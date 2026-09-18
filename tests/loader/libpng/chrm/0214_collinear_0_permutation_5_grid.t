@@ -14,7 +14,7 @@ test "$result" -eq 0 || {
     echo "not ok 1 - collinear 0 permutation 5 exact signed area"
     exit 0
 }
-test "${trace#*"PNG_CHRM_AREA|sample=5|checked=2"}" != "$trace" || {
+case "${trace}" in *"PNG_CHRM_AREA|sample=5|checked=2"*) true ;; *) false ;; esac || {
     echo "not ok 1 - numeric observation did not complete"
     exit 0
 }

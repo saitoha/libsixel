@@ -57,37 +57,37 @@ test -f "${log_path}" || {
 while IFS= read -r line; do
     line_count=$((line_count + 1))
     test "${line_count}" -ne 1 || first_line=${line}
-    test "${line#*\"ts\":}" != "${line}" || {
+    case "${line}" in *\"ts\":*) true ;; *) false ;; esac || {
         echo "# timeline JSONL line is missing ts: ${line}"
         echo "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0
     }
-    test "${line#*\"session_id\":}" != "${line}" || {
+    case "${line}" in *\"session_id\":*) true ;; *) false ;; esac || {
         echo "# timeline JSONL line is missing session_id: ${line}"
         echo "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0
     }
-    test "${line#*\"thread\":}" != "${line}" || {
+    case "${line}" in *\"thread\":*) true ;; *) false ;; esac || {
         echo "# timeline JSONL line is missing thread: ${line}"
         echo "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0
     }
-    test "${line#*\"worker\":}" != "${line}" || {
+    case "${line}" in *\"worker\":*) true ;; *) false ;; esac || {
         echo "# timeline JSONL line is missing worker: ${line}"
         echo "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0
     }
-    test "${line#*\"role\":}" != "${line}" || {
+    case "${line}" in *\"role\":*) true ;; *) false ;; esac || {
         echo "# timeline JSONL line is missing role: ${line}"
         echo "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0
     }
-    test "${line#*\"event\":}" != "${line}" || {
+    case "${line}" in *\"event\":*) true ;; *) false ;; esac || {
         echo "# timeline JSONL line is missing event: ${line}"
         echo "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0
     }
-    test "${line#*\"job\":}" != "${line}" || {
+    case "${line}" in *\"job\":*) true ;; *) false ;; esac || {
         echo "# timeline JSONL line is missing job: ${line}"
         echo "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0

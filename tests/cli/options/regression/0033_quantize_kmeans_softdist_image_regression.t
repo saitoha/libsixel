@@ -34,7 +34,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=softdist|stored=1|binding=quantize_model_kmeans_softdist_mode,quantize_model_kmeans_softdist_override*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=softdist\|stored=1\|binding=quantize_model_kmeans_softdist_mode,quantize_model_kmeans_softdist_override**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "softdist short value was not stored"
     exit 0
 }
@@ -48,7 +48,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=softdist|stored=1|binding=quantize_model_kmeans_softdist_mode,quantize_model_kmeans_softdist_override*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=softdist\|stored=1\|binding=quantize_model_kmeans_softdist_mode,quantize_model_kmeans_softdist_override**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "softdist environment value was not stored"
     exit 0
 }

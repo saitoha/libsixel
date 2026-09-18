@@ -17,7 +17,7 @@ test "$status" = 2 || {
     echo "not ok 1 - invalid argument must exit 2"
     exit 0
 }
-test "${message#*-d perturb must be in range 0.0-1.0.}" != "$message" || {
+case "${message}" in *-d\ perturb\ must\ be\ in\ range\ 0.0-1.0.*) true ;; *) false ;; esac || {
     echo "not ok 1 - missing range diagnostic"
     exit 0
 }

@@ -32,15 +32,12 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --threads=2 \
 }
 
 while IFS= read -r line; do
-    test "${line#*\"worker\":\"decoder\",\"role\":\"paint\",\"event\":\"ready\"*}" = \
-        "${line}" || paint_ready=$((paint_ready + 1))
-    test "${line#*\"worker\":\"decoder\",\"role\":\"paint\",\"event\":\"start\"*}" = \
-        "${line}" || {
+    case "${line}" in *\"worker\":\"decoder\",\"role\":\"paint\",\"event\":\"ready\"**) false ;; *) true ;; esac || paint_ready=$((paint_ready + 1))
+    case "${line}" in *\"worker\":\"decoder\",\"role\":\"paint\",\"event\":\"start\"**) false ;; *) true ;; esac || {
         paint_start=$((paint_start + 1))
         test "${paint_ready}" -eq 2 || paint_started_early=1
     }
-    test "${line#*\"worker\":\"decoder\",\"role\":\"paint\",\"event\":\"finish\"*}" = \
-        "${line}" || paint_finish=$((paint_finish + 1))
+    case "${line}" in *\"worker\":\"decoder\",\"role\":\"paint\",\"event\":\"finish\"**) false ;; *) true ;; esac || paint_finish=$((paint_finish + 1))
 done < "${timeline_log}"
 
 test "${paint_ready}" -eq 2 || {

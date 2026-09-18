@@ -21,7 +21,7 @@ test "$result" -eq 0 || {
     echo "not ok 1 - byte white fallback"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|"}" = "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - inapplicable ICC unexpectedly applied"
     exit 0

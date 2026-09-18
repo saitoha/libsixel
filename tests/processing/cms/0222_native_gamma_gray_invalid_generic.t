@@ -17,12 +17,12 @@ test "$result" -eq 0 || {
     echo "not ok 1 - native gamma gray invalid generic"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=colorsync|"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - requested engine did not apply"
     exit 0
 }
-test "${trace#*"to=original"}" = "$trace" || {
+case "${trace}" in *"to=original"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - unexpected original-curve branch"
     exit 0
@@ -30,7 +30,7 @@ test "${trace#*"to=original"}" = "$trace" || {
 actual=${trace#*'NGPHASE|begin
 '}
 actual=${actual%%'NGPHASE|end'*}
-test "${actual#*"LSXCMS3|event=gamma-source|"}" = "$actual" || {
+case "${actual}" in *"LSXCMS3|event=gamma-source|"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - native TRC XYZ or sample bytes changed"
     exit 0

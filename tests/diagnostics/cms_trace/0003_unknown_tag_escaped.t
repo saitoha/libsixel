@@ -14,7 +14,7 @@ message=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" --cms-engine=builtin -L "builtin!" -m
     exit 0
 }
 
-test "${message#*tag=1b5b324a|type=74657874|reason=tag-not-consumed}" != "$message" || {
+case "${message}" in *tag=1b5b324a\|type=74657874\|reason=tag-not-consumed*) true ;; *) false ;; esac || {
     echo "not ok 1 - missing ICC decision reason"
     exit 0
 }

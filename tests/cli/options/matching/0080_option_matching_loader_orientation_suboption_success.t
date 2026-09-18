@@ -22,8 +22,7 @@ probe_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.png" \
     -o/dev/null 2>&1) || probe_status=$?
 
-test "${probe_output#*invalid argument for -L,--loaders option*}" = \
-    "${probe_output}" || {
+case "${probe_output}" in *invalid\ argument\ for\ -L,--loaders\ option**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "-L libpng orientation suboption was rejected"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${probe_output}" >&2

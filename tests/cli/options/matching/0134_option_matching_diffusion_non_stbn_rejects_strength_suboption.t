@@ -24,12 +24,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown suboption key*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ key**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing non-stbn strength diagnostic"
     exit 0
 }
 
-test "${msg#*strength*}" != "${msg}" || {
+case "${msg}" in *strength**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "non-stbn strength diagnostic lacked key name"
     exit 0
 }

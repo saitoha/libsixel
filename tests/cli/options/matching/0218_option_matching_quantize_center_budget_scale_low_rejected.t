@@ -20,7 +20,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*budget_scale*}" != "${msg}" || {
+case "${msg}" in *budget_scale**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing center budget_scale range diagnostic"
     exit 0
 }

@@ -38,8 +38,7 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying effect-priority dual-stroke overlap on clipped group*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ effect-priority\ dual-stroke\ overlap\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing FXPRI overlap trace"
     exit 0
 }

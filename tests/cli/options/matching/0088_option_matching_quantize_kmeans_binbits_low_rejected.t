@@ -17,7 +17,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qk:N3 "${TOP_SRCDIR}/tests
     exit 0
 }
 
-test "${msg#*binbits must be in range 4-8.*}" != "${msg}" || {
+case "${msg}" in *binbits\ must\ be\ in\ range\ 4-8.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing kmeans binbits range diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

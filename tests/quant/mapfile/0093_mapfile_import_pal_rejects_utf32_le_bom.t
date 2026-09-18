@@ -23,8 +23,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! \
     exit 0
 }
 
-test "${msg#*sixel_palette_parse_pal_jasc: unsupported text encoding.}" \
-    != "${msg}" || {
+case "${msg}" in *sixel_palette_parse_pal_jasc:\ unsupported\ text\ encoding.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing JASC PAL UTF-32LE diagnostic"
     exit 0
 }

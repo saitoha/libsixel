@@ -22,7 +22,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_prepare_specified_palette: mapfile \"-\" is empty.}" != "${msg}" || {
+case "${msg}" in *sixel_prepare_specified_palette:\ mapfile\ \"-\"\ is\ empty.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing empty stdin mapfile diagnostic"
     exit 0
 }

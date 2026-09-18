@@ -21,7 +21,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXBPS1|quantizer_requested=2|quantizer_effective=1|quantizer_origin=explicit|quantizer_phase=executed|quantizer_reason=fallback|binning_requested=none|binning_effective=none|binning_origin=explicit|binning_phase=executed|binning_reason=explicit|points=*}" != "${trace}" || {
+case "${trace}" in *LSXBPS1\|quantizer_requested=2\|quantizer_effective=1\|quantizer_origin=explicit\|quantizer_phase=executed\|quantizer_reason=fallback\|binning_requested=none\|binning_effective=none\|binning_origin=explicit\|binning_phase=executed\|binning_reason=explicit\|points=**) true ;; *) false ;; esac || {
     echo "not ok 1 - fallback published the failed quantizer attempt"
     exit 0
 }

@@ -24,8 +24,7 @@ test "${command_status}" -ne 0 || {
     echo "not ok" 1 - "unexpected success: cover policy conflicts with built-in palette"
     exit 0
 }
-test "${msg#*option -b, --builtin-palette conflicts with -a, --cover-policy.*}" \
-    != "${msg}" || {
+case "${msg}" in *option\ -b,\ --builtin-palette\ conflicts\ with\ -a,\ --cover-policy.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing cover policy and built-in conflict diagnostic"
     exit 0
 }

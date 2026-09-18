@@ -22,7 +22,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_encoder_setopt: no mapfile specified.}" != "${msg}" || {
+case "${msg}" in *sixel_encoder_setopt:\ no\ mapfile\ specified.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing empty mapfile option diagnostic"
     exit 0
 }

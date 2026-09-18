@@ -11,7 +11,7 @@ test "$status" -eq 2 || {
     echo "not ok 1 - invalid combination was not rejected"
     exit 0
 }
-test "${value#*'explicit target colorspace with dequantize'}" != "$value" || {
+case "${value}" in *'explicit target colorspace with dequantize'*) true ;; *) false ;; esac || {
     echo "not ok 1 - rejection reason missing"
     exit 0
 }

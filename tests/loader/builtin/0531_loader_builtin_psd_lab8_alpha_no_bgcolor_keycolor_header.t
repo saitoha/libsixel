@@ -28,7 +28,7 @@ test "${status_no}" -eq 0 || {
     exit 0
 }
 
-test "${output_no#*"${keycolor_header}"}" != "${output_no}" || {
+{ test -n "${keycolor_header}" && case "${output_no}" in *"${keycolor_header}"*) true ;; *) false ;; esac; } || {
     echo "not ok 1 - builtin PSD Lab8 alpha did not emit keycolor header without --bgcolor"
     exit 0
 }
@@ -42,7 +42,7 @@ test "${status_bg}" -eq 0 || {
     exit 0
 }
 
-test "${output_bg#*"${keycolor_header}"}" = "${output_bg}" || {
+{ test -z "${keycolor_header}" || case "${output_bg}" in *"${keycolor_header}"*) false ;; *) true ;; esac; } || {
     echo "not ok 1 - builtin PSD Lab8 alpha kept keycolor header with --bgcolor"
     exit 0
 }

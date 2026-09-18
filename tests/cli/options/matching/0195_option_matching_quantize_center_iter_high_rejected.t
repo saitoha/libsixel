@@ -20,7 +20,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*iter must be in range 1-64.*}" != "${msg}" || {
+case "${msg}" in *iter\ must\ be\ in\ range\ 1-64.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing center iter range diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

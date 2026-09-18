@@ -24,7 +24,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_palette_read_stream: palette input exceeds 16 MiB limit.}" != "${msg}" || {
+case "${msg}" in *sixel_palette_read_stream:\ palette\ input\ exceeds\ 16\ MiB\ limit.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing oversized stream diagnostic"
     exit 0
 }

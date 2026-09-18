@@ -34,7 +34,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=miniter|stored=1|binding=quantize_model_kmeans_miniter,quantize_model_kmeans_miniter_override|value=100*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=miniter\|stored=1\|binding=quantize_model_kmeans_miniter,quantize_model_kmeans_miniter_override\|value=100**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "miniter short value was not stored"
     exit 0
 }
@@ -47,7 +47,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=miniter|stored=1|binding=quantize_model_kmeans_miniter,quantize_model_kmeans_miniter_override|value=100*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=miniter\|stored=1\|binding=quantize_model_kmeans_miniter,quantize_model_kmeans_miniter_override\|value=100**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "miniter environment value was not stored"
     exit 0
 }
@@ -60,7 +60,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=miniter|stored=1|binding=quantize_model_kmeans_miniter,quantize_model_kmeans_miniter_override|value=0*}" != "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=miniter\|stored=1\|binding=quantize_model_kmeans_miniter,quantize_model_kmeans_miniter_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "miniter zero endpoint was not stored"
     exit 0
 }

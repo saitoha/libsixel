@@ -32,15 +32,13 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying round-join vector stroke coverage in layer fallback*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ round-join\ vector\ stroke\ coverage\ in\ layer\ fallback**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite did not apply base round-join vector stroke coverage"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying miter-join vector stroke coverage in layer fallback*}" \
-    = "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ miter-join\ vector\ stroke\ coverage\ in\ layer\ fallback**) false ;; *) true ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite unexpectedly used base miter-join trace for round join"
     exit 0

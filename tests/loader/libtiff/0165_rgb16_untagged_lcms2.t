@@ -19,12 +19,12 @@ test "$result" -eq 0 || {
     echo "not ok 1 - RGB16 untagged lcms2"
     exit 0
 }
-test "${trace#*"LSXLOAD1|event=ok|loader=libtiff|"}" != "$trace" || {
+case "${trace}" in *"LSXLOAD1|event=ok|loader=libtiff|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - libtiff did not deliver the frame"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|"}" = "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - unmanaged source unexpectedly passed through CMS"
     exit 0

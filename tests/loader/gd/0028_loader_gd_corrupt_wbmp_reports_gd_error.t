@@ -32,15 +32,14 @@ msg=$(set +xv; printf '\000\000\377\377\177\377\177\000' | \
     exit 0
 }
 
-test "${msg#*GD error*}" != "${msg}" || {
+case "${msg}" in *GD\ error**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "expected GD error diagnostic was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*runtime error: unable to decode input with available loaders*}" \
-    = "${msg}" || {
+case "${msg}" in *runtime\ error:\ unable\ to\ decode\ input\ with\ available\ loaders**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "unexpected generic loader-chain failure message"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

@@ -2326,6 +2326,7 @@ staticcheck-loader-cms-boundary \
 	staticcheck-test-executable \
 	staticcheck-test-webp-serial-unique \
 	staticcheck-test-no-grep-awk \
+	staticcheck-test-pattern-match \
 	staticcheck-test-no-for-until \
 	staticcheck-artifact-local-dir-mkdir \
 	staticcheck-binding-loader-setopt-sync \
@@ -2403,6 +2404,7 @@ staticcheck-test-plan-single \
 	staticcheck-test-executable \
 staticcheck-test-webp-serial-unique \
 staticcheck-test-no-grep-awk \
+staticcheck-test-pattern-match \
 staticcheck-test-no-for-until \
 staticcheck-artifact-local-dir-mkdir \
 staticcheck-binding-loader-setopt-sync \
@@ -3015,6 +3017,16 @@ staticcheck-test-no-grep-awk:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-test-no-grep-awk.sh" \
 		"$(abs_top_srcdir)"
+
+staticcheck-test-pattern-match:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-test-pattern-match" \
+		--log-file staticcheck-test-pattern-match.log \
+		--trs-file staticcheck-test-pattern-match.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-test-pattern-match.sh" \
+		"$(abs_top_srcdir)" "$(PYTHON_STATICCHECK)"
 
 staticcheck-test-no-for-until:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
@@ -4110,6 +4122,9 @@ EXTRA_DIST = loader/libpng/chrm_trace_control.sh \
     _static/sh/staticcheck-test-executable.sh \
     _static/sh/staticcheck-test-webp-serial-unique.sh \
     _static/sh/staticcheck-test-no-grep-awk.sh \
+    _static/sh/staticcheck-test-pattern-match.sh \
+    _static/python/test_pattern_match.py \
+    _static/data/test-pattern-match-whitelist.json \
     _static/sh/staticcheck-test-no-for-until.sh \
     _static/sh/staticcheck-artifact-local-dir-mkdir.sh \
     _static/sh/staticcheck-build-doc-configure-help.sh \

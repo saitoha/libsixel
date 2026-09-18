@@ -22,7 +22,7 @@ test "$result" -eq 0 || {
 }
 observed=${trace#*"TMFAULT|phase-begin=1"}
 observed=${observed%%"TMFAULT|phase-begin=2"*}
-test "$observed" = "${observed#*"LSXCMS2|event=apply"}" || {
+case "${observed}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - nonfinite input reached CMS"
     exit 0

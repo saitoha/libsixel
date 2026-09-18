@@ -14,7 +14,7 @@ test "$result" -eq 0 || {
     echo "not ok 1 - all usable boundary coordinates recover their PNG integers"
     exit 0
 }
-test "${trace#*"PNG_CHRM_GRID|roundtrip|checked=200000"}" != "$trace" || {
+case "${trace}" in *"PNG_CHRM_GRID|roundtrip|checked=200000"*) true ;; *) false ;; esac || {
     echo "not ok 1 - numeric observation did not complete"
     exit 0
 }

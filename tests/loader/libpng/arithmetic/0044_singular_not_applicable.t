@@ -21,7 +21,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     printf '# %s\n' "$trace"
     exit 0
 }
-test "${trace#*PNGCHRM1|*requested=512bit|actual=not-applicable|reason=undefined-chrm*}" != "$trace" || {
+case "${trace}" in *PNGCHRM1\|*requested=512bit\|actual=not-applicable\|reason=undefined-chrm**) true ;; *) false ;; esac || {
     echo "not ok 1 - exactly collinear cHRM remains metadata fallback"
     printf '# %s\n' "$trace"
     exit 0

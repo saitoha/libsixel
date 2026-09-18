@@ -33,7 +33,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=chrm_arithmetic|stored=1|binding=libpng_chrm_arithmetic*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=chrm_arithmetic\|stored=1\|binding=libpng_chrm_arithmetic**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "chrm_arithmetic short value was not stored"
     exit 0
 }
@@ -46,17 +46,17 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=chrm_arithmetic|stored=1|binding=libpng_chrm_arithmetic*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=chrm_arithmetic\|stored=1\|binding=libpng_chrm_arithmetic**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "chrm_arithmetic environment value was not stored"
     exit 0
 }
 
-test "${short_trace#*PNGCHRM1|*requested=512bit|selected=512bit|actual=identity*}" != "${short_trace}" || {
+case "${short_trace}" in *PNGCHRM1\|*requested=512bit\|selected=512bit\|actual=identity**) true ;; *) false ;; esac || {
     echo "not ok 1 - forced arithmetic did not reach the cHRM consumer"
     exit 0
 }
 
-test "${env_trace#*PNGCHRM1|*requested=512bit|selected=512bit|actual=identity*}" != "${env_trace}" || {
+case "${env_trace}" in *PNGCHRM1\|*requested=512bit\|selected=512bit\|actual=identity**) true ;; *) false ;; esac || {
     echo "not ok 1 - environment arithmetic did not reach the cHRM consumer"
     exit 0
 }

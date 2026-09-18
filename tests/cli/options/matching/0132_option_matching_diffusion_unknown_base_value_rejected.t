@@ -22,7 +22,7 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown*}" != "${msg}" || {
+case "${msg}" in *unknown**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing unknown diffusion diagnostic"
     exit 0
 }

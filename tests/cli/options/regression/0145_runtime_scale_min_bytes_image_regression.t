@@ -31,7 +31,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "scale threshold short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=scale_min_bytes|stored=1|binding=scale_parallel_min_bytes,scale_parallel_min_bytes_override|value=17*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=scale_min_bytes\|stored=1\|binding=scale_parallel_min_bytes,scale_parallel_min_bytes_override\|value=17**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "scale threshold short value was not stored"
     exit 0
 }
@@ -43,7 +43,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "scale threshold environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=scale_min_bytes|stored=1|binding=scale_parallel_min_bytes,scale_parallel_min_bytes_override|value=17*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=scale_min_bytes\|stored=1\|binding=scale_parallel_min_bytes,scale_parallel_min_bytes_override\|value=17**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "scale threshold environment value was not stored"
     exit 0
 }
@@ -55,7 +55,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "scale threshold signed conversion failed"
     exit 0
 }
-test "${range_trace#*LSXSUB1|*key=scale_min_bytes|stored=1|binding=scale_parallel_min_bytes,scale_parallel_min_bytes_override|value=*}" != "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=scale_min_bytes\|stored=1\|binding=scale_parallel_min_bytes,scale_parallel_min_bytes_override\|value=**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "scale threshold did not preserve size clamping"
     exit 0
 }

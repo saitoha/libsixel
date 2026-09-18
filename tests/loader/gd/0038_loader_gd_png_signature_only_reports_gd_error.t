@@ -23,14 +23,13 @@ msg=$(set +xv; printf '\211PNG\r\n\032\n' | \
     exit 0
 }
 
-test "${msg#*GD error*}" != "${msg}" || {
+case "${msg}" in *GD\ error**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced gd PNG signature-only missed GD error"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*runtime error: unable to decode input with available loaders*}" \
-    = "${msg}" || {
+case "${msg}" in *runtime\ error:\ unable\ to\ decode\ input\ with\ available\ loaders**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "forced gd PNG signature-only degraded to generic error"
     printf '%s\n' "${msg}" >&2
     exit 0

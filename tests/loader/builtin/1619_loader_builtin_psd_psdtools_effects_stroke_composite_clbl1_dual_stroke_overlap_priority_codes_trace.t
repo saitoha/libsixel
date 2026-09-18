@@ -42,28 +42,28 @@ test -n "${diag_line}" || {
     exit 0
 }
 
-test "${diag_line#LSXPSD1\|rc=0\|kind=OK\|codes=}" != "${diag_line}" || {
+case "${diag_line}" in LSXPSD1\|rc=0\|kind=OK\|codes=*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite diagnostic header is malformed"
     exit 0
 }
 
-test "${diag_line#*FX_DUAL_SOURCE_DEFER*}" != "${diag_line}" || {
+case "${diag_line}" in *FX_DUAL_SOURCE_DEFER**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing FX_DUAL_SOURCE_DEFER code"
     exit 0
 }
 
-test "${diag_line#*FX_DUAL_OVERLAP_DEFER*}" != "${diag_line}" || {
+case "${diag_line}" in *FX_DUAL_OVERLAP_DEFER**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing FX_DUAL_OVERLAP_DEFER code"
     exit 0
 }
 
-test "${diag_line#*FX_DUAL_FXPRI_OVL_DEFER*}" != "${diag_line}" || {
+case "${diag_line}" in *FX_DUAL_FXPRI_OVL_DEFER**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing FX_DUAL_FXPRI_OVL_DEFER code"
     exit 0
 }
 
-test "${diag_line#*FX_DUAL_FRFX_ONLY_DEFER*}" = "${diag_line}" || {
+case "${diag_line}" in *FX_DUAL_FRFX_ONLY_DEFER**) false ;; *) true ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite kept removed FX_DUAL_FRFX_ONLY_DEFER code"
     exit 0

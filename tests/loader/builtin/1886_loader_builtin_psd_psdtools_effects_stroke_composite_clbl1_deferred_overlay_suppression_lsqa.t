@@ -41,19 +41,17 @@ test "${command_status}" -eq 0 || {
 
 suppressed_tail="${trace_output#*builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays*}"
 
-test "${suppressed_tail}" != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ suppressing\ clbl=1\ deferred\ base\ solid/gradient\ overlays**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing clbl=1 overlay suppression trace"
     exit 0
 }
 
-test "${suppressed_tail#*builtin PSD: applying clip-weighted deferred gradient overlay in layer fallback*}" \
-    != "${suppressed_tail}" || {
+case "${suppressed_tail}" in *builtin\ PSD:\ applying\ clip-weighted\ deferred\ gradient\ overlay\ in\ layer\ fallback**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred gradient overlay after suppression"
     exit 0
 }
 
-test "${suppressed_tail#*builtin PSD: keeping deferred gradient overlay alpha unchanged in layer fallback*}" \
-    != "${suppressed_tail}" || {
+case "${suppressed_tail}" in *builtin\ PSD:\ keeping\ deferred\ gradient\ overlay\ alpha\ unchanged\ in\ layer\ fallback**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred gradient alpha-invariant trace"
     exit 0
 }

@@ -61,7 +61,7 @@ test "${rc-0}" -ne 139 || {
     exit 0
 }
 
-test "${err#*indexed source row payload is too large*}" != "${err}" || {
+case "${err}" in *indexed\ source\ row\ payload\ is\ too\ large**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fuzz0007 did not hit indexed row-size guard"
     exit 0
 }

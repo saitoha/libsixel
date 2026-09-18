@@ -17,7 +17,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qmedoids:S4294967296 "${TO
     exit 0
 }
 
-test "${msg#*seed must be in range 0-4294967295.*}" != "${msg}" || {
+case "${msg}" in *seed\ must\ be\ in\ range\ 0-4294967295.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing medoids seed range diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

@@ -20,7 +20,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*histbits must be in range 3-6.*}" != "${msg}" || {
+case "${msg}" in *histbits\ must\ be\ in\ range\ 3-6.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing center histbits range diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

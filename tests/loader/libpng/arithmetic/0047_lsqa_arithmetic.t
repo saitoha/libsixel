@@ -23,7 +23,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     printf '# %s\n' "$trace"
     exit 0
 }
-test "${trace#*PNGCHRM1|*requested=512bit|selected=512bit|actual=identity*}" != "$trace" || {
+case "${trace}" in *PNGCHRM1\|*requested=512bit\|selected=512bit\|actual=identity**) true ;; *) false ;; esac || {
     echo "not ok 1 - lsqa did not forward forced cHRM arithmetic"
     exit 0
 }

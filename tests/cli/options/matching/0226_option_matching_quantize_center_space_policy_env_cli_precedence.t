@@ -38,7 +38,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*space_policy*}" != "${msg}" || {
+case "${msg}" in *space_policy**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing invalid CLI center space_policy diagnostic"
     exit 0
 }

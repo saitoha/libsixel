@@ -25,20 +25,17 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_log#*builtin BMP: CMYK ICC conversion failed*}" = \
-    "${trace_log}" || {
+case "${trace_log}" in *builtin\ BMP:\ CMYK\ ICC\ conversion\ failed**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "non-applicable RGB ICC was misclassified as CMYK conversion failure"
     exit 0
 }
 
-test "${trace_log#*builtin BMP: invalid embedded ICC size*}" = \
-    "${trace_log}" || {
+case "${trace_log}" in *builtin\ BMP:\ invalid\ embedded\ ICC\ size**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "non-applicable RGB ICC was misclassified as malformed ICC size"
     exit 0
 }
 
-test "${trace_log#*builtin BMP: embedded ICC range is invalid*}" = \
-    "${trace_log}" || {
+case "${trace_log}" in *builtin\ BMP:\ embedded\ ICC\ range\ is\ invalid**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "non-applicable RGB ICC was misclassified as malformed ICC range"
     exit 0
 }

@@ -19,7 +19,6 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
-trace_tail=''
 diag_line=''
 command_status=0
 nl='
@@ -38,18 +37,17 @@ test "${command_status}" -eq 0 || {
 
 diag_line=${trace_output%%"${nl}"*}
 
-test "${diag_line#*FX_DUAL_OVERLAP_DEFER*}" != "${diag_line}" || {
+case "${diag_line}" in *FX_DUAL_OVERLAP_DEFER**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred overlap code"
     exit 0
 }
 
-test "${diag_line#*FX_DUAL_FXPRI_OVL_DEFER*}" != "${diag_line}" || {
+case "${diag_line}" in *FX_DUAL_FXPRI_OVL_DEFER**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing FXPRI overlap code"
     exit 0
 }
 
-trace_tail="${trace_output#*builtin PSD: applying deferred dual-stroke pseudo-layer blend on clipped group*}"
-test "${trace_tail}" != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ deferred\ dual-stroke\ pseudo-layer\ blend\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing pseudo-layer overlap trace"
     exit 0
 }

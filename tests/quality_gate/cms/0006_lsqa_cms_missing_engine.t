@@ -17,7 +17,7 @@ test "$status" -eq 2 || {
     echo "not ok 1 - missing engine exit status"
     exit 0
 }
-test "${message#*missing required argument*}" != "$message" || {
+case "${message}" in *missing\ required\ argument**) true ;; *) false ;; esac || {
     echo "not ok 1 - missing engine diagnostic"
     exit 0
 }

@@ -24,12 +24,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*boolean suboption must be 0 or 1.*}" != "${msg}" || {
+case "${msg}" in *boolean\ suboption\ must\ be\ 0\ or\ 1.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing stbn motion_adapt invalid-value diagnostic"
     exit 0
 }
 
-test "${msg#*motion_adapt*}" != "${msg}" || {
+case "${msg}" in *motion_adapt**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "motion_adapt invalid-value diagnostic lacked key name"
     exit 0
 }

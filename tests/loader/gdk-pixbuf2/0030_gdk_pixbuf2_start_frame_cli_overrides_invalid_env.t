@@ -35,8 +35,7 @@ cli_bad_env_text="$(SIXEL_LOADER_ANIMATION_START_FRAME_NO=abc \
     exit 0
 }
 
-test "${cli_bad_env_text#*SIXEL_LOADER_ANIMATION_START_FRAME_NO must be an integer.}" = \
-    "${cli_bad_env_text}" || {
+case "${cli_bad_env_text}" in *SIXEL_LOADER_ANIMATION_START_FRAME_NO\ must\ be\ an\ integer.*) false ;; *) true ;; esac || {
     echo "not ok 1 - invalid env error leaked despite --start-frame override"
     exit 0
 }

@@ -19,16 +19,16 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     echo "not ok" 1 - "FHEDT tile_depth environment conversion failed"
     exit 0
 }
-test "${trace#*work=rgb888*}" != "${trace}" || {
+case "${trace}" in *work=rgb888**) true ;; *) false ;; esac || {
     echo "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
-test "${trace#*LSXLUT2|phase=palette-apply|selected=lookup/fhedt.8bit|explicit=1*}" != "${trace}" || {
+case "${trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.8bit\|explicit=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
-test "${trace#*LSXFHD1|precision=8bit|*tile_depth=6*}" != "${trace}" || {
+case "${trace}" in *LSXFHD1\|precision=8bit\|*tile_depth=6**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "canonical FHEDT tile_depth did not win"
     exit 0
 }

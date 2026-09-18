@@ -24,12 +24,12 @@ pipeline_log=$(
 }
 printf '%s' "${pipeline_log}" >&2
 
-test "${pipeline_log#*gradient-map*}" = "${pipeline_log}" || {
+case "${pipeline_log}" in *gradient-map**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "planner unexpectedly inserted gradient-map"
     exit 0
 }
 
-test "${pipeline_log#*load -> dither*}" != "${pipeline_log}" || {
+case "${pipeline_log}" in *load\ -\>\ dither**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "planner missed direct load -> dither edge"
     exit 0
 }

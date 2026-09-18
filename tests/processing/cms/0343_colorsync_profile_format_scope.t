@@ -27,18 +27,18 @@ positive=0
 outside=0
 native_controls=0
 ok=1
-while test "${remaining#*"PFTRACE|kind="}" != "$remaining"; do
+while case "$remaining" in *"PFTRACE|kind="*) true ;; *) false ;; esac; do
     prefix=${remaining%%PFTRACE|kind=*}
-    test "${prefix#*"reason=source-profile-format"}" = "$prefix" || ok=0
-    test "${prefix#*"reason=native-source-channels"}" = "$prefix" || ok=0
+    case "${prefix}" in *"reason=source-profile-format"*) false ;; *) true ;; esac || ok=0
+    case "${prefix}" in *"reason=native-source-channels"*) false ;; *) true ;; esac || ok=0
     remaining=${remaining#*PFTRACE|kind=}
     block=${remaining%%PFTRACE|kind=end*}
-    test "$block" != "$remaining" || {
+    case "${remaining}" in *PFTRACE\|kind=end*) true ;; *) false ;; esac || {
         ok=0
         break
     }
     remaining=${remaining#*PFTRACE|kind=end}
-    test "${block#*PFTRACE}" = "$block" || ok=0
+    case "${block}" in *PFTRACE*) false ;; *) true ;; esac || ok=0
     marker=${block%%'
 '*}
     kind=${marker%%|*}
@@ -67,20 +67,20 @@ while test "${remaining#*"PFTRACE|kind="}" != "$remaining"; do
         rest=$prefix$rest
         wanted="LSXCMS2|event=apply|engine=$engine|path="
         apply=${block#*"$wanted"}
-        test "$apply" != "$block" || ok=0
+        { test -n "$wanted" && case "${block}" in *"$wanted"*) true ;; *) false ;; esac; } || ok=0
         apply=${apply#*|src=}
         wanted="$src|dst=4|ok=0
 "
-        test "${apply#"$wanted"}" != "$apply" || ok=0
+        { test -n "$wanted" && case "${apply}" in "$wanted"*) true ;; *) false ;; esac; } || ok=0
         prefix=${block%%LSXCMS2|event=apply*}
         apply=${apply#"$wanted"}
         apply=$prefix$apply
-        test "${apply#*"LSXCMS2|event=apply"}" = "$apply" || ok=0
+        case "${apply}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || ok=0
     }
     test "$kind" != positive || positive=$((positive + 1))
     test "$kind" != outside || outside=$((outside + 1))
     test "$kind" != outside ||
-        test "${marker#*"|native=3|"}" = "$marker" || {
+        case "${marker}" in *"|native=3|"*) false ;; *) true ;; esac || {
             native_controls=$((native_controls + 1))
             wanted="LSXCMS2|event=reject|engine=colorsync|reason=native-source-channels|src=$src|dst=4|native=3|expected=$expected
 "
@@ -89,12 +89,12 @@ while test "${remaining#*"PFTRACE|kind="}" != "$remaining"; do
             prefix=${block%%"$wanted"*}
             rest=$prefix$rest
     }
-    test "${rest#*"reason=source-profile-format"}" = "$rest" || ok=0
-    test "${rest#*"reason=native-source-channels"}" = "$rest" || ok=0
+    case "${rest}" in *"reason=source-profile-format"*) false ;; *) true ;; esac || ok=0
+    case "${rest}" in *"reason=native-source-channels"*) false ;; *) true ;; esac || ok=0
 done
 set -x
-test "${remaining#*"reason=source-profile-format"}" = "$remaining" || ok=0
-test "${remaining#*"reason=native-source-channels"}" = "$remaining" || ok=0
+case "${remaining}" in *"reason=source-profile-format"*) false ;; *) true ;; esac || ok=0
+case "${remaining}" in *"reason=native-source-channels"*) false ;; *) true ;; esac || ok=0
 test "$known" -eq 376 || ok=0
 test "$positive" -eq 18 || ok=0
 test "$outside" -eq 7 || ok=0

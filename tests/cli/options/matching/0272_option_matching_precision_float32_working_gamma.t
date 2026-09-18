@@ -20,7 +20,7 @@ planner_log=$(set +xv; SIXEL_FLOAT32_DITHER=0 \
     echo "not ok 1 - float32 gamma conversion failed"
     exit 0
 }
-test "${planner_log#*work=rgb-f32*}" != "${planner_log}" || {
+case "${planner_log}" in *work=rgb-f32**) true ;; *) false ;; esac || {
     echo "not ok 1 - gamma discarded explicit float32 precision"
     exit 0
 }

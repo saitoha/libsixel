@@ -31,12 +31,12 @@ effect_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${effect_trace#*LSXDTH1|*consume=[1-9]*}" != "${effect_trace}" || {
+case "${effect_trace}" in *LSXDTH1\|*consume=[1-9]**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "diffusion stbn scene cut reset did not consume a second frame"
     exit 0
 }
 
-test "${effect_trace#*LSXDTH1|*scene_reset=1|scene_reset_override=1*}" != "${effect_trace}" || {
+case "${effect_trace}" in *LSXDTH1\|*scene_reset=1\|scene_reset_override=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "stbn scene cut reset did not reach the dither"
     exit 0
 }
@@ -49,7 +49,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=scene_cut_reset|stored=1|binding=stbn_scene_cut_reset_enabled,stbn_scene_cut_reset_override*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=scene_cut_reset\|stored=1\|binding=stbn_scene_cut_reset_enabled,stbn_scene_cut_reset_override**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "scene_cut_reset short value was not stored"
     exit 0
 }
@@ -64,7 +64,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=scene_cut_reset|stored=1|binding=stbn_scene_cut_reset_enabled,stbn_scene_cut_reset_override*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=scene_cut_reset\|stored=1\|binding=stbn_scene_cut_reset_enabled,stbn_scene_cut_reset_override**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "scene_cut_reset environment value was not stored"
     exit 0
 }

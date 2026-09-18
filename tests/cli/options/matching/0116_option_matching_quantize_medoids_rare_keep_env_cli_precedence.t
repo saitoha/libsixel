@@ -38,7 +38,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*-Q rare_keep must be in range 0-1024.*}" != "${msg}" || {
+case "${msg}" in *-Q\ rare_keep\ must\ be\ in\ range\ 0-1024.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing invalid CLI rare_keep diagnostic"
     exit 0
 }

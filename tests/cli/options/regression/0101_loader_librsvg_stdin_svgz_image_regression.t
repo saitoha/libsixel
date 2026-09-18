@@ -34,7 +34,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=stdin_svgz|stored=1|binding=librsvg_allow_stdin_svgz|value=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=stdin_svgz\|stored=1\|binding=librsvg_allow_stdin_svgz\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "stdin_svgz short value was not stored"
     exit 0
 }
@@ -48,7 +48,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=stdin_svgz|stored=1|binding=librsvg_allow_stdin_svgz|value=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=stdin_svgz\|stored=1\|binding=librsvg_allow_stdin_svgz\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "stdin_svgz environment value was not stored"
     exit 0
 }

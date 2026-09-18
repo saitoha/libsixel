@@ -31,7 +31,7 @@ test "${command_status}" -ne 0 || {
 }
 
 diag_line=${trace_output#*LSXWEBP1\|}
-test "${diag_line}" != "${trace_output}" || {
+case "${trace_output}" in *LSXWEBP1\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader corrupted fixture bad_vp8x_dimensions_exceed_limit.webp missing LSXWEBP1 contract header"
     exit 0
 }
@@ -39,27 +39,27 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_line}" || {
+case "${diag_line}" in LSXWEBP1\|rc=1\|kind=ERR\|codes=*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader corrupted fixture bad_vp8x_dimensions_exceed_limit.webp malformed error contract header"
     exit 0
 }
 
-test "${diag_line#*W_UNSUP_ANIM*}" != "${diag_line}" || {
+case "${diag_line}" in *W_UNSUP_ANIM**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader corrupted fixture bad_vp8x_dimensions_exceed_limit.webp missing W_UNSUP_ANIM contract code"
     exit 0
 }
 
-test "${diag_line#*W_UNSUP_ANIM_DIMENSION_LIMIT*}" != "${diag_line}" || {
+case "${diag_line}" in *W_UNSUP_ANIM_DIMENSION_LIMIT**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader corrupted fixture bad_vp8x_dimensions_exceed_limit.webp missing W_UNSUP_ANIM_DIMENSION_LIMIT contract code"
     exit 0
 }
 
-test "${diag_line#*W_UNSUP_ANIM_FRAME_LIMIT*}" = "${diag_line}" || {
+case "${diag_line}" in *W_UNSUP_ANIM_FRAME_LIMIT**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "forced builtin loader corrupted fixture bad_vp8x_dimensions_exceed_limit.webp unexpectedly emitted W_UNSUP_ANIM_FRAME_LIMIT contract code"
     exit 0
 }
 
-test "${diag_line#*W_UNSUP_ANIM_PIXEL_LIMIT*}" = "${diag_line}" || {
+case "${diag_line}" in *W_UNSUP_ANIM_PIXEL_LIMIT**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "forced builtin loader corrupted fixture bad_vp8x_dimensions_exceed_limit.webp unexpectedly emitted W_UNSUP_ANIM_PIXEL_LIMIT contract code"
     exit 0
 }

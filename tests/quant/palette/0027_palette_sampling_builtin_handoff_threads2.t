@@ -25,8 +25,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=encode_handoff \
     exit 0
 }
 
-test "${trace#*event=callback_handoff_decide handoff=pipeline*}" \
-    != "${trace}" || {
+case "${trace}" in *event=callback_handoff_decide\ handoff=pipeline**) true ;; *) false ;; esac || {
     echo "not ok 1 - bypassed sampling reserved a palette worker"
     exit 0
 }

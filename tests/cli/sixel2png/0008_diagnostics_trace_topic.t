@@ -21,7 +21,7 @@ test "${trace_status}" -eq 2 || {
     exit 0
 }
 
-test "${trace_message#*LSXSUB1|*key=trace_topic|stored=1|binding=trace_topic,trace_topic_override|value=suboption_contract*}" != "${trace_message}" || {
+case "${trace_message}" in *LSXSUB1\|*key=trace_topic\|stored=1\|binding=trace_topic,trace_topic_override\|value=suboption_contract**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "trace topic was not applied by sixel2png"
     exit 0
 }

@@ -22,8 +22,7 @@ cli_trace=$(set +xv; SIXEL_TRACE_TOPIC=terminal_contract \
     echo "not ok" 1 - "terminal policy CLI conversion failed"
     exit 0
 }
-test "${cli_trace#*LSXTTY1\|hide_cursor=1\|override=1\|*}" != \
-    "${cli_trace}" || {
+case "${cli_trace}" in *LSXTTY1\|hide_cursor=1\|override=1\|**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "terminal policy CLI value missed its consumer"
     exit 0
 }
@@ -35,8 +34,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=terminal_contract \
     echo "not ok" 1 - "terminal policy environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXTTY1\|hide_cursor=1\|override=0\|*}" != \
-    "${env_trace}" || {
+case "${env_trace}" in *LSXTTY1\|hide_cursor=1\|override=0\|**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "terminal policy environment missed its consumer"
     exit 0
 }
@@ -48,8 +46,7 @@ empty_trace=$(set +xv; SIXEL_TRACE_TOPIC=terminal_contract \
     echo "not ok" 1 - "empty terminal policy conversion failed"
     exit 0
 }
-test "${empty_trace#*LSXTTY1\|hide_cursor=0\|override=0\|*}" != \
-    "${empty_trace}" || {
+case "${empty_trace}" in *LSXTTY1\|hide_cursor=0\|override=0\|**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "empty terminal policy no longer disables hiding"
     exit 0
 }
@@ -61,8 +58,7 @@ override_trace=$(set +xv; SIXEL_TRACE_TOPIC=terminal_contract \
     echo "not ok" 1 - "terminal policy override conversion failed"
     exit 0
 }
-test "${override_trace#*LSXTTY1\|hide_cursor=0\|override=1\|*}" != \
-    "${override_trace}" || {
+case "${override_trace}" in *LSXTTY1\|hide_cursor=0\|override=1\|**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "terminal policy CLI did not override its environment"
     exit 0
 }

@@ -22,12 +22,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*phase*}" != "${msg}" || {
+case "${msg}" in *phase**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing bluenoise phase key diagnostic"
     exit 0
 }
 
-test "${msg#*X,Y*}" != "${msg}" || {
+case "${msg}" in *X,Y**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing bluenoise phase format diagnostic"
     exit 0
 }

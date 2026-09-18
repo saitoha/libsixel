@@ -21,7 +21,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     printf '# %s\n' "$trace"
     exit 0
 }
-test "${trace#*PNGCHRM1|*requested=512bit|actual=not-applicable|reason=icc-selected*}" != "$trace" || {
+case "${trace}" in *PNGCHRM1\|*requested=512bit\|actual=not-applicable\|reason=icc-selected**) true ;; *) false ;; esac || {
     echo "not ok 1 - selected ICC bypasses cHRM arithmetic"
     printf '# %s\n' "$trace"
     exit 0

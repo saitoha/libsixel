@@ -31,7 +31,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "parallel skew short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=parallel_skew|stored=1|binding=parallel_skew,parallel_skew_override|value=20*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=parallel_skew\|stored=1\|binding=parallel_skew,parallel_skew_override\|value=20**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "parallel skew short value was not stored"
     exit 0
 }
@@ -43,7 +43,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "parallel skew environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=parallel_skew|stored=1|binding=parallel_skew,parallel_skew_override|value=20*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=parallel_skew\|stored=1\|binding=parallel_skew,parallel_skew_override\|value=20**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "parallel skew environment value was not stored"
     exit 0
 }
@@ -55,7 +55,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "parallel skew lower conversion failed"
     exit 0
 }
-test "${range_trace#*LSXSUB1|*key=parallel_skew|stored=1|binding=parallel_skew,parallel_skew_override|value=-20*}" != "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=parallel_skew\|stored=1\|binding=parallel_skew,parallel_skew_override\|value=-20**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "parallel skew did not clamp its lower endpoint"
     exit 0
 }

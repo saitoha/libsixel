@@ -32,15 +32,13 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying deferred bevel-join vector stroke on clipped group*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ deferred\ bevel-join\ vector\ stroke\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite did not apply deferred bevel-join vector stroke coverage"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying deferred miter-join vector stroke on clipped group*}" \
-    = "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ deferred\ miter-join\ vector\ stroke\ on\ clipped\ group**) false ;; *) true ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite unexpectedly used deferred miter-join trace for bevel join"
     exit 0

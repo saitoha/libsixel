@@ -26,14 +26,14 @@ msg=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
     exit 0
 }
 
-test "${msg#*animation frame guard source=riff *}" != "${msg}" || {
+case "${msg}" in *animation\ frame\ guard\ source=riff\ **) true ;; *) false ;; esac || {
     echo "not ok" 1 - "expected RIFF-side frame guard trace was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*animation frame guard source=decoder *}" != "${msg}" || {
+case "${msg}" in *animation\ frame\ guard\ source=decoder\ **) true ;; *) false ;; esac || {
     echo "not ok" 1 - "expected decoder-side frame guard trace was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

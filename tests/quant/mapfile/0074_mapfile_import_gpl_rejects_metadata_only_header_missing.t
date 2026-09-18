@@ -23,7 +23,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_palette_parse_gpl: header missing.}" != "${msg}" || {
+case "${msg}" in *sixel_palette_parse_gpl:\ header\ missing.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing GPL header-missing diagnostic"
     exit 0
 }

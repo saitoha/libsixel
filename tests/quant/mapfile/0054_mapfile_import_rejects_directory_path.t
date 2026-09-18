@@ -23,7 +23,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*path refers to a directory; expected a file input.}" != "${msg}" || {
+case "${msg}" in *path\ refers\ to\ a\ directory\;\ expected\ a\ file\ input.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing directory mapfile diagnostic"
     exit 0
 }

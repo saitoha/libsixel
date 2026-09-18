@@ -29,7 +29,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1\|*key=rare_keep\|stored=1\|binding=quantize_model_kmedoids_rare_keep,quantize_model_kmedoids_rare_keep_override\|value=1024*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=rare_keep\|stored=1\|binding=quantize_model_kmedoids_rare_keep,quantize_model_kmedoids_rare_keep_override\|value=1024**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "rare_keep short value was not stored"
     exit 0
 }
@@ -42,7 +42,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1\|*key=rare_keep\|stored=1\|binding=quantize_model_kmedoids_rare_keep,quantize_model_kmedoids_rare_keep_override\|value=1024*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=rare_keep\|stored=1\|binding=quantize_model_kmedoids_rare_keep,quantize_model_kmedoids_rare_keep_override\|value=1024**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "rare_keep environment value was not stored"
     exit 0
 }
@@ -55,7 +55,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1\|*key=rare_keep\|stored=1\|binding=quantize_model_kmedoids_rare_keep,quantize_model_kmedoids_rare_keep_override\|value=0*}" != "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=rare_keep\|stored=1\|binding=quantize_model_kmedoids_rare_keep,quantize_model_kmedoids_rare_keep_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "medoids rare_keep rejected zero"
     exit 0
 }
@@ -68,7 +68,7 @@ width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${width_trace#*LSXSUB1\|*key=rare_keep\|stored=1}" = "${width_trace}" || {
+case "${width_trace}" in *LSXSUB1\|*key=rare_keep\|stored=1*) false ;; *) true ;; esac || {
     echo "not ok" 1 - "medoids rare_keep accepted an over-width value"
     exit 0
 }

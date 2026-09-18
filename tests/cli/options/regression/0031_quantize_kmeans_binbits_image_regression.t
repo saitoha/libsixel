@@ -34,7 +34,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=binbits|stored=1|binding=quantize_model_kmeans_binbits,quantize_model_kmeans_binbits_override|value=4*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=binbits\|stored=1\|binding=quantize_model_kmeans_binbits,quantize_model_kmeans_binbits_override\|value=4**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "binbits short value was not stored"
     exit 0
 }
@@ -47,7 +47,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=binbits|stored=1|binding=quantize_model_kmeans_binbits,quantize_model_kmeans_binbits_override|value=4*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=binbits\|stored=1\|binding=quantize_model_kmeans_binbits,quantize_model_kmeans_binbits_override\|value=4**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "binbits environment value was not stored"
     exit 0
 }
@@ -60,7 +60,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=binbits|stored=1|binding=quantize_model_kmeans_binbits,quantize_model_kmeans_binbits_override|value=8*}" != "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=binbits\|stored=1\|binding=quantize_model_kmeans_binbits,quantize_model_kmeans_binbits_override\|value=8**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "binbits upper endpoint was not clamped"
     exit 0
 }

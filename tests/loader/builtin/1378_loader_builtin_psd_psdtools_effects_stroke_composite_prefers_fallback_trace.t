@@ -31,8 +31,7 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: preferring layer fallback over merged composite*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ preferring\ layer\ fallback\ over\ merged\ composite**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite did not prefer layer fallback"
     exit 0
 }

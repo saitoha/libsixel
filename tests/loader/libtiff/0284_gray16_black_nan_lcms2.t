@@ -21,12 +21,12 @@ test "$result" -eq 0 || {
 }
 observed=${trace#*"TMFAULT|phase-begin=1"}
 observed=${observed%%"TMFAULT|phase-begin=2"*}
-test "${observed#*"LSXCMS2|event=apply|engine=lcms2|"}" != "$observed" || {
+case "${observed}" in *"LSXCMS2|event=apply|engine=lcms2|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - requested engine did not apply"
     exit 0
 }
-test "${observed#*"|ok=1"}" != "$observed" || {
+case "${observed}" in *"|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - unexpected native apply result"
     exit 0

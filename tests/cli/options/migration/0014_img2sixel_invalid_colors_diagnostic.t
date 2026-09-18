@@ -16,7 +16,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --colors=bogus \
     echo "not ok 1 - img2sixel accepts a non-numeric color count"
     exit 0
 }
-test "${msg#*cannot*parse*-p/--colors*option.}" != "${msg}" || {
+case "${msg}" in *cannot*parse*-p/--colors*option.*) true ;; *) false ;; esac || {
     echo "not ok 1 - invalid colors diagnostic changed"
     printf '%s\n' "${msg}" >&2
     exit 0

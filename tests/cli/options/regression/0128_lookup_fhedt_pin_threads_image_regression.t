@@ -27,21 +27,20 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     echo "not ok" 1 - "fhedt:pin_threads short conversion failed"
     exit 0
 }
-test "${short_trace#*work=rgb888*}" != "${short_trace}" || {
+case "${short_trace}" in *work=rgb888**) true ;; *) false ;; esac || {
     echo "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
-test "${short_trace#*LSXLUT2|phase=palette-apply|selected=lookup/fhedt.8bit|explicit=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.8bit\|explicit=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=pin_threads|stored=1|binding=lut_policy_fhedt_pin_threads,lut_policy_fhedt_pin_threads_override|value=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=pin_threads\|stored=1\|binding=lut_policy_fhedt_pin_threads,lut_policy_fhedt_pin_threads_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt pin_threads short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXFHD1|*precision=8bit|*pin_threads=1*}" != \
-    "${short_trace}" || {
+case "${short_trace}" in *LSXFHD1\|*precision=8bit\|*pin_threads=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt pin_threads did not reach the backend"
     exit 0
 }
@@ -53,21 +52,20 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     echo "not ok" 1 - "fhedt:pin_threads environment conversion failed"
     exit 0
 }
-test "${env_trace#*work=rgb888*}" != "${env_trace}" || {
+case "${env_trace}" in *work=rgb888**) true ;; *) false ;; esac || {
     echo "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
-test "${env_trace#*LSXLUT2|phase=palette-apply|selected=lookup/fhedt.8bit|explicit=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.8bit\|explicit=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=pin_threads|stored=1|binding=lut_policy_fhedt_pin_threads,lut_policy_fhedt_pin_threads_override|value=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=pin_threads\|stored=1\|binding=lut_policy_fhedt_pin_threads,lut_policy_fhedt_pin_threads_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt pin_threads environment value was not stored"
     exit 0
 }
-test "${env_trace#*LSXFHD1|*precision=8bit|*pin_threads=1*}" != \
-    "${env_trace}" || {
+case "${env_trace}" in *LSXFHD1\|*precision=8bit\|*pin_threads=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "environment pin_threads missed the backend"
     exit 0
 }
@@ -78,8 +76,7 @@ float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     echo "not ok" 1 - "fhedt pin_threads float32 conversion failed"
     exit 0
 }
-test "${float_trace#*LSXFHD1|*precision=float32|*pin_threads=1*}" != \
-    "${float_trace}" || {
+case "${float_trace}" in *LSXFHD1\|*precision=float32\|*pin_threads=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt pin_threads missed the float32 backend"
     exit 0
 }
@@ -96,16 +93,16 @@ legacy_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     echo "not ok" 1 - "legacy pin_threads conversion failed"
     exit 0
 }
-test "${legacy_trace#*work=rgb888*}" != "${legacy_trace}" || {
+case "${legacy_trace}" in *work=rgb888**) true ;; *) false ;; esac || {
     echo "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
-test "${legacy_trace#*LSXLUT2|phase=palette-apply|selected=lookup/fhedt.8bit|explicit=1*}" != "${legacy_trace}" || {
+case "${legacy_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.8bit\|explicit=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
-test "${legacy_trace#*LSXFHD1|*pin_threads=1*}" != "${legacy_trace}" || {
+case "${legacy_trace}" in *LSXFHD1\|*pin_threads=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "legacy pin_threads was not consumed"
     exit 0
 }

@@ -32,10 +32,8 @@ test "${rc:-0}" -eq 77 && {
 abort_detected=0
 abort_complete=0
 # Escape parentheses so ksh-derived /bin/sh treats them as literals.
-abort_remainder=${abort_output#*libsixel: abort\(\) detected}
-test "${abort_remainder}" != "${abort_output}" && abort_detected=1
-abort_remainder=${abort_output#*libsixel: abort trace complete}
-test "${abort_remainder}" != "${abort_output}" && abort_complete=1
+case "${abort_output}" in *libsixel:\ abort\(\)\ detected*) true ;; *) false ;; esac && abort_detected=1
+case "${abort_output}" in *libsixel:\ abort\ trace\ complete*) true ;; *) false ;; esac && abort_complete=1
 
 test "${abort_detected}" = "1" || {
     printf '%s\n' '--- stderr ---' >&2

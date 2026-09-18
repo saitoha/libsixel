@@ -24,8 +24,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
     exit 0
 }
 
-test "${msg#*sixel_encoder_emit_palette_output: unknown palette file extension.}" \
-    != "${msg}" || {
+case "${msg}" in *sixel_encoder_emit_palette_output:\ unknown\ palette\ file\ extension.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing unknown palette-output extension diagnostic"
     exit 0
 }

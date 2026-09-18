@@ -32,14 +32,12 @@ test "${status}" -ne 0 || {
     exit 0
 }
 
-test "${trace#*LSXPFB1|stage=init|action=propagate-explicit|cause=4352|rc=4352*}" \
-    != "${trace}" || {
+case "${trace}" in *LSXPFB1\|stage=init\|action=propagate-explicit\|cause=4352\|rc=4352**) true ;; *) false ;; esac || {
     echo "not ok 1 - explicit sampling replaced the worker failure status"
     exit 0
 }
 
-test "${trace#*LSXSPL1|requested=adaptive-grid|effective=adaptive-grid|source=loaded-frame|origin=explicit|phase=resolved|reason=explicit|threads=4|heavy=0|budget_async=1|job_ready=1*}" \
-    != "${trace}" || {
+case "${trace}" in *LSXSPL1\|requested=adaptive-grid\|effective=adaptive-grid\|source=loaded-frame\|origin=explicit\|phase=resolved\|reason=explicit\|threads=4\|heavy=0\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - explicit sampling failure changed policy state"
     exit 0
 }

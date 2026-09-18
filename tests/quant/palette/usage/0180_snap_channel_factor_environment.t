@@ -24,7 +24,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXSNP1|channel_l=0.75*}" != "${trace}" || {
+case "${trace}" in *LSXSNP1\|channel_l=0.75**) true ;; *) false ;; esac || {
     echo "not ok 1 - snap channel factor missed its consumer"
     exit 0
 }

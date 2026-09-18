@@ -23,7 +23,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_palette_parse_pal_riff: truncated palette.}" != "${msg}" || {
+case "${msg}" in *sixel_palette_parse_pal_riff:\ truncated\ palette.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing RIFF truncated-palette diagnostic"
     exit 0
 }

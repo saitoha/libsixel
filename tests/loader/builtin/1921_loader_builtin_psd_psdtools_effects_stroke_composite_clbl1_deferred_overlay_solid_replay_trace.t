@@ -42,7 +42,7 @@ test "${command_status}" -eq 0 || {
 }
 
 diag_line=${trace_output#*LSXPSD1\|}
-test "${diag_line}" != "${trace_output}" || {
+case "${trace_output}" in *LSXPSD1\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing LSXPSD1 contract header"
     exit 0
 }
@@ -50,12 +50,9 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXPSD1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#*FX_DEFERRED_SOLID_OVERLAY_CLIP*}" = "${diag_line}" || \
-    solid_apply_count=$((solid_apply_count + 1))
-test "${diag_line#*FX_DEFERRED_SOLID_SKIP_ZERO_COVERAGE*}" = "${diag_line}" || \
-    solid_skip_count=$((solid_skip_count + 1))
-test "${diag_line#*FX_DEFERRED_SOLID_SKIP_UNSUPPRESSED*}" = "${diag_line}" || \
-    solid_unsuppressed_skip_count=$((solid_unsuppressed_skip_count + 1))
+case "${diag_line}" in *FX_DEFERRED_SOLID_OVERLAY_CLIP**) false ;; *) true ;; esac ||      solid_apply_count=$((solid_apply_count + 1))
+case "${diag_line}" in *FX_DEFERRED_SOLID_SKIP_ZERO_COVERAGE**) false ;; *) true ;; esac ||      solid_skip_count=$((solid_skip_count + 1))
+case "${diag_line}" in *FX_DEFERRED_SOLID_SKIP_UNSUPPRESSED**) false ;; *) true ;; esac ||      solid_unsuppressed_skip_count=$((solid_unsuppressed_skip_count + 1))
 
 test $((solid_apply_count + solid_skip_count + solid_unsuppressed_skip_count)) \
     -eq 1 || {

@@ -22,7 +22,7 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown suboption value*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ value**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing unknown-value diagnostic for scan suboption"
     exit 0
 }

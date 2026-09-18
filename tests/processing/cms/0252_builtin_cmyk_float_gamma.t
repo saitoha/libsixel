@@ -11,17 +11,17 @@ test "$result" -eq 0 || {
     echo "not ok 1 - 0252_builtin_cmyk_float_gamma values and buffer integrity"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=builtin|path=extended-rgb|src=7|dst=4|ok=1"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=builtin|path=extended-rgb|src=7|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - builtin analytic transform did not apply"
     exit 0
 }
-test "${trace#*"LSXCMS1|intent_order=relative|exclusive=1"}" != "$trace" || {
+case "${trace}" in *"LSXCMS1|intent_order=relative|exclusive=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - relative intent was not selected"
     exit 0
 }
-test "${trace#*"BUILTINDEVICE|gray=0|gamma=1|alias=0|count=521|values-and-guards-verified"}" != "$trace" || {
+case "${trace}" in *"BUILTINDEVICE|gray=0|gamma=1|alias=0|count=521|values-and-guards-verified"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - independent values and layout were not checked"
     exit 0

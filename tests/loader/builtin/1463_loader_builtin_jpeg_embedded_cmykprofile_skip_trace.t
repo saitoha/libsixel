@@ -25,8 +25,7 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_log#*builtin JPEG: embedded ICC conversion failed*}" = \
-    "${trace_log}" || {
+case "${trace_log}" in *builtin\ JPEG:\ embedded\ ICC\ conversion\ failed**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "non-applicable CMYK ICC was misclassified as conversion failure"
     exit 0
 }

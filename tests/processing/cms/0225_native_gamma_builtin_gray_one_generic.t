@@ -17,12 +17,12 @@ test "$result" -eq 0 || {
     echo "not ok 1 - native gamma builtin gray one generic"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=builtin|"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=builtin|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - requested engine did not apply"
     exit 0
 }
-test "${trace#*"curve=original|order=012"}" = "$trace" || {
+case "${trace}" in *"curve=original|order=012"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - unexpected original-curve branch"
     exit 0
@@ -30,7 +30,7 @@ test "${trace#*"curve=original|order=012"}" = "$trace" || {
 actual=${trace#*'NGPHASE|begin
 '}
 actual=${actual%%'NGPHASE|end'*}
-test "${actual#*"LSXCMS3|event=gamma-source|"}" = "$actual" || {
+case "${actual}" in *"LSXCMS3|event=gamma-source|"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - native TRC XYZ or sample bytes changed"
     exit 0

@@ -24,7 +24,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_palette_parse_pal_riff: invalid entry count.}" != "${msg}" || {
+case "${msg}" in *sixel_palette_parse_pal_riff:\ invalid\ entry\ count.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing RIFF entry_count=257 diagnostic"
     exit 0
 }

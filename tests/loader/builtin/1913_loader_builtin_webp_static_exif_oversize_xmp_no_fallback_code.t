@@ -40,7 +40,7 @@ test "${command_status}" -eq 0 || {
 }
 
 diag_line=${trace_output#*LSXWEBP1\|}
-test "${diag_line}" != "${trace_output}" || {
+case "${trace_output}" in *LSXWEBP1\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin static EXIF oversize XMP no-fallback missing LSXWEBP1"
     exit 0
 }
@@ -48,27 +48,27 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#*W_META_EXIF_IGNORED*}" != "${diag_line}" || {
+case "${diag_line}" in *W_META_EXIF_IGNORED**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin static EXIF oversize XMP no-fallback missing W_META_EXIF_IGNORED"
     exit 0
 }
 
-test "${diag_line#*W_META_EXIF_SIZE_LIMIT_IGNORED*}" != "${diag_line}" || {
+case "${diag_line}" in *W_META_EXIF_SIZE_LIMIT_IGNORED**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin static EXIF oversize XMP no-fallback missing W_META_EXIF_SIZE_LIMIT_IGNORED"
     exit 0
 }
 
-test "${diag_line#*W_META_XMP_IGNORED*}" != "${diag_line}" || {
+case "${diag_line}" in *W_META_XMP_IGNORED**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin static EXIF oversize XMP no-fallback missing W_META_XMP_IGNORED"
     exit 0
 }
 
-test "${diag_line#*W_META_XMP_APPLIED*}" = "${diag_line}" || {
+case "${diag_line}" in *W_META_XMP_APPLIED**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "builtin static EXIF oversize XMP no-fallback unexpectedly emitted W_META_XMP_APPLIED"
     exit 0
 }
 
-test "${diag_line#*W_META_XMP_SIZE_LIMIT_IGNORED*}" = "${diag_line}" || {
+case "${diag_line}" in *W_META_XMP_SIZE_LIMIT_IGNORED**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "builtin static EXIF oversize XMP no-fallback unexpectedly emitted W_META_XMP_SIZE_LIMIT_IGNORED"
     exit 0
 }

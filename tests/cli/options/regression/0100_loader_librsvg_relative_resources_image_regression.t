@@ -35,7 +35,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=relative_resources|stored=1|binding=librsvg_allow_relative_resources|value=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=relative_resources\|stored=1\|binding=librsvg_allow_relative_resources\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "relative_resources short value was not stored"
     exit 0
 }
@@ -49,7 +49,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=relative_resources|stored=1|binding=librsvg_allow_relative_resources|value=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=relative_resources\|stored=1\|binding=librsvg_allow_relative_resources\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "relative_resources environment value was not stored"
     exit 0
 }

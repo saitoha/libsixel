@@ -23,7 +23,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_palette_parse_act: invalid ACT length.}" != "${msg}" || {
+case "${msg}" in *sixel_palette_parse_act:\ invalid\ ACT\ length.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing invalid ACT length diagnostic"
     exit 0
 }

@@ -19,11 +19,11 @@ test "$result" -eq 0 || {
     echo "not ok 1 - libpng none 8-bit original alpha with file background and keep"
     exit 0
 }
-test "${trace#*"LSXLOAD1|event=ok|loader=libpng|code=L_OK"}" != "$trace" || {
+case "${trace}" in *"LSXLOAD1|event=ok|loader=libpng|code=L_OK"*) true ;; *) false ;; esac || {
     echo "not ok 1 - requested PNG loader did not deliver the frame"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply"}" = "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || {
     echo "not ok 1 - disabled CMS unexpectedly applied"
     exit 0
 }

@@ -20,7 +20,7 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-test "${message#*--binning-policy*}" != "${message}" || {
+case "${message}" in *--binning-policy**) true ;; *) false ;; esac || {
     echo "not ok 1 - missing binning-policy diagnostic is missing"
     exit 0
 }

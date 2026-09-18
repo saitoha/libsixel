@@ -25,21 +25,21 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*boolean suboption must be 0 or 1.*}" != "${msg}" || {
+case "${msg}" in *boolean\ suboption\ must\ be\ 0\ or\ 1.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing shared boolean diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*libpng:orientation=yes!*}" != "${msg}" || {
+case "${msg}" in *libpng:orientation=yes!**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "unknown orientation value token not reported"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*:orientation=0|1*}" != "${msg}" || {
+case "${msg}" in *:orientation=0\|1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "orientation key token not reported"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

@@ -17,12 +17,12 @@ test "$result" -eq 0 || {
     echo "not ok 1 - independent correct-ICC and original-input CMYK32 fallback"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=colorsync|path=external|src=7|dst=4|ok=1"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|path=external|src=7|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - expected actual ColorSync apply outcome"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=colorsync|path=external|src=7|dst=4|ok=0"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|path=external|src=7|dst=4|ok=0"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - expected actual ColorSync apply outcome"
     exit 0

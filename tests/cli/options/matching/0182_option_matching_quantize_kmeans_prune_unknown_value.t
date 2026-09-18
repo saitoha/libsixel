@@ -17,22 +17,21 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qkmeans:prune=invalid "${T
     exit 0
 }
 
-test "${msg#*unknown suboption value*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ value**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing unknown suboption value diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*\"prune\"*}" != "${msg}" || {
+case "${msg}" in *\"prune\"**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing prune key diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*valid values*auto, none, hamerly, elkan, yinyang*}" \
-    != "${msg}" || {
+case "${msg}" in *valid\ values*auto,\ none,\ hamerly,\ elkan,\ yinyang**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing kmeans prune candidate list"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

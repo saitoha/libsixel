@@ -33,12 +33,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=perturb_seed|stored=1|binding=diffusion_perturb_seed,diffusion_perturb_seed_override|value=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=perturb_seed\|stored=1\|binding=diffusion_perturb_seed,diffusion_perturb_seed_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fs perturb_seed short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXDTH1|*diffuse=fs|*perturb_seed=1|perturb_seed_override=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXDTH1\|*diffuse=fs\|*perturb_seed=1\|perturb_seed_override=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fs perturb_seed did not reach the dither"
     exit 0
 }
@@ -51,12 +51,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=perturb_seed|stored=1|binding=diffusion_perturb_seed,diffusion_perturb_seed_override|value=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=perturb_seed\|stored=1\|binding=diffusion_perturb_seed,diffusion_perturb_seed_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fs perturb_seed environment value was not stored"
     exit 0
 }
 
-test "${env_trace#*LSXDTH1|*diffuse=fs|*perturb_seed=1|perturb_seed_override=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXDTH1\|*diffuse=fs\|*perturb_seed=1\|perturb_seed_override=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fs environment perturb_seed did not reach the dither"
     exit 0
 }

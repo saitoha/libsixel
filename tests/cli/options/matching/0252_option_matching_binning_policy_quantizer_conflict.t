@@ -23,12 +23,12 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-test "${message#*unsupported by the selected quantizer*}" != "${message}" || {
+case "${message}" in *unsupported\ by\ the\ selected\ quantizer**) true ;; *) false ;; esac || {
     echo "not ok 1 - incompatible quantizer diagnostic is missing"
     exit 0
 }
 
-test "${message#*LSXPFB1*}" = "${message}" || {
+case "${message}" in *LSXPFB1**) false ;; *) true ;; esac || {
     echo "not ok 1 - incompatible policy entered sampling fallback"
     exit 0
 }

@@ -21,7 +21,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     printf '# %s\n' "$trace"
     exit 0
 }
-test "${trace#*PNGCHRM1|*requested=double|selected=double|actual=double|reason=forced*}" != "$trace" || {
+case "${trace}" in *PNGCHRM1\|*requested=double\|selected=double\|actual=double\|reason=forced**) true ;; *) false ;; esac || {
     echo "not ok 1 - CLI arithmetic overrides the environment"
     printf '# %s\n' "$trace"
     exit 0

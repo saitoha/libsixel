@@ -37,12 +37,12 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed clbl=1*}" != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ parsed\ clbl=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/shape-fx did not parse clbl=1"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed clbl=0*}" != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ parsed\ clbl=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/shape-fx did not parse clbl=0"
     exit 0
 }

@@ -18,7 +18,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     echo "not ok" 1 - "FHEDT cache environment conversion failed"
     exit 0
 }
-test "${trace#*LSXLUT1|policy=fhedt|*cache=1*}" != "${trace}" || {
+case "${trace}" in *LSXLUT1\|policy=fhedt\|*cache=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "FHEDT cache environment was not consumed"
     exit 0
 }

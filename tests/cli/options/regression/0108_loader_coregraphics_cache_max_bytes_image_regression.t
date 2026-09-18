@@ -33,7 +33,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=cache_max_bytes|stored=1|binding=coregraphics_cache_max_bytes,coregraphics_cache_max_bytes_override|value=0*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=cache_max_bytes\|stored=1\|binding=coregraphics_cache_max_bytes,coregraphics_cache_max_bytes_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "cache_max_bytes short value was not stored"
     exit 0
 }
@@ -46,7 +46,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=cache_max_bytes|stored=1|binding=coregraphics_cache_max_bytes,coregraphics_cache_max_bytes_override|value=0*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=cache_max_bytes\|stored=1\|binding=coregraphics_cache_max_bytes,coregraphics_cache_max_bytes_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "cache_max_bytes environment value was not stored"
     exit 0
 }

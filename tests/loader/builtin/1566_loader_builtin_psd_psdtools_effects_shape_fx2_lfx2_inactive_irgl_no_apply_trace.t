@@ -32,20 +32,17 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed IrGl effect object in layer effects \(inactive\)*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ parsed\ IrGl\ effect\ object\ in\ layer\ effects\ \(inactive\)**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/shape-fx2 lost IrGl inactive parse trace"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: merging legacy lrFX effects missing from lfx2*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ merging\ legacy\ lrFX\ effects\ missing\ from\ lfx2**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/shape-fx2 did not merge legacy lrFX effects"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying inner glow effect in layer fallback*}" \
-    = "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ inner\ glow\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "effects/shape-fx2 applied inner glow from inactive IrGl"
     exit 0
 }

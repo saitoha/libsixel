@@ -25,7 +25,7 @@ short_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     echo "not ok" 1 - "trace topic short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=trace_topic|stored=1|binding=trace_topic,trace_topic_override|value=lifecycle*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=trace_topic\|stored=1\|binding=trace_topic,trace_topic_override\|value=lifecycle**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "trace topic short value was not stored"
     exit 0
 }
@@ -36,12 +36,12 @@ env_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     echo "not ok" 1 - "trace topic environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=trace_topic|stored=1|binding=trace_topic,trace_topic_override|value=suboption_contract,lifecycle*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=trace_topic\|stored=1\|binding=trace_topic,trace_topic_override\|value=suboption_contract,lifecycle**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "trace topic environment value was not stored"
     exit 0
 }
 
-test "${short_trace#*img2sixel?lifecycle?:*}" != "${short_trace}" || {
+case "${short_trace}" in *img2sixel?lifecycle?:**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "trace topic did not reach its consumer"
     exit 0
 }

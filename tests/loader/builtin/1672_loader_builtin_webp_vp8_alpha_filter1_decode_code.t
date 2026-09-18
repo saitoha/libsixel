@@ -32,7 +32,7 @@ test "${command_status}" -eq 0 || {
 }
 
 diag_line=${trace_output#*LSXWEBP1\|}
-test "${diag_line}" != "${trace_output}" || {
+case "${trace_output}" in *LSXWEBP1\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader VP8+ALPHA filter=1 missing LSXWEBP1 contract header"
     exit 0
 }
@@ -40,12 +40,12 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#LSXWEBP1\|rc=0\|kind=OK\|codes=}" != "${diag_line}" || {
+case "${diag_line}" in LSXWEBP1\|rc=0\|kind=OK\|codes=*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader VP8+ALPHA filter=1 malformed success contract header"
     exit 0
 }
 
-test "${diag_line#*W_OK_VP8_ALPHA_STATIC*}" != "${diag_line}" || {
+case "${diag_line}" in *W_OK_VP8_ALPHA_STATIC**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader VP8+ALPHA filter=1 missing W_OK_VP8_ALPHA_STATIC"
     exit 0
 }

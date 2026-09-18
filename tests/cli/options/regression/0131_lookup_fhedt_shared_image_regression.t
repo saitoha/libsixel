@@ -26,12 +26,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     echo "not ok" 1 - "fhedt:shared short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=shared|stored=1|binding=lut_policy_fhedt_shared,lut_policy_fhedt_shared_override|value=0*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=shared\|stored=1\|binding=lut_policy_fhedt_shared,lut_policy_fhedt_shared_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt shared short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXLUT1|*policy=fhedt|*shared=0*}" != \
-    "${short_trace}" || {
+case "${short_trace}" in *LSXLUT1\|*policy=fhedt\|*shared=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt shared did not reach the policy"
     exit 0
 }
@@ -43,11 +42,11 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     echo "not ok" 1 - "fhedt:shared environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=shared|stored=1|binding=lut_policy_fhedt_shared,lut_policy_fhedt_shared_override|value=0*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=shared\|stored=1\|binding=lut_policy_fhedt_shared,lut_policy_fhedt_shared_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt shared environment value was not stored"
     exit 0
 }
-test "${env_trace#*LSXLUT1|*policy=fhedt|*shared=0*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXLUT1\|*policy=fhedt\|*shared=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "environment shared missed the policy"
     exit 0
 }
@@ -58,8 +57,7 @@ float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     echo "not ok" 1 - "fhedt shared float32 conversion failed"
     exit 0
 }
-test "${float_trace#*LSXLUT1|*policy=fhedt|precision=float32|*shared=0*}" != \
-    "${float_trace}" || {
+case "${float_trace}" in *LSXLUT1\|*policy=fhedt\|precision=float32\|*shared=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt shared missed the float32 backend"
     exit 0
 }

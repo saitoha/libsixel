@@ -17,19 +17,19 @@ test "$result" -eq 0 || {
     echo "not ok 1 - 12bit-ycck-seq444 strict apply failure"
     exit 0
 }
-test "${trace#*"JCMYK|target-begin"}" != "$trace" || {
+case "${trace}" in *"JCMYK|target-begin"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - target marker is absent"
     exit 0
 }
 observed=${trace#*"JCMYK|target-begin"}
-test "${observed#*"LSXCMS2|event=apply|engine=builtin|path="*"|src=6|dst=4|ok=0"}" != "$observed" || {
+case "${observed}" in *"LSXCMS2|event=apply|engine=builtin|path="*"|src=6|dst=4|ok=0"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - selected CMS apply outcome is absent"
     exit 0
 }
 control=${trace%%"JCMYK|target-begin"*}
-test "${control#*"LSXCMS2|event=apply|engine=builtin|"*"|ok=1"}" != "$control" || {
+case "${control}" in *"LSXCMS2|event=apply|engine=builtin|"*"|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - successful transform qualification is absent"
     exit 0

@@ -26,7 +26,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "forced colors short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=force_colors|stored=1|binding=force_colors,force_colors_override|value=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=force_colors\|stored=1\|binding=force_colors,force_colors_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced colors short value was not stored"
     exit 0
 }
@@ -38,7 +38,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "forced colors environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=force_colors|stored=1|binding=force_colors,force_colors_override|value=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=force_colors\|stored=1\|binding=force_colors,force_colors_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced colors environment value was not stored"
     exit 0
 }
@@ -52,8 +52,7 @@ test "${status}" -eq 2 || {
     exit 0
 }
 escape=$(printf '\033')
-colored_message=${message#*"${escape}[33m"*}
-test "${colored_message}" != "${message}" || {
+case "${message}" in *"${escape}[33m"**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced colors did not reach consumer"
     exit 0
 }

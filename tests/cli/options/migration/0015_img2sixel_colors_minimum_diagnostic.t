@@ -16,7 +16,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --colors=0 \
     echo "not ok 1 - img2sixel accepts zero colors"
     exit 0
 }
-test "${msg#*-p/--colors*parameter*must*be*1*or*more.}" != "${msg}" || {
+case "${msg}" in *-p/--colors*parameter*must*be*1*or*more.*) true ;; *) false ;; esac || {
     echo "not ok 1 - colors minimum diagnostic changed"
     printf '%s\n' "${msg}" >&2
     exit 0

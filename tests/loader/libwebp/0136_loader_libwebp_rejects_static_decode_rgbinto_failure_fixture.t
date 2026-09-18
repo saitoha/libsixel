@@ -25,7 +25,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp:cms_engine=none!
     exit 0
 }
 
-test "${msg#*load_webp: WebPDecodeRGBInto failed.*}" != "${msg}" || {
+case "${msg}" in *load_webp:\ WebPDecodeRGBInto\ failed.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "expected WebPDecodeRGBInto failure diagnostic was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

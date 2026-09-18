@@ -24,12 +24,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown suboption key*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ key**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing non-stbn motion_adapt diagnostic"
     exit 0
 }
 
-test "${msg#*motion_adapt*}" != "${msg}" || {
+case "${msg}" in *motion_adapt**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "non-stbn motion_adapt diagnostic lacked key name"
     exit 0
 }

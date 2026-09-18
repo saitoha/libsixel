@@ -18,29 +18,29 @@ test "$result" -eq 0 || {
     echo "not ok 1 - float rgb invalid source"
     exit 0
 }
-test "${trace#*"TFLOAT|control=1|case-begin"}" != "$trace" || {
+case "${trace}" in *"TFLOAT|control=1|case-begin"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - successful control marker is absent"
     exit 0
 }
 control=${trace%%"TFLOAT|control=1|case-begin"*}
-test "${control#*"LSXCMS2|event=apply|engine=builtin|"}" != "$control" || {
+case "${control}" in *"LSXCMS2|event=apply|engine=builtin|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - positive CMS trace control did not apply"
     exit 0
 }
-test "${control#*"|ok=1"}" != "$control" || {
+case "${control}" in *"|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - positive CMS trace control was unsuccessful"
     exit 0
 }
 observed=${trace#*"TFLOAT|control=1|case-begin"}
-test "$observed" = "${observed#*"LSXCMS2|event=apply"}" || {
+case "${observed}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - unexpected CMS application"
     exit 0
 }
-test "${observed#*"LSXLOAD1|event=ok|loader=libtiff|"}" != "$observed" || {
+case "${observed}" in *"LSXLOAD1|event=ok|loader=libtiff|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - libtiff did not deliver the frame"
     exit 0

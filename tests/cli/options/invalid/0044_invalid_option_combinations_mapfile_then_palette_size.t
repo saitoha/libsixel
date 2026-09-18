@@ -22,8 +22,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*option -p, --colors conflicts with -m, --mapfile.}" \
-    != "${msg}" || {
+case "${msg}" in *option\ -p,\ --colors\ conflicts\ with\ -m,\ --mapfile.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing mapfile and palette-size conflict diagnostic"
     exit 0
 }

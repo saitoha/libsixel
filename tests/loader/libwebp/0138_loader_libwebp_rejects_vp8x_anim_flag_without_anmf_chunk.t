@@ -25,7 +25,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp:cms_engine=none!
     exit 0
 }
 
-test "${msg#*webp decode: VP8X animation flag requires ANIM and ANMF chunks.*}" != "${msg}" || {
+case "${msg}" in *webp\ decode:\ VP8X\ animation\ flag\ requires\ ANIM\ and\ ANMF\ chunks.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "expected VP8X ANIM/ANMF consistency diagnostic was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

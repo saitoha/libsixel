@@ -20,7 +20,7 @@ planner_log=$(set +xv; SIXEL_FLOAT32_DITHER=0 \
     exit 0
 }
 # Loader float publication is independent of the requested working format.
-test "${planner_log#*work=rgb888*}" != "${planner_log}" || {
+case "${planner_log}" in *work=rgb888**) true ;; *) false ;; esac || {
     echo "not ok 1 - clustering colorspace promoted the main pipeline"
     exit 0
 }

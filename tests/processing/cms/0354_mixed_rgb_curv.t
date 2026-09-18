@@ -23,7 +23,7 @@ actual=${actual%%'MDPHASE|end'*}
 expected=${trace#*'MDEXPECT1|begin
 '}
 expected=${expected%%'MDEXPECT1|end'*}
-test "${actual#*"$expected"}" != "$actual" || {
+{ test -n "$expected" && case "${actual}" in *"$expected"*) true ;; *) false ;; esac; } || {
     echo "$trace" >&2
     echo "not ok 1 - first native group payload differs"
     exit 0
@@ -31,26 +31,26 @@ test "${actual#*"$expected"}" != "$actual" || {
 expected=${trace#*'MDEXPECT2|begin
 '}
 expected=${expected%%'MDEXPECT2|end'*}
-test "${actual#*"$expected"}" != "$actual" || {
+{ test -n "$expected" && case "${actual}" in *"$expected"*) true ;; *) false ;; esac; } || {
     echo "$trace" >&2
     echo "not ok 1 - second native group payload differs"
     exit 0
 }
 remaining=${actual#*'LSXCMS2|event=apply|engine=colorsync|'}
-test "$remaining" != "$actual" || {
+case "${actual}" in *'LSXCMS2|event=apply|engine=colorsync|'*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - expected native apply is absent"
     exit 0
 }
 actual=$remaining
 remaining=${actual#*'LSXCMS2|event=apply|engine=colorsync|'}
-test "$remaining" != "$actual" || {
+case "${actual}" in *'LSXCMS2|event=apply|engine=colorsync|'*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - expected native apply is absent"
     exit 0
 }
 actual=$remaining
-test "${actual#*'LSXCMS2|event=apply|'}" = "$actual" || {
+case "${actual}" in *'LSXCMS2|event=apply|'*) false ;; *) true ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - unexpected additional CMS apply"
     exit 0

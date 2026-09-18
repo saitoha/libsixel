@@ -27,11 +27,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,runtime_contract \
     echo "not ok" 1 - "resize precision short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=resize_precision|stored=1|binding=resize_precision,resize_precision_override|value=3*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=resize_precision\|stored=1\|binding=resize_precision,resize_precision_override\|value=3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "resize precision short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXRT1|resize_precision=3*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXRT1\|resize_precision=3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "resize precision missed its consumer"
     exit 0
 }
@@ -43,11 +43,11 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,runtime_contract \
     echo "not ok" 1 - "resize precision environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=resize_precision|stored=1|binding=resize_precision,resize_precision_override|value=3*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=resize_precision\|stored=1\|binding=resize_precision,resize_precision_override\|value=3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "resize precision environment value was not stored"
     exit 0
 }
-test "${env_trace#*LSXRT1|resize_precision=3*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXRT1\|resize_precision=3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "environment precision missed its consumer"
     exit 0
 }
@@ -59,11 +59,11 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,runtime_contract \
     echo "not ok" 1 - "resize precision prefix conversion failed"
     exit 0
 }
-test "${range_trace#*LSXSUB1|*key=resize_precision|stored=1|binding=resize_precision,resize_precision_override|value=2*}" != "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=resize_precision\|stored=1\|binding=resize_precision,resize_precision_override\|value=2**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "resize precision lost signed-prefix parsing"
     exit 0
 }
-test "${range_trace#*LSXRT1|resize_precision=2*}" != "${range_trace}" || {
+case "${range_trace}" in *LSXRT1\|resize_precision=2**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "prefixed resize precision missed its consumer"
     exit 0
 }

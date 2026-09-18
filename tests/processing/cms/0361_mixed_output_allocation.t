@@ -17,7 +17,7 @@ test "$result" -eq 0 || {
     echo "not ok 1 - mixed output allocation"
     exit 0
 }
-test "${trace#*'MDFAULT|case=1|'}" != "$trace" || {
+case "${trace}" in *'MDFAULT|case=1|'*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - fault qualification is absent"
     exit 0

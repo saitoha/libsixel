@@ -17,8 +17,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=bogus \
     echo "not ok 1 - img2sixel accepts an invalid thread token"
     exit 0
 }
-test "${msg#*threads*accepts*positive*integers*or*[\']auto[\'].}" != \
-    "${msg}" || {
+case "${msg}" in *threads*accepts*positive*integers*or*[\']auto[\'].*) true ;; *) false ;; esac || {
     echo "not ok 1 - img2sixel thread diagnostic changed"
     printf '%s\n' "${msg}" >&2
     exit 0

@@ -20,8 +20,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXBIN1|requested=auto|origin=default*effective=hard*}" \
-    != "${trace}" || {
+case "${trace}" in *LSXBIN1\|requested=auto\|origin=default*effective=hard**) true ;; *) false ;; esac || {
     echo "not ok 1 - invalid binning-policy environment changed AUTO"
     exit 0
 }

@@ -26,17 +26,17 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXBPS1|quantizer_requested=0|quantizer_effective=2|quantizer_origin=auto|quantizer_phase=executed|quantizer_reason=quantizer-capability|binning_requested=soft|binning_effective=soft|binning_origin=explicit|binning_phase=executed|binning_reason=explicit|points=*}" != "${trace}" || {
+case "${trace}" in *LSXBPS1\|quantizer_requested=0\|quantizer_effective=2\|quantizer_origin=auto\|quantizer_phase=executed\|quantizer_reason=quantizer-capability\|binning_requested=soft\|binning_effective=soft\|binning_origin=explicit\|binning_phase=executed\|binning_reason=explicit\|points=**) true ;; *) false ;; esac || {
     echo "not ok 1 - async binning state was not committed"
     exit 0
 }
 
-test "${trace#*LSXSPL1|requested=auto|effective=adaptive-grid|source=loaded-frame|origin=auto|phase=executed|reason=resource-profile|threads=4|heavy=0|budget_async=1|job_ready=1*}" != "${trace}" || {
+case "${trace}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=resource-profile\|threads=4\|heavy=0\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - palette work did not use the asynchronous path"
     exit 0
 }
 
-test "${trace#*LSXPFB1*}" = "${trace}" || {
+case "${trace}" in *LSXPFB1**) false ;; *) true ;; esac || {
     echo "not ok 1 - asynchronous palette work used a fallback"
     exit 0
 }

@@ -29,7 +29,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=pnm_trailing_data|stored=1|binding=builtin_pnm_trailing_data|value=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=pnm_trailing_data\|stored=1\|binding=builtin_pnm_trailing_data\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "pnm_trailing_data short value was not stored"
     exit 0
 }
@@ -43,7 +43,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=pnm_trailing_data|stored=1|binding=builtin_pnm_trailing_data|value=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=pnm_trailing_data\|stored=1\|binding=builtin_pnm_trailing_data\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "pnm_trailing_data environment value was not stored"
     exit 0
 }

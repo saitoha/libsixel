@@ -23,7 +23,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_palette_parse_pal_riff: unexpected chunk size.}" != "${msg}" || {
+case "${msg}" in *sixel_palette_parse_pal_riff:\ unexpected\ chunk\ size.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing RIFF unexpected-chunk-size diagnostic"
     exit 0
 }

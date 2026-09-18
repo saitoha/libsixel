@@ -33,7 +33,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=feedback|stored=1|binding=quantize_model_kmeans_feedback_mode,quantize_model_kmeans_feedback_override*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=feedback\|stored=1\|binding=quantize_model_kmeans_feedback_mode,quantize_model_kmeans_feedback_override**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "feedback short value was not stored"
     exit 0
 }
@@ -46,7 +46,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=feedback|stored=1|binding=quantize_model_kmeans_feedback_mode,quantize_model_kmeans_feedback_override*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=feedback\|stored=1\|binding=quantize_model_kmeans_feedback_mode,quantize_model_kmeans_feedback_override**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "feedback environment value was not stored"
     exit 0
 }

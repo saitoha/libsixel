@@ -10,7 +10,7 @@ trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     echo "not ok 1 - actual builtin float transform failed"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=builtin|path=extended-rgb|src=2|dst=4|ok=1"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=builtin|path=extended-rgb|src=2|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "not ok 1 - actual builtin float apply trace missing"
     exit 0
 }

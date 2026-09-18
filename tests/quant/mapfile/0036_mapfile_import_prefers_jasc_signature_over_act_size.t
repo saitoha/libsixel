@@ -24,7 +24,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_palette_parse_pal_jasc: invalid version.}" != "${msg}" || {
+case "${msg}" in *sixel_palette_parse_pal_jasc:\ invalid\ version.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing JASC-signature priority diagnostic"
     exit 0
 }

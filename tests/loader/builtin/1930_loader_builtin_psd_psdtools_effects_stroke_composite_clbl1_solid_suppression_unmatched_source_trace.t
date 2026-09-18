@@ -39,7 +39,7 @@ test "${command_status}" -eq 0 || {
 }
 
 diag_line=${trace_output#*LSXPSD1\|}
-test "${diag_line}" != "${trace_output}" || {
+case "${trace_output}" in *LSXPSD1\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing LSXPSD1 contract header"
     exit 0
 }
@@ -47,12 +47,12 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXPSD1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#*FX_DEFERRED_OVERLAY_REPLAY_REPLACE*}" = "${diag_line}" || {
+case "${diag_line}" in *FX_DEFERRED_OVERLAY_REPLAY_REPLACE**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite emitted deferred replay replacement code"
     exit 0
 }
 
-test "${diag_line#*FX_SOLID_OVERLAY_BASE*}" != "${diag_line}" || {
+case "${diag_line}" in *FX_SOLID_OVERLAY_BASE**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing base solid overlay code"
     exit 0
 }

@@ -25,8 +25,7 @@ threads_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${threads_trace#*threads: dither=1 encode=4*}" != \
-    "${threads_trace}" || {
+case "${threads_trace}" in *threads:\ dither=1\ encode=4**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "threads max did not cap the dither workers"
     exit 0
 }
@@ -39,8 +38,7 @@ negative_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${negative_trace#*threads: dither=3 encode=2*}" != \
-    "${negative_trace}" || {
+case "${negative_trace}" in *threads:\ dither=3\ encode=2**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "negative threads max changed the default"
     exit 0
 }

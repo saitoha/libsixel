@@ -17,12 +17,12 @@ test "$result" -eq 0 || {
     echo "not ok 1 - native gamma gray curv padded generic"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=colorsync|"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - requested engine did not apply"
     exit 0
 }
-test "${trace#*"to=original"}" != "$trace" || {
+case "${trace}" in *"to=original"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - unexpected original-curve branch"
     exit 0
@@ -33,7 +33,7 @@ expected=${expected%%'NGEXPECT|end'*}
 actual=${trace#*'NGPHASE|begin
 '}
 actual=${actual%%'NGPHASE|end'*}
-test "${actual#*"$expected"}" != "$actual" || {
+{ test -n "$expected" && case "${actual}" in *"$expected"*) true ;; *) false ;; esac; } || {
     echo "$trace" >&2
     echo "not ok 1 - native TRC XYZ or sample bytes changed"
     exit 0

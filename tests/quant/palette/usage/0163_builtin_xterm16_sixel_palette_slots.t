@@ -19,15 +19,15 @@ sixel_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${sixel_output#*#0;2;0;0;0}" != "${sixel_output}" || {
+case "${sixel_output}" in *#0\;2\;0\;0\;0*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "xterm16 SIXEL palette slot range changed"
     exit 0
 }
-test "${sixel_output#*#15;2;100;100;100}" != "${sixel_output}" || {
+case "${sixel_output}" in *#15\;2\;100\;100\;100*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "xterm16 SIXEL palette slot range changed"
     exit 0
 }
-test "${sixel_output#*#16;2;}" = "${sixel_output}" || {
+case "${sixel_output}" in *#16\;2\;*) false ;; *) true ;; esac || {
     echo "not ok" 1 - "xterm16 SIXEL palette slot range changed"
     exit 0
 }

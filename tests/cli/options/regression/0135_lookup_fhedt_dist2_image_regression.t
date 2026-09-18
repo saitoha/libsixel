@@ -26,12 +26,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     echo "not ok" 1 - "fhedt:dist2 short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=dist2|stored=1|binding=lut_policy_fhedt_use_dist2,lut_policy_fhedt_use_dist2_override|value=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=dist2\|stored=1\|binding=lut_policy_fhedt_use_dist2,lut_policy_fhedt_use_dist2_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt dist2 short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXLUT1|*policy=fhedt|*dist2=1*}" != \
-    "${short_trace}" || {
+case "${short_trace}" in *LSXLUT1\|*policy=fhedt\|*dist2=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt dist2 did not reach the policy"
     exit 0
 }
@@ -43,11 +42,11 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     echo "not ok" 1 - "fhedt:dist2 environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=dist2|stored=1|binding=lut_policy_fhedt_use_dist2,lut_policy_fhedt_use_dist2_override|value=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=dist2\|stored=1\|binding=lut_policy_fhedt_use_dist2,lut_policy_fhedt_use_dist2_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt dist2 environment value was not stored"
     exit 0
 }
-test "${env_trace#*LSXLUT1|*policy=fhedt|*dist2=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXLUT1\|*policy=fhedt\|*dist2=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "environment dist2 missed the policy"
     exit 0
 }
@@ -58,8 +57,7 @@ float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     echo "not ok" 1 - "fhedt dist2 float32 conversion failed"
     exit 0
 }
-test "${float_trace#*LSXLUT1|*policy=fhedt|precision=float32|*dist2=1*}" != \
-    "${float_trace}" || {
+case "${float_trace}" in *LSXLUT1\|*policy=fhedt\|precision=float32\|*dist2=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt dist2 missed the float32 backend"
     exit 0
 }

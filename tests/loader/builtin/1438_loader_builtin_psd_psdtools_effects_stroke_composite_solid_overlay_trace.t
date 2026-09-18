@@ -53,10 +53,8 @@ case "${diag_line}" in
         ;;
 esac
 
-test "${diag_line#*FX_SOLID_OVERLAY_BASE*}" \
-    != "${diag_line}" && overlay_trace_ok=1
-test "${diag_line#*FX_CLBL1_BASE_OVERLAY_SUPPRESS*}" \
-    != "${diag_line}" && overlay_trace_ok=1
+case "${diag_line}" in *FX_SOLID_OVERLAY_BASE**) true ;; *) false ;; esac && overlay_trace_ok=1
+case "${diag_line}" in *FX_CLBL1_BASE_OVERLAY_SUPPRESS**) true ;; *) false ;; esac && overlay_trace_ok=1
 
 test "${overlay_trace_ok}" = "1" || {
     echo "not ok" 1 - \

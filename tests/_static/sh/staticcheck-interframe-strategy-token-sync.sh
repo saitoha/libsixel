@@ -267,7 +267,7 @@ if test ! -f "$test_path"; then
     status=1
 else
     if ! grep -F -- "fs:strength=" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "unknown suboption key" "$test_path" \
+            || ! grep -F -- 'unknown\ suboption\ key' "$test_path" \
             >/dev/null 2>&1; then
         echo "# tests/cli/options/matching: 0134 must reject strength outside stbn" \
             >> "$missing"
@@ -324,7 +324,7 @@ if test ! -f "$test_path"; then
     status=1
 else
     if ! grep -F -- "fs:diffusion=" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "unknown suboption key" "$test_path" \
+            || ! grep -F -- 'unknown\ suboption\ key' "$test_path" \
             >/dev/null 2>&1; then
         echo "# tests/cli/options/matching: 0138 must reject diffusion outside interframe/stbn" \
             >> "$missing"
@@ -340,7 +340,7 @@ if test ! -f "$test_path"; then
 else
     if ! grep -F -- "interframe:diffusion=invalid-kernel" "$test_path" \
             >/dev/null 2>&1 \
-            || ! grep -F -- "unknown suboption value" "$test_path" \
+            || ! grep -F -- 'unknown\ suboption\ value' "$test_path" \
             >/dev/null 2>&1; then
         echo "# tests/cli/options/matching: 0139 must validate diffusion unknown-value diagnostics" \
             >> "$missing"
@@ -381,7 +381,7 @@ while IFS='|' read -r test_name key_token; do
         continue
     fi
     if ! grep -F -- "stbn:${key_token}=2" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "boolean suboption must be 0 or 1." "$test_path" \
+            || ! grep -F -- 'boolean\ suboption\ must\ be\ 0\ or\ 1.' "$test_path" \
             >/dev/null 2>&1; then
         echo "# tests/cli/options/matching: $test_name must reject stbn:${key_token}=2" \
             >> "$missing"
@@ -406,7 +406,7 @@ while IFS='|' read -r test_name key_token; do
         continue
     fi
     if ! grep -F -- "fs:${key_token}=1" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "unknown suboption key" "$test_path" \
+            || ! grep -F -- 'unknown\ suboption\ key' "$test_path" \
             >/dev/null 2>&1; then
         echo "# tests/cli/options/matching: $test_name must reject fs:${key_token}=1" \
             >> "$missing"

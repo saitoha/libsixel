@@ -35,7 +35,7 @@ test "${command_status}" -ne 0 || {
 }
 
 diag_static=${trace_static#*LSXWEBP1\|}
-test "${diag_static}" != "${trace_static}" || {
+case "${trace_static}" in *LSXWEBP1\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader bad_vp8_interframe_flag.webp missing LSXWEBP1 contract header"
     exit 0
 }
@@ -43,22 +43,22 @@ test "${diag_static}" != "${trace_static}" || {
 diag_static="LSXWEBP1|${diag_static}"
 diag_static=${diag_static%%"${nl}"*}
 
-test "${diag_static#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_static}" || {
+case "${diag_static}" in LSXWEBP1\|rc=1\|kind=ERR\|codes=*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader bad_vp8_interframe_flag.webp malformed error contract header"
     exit 0
 }
 
-test "${diag_static#*W_ERR_VP8_STREAM*}" != "${diag_static}" || {
+case "${diag_static}" in *W_ERR_VP8_STREAM**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader bad_vp8_interframe_flag.webp missing W_ERR_VP8_STREAM"
     exit 0
 }
 
-test "${diag_static#*W_UNSUP_VP8_FEATURE*}" = "${diag_static}" || {
+case "${diag_static}" in *W_UNSUP_VP8_FEATURE**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "forced builtin loader bad_vp8_interframe_flag.webp still emitted W_UNSUP_VP8_FEATURE"
     exit 0
 }
 
-test "${diag_static#*W_UNSUP_VP8_ALPHA*}" = "${diag_static}" || {
+case "${diag_static}" in *W_UNSUP_VP8_ALPHA**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "forced builtin loader bad_vp8_interframe_flag.webp still emitted W_UNSUP_VP8_ALPHA"
     exit 0
 }
@@ -73,7 +73,7 @@ test "${command_status}" -ne 0 || {
 }
 
 diag_anim=${trace_anim#*LSXWEBP1\|}
-test "${diag_anim}" != "${trace_anim}" || {
+case "${trace_anim}" in *LSXWEBP1\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader bad_anim_vp8_interframe_flag.webp missing LSXWEBP1 contract header"
     exit 0
 }
@@ -81,22 +81,22 @@ test "${diag_anim}" != "${trace_anim}" || {
 diag_anim="LSXWEBP1|${diag_anim}"
 diag_anim=${diag_anim%%"${nl}"*}
 
-test "${diag_anim#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_anim}" || {
+case "${diag_anim}" in LSXWEBP1\|rc=1\|kind=ERR\|codes=*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader bad_anim_vp8_interframe_flag.webp malformed error contract header"
     exit 0
 }
 
-test "${diag_anim#*W_ERR_VP8_STREAM*}" != "${diag_anim}" || {
+case "${diag_anim}" in *W_ERR_VP8_STREAM**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader bad_anim_vp8_interframe_flag.webp missing W_ERR_VP8_STREAM"
     exit 0
 }
 
-test "${diag_anim#*W_UNSUP_VP8_FEATURE*}" = "${diag_anim}" || {
+case "${diag_anim}" in *W_UNSUP_VP8_FEATURE**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "forced builtin loader bad_anim_vp8_interframe_flag.webp still emitted W_UNSUP_VP8_FEATURE"
     exit 0
 }
 
-test "${diag_anim#*W_UNSUP_VP8_ALPHA*}" = "${diag_anim}" || {
+case "${diag_anim}" in *W_UNSUP_VP8_ALPHA**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "forced builtin loader bad_anim_vp8_interframe_flag.webp still emitted W_UNSUP_VP8_ALPHA"
     exit 0
 }

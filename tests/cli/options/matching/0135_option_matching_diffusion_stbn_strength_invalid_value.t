@@ -22,12 +22,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*strength*}" != "${msg}" || {
+case "${msg}" in *strength**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing stbn strength key diagnostic"
     exit 0
 }
 
-test "${msg#*0.0-2.0*}" != "${msg}" || {
+case "${msg}" in *0.0-2.0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing stbn strength range diagnostic"
     exit 0
 }

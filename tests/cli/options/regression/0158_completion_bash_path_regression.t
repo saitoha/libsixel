@@ -22,15 +22,15 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,completion_contract 
     echo "not ok" 1 - "completion bash_path short lookup failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=bash_path|stored=1|binding=bash_path,bash_path_override|value="${completion_path}"*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=bash_path\|stored=1\|binding=bash_path,bash_path_override\|value="${completion_path}"**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "completion bash_path short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXCMP1|*key=bash_path|configured=1|override=1|used=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXCMP1\|*key=bash_path\|configured=1\|override=1\|used=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "completion bash_path short value missed its consumer"
     exit 0
 }
-test "${short_trace#*completion bash path fixture*}" != "${short_trace}" || {
+case "${short_trace}" in *completion\ bash\ path\ fixture**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "completion bash_path short source was not read"
     exit 0
 }
@@ -41,11 +41,11 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,completion_contract \
     echo "not ok" 1 - "completion bash_path environment lookup failed"
     exit 0
 }
-test "${env_trace#*LSXCMP1|*key=bash_path|configured=1|override=0|used=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXCMP1\|*key=bash_path\|configured=1\|override=0\|used=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "completion bash_path environment missed its consumer"
     exit 0
 }
-test "${env_trace#*completion bash path fixture*}" != "${env_trace}" || {
+case "${env_trace}" in *completion\ bash\ path\ fixture**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "completion bash_path environment source was not read"
     exit 0
 }

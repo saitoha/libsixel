@@ -23,7 +23,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_palette_parse_pal_riff: data chunk too small.}" != "${msg}" || {
+case "${msg}" in *sixel_palette_parse_pal_riff:\ data\ chunk\ too\ small.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing RIFF data-chunk-too-small diagnostic"
     exit 0
 }

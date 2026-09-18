@@ -19,12 +19,12 @@ test "$result" -eq 0 || {
     echo "not ok 1 - RGB16 void builtin"
     exit 0
 }
-test "${trace#*"LSXLOAD1|event=ok|loader=libtiff|"}" != "$trace" || {
+case "${trace}" in *"LSXLOAD1|event=ok|loader=libtiff|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - libtiff did not deliver the frame"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=builtin|path=extended-rgb|src=4|dst=4|ok=1"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=builtin|path=extended-rgb|src=4|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - requested CMS did not apply"
     exit 0

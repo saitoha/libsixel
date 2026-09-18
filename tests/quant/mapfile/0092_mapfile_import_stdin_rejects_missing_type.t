@@ -27,7 +27,7 @@ PAL
     exit 0
 }
 
-test "${msg#*sixel_prepare_specified_palette: format required for}" != "${msg}" || {
+case "${msg}" in *sixel_prepare_specified_palette:\ format\ required\ for*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing untyped standard-input diagnostic"
     exit 0
 }

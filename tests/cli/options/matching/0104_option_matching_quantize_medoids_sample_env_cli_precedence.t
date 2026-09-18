@@ -38,7 +38,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*-Q sample must be 0 or in range 64-1048576.*}" != "${msg}" || {
+case "${msg}" in *-Q\ sample\ must\ be\ 0\ or\ in\ range\ 64-1048576.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing invalid CLI sample diagnostic"
     exit 0
 }

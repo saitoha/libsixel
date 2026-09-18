@@ -38,7 +38,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*restarts must be in range 1-32.*}" != "${msg}" || {
+case "${msg}" in *restarts\ must\ be\ in\ range\ 1-32.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing invalid CLI center restarts diagnostic"
     exit 0
 }

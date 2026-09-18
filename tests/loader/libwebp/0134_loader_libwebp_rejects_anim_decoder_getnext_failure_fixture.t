@@ -25,21 +25,20 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp:cms_engine=none!
     exit 0
 }
 
-test "${msg#*load_with_libwebp: WebPAnimDecoderGetNext failed.*}" != "${msg}" && {
+case "${msg}" in *load_with_libwebp:\ WebPAnimDecoderGetNext\ failed.**) true ;; *) false ;; esac && {
     echo "ok" 1 - "forced libwebp loader reports WebPAnimDecoderGetNext failure for decoder-stage corruption"
     exit 0
 }
 
 # Some libwebp builds report the fallback decode failure as either
 # "unexpected error" or "libpng error" while still rejecting the fixture.
-test "${msg#*unexpected error*}" != "${msg}" || \
-test "${msg#*libpng error*}" != "${msg}" || {
+case "${msg}" in *unexpected\ error**) true ;; *) false ;; esac ||  case "${msg}" in *libpng\ error**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "expected fallback error diagnostic was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
-test "${msg#*Image already has few enough colors (<=256). Keeping same colors.*}" != "${msg}" || {
+case "${msg}" in *Image\ already\ has\ few\ enough\ colors\ \(\<=256\).\ Keeping\ same\ colors.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "expected fallback decode-failure diagnostic was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

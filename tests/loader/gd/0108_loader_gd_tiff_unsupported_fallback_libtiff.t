@@ -41,12 +41,12 @@ trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
     exit 0
 }
 
-test "${trace_log#*libsixel: trying gd loader*}" != "${trace_log}" || {
+case "${trace_log}" in *libsixel:\ trying\ gd\ loader**) true ;; *) false ;; esac || {
     echo "not ok 1 - gd loader was not attempted"
     exit 0
 }
 
-test "${trace_log#*libsixel: trying libtiff loader*}" != "${trace_log}" || {
+case "${trace_log}" in *libsixel:\ trying\ libtiff\ loader**) true ;; *) false ;; esac || {
     echo "not ok 1 - libtiff fallback was not attempted"
     exit 0
 }

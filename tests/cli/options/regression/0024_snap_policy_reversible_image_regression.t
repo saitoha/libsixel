@@ -33,7 +33,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     echo "not ok" 1 - "snap policy short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSNP1|*policy=reversible*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSNP1\|*policy=reversible**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "snap policy missed its consumer"
     exit 0
 }
@@ -46,7 +46,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     echo "not ok" 1 - "snap policy environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSNP1|*policy=reversible*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSNP1\|*policy=reversible**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "snap policy environment missed its consumer"
     exit 0
 }

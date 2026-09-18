@@ -39,7 +39,7 @@ test "${command_status}" -eq 0 || {
 }
 
 diag_line=${trace_output#*LSXPSD1\|}
-test "${diag_line}" != "${trace_output}" || {
+case "${trace_output}" in *LSXPSD1\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing LSXPSD1 contract header"
     exit 0
 }
@@ -47,17 +47,17 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXPSD1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#*FX_DEFERRED_GRADIENT_CLIP*}" != "${diag_line}" || {
+case "${diag_line}" in *FX_DEFERRED_GRADIENT_CLIP**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred gradient replay code"
     exit 0
 }
 
-test "${diag_line#*FX_DEFERRED_SOLID_SKIP_UNSUPPRESSED*}" != "${diag_line}" || {
+case "${diag_line}" in *FX_DEFERRED_SOLID_SKIP_UNSUPPRESSED**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred solid unsuppressed-skip code"
     exit 0
 }
 
-test "${diag_line#*FX_DEFERRED_POST_COMMIT_REPLAY_BLOCKED*}" = "${diag_line}" || {
+case "${diag_line}" in *FX_DEFERRED_POST_COMMIT_REPLAY_BLOCKED**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite emitted post-commit replay-block code"
     exit 0
 }

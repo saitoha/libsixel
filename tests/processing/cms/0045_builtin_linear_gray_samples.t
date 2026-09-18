@@ -17,7 +17,7 @@ test "$result" -eq 0 || {
     echo "not ok 1 - builtin original gray samples to linear RGB"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=builtin|path=extended-rgb|src=9|dst=4|ok=1"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=builtin|path=extended-rgb|src=9|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "not ok 1 - requested CMS did not apply to packed gray float"
     exit 0
 }

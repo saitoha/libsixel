@@ -17,12 +17,12 @@ test "$result" -eq 0 || {
     echo "not ok 1 - 0197_lcms_cmyk32_layers public frame values"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=lcms2|path=external|src=7|dst=4|ok=1"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=lcms2|path=external|src=7|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - expected LCMS apply did not execute"
     exit 0
 }
-test "${trace#*"LCMSFRAME|mode=2|values-verified"}" != "$trace" || {
+case "${trace}" in *"LCMSFRAME|mode=2|values-verified"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - independent public frame values were not checked"
     exit 0

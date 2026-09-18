@@ -21,7 +21,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     printf '# %s\n' "$trace"
     exit 0
 }
-test "${trace#*PNGCHRM1|*requested=auto|selected=512bit|actual=512bit|reason=small-area+cone*}" != "$trace" || {
+case "${trace}" in *PNGCHRM1\|*requested=auto\|selected=512bit\|actual=512bit\|reason=small-area+cone**) true ;; *) false ;; esac || {
     echo "not ok 1 - omitted arithmetic selects auto"
     printf '# %s\n' "$trace"
     exit 0

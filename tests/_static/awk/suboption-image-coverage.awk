@@ -355,7 +355,7 @@ FILENAME == registry_file || FILENAME == completion_registry_file {
 FILENAME != registry_file {
     regression_test[FILENAME] = 1
     if ($0 ~ /^[[:space:]]*#/) next
-    # Escaping a pipe in a shell parameter pattern does not change the
+    # Escaping a pipe in a shell case pattern does not change the
     # literal trace field separator. Normalize only this equivalent spelling.
     gsub(/\\[|]/, "|", $0)
     environment_first = ""
@@ -434,39 +434,39 @@ FILENAME != registry_file {
             cms_clip[FILENAME] = 1
         }
         if (cms_clip[FILENAME] && index($0, \
-                "test \"${record#engine=builtin|}\" != \"$record\" &&") > 0) {
+                "case \"${record}\" in engine=builtin|*) true ;; *) false ;; esac &&") > 0) {
             cms_engine[FILENAME] = 1
         }
         if (cms_engine[FILENAME] && index($0, \
-                "test \"${record%|ok=1}\" != \"$record\" || {") > 0) {
+                "case \"${record}\" in *|ok=1) true ;; *) false ;; esac; } || {") > 0) {
             has_cms_consumer[FILENAME, phase] = 1
         }
     }
     if (index($0, "SIXEL_TRACE_TOPIC=suboption_contract") > 0) {
         contract_trace_count[FILENAME] += 1
     }
-    if (index($0, "short_trace#*LSXSUB1|*key=" expected_name[key] \
+    if (index($0, "case \"${short_trace}\" in *LSXSUB1|*key=" expected_name[key] \
             "|stored=1|binding=" expected_trace_binding[key]) > 0) {
         has_short_contract[FILENAME] = 1
     }
-    if (index($0, "env_trace#*LSXSUB1|*key=" expected_name[key] \
+    if (index($0, "case \"${env_trace}\" in *LSXSUB1|*key=" expected_name[key] \
             "|stored=1|binding=" expected_trace_binding[key]) > 0) {
         has_environment_contract[FILENAME] = 1
     }
-    if (index($0, "short_trace#*LSXCMP1|*key=" expected_name[key] \
+    if (index($0, "case \"${short_trace}\" in *LSXCMP1|*key=" expected_name[key] \
             "|configured=1|override=1|used=1*") > 0) {
         has_short_completion_contract[FILENAME] = 1
     }
-    if (index($0, "env_trace#*LSXCMP1|*key=" expected_name[key] \
+    if (index($0, "case \"${env_trace}\" in *LSXCMP1|*key=" expected_name[key] \
             "|configured=1|override=0|used=1*") > 0) {
         has_environment_completion_contract[FILENAME] = 1
     }
-    if (index($0, "short_trace#*LSXSUB1|*key=" expected_name[key] \
+    if (index($0, "case \"${short_trace}\" in *LSXSUB1|*key=" expected_name[key] \
             "|stored=1|binding=" expected_trace_binding[key] \
             "|value=") > 0) {
         has_short_value_contract[FILENAME] = 1
     }
-    if (index($0, "env_trace#*LSXSUB1|*key=" expected_name[key] \
+    if (index($0, "case \"${env_trace}\" in *LSXSUB1|*key=" expected_name[key] \
             "|stored=1|binding=" expected_trace_binding[key] \
             "|value=") > 0) {
         has_environment_value_contract[FILENAME] = 1
@@ -493,19 +493,19 @@ FILENAME != registry_file {
              index($0, "LSXSMP1|*" test_palette_contract[FILENAME] "*") > 0)) {
         has_palette_contract[FILENAME] = 1
     }
-    if (index($0, "range_trace#*LSXSUB1|*key=" expected_name[key] \
+    if (index($0, "case \"${range_trace}\" in *LSXSUB1|*key=" expected_name[key] \
             "|stored=1|binding=" expected_trace_binding[key] \
             "|value=") > 0) {
         has_range_value_contract[FILENAME] = 1
     }
-    if (index($0, "range_trace#*LSXSUB1|*key=" expected_name[key] \
+    if (index($0, "case \"${range_trace}\" in *LSXSUB1|*key=" expected_name[key] \
             "|stored=1") > 0 && index($0, \
-            " = \"${range_trace}\"") > 0) {
+            ") false ;; *) true ;; esac") > 0) {
         has_range_reject_contract[FILENAME] = 1
     }
-    if (index($0, "width_trace#*LSXSUB1|*key=" expected_name[key] \
+    if (index($0, "case \"${width_trace}\" in *LSXSUB1|*key=" expected_name[key] \
             "|stored=1") > 0 && index($0, \
-            " = \"${width_trace}\"") > 0) {
+            ") false ;; *) true ;; esac") > 0) {
         has_width_reject_contract[FILENAME] = 1
     }
     lazy_artifact_mkdir = index($0,

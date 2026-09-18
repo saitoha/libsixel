@@ -17,7 +17,7 @@ msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     echo "not ok" 1 - "Zsh completion path override failed"
     exit 0
 }
-test "${msg#*completion zsh path fixture*}" != "${msg}" || {
+case "${msg}" in *completion\ zsh\ path\ fixture**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "Zsh completion path override was ignored"
     exit 0
 }

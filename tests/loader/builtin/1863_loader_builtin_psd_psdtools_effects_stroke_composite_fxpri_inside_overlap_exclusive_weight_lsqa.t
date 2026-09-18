@@ -24,7 +24,6 @@ expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psdtools_effects_
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.95}
 trace_output=''
-trace_tail=''
 lsqa_msg=''
 command_status=0
 
@@ -39,8 +38,7 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-trace_tail="${trace_output#*builtin PSD: applying effect-priority dual-stroke overlap on clipped group*}"
-test "${trace_tail}" != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ effect-priority\ dual-stroke\ overlap\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing FXPRI overlap trace"
     exit 0
 }

@@ -20,7 +20,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXBPS1|quantizer_requested=0|quantizer_effective=2|quantizer_origin=auto|quantizer_phase=executed|quantizer_reason=quantizer-capability|binning_requested=exact|binning_effective=exact|binning_origin=explicit|binning_phase=executed|binning_reason=explicit|points=*}" != "${trace}" || {
+case "${trace}" in *LSXBPS1\|quantizer_requested=0\|quantizer_effective=2\|quantizer_origin=auto\|quantizer_phase=executed\|quantizer_reason=quantizer-capability\|binning_requested=exact\|binning_effective=exact\|binning_origin=explicit\|binning_phase=executed\|binning_reason=explicit\|points=**) true ;; *) false ;; esac || {
     echo "not ok 1 - exact palette binning state was not committed"
     exit 0
 }

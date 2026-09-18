@@ -36,8 +36,7 @@ test "${record%%[![:print:]]*}" = \
 # Inspect one complete actual-apply record, never a selector/parser record.
 record=${trace##*"LSXCMS2|event=apply|"}
 record=${record%%[![:print:]]*}
-test "${record#engine=builtin|}" != "$record" && \
-    test "${record%|ok=1}" != "$record" || {
+{ case "${record}" in engine=builtin\|*) true ;; *) false ;; esac &&      case "${record}" in *\|ok=1) true ;; *) false ;; esac; } || {
     echo "not ok 1 - short input profile was not applied by builtin"
     exit 0
 }
@@ -57,8 +56,7 @@ test "${record%%[![:print:]]*}" = \
 # Inspect one complete actual-apply record, never a selector/parser record.
 record=${trace##*"LSXCMS2|event=apply|"}
 record=${record%%[![:print:]]*}
-test "${record#engine=builtin|}" != "$record" && \
-    test "${record%|ok=1}" != "$record" || {
+{ case "${record}" in engine=builtin\|*) true ;; *) false ;; esac &&      case "${record}" in *\|ok=1) true ;; *) false ;; esac; } || {
     echo "not ok 1 - env input profile was not applied by builtin"
     exit 0
 }

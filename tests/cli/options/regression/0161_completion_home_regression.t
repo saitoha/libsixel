@@ -22,15 +22,15 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,completion_contract 
     echo "not ok" 1 - "completion home short lookup failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=home|stored=1|binding=home,home_override|value="${completion_home}"*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=home\|stored=1\|binding=home,home_override\|value="${completion_home}"**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "completion home short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXCMP1|*key=home|configured=1|override=1|used=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXCMP1\|*key=home\|configured=1\|override=1\|used=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "completion home short value missed its consumer"
     exit 0
 }
-test "${short_trace#*missing *"${completion_home##*/}"/.zfunc/_img2sixel*}" != "${short_trace}" || {
+case "${short_trace}" in *missing\ *"${completion_home##*/}"/.zfunc/_img2sixel**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "completion home short path was not used"
     exit 0
 }
@@ -41,11 +41,11 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,completion_contract \
     echo "not ok" 1 - "completion home environment lookup failed"
     exit 0
 }
-test "${env_trace#*LSXCMP1|*key=home|configured=1|override=0|used=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXCMP1\|*key=home\|configured=1\|override=0\|used=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "completion home environment missed its consumer"
     exit 0
 }
-test "${env_trace#*missing *"${completion_home##*/}"/.zfunc/_img2sixel*}" != "${env_trace}" || {
+case "${env_trace}" in *missing\ *"${completion_home##*/}"/.zfunc/_img2sixel**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "completion home environment path was not used"
     exit 0
 }

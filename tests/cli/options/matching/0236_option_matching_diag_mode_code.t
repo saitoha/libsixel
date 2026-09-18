@@ -23,18 +23,17 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-test "${message#*LSXCLI1|phase=option_parse|*code=AMBIGUOUS_PREFIX*}" \
-    != "${message}" || {
+case "${message}" in *LSXCLI1\|phase=option_parse\|*code=AMBIGUOUS_PREFIX**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "code diagnostic header is missing"
     exit 0
 }
 
-test "${message#*ambiguous prefix \"st\".*}" != "${message}" || {
+case "${message}" in *ambiguous\ prefix\ \"st\".**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "code diagnostic detail is missing"
     exit 0
 }
 
-test "${message#*\(matches:*}" = "${message}" || {
+case "${message}" in *\(matches:**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "code diagnostic includes candidate list"
     exit 0
 }

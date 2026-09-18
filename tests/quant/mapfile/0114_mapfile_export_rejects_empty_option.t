@@ -21,8 +21,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
     exit 0
 }
 
-test "${msg#*sixel_encoder_setopt: mapfile-output path is empty.}" \
-    != "${msg}" || {
+case "${msg}" in *sixel_encoder_setopt:\ mapfile-output\ path\ is\ empty.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing empty palette-output diagnostic"
     exit 0
 }

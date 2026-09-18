@@ -17,7 +17,7 @@ trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     echo "not ok 1 - historical incomplete CMYK ICC rejected"
     exit 0
 }
-test "${trace#*"event=apply|engine=builtin|path=extended-rgb|src=5|dst=4|ok=1"}" != "$trace" || {
+case "${trace}" in *"event=apply|engine=builtin|path=extended-rgb|src=5|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "not ok 1 - historical CMYK LUT was not actually applied"
     exit 0
 }

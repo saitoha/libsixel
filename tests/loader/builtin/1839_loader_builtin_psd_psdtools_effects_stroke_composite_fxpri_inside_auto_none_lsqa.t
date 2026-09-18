@@ -52,14 +52,12 @@ test "${none_status}" -eq 0 || {
     exit 0
 }
 
-test "${auto_trace#*builtin PSD: applying effect-priority dual-stroke overlap on clipped group*}" \
-    != "${auto_trace}" || {
+case "${auto_trace}" in *builtin\ PSD:\ applying\ effect-priority\ dual-stroke\ overlap\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite auto decode missed FXPRI overlap trace"
     exit 0
 }
 
-test "${none_trace#*builtin PSD: applying effect-priority dual-stroke overlap on clipped group*}" \
-    != "${none_trace}" || {
+case "${none_trace}" in *builtin\ PSD:\ applying\ effect-priority\ dual-stroke\ overlap\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite none decode missed FXPRI overlap trace"
     exit 0
 }

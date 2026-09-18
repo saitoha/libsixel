@@ -17,21 +17,21 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qk:Minvalid "${TOP_SRCDIR}
     exit 0
 }
 
-test "${msg#*unknown suboption value*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ value**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing unknown suboption value diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*\"mapping\"*}" != "${msg}" || {
+case "${msg}" in *\"mapping\"**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing mapping key diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*valid values*uniform, srgb*}" != "${msg}" || {
+case "${msg}" in *valid\ values*uniform,\ srgb**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing kmeans mapping valid value list"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

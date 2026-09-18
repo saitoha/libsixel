@@ -31,14 +31,12 @@ trace_output=$(
     exit 0
 }
 
-test "${trace_output#*"event=callback_handoff_decide handoff=pipeline"}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *"event=callback_handoff_decide handoff=pipeline"*) true ;; *) false ;; esac || {
     echo "not ok 1 - coregraphics handoff clone fallback trace assertions"
     exit 0
 }
 
-test "${trace_output#*"event=worker_clone_fallback_enabled"}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *"event=worker_clone_fallback_enabled"*) true ;; *) false ;; esac || {
     echo "not ok 1 - coregraphics handoff clone fallback trace assertions"
     exit 0
 }

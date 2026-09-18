@@ -52,8 +52,7 @@ preflight_trace=$(
         2>&1 >/dev/null
 ) || preflight_status=$?
 preflight_has_trigger=0
-trace_remainder=${preflight_trace#*event=callback_handoff_decide}
-test "${trace_remainder}" != "${preflight_trace}" && preflight_has_trigger=1
+case "${preflight_trace}" in *event=callback_handoff_decide*) true ;; *) false ;; esac && preflight_has_trigger=1
 set -xv
 
 test "${preflight_status}" = "0" || {

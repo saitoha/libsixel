@@ -24,7 +24,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_palette_parse_pal_riff: chunk extends past end.}" != "${msg}" || {
+case "${msg}" in *sixel_palette_parse_pal_riff:\ chunk\ extends\ past\ end.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing RIFF payload overrun diagnostic"
     exit 0
 }

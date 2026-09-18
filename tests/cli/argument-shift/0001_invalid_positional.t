@@ -13,9 +13,9 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 # intermittent failures specific to that platform.
 os_name="${RUNTIME_ENV_BUILD_OS-unknown}"
 is_windows_env=0
-test "${os_name}" != "${os_name#*mingw*}" && is_windows_env=1
-test "${os_name}" != "${os_name#*msys*}" && is_windows_env=1
-test "${os_name}" != "${os_name#*cygwin*}" && is_windows_env=1
+case "${os_name}" in *mingw**) true ;; *) false ;; esac && is_windows_env=1
+case "${os_name}" in *msys**) true ;; *) false ;; esac && is_windows_env=1
+case "${os_name}" in *cygwin**) true ;; *) false ;; esac && is_windows_env=1
 test "${is_windows_env}" = 0 || {
     printf "1..0 # SKIP temporarily disabled on Windows due to instability\n"
     exit 0

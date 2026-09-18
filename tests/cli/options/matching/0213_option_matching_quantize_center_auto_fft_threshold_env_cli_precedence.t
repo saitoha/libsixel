@@ -38,7 +38,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*auto_fft_threshold*}" != "${msg}" || {
+case "${msg}" in *auto_fft_threshold**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing invalid CLI center auto_fft_threshold diagnostic"
     exit 0
 }

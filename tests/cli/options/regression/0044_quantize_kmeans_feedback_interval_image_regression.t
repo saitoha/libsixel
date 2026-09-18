@@ -34,7 +34,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=feedback_interval|stored=1|binding=quantize_model_kmeans_feedback_interval,quantize_model_kmeans_feedback_interval_override|value=64*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=feedback_interval\|stored=1\|binding=quantize_model_kmeans_feedback_interval,quantize_model_kmeans_feedback_interval_override\|value=64**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "feedback_interval short value was not stored"
     exit 0
 }
@@ -47,7 +47,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=feedback_interval|stored=1|binding=quantize_model_kmeans_feedback_interval,quantize_model_kmeans_feedback_interval_override|value=64*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=feedback_interval\|stored=1\|binding=quantize_model_kmeans_feedback_interval,quantize_model_kmeans_feedback_interval_override\|value=64**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "feedback_interval environment value was not stored"
     exit 0
 }
@@ -60,7 +60,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=feedback_interval|stored=1|binding=quantize_model_kmeans_feedback_interval,quantize_model_kmeans_feedback_interval_override|value=1*}" != "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=feedback_interval\|stored=1\|binding=quantize_model_kmeans_feedback_interval,quantize_model_kmeans_feedback_interval_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "feedback_interval lower endpoint was not clamped"
     exit 0
 }

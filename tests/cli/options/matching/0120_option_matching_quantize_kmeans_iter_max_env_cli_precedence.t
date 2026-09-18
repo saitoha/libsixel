@@ -38,7 +38,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*-Q iter_max must be in range 1-100.*}" != "${msg}" || {
+case "${msg}" in *-Q\ iter_max\ must\ be\ in\ range\ 1-100.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing invalid CLI iter_max diagnostic"
     exit 0
 }

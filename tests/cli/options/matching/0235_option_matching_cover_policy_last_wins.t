@@ -20,7 +20,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*LSXCOV1|policy=corners*}" != "${msg}" || {
+case "${msg}" in *LSXCOV1\|policy=corners**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "late corners did not override early off"
     exit 0
 }
@@ -34,7 +34,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*LSXCOV1|policy=off*}" != "${msg}" || {
+case "${msg}" in *LSXCOV1\|policy=off**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "late off did not override early corners"
     exit 0
 }

@@ -16,17 +16,17 @@ test "$result" -eq 0 || {
     echo "not ok 1 - independent signed Lab16 frame values"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|"}" = "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - unexpected CMS apply for untagged TIFF"
     exit 0
 }
-test "${trace#*"LAB16|mode=0|calls=1|misses=0|verified=1"}" != "$trace" || {
+case "${trace}" in *"LAB16|mode=0|calls=1|misses=0|verified=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - independent frame values were not checked"
     exit 0
 }
-test "${trace#*"LSXLOAD1|event=ok|loader=libtiff|"}" != "$trace" || {
+case "${trace}" in *"LSXLOAD1|event=ok|loader=libtiff|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - libtiff did not deliver the expected frame"
     exit 0

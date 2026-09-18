@@ -28,7 +28,7 @@ output_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite \
     exit 0
 }
 
-test "${output_text#*"${keycolor_header}"}" != "${output_text}" || {
+{ test -n "${keycolor_header}" && case "${output_text}" in *"${keycolor_header}"*) true ;; *) false ;; esac; } || {
     echo "not ok 1 - gdk-pixbuf2 indexed+tRNS output lost keycolor DCS header"
     exit 0
 }

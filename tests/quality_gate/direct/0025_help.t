@@ -9,7 +9,7 @@ value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -H) || {
     echo "not ok 1 - help failed"
     exit 0
 }
-test "${value#*'-D, --direct'}" != "$value" || {
+case "${value}" in *'-D, --direct'*) true ;; *) false ;; esac || {
     echo "not ok 1 - direct help missing"
     exit 0
 }

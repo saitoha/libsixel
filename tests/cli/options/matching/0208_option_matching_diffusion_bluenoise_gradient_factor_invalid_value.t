@@ -22,8 +22,7 @@ msg=$(
     exit 0
 }
 
-test "${msg#*-d bluenoise:gradient_factor must be a floating point value.*}" \
-    != "${msg}" || {
+case "${msg}" in *-d\ bluenoise:gradient_factor\ must\ be\ a\ floating\ point\ value.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing bluenoise gradient_factor diagnostic"
     exit 0
 }

@@ -32,12 +32,11 @@ short_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     echo "not ok" 1 - "log lines short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=log_lines|stored=1|binding=log_lines,log_lines_override|value=3*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=log_lines\|stored=1\|binding=log_lines,log_lines_override\|value=3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "log lines short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXTLN1|*line_events=1|line_stride=3*}" != \
-    "${short_trace}" || {
+case "${short_trace}" in *LSXTLN1\|*line_events=1\|line_stride=3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "log lines short value missed its consumer"
     exit 0
 }
@@ -49,12 +48,11 @@ env_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     echo "not ok" 1 - "log lines environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=log_lines|stored=1|binding=log_lines,log_lines_override|value=3*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=log_lines\|stored=1\|binding=log_lines,log_lines_override\|value=3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "log lines environment value was not stored"
     exit 0
 }
-test "${env_trace#*LSXTLN1|*line_events=1|line_stride=3*}" != \
-    "${env_trace}" || {
+case "${env_trace}" in *LSXTLN1\|*line_events=1\|line_stride=3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "log lines environment value missed its consumer"
     exit 0
 }
@@ -66,7 +64,7 @@ range_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     echo "not ok" 1 - "log lines lower conversion failed"
     exit 0
 }
-test "${range_trace#*LSXSUB1|*key=log_lines|stored=1|binding=log_lines,log_lines_override|value=1*}" != "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=log_lines\|stored=1\|binding=log_lines,log_lines_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "log lines lower endpoint was not clamped"
     exit 0
 }

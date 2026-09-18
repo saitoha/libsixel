@@ -42,14 +42,13 @@ test "${command_status}" -eq 0 || {
 }
 
 stroke_tail="${trace_output#*builtin PSD: applying deferred stroke on clipped group*}"
-test "${stroke_tail}" != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ deferred\ stroke\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing deferred stroke trace"
     exit 0
 }
 
-test "${stroke_tail#*builtin PSD: using post-effect offscreen group backdrop for deferred stroke blend*}" \
-    != "${stroke_tail}" || {
+case "${stroke_tail}" in *builtin\ PSD:\ using\ post-effect\ offscreen\ group\ backdrop\ for\ deferred\ stroke\ blend**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing post-effect backdrop trace after deferred stroke"
     exit 0

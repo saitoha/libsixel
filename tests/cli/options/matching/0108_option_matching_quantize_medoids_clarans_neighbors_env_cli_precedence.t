@@ -38,7 +38,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*-Q clarans_neighbors must be 0 or in range 1-5000000.*}" != "${msg}" || {
+case "${msg}" in *-Q\ clarans_neighbors\ must\ be\ 0\ or\ in\ range\ 1-5000000.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing invalid CLI clarans_neighbors diagnostic"
     exit 0
 }

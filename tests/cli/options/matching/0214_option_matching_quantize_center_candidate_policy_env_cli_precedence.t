@@ -38,7 +38,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*unknown suboption value*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ value**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing invalid CLI center candidate_policy diagnostic"
     exit 0
 }

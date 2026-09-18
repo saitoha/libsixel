@@ -33,12 +33,12 @@ test "${case_status}" -eq 2 || {
     exit 0
 }
 
-test "${prefix_message#*\(matches:*}" != "${prefix_message}" || {
+case "${prefix_message}" in *\(matches:**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "diagnostics environment accepted a prefix"
     exit 0
 }
 
-test "${case_message#*\(matches:*}" != "${case_message}" || {
+case "${case_message}" in *\(matches:**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "diagnostics environment ignored case"
     exit 0
 }

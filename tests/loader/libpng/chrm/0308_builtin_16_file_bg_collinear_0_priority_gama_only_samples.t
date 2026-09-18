@@ -18,12 +18,12 @@ test "$result" -eq 0 || {
     echo "not ok 1 - builtin 16-file-bg-collinear-0-priority-gama-only original samples and coverage"
     exit 0
 }
-test "${trace#*"PNG_CHRM_SAMPLE|fixture=209|engine=builtin|checked=24|"}" != "$trace" || {
+case "${trace}" in *"PNG_CHRM_SAMPLE|fixture=209|engine=builtin|checked=24|"*) true ;; *) false ;; esac || {
     echo "not ok 1 - numeric observation did not complete"
     exit 0
 }
 # Consume every apply in order; partial or extra records must fail.
-test "${trace#*"LSXCMS2|event=apply"}" = "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || {
     echo "not ok 1 - unexpected ICC apply remains"
     exit 0
 }

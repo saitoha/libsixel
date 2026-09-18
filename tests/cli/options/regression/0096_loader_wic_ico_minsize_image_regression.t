@@ -38,7 +38,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=ico_minsize|stored=1|binding=wic_ico_minsize|value=2147483647*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=ico_minsize\|stored=1\|binding=wic_ico_minsize\|value=2147483647**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "ico_minsize short value was not stored"
     exit 0
 }
@@ -51,7 +51,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=ico_minsize|stored=1|binding=wic_ico_minsize|value=2147483647*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=ico_minsize\|stored=1\|binding=wic_ico_minsize\|value=2147483647**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "ico_minsize environment value was not stored"
     exit 0
 }
@@ -64,7 +64,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=ico_minsize|stored=1*}" = "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=ico_minsize\|stored=1**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "ico_minsize accepted a value above INT_MAX"
     exit 0
 }

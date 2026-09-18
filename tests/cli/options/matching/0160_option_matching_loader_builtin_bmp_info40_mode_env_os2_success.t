@@ -22,7 +22,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*invalid argument for -L,--loaders option*}" = "${msg}" || {
+case "${msg}" in *invalid\ argument\ for\ -L,--loaders\ option**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "windows env path failed at option parsing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

@@ -17,13 +17,13 @@ test "$result" -eq 0 || {
     echo "not ok 1 - profile rejected adobe"
     exit 0
 }
-test "${trace#*"JCMYK|target-begin"}" != "$trace" || {
+case "${trace}" in *"JCMYK|target-begin"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - target observation marker is absent"
     exit 0
 }
 observed=${trace#*"JCMYK|target-begin"}
-test "$observed" = "${observed#*"LSXCMS2|event=apply"}" || {
+case "${observed}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - fallback unexpectedly applied an ICC transform"
     exit 0

@@ -22,12 +22,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown option base value*}" != "${msg}" || {
+case "${msg}" in *unknown\ option\ base\ value**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing legacy sierra token diagnostic"
     exit 0
 }
 
-test "${msg#*sierra1*}" != "${msg}" || {
+case "${msg}" in *sierra1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "legacy sierra token diagnostic lacked rejected value"
     exit 0
 }

@@ -23,14 +23,12 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-err_tail=${err_msg#*'ambiguous prefix "c"'}
-test "${err_tail}" != "${err_msg}" || {
+case "${err_msg}" in *'ambiguous prefix "c"'*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "ambiguous -m metric prefix detail was missing"
     exit 0
 }
 
-err_tail=${err_msg#*clip_l_ref}
-test "${err_tail}" != "${err_msg}" || {
+case "${err_msg}" in *clip_l_ref*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "ambiguous -m metric prefix candidates were missing"
     exit 0
 }

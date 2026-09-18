@@ -22,7 +22,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXSPL1|requested=adaptive-grid|effective=adaptive-grid|source=loaded-frame|origin=explicit|phase=executed|reason=explicit*}" != "${trace}" || {
+case "${trace}" in *LSXSPL1\|requested=adaptive-grid\|effective=adaptive-grid\|source=loaded-frame\|origin=explicit\|phase=executed\|reason=explicit**) true ;; *) false ;; esac || {
     echo "not ok 1 - environment overrode command-line sampling-policy"
     exit 0
 }

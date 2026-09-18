@@ -24,7 +24,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXSNP1|approach=0.5*}" != "${trace}" || {
+case "${trace}" in *LSXSNP1\|approach=0.5**) true ;; *) false ;; esac || {
     echo "not ok 1 - snap approach rate missed its consumer"
     exit 0
 }

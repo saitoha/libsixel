@@ -22,12 +22,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown suboption value*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ value**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing bluenoise size diagnostic prefix"
     exit 0
 }
 
-test "${msg#*size*}" != "${msg}" || {
+case "${msg}" in *size**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing bluenoise size key diagnostic"
     exit 0
 }

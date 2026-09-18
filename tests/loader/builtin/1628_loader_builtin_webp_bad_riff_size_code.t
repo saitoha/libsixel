@@ -31,7 +31,7 @@ test "${command_status}" -ne 0 || {
 }
 
 diag_line=${trace_output#*LSXWEBP1\|}
-test "${diag_line}" != "${trace_output}" || {
+case "${trace_output}" in *LSXWEBP1\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader corrupted fixture bad_riff_size.webp missing LSXWEBP1 contract header"
     exit 0
 }
@@ -39,12 +39,12 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_line}" || {
+case "${diag_line}" in LSXWEBP1\|rc=1\|kind=ERR\|codes=*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader corrupted fixture bad_riff_size.webp malformed error contract header"
     exit 0
 }
 
-test "${diag_line#*W_ERR_RIFF_SIZE_EXCEEDS*}" != "${diag_line}" || {
+case "${diag_line}" in *W_ERR_RIFF_SIZE_EXCEEDS**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced builtin loader corrupted fixture bad_riff_size.webp missing W_ERR_RIFF_SIZE_EXCEEDS contract code"
     exit 0
 }

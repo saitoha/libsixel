@@ -24,12 +24,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*boolean suboption must be 0 or 1.*}" != "${msg}" || {
+case "${msg}" in *boolean\ suboption\ must\ be\ 0\ or\ 1.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing stbn fastpath invalid-value diagnostic"
     exit 0
 }
 
-test "${msg#*fastpath*}" != "${msg}" || {
+case "${msg}" in *fastpath**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fastpath diagnostic lacked key name"
     exit 0
 }

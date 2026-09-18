@@ -20,21 +20,21 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*unknown suboption value*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ value**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing unknown center algo diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*\"algo\"*}" != "${msg}" || {
+case "${msg}" in *\"algo\"**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing center algo key diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*valid values*auto, fft, swap, hybrid*}" != "${msg}" || {
+case "${msg}" in *valid\ values*auto,\ fft,\ swap,\ hybrid**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing center algo candidate list"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

@@ -22,7 +22,7 @@ test "$status" -eq 0 || {
     echo "not ok 1 - Inspect PNG metadata grid-outside RGB16 with colorsync"
     exit 0
 }
-test "${output#*"PNGMETA|evaluator="}" != "$output" || {
+case "${output}" in *"PNGMETA|evaluator="*) true ;; *) false ;; esac || {
     echo "not ok 1 - PNG metadata evaluator marker"
     exit 0
 }
@@ -31,11 +31,10 @@ expected=${evaluator#*"|applies="}
 evaluator=${evaluator%%|*}
 count=0
 first=${output#*"LSXCMS2|event=apply|"}
-test "$first" = "$output" || count=1
+case "${output}" in *"LSXCMS2|event=apply|"*) false ;; *) true ;; esac || count=1
 second=${first#*"LSXCMS2|event=apply|"}
-test "$second" = "$first" || count=2
-third=${second#*"LSXCMS2|event=apply|"}
-test "$third" = "$second" && test "$expected" = "$count" || {
+case "${first}" in *"LSXCMS2|event=apply|"*) false ;; *) true ;; esac || count=2
+{ case "${second}" in *"LSXCMS2|event=apply|"*) false ;; *) true ;; esac && test "$expected" = "$count"; } || {
     echo "not ok 1 - PNG metadata apply count"
     exit 0
 }
@@ -43,19 +42,19 @@ newline='
 '
 first=${first%%"$newline"*}
 second=${second%%"$newline"*}
-test "$count" -eq 0 || test "${first#engine="$evaluator"|}" != "$first" || {
+test "$count" -eq 0 || case "${first}" in engine="$evaluator"\|*) true ;; *) false ;; esac || {
     echo "not ok 1 - PNG metadata image evaluator"
     exit 0
 }
-test "$count" -eq 0 || test "${first%|ok=1}" != "$first" || {
+test "$count" -eq 0 || case "${first}" in *\|ok=1) true ;; *) false ;; esac || {
     echo "not ok 1 - PNG metadata image application"
     exit 0
 }
-test "$count" -lt 2 || test "${second#engine="$evaluator"|}" != "$second" || {
+test "$count" -lt 2 || case "${second}" in engine="$evaluator"\|*) true ;; *) false ;; esac || {
     echo "not ok 1 - PNG metadata background evaluator"
     exit 0
 }
-test "$count" -lt 2 || test "${second%|ok=1}" != "$second" || {
+test "$count" -lt 2 || case "${second}" in *\|ok=1) true ;; *) false ;; esac || {
     echo "not ok 1 - PNG metadata background application"
     exit 0
 }

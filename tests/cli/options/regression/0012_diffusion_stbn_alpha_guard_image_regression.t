@@ -30,12 +30,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=alpha_guard|stored=1|binding=stbn_alpha_guard_enabled,stbn_alpha_guard_override*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=alpha_guard\|stored=1\|binding=stbn_alpha_guard_enabled,stbn_alpha_guard_override**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "alpha_guard short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXDTH1|*alpha=1|alpha_override=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXDTH1\|*alpha=1\|alpha_override=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "stbn alpha guard did not reach the dither"
     exit 0
 }
@@ -50,7 +50,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=alpha_guard|stored=1|binding=stbn_alpha_guard_enabled,stbn_alpha_guard_override*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=alpha_guard\|stored=1\|binding=stbn_alpha_guard_enabled,stbn_alpha_guard_override**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "alpha_guard environment value was not stored"
     exit 0
 }

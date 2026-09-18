@@ -36,12 +36,12 @@ trace_log=$(set +xv; head -c 32 "${input_webp}" | \
     exit 0
 }
 
-test "${trace_log#*libsixel: trying gd loader*}" != "${trace_log}" || {
+case "${trace_log}" in *libsixel:\ trying\ gd\ loader**) true ;; *) false ;; esac || {
     echo "not ok 1 - gd loader was not attempted for truncated stdin WebP"
     exit 0
 }
 
-test "${trace_log#*libsixel: trying libwebp loader*}" != "${trace_log}" || {
+case "${trace_log}" in *libsixel:\ trying\ libwebp\ loader**) true ;; *) false ;; esac || {
     echo "not ok 1 - libwebp loader was not attempted after gd error"
     exit 0
 }

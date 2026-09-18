@@ -33,7 +33,7 @@ test "${command_status}" -eq 0 || {
 }
 
 diag_line=${trace_output#*LSXWEBP1\|}
-test "${diag_line}" != "${trace_output}" || {
+case "${trace_output}" in *LSXWEBP1\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin palette_lossless_embedded_invalid_icc_anim2.webp missing LSXWEBP1 contract header with CMS off"
     exit 0
 }
@@ -41,22 +41,22 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#LSXWEBP1\|rc=0\|kind=OK\|codes=}" != "${diag_line}" || {
+case "${diag_line}" in LSXWEBP1\|rc=0\|kind=OK\|codes=*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin palette_lossless_embedded_invalid_icc_anim2.webp malformed success contract header with CMS off"
     exit 0
 }
 
-test "${diag_line#*W_OK_VP8L_STATIC*}" != "${diag_line}" || {
+case "${diag_line}" in *W_OK_VP8L_STATIC**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin palette_lossless_embedded_invalid_icc_anim2.webp missing W_OK_VP8L_STATIC with CMS off"
     exit 0
 }
 
-test "${diag_line#*W_OK_ANIM*}" != "${diag_line}" || {
+case "${diag_line}" in *W_OK_ANIM**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin palette_lossless_embedded_invalid_icc_anim2.webp missing W_OK_ANIM with CMS off"
     exit 0
 }
 
-test "${diag_line#*W_META_ICCP_IGNORED*}" != "${diag_line}" || {
+case "${diag_line}" in *W_META_ICCP_IGNORED**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin palette_lossless_embedded_invalid_icc_anim2.webp missing W_META_ICCP_IGNORED with CMS off"
     exit 0
 }

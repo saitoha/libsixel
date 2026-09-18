@@ -16,22 +16,22 @@ test "$result" -eq 0 || {
     echo "not ok 1 - independent positive values and prewrite channel rejection"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=colorsync|path=external|src=5|dst=4|ok=1"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|path=external|src=5|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - missing expected contract trace"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=colorsync|path=external|src=5|dst=4|ok=0"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|path=external|src=5|dst=4|ok=0"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - missing expected contract trace"
     exit 0
 }
-test "${trace#*"LSXCMS1|intent_order=relative|exclusive=1"}" != "$trace" || {
+case "${trace}" in *"LSXCMS1|intent_order=relative|exclusive=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - missing expected contract trace"
     exit 0
 }
-test "${trace#*"independent-values-and-prewrite-guards-verified"}" != "$trace" || {
+case "${trace}" in *"independent-values-and-prewrite-guards-verified"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - missing expected contract trace"
     exit 0

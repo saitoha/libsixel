@@ -24,7 +24,7 @@ test "${trace_status}" -eq 0 || {
     echo "not ok" 1 - "builtin HDR cms=auto trace run failed"
     exit 0
 }
-test "${trace_log#*header-derived source profile is unavailable on this CMS backend*}" = "${trace_log}" || {
+case "${trace_log}" in *header-derived\ source\ profile\ is\ unavailable\ on\ this\ CMS\ backend**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "builtin HDR cms=auto emitted unexpected header-profile unavailable trace"
     exit 0
 }

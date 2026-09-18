@@ -24,7 +24,7 @@ keep_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 palette="${keep_output#"${esc}"P0;1q\"1;1;1;1#0;2;}"
-test "${palette}" != "${keep_output}" || {
+case "${keep_output}" in "${esc}"P0\;1q\"1\;1\;1\;1#0\;2\;*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "keep policy did not emit P2=1"
     exit 0
 }
@@ -33,11 +33,11 @@ red="${palette%%;*}"
 green_blue="${palette#*;}"
 green="${green_blue%%;*}"
 blue="${green_blue#*;}"
-test "${green_blue}" != "${palette}" || {
+case "${palette}" in *\;*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
     exit 0
 }
-test "${blue}" != "${green_blue}" || {
+case "${green_blue}" in *\;*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
     exit 0
 }

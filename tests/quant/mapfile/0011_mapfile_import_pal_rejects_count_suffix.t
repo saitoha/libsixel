@@ -24,7 +24,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_palette_parse_pal_jasc: invalid color count.}" != "${msg}" || {
+case "${msg}" in *sixel_palette_parse_pal_jasc:\ invalid\ color\ count.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing PAL color count suffix diagnostic"
     exit 0
 }

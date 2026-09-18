@@ -37,7 +37,7 @@ test "${cli_message}" = "${env_message}" || {
     exit 0
 }
 
-test "${cli_message#*\(matches:*}" = "${cli_message}" || {
+case "${cli_message}" in *\(matches:**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "diagnostics code mode retained candidates"
     exit 0
 }

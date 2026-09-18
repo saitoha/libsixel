@@ -9,16 +9,16 @@ value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -D "${TOP_SRCDIR}/tests/data/color-nume
     echo "not ok 1 - JSON evaluation failed"
     exit 0
 }
-test "${value#*'"requested_sixel_drawing": "direct"'}" != "$value" || {
+case "${value}" in *'"requested_sixel_drawing": "direct"'*) true ;; *) false ;; esac || {
     echo "not ok 1 - drawing selection missing"
     exit 0
 }
 reference=${value#*'"drawing": "direct"'}
-test "$reference" != "$value" || {
+case "${value}" in *'"drawing": "direct"'*) true ;; *) false ;; esac || {
     echo "not ok 1 - reference drawing missing"
     exit 0
 }
-test "${reference#*'"drawing": "direct"'}" != "$reference" || {
+case "${reference}" in *'"drawing": "direct"'*) true ;; *) false ;; esac || {
     echo "not ok 1 - target drawing missing"
     exit 0
 }

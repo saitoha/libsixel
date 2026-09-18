@@ -22,12 +22,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown suboption key*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ key**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing non-bluenoise gradient_factor diagnostic"
     exit 0
 }
 
-test "${msg#*gradient_factor*}" != "${msg}" || {
+case "${msg}" in *gradient_factor**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "diagnostic lacked gradient_factor key name"
     exit 0
 }

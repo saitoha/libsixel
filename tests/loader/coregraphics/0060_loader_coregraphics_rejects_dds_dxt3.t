@@ -25,7 +25,7 @@ test -n "${macos_version}" || {
 
 macos_major="${macos_version%%.*}"
 macos_rest="${macos_version#*.}"
-test "${macos_rest}" = "${macos_version}" && macos_rest=0
+case "${macos_version}" in *.*) false ;; *) true ;; esac && macos_rest=0
 macos_minor="${macos_rest%%.*}"
 
 dds_min_major="${dds_min_macos%%.*}"

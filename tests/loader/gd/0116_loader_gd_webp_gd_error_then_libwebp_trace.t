@@ -38,19 +38,18 @@ trace_log=$(set +xv; head -c 64 "${input_webp}" | \
 }
 
 after_gd=${trace_log#*LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD*}
-test "${after_gd}" != "${trace_log}" || {
+case "${trace_log}" in *LSXLOAD1\|event=fail\|loader=gd\|code=L_ERR_GD**) true ;; *) false ;; esac || {
     echo "not ok 1 - gd failure code was not reported"
     exit 0
 }
 
 after_libwebp=${after_gd#*LSXLOAD1|event=try|loader=libwebp|code=L_TRY*}
-test "${after_libwebp}" != "${after_gd}" || {
+case "${after_gd}" in *LSXLOAD1\|event=try\|loader=libwebp\|code=L_TRY**) true ;; *) false ;; esac || {
     echo "not ok 1 - libwebp loader was not attempted after gd failure"
     exit 0
 }
 
-test "${after_libwebp#*LSXLOAD1|event=fail|loader=libwebp|code=*}" \
-    != "${after_libwebp}" || {
+case "${after_libwebp}" in *LSXLOAD1\|event=fail\|loader=libwebp\|code=**) true ;; *) false ;; esac || {
     echo "not ok 1 - libwebp failure code was not reported"
     exit 0
 }

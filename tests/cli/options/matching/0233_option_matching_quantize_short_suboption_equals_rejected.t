@@ -15,7 +15,6 @@ set -v
 
 msg=''
 diag_line=''
-diag_tail=''
 status=0
 nl='
 '
@@ -32,9 +31,8 @@ test "${status}" -eq 2 || {
 }
 
 diag_line=${msg%%"${nl}"*}
-diag_tail=${diag_line#LSXCLI1|phase=option_parse|rc=*|code=UNKNOWN_SUBOPTION_KEY}
 
-test "${diag_tail}" != "${diag_line}" || {
+case "${diag_line}" in LSXCLI1\|phase=option_parse\|rc=*\|code=UNKNOWN_SUBOPTION_KEY*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "uppercase -Q short syntax with '=' diagnostic mismatch"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

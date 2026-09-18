@@ -41,19 +41,19 @@ test "${status}" -eq 0 || {
 
 diag_line="LSXPAL1${msg#*LSXPAL1}"
 diag_line=${diag_line%%"${nl}"*}
-test "${diag_line#LSXPAL1*rc=0*}" != "${diag_line}" || {
+case "${diag_line}" in LSXPAL1*rc=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "kmeans seed diagnostic header is malformed"
     exit 0
 }
-test "${diag_line#*kseed_set=1*}" != "${diag_line}" || {
+case "${diag_line}" in *kseed_set=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "kmeans seed diagnostic header missing seed_set"
     exit 0
 }
-test "${diag_line#*kseed=124*}" != "${diag_line}" || {
+case "${diag_line}" in *kseed=124**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "kmeans seed diagnostic header missing seed value"
     exit 0
 }
-test "${diag_line#*KMEANS_SEED_SET*}" != "${diag_line}" || {
+case "${diag_line}" in *KMEANS_SEED_SET**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "kmeans seed contract code missing"
     exit 0
 }

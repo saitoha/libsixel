@@ -30,12 +30,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,gpu_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=dequant_threshold|stored=1|binding=gpu_dequant_threshold,gpu_dequant_threshold_override|value=300*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=dequant_threshold\|stored=1\|binding=gpu_dequant_threshold,gpu_dequant_threshold_override\|value=300**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "GPU dequant threshold short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXGPU1|*consumer=decoder|policy=1|threshold=300*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXGPU1\|*consumer=decoder\|policy=1\|threshold=300**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "GPU dequant threshold did not reach the request"
     exit 0
 }
@@ -48,12 +48,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,gpu_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=dequant_threshold|stored=1|binding=gpu_dequant_threshold,gpu_dequant_threshold_override|value=300*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=dequant_threshold\|stored=1\|binding=gpu_dequant_threshold,gpu_dequant_threshold_override\|value=300**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "GPU dequant threshold environment value was not stored"
     exit 0
 }
 
-test "${env_trace#*LSXGPU1|*consumer=decoder|policy=1|threshold=300*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXGPU1\|*consumer=decoder\|policy=1\|threshold=300**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "environment GPU threshold did not reach the request"
     exit 0
 }
@@ -71,7 +71,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=dequant_threshold|stored=1|binding=gpu_dequant_threshold,gpu_dequant_threshold_override|value=}" != "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=dequant_threshold\|stored=1\|binding=gpu_dequant_threshold,gpu_dequant_threshold_override\|value=*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "GPU dequant threshold did not saturate overflow"
     exit 0
 }

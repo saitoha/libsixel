@@ -26,7 +26,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=runtime_contract \
     exit 0
 }
 
-test "${trace#*LSXRT1|colorspace_min=257*}" != "${trace}" || {
+case "${trace}" in *LSXRT1\|colorspace_min=257**) true ;; *) false ;; esac || {
     echo "not ok 1 - colorspace threshold missed its consumer"
     exit 0
 }

@@ -16,7 +16,7 @@ output=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/libpng_contract emit_trn
     exit 0
 }
 header=$(printf '\033P0;1q')
-test "${output#*"${header}"}" != "${output}" || {
+{ test -n "${header}" && case "${output}" in *"${header}"*) true ;; *) false ;; esac; } || {
     echo "not ok 1 - APNG lost the keep header"
     exit 0
 }

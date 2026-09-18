@@ -29,13 +29,12 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed clbl=1*}" != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ parsed\ clbl=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/shape-fx2 malformed-lrFX fixture did not reach layer-effects parse path"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: legacy lrFX contains glow/bevel/sofi records*}" \
-    = "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ legacy\ lrFX\ contains\ glow/bevel/sofi\ records**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "effects/shape-fx2 malformed lrFX unexpectedly reported feature records"
     exit 0
 }

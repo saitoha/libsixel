@@ -22,7 +22,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*path \"act:\" not found.}" != "${msg}" || {
+case "${msg}" in *path\ \"act:\"\ not\ found.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing prefix-only mapfile diagnostic"
     exit 0
 }

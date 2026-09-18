@@ -20,11 +20,11 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXSPL1|requested=auto|effective=unset|source=none|origin=auto|phase=bypassed|reason=not-applicable|threads=1|heavy=0|budget_async=0|job_ready=0*}" != "${trace}" || {
+case "${trace}" in *LSXSPL1\|requested=auto\|effective=unset\|source=none\|origin=auto\|phase=bypassed\|reason=not-applicable\|threads=1\|heavy=0\|budget_async=0\|job_ready=0**) true ;; *) false ;; esac || {
     echo "not ok 1 - built-in palette sampling was not bypassed"
     exit 0
 }
-test "${trace#*LSXSMP1|*}" = "${trace}" || {
+case "${trace}" in *LSXSMP1\|**) false ;; *) true ;; esac || {
     echo "not ok 1 - built-in palette unexpectedly ran sampling"
     exit 0
 }

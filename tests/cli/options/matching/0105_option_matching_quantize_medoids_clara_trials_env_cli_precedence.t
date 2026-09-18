@@ -38,7 +38,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*-Q clara_trials must be in range 1-32.*}" != "${msg}" || {
+case "${msg}" in *-Q\ clara_trials\ must\ be\ in\ range\ 1-32.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing invalid CLI clara_trials diagnostic"
     exit 0
 }

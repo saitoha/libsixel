@@ -39,7 +39,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*-F merge_lloyd must be 0 or in range 1-30.*}" != "${msg}" || {
+case "${msg}" in *-F\ merge_lloyd\ must\ be\ 0\ or\ in\ range\ 1-30.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing invalid CLI merge_lloyd diagnostic"
     exit 0
 }

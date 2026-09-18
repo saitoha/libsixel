@@ -17,16 +17,16 @@ test "$result" -eq 0 || {
     echo "not ok 1 - p3 native float source with global engine none"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=colorsync|path=external|src=4|dst=4|ok=1"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|path=external|src=4|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - original RGB float did not use ColorSync"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=builtin|"}" = "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=builtin|"*) false ;; *) true ;; esac || {
     echo "not ok 1 - builtin substituted for the native source transform"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=lcms2|"}" = "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=lcms2|"*) false ;; *) true ;; esac || {
     echo "not ok 1 - Little CMS substituted for the native source transform"
     exit 0
 }

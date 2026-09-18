@@ -26,7 +26,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "diagnostics quiet short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=quiet|stored=1|binding=quiet,quiet_override|value=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=quiet\|stored=1\|binding=quiet,quiet_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "diagnostics quiet short value was not stored"
     exit 0
 }
@@ -38,7 +38,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "diagnostics quiet environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=quiet|stored=1|binding=quiet,quiet_override|value=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=quiet\|stored=1\|binding=quiet,quiet_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "diagnostics quiet environment value was not stored"
     exit 0
 }
@@ -52,7 +52,7 @@ test "${status}" -eq 2 || {
     echo "not ok" 1 - "diagnostics quiet consumer exit status mismatch"
     exit 0
 }
-test "${message#*-d DIFFUSION,*}" = "${message}" || {
+case "${message}" in *-d\ DIFFUSION,**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "diagnostics quiet did not suppress option help"
     exit 0
 }

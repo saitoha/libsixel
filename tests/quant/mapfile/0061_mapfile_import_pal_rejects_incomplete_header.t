@@ -23,7 +23,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_palette_parse_pal_jasc: incomplete header.}" != "${msg}" || {
+case "${msg}" in *sixel_palette_parse_pal_jasc:\ incomplete\ header.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing PAL incomplete-header diagnostic"
     exit 0
 }

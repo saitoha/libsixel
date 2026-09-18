@@ -17,20 +17,20 @@ test "$result" -eq 0 || {
     echo "not ok 1 - ColorSync curv gray word128 generic"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=colorsync|path=external|"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|path=external|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - native ColorSync did not apply"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=builtin|"}" = "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=builtin|"*) false ;; *) true ;; esac || {
     echo "not ok 1 - builtin substituted for ColorSync"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=lcms2|"}" = "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=lcms2|"*) false ;; *) true ;; esac || {
     echo "not ok 1 - Little CMS substituted for ColorSync"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=source-profile-adapter|"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=source-profile-adapter|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - unexpected source preparation path"
     exit 0

@@ -41,7 +41,7 @@ suppression_tail="${trace_output}"
 while :
 do
     next_tail="${suppression_tail#*builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays*}"
-    test "${next_tail}" = "${suppression_tail}" && break
+    case "${suppression_tail}" in *builtin\ PSD:\ suppressing\ clbl=1\ deferred\ base\ solid/gradient\ overlays**) false ;; *) true ;; esac && break
     suppression_count=$((suppression_count + 1))
     suppression_tail="${next_tail}"
 done
@@ -50,7 +50,7 @@ replay_tail="${trace_output}"
 while :
 do
     next_tail="${replay_tail#*builtin PSD: replaying deferred clbl=1 overlay entry in layer fallback*}"
-    test "${next_tail}" = "${replay_tail}" && break
+    case "${replay_tail}" in *builtin\ PSD:\ replaying\ deferred\ clbl=1\ overlay\ entry\ in\ layer\ fallback**) false ;; *) true ;; esac && break
     replay_count=$((replay_count + 1))
     replay_tail="${next_tail}"
 done

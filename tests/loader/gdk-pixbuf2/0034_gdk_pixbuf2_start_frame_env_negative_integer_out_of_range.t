@@ -27,8 +27,7 @@ error_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${error_text#*SIXEL_LOADER_ANIMATION_START_FRAME_NO is out of range.}" != \
-    "${error_text}" || {
+case "${error_text}" in *SIXEL_LOADER_ANIMATION_START_FRAME_NO\ is\ out\ of\ range.*) true ;; *) false ;; esac || {
     echo "not ok 1 - gdk-pixbuf2 negative out-of-range message mismatch"
     exit 0
 }

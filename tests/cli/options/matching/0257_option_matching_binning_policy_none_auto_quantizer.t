@@ -20,7 +20,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXBIN1|requested=none|origin=explicit|quantizer_requested=0|quantizer_effective=1|phase=quantizer*}" != "${trace}" || {
+case "${trace}" in *LSXBIN1\|requested=none\|origin=explicit\|quantizer_requested=0\|quantizer_effective=1\|phase=quantizer**) true ;; *) false ;; esac || {
     echo "not ok 1 - raw binning changed auto quantizer compatibility"
     exit 0
 }

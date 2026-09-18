@@ -39,13 +39,13 @@ trace=$(SIXEL_TRACE_TOPIC=loader,loader_contract ${SIXEL_RUNTIME-} \
     exit 0
 }
 
-test "${trace#*"LSXLOAD1|event=ok|loader=libtiff|"}" != "$trace" || {
+case "${trace}" in *"LSXLOAD1|event=ok|loader=libtiff|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok" 1 - "libtiff did not deliver the quality input"
     exit 0
 }
 
-test "${trace#*"LSXCMS2|event=apply|engine=builtin|"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=builtin|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok" 1 - "builtin CMS did not apply to the quality input"
     exit 0

@@ -23,12 +23,12 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 valid_keys_line=${msg#*valid keys: }
 valid_keys_line=${valid_keys_line%%.*}
 
-test "${valid_keys_line#*, prune,*}" = "${valid_keys_line}" || {
+case "${valid_keys_line}" in *,\ prune,**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "removed medoids prune key is still listed"
     exit 0
 }
 
-test "${valid_keys_line#*prune_mass*}" != "${valid_keys_line}" || {
+case "${valid_keys_line}" in *prune_mass**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "medoids prune_mass key missing from candidates"
     exit 0
 }

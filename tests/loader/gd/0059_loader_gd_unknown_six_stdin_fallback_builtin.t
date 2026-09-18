@@ -30,12 +30,12 @@ trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
     exit 0
 }
 
-test "${trace_log#*libsixel: trying builtin loader*}" != "${trace_log}" || {
+case "${trace_log}" in *libsixel:\ trying\ builtin\ loader**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin loader was not attempted for stdin .six"
     exit 0
 }
 
-test "${trace_log#*libsixel: trying gd loader*}" = "${trace_log}" || {
+case "${trace_log}" in *libsixel:\ trying\ gd\ loader**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "gd loader should be skipped for stdin .six"
     exit 0
 }

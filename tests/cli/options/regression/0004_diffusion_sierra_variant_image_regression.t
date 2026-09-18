@@ -29,12 +29,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=variant|stored=1|binding=method_for_diffuse*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=variant\|stored=1\|binding=method_for_diffuse**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "variant short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXDTH1|*diffuse=sierra3*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXDTH1\|*diffuse=sierra3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "sierra variant did not reach the dither"
     exit 0
 }
@@ -47,12 +47,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=variant|stored=1|binding=method_for_diffuse*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=variant\|stored=1\|binding=method_for_diffuse**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "variant environment value was not stored"
     exit 0
 }
 
-test "${env_trace#*LSXDTH1|*diffuse=sierra3*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXDTH1\|*diffuse=sierra3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "sierra environment variant did not reach the dither"
     exit 0
 }

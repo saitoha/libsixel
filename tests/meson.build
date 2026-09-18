@@ -1061,6 +1061,11 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-test-pattern-match',
+    [meson.current_source_dir() / '_static/sh/staticcheck-test-pattern-match.sh',
+      meson.project_source_root(), python_for_tests_path],
+  ],
+  [
     'staticcheck-test-no-for-until',
     [meson.current_source_dir() / '_static/sh/staticcheck-test-no-for-until.sh',
       meson.project_source_root()],

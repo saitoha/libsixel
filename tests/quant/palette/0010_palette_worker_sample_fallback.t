@@ -43,14 +43,12 @@ cmp -s "${expected}" "${actual}" || {
     exit 0
 }
 
-test "${message#*LSXPFB1\|stage=sample\|action=full-frame-sync\|*\|rc=0*}" \
-    != "${message}" || {
+case "${message}" in *LSXPFB1\|stage=sample\|action=full-frame-sync\|*\|rc=0**) true ;; *) false ;; esac || {
     echo "not ok 1 - palette sample fallback was not traced"
     exit 0
 }
 
-test "${message#*LSXSPL1\|requested=auto\|effective=full-frame\|source=preprocessed-frame\|origin=auto\|phase=executed\|reason=fallback\|threads=4\|heavy=0\|budget_async=1\|job_ready=1*}" \
-    != "${message}" || {
+case "${message}" in *LSXSPL1\|requested=auto\|effective=full-frame\|source=preprocessed-frame\|origin=auto\|phase=executed\|reason=fallback\|threads=4\|heavy=0\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - palette sample fallback state was not recorded"
     exit 0
 }

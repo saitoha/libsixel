@@ -28,12 +28,11 @@ short_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     echo "not ok" 1 - "abort trace short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=abort_trace|stored=1|binding=abort_trace,abort_trace_override|value=0*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=abort_trace\|stored=1\|binding=abort_trace,abort_trace_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "abort trace short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXABT1|*enabled=0|installed=0*}" != \
-    "${short_trace}" || {
+case "${short_trace}" in *LSXABT1\|*enabled=0\|installed=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "abort trace short value missed its consumer"
     exit 0
 }
@@ -45,12 +44,11 @@ env_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     echo "not ok" 1 - "abort trace environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=abort_trace|stored=1|binding=abort_trace,abort_trace_override|value=0*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=abort_trace\|stored=1\|binding=abort_trace,abort_trace_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "abort trace environment value was not stored"
     exit 0
 }
-test "${env_trace#*LSXABT1|*enabled=0|installed=0*}" != \
-    "${env_trace}" || {
+case "${env_trace}" in *LSXABT1\|*enabled=0\|installed=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "abort trace environment value missed its consumer"
     exit 0
 }

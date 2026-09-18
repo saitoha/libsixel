@@ -21,7 +21,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXBPS1|quantizer_requested=4|quantizer_effective=4|quantizer_origin=explicit|quantizer_phase=executed|quantizer_reason=explicit|binning_requested=hard|binning_effective=hard|binning_origin=explicit|binning_phase=executed|binning_reason=explicit|points=*|quantizer_retries=1*}" != "${trace}" || {
+case "${trace}" in *LSXBPS1\|quantizer_requested=4\|quantizer_effective=4\|quantizer_origin=explicit\|quantizer_phase=executed\|quantizer_reason=explicit\|binning_requested=hard\|binning_effective=hard\|binning_origin=explicit\|binning_phase=executed\|binning_reason=explicit\|points=*\|quantizer_retries=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - legacy retry did not publish executed K-center state"
     exit 0
 }

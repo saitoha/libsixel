@@ -18,29 +18,29 @@ test "$result" -eq 0 || {
     echo "not ok 1 - logluv din99d target"
     exit 0
 }
-test "${trace#*"TLOGLUV|native-begin"}" != "$trace" || {
+case "${trace}" in *"TLOGLUV|native-begin"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - native route marker is absent"
     exit 0
 }
 control=${trace%%"TLOGLUV|native-begin"*}
-test "${control#*"LSXCMS2|event=apply|engine=builtin|"}" != "$control" || {
+case "${control}" in *"LSXCMS2|event=apply|engine=builtin|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - positive CMS trace control did not apply"
     exit 0
 }
-test "${control#*"|ok=1"}" != "$control" || {
+case "${control}" in *"|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - positive CMS control was unsuccessful"
     exit 0
 }
 native=${trace#*"TLOGLUV|native-begin"}
-test "$native" = "${native#*"LSXCMS2|event=apply"}" || {
+case "${native}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - native XYZ was reinterpreted by CMS"
     exit 0
 }
-test "${native#*"LSXLOAD1|event=ok|loader=libtiff|"}" != "$native" || {
+case "${native}" in *"LSXLOAD1|event=ok|loader=libtiff|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - libtiff did not deliver the frame"
     exit 0

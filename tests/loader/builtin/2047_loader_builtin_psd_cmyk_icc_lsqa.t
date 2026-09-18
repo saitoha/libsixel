@@ -20,7 +20,7 @@ trace=$(SIXEL_TRACE_TOPIC=loader \
     echo "not ok 1 - independent PSD CMYK conversion failed"
     exit 0
 }
-test "${trace#*"event=apply|engine=builtin|path=extended-rgb|src=5|dst=4|ok=1"}" != "$trace" || {
+case "${trace}" in *"event=apply|engine=builtin|path=extended-rgb|src=5|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "not ok 1 - normal CMYK ICC was not actually applied by builtin"
     exit 0
 }

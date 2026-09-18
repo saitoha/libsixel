@@ -26,7 +26,7 @@ test "${status_no}" -eq 0 || {
     exit 0
 }
 
-test "${output_no#*"${keycolor_header}"}" != "${output_no}" || {
+{ test -n "${keycolor_header}" && case "${output_no}" in *"${keycolor_header}"*) true ;; *) false ;; esac; } || {
     echo "not ok 1 - missing-composite single-layer Duotone8+alpha did not emit keycolor header without --bgcolor"
     exit 0
 }

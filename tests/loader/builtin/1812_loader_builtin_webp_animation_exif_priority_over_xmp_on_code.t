@@ -35,7 +35,7 @@ test "${command_status}" -eq 0 || {
 }
 
 diag_line=${trace_output#*LSXWEBP1\|}
-test "${diag_line}" != "${trace_output}" || {
+case "${trace_output}" in *LSXWEBP1\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin animated EXIF+XMP orientation on missing LSXWEBP1 header"
     exit 0
 }
@@ -43,27 +43,27 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#LSXWEBP1\|rc=0\|kind=OK\|codes=}" != "${diag_line}" || {
+case "${diag_line}" in LSXWEBP1\|rc=0\|kind=OK\|codes=*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin animated EXIF+XMP orientation on malformed success header"
     exit 0
 }
 
-test "${diag_line#*W_OK_ANIM*}" != "${diag_line}" || {
+case "${diag_line}" in *W_OK_ANIM**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin animated EXIF+XMP orientation on missing W_OK_ANIM"
     exit 0
 }
 
-test "${diag_line#*W_META_EXIF_APPLIED*}" != "${diag_line}" || {
+case "${diag_line}" in *W_META_EXIF_APPLIED**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin animated EXIF+XMP orientation on missing W_META_EXIF_APPLIED"
     exit 0
 }
 
-test "${diag_line#*W_META_XMP_IGNORED*}" != "${diag_line}" || {
+case "${diag_line}" in *W_META_XMP_IGNORED**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin animated EXIF+XMP orientation on missing W_META_XMP_IGNORED"
     exit 0
 }
 
-test "${diag_line#*W_META_XMP_APPLIED*}" = "${diag_line}" || {
+case "${diag_line}" in *W_META_XMP_APPLIED**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "builtin animated EXIF+XMP orientation on unexpectedly emitted W_META_XMP_APPLIED"
     exit 0
 }

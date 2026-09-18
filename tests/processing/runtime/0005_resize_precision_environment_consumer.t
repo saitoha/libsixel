@@ -21,7 +21,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=runtime_contract \
     exit 0
 }
 
-test "${trace#*LSXRT1|resize_precision=3*}" != "${trace}" || {
+case "${trace}" in *LSXRT1\|resize_precision=3**) true ;; *) false ;; esac || {
     echo "not ok 1 - resize precision missed the planner"
     exit 0
 }

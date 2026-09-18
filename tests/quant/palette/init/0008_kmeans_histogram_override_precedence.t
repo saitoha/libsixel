@@ -17,7 +17,7 @@ output=$(
 ) || output=""
 
 cr=$(printf '\r')
-test "${output%"${cr}"}" != "${output}" && output=${output%"${cr}"}
+{ test -n "${cr}" && case "${output}" in *"${cr}") true ;; *) false ;; esac; } && output=${output%"${cr}"}
 
 test "${output}" = "binbits=7 mapping=uniform softdist=trilinear feedback=0" || {
     echo "not ok" 1 - "unexpected kmeans override output: ${output}"

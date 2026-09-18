@@ -26,12 +26,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     echo "not ok" 1 - "fhedt:cache short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=cache|stored=1|binding=lut_policy_fhedt_use_cache,lut_policy_fhedt_use_cache_override|value=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=cache\|stored=1\|binding=lut_policy_fhedt_use_cache,lut_policy_fhedt_use_cache_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt cache short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXLUT1|*policy=fhedt|*cache=1*}" != \
-    "${short_trace}" || {
+case "${short_trace}" in *LSXLUT1\|*policy=fhedt\|*cache=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt cache did not reach the policy"
     exit 0
 }
@@ -43,11 +42,11 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     echo "not ok" 1 - "fhedt:cache environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=cache|stored=1|binding=lut_policy_fhedt_use_cache,lut_policy_fhedt_use_cache_override|value=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=cache\|stored=1\|binding=lut_policy_fhedt_use_cache,lut_policy_fhedt_use_cache_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt cache environment value was not stored"
     exit 0
 }
-test "${env_trace#*LSXLUT1|*policy=fhedt|*cache=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXLUT1\|*policy=fhedt\|*cache=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "environment cache missed the policy"
     exit 0
 }
@@ -58,8 +57,7 @@ float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     echo "not ok" 1 - "fhedt cache float32 conversion failed"
     exit 0
 }
-test "${float_trace#*LSXLUT1|*policy=fhedt|precision=float32|*cache=1*}" != \
-    "${float_trace}" || {
+case "${float_trace}" in *LSXLUT1\|*policy=fhedt\|precision=float32\|*cache=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt cache missed the float32 backend"
     exit 0
 }

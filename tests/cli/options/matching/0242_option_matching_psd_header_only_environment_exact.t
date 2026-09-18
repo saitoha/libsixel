@@ -29,15 +29,15 @@ invalid_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${header_trace#*LSXPSD1\|*}" != "${header_trace}" || {
+case "${header_trace}" in *LSXPSD1\|**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "PSD header-only mode omitted its header"
     exit 0
 }
-test "${header_trace#*libsixel?psd_decode?:*}" = "${header_trace}" || {
+case "${header_trace}" in *libsixel?psd_decode?:**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "PSD header-only mode retained verbose traces"
     exit 0
 }
-test "${invalid_trace#*libsixel?psd_decode?:*}" != "${invalid_trace}" || {
+case "${invalid_trace}" in *libsixel?psd_decode?:**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "PSD header-only accepted a nonnumeric boolean"
     exit 0
 }

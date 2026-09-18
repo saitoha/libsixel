@@ -20,17 +20,16 @@ bit5_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     echo "not ok" 1 - "5bit packing environment conversion failed"
     exit 0
 }
-test "${bit5_trace#*work=rgb888*}" != "${bit5_trace}" || {
+case "${bit5_trace}" in *work=rgb888**) true ;; *) false ;; esac || {
     echo "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
-test "${bit5_trace#*LSXLUT2|phase=palette-apply|selected=lookup/5bit.8bit|explicit=1*}" != "${bit5_trace}" || {
+case "${bit5_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/5bit.8bit\|explicit=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
-test "${bit5_trace#*LSXLUT1|policy=5bit|packing=morton*}" != \
-    "${bit5_trace}" || {
+case "${bit5_trace}" in *LSXLUT1\|policy=5bit\|packing=morton**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "5bit packing environment was not consumed"
     exit 0
 }
@@ -42,17 +41,16 @@ bit6_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     echo "not ok" 1 - "6bit packing environment conversion failed"
     exit 0
 }
-test "${bit6_trace#*work=rgb888*}" != "${bit6_trace}" || {
+case "${bit6_trace}" in *work=rgb888**) true ;; *) false ;; esac || {
     echo "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
-test "${bit6_trace#*LSXLUT2|phase=palette-apply|selected=lookup/6bit.8bit|explicit=1*}" != "${bit6_trace}" || {
+case "${bit6_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/6bit.8bit\|explicit=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
-test "${bit6_trace#*LSXLUT1|policy=6bit|packing=morton*}" != \
-    "${bit6_trace}" || {
+case "${bit6_trace}" in *LSXLUT1\|policy=6bit\|packing=morton**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "6bit packing environment was not consumed"
     exit 0
 }

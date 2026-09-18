@@ -28,19 +28,19 @@ test "${status}" -eq 0 || {
 }
 diag_line="LSXPAL1${msg#*LSXPAL1}"
 diag_line=${diag_line%%"${nl}"*}
-test "${diag_line#LSXPAL1*rc=0*}" != "${diag_line}" || {
+case "${diag_line}" in LSXPAL1*rc=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "heckbert profile=compat diagnostic header is malformed"
     exit 0
 }
-test "${diag_line#*codes=}" != "${diag_line}" || {
+case "${diag_line}" in *codes=*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "heckbert profile=compat diagnostic header is malformed"
     exit 0
 }
-test "${diag_line#*MODEL_HECKBERT}" != "${diag_line}" || {
+case "${diag_line}" in *MODEL_HECKBERT*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "heckbert profile=compat contract code mismatch"
     exit 0
 }
-test "${diag_line#*MERGE_AUTO}" != "${diag_line}" || {
+case "${diag_line}" in *MERGE_AUTO*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "heckbert profile=compat contract code mismatch"
     exit 0
 }

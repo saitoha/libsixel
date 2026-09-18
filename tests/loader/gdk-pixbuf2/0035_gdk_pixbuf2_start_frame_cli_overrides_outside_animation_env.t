@@ -35,8 +35,7 @@ cli_outside_env_text="$(SIXEL_LOADER_ANIMATION_START_FRAME_NO=999 \
     exit 0
 }
 
-test "${cli_outside_env_text#*SIXEL_LOADER_ANIMATION_START_FRAME_NO is outside the animation frame range.}" = \
-    "${cli_outside_env_text}" || {
+case "${cli_outside_env_text}" in *SIXEL_LOADER_ANIMATION_START_FRAME_NO\ is\ outside\ the\ animation\ frame\ range.*) false ;; *) true ;; esac || {
     echo "not ok 1 - outside-animation env error leaked despite --start-frame"
     exit 0
 }

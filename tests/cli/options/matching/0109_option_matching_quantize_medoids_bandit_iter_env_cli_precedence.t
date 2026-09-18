@@ -38,7 +38,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*-Q bandit_iter must be in range 1-64.*}" != "${msg}" || {
+case "${msg}" in *-Q\ bandit_iter\ must\ be\ in\ range\ 1-64.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing invalid CLI bandit_iter diagnostic"
     exit 0
 }

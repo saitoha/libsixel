@@ -57,14 +57,14 @@ test "${line_count}" -ge 2 || {
     exit 0
 }
 
-test "${first_line#*\"event\":\"first\"}" != "${first_line}" || {
+case "${first_line}" in *\"event\":\"first\"*) true ;; *) false ;; esac || {
     echo "# timeline first clock event is missing"
     echo "# timeline JSONL first line: ${first_line}"
     echo "not ok 1 - 0003_timeline_clock_origin"
     exit 0
 }
 
-test "${second_line#*\"event\":\"second\"}" != "${second_line}" || {
+case "${second_line}" in *\"event\":\"second\"*) true ;; *) false ;; esac || {
     echo "# timeline second clock event is missing"
     echo "# timeline JSONL second line: ${second_line}"
     echo "not ok 1 - 0003_timeline_clock_origin"
@@ -80,7 +80,7 @@ test -n "${second_ts}" || {
     exit 0
 }
 
-test "${second_ts#0.00}" = "${second_ts}" || {
+case "${second_ts}" in 0.00*) false ;; *) true ;; esac || {
     echo "# timeline clock origin regressed: second ts=${second_ts}"
     echo "# timeline JSONL first line: ${first_line}"
     echo "# timeline JSONL second line: ${second_line}"

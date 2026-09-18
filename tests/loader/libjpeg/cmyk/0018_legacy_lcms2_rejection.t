@@ -16,7 +16,7 @@ test "$result" -eq 0 || {
     echo "not ok 1 - legacy lcms2 rejection"
     exit 0
 }
-test "${trace#*"JCMYK|target-begin"}" != "$trace" || {
+case "${trace}" in *"JCMYK|target-begin"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - target observation marker is absent"
     exit 0
@@ -27,7 +27,7 @@ case "$control" in
     *"LSXCMS2|event=apply|engine=lcms2|"*"|ok=1"*) ;;
     *) echo "$trace" >&2; echo "not ok 1 - successful CMS qualification is absent"; exit 0 ;;
 esac
-test "$observed" = "${observed#*"LSXCMS2|event=apply"}" || {
+case "${observed}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - fallback unexpectedly applied an ICC transform"
     exit 0

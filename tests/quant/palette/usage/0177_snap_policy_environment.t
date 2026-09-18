@@ -24,7 +24,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXSNP1|policy=reversible*}" != "${trace}" || {
+case "${trace}" in *LSXSNP1\|policy=reversible**) true ;; *) false ;; esac || {
     echo "not ok 1 - snap policy missed its consumer"
     exit 0
 }

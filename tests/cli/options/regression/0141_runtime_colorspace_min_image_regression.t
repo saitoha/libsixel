@@ -32,11 +32,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,runtime_contract \
     echo "not ok" 1 - "colorspace threshold short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=colorspace_min|stored=1|binding=colorspace_parallel_min_pixels,colorspace_parallel_min_pixels_override|value=257*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=colorspace_min\|stored=1\|binding=colorspace_parallel_min_pixels,colorspace_parallel_min_pixels_override\|value=257**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "colorspace threshold short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXRT1|colorspace_min=257*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXRT1\|colorspace_min=257**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "colorspace threshold missed its consumer"
     exit 0
 }
@@ -48,11 +48,11 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,runtime_contract \
     echo "not ok" 1 - "colorspace threshold environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=colorspace_min|stored=1|binding=colorspace_parallel_min_pixels,colorspace_parallel_min_pixels_override|value=257*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=colorspace_min\|stored=1\|binding=colorspace_parallel_min_pixels,colorspace_parallel_min_pixels_override\|value=257**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "colorspace threshold environment value was not stored"
     exit 0
 }
-test "${env_trace#*LSXRT1|colorspace_min=257*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXRT1\|colorspace_min=257**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "environment threshold missed its consumer"
     exit 0
 }
@@ -64,7 +64,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "colorspace threshold signed conversion failed"
     exit 0
 }
-test "${range_trace#*LSXSUB1|*key=colorspace_min|stored=1|binding=colorspace_parallel_min_pixels,colorspace_parallel_min_pixels_override|value=*}" != "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=colorspace_min\|stored=1\|binding=colorspace_parallel_min_pixels,colorspace_parallel_min_pixels_override\|value=**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "colorspace threshold did not preserve size clamping"
     exit 0
 }

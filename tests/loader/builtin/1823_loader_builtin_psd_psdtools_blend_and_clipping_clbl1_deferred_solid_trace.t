@@ -35,14 +35,12 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying clip-weighted deferred solid overlay in layer fallback*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ clip-weighted\ deferred\ solid\ overlay\ in\ layer\ fallback**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "blend_and_clipping missing deferred solid overlay trace"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: keeping deferred solid overlay alpha unchanged in layer fallback*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ keeping\ deferred\ solid\ overlay\ alpha\ unchanged\ in\ layer\ fallback**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "blend_and_clipping missing deferred solid alpha-invariant trace"
     exit 0
 }

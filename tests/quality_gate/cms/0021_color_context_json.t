@@ -9,39 +9,39 @@ value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -R srgb -T display-p3 -w 8 -P float32 -
     echo "not ok 1 - JSON evaluation failed"
     exit 0
 }
-test "${value#*'"evaluator": "builtin"'}" != "$value" || {
+case "${value}" in *'"evaluator": "builtin"'*) true ;; *) false ;; esac || {
     echo "not ok 1 - missing color context field"
     exit 0
 }
-test "${value#*'"requested_loader_cms": "lcms2"'}" != "$value" || {
+case "${value}" in *'"requested_loader_cms": "lcms2"'*) true ;; *) false ;; esac || {
     echo "not ok 1 - missing color context field"
     exit 0
 }
-test "${value#*'"plain_sixel_default": "srgb"'}" != "$value" || {
+case "${value}" in *'"plain_sixel_default": "srgb"'*) true ;; *) false ;; esac || {
     echo "not ok 1 - missing color context field"
     exit 0
 }
-test "${value#*'"region_count": 4'}" != "$value" || {
+case "${value}" in *'"region_count": 4'*) true ;; *) false ;; esac || {
     echo "not ok 1 - missing color context field"
     exit 0
 }
-test "${value#*'"pcs": "XYZ D50, Y=1"'}" != "$value" || {
+case "${value}" in *'"pcs": "XYZ D50, Y=1"'*) true ;; *) false ;; esac || {
     echo "not ok 1 - missing color context field"
     exit 0
 }
-test "${value#*'"requested_definition": "display-p3"'}" != "$value" || {
+case "${value}" in *'"requested_definition": "display-p3"'*) true ;; *) false ;; esac || {
     echo "not ok 1 - missing color context field"
     exit 0
 }
-test "${value#*'"background_definition": "srgb"'}" != "$value" || {
+case "${value}" in *'"background_definition": "srgb"'*) true ;; *) false ;; esac || {
     echo "not ok 1 - missing color context field"
     exit 0
 }
-test "${value#*'"signal_precision": "float32"'}" != "$value" || {
+case "${value}" in *'"signal_precision": "float32"'*) true ;; *) false ;; esac || {
     echo "not ok 1 - missing color context field"
     exit 0
 }
-test "${value#*'"current_format": "LINEARRGBFLOAT32"'}" != "$value" || {
+case "${value}" in *'"current_format": "LINEARRGBFLOAT32"'*) true ;; *) false ;; esac || {
     echo "not ok 1 - missing actual float frame format"
     exit 0
 }

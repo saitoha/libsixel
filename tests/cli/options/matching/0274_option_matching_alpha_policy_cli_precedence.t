@@ -37,7 +37,7 @@ test "${env_first}" = "${cli_first}" || {
     exit 0
 }
 
-test "${env_first#"${esc}P0;0q"}" != "${env_first}" || {
+case "${env_first}" in "${esc}P0;0q"*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "alpha-policy CLI value did not override environment"
     exit 0
 }

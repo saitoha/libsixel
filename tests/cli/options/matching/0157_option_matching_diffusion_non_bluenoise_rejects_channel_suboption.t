@@ -22,12 +22,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown suboption key*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ key**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing non-bluenoise channel diagnostic"
     exit 0
 }
 
-test "${msg#*channel*}" != "${msg}" || {
+case "${msg}" in *channel**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "non-bluenoise channel diagnostic lacked key name"
     exit 0
 }

@@ -24,12 +24,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown suboption key*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ key**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing non-stbn scene_cut_reset diagnostic"
     exit 0
 }
 
-test "${msg#*scene_cut_reset*}" != "${msg}" || {
+case "${msg}" in *scene_cut_reset**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "non-stbn scene_cut_reset diagnostic lacked key name"
     exit 0
 }

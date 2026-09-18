@@ -32,11 +32,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     echo "not ok" 1 - "snap timing short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=timing|stored=1|binding=snap_policy_timing,snap_policy_timing_override|value=4*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=timing\|stored=1\|binding=snap_policy_timing,snap_policy_timing_override\|value=4**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "snap timing short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXSNP1|*timing=all*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSNP1\|*timing=all**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "snap timing missed its consumer"
     exit 0
 }
@@ -49,7 +49,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     echo "not ok" 1 - "snap timing environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=timing|stored=1|binding=snap_policy_timing,snap_policy_timing_override|value=4*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=timing\|stored=1\|binding=snap_policy_timing,snap_policy_timing_override\|value=4**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "snap timing environment value was not stored"
     exit 0
 }

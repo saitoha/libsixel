@@ -23,7 +23,7 @@ pipeline_log=$(
 }
 printf '%s' "${pipeline_log}" >&2
 
-test "${pipeline_log#*gradient-map -> dither*}" != "${pipeline_log}" || {
+case "${pipeline_log}" in *gradient-map\ -\>\ dither**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "planner missed gradient-map -> dither edge"
     exit 0
 }

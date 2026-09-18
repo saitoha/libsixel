@@ -34,18 +34,17 @@ test "${quiet_status}" -eq 2 || {
     exit 0
 }
 
-test "${verbose_message#*-d DIFFUSION,*}" != "${verbose_message}" || {
+case "${verbose_message}" in *-d\ DIFFUSION,**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "verbose diagnostic omits option help"
     exit 0
 }
 
-test "${quiet_message#*-d DIFFUSION,*}" = "${quiet_message}" || {
+case "${quiet_message}" in *-d\ DIFFUSION,**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "quiet diagnostic includes option help"
     exit 0
 }
 
-test "${quiet_message#*unknown option base value \"invalidvalue\".*}" \
-    != "${quiet_message}" || {
+case "${quiet_message}" in *unknown\ option\ base\ value\ \"invalidvalue\".**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "quiet diagnostic detail is missing"
     exit 0
 }

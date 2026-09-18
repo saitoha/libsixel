@@ -14,7 +14,7 @@ test "$result" -eq 0 || {
     echo "not ok 1 - blue inside boundary has exact XYZ"
     exit 0
 }
-test "${trace#*"PNG_CHRM_GRID|boundary|point=3|inside=1|checked=3"}" != "$trace" || {
+case "${trace}" in *"PNG_CHRM_GRID|boundary|point=3|inside=1|checked=3"*) true ;; *) false ;; esac || {
     echo "not ok 1 - numeric observation did not complete"
     exit 0
 }

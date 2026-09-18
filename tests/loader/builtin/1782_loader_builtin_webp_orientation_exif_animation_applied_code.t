@@ -33,7 +33,7 @@ test "${command_status}" -eq 0 || {
 }
 
 diag_line=${trace_output#*LSXWEBP1\|}
-test "${diag_line}" != "${trace_output}" || {
+case "${trace_output}" in *LSXWEBP1\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp missing LSXWEBP1 contract header with orientation=1"
     exit 0
 }
@@ -41,17 +41,17 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#LSXWEBP1\|rc=0\|kind=OK\|codes=}" != "${diag_line}" || {
+case "${diag_line}" in LSXWEBP1\|rc=0\|kind=OK\|codes=*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp malformed success contract header with orientation=1"
     exit 0
 }
 
-test "${diag_line#*W_OK_ANIM*}" != "${diag_line}" || {
+case "${diag_line}" in *W_OK_ANIM**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp missing W_OK_ANIM with orientation=1"
     exit 0
 }
 
-test "${diag_line#*W_META_EXIF_APPLIED*}" != "${diag_line}" || {
+case "${diag_line}" in *W_META_EXIF_APPLIED**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp missing W_META_EXIF_APPLIED with orientation=1"
     exit 0
 }

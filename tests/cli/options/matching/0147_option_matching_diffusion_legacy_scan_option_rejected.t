@@ -22,22 +22,22 @@ msg=$(
     exit 0
 }
 
-test "${msg#*invalid option*}" != "${msg}" && {
+case "${msg}" in *invalid\ option**) true ;; *) false ;; esac && {
     echo "ok" 1 - "legacy -y scan option is rejected"
     exit 0
 }
 
-test "${msg#*unknown option*}" != "${msg}" && {
+case "${msg}" in *unknown\ option**) true ;; *) false ;; esac && {
     echo "ok" 1 - "legacy -y scan option is rejected"
     exit 0
 }
 
-test "${msg#*illegal option*}" != "${msg}" && {
+case "${msg}" in *illegal\ option**) true ;; *) false ;; esac && {
     echo "ok" 1 - "legacy -y scan option is rejected"
     exit 0
 }
 
-test "${msg#*unrecognized option*}" != "${msg}" && {
+case "${msg}" in *unrecognized\ option**) true ;; *) false ;; esac && {
     echo "ok" 1 - "legacy -y scan option is rejected"
     exit 0
 }

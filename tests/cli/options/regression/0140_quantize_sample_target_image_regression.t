@@ -28,11 +28,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     echo "not ok" 1 - "sample target short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1\|*key=sample_target\|stored=1\|binding=palette_sample_target,palette_sample_override\|value=128*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=sample_target\|stored=1\|binding=palette_sample_target,palette_sample_override\|value=128**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "sample target short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXSMP1\|*target=128*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSMP1\|*target=128**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "sample target missed its consumer"
     exit 0
 }
@@ -45,7 +45,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     echo "not ok" 1 - "sample target environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1\|*key=sample_target\|stored=1\|binding=palette_sample_target,palette_sample_override\|value=128*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=sample_target\|stored=1\|binding=palette_sample_target,palette_sample_override\|value=128**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "sample target environment value was not stored"
     exit 0
 }
@@ -57,7 +57,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "sample target zero conversion failed"
     exit 0
 }
-test "${range_trace#*LSXSUB1\|*key=sample_target\|stored=1*}" = "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=sample_target\|stored=1**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "sample target zero was not rejected"
     exit 0
 }
@@ -69,7 +69,7 @@ width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "sample target overflow conversion failed"
     exit 0
 }
-test "${width_trace#*LSXSUB1\|*key=sample_target\|stored=1*}" = "${width_trace}" || {
+case "${width_trace}" in *LSXSUB1\|*key=sample_target\|stored=1**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "sample target overflow was not rejected"
     exit 0
 }

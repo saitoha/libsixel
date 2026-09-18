@@ -33,26 +33,22 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed vstk vector stroke style payload*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ parsed\ vstk\ vector\ stroke\ style\ payload**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite did not parse vstk payload"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: legacy lrFX contains glow/bevel/sofi records*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ legacy\ lrFX\ contains\ glow/bevel/sofi\ records**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite did not report legacy lrFX feature records"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: merging legacy lrFX effects missing from lfx2*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ merging\ legacy\ lrFX\ effects\ missing\ from\ lfx2**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite did not merge legacy lrFX effects"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: ignoring legacy lrFX when lfx2 is present*}" \
-    = "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ ignoring\ legacy\ lrFX\ when\ lfx2\ is\ present**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite unexpectedly ignored legacy lrFX"
     exit 0
 }

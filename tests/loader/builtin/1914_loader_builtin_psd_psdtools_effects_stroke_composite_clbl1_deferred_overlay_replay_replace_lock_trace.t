@@ -39,7 +39,7 @@ test "${command_status}" -eq 0 || {
 
 committed_tail="${trace_output#*"${commit_marker}"}"
 
-test "${committed_tail}" != "${trace_output}" || {
+{ test -n "${commit_marker}" && case "${trace_output}" in *"${commit_marker}"*) true ;; *) false ;; esac; } || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred group commit trace"
     exit 0
 }
@@ -51,7 +51,7 @@ test -n "${committed_tail}" || {
 }
 
 diag_line=${trace_output#*LSXPSD1\|}
-test "${diag_line}" != "${trace_output}" || {
+case "${trace_output}" in *LSXPSD1\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing LSXPSD1 contract header"
     exit 0
 }
@@ -59,22 +59,19 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXPSD1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#*FX_DEFERRED_OVERLAY_REPLAY_REPLACE*}" \
-    = "${diag_line}" || {
+case "${diag_line}" in *FX_DEFERRED_OVERLAY_REPLAY_REPLACE**) false ;; *) true ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite emitted replay replacement code in normal flow"
     exit 0
 }
 
-test "${diag_line#*FX_DEFERRED_OVERLAY_REPLAY_SKIP_LOCKED*}" \
-    = "${diag_line}" || {
+case "${diag_line}" in *FX_DEFERRED_OVERLAY_REPLAY_SKIP_LOCKED**) false ;; *) true ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite emitted replay lock skip code in normal flow"
     exit 0
 }
 
-test "${diag_line#*FX_DEFERRED_POST_COMMIT_REPLAY_BLOCKED*}" \
-    = "${diag_line}" || {
+case "${diag_line}" in *FX_DEFERRED_POST_COMMIT_REPLAY_BLOCKED**) false ;; *) true ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite emitted post-commit replay-block code in normal flow"
     exit 0

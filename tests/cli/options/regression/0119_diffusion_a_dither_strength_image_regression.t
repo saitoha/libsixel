@@ -33,12 +33,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=strength|stored=1|binding=a_dither_strength,a_dither_strength_override|value=0.25*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=strength\|stored=1\|binding=a_dither_strength,a_dither_strength_override\|value=0.25**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "a_dither strength short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXDTH1|*diffuse=a_dither|*a_strength=0.25|a_strength_override=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXDTH1\|*diffuse=a_dither\|*a_strength=0.25\|a_strength_override=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "a_dither strength did not reach the dither"
     exit 0
 }
@@ -51,12 +51,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=strength|stored=1|binding=a_dither_strength,a_dither_strength_override|value=0.25*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=strength\|stored=1\|binding=a_dither_strength,a_dither_strength_override\|value=0.25**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "a_dither strength environment value was not stored"
     exit 0
 }
 
-test "${env_trace#*LSXDTH1|*diffuse=a_dither|*a_strength=0.25|a_strength_override=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXDTH1\|*diffuse=a_dither\|*a_strength=0.25\|a_strength_override=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "a_dither environment strength did not reach the dither"
     exit 0
 }

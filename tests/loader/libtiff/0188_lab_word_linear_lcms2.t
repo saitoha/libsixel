@@ -18,17 +18,17 @@ test "$result" -eq 0 || {
     echo "not ok 1 - lab word linear lcms2"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=lcms2|"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=lcms2|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - requested CMS did not apply"
     exit 0
 }
-test "${trace#*"|src=8|dst=4|ok=1"}" != "$trace" || {
+case "${trace}" in *"|src=8|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - Lab to float RGB apply was not observed"
     exit 0
 }
-test "${trace#*"LSXLOAD1|event=ok|loader=libtiff|"}" != "$trace" || {
+case "${trace}" in *"LSXLOAD1|event=ok|loader=libtiff|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - libtiff did not deliver the linear frame"
     exit 0

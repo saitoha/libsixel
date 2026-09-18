@@ -17,18 +17,18 @@ test "$result" -eq 0 || {
     echo "not ok 1 - lab linear profile builtin"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=builtin|"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=builtin|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - requested CMS did not apply"
     exit 0
 }
-test "${trace#*"|src=8|dst=4|ok=1"}" != "$trace" || {
+case "${trace}" in *"|src=8|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - Lab to float RGB apply was not observed"
     exit 0
 }
 negative=${trace#*"TLINPROFILE|negative-begin"}
-test "$negative" = "${negative#*"LSXCMS2|event=apply"}" || {
+case "${negative}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - mismatched profile reached CMS apply"
     exit 0

@@ -35,8 +35,7 @@ cli_oob_env_text="$(SIXEL_LOADER_ANIMATION_START_FRAME_NO=9999999999999999999999
     exit 0
 }
 
-test "${cli_oob_env_text#*SIXEL_LOADER_ANIMATION_START_FRAME_NO is out of range.}" = \
-    "${cli_oob_env_text}" || {
+case "${cli_oob_env_text}" in *SIXEL_LOADER_ANIMATION_START_FRAME_NO\ is\ out\ of\ range.*) false ;; *) true ;; esac || {
     echo "not ok 1 - out-of-range env error leaked despite --start-frame"
     exit 0
 }

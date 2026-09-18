@@ -31,8 +31,7 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying GrFl alignment semantics in layer effects*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ GrFl\ alignment\ semantics\ in\ layer\ effects**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/shape-fx2 missed GrFl alignment semantics trace"
     exit 0
 }

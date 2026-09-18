@@ -29,11 +29,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     echo "not ok" 1 - "merge channel short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=channel_l|stored=1|binding=merge_policy_channel_factor_l,merge_policy_channel_factor_l_override|value=0.75*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=channel_l\|stored=1\|binding=merge_policy_channel_factor_l,merge_policy_channel_factor_l_override\|value=0.75**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "merge channel short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXMRG1|*channel_l=0.75*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXMRG1\|*channel_l=0.75**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "merge channel weight missed its consumer"
     exit 0
 }
@@ -47,7 +47,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     echo "not ok" 1 - "merge channel environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=channel_l|stored=1|binding=merge_policy_channel_factor_l,merge_policy_channel_factor_l_override|value=0.75*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=channel_l\|stored=1\|binding=merge_policy_channel_factor_l,merge_policy_channel_factor_l_override\|value=0.75**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "merge channel environment value was not stored"
     exit 0
 }
@@ -59,7 +59,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "merge channel lower conversion failed"
     exit 0
 }
-test "${range_trace#*LSXSUB1|*key=channel_l|stored=1|binding=merge_policy_channel_factor_l,merge_policy_channel_factor_l_override|value=0*}" != "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=channel_l\|stored=1\|binding=merge_policy_channel_factor_l,merge_policy_channel_factor_l_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "merge channel lower endpoint was not clamped"
     exit 0
 }

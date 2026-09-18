@@ -31,12 +31,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=merge_oversplit|stored=1|binding=merge_policy_oversplit,merge_policy_oversplit_override|value=3*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=merge_oversplit\|stored=1\|binding=merge_policy_oversplit,merge_policy_oversplit_override\|value=3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "merge_oversplit short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXMRG1|*oversplit=3*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXMRG1\|*oversplit=3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "merge_oversplit missed its consumer"
     exit 0
 }
@@ -49,7 +49,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=merge_oversplit|stored=1|binding=merge_policy_oversplit,merge_policy_oversplit_override|value=3*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=merge_oversplit\|stored=1\|binding=merge_policy_oversplit,merge_policy_oversplit_override\|value=3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "merge_oversplit environment value was not stored"
     exit 0
 }
@@ -62,7 +62,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=merge_oversplit|stored=1|binding=merge_policy_oversplit,merge_policy_oversplit_override|value=1*}" != "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=merge_oversplit\|stored=1\|binding=merge_policy_oversplit,merge_policy_oversplit_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "merge_oversplit lower endpoint was not clamped"
     exit 0
 }

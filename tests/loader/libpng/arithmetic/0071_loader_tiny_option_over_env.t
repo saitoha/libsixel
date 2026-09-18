@@ -20,7 +20,7 @@ test "$result" -eq 0 || {
     echo "not ok 1 - loader shared resolver option_over_env tiny frame bits"
     exit 0
 }
-test "${trace#*PNGCHRM1|role=image|requested=double|selected=double|actual=double|reason=forced*}" != "$trace" || {
+case "${trace}" in *PNGCHRM1\|role=image\|requested=double\|selected=double\|actual=double\|reason=forced**) true ;; *) false ;; esac || {
     echo "not ok 1 - selected arithmetic path differs"
     printf '# %s\n' "$trace"
     exit 0

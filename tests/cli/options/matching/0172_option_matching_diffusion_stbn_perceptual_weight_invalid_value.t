@@ -24,12 +24,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*boolean suboption must be 0 or 1.*}" != "${msg}" || {
+case "${msg}" in *boolean\ suboption\ must\ be\ 0\ or\ 1.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing stbn perceptual_weight invalid-value diagnostic"
     exit 0
 }
 
-test "${msg#*perceptual_weight*}" != "${msg}" || {
+case "${msg}" in *perceptual_weight**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "perceptual_weight diagnostic lacked key name"
     exit 0
 }

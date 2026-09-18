@@ -27,7 +27,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "path suggestions short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=path_suggestions|stored=1|binding=path_suggestions,path_suggestions_override|value=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=path_suggestions\|stored=1\|binding=path_suggestions,path_suggestions_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "path suggestions short value was not stored"
     exit 0
 }
@@ -39,7 +39,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "path suggestions environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=path_suggestions|stored=1|binding=path_suggestions,path_suggestions_override|value=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=path_suggestions\|stored=1\|binding=path_suggestions,path_suggestions_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "path suggestions environment value was not stored"
     exit 0
 }
@@ -52,8 +52,8 @@ message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 suggestion_found=0
-test "${message#*Suggestion*}" != "${message}" && suggestion_found=1
-test "${message#*No nearby matches*}" != "${message}" && suggestion_found=1
+case "${message}" in *Suggestion**) true ;; *) false ;; esac && suggestion_found=1
+case "${message}" in *No\ nearby\ matches**) true ;; *) false ;; esac && suggestion_found=1
 test "${suggestion_found}" -eq 1 || {
     echo "not ok" 1 - "path suggestions did not reach consumer"
     exit 0

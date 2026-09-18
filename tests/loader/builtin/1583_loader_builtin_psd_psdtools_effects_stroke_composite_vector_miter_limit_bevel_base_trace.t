@@ -32,15 +32,13 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying miter-limit constrained vector stroke coverage in layer fallback*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ miter-limit\ constrained\ vector\ stroke\ coverage\ in\ layer\ fallback**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite did not report base miter-limit constrained vector coverage"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying bevel-join vector stroke coverage in layer fallback*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ bevel-join\ vector\ stroke\ coverage\ in\ layer\ fallback**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite did not switch base miter-limit fallback to bevel coverage"
     exit 0

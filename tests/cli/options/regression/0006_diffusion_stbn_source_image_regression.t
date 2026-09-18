@@ -31,12 +31,12 @@ effect_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${effect_trace#*LSXDTH1|*consume=[1-9]*}" != "${effect_trace}" || {
+case "${effect_trace}" in *LSXDTH1\|*consume=[1-9]**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "diffusion stbn source did not consume a second frame"
     exit 0
 }
 
-test "${effect_trace#*LSXDTH1|*source=pmj|source_override=1*}" != "${effect_trace}" || {
+case "${effect_trace}" in *LSXDTH1\|*source=pmj\|source_override=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "stbn source did not reach the dither"
     exit 0
 }
@@ -49,7 +49,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=source|stored=1|binding=interframe_strategy_token,interframe_strategy_override*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=source\|stored=1\|binding=interframe_strategy_token,interframe_strategy_override**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "source short value was not stored"
     exit 0
 }
@@ -64,7 +64,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=source|stored=1|binding=interframe_strategy_token,interframe_strategy_override*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=source\|stored=1\|binding=interframe_strategy_token,interframe_strategy_override**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "source environment value was not stored"
     exit 0
 }

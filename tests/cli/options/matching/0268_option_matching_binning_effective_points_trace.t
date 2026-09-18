@@ -20,8 +20,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXBSTAT1|bits=6|source_points=*|effective_points=*}" \
-    != "${trace}" || {
+case "${trace}" in *LSXBSTAT1\|bits=6\|source_points=*\|effective_points=**) true ;; *) false ;; esac || {
     echo "not ok 1 - hard-binning diagnostics omit effective points"
     exit 0
 }

@@ -20,7 +20,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXBIN1|requested=soft|origin=environment|quantizer_requested=0|quantizer_effective=2|phase=quantizer*}" != "${trace}" || {
+case "${trace}" in *LSXBIN1\|requested=soft\|origin=environment\|quantizer_requested=0\|quantizer_effective=2\|phase=quantizer**) true ;; *) false ;; esac || {
     echo "not ok 1 - binning-policy environment was not resolved"
     exit 0
 }

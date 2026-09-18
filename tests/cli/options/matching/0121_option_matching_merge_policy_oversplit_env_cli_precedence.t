@@ -39,7 +39,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*-F merge_oversplit must be in range 1.0-3.0.*}" != "${msg}" || {
+case "${msg}" in *-F\ merge_oversplit\ must\ be\ in\ range\ 1.0-3.0.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing invalid CLI merge_oversplit diagnostic"
     exit 0
 }

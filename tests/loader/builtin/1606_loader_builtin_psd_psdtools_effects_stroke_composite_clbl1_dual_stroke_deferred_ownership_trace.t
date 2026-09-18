@@ -32,15 +32,13 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: deferring dual-stroke ownership to clipped group in layer fallback*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ deferring\ dual-stroke\ ownership\ to\ clipped\ group\ in\ layer\ fallback**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing clbl=1 deferred dual-stroke ownership trace"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying owned deferred dual-stroke on clipped group*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ owned\ deferred\ dual-stroke\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing owned deferred dual-stroke apply trace"
     exit 0

@@ -17,7 +17,7 @@ test "$status" = 2 || {
     echo "not ok 1 - invalid argument must exit 2"
     exit 0
 }
-test "${message#*-d perturb_seed must be a 32-bit signed integer.}" != "$message" || {
+case "${message}" in *-d\ perturb_seed\ must\ be\ a\ 32-bit\ signed\ integer.*) true ;; *) false ;; esac || {
     echo "not ok 1 - missing range diagnostic"
     exit 0
 }

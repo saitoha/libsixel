@@ -18,7 +18,7 @@ test "$result" -eq 0 || {
     echo "not ok 1 - TIFF ICC lab pcs"
     exit 0
 }
-test "${trace#*"TIFFICC|mode=2|verified"}" != "$trace" || {
+case "${trace}" in *"TIFFICC|mode=2|verified"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - independent values were not verified"
     exit 0

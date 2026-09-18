@@ -27,21 +27,20 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     echo "not ok" 1 - "fhedt:tile_depth short conversion failed"
     exit 0
 }
-test "${short_trace#*work=rgb888*}" != "${short_trace}" || {
+case "${short_trace}" in *work=rgb888**) true ;; *) false ;; esac || {
     echo "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
-test "${short_trace#*LSXLUT2|phase=palette-apply|selected=lookup/fhedt.8bit|explicit=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.8bit\|explicit=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=tile_depth|stored=1|binding=lut_policy_fhedt_tile_depth,lut_policy_fhedt_tile_depth_override|value=6*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=tile_depth\|stored=1\|binding=lut_policy_fhedt_tile_depth,lut_policy_fhedt_tile_depth_override\|value=6**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt tile_depth short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXFHD1|*precision=8bit|*tile_depth=6*}" != \
-    "${short_trace}" || {
+case "${short_trace}" in *LSXFHD1\|*precision=8bit\|*tile_depth=6**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt tile_depth did not reach the backend"
     exit 0
 }
@@ -53,21 +52,20 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     echo "not ok" 1 - "fhedt:tile_depth environment conversion failed"
     exit 0
 }
-test "${env_trace#*work=rgb888*}" != "${env_trace}" || {
+case "${env_trace}" in *work=rgb888**) true ;; *) false ;; esac || {
     echo "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
-test "${env_trace#*LSXLUT2|phase=palette-apply|selected=lookup/fhedt.8bit|explicit=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.8bit\|explicit=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=tile_depth|stored=1|binding=lut_policy_fhedt_tile_depth,lut_policy_fhedt_tile_depth_override|value=6*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=tile_depth\|stored=1\|binding=lut_policy_fhedt_tile_depth,lut_policy_fhedt_tile_depth_override\|value=6**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt tile_depth environment value was not stored"
     exit 0
 }
-test "${env_trace#*LSXFHD1|*precision=8bit|*tile_depth=6*}" != \
-    "${env_trace}" || {
+case "${env_trace}" in *LSXFHD1\|*precision=8bit\|*tile_depth=6**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "environment tile_depth missed the backend"
     exit 0
 }
@@ -78,8 +76,7 @@ float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     echo "not ok" 1 - "fhedt tile_depth float32 conversion failed"
     exit 0
 }
-test "${float_trace#*LSXFHD1|*precision=float32|*tile_depth=6*}" != \
-    "${float_trace}" || {
+case "${float_trace}" in *LSXFHD1\|*precision=float32\|*tile_depth=6**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt tile_depth missed the float32 backend"
     exit 0
 }
@@ -96,16 +93,16 @@ legacy_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     echo "not ok" 1 - "legacy tile_depth conversion failed"
     exit 0
 }
-test "${legacy_trace#*work=rgb888*}" != "${legacy_trace}" || {
+case "${legacy_trace}" in *work=rgb888**) true ;; *) false ;; esac || {
     echo "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
-test "${legacy_trace#*LSXLUT2|phase=palette-apply|selected=lookup/fhedt.8bit|explicit=1*}" != "${legacy_trace}" || {
+case "${legacy_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.8bit\|explicit=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
-test "${legacy_trace#*LSXFHD1|*tile_depth=6*}" != "${legacy_trace}" || {
+case "${legacy_trace}" in *LSXFHD1\|*tile_depth=6**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "legacy tile_depth was not consumed"
     exit 0
 }

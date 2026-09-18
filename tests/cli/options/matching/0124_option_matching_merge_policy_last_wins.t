@@ -42,11 +42,11 @@ case "${diag_line}" in
         ;;
 esac
 
-test "${diag_line#*MODEL_KMEANS}" != "${diag_line}" || {
+case "${diag_line}" in *MODEL_KMEANS*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "late ward merge did not use kmeans contract"
     exit 0
 }
-test "${diag_line#*MERGE_WARD}" != "${diag_line}" || {
+case "${diag_line}" in *MERGE_WARD*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "late ward merge did not override early auto merge"
     exit 0
 }
@@ -74,11 +74,11 @@ case "${diag_line}" in
         ;;
 esac
 
-test "${diag_line#*MODEL_KMEANS}" != "${diag_line}" || {
+case "${diag_line}" in *MODEL_KMEANS*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "late auto merge did not use kmeans contract"
     exit 0
 }
-test "${diag_line#*MERGE_AUTO}" != "${diag_line}" || {
+case "${diag_line}" in *MERGE_AUTO*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "late auto merge did not override early ward merge"
     exit 0
 }

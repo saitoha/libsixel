@@ -39,20 +39,17 @@ actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
     exit 0
 }
 
-actual_without_prefix=${actual_palette#"${expected_prefix}"}
-test "${actual_without_prefix}" != "${actual_palette}" || {
+{ test -n "${expected_prefix}" && case "${actual_palette}" in "${expected_prefix}"*) true ;; *) false ;; esac; } || {
     echo "not ok" 1 - "OKLCh lattice PAL header or gray ramp changed"
     exit 0
 }
 
-actual_without_middle=${actual_palette#*"${expected_middle}"}
-test "${actual_without_middle}" != "${actual_palette}" || {
+{ test -n "${expected_middle}" && case "${actual_palette}" in *"${expected_middle}"*) true ;; *) false ;; esac; } || {
     echo "not ok" 1 - "OKLCh lattice chroma ramp start changed"
     exit 0
 }
 
-actual_without_suffix=${actual_palette%"${expected_suffix}"}
-test "${actual_without_suffix}" != "${actual_palette}" || {
+{ test -n "${expected_suffix}" && case "${actual_palette}" in *"${expected_suffix}") true ;; *) false ;; esac; } || {
     echo "not ok" 1 - "OKLCh lattice PAL tail changed"
     exit 0
 }

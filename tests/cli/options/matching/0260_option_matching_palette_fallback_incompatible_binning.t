@@ -24,13 +24,12 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-test "${trace#*palette fallback quantizer cannot consume*}" != \
-    "${trace}" || {
+case "${trace}" in *palette\ fallback\ quantizer\ cannot\ consume**) true ;; *) false ;; esac || {
     echo "not ok 1 - incompatible fallback diagnostic is missing"
     exit 0
 }
 
-test "${trace#*LSXBPS1|quantizer_requested=2|quantizer_effective=-1|quantizer_origin=explicit|quantizer_phase=unresolved|quantizer_reason=none|binning_requested=hard|binning_effective=unset|binning_origin=explicit|binning_phase=unresolved|binning_reason=none|points=0*}" != "${trace}" || {
+case "${trace}" in *LSXBPS1\|quantizer_requested=2\|quantizer_effective=-1\|quantizer_origin=explicit\|quantizer_phase=unresolved\|quantizer_reason=none\|binning_requested=hard\|binning_effective=unset\|binning_origin=explicit\|binning_phase=unresolved\|binning_reason=none\|points=0**) true ;; *) false ;; esac || {
     echo "not ok 1 - failed fallback published partial policy state"
     exit 0
 }

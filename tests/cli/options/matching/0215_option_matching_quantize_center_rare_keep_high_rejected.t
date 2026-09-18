@@ -20,7 +20,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*rare_keep*}" != "${msg}" || {
+case "${msg}" in *rare_keep**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing center rare_keep range diagnostic"
     exit 0
 }

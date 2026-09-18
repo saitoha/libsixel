@@ -34,12 +34,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=prefer_8bit|stored=1|binding=cms_prefer_8bit|value=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=prefer_8bit\|stored=1\|binding=cms_prefer_8bit\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "prefer_8bit short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXLDR1|cms_target=gamma|prefer_8bit=1|pixelformat=rgb888*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXLDR1\|cms_target=gamma\|prefer_8bit=1\|pixelformat=rgb888**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "prefer_8bit short value did not reach the loader"
     exit 0
 }
@@ -53,12 +53,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=prefer_8bit|stored=1|binding=cms_prefer_8bit|value=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=prefer_8bit\|stored=1\|binding=cms_prefer_8bit\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "prefer_8bit environment value was not stored"
     exit 0
 }
 
-test "${env_trace#*LSXLDR1|cms_target=gamma|prefer_8bit=1|pixelformat=rgb888*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXLDR1\|cms_target=gamma\|prefer_8bit=1\|pixelformat=rgb888**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "prefer_8bit environment value did not reach the loader"
     exit 0
 }

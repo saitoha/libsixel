@@ -38,7 +38,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*point_budget must be 0 or in range 64-16384.*}" != "${msg}" || {
+case "${msg}" in *point_budget\ must\ be\ 0\ or\ in\ range\ 64-16384.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing invalid CLI center point_budget diagnostic"
     exit 0
 }

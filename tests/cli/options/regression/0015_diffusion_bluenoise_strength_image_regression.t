@@ -28,7 +28,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=strength|stored=1|binding=bluenoise_strength,bluenoise_strength_override*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=strength\|stored=1\|binding=bluenoise_strength,bluenoise_strength_override**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "strength short value was not stored"
     exit 0
 }
@@ -41,7 +41,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=strength|stored=1|binding=bluenoise_strength,bluenoise_strength_override*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=strength\|stored=1\|binding=bluenoise_strength,bluenoise_strength_override**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "strength environment value was not stored"
     exit 0
 }

@@ -27,12 +27,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     echo "not ok" 1 - "fhedt:resolution short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1\|*key=resolution\|stored=1\|binding=lut_policy_fhedt_resolution,lut_policy_fhedt_resolution_override\|value=128*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=resolution\|stored=1\|binding=lut_policy_fhedt_resolution,lut_policy_fhedt_resolution_override\|value=128**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt resolution short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXLUT1\|*policy=fhedt\|*resolution=128*}" != \
-    "${short_trace}" || {
+case "${short_trace}" in *LSXLUT1\|*policy=fhedt\|*resolution=128**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt resolution did not reach the policy"
     exit 0
 }
@@ -44,12 +43,11 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     echo "not ok" 1 - "fhedt:resolution environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1\|*key=resolution\|stored=1\|binding=lut_policy_fhedt_resolution,lut_policy_fhedt_resolution_override\|value=128*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=resolution\|stored=1\|binding=lut_policy_fhedt_resolution,lut_policy_fhedt_resolution_override\|value=128**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt resolution environment value was not stored"
     exit 0
 }
-test "${env_trace#*LSXLUT1\|*policy=fhedt\|*resolution=128*}" != \
-    "${env_trace}" || {
+case "${env_trace}" in *LSXLUT1\|*policy=fhedt\|*resolution=128**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "environment resolution missed the policy"
     exit 0
 }
@@ -60,8 +58,7 @@ float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     echo "not ok" 1 - "fhedt resolution float32 conversion failed"
     exit 0
 }
-test "${float_trace#*LSXLUT1\|*policy=fhedt\|precision=float32\|*resolution=128*}" != \
-    "${float_trace}" || {
+case "${float_trace}" in *LSXLUT1\|*policy=fhedt\|precision=float32\|*resolution=128**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt resolution missed the float32 backend"
     exit 0
 }
@@ -78,12 +75,11 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     echo "not ok" 1 - "fhedt resolution range conversion failed"
     exit 0
 }
-test "${range_trace#*LSXSUB1\|*key=resolution\|stored=1*}" = "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=resolution\|stored=1**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "fhedt resolution accepted a non-choice value"
     exit 0
 }
-test "${range_trace#*LSXLUT1\|*policy=fhedt\|*resolution=64*}" != \
-    "${range_trace}" || {
+case "${range_trace}" in *LSXLUT1\|*policy=fhedt\|*resolution=64**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fhedt resolution did not retain its default"
     exit 0
 }

@@ -31,7 +31,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "parallel factor short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1\|*key=parallel_factor\|stored=1\|binding=parallel_factor,parallel_factor_override\|value=3*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=parallel_factor\|stored=1\|binding=parallel_factor,parallel_factor_override\|value=3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "parallel factor short value was not stored"
     exit 0
 }
@@ -43,7 +43,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "parallel factor environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1\|*key=parallel_factor\|stored=1\|binding=parallel_factor,parallel_factor_override\|value=3*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=parallel_factor\|stored=1\|binding=parallel_factor,parallel_factor_override\|value=3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "parallel factor environment value was not stored"
     exit 0
 }
@@ -55,7 +55,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "parallel factor zero conversion failed"
     exit 0
 }
-test "${range_trace#*LSXSUB1\|*key=parallel_factor\|stored=1*}" = "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=parallel_factor\|stored=1**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "parallel factor accepted zero"
     exit 0
 }

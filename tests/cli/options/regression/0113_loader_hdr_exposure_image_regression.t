@@ -30,12 +30,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=hdr_exposure|stored=1|binding=hdr_exposure_ev|value=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=hdr_exposure\|stored=1\|binding=hdr_exposure_ev\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "hdr_exposure short value was not stored"
     exit 0
 }
 
-test "${short_trace#*builtin HDR: final controls*env_ev=1.000000*}" != "${short_trace}" || {
+case "${short_trace}" in *builtin\ HDR:\ final\ controls*env_ev=1.000000**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "hdr_exposure short value did not reach HDR"
     exit 0
 }
@@ -48,12 +48,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=hdr_exposure|stored=1|binding=hdr_exposure_ev|value=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=hdr_exposure\|stored=1\|binding=hdr_exposure_ev\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "hdr_exposure environment value was not stored"
     exit 0
 }
 
-test "${env_trace#*builtin HDR: final controls*env_ev=1.000000*}" != "${env_trace}" || {
+case "${env_trace}" in *builtin\ HDR:\ final\ controls*env_ev=1.000000**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "hdr_exposure environment value did not reach HDR"
     exit 0
 }

@@ -20,11 +20,11 @@ sixel_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${sixel_output#*P0;1q}" != "${sixel_output}" || {
+case "${sixel_output}" in *P0\;1q*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "monochrome SIXEL mode emitted palette slots"
     exit 0
 }
-test "${sixel_output#*#}" = "${sixel_output}" || {
+case "${sixel_output}" in *#*) false ;; *) true ;; esac || {
     echo "not ok" 1 - "monochrome SIXEL mode emitted palette slots"
     exit 0
 }

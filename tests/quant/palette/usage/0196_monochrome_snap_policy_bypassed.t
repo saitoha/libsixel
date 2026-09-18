@@ -20,7 +20,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     echo "not ok" 1 - "monochrome conversion with snap policy failed"
     exit 0
 }
-test "${trace#*LSXSNP1|*}" = "${trace}" || {
+case "${trace}" in *LSXSNP1\|**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "snap policy unexpectedly reached monochrome palette"
     exit 0
 }

@@ -33,11 +33,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     echo "not ok" 1 - "snap rate short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=rate|stored=1|binding=snap_policy_approach_rate,snap_policy_approach_rate_override|value=0.5*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=rate\|stored=1\|binding=snap_policy_approach_rate,snap_policy_approach_rate_override\|value=0.5**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "snap rate short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXSNP1|*approach=0.5*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSNP1\|*approach=0.5**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "snap rate missed its consumer"
     exit 0
 }
@@ -50,7 +50,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     echo "not ok" 1 - "snap rate environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=rate|stored=1|binding=snap_policy_approach_rate,snap_policy_approach_rate_override|value=0.5*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=rate\|stored=1\|binding=snap_policy_approach_rate,snap_policy_approach_rate_override\|value=0.5**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "snap rate environment value was not stored"
     exit 0
 }
@@ -62,7 +62,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "snap rate upper conversion failed"
     exit 0
 }
-test "${range_trace#*LSXSUB1|*key=rate|stored=1|binding=snap_policy_approach_rate,snap_policy_approach_rate_override|value=1*}" != "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=rate\|stored=1\|binding=snap_policy_approach_rate,snap_policy_approach_rate_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "snap rate upper endpoint was not clamped"
     exit 0
 }

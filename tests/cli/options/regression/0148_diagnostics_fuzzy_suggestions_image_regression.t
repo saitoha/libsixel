@@ -27,7 +27,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "fuzzy suggestions short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=fuzzy_suggestions|stored=1|binding=fuzzy_suggestions,fuzzy_suggestions_override|value=0*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=fuzzy_suggestions\|stored=1\|binding=fuzzy_suggestions,fuzzy_suggestions_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fuzzy suggestions short value was not stored"
     exit 0
 }
@@ -39,7 +39,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "fuzzy suggestions environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=fuzzy_suggestions|stored=1|binding=fuzzy_suggestions,fuzzy_suggestions_override|value=0*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=fuzzy_suggestions\|stored=1\|binding=fuzzy_suggestions,fuzzy_suggestions_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fuzzy suggestions environment value was not stored"
     exit 0
 }
@@ -52,7 +52,7 @@ test "${status}" -eq 2 || {
     echo "not ok" 1 - "fuzzy suggestions consumer exit status mismatch"
     exit 0
 }
-test "${message#*Did you mean:*}" = "${message}" || {
+case "${message}" in *Did\ you\ mean:**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "fuzzy suggestions remained enabled"
     exit 0
 }

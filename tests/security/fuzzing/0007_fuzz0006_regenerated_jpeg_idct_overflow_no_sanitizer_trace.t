@@ -39,17 +39,17 @@ test "${rc-0}" -ne 139 || {
     exit 0
 }
 
-test "${err#*runtime error:*}" = "${err}" || {
+case "${err}" in *runtime\ error:**) false ;; *) true ;; esac || {
     echo "not ok 1 - fuzz0006 emitted UBSAN runtime error trace"
     exit 0
 }
 
-test "${err#*UndefinedBehaviorSanitizer*}" = "${err}" || {
+case "${err}" in *UndefinedBehaviorSanitizer**) false ;; *) true ;; esac || {
     echo "not ok 1 - fuzz0006 emitted UBSAN summary"
     exit 0
 }
 
-test "${err#*AddressSanitizer*}" = "${err}" || {
+case "${err}" in *AddressSanitizer**) false ;; *) true ;; esac || {
     echo "not ok 1 - fuzz0006 emitted ASAN trace"
     exit 0
 }

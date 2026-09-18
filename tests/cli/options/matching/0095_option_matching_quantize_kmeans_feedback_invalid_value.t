@@ -17,14 +17,14 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qk:Finvalid "${TOP_SRCDIR}
     exit 0
 }
 
-test "${msg#*boolean suboption must be 0 or 1.*}" != "${msg}" || {
+case "${msg}" in *boolean\ suboption\ must\ be\ 0\ or\ 1.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing shared boolean diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*:feedback=0|1*}" != "${msg}" || {
+case "${msg}" in *:feedback=0\|1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing feedback key diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

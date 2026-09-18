@@ -16,7 +16,7 @@ test "${trace_status:-0}" -eq 0 || {
     exit 0
 }
 
-test "${trace#*LSXPIX1|palette_expand=fallback|bpp=1*}" != "${trace}" || {
+case "${trace}" in *LSXPIX1\|palette_expand=fallback\|bpp=1**) true ;; *) false ;; esac || {
     printf 'not ok 1 - fallback expansion path was not selected\n'
     exit 0
 }

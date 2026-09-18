@@ -33,13 +33,12 @@ PAL
     echo "not ok" 1 - "PAL mapfile conversion with FHEDT failed"
     exit 0
 }
-test "${trace#*work=rgb888*}" != "${trace}" || {
+case "${trace}" in *work=rgb888**) true ;; *) false ;; esac || {
     echo "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
 
-test "${trace#*LSXLUT2|phase=palette-apply|selected=lookup/fhedt.8bit|explicit=1*}" \
-    != "${trace}" || {
+case "${trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.8bit\|explicit=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "explicit FHEDT missed PAL mapfile palette application"
     exit 0
 }
@@ -64,13 +63,12 @@ PAL
     echo "not ok" 1 - "PAL mapfile conversion with FHEDT failed"
     exit 0
 }
-test "${float_trace#*work=rgb-f32*}" != "${float_trace}" || {
+case "${float_trace}" in *work=rgb-f32**) true ;; *) false ;; esac || {
     echo "not ok 1 - float lookup did not use rgb-f32 working samples"
     exit 0
 }
 
-test "${float_trace#*LSXLUT2|phase=palette-apply|selected=lookup/fhedt.float32|explicit=1*}" \
-    != "${float_trace}" || {
+case "${float_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.float32\|explicit=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "explicit FHEDT missed PAL mapfile palette application"
     exit 0
 }

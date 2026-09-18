@@ -32,7 +32,7 @@ test "${command_status}" -ne 0 || {
 }
 
 diag_line=${trace_output#*LSXWEBP1\|}
-test "${diag_line}" != "${trace_output}" || {
+case "${trace_output}" in *LSXWEBP1\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin WebP animation EXIF start-frame parse failure missing LSXWEBP1 contract header"
     exit 0
 }
@@ -40,12 +40,12 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_line}" || {
+case "${diag_line}" in LSXWEBP1\|rc=1\|kind=ERR\|codes=*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin WebP animation EXIF start-frame parse failure malformed error contract header"
     exit 0
 }
 
-test "${diag_line#*W_META_EXIF_IGNORED*}" != "${diag_line}" || {
+case "${diag_line}" in *W_META_EXIF_IGNORED**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin WebP animation EXIF start-frame parse failure missing W_META_EXIF_IGNORED"
     exit 0
 }

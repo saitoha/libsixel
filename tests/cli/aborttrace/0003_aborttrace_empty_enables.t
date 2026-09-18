@@ -30,15 +30,13 @@ test "${rc:-0}" -eq 77 && {
 }
 
 # Escape parentheses so ksh-derived /bin/sh treats them as literals.
-abort_remainder=${abort_output#*libsixel: abort\(\) detected}
-test "${abort_remainder}" != "${abort_output}" || {
+case "${abort_output}" in *libsixel:\ abort\(\)\ detected*) true ;; *) false ;; esac || {
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${abort_output}" >&2
     echo "not ok" 1 - "abort trace empty did not enable tracing"
     exit 0
 }
-abort_remainder=${abort_output#*libsixel: abort trace complete}
-test "${abort_remainder}" != "${abort_output}" || {
+case "${abort_output}" in *libsixel:\ abort\ trace\ complete*) true ;; *) false ;; esac || {
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${abort_output}" >&2
     echo "not ok" 1 - "abort trace empty did not complete tracing"

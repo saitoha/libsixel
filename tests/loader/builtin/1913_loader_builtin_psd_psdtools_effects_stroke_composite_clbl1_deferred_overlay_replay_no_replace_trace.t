@@ -32,20 +32,17 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ suppressing\ clbl=1\ deferred\ base\ solid/gradient\ overlays**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing clbl=1 suppression trace"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: replaying deferred clbl=1 overlay entry in layer fallback*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ replaying\ deferred\ clbl=1\ overlay\ entry\ in\ layer\ fallback**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred overlay replay trace"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: replacing deferred clbl=1 overlay replay entry in layer fallback*}" \
-    = "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ replacing\ deferred\ clbl=1\ overlay\ replay\ entry\ in\ layer\ fallback**) false ;; *) true ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite emitted deferred overlay replay replacement trace"
     exit 0

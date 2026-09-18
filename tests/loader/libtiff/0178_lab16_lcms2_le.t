@@ -16,17 +16,17 @@ test "$result" -eq 0 || {
     echo "not ok 1 - independent signed Lab16 frame values"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=lcms2|path=external|src=8|dst=4|ok=1"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=lcms2|path=external|src=8|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - expected CMS apply did not execute"
     exit 0
 }
-test "${trace#*"LAB16|mode=2|calls=1|misses=0|verified=1"}" != "$trace" || {
+case "${trace}" in *"LAB16|mode=2|calls=1|misses=0|verified=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - independent frame values were not checked"
     exit 0
 }
-test "${trace#*"LSXLOAD1|event=ok|loader=libtiff|"}" != "$trace" || {
+case "${trace}" in *"LSXLOAD1|event=ok|loader=libtiff|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - libtiff did not deliver the expected frame"
     exit 0

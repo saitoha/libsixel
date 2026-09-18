@@ -23,8 +23,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable - \
     exit 0
 }
 
-test "${msg#*runtime error: unable to decode input with available loaders*}" \
-    != "${msg}" || {
+case "${msg}" in *runtime\ error:\ unable\ to\ decode\ input\ with\ available\ loaders**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "forced gd APNG stdin failure missed generic decode error"
     exit 0
 }

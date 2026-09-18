@@ -28,11 +28,11 @@ test "${status}" -ne 0 || {
     exit 0
 }
 diag_line=${msg%%"${nl}"*}
-test "${diag_line#LSXCLI1*phase=option_parse*rc=*}" != "${diag_line}" || {
+case "${diag_line}" in LSXCLI1*phase=option_parse*rc=**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "heckbert invalid profile diagnostic header is malformed"
     exit 0
 }
-test "${diag_line#*code=UNKNOWN_SUBOPTION_VALUE}" != "${diag_line}" || {
+case "${diag_line}" in *code=UNKNOWN_SUBOPTION_VALUE*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "heckbert invalid profile diagnostic code mismatch"
     exit 0
 }

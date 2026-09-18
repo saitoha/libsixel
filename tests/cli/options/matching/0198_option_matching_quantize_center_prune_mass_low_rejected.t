@@ -20,7 +20,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*prune_mass must be in range 0.900-1.000.*}" != "${msg}" || {
+case "${msg}" in *prune_mass\ must\ be\ in\ range\ 0.900-1.000.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing center prune_mass range diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

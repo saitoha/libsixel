@@ -32,16 +32,15 @@ invalid_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${minimal_trace#*event=callback_handoff_decide*}" != \
-    "${minimal_trace}" || {
+case "${minimal_trace}" in *event=callback_handoff_decide**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "minimal handoff trace omitted the decision event"
     exit 0
 }
-test "${minimal_trace#*event=callback_enter*}" = "${minimal_trace}" || {
+case "${minimal_trace}" in *event=callback_enter**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "minimal handoff trace retained verbose events"
     exit 0
 }
-test "${invalid_trace#*event=callback_enter*}" != "${invalid_trace}" || {
+case "${invalid_trace}" in *event=callback_enter**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "handoff trace accepted a nonnumeric boolean"
     exit 0
 }

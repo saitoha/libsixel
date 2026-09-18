@@ -26,12 +26,12 @@ test "${result}" -eq 2 || {
     exit 0
 }
 
-test "${msg#*unknown suboption key*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ key**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing removed cover snap diagnostic"
     exit 0
 }
 
-test "${msg#*snap_target*}" != "${msg}" || {
+case "${msg}" in *snap_target**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "removed cover snap diagnostic lacks key name"
     exit 0
 }

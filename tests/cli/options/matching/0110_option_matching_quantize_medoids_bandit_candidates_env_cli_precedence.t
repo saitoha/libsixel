@@ -38,7 +38,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*-Q bandit_candidates must be in range 8-4096.*}" != "${msg}" || {
+case "${msg}" in *-Q\ bandit_candidates\ must\ be\ in\ range\ 8-4096.**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing invalid CLI bandit_candidates diagnostic"
     exit 0
 }

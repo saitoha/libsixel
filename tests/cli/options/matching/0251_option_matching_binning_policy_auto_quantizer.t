@@ -20,7 +20,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXBIN1|requested=hard|origin=explicit|quantizer_requested=0|quantizer_effective=2|phase=quantizer*}" != "${trace}" || {
+case "${trace}" in *LSXBIN1\|requested=hard\|origin=explicit\|quantizer_requested=0\|quantizer_effective=2\|phase=quantizer**) true ;; *) false ;; esac || {
     echo "not ok 1 - hard binning did not select k-means"
     exit 0
 }

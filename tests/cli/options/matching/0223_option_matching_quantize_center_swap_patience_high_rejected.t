@@ -20,7 +20,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*swap_patience*}" != "${msg}" || {
+case "${msg}" in *swap_patience**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing center swap_patience range diagnostic"
     exit 0
 }

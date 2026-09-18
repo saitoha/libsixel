@@ -19,11 +19,11 @@ msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     echo "not ok" 1 - "completion directory override failed"
     exit 0
 }
-test "${msg#*completion bash path fixture*}" != "${msg}" || {
+case "${msg}" in *completion\ bash\ path\ fixture**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "completion directory missed its Bash source"
     exit 0
 }
-test "${msg#*completion zsh path fixture*}" != "${msg}" || {
+case "${msg}" in *completion\ zsh\ path\ fixture**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "completion directory missed its Zsh source"
     exit 0
 }

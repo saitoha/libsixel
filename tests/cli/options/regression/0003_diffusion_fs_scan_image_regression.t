@@ -29,12 +29,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=scan|stored=1|binding=method_for_scan*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=scan\|stored=1\|binding=method_for_scan**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "scan short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXDTH1|*diffuse=fs|scan=serpentine*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXDTH1\|*diffuse=fs\|scan=serpentine**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fs scan did not reach the dither"
     exit 0
 }
@@ -47,12 +47,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=scan|stored=1|binding=method_for_scan*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=scan\|stored=1\|binding=method_for_scan**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "scan environment value was not stored"
     exit 0
 }
 
-test "${env_trace#*LSXDTH1|*diffuse=fs|scan=serpentine*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXDTH1\|*diffuse=fs\|scan=serpentine**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "fs environment scan did not reach the dither"
     exit 0
 }

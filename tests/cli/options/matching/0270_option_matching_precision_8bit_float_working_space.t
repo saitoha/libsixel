@@ -20,7 +20,7 @@ planner_log=$(set +xv; SIXEL_FLOAT32_DITHER=0 \
     echo "not ok 1 - float-only working-space conversion failed"
     exit 0
 }
-test "${planner_log#*work=linear-f32*}" != "${planner_log}" || {
+case "${planner_log}" in *work=linear-f32**) true ;; *) false ;; esac || {
     echo "not ok 1 - linear working space did not require float32"
     exit 0
 }

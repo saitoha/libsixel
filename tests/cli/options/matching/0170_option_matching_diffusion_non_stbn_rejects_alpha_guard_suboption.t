@@ -24,12 +24,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown suboption key*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ key**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing non-stbn alpha_guard diagnostic"
     exit 0
 }
 
-test "${msg#*alpha_guard*}" != "${msg}" || {
+case "${msg}" in *alpha_guard**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "non-stbn alpha_guard diagnostic lacked key name"
     exit 0
 }

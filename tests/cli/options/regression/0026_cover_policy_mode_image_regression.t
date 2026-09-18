@@ -30,12 +30,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=cover_mode|stored=1|binding=cover_policy_mode,cover_policy_mode_override|value=0*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=cover_mode\|stored=1\|binding=cover_policy_mode,cover_policy_mode_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "cover_mode short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXCOV1|*mode=hard*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXCOV1\|*mode=hard**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "cover_mode missed its consumer"
     exit 0
 }
@@ -48,7 +48,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=cover_mode|stored=1|binding=cover_policy_mode,cover_policy_mode_override|value=0*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=cover_mode\|stored=1\|binding=cover_policy_mode,cover_policy_mode_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "cover_mode environment value was not stored"
     exit 0
 }

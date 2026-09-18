@@ -38,24 +38,23 @@ test "${command_status}" -eq 0 || {
 
 diag_line=${trace_output%%"${nl}"*}
 
-test "${diag_line#*FX_DUAL_OVERLAP_DEFER*}" != "${diag_line}" || {
+case "${diag_line}" in *FX_DUAL_OVERLAP_DEFER**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred overlap code"
     exit 0
 }
 
-test "${diag_line#*FX_DUAL_FXPRI_OVL_DEFER*}" != "${diag_line}" || {
+case "${diag_line}" in *FX_DUAL_FXPRI_OVL_DEFER**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing FXPRI overlap code"
     exit 0
 }
 
 trace_tail="${trace_output#*builtin PSD: applying deferred dual-stroke overlap decomposition on clipped group*}"
-test "${trace_tail}" != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ deferred\ dual-stroke\ overlap\ decomposition\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred overlap decomposition trace"
     exit 0
 }
 
-test "${trace_tail#*builtin PSD: applying effect-priority dual-stroke overlap on clipped group*}" \
-    != "${trace_tail}" || {
+case "${trace_tail}" in *builtin\ PSD:\ applying\ effect-priority\ dual-stroke\ overlap\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing FXPRI overlap trace"
     exit 0
 }

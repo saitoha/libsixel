@@ -55,12 +55,12 @@ test "${outside_status}" -eq 0 || {
 inside_diag=${inside_trace%%"${nl}"*}
 outside_diag=${outside_trace%%"${nl}"*}
 
-test "${inside_diag#*FX_DUAL_FXPRI_OVL_DEFER*}" != "${inside_diag}" || {
+case "${inside_diag}" in *FX_DUAL_FXPRI_OVL_DEFER**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite inside missing FXPRI code"
     exit 0
 }
 
-test "${outside_diag#*FX_DUAL_FXPRI_OVL_DEFER*}" = "${outside_diag}" || {
+case "${outside_diag}" in *FX_DUAL_FXPRI_OVL_DEFER**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite outside unexpectedly used FXPRI code"
     exit 0
 }

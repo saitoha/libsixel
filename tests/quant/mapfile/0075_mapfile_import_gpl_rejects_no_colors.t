@@ -23,7 +23,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_palette_parse_gpl: no colors parsed.}" != "${msg}" || {
+case "${msg}" in *sixel_palette_parse_gpl:\ no\ colors\ parsed.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing GPL no-colors diagnostic"
     exit 0
 }

@@ -25,8 +25,7 @@ partial_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${matched_trace#*img2sixel?lifecycle?:*}" != \
-    "${matched_trace}" || {
+case "${matched_trace}" in *img2sixel?lifecycle?:**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "semicolon-separated trace topic was not matched"
     exit 0
 }

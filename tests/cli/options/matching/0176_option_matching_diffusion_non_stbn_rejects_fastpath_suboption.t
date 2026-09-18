@@ -24,12 +24,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown suboption key*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ key**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing non-stbn fastpath diagnostic"
     exit 0
 }
 
-test "${msg#*fastpath*}" != "${msg}" || {
+case "${msg}" in *fastpath**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "non-stbn fastpath diagnostic lacked key name"
     exit 0
 }

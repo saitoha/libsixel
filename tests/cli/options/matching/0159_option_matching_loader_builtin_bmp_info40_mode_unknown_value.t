@@ -20,35 +20,35 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*unknown suboption value*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ value**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing unknown suboption value diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*\"bmp_info40_mode\"*}" != "${msg}" || {
+case "${msg}" in *\"bmp_info40_mode\"**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing bmp_info40_mode token in diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*auto*}" != "${msg}" || {
+case "${msg}" in *auto**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "valid-values list missing auto"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*windows*}" != "${msg}" || {
+case "${msg}" in *windows**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "valid-values list missing windows"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*os2*}" != "${msg}" || {
+case "${msg}" in *os2**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "valid-values list missing os2"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

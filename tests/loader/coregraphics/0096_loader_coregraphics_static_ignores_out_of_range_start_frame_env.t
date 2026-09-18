@@ -27,8 +27,7 @@ error_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${error_text#*SIXEL_LOADER_ANIMATION_START_FRAME_NO*}" = \
-    "${error_text}" || {
+case "${error_text}" in *SIXEL_LOADER_ANIMATION_START_FRAME_NO**) false ;; *) true ;; esac || {
     echo "not ok 1 - coregraphics static decode emitted out-of-range env error text"
     exit 0
 }

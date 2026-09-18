@@ -32,14 +32,10 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --threads=2 \
 }
 
 while IFS= read -r line; do
-    test "${line#*\"worker\":\"decoder\",\"role\":\"scan\",\"event\":\"start\"*}" = \
-        "${line}" || scan_start=$((scan_start + 1))
-    test "${line#*\"worker\":\"decoder\",\"role\":\"scan\",\"event\":\"finish\"*}" = \
-        "${line}" || scan_finish=$((scan_finish + 1))
-    test "${line#*\"worker\":\"decoder\",\"role\":\"paint\",\"event\":\"start\"*}" = \
-        "${line}" || paint_start=$((paint_start + 1))
-    test "${line#*\"worker\":\"decoder\",\"role\":\"paint\",\"event\":\"finish\"*}" = \
-        "${line}" || paint_finish=$((paint_finish + 1))
+    case "${line}" in *\"worker\":\"decoder\",\"role\":\"scan\",\"event\":\"start\"**) false ;; *) true ;; esac || scan_start=$((scan_start + 1))
+    case "${line}" in *\"worker\":\"decoder\",\"role\":\"scan\",\"event\":\"finish\"**) false ;; *) true ;; esac || scan_finish=$((scan_finish + 1))
+    case "${line}" in *\"worker\":\"decoder\",\"role\":\"paint\",\"event\":\"start\"**) false ;; *) true ;; esac || paint_start=$((paint_start + 1))
+    case "${line}" in *\"worker\":\"decoder\",\"role\":\"paint\",\"event\":\"finish\"**) false ;; *) true ;; esac || paint_finish=$((paint_finish + 1))
 done < "${timeline_log}"
 
 test "${scan_start}" -gt 0 || {

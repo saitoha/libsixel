@@ -24,7 +24,7 @@ output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${output#"${esc}P0;1q"}" != "${output}" || {
+case "${output}" in "${esc}P0;1q"*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "6delta did not resolve auto alpha-policy to keep"
     exit 0
 }

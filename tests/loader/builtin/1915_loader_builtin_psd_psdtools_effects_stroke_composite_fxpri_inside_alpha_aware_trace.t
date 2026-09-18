@@ -32,21 +32,19 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying effect-priority dual-stroke overlap on clipped group*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ effect-priority\ dual-stroke\ overlap\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing FXPRI overlap apply trace"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: sharing clipped source alpha for deferred inside dual-stroke coverage*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ sharing\ clipped\ source\ alpha\ for\ deferred\ inside\ dual-stroke\ coverage**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing shared clipped source trace"
     exit 0
 }
 
-test "${trace_output#*FX_DUAL_FXPRI_OVL_DEFER*}" != "${trace_output}" || {
+case "${trace_output}" in *FX_DUAL_FXPRI_OVL_DEFER**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing FX_DUAL_FXPRI_OVL_DEFER code"
     exit 0

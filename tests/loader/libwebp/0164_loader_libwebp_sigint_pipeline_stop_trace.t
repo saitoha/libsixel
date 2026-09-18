@@ -36,7 +36,7 @@ test "${SIXEL_TSAN_BUILD-no}" = "yes" && {
 }
 
 build_os="${RUNTIME_ENV_BUILD_OS-unknown}"
-test "${build_os}" != "${build_os#haiku}" && {
+case "${build_os}" in haiku*) true ;; *) false ;; esac && {
     printf "1..0 # SKIP Haiku signal timing is unstable for this trace test\n"
     exit 0
 }
@@ -79,14 +79,11 @@ handoff_pipeline_flag=0
 handoff_serial_flag=0
 pipeline_stop_flag=0
 
-trace_remainder=${trace_summary#*event=callback_dispatch_start handoff=pipeline}
-test "${trace_remainder}" != "${trace_summary}" && handoff_pipeline_flag=1
+case "${trace_summary}" in *event=callback_dispatch_start\ handoff=pipeline*) true ;; *) false ;; esac && handoff_pipeline_flag=1
 
-trace_remainder=${trace_summary#*event=callback_dispatch_start handoff=serial}
-test "${trace_remainder}" != "${trace_summary}" && handoff_serial_flag=1
+case "${trace_summary}" in *event=callback_dispatch_start\ handoff=serial*) true ;; *) false ;; esac && handoff_serial_flag=1
 
-trace_remainder=${trace_summary#*event=pipeline_stop handoff=pipeline}
-test "${trace_remainder}" != "${trace_summary}" && pipeline_stop_flag=1
+case "${trace_summary}" in *event=pipeline_stop\ handoff=pipeline*) true ;; *) false ;; esac && pipeline_stop_flag=1
 set -xv
 
 test "${sigint_run_status}" = "0" || {

@@ -24,8 +24,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXSMP1\|override=1\|target=128\|stride=6*}" != \
-    "${trace}" || {
+case "${trace}" in *LSXSMP1\|override=1\|target=128\|stride=6**) true ;; *) false ;; esac || {
     echo "not ok 1 - sample target missed its consumer"
     exit 0
 }

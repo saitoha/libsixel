@@ -17,7 +17,7 @@ message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${message#*unknown suboption key*Bsoft*}" != "${message}" || {
+case "${message}" in *unknown\ suboption\ key*Bsoft**) true ;; *) false ;; esac || {
     echo "not ok 1 - missing compact Kmeans binning diagnostic"
     exit 0
 }

@@ -37,7 +37,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=trns_keycolor|stored=1|binding=png_trns_keycolor|value=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=trns_keycolor\|stored=1\|binding=png_trns_keycolor\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "trns_keycolor short value was not stored"
     exit 0
 }
@@ -51,7 +51,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=trns_keycolor|stored=1|binding=png_trns_keycolor|value=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=trns_keycolor\|stored=1\|binding=png_trns_keycolor\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "trns_keycolor environment value was not stored"
     exit 0
 }
@@ -65,7 +65,7 @@ control_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${control_trace#*LSXSUB1|*key=trns_keycolor|stored=1|binding=png_trns_keycolor|value=0*}" != "${control_trace}" || {
+case "${control_trace}" in *LSXSUB1\|*key=trns_keycolor\|stored=1\|binding=png_trns_keycolor\|value=0**) true ;; *) false ;; esac || {
     echo "not ok 1 - explicit K0 did not override the enabled environment"
     exit 0
 }

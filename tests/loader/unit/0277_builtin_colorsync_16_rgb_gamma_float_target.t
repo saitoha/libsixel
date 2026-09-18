@@ -19,11 +19,11 @@ test "$result" -eq 0 || {
     echo "not ok 1 - builtin colorsync 16-bit rgb final gamma_float target"
     exit 0
 }
-test "${trace#*"LSXLOAD1|event=ok|loader=builtin|code=L_OK"}" != "$trace" || {
+case "${trace}" in *"LSXLOAD1|event=ok|loader=builtin|code=L_OK"*) true ;; *) false ;; esac || {
     echo "not ok 1 - requested PNG loader did not deliver the frame"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=colorsync|path=external|src=4|dst=4|ok=1"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|path=external|src=4|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "not ok 1 - requested CMS did not apply to original float samples"
     exit 0
 }

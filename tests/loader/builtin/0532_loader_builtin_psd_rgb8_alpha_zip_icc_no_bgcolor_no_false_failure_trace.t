@@ -26,12 +26,12 @@ test "${status_code}" -eq 0 || {
     exit 0
 }
 
-test "${output_text#*"${keycolor_header}"}" != "${output_text}" || {
+{ test -n "${keycolor_header}" && case "${output_text}" in *"${keycolor_header}"*) true ;; *) false ;; esac; } || {
     echo "not ok 1 - builtin PSD RGB8 alpha ZIP ICC did not emit keycolor header without --bgcolor"
     exit 0
 }
 
-test "${output_text#*embedded ICC conversion failed}" = "${output_text}" || {
+case "${output_text}" in *embedded\ ICC\ conversion\ failed*) false ;; *) true ;; esac || {
     echo "not ok 1 - builtin PSD RGB8 alpha ZIP ICC emitted false failure trace without --bgcolor"
     exit 0
 }

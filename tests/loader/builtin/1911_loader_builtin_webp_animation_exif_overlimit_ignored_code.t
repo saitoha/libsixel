@@ -40,7 +40,7 @@ test "${command_status}" -eq 0 || {
 }
 
 diag_line=${trace_output#*LSXWEBP1\|}
-test "${diag_line}" != "${trace_output}" || {
+case "${trace_output}" in *LSXWEBP1\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin animation EXIF overlimit missing LSXWEBP1"
     exit 0
 }
@@ -48,17 +48,17 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#*W_OK_ANIM*}" != "${diag_line}" || {
+case "${diag_line}" in *W_OK_ANIM**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin animation EXIF overlimit missing W_OK_ANIM"
     exit 0
 }
 
-test "${diag_line#*W_META_EXIF_IGNORED*}" != "${diag_line}" || {
+case "${diag_line}" in *W_META_EXIF_IGNORED**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin animation EXIF overlimit missing W_META_EXIF_IGNORED"
     exit 0
 }
 
-test "${diag_line#*W_META_EXIF_SIZE_LIMIT_IGNORED*}" != "${diag_line}" || {
+case "${diag_line}" in *W_META_EXIF_SIZE_LIMIT_IGNORED**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin animation EXIF overlimit missing W_META_EXIF_SIZE_LIMIT_IGNORED"
     exit 0
 }

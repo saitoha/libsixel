@@ -25,7 +25,7 @@ test "${status_bg}" -eq 0 || {
     exit 0
 }
 
-test "${output_bg#*"${keycolor_header}"}" = "${output_bg}" || {
+{ test -z "${keycolor_header}" || case "${output_bg}" in *"${keycolor_header}"*) false ;; *) true ;; esac; } || {
     echo "not ok 1 - missing-composite single-layer Duotone8+alpha kept keycolor header with --bgcolor"
     exit 0
 }

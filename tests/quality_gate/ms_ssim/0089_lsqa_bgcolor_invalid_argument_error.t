@@ -18,7 +18,7 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-test "${stderr_text#*invalid argument for*}" != "${stderr_text}" || {
+case "${stderr_text}" in *invalid\ argument\ for**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "invalid -B error message was missing"
     exit 0
 }

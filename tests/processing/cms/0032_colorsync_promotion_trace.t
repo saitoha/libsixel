@@ -16,11 +16,11 @@ test "$status" -eq 0 || {
     echo "not ok 1 - ColorSync integer conversion"
     exit 0
 }
-test "${trace#*"event=source-promotion|engine=colorsync|src=3|dst=4|via=float32"}" != "$trace" || {
+case "${trace}" in *"event=source-promotion|engine=colorsync|src=3|dst=4|via=float32"*) true ;; *) false ;; esac || {
     echo "not ok 1 - ColorSync source promotion trace missing"
     exit 0
 }
-test "${trace#*"event=apply|engine=colorsync|path=external|src=3|dst=4|ok=1"}" != "$trace" || {
+case "${trace}" in *"event=apply|engine=colorsync|path=external|src=3|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "not ok 1 - actual ColorSync apply trace missing"
     exit 0
 }

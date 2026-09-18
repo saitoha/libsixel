@@ -31,20 +31,17 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying GrFl alignment semantics in layer effects*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ GrFl\ alignment\ semantics\ in\ layer\ effects**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/shape-fx2 missing GrFl alignment semantics"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying GrFl offset semantics in layer effects*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ GrFl\ offset\ semantics\ in\ layer\ effects**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/shape-fx2 missing GrFl offset semantics"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed GrFl effect object in layer effects*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ parsed\ GrFl\ effect\ object\ in\ layer\ effects**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/shape-fx2 missing GrFl effect object parse"
     exit 0
 }

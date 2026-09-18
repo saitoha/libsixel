@@ -17,7 +17,7 @@ message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${message#*unknown suboption key*autoratio*}" != "${message}" || {
+case "${message}" in *unknown\ suboption\ key*autoratio**) true ;; *) false ;; esac || {
     echo "not ok 1 - missing removed Kmeans autoratio diagnostic"
     exit 0
 }

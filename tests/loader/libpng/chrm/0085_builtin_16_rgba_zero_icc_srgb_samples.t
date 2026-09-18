@@ -19,24 +19,24 @@ test "$result" -eq 0 || {
     echo "not ok 1 - builtin 16-rgba-zero-icc-srgb original samples and coverage"
     exit 0
 }
-test "${trace#*"PNG_CHRM_SAMPLE|fixture=58|engine=builtin|checked=24|"}" != "$trace" || {
+case "${trace}" in *"PNG_CHRM_SAMPLE|fixture=58|engine=builtin|checked=24|"*) true ;; *) false ;; esac || {
     echo "not ok 1 - numeric observation did not complete"
     exit 0
 }
 # Consume every apply in order; partial or extra records must fail.
-test "${trace#*"LSXCMS2|event=apply"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply"*) true ;; *) false ;; esac || {
     echo "not ok 1 - ICC apply 1 is missing"
     exit 0
 }
 trace=${trace#*"LSXCMS2|event=apply"}
-test "${trace#'|engine=builtin|path=extended-rgb|src=4|dst=4|ok=1
-'}" != "$trace" || {
+case "${trace}" in '|engine=builtin|path=extended-rgb|src=4|dst=4|ok=1
+'*) true ;; *) false ;; esac || {
     echo "not ok 1 - ICC apply 1 fields differ"
     exit 0
 }
 trace=${trace#'|engine=builtin|path=extended-rgb|src=4|dst=4|ok=1
 '}
-test "${trace#*"LSXCMS2|event=apply"}" = "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || {
     echo "not ok 1 - unexpected ICC apply remains"
     exit 0
 }

@@ -19,23 +19,23 @@ test "$result" -eq 0 || {
     echo "not ok 1 - managed gray native gamma"
     exit 0
 }
-test "${trace#*"TMVALUE|reference=1|case-begin"}" != "$trace" || {
+case "${trace}" in *"TMVALUE|reference=1|case-begin"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - reference control absent"
     exit 0
 }
 observed=${trace#*"TMVALUE|reference=1|case-begin"}
-test "${observed#*"LSXCMS2|event=apply|engine=colorsync|"}" != "$observed" || {
+case "${observed}" in *"LSXCMS2|event=apply|engine=colorsync|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - requested engine did not apply"
     exit 0
 }
-test "${observed#*"|ok=1"}" != "$observed" || {
+case "${observed}" in *"|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - unexpected native apply result"
     exit 0
 }
-test "${observed#*"path=gray-pure-gamma|tag=kTRC|from=para0|to=original"}" != "$observed" || {
+case "${observed}" in *"path=gray-pure-gamma|tag=kTRC|from=para0|to=original"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - unexpected gray preparation"
     exit 0

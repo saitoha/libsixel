@@ -36,27 +36,24 @@ test "${command_status}" -eq 0 || {
 
 sibling_tail="${trace_output#*builtin PSD: hardening vector-style clipping sibling alpha in layer fallback*}"
 
-test "${sibling_tail}" != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ hardening\ vector-style\ clipping\ sibling\ alpha\ in\ layer\ fallback**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing clipping sibling trace marker"
     exit 0
 }
 
-test "${sibling_tail#*builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays*}" \
-    != "${sibling_tail}" || {
+case "${sibling_tail}" in *builtin\ PSD:\ suppressing\ clbl=1\ deferred\ base\ solid/gradient\ overlays**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing clbl=1 overlay suppression after sibling marker"
     exit 0
 }
 
 suppressed_tail="${sibling_tail#*builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays*}"
 
-test "${suppressed_tail#*builtin PSD: applying solid overlay effect in layer fallback*}" \
-    = "${suppressed_tail}" || {
+case "${suppressed_tail}" in *builtin\ PSD:\ applying\ solid\ overlay\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite unexpectedly applied base solid overlay after sibling suppression"
     exit 0
 }
 
-test "${suppressed_tail#*builtin PSD: applying gradient overlay effect in layer fallback*}" \
-    = "${suppressed_tail}" || {
+case "${suppressed_tail}" in *builtin\ PSD:\ applying\ gradient\ overlay\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite unexpectedly applied base gradient overlay after sibling suppression"
     exit 0
 }

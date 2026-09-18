@@ -20,7 +20,7 @@ precision_first=$(set +xv; SIXEL_FLOAT32_DITHER=0 \
     echo "not ok 1 - precision-first conversion failed"
     exit 0
 }
-test "${precision_first#*work=rgb888*}" != "${precision_first}" || {
+case "${precision_first}" in *work=rgb888**) true ;; *) false ;; esac || {
     echo "not ok 1 - gamma did not restore precision-first 8-bit work"
     exit 0
 }
@@ -32,7 +32,7 @@ colorspace_first=$(set +xv; SIXEL_FLOAT32_DITHER=0 \
     echo "not ok 1 - colorspace-first conversion failed"
     exit 0
 }
-test "${colorspace_first#*work=rgb888*}" != "${colorspace_first}" || {
+case "${colorspace_first}" in *work=rgb888**) true ;; *) false ;; esac || {
     echo "not ok 1 - gamma did not restore colorspace-first 8-bit work"
     exit 0
 }

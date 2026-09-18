@@ -16,7 +16,7 @@ test "$result" -eq 0 || {
     echo "not ok 1 - legacy strict apply failure"
     exit 0
 }
-test "${trace#*"JCMYK|target-begin"}" != "$trace" || {
+case "${trace}" in *"JCMYK|target-begin"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - target observation marker is absent"
     exit 0

@@ -21,7 +21,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${msg#*unknown suboption key*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ key**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing unknown medoids key diagnostic"
     exit 0
 }
@@ -29,8 +29,7 @@ test "${msg#*unknown suboption key*}" != "${msg}" || {
 valid_keys_line=${msg#*valid keys: }
 valid_keys_line=${valid_keys_line%%.*}
 
-test "${valid_keys_line#*algo*seed*iter*sample*clara_trials*clara_sample*clarans_local*clarans_neighbors*bandit_iter*bandit_candidates*bandit_batch*histbits*point_budget*rare_keep*prune_mass*auction*auction_shortlist*sample_target*}" \
-    != "${valid_keys_line}" || {
+case "${valid_keys_line}" in *algo*seed*iter*sample*clara_trials*clara_sample*clarans_local*clarans_neighbors*bandit_iter*bandit_candidates*bandit_batch*histbits*point_budget*rare_keep*prune_mass*auction*auction_shortlist*sample_target**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing medoids key candidate list"
     exit 0
 }

@@ -34,20 +34,18 @@ test "${command_status}" -eq 0 || {
 }
 
 delegated_tail="${trace_output#*builtin PSD: deferring dual-stroke ownership to clipped group in layer fallback*}"
-test "${delegated_tail}" != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ deferring\ dual-stroke\ ownership\ to\ clipped\ group\ in\ layer\ fallback**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred ownership trace"
     exit 0
 }
 
-test "${delegated_tail#*builtin PSD: applying mode-aware dual-stroke blend in layer fallback*}" \
-    = "${delegated_tail}" || {
+case "${delegated_tail}" in *builtin\ PSD:\ applying\ mode-aware\ dual-stroke\ blend\ in\ layer\ fallback**) false ;; *) true ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite kept base mode-aware dual-stroke after ownership delegation"
     exit 0
 }
 
-test "${delegated_tail#*builtin PSD: applying mode-aware dual-stroke blend on clipped group*}" \
-    != "${delegated_tail}" || {
+case "${delegated_tail}" in *builtin\ PSD:\ applying\ mode-aware\ dual-stroke\ blend\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite lost deferred mode-aware dual-stroke after ownership delegation"
     exit 0

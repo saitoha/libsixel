@@ -22,12 +22,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown suboption key*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ key**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing non-sierra variant diagnostic"
     exit 0
 }
 
-test "${msg#*variant*}" != "${msg}" || {
+case "${msg}" in *variant**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "non-sierra variant diagnostic lacked key name"
     exit 0
 }

@@ -30,12 +30,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=palette_threshold|stored=1|binding=gpu_palette_threshold,gpu_palette_threshold_override|value=300*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=palette_threshold\|stored=1\|binding=gpu_palette_threshold,gpu_palette_threshold_override\|value=300**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "GPU palette threshold short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXDTH1|*gpu_threshold=300|gpu_threshold_override=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXDTH1\|*gpu_threshold=300\|gpu_threshold_override=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "GPU palette threshold did not reach the dither"
     exit 0
 }
@@ -48,12 +48,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=palette_threshold|stored=1|binding=gpu_palette_threshold,gpu_palette_threshold_override|value=300*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=palette_threshold\|stored=1\|binding=gpu_palette_threshold,gpu_palette_threshold_override\|value=300**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "GPU palette threshold environment value was not stored"
     exit 0
 }
 
-test "${env_trace#*LSXDTH1|*gpu_threshold=300|gpu_threshold_override=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXDTH1\|*gpu_threshold=300\|gpu_threshold_override=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "environment GPU threshold did not reach the dither"
     exit 0
 }
@@ -71,7 +71,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=palette_threshold|stored=1|binding=gpu_palette_threshold,gpu_palette_threshold_override|value=}" != "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=palette_threshold\|stored=1\|binding=gpu_palette_threshold,gpu_palette_threshold_override\|value=*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "GPU palette threshold did not saturate overflow"
     exit 0
 }

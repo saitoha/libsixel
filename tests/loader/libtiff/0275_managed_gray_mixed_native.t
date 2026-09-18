@@ -19,35 +19,35 @@ test "$result" -eq 0 || {
     echo "not ok 1 - managed gray mixed native"
     exit 0
 }
-test "${trace#*"TMVALUE|reference=1|case-begin"}" != "$trace" || {
+case "${trace}" in *"TMVALUE|reference=1|case-begin"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - reference control absent"
     exit 0
 }
 observed=${trace#*"TMVALUE|reference=1|case-begin"}
-test "${observed#*"LSXCMS2|event=apply|engine=colorsync|"}" != "$observed" || {
+case "${observed}" in *"LSXCMS2|event=apply|engine=colorsync|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - requested engine did not apply"
     exit 0
 }
-test "${observed#*"|ok=1"}" != "$observed" || {
+case "${observed}" in *"|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - unexpected native apply result"
     exit 0
 }
-test "${observed#*"to=original"}" != "$observed" || {
+case "${observed}" in *"to=original"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - mixed device domain preparation differs"
     exit 0
 }
 remaining=${observed#*'LSXCMS2|event=apply|engine=colorsync|'}
-test "$remaining" != "$observed" || {
+case "${observed}" in *'LSXCMS2|event=apply|engine=colorsync|'*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - expected native group did not apply"
     exit 0
 }
 observed=$remaining
-test "${observed#*'LSXCMS2|event=apply|'}" = "$observed" || {
+case "${observed}" in *'LSXCMS2|event=apply|'*) false ;; *) true ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - unexpected additional CMS apply"
     exit 0

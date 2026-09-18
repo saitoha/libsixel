@@ -18,7 +18,7 @@ test "$result" -eq 0 || {
     echo "not ok 1 - external libpng withholds bad-crc cHRM"
     exit 0
 }
-test "${trace#*"PNG_CHRM_GETTER|fixture=114|rejected=1"}" != "$trace" || {
+case "${trace}" in *"PNG_CHRM_GETTER|fixture=114|rejected=1"*) true ;; *) false ;; esac || {
     echo "not ok 1 - numeric observation did not complete"
     exit 0
 }

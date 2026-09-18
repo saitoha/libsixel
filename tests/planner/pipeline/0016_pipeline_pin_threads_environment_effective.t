@@ -25,7 +25,7 @@ pin_trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
     exit 0
 }
 
-test "${pin_trace#*LSXDTH1|*pin_threads=0*}" != "${pin_trace}" || {
+case "${pin_trace}" in *LSXDTH1\|*pin_threads=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "pin threads was not disabled"
     exit 0
 }
@@ -38,8 +38,7 @@ invalid_trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
     exit 0
 }
 
-test "${invalid_trace#*LSXDTH1|*pin_threads=1*}" != \
-    "${invalid_trace}" || {
+case "${invalid_trace}" in *LSXDTH1\|*pin_threads=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "invalid pin threads changed the default"
     exit 0
 }

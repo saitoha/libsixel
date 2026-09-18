@@ -72,7 +72,7 @@ echo "1..1"
 set -v
 
 diag_line=${msg#*LSXDTH1|}
-test "${diag_line}" != "${msg}" || {
+case "${msg}" in *LSXDTH1\|*) true ;; *) false ;; esac || {
     echo "ok" 1 - "8bit CLI stbn alias matches stbn-hash output (output contract)"
     exit 0
 }
@@ -80,17 +80,17 @@ test "${diag_line}" != "${msg}" || {
 diag_line="LSXDTH1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#LSXDTH1|rc=0|}" != "${diag_line}" || {
+case "${diag_line}" in LSXDTH1\|rc=0\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "8bit stbn alias malformed diagnostic header"
     exit 0
 }
 
-test "${diag_line#*|source=hash|}" != "${diag_line}" || {
+case "${diag_line}" in *\|source=hash\|*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "8bit stbn alias did not resolve to hash source"
     exit 0
 }
 
-test "${diag_line#*STRATEGY_SOURCE_PMJ}" = "${diag_line}" || {
+case "${diag_line}" in *STRATEGY_SOURCE_PMJ*) false ;; *) true ;; esac || {
     echo "not ok" 1 - "8bit stbn alias unexpectedly used PMJ source"
     exit 0
 }

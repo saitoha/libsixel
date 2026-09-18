@@ -20,7 +20,7 @@ test "$result" -eq 0 || {
     echo "not ok 1 - real loader p3 auto tiny frame bits"
     exit 0
 }
-test "${trace#*PNGCHRM1|role=image|requested=auto|selected=double|actual=double|reason=ordinary*}" != "$trace" || {
+case "${trace}" in *PNGCHRM1\|role=image\|requested=auto\|selected=double\|actual=double\|reason=ordinary**) true ;; *) false ;; esac || {
     echo "not ok 1 - selected arithmetic path differs"
     printf '# %s\n' "$trace"
     exit 0

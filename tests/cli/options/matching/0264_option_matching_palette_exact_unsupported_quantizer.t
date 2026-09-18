@@ -23,13 +23,12 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-test "${trace#*palette binning policy is unsupported by the selected quantizer*}" != \
-    "${trace}" || {
+case "${trace}" in *palette\ binning\ policy\ is\ unsupported\ by\ the\ selected\ quantizer**) true ;; *) false ;; esac || {
     echo "not ok 1 - unsupported exact quantizer diagnostic is missing"
     exit 0
 }
 
-test "${trace#*LSXSPL1|requested=auto|effective=unset|source=none|origin=auto|phase=unresolved|reason=none|threads=1|heavy=0|budget_async=0|job_ready=0*}" != "${trace}" || {
+case "${trace}" in *LSXSPL1\|requested=auto\|effective=unset\|source=none\|origin=auto\|phase=unresolved\|reason=none\|threads=1\|heavy=0\|budget_async=0\|job_ready=0**) true ;; *) false ;; esac || {
     echo "not ok 1 - unsupported exact quantizer changed sampling state"
     exit 0
 }

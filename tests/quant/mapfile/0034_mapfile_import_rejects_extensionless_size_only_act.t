@@ -24,7 +24,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_prepare_specified_palette: ambiguous ACT payload without extension; use act:PATH.}" != "${msg}" || {
+case "${msg}" in *sixel_prepare_specified_palette:\ ambiguous\ ACT\ payload\ without\ extension\;\ use\ act:PATH.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing extensionless ACT ambiguity diagnostic"
     exit 0
 }

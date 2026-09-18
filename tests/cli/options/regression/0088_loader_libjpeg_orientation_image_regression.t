@@ -32,7 +32,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=orientation|stored=1|binding=libjpeg_enable_orientation*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=orientation\|stored=1\|binding=libjpeg_enable_orientation**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "orientation short value was not stored"
     exit 0
 }
@@ -45,7 +45,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=orientation|stored=1|binding=libjpeg_enable_orientation*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=orientation\|stored=1\|binding=libjpeg_enable_orientation**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "orientation environment value was not stored"
     exit 0
 }

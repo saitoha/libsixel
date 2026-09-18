@@ -31,12 +31,12 @@ effect_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${effect_trace#*LSXDTH1|*consume=[1-9]*}" != "${effect_trace}" || {
+case "${effect_trace}" in *LSXDTH1\|*consume=[1-9]**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "diffusion stbn motion adapt did not consume a second frame"
     exit 0
 }
 
-test "${effect_trace#*LSXDTH1|*motion=1|motion_override=1*}" != "${effect_trace}" || {
+case "${effect_trace}" in *LSXDTH1\|*motion=1\|motion_override=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "stbn motion adapt did not reach the dither"
     exit 0
 }
@@ -49,7 +49,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=motion_adapt|stored=1|binding=stbn_motion_adapt_enabled,stbn_motion_adapt_override*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=motion_adapt\|stored=1\|binding=stbn_motion_adapt_enabled,stbn_motion_adapt_override**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "motion_adapt short value was not stored"
     exit 0
 }
@@ -64,7 +64,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=motion_adapt|stored=1|binding=stbn_motion_adapt_enabled,stbn_motion_adapt_override*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=motion_adapt\|stored=1\|binding=stbn_motion_adapt_enabled,stbn_motion_adapt_override**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "motion_adapt environment value was not stored"
     exit 0
 }

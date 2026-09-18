@@ -18,7 +18,7 @@ msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     echo "not ok" 1 - "missing completion source fallback failed"
     exit 0
 }
-test "${msg#*# bash completion for img2sixel*}" != "${msg}" || {
+case "${msg}" in *#\ bash\ completion\ for\ img2sixel**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing completion source did not fall back"
     exit 0
 }

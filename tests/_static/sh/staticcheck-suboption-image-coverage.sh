@@ -28,16 +28,16 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
         binding) needle='binding=libpng_cms_engine|'; replacement='binding=other_field|' ;;
         base) needle='schema=9|base=libpng|'; replacement='schema=9|base=libjpeg|' ;;
         consumer-event) needle='LSXCMS2|event=apply|'; replacement='LSXCMS2|event=select|' ;;
-        consumer-engine) needle='record#engine=builtin|'; replacement='record#engine=other|' ;;
-        consumer-result) needle='record%|ok=1'; replacement='record%|ok=0' ;;
+        consumer-engine) needle='engine=builtin\|*)'; replacement='engine=other\|*)' ;;
+        consumer-result) needle='*\|ok=1)'; replacement='*\|ok=0)' ;;
         comparison) needle='cmp -s'; replacement=': -s' ;;
         image-reference) needle='${LSQA_PATH}'; replacement='${OTHER_PATH}' ;;
         legacy-*)
             fixture="$regression_dir/0012_diffusion_stbn_alpha_guard_image_regression.t"
             case "$sample" in
-                legacy-assignment) needle='stored=1|binding='; replacement='stored=0|binding=' ;;
+                legacy-assignment) needle='stored=1\|binding='; replacement='stored=0\|binding=' ;;
                 legacy-binding) needle='binding=stbn_alpha_guard_enabled,'; replacement='binding=other_field,' ;;
-                legacy-consumer) needle='LSXDTH1|*alpha=1'; replacement='LSXDTH1|*alpha=0' ;;
+                legacy-consumer) needle='LSXDTH1\|*alpha=1'; replacement='LSXDTH1\|*alpha=0' ;;
             esac
             ;;
         perceptual-*)
@@ -54,7 +54,8 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
             needle='cmp -s "${reference_output}"'; replacement=': -s "${reference_output}"'
             ;;
     esac
-    awk -v needle="$needle" -v replacement="$replacement" '
+    PATTERN_NEEDLE="$needle" PATTERN_REPLACEMENT="$replacement" awk '
+    BEGIN { needle = ENVIRON["PATTERN_NEEDLE"]; replacement = ENVIRON["PATTERN_REPLACEMENT"] }
     {
         offset = index($0, needle)
         if (offset) {

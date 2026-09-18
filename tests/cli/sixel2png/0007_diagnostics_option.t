@@ -36,12 +36,12 @@ test "${env_status}" -eq 2 || {
     exit 0
 }
 
-test "${human_message#*valid values:*}" != "${human_message}" || {
+case "${human_message}" in *valid\ values:**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "human diagnostics omitted valid values"
     exit 0
 }
 
-test "${code_message#*valid values:*}" = "${code_message}" || {
+case "${code_message}" in *valid\ values:**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "code diagnostics retained valid values"
     exit 0
 }

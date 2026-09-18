@@ -25,11 +25,11 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXSPL1|requested=auto|effective=full-frame|source=preprocessed-frame|origin=auto|phase=executed|reason=resource-profile|threads=4|heavy=3|budget_async=0|job_ready=0*}" != "${trace}" || {
+case "${trace}" in *LSXSPL1\|requested=auto\|effective=full-frame\|source=preprocessed-frame\|origin=auto\|phase=executed\|reason=resource-profile\|threads=4\|heavy=3\|budget_async=0\|job_ready=0**) true ;; *) false ;; esac || {
     echo "not ok 1 - cropped resize four-thread sampling plan changed"
     exit 0
 }
-test "${trace#*LSXSMP1|*}" = "${trace}" || {
+case "${trace}" in *LSXSMP1\|**) false ;; *) true ;; esac || {
     echo "not ok 1 - cropped resize four-thread path ran sampling"
     exit 0
 }

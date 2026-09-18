@@ -40,46 +40,42 @@ test -n "${help_text}" || {
     exit 0
 }
 
-test "${help_text#*medoids -> k-medoids clustering. sub-option:*}" \
-    != "${help_text}" || {
+case "${help_text}" in *medoids\ -\>\ k-medoids\ clustering.\ sub-option:**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "medoids section heading is missing in runtime help"
     exit 0
 }
 
-test "${help_text#*:algo=NAME*choose*k-medoids*solver:*}" \
-    != "${help_text}" || {
+case "${help_text}" in *:algo=NAME*choose*k-medoids*solver:**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "medoids algo heading is missing in runtime help"
     exit 0
 }
 
-test "${help_text#*auto*adaptive*default*}" != "${help_text}" || {
+case "${help_text}" in *auto*adaptive*default**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "medoids auto description is missing in runtime help"
     exit 0
 }
 
-test "${help_text#*sample*CLARA:*}" != "${help_text}" || {
+case "${help_text}" in *sample*CLARA:**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "medoids sample description is missing in runtime help"
     exit 0
 }
 
-test "${help_text#*random*CLARANS:*}" != "${help_text}" || {
+case "${help_text}" in *random*CLARANS:**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "medoids random description is missing in runtime help"
     exit 0
 }
 
-test "${help_text#*bandit*BanditPAM:*}" != "${help_text}" || {
+case "${help_text}" in *bandit*BanditPAM:**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "medoids bandit description is missing in runtime help"
     exit 0
 }
 
-test "${help_text#*:inittype=TYPE*choose*k-means*seed*mode:*}" \
-    != "${help_text}" || {
+case "${help_text}" in *:inittype=TYPE*choose*k-means*seed*mode:**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "kmeans inittype heading is missing in runtime help"
     exit 0
 }
 
-test "${help_text#*auto*choose*seed*mode*automatically*}" \
-    != "${help_text}" || {
+case "${help_text}" in *auto*choose*seed*mode*automatically**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "kmeans inittype auto description is missing in runtime help"
     exit 0
 }

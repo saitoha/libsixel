@@ -27,21 +27,20 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     echo "not ok" 1 - "5bit packing short conversion failed"
     exit 0
 }
-test "${short_trace#*work=rgb888*}" != "${short_trace}" || {
+case "${short_trace}" in *work=rgb888**) true ;; *) false ;; esac || {
     echo "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
-test "${short_trace#*LSXLUT2|phase=palette-apply|selected=lookup/5bit.8bit|explicit=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/5bit.8bit\|explicit=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=packing|stored=1|binding=lut_policy_packing,lut_policy_packing_override|value=1*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=packing\|stored=1\|binding=lut_policy_packing,lut_policy_packing_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "5bit packing short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXLUT1|*packing=morton*}" != \
-    "${short_trace}" || {
+case "${short_trace}" in *LSXLUT1\|*packing=morton**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "packing missed the 5bit consumer"
     exit 0
 }
@@ -53,21 +52,20 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     echo "not ok" 1 - "5bit packing environment conversion failed"
     exit 0
 }
-test "${env_trace#*work=rgb888*}" != "${env_trace}" || {
+case "${env_trace}" in *work=rgb888**) true ;; *) false ;; esac || {
     echo "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
-test "${env_trace#*LSXLUT2|phase=palette-apply|selected=lookup/5bit.8bit|explicit=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/5bit.8bit\|explicit=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=packing|stored=1|binding=lut_policy_packing,lut_policy_packing_override|value=1*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=packing\|stored=1\|binding=lut_policy_packing,lut_policy_packing_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "5bit packing environment value was not stored"
     exit 0
 }
-test "${env_trace#*LSXLUT1|*packing=morton*}" != \
-    "${env_trace}" || {
+case "${env_trace}" in *LSXLUT1\|*packing=morton**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "environment packing missed the 5bit consumer"
     exit 0
 }
@@ -84,12 +82,11 @@ bit6_short_trace=$(set +xv; \
     echo "not ok" 1 - "6bit packing short conversion failed"
     exit 0
 }
-test "${bit6_short_trace#*LSXSUB1|*key=packing|stored=1|binding=lut_policy_packing,lut_policy_packing_override|value=1*}" != "${bit6_short_trace}" || {
+case "${bit6_short_trace}" in *LSXSUB1\|*key=packing\|stored=1\|binding=lut_policy_packing,lut_policy_packing_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "6bit packing short value was not stored"
     exit 0
 }
-test "${bit6_short_trace#*LSXLUT1|*packing=morton*}" != \
-    "${bit6_short_trace}" || {
+case "${bit6_short_trace}" in *LSXLUT1\|*packing=morton**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "packing missed the 6bit consumer"
     exit 0
 }
@@ -102,12 +99,11 @@ bit6_env_trace=$(set +xv; \
     echo "not ok" 1 - "6bit packing environment conversion failed"
     exit 0
 }
-test "${bit6_env_trace#*LSXSUB1|*key=packing|stored=1|binding=lut_policy_packing,lut_policy_packing_override|value=1*}" != "${bit6_env_trace}" || {
+case "${bit6_env_trace}" in *LSXSUB1\|*key=packing\|stored=1\|binding=lut_policy_packing,lut_policy_packing_override\|value=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "6bit packing environment value was not stored"
     exit 0
 }
-test "${bit6_env_trace#*LSXLUT1|*packing=morton*}" != \
-    "${bit6_env_trace}" || {
+case "${bit6_env_trace}" in *LSXLUT1\|*packing=morton**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "environment packing missed the 6bit consumer"
     exit 0
 }

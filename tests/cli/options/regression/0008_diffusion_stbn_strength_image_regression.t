@@ -32,12 +32,12 @@ effect_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${effect_trace#*LSXDTH1|*consume=[1-9]*}" != "${effect_trace}" || {
+case "${effect_trace}" in *LSXDTH1\|*consume=[1-9]**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "diffusion stbn strength did not consume a second frame"
     exit 0
 }
 
-test "${effect_trace#*LSXDTH1|*strength=15|strength_override=1*}" != "${effect_trace}" || {
+case "${effect_trace}" in *LSXDTH1\|*strength=15\|strength_override=1**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "stbn strength did not reach the dither"
     exit 0
 }
@@ -50,7 +50,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=strength|stored=1|binding=interframe_noise_strength_u8,interframe_noise_strength_override|value=0*}" != "${short_trace}" || {
+case "${short_trace}" in *LSXSUB1\|*key=strength\|stored=1\|binding=interframe_noise_strength_u8,interframe_noise_strength_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "strength short value was not stored"
     exit 0
 }
@@ -65,7 +65,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=strength|stored=1|binding=interframe_noise_strength_u8,interframe_noise_strength_override|value=0*}" != "${env_trace}" || {
+case "${env_trace}" in *LSXSUB1\|*key=strength\|stored=1\|binding=interframe_noise_strength_u8,interframe_noise_strength_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "strength environment value was not stored"
     exit 0
 }
@@ -79,7 +79,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=strength|stored=1|binding=interframe_noise_strength_u8,interframe_noise_strength_override|value=255*}" != "${range_trace}" || {
+case "${range_trace}" in *LSXSUB1\|*key=strength\|stored=1\|binding=interframe_noise_strength_u8,interframe_noise_strength_override\|value=255**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "strength upper endpoint was not clamped"
     exit 0
 }

@@ -32,8 +32,7 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*clipping layer without base; skipping layer*}" = \
-    "${trace_output}" || {
+case "${trace_output}" in *clipping\ layer\ without\ base\;\ skipping\ layer**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite emitted clipping orphan trace"
     exit 0
 }

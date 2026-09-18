@@ -34,14 +34,13 @@ test "${command_status}" -eq 0 || {
 }
 
 overlap_tail="${trace_output#*builtin PSD: applying deferred dual-stroke overlap decomposition on clipped group*}"
-test "${overlap_tail}" != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ applying\ deferred\ dual-stroke\ overlap\ decomposition\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing deferred dual-stroke overlap decomposition trace"
     exit 0
 }
 
-test "${overlap_tail#*builtin PSD: applying effect-priority dual-stroke overlap on clipped group*}" \
-    != "${overlap_tail}" || {
+case "${overlap_tail}" in *builtin\ PSD:\ applying\ effect-priority\ dual-stroke\ overlap\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing FXPRI overlap trace after deferred overlap decomposition"
     exit 0

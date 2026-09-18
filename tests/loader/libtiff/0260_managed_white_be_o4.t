@@ -19,18 +19,18 @@ test "$result" -eq 0 || {
     echo "not ok 1 - managed white be o4"
     exit 0
 }
-test "${trace#*"TMVALUE|reference=1|case-begin"}" != "$trace" || {
+case "${trace}" in *"TMVALUE|reference=1|case-begin"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - reference control absent"
     exit 0
 }
 observed=${trace#*"TMVALUE|reference=1|case-begin"}
-test "${observed#*"LSXCMS2|event=apply|engine=builtin|"}" != "$observed" || {
+case "${observed}" in *"LSXCMS2|event=apply|engine=builtin|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - requested engine did not apply"
     exit 0
 }
-test "${observed#*"|ok=1"}" != "$observed" || {
+case "${observed}" in *"|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - unexpected native apply result"
     exit 0

@@ -65,8 +65,12 @@ The TAP stream, not the process status, reports an assertion failure. A `*.t` te
 - Use `command || { ...; exit 0; }` for one failure boundary.
 - Do not nest `|| { ...; }` blocks.
 - Use `test ...`, not `[ ... ]`.
-- Prefer shell parameter expansion for simple string inspection.
-- Use `case` for shell-native pattern matching when it avoids spawning `grep` or another external matcher. Keep it focused on that matching purpose rather than using it to introduce deeply nested control flow.
+- Use parameter expansion to extract a value, such as `${0%/*}` or `${record##*=}`. Use `test` for exact value comparisons.
+- Use `case` for pattern matching. Do not compare a prefix/suffix removal with its unchanged input to infer a match, directly or through a temporary variable. Repeated shortest-prefix probing can become quadratic in the length of a trace even though it does not fork. Bash glob/regex predicates are also prohibited. Keep `case` focused on matching rather than introducing deeply nested control flow.
+
+`staticcheck-test-pattern-match` checks shell TAP sources, including newly added files and source distributions, for these predicate forms. It follows simple removal assignments and copies, ignores comments and heredoc payloads, and permits actual field/path extraction. This is a syntactic check, not a general shell interpreter; it does not prove the cost or correctness of arbitrary shell code. Its lexical and whitelist rejection controls run on every invocation. Python 3 is required for this check; an unavailable interpreter fails rather than silently skipping it.
+
+An unavoidable exception requires explicit user approval **before** adding it to [the pattern-matching whitelist](../../tests/_static/data/test-pattern-match-whitelist.json). Contributors and agents must not approve their own exceptions or grandfather existing tests. Each version-1 `entries` item must identify one `path` under `tests/`, a one-based `line`, the `sha256` printed by the checker, a concrete `reason` why `case` or a focused helper cannot express the necessary observation, and an `approval` recording the user's decision and its reference. The hash covers the complete logical statement as written, including continuations but excluding its final newline. Empty reasons or approvals, wildcard/file-wide exemptions, duplicate entries, and entries that no longer match a reported violation fail the check. The checker validates the record's shape and scope; reviewers must verify that the recorded user approval exists. Changing an approved statement or moving it requires a renewed review of the entry. The whitelist starts empty.
 
 ### Process and file cost
 
@@ -166,6 +170,7 @@ Each automated contract has a stable ID and an owning static check. The reciproc
 | TG-08 | Aborttrace TAP tests that invoke the shared abort helper retain early whole-file skips for both Wine runtime prefixes. | [tests/_static/sh/staticcheck-aborttrace-wine-skip.sh](../../tests/_static/sh/staticcheck-aborttrace-wine-skip.sh) |
 | TG-09 | Marked test-plan inventories and their complete glob-scoped test sets carry exact reciprocal links without duplicate entries. | [tests/_static/sh/staticcheck-test-plan-links.sh](../../tests/_static/sh/staticcheck-test-plan-links.sh) |
 | TG-10 | Shell TAP sources retain executable filesystem or Git modes on the supported checkout and distribution paths. | [tests/_static/sh/staticcheck-test-executable.sh](../../tests/_static/sh/staticcheck-test-executable.sh) |
+| TG-11 | Shell pattern predicates use `case`; only exact, current entries with a recorded user approval can exempt a predicate. | [tests/_static/sh/staticcheck-test-pattern-match.sh](../../tests/_static/sh/staticcheck-test-pattern-match.sh) |
 
 ### Coverage boundary
 

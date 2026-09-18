@@ -17,7 +17,7 @@ test "$result" -eq 0 || {
     echo "not ok 1 - mixed second nonfinite"
     exit 0
 }
-test "${trace#*'MDFAULT|case=5|'}" != "$trace" || {
+case "${trace}" in *'MDFAULT|case=5|'*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - fault qualification is absent"
     exit 0

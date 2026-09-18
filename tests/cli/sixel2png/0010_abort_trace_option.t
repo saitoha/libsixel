@@ -21,12 +21,11 @@ trace_message=$(set +xv; ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     exit 0
 }
 
-test "${trace_message#*LSXSUB1|*key=abort_trace|stored=1|binding=abort_trace,abort_trace_override|value=0*}" != "${trace_message}" || {
+case "${trace_message}" in *LSXSUB1\|*key=abort_trace\|stored=1\|binding=abort_trace,abort_trace_override\|value=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "sixel2png abort trace value was not stored"
     exit 0
 }
-test "${trace_message#*LSXABT1|*enabled=0|installed=0*}" != \
-    "${trace_message}" || {
+case "${trace_message}" in *LSXABT1\|*enabled=0\|installed=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "sixel2png abort trace value missed its consumer"
     exit 0
 }

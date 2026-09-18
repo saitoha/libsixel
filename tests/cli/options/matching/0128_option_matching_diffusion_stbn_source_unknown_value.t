@@ -22,12 +22,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown suboption value*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ value**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing unknown stbn source diagnostic"
     exit 0
 }
 
-test "${msg#*source*}" != "${msg}" || {
+case "${msg}" in *source**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "unknown stbn source diagnostic lacked key name"
     exit 0
 }

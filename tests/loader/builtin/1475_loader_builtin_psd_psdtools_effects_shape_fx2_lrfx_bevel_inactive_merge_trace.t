@@ -30,20 +30,17 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed ebbl bevel object in layer effects \(inactive\)*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ parsed\ ebbl\ bevel\ object\ in\ layer\ effects\ \(inactive\)**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/shape-fx2 missing inactive ebbl parse trace"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: merging legacy lrFX effects missing from lfx2*}" \
-    != "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ merging\ legacy\ lrFX\ effects\ missing\ from\ lfx2**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/shape-fx2 did not merge legacy lrFX effects"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: ignoring legacy lrFX when lfx2 is present*}" \
-    = "${trace_output}" || {
+case "${trace_output}" in *builtin\ PSD:\ ignoring\ legacy\ lrFX\ when\ lfx2\ is\ present**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "effects/shape-fx2 unexpectedly ignored legacy lrFX"
     exit 0
 }

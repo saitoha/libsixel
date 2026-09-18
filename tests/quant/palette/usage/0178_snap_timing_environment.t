@@ -24,7 +24,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXSNP1|timing=all*}" != "${trace}" || {
+case "${trace}" in *LSXSNP1\|timing=all**) true ;; *) false ;; esac || {
     echo "not ok 1 - snap timing missed its consumer"
     exit 0
 }

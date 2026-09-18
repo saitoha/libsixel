@@ -21,7 +21,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=runtime_contract \
     exit 0
 }
 
-test "${trace#*LSXRT1|simd_cap=0|*effective=0*}" != "${trace}" || {
+case "${trace}" in *LSXRT1\|simd_cap=0\|*effective=0**) true ;; *) false ;; esac || {
     echo "not ok 1 - SIMD level missed CPU dispatch"
     exit 0
 }

@@ -24,7 +24,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*sixel_prepare_specified_palette: unable to detect palette format.}" != "${msg}" || {
+case "${msg}" in *sixel_prepare_specified_palette:\ unable\ to\ detect\ palette\ format.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing unknown extensionless format diagnostic"
     exit 0
 }

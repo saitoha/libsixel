@@ -29,7 +29,7 @@ output_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite \
     exit 0
 }
 
-test "${output_text#*"${keycolor_header}"}" = "${output_text}" || {
+{ test -z "${keycolor_header}" || case "${output_text}" in *"${keycolor_header}"*) false ;; *) true ;; esac; } || {
     echo "not ok 1 - coregraphics indexed+tRNS bgcolor output kept keycolor DCS header"
     exit 0
 }

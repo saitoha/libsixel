@@ -23,7 +23,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     exit 0
 }
 
-test "${msg#*missing-mapfile.pal\" not found.}" != "${msg}" || {
+case "${msg}" in *missing-mapfile.pal\"\ not\ found.*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing mapfile path-not-found diagnostic"
     exit 0
 }

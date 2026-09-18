@@ -32,8 +32,7 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-trimmed_msg=${msg#*missing required argument for -m,--mapfile option}
-test "${trimmed_msg}" != "${msg}" || {
+case "${msg}" in *missing\ required\ argument\ for\ -m,--mapfile\ option*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "no diagnostic for missing -m argument"
     exit 0
 }

@@ -17,7 +17,7 @@ test "$status" -eq 2 || {
     echo "not ok 1 - invalid engine exit status"
     exit 0
 }
-test "${message#*invalid argument for*}" != "$message" || {
+case "${message}" in *invalid\ argument\ for**) true ;; *) false ;; esac || {
     echo "not ok 1 - invalid engine diagnostic"
     exit 0
 }

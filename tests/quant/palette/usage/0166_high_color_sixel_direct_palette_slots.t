@@ -19,19 +19,19 @@ sixel_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${sixel_output#*#0;2;100;0;0}" != "${sixel_output}" || {
+case "${sixel_output}" in *#0\;2\;100\;0\;0*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "high-color SIXEL direct palette slots changed"
     exit 0
 }
-test "${sixel_output#*#5;2;100;0;100}" != "${sixel_output}" || {
+case "${sixel_output}" in *#5\;2\;100\;0\;100*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "high-color SIXEL direct palette slots changed"
     exit 0
 }
-test "${sixel_output#*#254;2;0;0;0}" != "${sixel_output}" || {
+case "${sixel_output}" in *#254\;2\;0\;0\;0*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "high-color SIXEL direct palette slots changed"
     exit 0
 }
-test "${sixel_output#*#255;2;}" = "${sixel_output}" || {
+case "${sixel_output}" in *#255\;2\;*) false ;; *) true ;; esac || {
     echo "not ok" 1 - "high-color SIXEL direct palette slots changed"
     exit 0
 }

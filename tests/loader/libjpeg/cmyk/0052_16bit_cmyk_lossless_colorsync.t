@@ -17,13 +17,13 @@ test "$result" -eq 0 || {
     echo "not ok 1 - 16bit-cmyk-lossless colorsync"
     exit 0
 }
-test "${trace#*"JCMYK|target-begin"}" != "$trace" || {
+case "${trace}" in *"JCMYK|target-begin"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - target marker is absent"
     exit 0
 }
 observed=${trace#*"JCMYK|target-begin"}
-test "${observed#*"LSXCMS2|event=apply|engine=colorsync|path="*"|src=6|dst=4|ok=1"}" != "$observed" || {
+case "${observed}" in *"LSXCMS2|event=apply|engine=colorsync|path="*"|src=6|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - selected CMS apply outcome is absent"
     exit 0

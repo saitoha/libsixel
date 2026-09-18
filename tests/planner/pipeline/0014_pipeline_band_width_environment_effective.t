@@ -25,8 +25,7 @@ width_trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
     exit 0
 }
 
-test "${width_trace#*LSXDTH1|*diffuse=fs|*band_height=12*}" != \
-    "${width_trace}" || {
+case "${width_trace}" in *LSXDTH1\|*diffuse=fs\|*band_height=12**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "band width was not rounded to six rows"
     exit 0
 }
@@ -39,8 +38,7 @@ negative_trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
     exit 0
 }
 
-test "${negative_trace#*LSXDTH1|*diffuse=fs|*band_height=18*}" != \
-    "${negative_trace}" || {
+case "${negative_trace}" in *LSXDTH1\|*diffuse=fs\|*band_height=18**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "negative band width changed the default"
     exit 0
 }

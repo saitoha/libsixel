@@ -45,8 +45,8 @@ while IFS= read -r line; do
     *"LSXCMS2|event=apply|"*)
         # Independent reference conversions run outside the loader phase.
         test "$active" -ne 0 || continue
-        test "${line#*"|engine=$engine|"}" != "$line" &&
-            test "${line#*"|src=$source|dst=4|"}" != "$line" &&
+        case "${line}" in *"|engine=$engine|"*) true ;; *) false ;; esac &&
+            case "${line}" in *"|src=$source|dst=4|"*) true ;; *) false ;; esac &&
             test "${line##*|ok=}" -eq 1 || {
             echo "$trace" >&2
             echo "not ok 1 - wrong actual CMS backend, format or result"

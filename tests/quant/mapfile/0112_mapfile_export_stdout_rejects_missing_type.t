@@ -21,8 +21,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
     exit 0
 }
 
-test "${msg#*sixel_encoder_emit_palette_output: format required for}" \
-    != "${msg}" || {
+case "${msg}" in *sixel_encoder_emit_palette_output:\ format\ required\ for*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing untyped palette-output diagnostic"
     exit 0
 }

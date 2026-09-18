@@ -17,21 +17,21 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qk:Dinvalid "${TOP_SRCDIR}
     exit 0
 }
 
-test "${msg#*unknown suboption value*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ value**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing unknown suboption value diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*\"softdist\"*}" != "${msg}" || {
+case "${msg}" in *\"softdist\"**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing softdist key diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*valid values*trilinear*}" != "${msg}" || {
+case "${msg}" in *valid\ values*trilinear**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing kmeans softdist valid value list"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

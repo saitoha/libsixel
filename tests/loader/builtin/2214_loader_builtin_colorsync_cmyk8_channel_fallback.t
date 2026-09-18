@@ -17,12 +17,12 @@ test "$result" -eq 0 || {
     echo "not ok 1 - original-input CMYK8 fallback values and frame format"
     exit 0
 }
-test "${trace#*"LSXCMS2|event=apply|engine=colorsync|path=external|src=5|dst=4|ok=0"}" != "$trace" || {
+case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|path=external|src=5|dst=4|ok=0"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - missing expected contract trace"
     exit 0
 }
-test "${trace#*"CSCHFRAME|depth=8|original-input-fallback-values-and-format-verified"}" != "$trace" || {
+case "${trace}" in *"CSCHFRAME|depth=8|original-input-fallback-values-and-format-verified"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
     echo "not ok 1 - missing expected contract trace"
     exit 0

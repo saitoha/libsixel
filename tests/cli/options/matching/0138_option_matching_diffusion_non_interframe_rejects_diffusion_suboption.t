@@ -24,12 +24,12 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown suboption key*}" != "${msg}" || {
+case "${msg}" in *unknown\ suboption\ key**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "missing non-interframe diffusion diagnostic"
     exit 0
 }
 
-test "${msg#*diffusion*}" != "${msg}" || {
+case "${msg}" in *diffusion**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "non-interframe diffusion diagnostic lacked key name"
     exit 0
 }

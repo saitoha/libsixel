@@ -20,7 +20,7 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-test "${message#*--sampling-policy*}" != "${message}" || {
+case "${message}" in *--sampling-policy**) true ;; *) false ;; esac || {
     echo "not ok 1 - missing sampling-policy diagnostic is missing"
     exit 0
 }

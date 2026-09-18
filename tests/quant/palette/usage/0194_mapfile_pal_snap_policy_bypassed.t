@@ -33,7 +33,7 @@ PAL
     echo "not ok" 1 - "PAL mapfile conversion with snap policy failed"
     exit 0
 }
-test "${trace#*LSXSNP1|*}" = "${trace}" || {
+case "${trace}" in *LSXSNP1\|**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "snap policy unexpectedly reached PAL mapfile palette"
     exit 0
 }
