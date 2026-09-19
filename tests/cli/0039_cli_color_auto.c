@@ -342,8 +342,19 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
     if (strncmp(name, "drcs-", 5u) == 0) {
         arguments[count++] = "-@2:1";
     }
-    color_option = "-Uauto:timeout_ms=20";
-    if (color_auto_is(name, "timeout-long")) {
+    /* Semantic cases use the normal 200 ms exchange budget. A short budget
+     * also times the peer's scheduling under parallel check, not just the
+     * protocol. Immediate replies do not wait for the budget to expire.
+     * Only cases that deliberately exhaust a deadline need shorter waits. */
+    color_option = "-Uauto";
+    if (color_auto_is(name, "silent") ||
+        color_auto_is(name, "multiple-silent") ||
+        color_auto_is(name, "partial") ||
+        color_auto_is(name, "save-timeout") ||
+        color_auto_is(name, "set-timeout") ||
+        color_auto_is(name, "restore-timeout")) {
+        color_option = "-Uauto:timeout_ms=20";
+    } else if (color_auto_is(name, "timeout-long")) {
         color_option = "-Uauto:timeout_ms=40";
     } else if (color_auto_is(name, "timeout-compact")) {
         color_option = "-Uauto:T40";
@@ -357,9 +368,10 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
         setenv("SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS",
                color_auto_is(name, "timeout-env") ? "20" : "0", 1);
     } else if (color_auto_is(name, "timeout-cli-over-env")) {
+        color_option = "-Uauto:timeout_ms=20";
         setenv("SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS", "invalid", 1);
     } else if (color_auto_is(name, "prefix")) {
-        color_option = "-UAu:T20";
+        color_option = "-UAu:T200";
     } else if (color_auto_is(name, "bad-zero")) {
         color_option = "-Uauto:T0";
     } else if (color_auto_is(name, "bad-limit")) {
@@ -378,7 +390,7 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
         arguments[count++] = "--env";
         arguments[count++] = "SIXEL_OUTPUT_COLORSPACE=auto";
         arguments[count++] = "--env";
-        arguments[count++] = "SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS=20";
+        arguments[count++] = "SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS=200";
     } else if (!baseline && (color_auto_is(name, "env-auto") ||
         color_auto_is(name, "drcs-env") ||
         color_auto_is(name, "env-gamma") ||
@@ -388,7 +400,7 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
             color_auto_is(name, "drcs-env")) ? "auto"
             : color_auto_is(name, "env-gamma") ? "gamma"
             : color_auto_is(name, "env-empty") ? "" : "invalid", 1);
-        setenv("SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS", "20", 1);
+        setenv("SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS", "200", 1);
     } else {
         arguments[count++] = baseline ? "-Ugamma" : (char *)color_option;
     }
@@ -411,7 +423,7 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
     }
     if (!baseline && color_auto_is(name, "repeated-auto")) {
         arguments[count++] = "-Ugamma";
-        arguments[count++] = "-Uauto:T20";
+        arguments[count++] = "-Uauto:T200";
     }
     if (!baseline && color_auto_is(name, "env-assignment-overridden")) {
         arguments[count++] = "-Ugamma";
