@@ -57,7 +57,9 @@ If palette fusion is disabled, indexed input is expanded by the general path. Th
 
 ## TGA 2.0 and extension fields
 
-The TGA 2.0 footer, extension-area offset, developer directory, author/comment fields, timestamp, job information, software ID, key color, pixel-aspect ratio, gamma, color-correction table, postage-stamp image, scan-line table, and attribute-type field are not interpreted. In particular, extension gamma/color-correction data does not establish a source colorspace, and the attribute-type field does not override the decoder's 15/16/32-bit decisions.
+The [Truevision TGA 2.0 specification](https://www.ludorg.net/amnesia/TGA_File_Format_Spec.html) defines gamma and color-correction data, but no standard ICC-profile field. Its developer area can carry application-defined data; that extensibility does not itself establish an interoperable ICC embedding convention. Thus absence of a standard ICC field does not mean that TGA has no source color information worth interpreting.
+
+The TGA 2.0 footer, extension-area offset, developer directory, author/comment fields, timestamp, job information, software ID, key color, pixel-aspect ratio, gamma, color-correction table, postage-stamp image, scan-line table, and attribute-type field are not interpreted. In particular, extension gamma/color-correction data does not affect this loader's source color interpretation, and the attribute-type field does not override the decoder's 15/16/32-bit decisions.
 
 Trailing data can therefore coexist with a successfully decoded raster, but it is neither validated as a complete 2.0 object nor preserved for round trip.
 

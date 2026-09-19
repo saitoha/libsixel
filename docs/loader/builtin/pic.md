@@ -24,6 +24,8 @@ The parser consumes this fixed header shape:
 
 There is no palette, ICC container, Exif orientation, frame directory, or high-bit-depth declaration in the supported boundary.
 
+No standard ICC embedding is identified for this Softimage PIC dialect. Do not transfer the color-metadata capabilities of Macintosh PICT or Radiance HDR to it merely because their names or filename suffixes overlap. The absence of source metadata means the loader uses its default interpretation; it does not prove how the original author encoded the RGB samples.
+
 ## Channel packets and color representation
 
 After the fixed header comes a chain of one through ten four-byte packet descriptors. The first byte indicates whether another descriptor follows. The remaining bytes select sample size, compression type, and a channel mask.
