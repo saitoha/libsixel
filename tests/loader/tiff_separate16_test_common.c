@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "src/compat_stub.h"
 #include "src/cms.h"
 #include "src/icc-apply.h"
 #include "src/frame-private.h"
@@ -198,6 +199,10 @@ ts_calloc(size_t count, size_t size)
     }
     return data;
 }
+
+/* Preserve printf argument checking through this variadic trace wrapper. */
+static void ts_trace(char const *topic, char const *format, ...)
+    SIXEL_ATTRIBUTE_FORMAT(SIXEL_PRINTF_ARCHETYPE, 2, 3);
 
 static void
 ts_trace(char const *topic, char const *format, ...)
