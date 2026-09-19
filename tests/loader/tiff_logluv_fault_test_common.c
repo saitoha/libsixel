@@ -235,7 +235,11 @@ tlf_target(sixel_frame_t *frame, int format)
 #define tiff_integer_layout_t til_ns_1_1
 #define tiff_scatter_integer_row til_ns_1_2
 #define tiff_try_load_integer_layouts til_ns_1_3
+#define tiff_lab8_ranges tlx_copy_6_ranges
+#define tiff_lab8_to_linear tlx_copy_6_linear
 #include "src/loader-libtiff.c"
+#undef tiff_lab8_to_linear
+#undef tiff_lab8_ranges
 #undef tiff_publish_integer_alpha
 #undef tiff_integer_layout_t
 #undef tiff_scatter_integer_row

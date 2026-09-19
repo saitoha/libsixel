@@ -192,7 +192,11 @@ yc_target_format(void)
 #define tiff_scatter_integer_row yc_ns_2
 #define tiff_try_load_integer_layouts yc_ns_3
 #define sixel_cms_open_profile_from_mem yc_open
+#define tiff_lab8_ranges tlx_copy_9_ranges
+#define tiff_lab8_to_linear tlx_copy_9_linear
 #include "src/loader-libtiff.c"
+#undef tiff_lab8_to_linear
+#undef tiff_lab8_ranges
 #undef sixel_cms_open_profile_from_mem
 #undef tiff_publish_integer_alpha
 #undef tiff_integer_layout_t

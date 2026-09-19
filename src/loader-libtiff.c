@@ -460,6 +460,101 @@ tiff_decode_lab_u16_ab(uint16_t value)
     return (double)signed_value / 32768.0;
 }
 
+/* ICC Lab8 uses offset binary chroma. ITU-T T.42 uses different ranges
+ * and offsets; RFC 3949 section 6.2.3 permits a six-value Decode override.
+ * Keep physical Lab here, then normalize once for the common CMS facade. */
+static int
+tiff_lab8_ranges(TIFF *tif, uint16_t photometric, double ranges[6])
+{
+    float *values;
+    uint16_t count;
+    size_t i;
+
+    ranges[0] = 0.0;
+    ranges[1] = 100.0;
+    ranges[2] = -128.0;
+    ranges[3] = 127.0;
+    ranges[4] = -128.0;
+    ranges[5] = 127.0;
+    if (photometric != PHOTOMETRIC_ITULAB) {
+        return 1;
+    }
+    ranges[2] = -21760.0 / 255.0;
+    ranges[3] = 21590.0 / 255.0;
+    ranges[4] = -19200.0 / 255.0;
+    ranges[5] = 31800.0 / 255.0;
+    values = NULL;
+    count = 0u;
+    if (TIFFGetField(tif, TIFFTAG_DECODE, &count, &values)) {
+        if (count != 6u || values == NULL) {
+            return 0;
+        }
+        for (i = 0u; i < 6u; ++i) {
+            if (!isfinite(values[i])) {
+                return 0;
+            }
+            ranges[i] = values[i];
+        }
+        for (i = 0u; i < 6u; i += 2u) {
+            if (ranges[i] >= ranges[i + 1u]) {
+                return 0;
+            }
+        }
+        return 2;
+    }
+    return 1;
+}
+
+/* Without an applicable profile, ICC/ITU Lab still requires a D50 color
+ * interpretation. Express normalized Lab in the common D50 PCS, then use
+ * the analytic linear-sRGB definition (Bradford adaptation included).
+ * This is format decoding, independent of the selected ICC engine; it
+ * never opens a profile or silently substitutes a different CMS backend.
+ * The older CIELAB16/float fallback retains its established D65 contract. */
+static SIXELSTATUS
+tiff_lab8_to_linear(float *pixels, size_t count)
+{
+    static double const xy[8] = {
+        0.3127, 0.3290, 0.64, 0.33, 0.30, 0.60, 0.15, 0.06
+    };
+    static double const gamma[3] = {1.0, 1.0, 1.0};
+    static double const white[3] = {0.9642, 1.0, 0.8249};
+    sixel_color_def_t *linear;
+    double f[3];
+    double xyz[3];
+    double rgb[3];
+    size_t i;
+    size_t c;
+    SIXELSTATUS status;
+
+    linear = sixel_cdef_rgb(xy, SIXEL_COLOR_TRC_POWER, gamma);
+    if (linear == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    status = SIXEL_OK;
+    for (i = 0u; i < count; ++i) {
+        f[1] = (100.0 * pixels[i * 3u] + 16.0) / 116.0;
+        f[0] = f[1] + 128.0 * pixels[i * 3u + 1u] / 500.0;
+        f[2] = f[1] - 128.0 * pixels[i * 3u + 2u] / 200.0;
+        for (c = 0u; c < 3u; ++c) {
+            xyz[c] = white[c] * (f[c] > 6.0 / 29.0
+                ? f[c] * f[c] * f[c]
+                : (f[c] - 4.0 / 29.0) * 108.0 / 841.0);
+        }
+        if (!sixel_cdef_from_xyz(linear, xyz, rgb, 0) ||
+            fabs(rgb[0]) > FLT_MAX || fabs(rgb[1]) > FLT_MAX ||
+            fabs(rgb[2]) > FLT_MAX) {
+            status = SIXEL_TIFF_ERROR;
+            break;
+        }
+        for (c = 0u; c < 3u; ++c) {
+            pixels[i * 3u + c] = (float)rgb[c];
+        }
+    }
+    sixel_cdef_free(linear);
+    return status;
+}
+
 static int
 tiff_orientation_is_supported(uint16_t orientation)
 {
@@ -976,7 +1071,11 @@ tiff_read_separate_uint16(float *pixels, TIFF *tif, unsigned char *scanline,
                 unit = photometric == PHOTOMETRIC_MINISWHITE
                     ? (double)(65535u - words[x]) / 65535.0
                     : (double)words[x] / 65535.0;
-                if (photometric == PHOTOMETRIC_RGB) {
+                if (photometric == PHOTOMETRIC_CIELAB) {
+                    pixels[destination + plane] = (float)(plane == 0u
+                        ? tiff_decode_lab_u16_l(words[x])
+                        : tiff_decode_lab_u16_ab(words[x]));
+                } else if (photometric == PHOTOMETRIC_RGB) {
                     pixels[destination + plane] = (float)unit;
                 } else {
                     pixels[destination] = (float)unit;
@@ -1384,7 +1483,9 @@ cleanup:
  *   - RGB/Gray integer (8/16-bit contiguous or 16-bit separate strips,
  *     no alpha, orientation 1-4)
  *   - RGB/Gray float32 (SampleFormat=IEEEFP, contiguous, no alpha)
- *   - CIELAB integer/float32 (16-bit or float32, contiguous, no alpha)
+ *   - CIELAB16 contiguous/separate strips; CIELAB float32 contiguous
+ *   - ICCLAB8/ITULAB8 contiguous strips, with original Lab normalization
+ *     (all Lab modes: no alpha, orientation 1-4)
  *   - LogLuv SGILOG/SGILOG24 via decoded XYZ float32, contiguous, no alpha
  *
  * The function returns SIXEL_FALSE for unsupported combinations so callers can
@@ -1431,8 +1532,10 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     double unit;
     double rgb_unit[3];
     double lab_unit[3];
+    double lab_ranges[6];
     int cms_converted;
     int separate_uint16;
+    int lab_decode;
     int native_float;
     int float_colorspace;
     int float_pixelformat;
@@ -1443,6 +1546,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
         TIFF_DECODE_RGB_FLOAT32,
         TIFF_DECODE_GRAY_FLOAT32,
         TIFF_DECODE_LAB_UINT,
+        TIFF_DECODE_LAB_BYTE,
         TIFF_DECODE_LAB_FLOAT32,
         TIFF_DECODE_LOGLUV_FLOAT32
     } decode_mode;
@@ -1504,7 +1608,8 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     float_bytes = pixel_count * 3u * sizeof(float);
 
     (void)TIFFGetFieldDefaulted(tif, TIFFTAG_BITSPERSAMPLE, &bits_per_sample);
-    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLESPERPIXEL, &samples_per_pixel);
+    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLESPERPIXEL,
+                                &samples_per_pixel);
     (void)TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLEFORMAT, &sample_format);
     (void)TIFFGetFieldDefaulted(tif, TIFFTAG_PLANARCONFIG, &planar_config);
     (void)TIFFGetFieldDefaulted(tif, TIFFTAG_ORIENTATION, &orientation);
@@ -1517,14 +1622,17 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
         !(bits_per_sample == 8u && sample_format == SAMPLEFORMAT_UINT &&
           (photometric == PHOTOMETRIC_RGB ||
            photometric == PHOTOMETRIC_MINISBLACK ||
-           photometric == PHOTOMETRIC_MINISWHITE))) {
+           photometric == PHOTOMETRIC_MINISWHITE ||
+           photometric == PHOTOMETRIC_ICCLAB ||
+           photometric == PHOTOMETRIC_ITULAB))) {
         return SIXEL_FALSE;
     }
     /* Do not widen the existing float, alpha or tiled source routes.
      * Extra-sample rejection below also precedes every read or allocation. */
     separate_uint16 = planar_config == PLANARCONFIG_SEPARATE &&
         bits_per_sample == 16u && sample_format == SAMPLEFORMAT_UINT &&
-        ((photometric == PHOTOMETRIC_RGB && samples_per_pixel == 3u) ||
+        (((photometric == PHOTOMETRIC_RGB ||
+           photometric == PHOTOMETRIC_CIELAB) && samples_per_pixel == 3u) ||
          ((photometric == PHOTOMETRIC_MINISBLACK ||
            photometric == PHOTOMETRIC_MINISWHITE) && samples_per_pixel == 1u));
     if ((planar_config != PLANARCONFIG_CONTIG && !separate_uint16) ||
@@ -1590,6 +1698,20 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
             decode_mode = TIFF_DECODE_GRAY_UINT;
         }
         break;
+    case PHOTOMETRIC_ICCLAB:
+    case PHOTOMETRIC_ITULAB:
+        if (samples_per_pixel != 3u || bits_per_sample != 8u ||
+            sample_format != SAMPLEFORMAT_UINT) {
+            return SIXEL_FALSE;
+        }
+        lab_decode = tiff_lab8_ranges(tif, photometric, lab_ranges);
+        if (!lab_decode) {
+            sixel_helper_set_additional_message(
+                "load_tiff: invalid ITULAB Decode ranges.");
+            return SIXEL_TIFF_ERROR;
+        }
+        decode_mode = TIFF_DECODE_LAB_BYTE;
+        break;
     case PHOTOMETRIC_CIELAB:
         if (samples_per_pixel < 3u || samples_per_pixel > 3u) {
             return SIXEL_FALSE;
@@ -1611,7 +1733,8 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     native_float =
         decode_mode == TIFF_DECODE_RGB_FLOAT32 ||
         decode_mode == TIFF_DECODE_GRAY_FLOAT32;
-    if (decode_mode == TIFF_DECODE_LAB_UINT ||
+    if (decode_mode == TIFF_DECODE_LAB_BYTE ||
+        decode_mode == TIFF_DECODE_LAB_UINT ||
         decode_mode == TIFF_DECODE_LAB_FLOAT32) {
         float_colorspace = SIXEL_COLORSPACE_CIELAB;
         float_pixelformat = SIXEL_PIXELFORMAT_CIELABFLOAT32;
@@ -1635,6 +1758,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     case TIFF_DECODE_RGB_UINT:
     case TIFF_DECODE_GRAY_UINT:
     case TIFF_DECODE_LAB_UINT:
+    case TIFF_DECODE_LAB_BYTE:
         if (bits_per_sample == 16u) {
             if (row_sample_count > SIZE_MAX / sizeof(uint16_t)) {
                 return SIXEL_BAD_INTEGER_OVERFLOW;
@@ -1652,7 +1776,8 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     if (scanline_size <= 0 ||
         required_scanline_bytes > (size_t)scanline_size) {
         /* An eligible separate source cannot retry via byte RGBA. */
-        return separate_uint16 || decode_mode == TIFF_DECODE_LOGLUV_FLOAT32
+        return separate_uint16 || decode_mode == TIFF_DECODE_LAB_BYTE ||
+            decode_mode == TIFF_DECODE_LOGLUV_FLOAT32
              ? SIXEL_TIFF_ERROR : SIXEL_FALSE;
     }
 
@@ -1744,6 +1869,30 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
                 rgb_unit[1] = unit;
                 rgb_unit[2] = unit;
                 break;
+            case TIFF_DECODE_LAB_BYTE:
+                for (component = 0u; component < 3u; ++component) {
+                    unit = row_u8[src_base + component];
+                    if (lab_decode == 2) {
+                        unit = lab_ranges[2u * component] + unit / 255.0 *
+                            (lab_ranges[2u * component + 1u] -
+                             lab_ranges[2u * component]);
+                    } else if (component == 0u) {
+                        unit *= 100.0 / 255.0;
+                    } else if (photometric == PHOTOMETRIC_ICCLAB) {
+                        unit -= 128.0;
+                    } else if (component == 1u) {
+                        unit = (unit - 128.0) * (170.0 / 255.0);
+                    } else {
+                        unit = (unit - 96.0) * (200.0 / 255.0);
+                    }
+                    unit /= component == 0u ? 100.0 : 128.0;
+                    if (!isfinite(unit) || fabs(unit) > FLT_MAX) {
+                        status = SIXEL_TIFF_ERROR;
+                        goto cleanup;
+                    }
+                    lab_unit[component] = unit;
+                }
+                break;
             case TIFF_DECODE_LAB_UINT:
                 lab_unit[0] = tiff_decode_lab_u16_l(row_u16[src_base + 0u]);
                 lab_unit[1] = tiff_decode_lab_u16_ab(row_u16[src_base + 1u]);
@@ -1817,6 +1966,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
                 icc_profile_length, photometric);
         } else if (decode_mode == TIFF_DECODE_RGB_FLOAT32 ||
             decode_mode == TIFF_DECODE_GRAY_FLOAT32 ||
+            decode_mode == TIFF_DECODE_LAB_BYTE ||
             decode_mode == TIFF_DECODE_LAB_UINT ||
             decode_mode == TIFF_DECODE_LAB_FLOAT32) {
             /* Retain device RGB/Gray or Lab through a direct linear apply.
@@ -1834,7 +1984,12 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
 
     /* RGB, Gray and Lab already contain signed linear CMS output.
      * Only failed Lab conversion should enter the original Lab fallback. */
-    if (!cms_converted && float_colorspace == SIXEL_COLORSPACE_CIELAB) {
+    if (!cms_converted && decode_mode == TIFF_DECODE_LAB_BYTE) {
+        status = tiff_lab8_to_linear(float_pixels, pixel_count);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    } else if (!cms_converted && float_colorspace == SIXEL_COLORSPACE_CIELAB) {
         status = sixel_helper_convert_colorspace((unsigned char *)float_pixels,
                                                  float_bytes,
                                                  float_pixelformat,
@@ -1847,6 +2002,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
 
     *result = (unsigned char *)float_pixels;
     *pnegotiate_target = decode_mode == TIFF_DECODE_LOGLUV_FLOAT32 ||
+        decode_mode == TIFF_DECODE_LAB_BYTE ||
         (cms_converted && bits_per_sample == 8u &&
          (decode_mode == TIFF_DECODE_RGB_UINT ||
           decode_mode == TIFF_DECODE_GRAY_UINT));
@@ -2303,8 +2459,8 @@ load_with_libtiff(
     }
 
     if (negotiate_target) {
-        /* Native XYZ and managed RGB/Gray establish canonical linear
-         * samples before target conversion. Alpha-bearing input also
+        /* Native XYZ, D50 Lab8 and managed RGB/Gray establish canonical
+         * linear samples before target conversion. Alpha-bearing input also
          * resolves background composition before this final boundary.
          * Failed byte ICC input keeps its original straight-source values
          * in gamma byte or float storage, depending on source fractions. */

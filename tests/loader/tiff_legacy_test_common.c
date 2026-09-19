@@ -426,7 +426,11 @@ lc_strip(sixel_frame_t *frame, unsigned char *background)
 #define tiff_integer_layout_t til_ns_0_1
 #define tiff_scatter_integer_row til_ns_0_2
 #define tiff_try_load_integer_layouts til_ns_0_3
+#define tiff_lab8_ranges tlx_copy_5_ranges
+#define tiff_lab8_to_linear tlx_copy_5_linear
 #include "src/loader-libtiff.c"
+#undef tiff_lab8_to_linear
+#undef tiff_lab8_ranges
 #undef tiff_publish_integer_alpha
 #undef tiff_integer_layout_t
 #undef tiff_scatter_integer_row

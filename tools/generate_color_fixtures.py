@@ -1874,6 +1874,8 @@ def main():
     from generate_tiff_lab_linear_tests import build as tiff_lab_linear_tests
     outputs.update(tiff_lab_linear_tests(outputs['colorsync-lab.json'],
                                         outputs['cli-rgb.icc']))
+    from generate_tiff_lab_layout_tests import build as tiff_lab_layout_tests
+    outputs.update(tiff_lab_layout_tests(outputs['cli-rgb.icc']))
     from generate_tiff_logluv_tests import build as tiff_logluv_tests
     outputs.update(tiff_logluv_tests(profile, opponents, encode))
     from generate_tiff_float_tests import build as tiff_float_tests

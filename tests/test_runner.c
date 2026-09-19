@@ -1252,6 +1252,25 @@ int test_loader_0471_ycbcr(int argc, char **argv);
 int test_loader_0472_ycbcr(int argc, char **argv);
 int test_loader_0473_ycbcr(int argc, char **argv);
 int test_loader_0474_ycbcr(int argc, char **argv);
+int test_loader_0491_lab_layout(int argc, char **argv);
+int test_loader_0492_lab_layout(int argc, char **argv);
+int test_loader_0493_lab_layout(int argc, char **argv);
+int test_loader_0475_lab_layout(int argc, char **argv);
+int test_loader_0476_lab_layout(int argc, char **argv);
+int test_loader_0477_lab_layout(int argc, char **argv);
+int test_loader_0478_lab_layout(int argc, char **argv);
+int test_loader_0479_lab_layout(int argc, char **argv);
+int test_loader_0480_lab_layout(int argc, char **argv);
+int test_loader_0481_lab_layout(int argc, char **argv);
+int test_loader_0482_lab_layout(int argc, char **argv);
+int test_loader_0483_lab_layout(int argc, char **argv);
+int test_loader_0484_lab_layout(int argc, char **argv);
+int test_loader_0485_lab_layout(int argc, char **argv);
+int test_loader_0486_lab_layout(int argc, char **argv);
+int test_loader_0487_lab_layout(int argc, char **argv);
+int test_loader_0488_lab_layout(int argc, char **argv);
+int test_loader_0489_lab_layout(int argc, char **argv);
+int test_loader_0490_lab_layout(int argc, char **argv);
 int test_loader_0383_sep16(int argc, char **argv);
 int test_loader_0384_sep16(int argc, char **argv);
 int test_loader_0385_sep16(int argc, char **argv);
@@ -2969,6 +2988,44 @@ static test_entry_t const test_entries[] = {
       test_loader_0473_ycbcr },
     { "loader/0474_ycbcr_targets",
       test_loader_0474_ycbcr },
+    { "loader/0491_lab_layout_profile_guard",
+      test_loader_0491_lab_layout },
+    { "loader/0492_lab8_gamma_target",
+      test_loader_0492_lab_layout },
+    { "loader/0493_lab8_byte_target",
+      test_loader_0493_lab_layout },
+    { "loader/0475_icclab8_source",
+      test_loader_0475_lab_layout },
+    { "loader/0476_itulab8_source",
+      test_loader_0476_lab_layout },
+    { "loader/0477_itulab8_decode",
+      test_loader_0477_lab_layout },
+    { "loader/0478_lab16_planar_le_source",
+      test_loader_0478_lab_layout },
+    { "loader/0479_lab16_planar_be_source",
+      test_loader_0479_lab_layout },
+    { "loader/0480_lab16_planar_packbits",
+      test_loader_0480_lab_layout },
+    { "loader/0481_icclab8_unmanaged",
+      test_loader_0481_lab_layout },
+    { "loader/0482_itulab8_unmanaged",
+      test_loader_0482_lab_layout },
+    { "loader/0483_itulab8_decode_unmanaged",
+      test_loader_0483_lab_layout },
+    { "loader/0484_lab16_planar_unmanaged",
+      test_loader_0484_lab_layout },
+    { "loader/0485_lab_layout_builtin",
+      test_loader_0485_lab_layout },
+    { "loader/0486_lab_layout_lcms2",
+      test_loader_0486_lab_layout },
+    { "loader/0487_lab_layout_colorsync",
+      test_loader_0487_lab_layout },
+    { "loader/0488_itulab8_invalid_decode",
+      test_loader_0488_lab_layout },
+    { "loader/0489_lab16_planar_late_read",
+      test_loader_0489_lab_layout },
+    { "loader/0490_lab_layout_allocation",
+      test_loader_0490_lab_layout },
     { "loader/0383_separate16_rgb_source",
       test_loader_0383_sep16 },
     { "loader/0384_separate16_black_source",

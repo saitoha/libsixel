@@ -153,7 +153,11 @@ uf_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define tiff_integer_layout_t til_ns_6_1
 #define tiff_scatter_integer_row til_ns_6_2
 #define tiff_try_load_integer_layouts til_ns_6_3
+#define tiff_lab8_ranges tlx_copy_3_ranges
+#define tiff_lab8_to_linear tlx_copy_3_linear
 #include "src/loader-libtiff.c"
+#undef tiff_lab8_to_linear
+#undef tiff_lab8_ranges
 #undef tiff_publish_integer_alpha
 #undef tiff_integer_layout_t
 #undef tiff_scatter_integer_row

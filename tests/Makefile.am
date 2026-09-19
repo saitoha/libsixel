@@ -1094,6 +1094,26 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0472_YCBCR_ALLOCATION_FAILURE \
     -DBUILD_TEST_0473_YCBCR_PROFILE_FAILURE \
     -DBUILD_TEST_0474_YCBCR_TARGETS \
+    -DBUILD_TIFF_LAB_LAYOUT_TEST_COMMON \
+    -DBUILD_TEST_0475_ICCLAB8_SOURCE \
+    -DBUILD_TEST_0476_ITULAB8_SOURCE \
+    -DBUILD_TEST_0477_ITULAB8_DECODE \
+    -DBUILD_TEST_0478_LAB16_PLANAR_LE_SOURCE \
+    -DBUILD_TEST_0479_LAB16_PLANAR_BE_SOURCE \
+    -DBUILD_TEST_0480_LAB16_PLANAR_PACKBITS \
+    -DBUILD_TEST_0481_ICCLAB8_UNMANAGED \
+    -DBUILD_TEST_0482_ITULAB8_UNMANAGED \
+    -DBUILD_TEST_0483_ITULAB8_DECODE_UNMANAGED \
+    -DBUILD_TEST_0484_LAB16_PLANAR_UNMANAGED \
+    -DBUILD_TEST_0485_LAB_LAYOUT_BUILTIN \
+    -DBUILD_TEST_0486_LAB_LAYOUT_LCMS2 \
+    -DBUILD_TEST_0487_LAB_LAYOUT_COLORSYNC \
+    -DBUILD_TEST_0488_ITULAB8_INVALID_DECODE \
+    -DBUILD_TEST_0489_LAB16_PLANAR_LATE_READ \
+    -DBUILD_TEST_0490_LAB_LAYOUT_ALLOCATION \
+    -DBUILD_TEST_0491_LAB_LAYOUT_PROFILE_GUARD \
+    -DBUILD_TEST_0492_LAB8_GAMMA_TARGET \
+    -DBUILD_TEST_0493_LAB8_BYTE_TARGET \
     -DBUILD_TIFF_ALPHA_TEST_COMMON \
     -DBUILD_TIFF_ALPHA_FAULT_TEST_COMMON \
     -DBUILD_TIFF_BYTE_TEST_COMMON \
@@ -1674,6 +1694,27 @@ test_runner_SOURCES = test_runner.c \
     loader/libtiff/0472_ycbcr_allocation_failure.c \
     loader/libtiff/0473_ycbcr_profile_failure.c \
     loader/libtiff/0474_ycbcr_targets.c \
+    loader/tiff_lab_layout_test_common.c \
+    loader/tiff_lab_layout_test_common.h \
+    loader/libtiff/0475_icclab8_source.c \
+    loader/libtiff/0476_itulab8_source.c \
+    loader/libtiff/0477_itulab8_decode.c \
+    loader/libtiff/0478_lab16_planar_le_source.c \
+    loader/libtiff/0479_lab16_planar_be_source.c \
+    loader/libtiff/0480_lab16_planar_packbits.c \
+    loader/libtiff/0481_icclab8_unmanaged.c \
+    loader/libtiff/0482_itulab8_unmanaged.c \
+    loader/libtiff/0483_itulab8_decode_unmanaged.c \
+    loader/libtiff/0484_lab16_planar_unmanaged.c \
+    loader/libtiff/0485_lab_layout_builtin.c \
+    loader/libtiff/0486_lab_layout_lcms2.c \
+    loader/libtiff/0487_lab_layout_colorsync.c \
+    loader/libtiff/0488_itulab8_invalid_decode.c \
+    loader/libtiff/0489_lab16_planar_late_read.c \
+    loader/libtiff/0490_lab_layout_allocation.c \
+    loader/libtiff/0491_lab_layout_profile_guard.c \
+    loader/libtiff/0492_lab8_gamma_target.c \
+    loader/libtiff/0493_lab8_byte_target.c \
     loader/tiff_alpha_test_common.c \
     loader/tiff_alpha_test_common.h \
     loader/tiff_alpha_fault_test_common.c \
