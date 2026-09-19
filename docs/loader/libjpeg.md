@@ -24,6 +24,8 @@ Backend-specific suboptions are `orientation=0|1` (`O`) and `cms_engine=auto|lcm
 
 Float storage preserves the values supplied by the decode/conversion route; it does not reverse JPEG loss or establish that an 8-bit JPEG contains higher-depth source information. Likewise, disabling CMS does not disable Exif orientation. Keep those controls fixed when comparing the external and builtin paths.
 
+Eight-bit RGB and grayscale decode directly to gamma RGB888 when no ICC payload needs interpretation and the encoder has not requested float decoding. This also applies with CMS enabled but no embedded profile. `-.float32` and independent float-work requirements reach the loader through its precision preference. CMYK/YCCK conversion and high-depth decoding retain their existing float paths.
+
 ## CMYK and YCCK ICC source coordinates
 
 libjpeg preserves inverted Adobe CMYK device coordinates, including the CMYK scanlines decoded from Adobe YCCK. ICC CMYK input expresses ink coverage. The adapter complements all four components only for matching APP14 markers: CMYK/transform 0 or YCCK/transform 2. Marker-absent input retains its source values. This follows the [libjpeg decoder](https://github.com/libjpeg-turbo/libjpeg-turbo/blob/3.2.0/src/jdcolor.c) and [Little CMS jpgicc input flavor selection](https://github.com/mm2/Little-CMS/blob/master/utils/jpgicc/jpgicc.c).

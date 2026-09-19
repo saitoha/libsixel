@@ -86,17 +86,15 @@ pipelines.
 .RS
 .TP 5
 .B auto
--> honor the \fBSIXEL_FLOAT32_DITHER\fP environment. This is the default
-   and currently maps to the legacy 8bit backend when the variable is
-   unset.
+-> choose from source and processing requirements, without requesting
+   an additional float promotion.
 .TP 5
 .B 8bit
--> use the historical integer pipeline when the working color space is
-   \\fBgamma\\fP. Float-only working color spaces still require float32.
+-> prefer byte storage when sufficient. CMS output, high-depth source
+   samples and color-space calculations retain their float requirements.
 .TP 5
 .B float32
--> request the experimental high-precision solvers without exporting the
-   environment variable manually.
+-> request float processing even when byte storage would suffice.
 .RE
 .TP 5
 .B \-G \fIPOLICY[:KEY=VALUE]\fP, \-\-gpu\-policy=\fIPOLICY[:KEY=VALUE]\fP
@@ -1330,10 +1328,11 @@ silence or a valid unavailable response permits unconfirmed gamma fallback;
 partial or malformed replies fail before image output. Timeout retires
 further queries; restoration then uses a bounded write without verification.
 .br
-Display P3 requires automatic or float precision, gamma or linear working
+Display P3 requires effective float precision, gamma or linear working
 coordinates, linear clustering, K-means, exact lookup, full-frame sampling,
 none or FS dithering, no binning, merge, cover or snap, and RGB SIXEL output.
-Explicit 8bit precision and palette input or export with
+The P3 float requirement overrides an explicit byte preference.
+Palette input or export with
 \fB-m\fP or \fB-M\fP are unsupported with Display P3.
 .TP 5
 .B \-K \fIauto[:KEY=PATH]\fP, \-\-completion\-policy=\fIauto[:KEY=PATH]\fP

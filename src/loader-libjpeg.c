@@ -83,6 +83,7 @@ typedef struct sixel_loader_libjpeg_component {
     sixel_allocator_t *allocator;
     unsigned int ref;
     int enable_cms;
+    int prefer_float32;
     int fstatic;
     int fuse_palette;
     int reqcolors;
@@ -1147,7 +1148,8 @@ load_jpeg(unsigned char **result,
           int *pheight,
           int *ppixelformat,
           sixel_allocator_t *allocator,
-          int enable_cms)
+          int enable_cms,
+          int prefer_float32)
 {
     SIXELSTATUS status;
     JDIMENSION row_stride;
@@ -1308,7 +1310,7 @@ load_jpeg(unsigned char **result,
                                                             icc_profile,
                                                             icc_profile_length
                                                             );
-        } else {
+        } else if (prefer_float32 || icc_profile_length != 0u) {
             status = jpeg_promote_rgb888_to_linear_float32(result,
                                                            *pwidth,
                                                            *pheight,
@@ -1317,6 +1319,11 @@ load_jpeg(unsigned char **result,
                                                            icc_profile,
                                                            icc_profile_length
                                                            );
+        } else {
+            /* No profile transform and no float-work request: libjpeg's
+             * byte samples are already the required gamma RGB frame. */
+            *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
+            status = SIXEL_OK;
         }
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -1535,7 +1542,8 @@ load_with_libjpeg(
     int                       /* in */     start_frame_no_set,
     int                       /* in */     start_frame_no,
     sixel_load_image_function /* in */     fn_load,
-    void                      /* in/out */ *context)
+    void                      /* in/out */ *context,
+    int                       /* in */     prefer_float32)
 {
     SIXELSTATUS status;
     sixel_frame_t *frame;
@@ -1578,7 +1586,8 @@ load_with_libjpeg(
                        &frame->height,
                        &pixelformat,
                        allocator,
-                       enable_cms);
+                       enable_cms,
+                       prefer_float32);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1687,6 +1696,10 @@ sixel_loader_libjpeg_setopt(sixel_loader_component_t *component,
 
     self = (sixel_loader_libjpeg_component_t *)component;
     switch (option) {
+    case SIXEL_LOADER_COMPONENT_OPTION_PREFER_FLOAT32:
+        flag = (int const *)value;
+        self->prefer_float32 = flag != NULL && *flag != 0;
+        return SIXEL_OK;
     case SIXEL_LOADER_COMPONENT_OPTION_LIBJPEG_ENABLE_CMS:
         flag = (int const *)value;
         self->enable_cms = (flag != NULL && *flag != 0) ? 1 : 0;
@@ -1795,7 +1808,8 @@ sixel_loader_libjpeg_load(sixel_loader_component_t *component,
                                self->has_start_frame_no,
                                self->start_frame_no,
                                loader_timeline_emit_frame_callback,
-                               &timeline_state);
+                               &timeline_state,
+                               self->prefer_float32);
 
     loader_timeline_callback_close_header(&timeline_state, status);
     loader_timeline_callback_close_decode(&timeline_state, status);
@@ -1853,6 +1867,7 @@ sixel_loader_libjpeg_new(sixel_allocator_t *allocator,
     self->allocator = allocator;
     self->ref = 1u;
     self->enable_cms = 0;
+    self->prefer_float32 = 0;
     self->enable_orientation = 1;
     self->reqcolors = 256;
     self->start_frame_no = INT_MIN;

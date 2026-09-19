@@ -1283,6 +1283,7 @@ int test_loader_0410_sep16(int argc, char **argv);
 int test_loader_0411_sep16(int argc, char **argv);
 int test_loader_0412_sep16(int argc, char **argv);
 int test_loader_0186_png_byte_target(int argc, char **argv);
+int test_loader_0189_byte_storage(int argc, char **argv);
 int test_loader_0187_coregraphics_png(int argc, char **argv);
 int test_loader_0188_colorsync_linear(int argc, char **argv);
 int test_loader_0189_png_palette_samples(int argc, char **argv);
@@ -1571,13 +1572,13 @@ static test_entry_t const test_entries[] = {
       test_plan_0001_resize_linear_float32 },
     { "planner/0002_resize_allocation_failure",
       test_plan_0002_resize_alloc_failure },
-    { "precision/0001_gamma_byte_boundary", test_precision_0001 },
-    { "precision/0002_linear_byte_boundary", test_precision_0002 },
+    { "precision/0001_byte_request_float_source", test_precision_0001 },
+    { "precision/0002_byte_request_linear_source", test_precision_0002 },
     { "precision/0003_auto_float_source", test_precision_0003 },
     { "precision/0004_non_gamma_float_work", test_precision_0004 },
     { "precision/0005_resize_float_override", test_precision_0005 },
-    { "precision/0006_resize_linear_byte_work", test_precision_0006 },
-    { "precision/0007_resize_preserve_byte_work", test_precision_0007 },
+    { "precision/0006_resize_linear_float_source", test_precision_0006 },
+    { "precision/0007_resize_preserve_float_source", test_precision_0007 },
     { "precision/0008_explicit_float_preserve", test_precision_0008 },
     { "chunk/0001_chunk_factory", test_chunk_0001_chunk_factory },
     { "timeline/0001_timeline_logger_factory",
@@ -3029,6 +3030,7 @@ static test_entry_t const test_entries[] = {
     { "loader/0412_separate16_excluded_layouts",
       test_loader_0412_sep16 },
     { "loader/0186_png_byte_target", test_loader_0186_png_byte_target },
+    { "loader/0189_byte_storage", test_loader_0189_byte_storage },
     { "loader/0187_coregraphics_png", test_loader_0187_coregraphics_png },
     { "loader/0188_colorsync_linear", test_loader_0188_colorsync_linear },
     { "loader/0189_png_palette_samples",

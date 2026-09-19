@@ -14,7 +14,7 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 precision_first=$(set +xv; SIXEL_FLOAT32_DITHER=0 \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 \
     --precision=8bit -Wlinear -Wgamma -dnone -p16 \
     -v -o/dev/null "${input_image}" 2>&1) || {
     echo "not ok 1 - precision-first conversion failed"
@@ -26,7 +26,7 @@ case "${precision_first}" in *work=rgb888**) true ;; *) false ;; esac || {
 }
 
 colorspace_first=$(set +xv; SIXEL_FLOAT32_DITHER=0 \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 \
     -Wlinear --precision=8bit -Wgamma -dnone -p16 \
     -v -o/dev/null "${input_image}" 2>&1) || {
     echo "not ok 1 - colorspace-first conversion failed"

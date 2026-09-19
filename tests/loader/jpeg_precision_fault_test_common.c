@@ -227,7 +227,7 @@ test_jp_fault(int argc, char **argv)
         jf_inject = stage;
         status = jf_load_jpeg(&pixels, sixel_chunk_get_buffer(chunk),
             sixel_chunk_get_size(chunk), &width, &height, &format,
-            allocator, 1);
+            allocator, 1, 1);
         if (SIXEL_FAILED(status) || width != 64 || height != 64 ||
             format != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
             !jf_values(pixels, stage)) {
@@ -287,7 +287,7 @@ test_jp_gray16(int argc, char **argv)
     status = sixel_chunk_create_from_source(&chunk, path, 0, NULL, allocator);
     if (SIXEL_FAILED(status)) { goto cleanup; }
     status = jf_load_jpeg(&pixels, sixel_chunk_get_buffer(chunk),
-        sixel_chunk_get_size(chunk), &width, &height, &format, allocator, 0);
+        sixel_chunk_get_size(chunk), &width, &height, &format, allocator, 0, 1);
     if (SIXEL_FAILED(status) || width != 64 || height != 64 ||
         format != SIXEL_PIXELFORMAT_RGBFLOAT32) {
         goto cleanup;

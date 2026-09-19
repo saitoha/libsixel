@@ -197,10 +197,10 @@ static cli_option_help_t const g_option_help_table[] = {
         '.',
         "precision",
         "-., --precision=MODE\n"
-        "    control quantization precision.\n"
-        "      auto    -> honor the SIXEL_FLOAT32_DITHER environment (default).\n"
-        "      8bit    -> use the integer pipeline with gamma working space.\n"
-        "      float32 -> request the experimental high-precision path.\n"
+        "    select base precision; required color precision takes priority.\n"
+        "      auto    -> choose from source and processing requirements.\n"
+        "      8bit    -> prefer bytes when sufficient; keep required float.\n"
+        "      float32 -> request float even when bytes would suffice.\n"
     },
     {
         '7',
@@ -1172,9 +1172,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "    auto cannot be combined with DRCS output (-@)\n"
         "    CLI overrides SIXEL_OUTPUT_COLORSPACE and the auto timeout\n"
         "    SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS environment value\n"
-        "    P3: auto/float precision, linear clustering, gamma/linear\n"
+        "    P3: effective float precision, linear clustering, gamma/linear\n"
         "    working space, exact lookup, none/fs dither; no binning, merge,\n"
-        "    cover or snap; explicit 8bit and -m/-M unsupported\n"
+        "    cover or snap; -m/-M unsupported\n"
     },
     {
         '1',

@@ -456,7 +456,7 @@ testonly_loader_frame_apply_orientation(sixel_frame_t *frame,
 
 /*
  * Avoid global symbol collisions with the linked libsixel objects while
- * keeping access to load_with_libwebp() inside this translation unit.
+ * keeping access to load_with_libwebp(, 1) inside this translation unit.
  */
 #define sixel_trace_topic_message testonly_sixel_trace_topic_message
 #define loader_timeline_phase_start testonly_loader_timeline_phase_start
@@ -646,7 +646,7 @@ run_animation_decode_fail_case(webp_fi_failpoint_t failpoint,
                                0,
                                0,
                                capture_noop_frame,
-                               NULL);
+                               NULL, 1);
     webpfi_set_failpoint(WEBP_FI_FAIL_NONE);
 
     if (status != expected_status) {
@@ -730,7 +730,7 @@ run_demux_fail_case(char const *label)
                                0,
                                0,
                                capture_noop_frame,
-                               NULL);
+                               NULL, 1);
     webpfi_set_failpoint(WEBP_FI_FAIL_NONE);
 
     if (status != SIXEL_BAD_INPUT) {
@@ -837,7 +837,7 @@ run_load_webp_fail_case(webp_fi_failpoint_t failpoint,
                        &cms_converted,
                        NULL,
                        allocator,
-                       NULL);
+                       NULL, 1);
     webpfi_set_failpoint(WEBP_FI_FAIL_NONE);
 
     if (status != expected_status) {
@@ -1355,7 +1355,7 @@ run_fast_frame_count_limit_case(void)
                                0,
                                0,
                                capture_noop_frame,
-                               NULL);
+                               NULL, 1);
     if (status != SIXEL_BAD_INPUT) {
         fprintf(stderr,
                 "libwebp fault injection frame-limit-fast: expected SIXEL_BAD_INPUT, got %d\n",

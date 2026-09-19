@@ -990,16 +990,18 @@ tiff_read_separate_uint16(float *pixels, TIFF *tif, unsigned char *scanline,
 }
 
 
-/* The residual integer reader separates storage addressing from source
- * interpretation. Integer numerators fit exactly in F32, so separate alpha
- * can arrive in a later plane without rounding the final color/alpha ratio
- * twice or allocating another full-image integer buffer. */
+/* Separate integer storage addressing from source interpretation. Unmanaged
+ * byte sources write bytes directly. When float work is required, integer
+ * numerators fit exactly in F32, so separate alpha can arrive in a later
+ * plane without rounding the final color/alpha ratio twice or allocating
+ * another full-image integer buffer. */
 typedef struct {
     uint32_t width, height, output_width, output_height;
     uint16_t bits, samples, planar, orientation, photometric;
     int has_alpha, associated;
     uint16_t *map[3];
     float *pixels;
+    unsigned char *bytes;
     unsigned char *alpha;
 } tiff_integer_layout_t;
 
@@ -1077,6 +1079,21 @@ tiff_scatter_integer_row(tiff_integer_layout_t *layout,
                     ((uint16_t *)layout->alpha)[destination] =
                         (uint16_t)value;
                 }
+            } else if (layout->bytes != NULL) {
+                /* Unmanaged byte samples do not need a normalized float
+                 * image. All 1/2/4-bit gray levels expand exactly to bytes. */
+                if (layout->photometric == PHOTOMETRIC_RGB) {
+                    layout->bytes[destination * 3u + channel] =
+                        (unsigned char)value;
+                } else {
+                    if (layout->photometric == PHOTOMETRIC_MINISWHITE) {
+                        value = maximum - value;
+                    }
+                    for (c = 0u; c < 3u; ++c) {
+                        layout->bytes[destination * 3u + c] =
+                            (unsigned char)(value * (255u / maximum));
+                    }
+                }
             } else if (layout->photometric == PHOTOMETRIC_RGB) {
                 layout->pixels[destination * 3u + channel] = (float)value;
             } else {
@@ -1133,6 +1150,8 @@ tiff_try_load_integer_layouts(unsigned char **result, TIFF *tif,
     int tiled;
     int managed;
     int all_opaque;
+    int byte_storage;
+    int has_mask;
 
     memset(&layout, 0, sizeof(layout));
     layout.width = width;
@@ -1183,10 +1202,15 @@ tiff_try_load_integer_layouts(unsigned char **result, TIFF *tif,
         layout.samples != (rgb ? 3u : 1u) + layout.has_alpha) {
         return SIXEL_FALSE;
     }
+    layout.associated = layout.has_alpha &&
+        extra_info[0] == EXTRASAMPLE_ASSOCALPHA;
+    byte_storage = layout.bits <= 8u && !palette &&
+        (profile == NULL || profile_length == 0u) &&
+        (!layout.has_alpha || (!layout.associated && bgcolor == NULL));
     /* Established contiguous and separate opaque16 readers retain their
      * gates, fault behavior and target policy. Float/Lab/LogLuv also remain
      * outside this integer reader, including their legacy delegation. */
-    if (!tiled && layout.orientation <= 4u && !palette &&
+    if (!byte_storage && !tiled && layout.orientation <= 4u && !palette &&
         layout.bits >= 8u &&
         (layout.planar == PLANARCONFIG_CONTIG ||
          (layout.bits == 16u && !layout.has_alpha))) {
@@ -1197,8 +1221,6 @@ tiff_try_load_integer_layouts(unsigned char **result, TIFF *tif,
                                 &layout.map[2])) {
         return SIXEL_TIFF_ERROR;
     }
-    layout.associated = layout.has_alpha &&
-        extra_info[0] == EXTRASAMPLE_ASSOCALPHA;
     layout.output_width = layout.orientation >= 5u ? height : width;
     layout.output_height = layout.orientation >= 5u ? width : height;
     if (width == 0u || height == 0u ||
@@ -1241,13 +1263,19 @@ tiff_try_load_integer_layouts(unsigned char **result, TIFF *tif,
      * including a short decoded tile; no convenience-RGBA retry is safe. */
     buffer = (unsigned char *)sixel_allocator_malloc(allocator,
                                                      (size_t)buffer_size);
-    layout.pixels = (float *)sixel_allocator_malloc(allocator,
-                                                   count * 3u * sizeof(float));
+    if (byte_storage) {
+        layout.bytes = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                               count * 3u);
+    } else {
+        layout.pixels = (float *)sixel_allocator_malloc(allocator,
+                                                count * 3u * sizeof(float));
+    }
     if (layout.has_alpha) {
         layout.alpha = (unsigned char *)sixel_allocator_malloc(allocator,
                                                 count * (layout.bits / 8u));
     }
-    if (buffer == NULL || layout.pixels == NULL ||
+    if (buffer == NULL ||
+        (byte_storage ? layout.bytes == NULL : layout.pixels == NULL) ||
         (layout.has_alpha && layout.alpha == NULL)) {
         status = SIXEL_BAD_ALLOCATION;
         goto cleanup;
@@ -1271,6 +1299,27 @@ tiff_try_load_integer_layouts(unsigned char **result, TIFF *tif,
                 }
             }
         }
+    }
+    if (byte_storage) {
+        has_mask = 0;
+        if (layout.has_alpha) {
+            for (i = 0u; i < count; ++i) {
+                layout.alpha[i] = layout.alpha[i] == 0u;
+                has_mask |= layout.alpha[i];
+            }
+        }
+        if (has_mask) {
+            *pmask = layout.alpha;
+            layout.alpha = NULL;
+        }
+        *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
+        *pnegotiate_target = 0;
+        *result = layout.bytes;
+        layout.bytes = NULL;
+        *pwidth = (int)layout.output_width;
+        *pheight = (int)layout.output_height;
+        status = SIXEL_OK;
+        goto cleanup;
     }
     maximum = palette ? 65535u : (1u << layout.bits) - 1u;
     for (i = 0u; i < count; ++i) {
@@ -1323,6 +1372,7 @@ tiff_try_load_integer_layouts(unsigned char **result, TIFF *tif,
 cleanup:
     sixel_allocator_free(allocator, buffer);
     sixel_allocator_free(allocator, layout.pixels);
+    sixel_allocator_free(allocator, layout.bytes);
     sixel_allocator_free(allocator, layout.alpha);
     return status;
 }

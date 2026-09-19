@@ -19,7 +19,7 @@ set -v
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossy-8x8-1frame-anim-min.webp"
 
 msg_default=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >/dev/null) || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -.float32 -L libwebp! -ldisable "${image_webp}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "single-frame animation decode failed (default)"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg_default}" >&2
@@ -38,7 +38,7 @@ case "${msg_default}" in
 esac
 
 msg_one=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=1 \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >/dev/null) || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -.float32 -L libwebp! -ldisable "${image_webp}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "single-frame animation decode failed (value 1)"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg_one}" >&2
@@ -57,7 +57,7 @@ case "${msg_one}" in
 esac
 
 msg_zero=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=0 \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >/dev/null) || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -.float32 -L libwebp! -ldisable "${image_webp}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "single-frame animation decode failed (value 0)"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg_zero}" >&2
@@ -76,7 +76,7 @@ case "${msg_zero}" in
 esac
 
 msg_empty=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE='' \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >/dev/null) || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -.float32 -L libwebp! -ldisable "${image_webp}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "single-frame animation decode failed (empty value)"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg_empty}" >&2

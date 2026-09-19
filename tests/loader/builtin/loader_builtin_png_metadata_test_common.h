@@ -84,13 +84,13 @@ png_metadata_check(int fixture, int engine, int background)
                                   : source->explicit_gamma;
     }
     if (engine == SIXEL_CMS_ENGINE_NONE || !source->transfer) {
-        expected = has_alpha ? source->srgb : source->source;
-        if (source->depth == 8 &&
-            (!has_alpha || engine == SIXEL_CMS_ENGINE_NONE)) {
-            format = SIXEL_PIXELFORMAT_RGB888;
-            colorspace = SIXEL_COLORSPACE_GAMMA;
-        } else if (!has_alpha) {
-            format = SIXEL_PIXELFORMAT_RGBFLOAT32;
+        expected = has_alpha && background != 0 ? source->srgb
+                                               : source->source;
+        if (!has_alpha || background == 0) {
+            /* A zero mask alone does not change source RGB coordinates.
+             * UINT16 retains its original precision in gamma float. */
+            format = source->depth == 8 ? SIXEL_PIXELFORMAT_RGB888
+                                       : SIXEL_PIXELFORMAT_RGBFLOAT32;
             colorspace = SIXEL_COLORSPACE_GAMMA;
         }
     }

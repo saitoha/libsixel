@@ -1,5 +1,5 @@
 /*
- * Verify libjpeg loader reports float output for JPEG sources.
+ * Verify libjpeg retains byte output or source high precision.
  */
 
 #include "tests/loader/pixelformat_test_common.h"
@@ -19,7 +19,7 @@ run_libjpeg_loader_test(void)
 
     rc = run_loader_component_case("libjpeg loader (8-bit grayscale)",
                                    JPEG_IMAGE_PATH,
-                                   SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                   SIXEL_PIXELFORMAT_RGB888,
                                    600,
                                    450,
                                    new_libjpeg_component);

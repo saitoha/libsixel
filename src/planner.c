@@ -683,13 +683,11 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
         : 0;
     source_colorspace = sixel_frame_get_colorspace(frame);
     prefer_float32 = encoder->prefer_float32;
-    if (source_is_float32
-        && encoder->precision_requested != SIXEL_OPTION_PRECISION_8BIT) {
-        /*
-         * Auto precision retains loader float samples. An explicit byte
-         * request instead uses the intentional frame conversion boundary;
-         * working-space and resize float requirements still take priority.
-         */
+    if (source_is_float32 ||
+        encoder->working_colorspace != source_colorspace) {
+        /* A byte preference never discards precision supplied by a loader
+         * or required by a coordinate transform. Explicit float additionally
+         * promotes an otherwise sufficient byte path. */
         prefer_float32 = 1;
     }
     /* Preserve the requested work precision even when resize itself uses

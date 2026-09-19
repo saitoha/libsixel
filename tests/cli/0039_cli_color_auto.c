@@ -432,7 +432,9 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
         arguments[count++] = "-o-";
     }
     if (!baseline && color_auto_is(name, "encode-error")) {
-        arguments[count++] = "--precision=8bit";
+        /* Unsupported P3 working coordinates fail after policy negotiation.
+         * A byte preference is legal and is promoted by the P3 requirement. */
+        arguments[count++] = "-Woklab";
     }
     if (!baseline && color_auto_is(name, "stdin")) {
         input = open(fixture, O_RDONLY);

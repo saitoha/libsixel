@@ -24,14 +24,13 @@ precision_sink(char *data, int size, void *context)
 static int
 precision_frame_samples(int mode, int linear)
 {
-    static unsigned int const witnesses[] = {6, 9, 11, 20, 23, 26};
+    static unsigned int const witnesses[] = {0, 6, 9, 11, 14, 20, 23, 26};
     sixel_encoder_t *encoder;
     sixel_frame_t *frame;
     sixel_output_t *output;
     SIXELSTATUS status;
     float pixels[8 * 3];
     float original[3];
-    unsigned char const *bytes;
     uint32_t bits;
     unsigned int i;
     unsigned int j;
@@ -43,12 +42,15 @@ precision_frame_samples(int mode, int linear)
     float const *actual;
     double delta;
     double budget;
+    double expected;
+    double magnitude;
 
     failed = 0;
     /* Constant footprints keep resize geometry independent of interpolation
      * weights. Exact source bits and byte expectations come from Decimal
      * fixtures; gamma resize has its separate float publication budget. */
-    for (witness = 0; witness < 6u; ++witness) {
+    for (witness = 0; witness < sizeof(witnesses) / sizeof(witnesses[0]);
+         ++witness) {
         encoder = NULL;
         frame = NULL;
         output = NULL;
@@ -139,8 +141,7 @@ precision_frame_samples(int mode, int linear)
         }
         status = sixel_encoder_encode_frame(encoder, frame, output);
         expected_format = mode == 3 ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 :
-            mode == 2 || mode == 4 || mode == 7 ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
-                                                SIXEL_PIXELFORMAT_RGB888;
+                                     SIXEL_PIXELFORMAT_RGBFLOAT32;
         if (SIXEL_FAILED(status) || count == 0 ||
             sixel_frame_get_pixelformat(frame) != expected_format ||
             sixel_frame_get_colorspace(frame) !=
@@ -152,29 +153,25 @@ precision_frame_samples(int mode, int linear)
                 mode, linear, status, sixel_frame_get_pixelformat(frame),
                 expected_format);
             failed = 1;
-        } else if (expected_format == SIXEL_PIXELFORMAT_RGB888) {
-            bytes = sixel_frame_get_pixels(frame);
-            for (i = 0; i < (mode >= 4 ? 2u : 8u); ++i) {
-                for (j = 0; j < 3; ++j) {
-                    if (bytes[i * 3 + j] != color_frame_byte[at].bytes[j]) {
-                        fprintf(stderr, "byte mismatch mode=%d linear=%d "
-                            "witness=%u got=%u expected=%u\n", mode, linear,
-                            witness, bytes[i * 3 + j],
-                            color_frame_byte[at].bytes[j]);
-                        failed = 1;
-                    }
-                }
-            }
         } else {
             actual = (float const *)sixel_frame_get_pixels(frame);
             for (i = 0; i < (mode >= 4 ? 2u : 8u); ++i) {
                 for (j = 0; j < 3u; ++j) {
-                    /* Float resize publishes a linear intermediate. The
-                     * other float cases preserve their original coordinates
-                     * exactly; no production transform is an oracle here. */
-                    budget = mode == 4
-                        ? fabs((double)original[j]) * 64.0 / 16777216.0 : 0.0;
-                    delta = fabs((double)actual[i * 3u + j] - original[j]);
+                    /* Independently evaluate the extended sRGB contract.
+                     * Existing coordinates are exact when no transform is
+                     * needed; transformed values allow float publication. */
+                    expected = original[j];
+                    if (linear && mode != 3) {
+                        magnitude = fabs(expected);
+                        expected = copysign(magnitude <= 0.0031308
+                            ? 12.92 * magnitude
+                            : 1.055 * pow(magnitude, 1.0 / 2.4) - 0.055,
+                            expected);
+                    }
+                    budget = (mode == 4 || mode == 5 ||
+                              (linear && mode != 3))
+                        ? fabs(expected) * 8.0 / 16777216.0 : 0.0;
+                    delta = fabs((double)actual[i * 3u + j] - expected);
                     if (!isfinite(actual[i * 3u + j]) || delta > budget) {
                         fprintf(stderr, "float sample changed mode=%d "
                             "channel=%u delta=%.17g budget=%.17g\n",

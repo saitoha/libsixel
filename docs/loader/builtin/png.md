@@ -62,6 +62,8 @@ The [source precision contract](png-source-precision.md) describes direct origin
 
 Without a resolved background, retained indexed PNG paths keep the original `PLTE` RGB bytes, including hidden and partially transparent entries. Optional CMS receives those original RGB samples. Zero-alpha coverage is stored separately as a transparent index: the first zero-alpha entry is selected and later zero-alpha raster indices are remapped to it. Positive-alpha indices remain painted, and entries omitted from `tRNS` have alpha 255. An all-transparent palette therefore paints nothing while retaining its source RGB. Both keycolor settings obey this rule; disabling an optimization does not request opaque output.
 
+For nonindexed eight-bit sources without an applied color transform or composition background, alpha requires only an exact-zero mask: RGB remains byte-valued. The shared encoder applies the [precision preference](../../functionality/precision.md) afterward; a mask alone does not require linear float RGB.
+
 The shared palette converter has an explicit format policy. TGA retains its existing black blend when no background is present, and an explicit background retains the existing integer byte blend. These isolation controls do not establish linear-light composition accuracy. `bKGD`, non-indexed decoding, and palettes exceeding `reqcolors` continue through their existing fallback paths.
 
 ## APNG pipeline

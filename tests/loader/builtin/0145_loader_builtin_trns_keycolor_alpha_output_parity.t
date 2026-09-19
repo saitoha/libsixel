@@ -1,6 +1,6 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# Verify builtin alpha-channel PNG keycolor is enabled by default.
+# Verify builtin PNG alpha optimization preserves exact SIXEL output.
 
 set -eux
 
@@ -35,10 +35,10 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
     exit 0
 }
 
-cmp -s "${out_default}" "${out_off}" && {
-    echo "not ok 1 - builtin alpha default keycolor is unexpectedly disabled"
+cmp -s "${out_default}" "${out_off}" || {
+    echo "not ok 1 - builtin alpha optimization changes byte output"
     exit 0
 }
 
-echo "ok 1 - builtin alpha keycolor is enabled by default"
+echo "ok 1 - builtin alpha optimization preserves byte output"
 exit 0

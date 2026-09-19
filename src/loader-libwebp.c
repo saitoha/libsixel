@@ -68,6 +68,7 @@ typedef struct sixel_loader_libwebp_component {
     int fuse_palette;
     int reqcolors;
     int enable_cms;
+    int prefer_float32;
     int loop_control;
     int has_bgcolor;
     unsigned char bgcolor[3];
@@ -83,6 +84,7 @@ typedef struct webp_decode_common {
     sixel_chunk_t const *chunk;
     sixel_allocator_t *allocator;
     int enable_cms;
+    int prefer_float32;
     int allow_palette_promotion;
     int reqcolors;
     int exif_orientation;
@@ -1435,7 +1437,8 @@ load_webp(unsigned char **result,
           int *pcms_converted,
           unsigned char *bgcolor,
           sixel_allocator_t *allocator,
-          WebPBitstreamFeatures const *known_features)
+          WebPBitstreamFeatures const *known_features,
+          int prefer_float32)
 {
     SIXELSTATUS status;
     WebPBitstreamFeatures features;
@@ -1502,9 +1505,13 @@ load_webp(unsigned char **result,
         force_rgb_decode = 1;
     }
 
-    use_lossy_float_decode = webp_should_use_lossy_float_decode(&features,
-                                                                force_rgb_decode,
-                                                                bgcolor);
+    /* Keep source YUV precision when downstream work or a source profile
+     * needs it. Ordinary unmanaged decoding can use libwebp's RGB8 API. */
+    use_lossy_float_decode =
+        (prefer_float32 || (enable_cms && icc_profile_length != 0u) ||
+         (features.has_alpha && bgcolor != NULL)) &&
+        webp_should_use_lossy_float_decode(&features, force_rgb_decode,
+                                          bgcolor);
     decode_path_name = webp_static_decode_path_name(&features,
                                                     use_lossy_float_decode);
     sixel_trace_topic_message(
@@ -2666,10 +2673,12 @@ webp_finalize_frame_output(sixel_frame_t *frame,
         apply_cms_target = 1;
     }
 
-    if (frame->pixelformat == SIXEL_PIXELFORMAT_RGB888
-            || frame->pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32
-            || (apply_cms_target &&
-                frame->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) {
+    /* A byte decode without an applied profile is already final. Float
+     * working precision is requested upstream or promoted by the planner. */
+    if (apply_cms_target &&
+        (frame->pixelformat == SIXEL_PIXELFORMAT_RGB888 ||
+         frame->pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+         frame->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) {
         status = sixel_frame_set_pixelformat(frame, target_pixelformat);
         if (SIXEL_FAILED(status)) {
             return status;
@@ -3040,7 +3049,8 @@ webp_decode_and_emit_single_frame_buffer(webp_decode_common_t const *decode,
                        &cms_converted,
                        bgcolor,
                        allocator,
-                       known_features);
+                       known_features,
+                       decode->prefer_float32);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -3602,7 +3612,8 @@ load_with_libwebp(
     int                       /* in */     start_frame_no_set,
     int                       /* in */     start_frame_no_override,
     sixel_load_image_function /* in */     fn_load,
-    void                      /* in/out */ *context)
+    void                      /* in/out */ *context,
+    int                       /* in */     prefer_float32)
 {
     SIXELSTATUS status;
     WebPData webp_data;
@@ -3649,6 +3660,7 @@ load_with_libwebp(
                             reqcolors,
                             fn_load,
                             context);
+    decode.prefer_float32 = prefer_float32;
     webp_init_animation_decode_control(&control, loop_control);
 
     webp_data.bytes = sixel_chunk_get_buffer(pchunk);
@@ -3935,6 +3947,10 @@ sixel_loader_libwebp_setopt(sixel_loader_component_t *component,
 
     self = (sixel_loader_libwebp_component_t *)component;
     switch (option) {
+    case SIXEL_LOADER_COMPONENT_OPTION_PREFER_FLOAT32:
+        flag = (int const *)value;
+        self->prefer_float32 = flag != NULL && *flag != 0;
+        return SIXEL_OK;
     case SIXEL_LOADER_COMPONENT_OPTION_LIBWEBP_ENABLE_CMS:
         flag = (int const *)value;
         self->enable_cms = (flag != NULL && *flag != 0) ? 1 : 0;
@@ -4042,7 +4058,8 @@ sixel_loader_libwebp_load(sixel_loader_component_t *component,
                                self->has_start_frame_no,
                                self->start_frame_no,
                                loader_timeline_emit_frame_callback,
-                               &timeline_state);
+                               &timeline_state,
+                               self->prefer_float32);
 
     loader_timeline_callback_close_header(&timeline_state, status);
     loader_timeline_callback_close_decode(&timeline_state, status);
@@ -4100,6 +4117,7 @@ sixel_loader_libwebp_new(sixel_allocator_t *allocator,
     self->allocator = allocator;
     self->ref = 1u;
     self->enable_cms = 0;
+    self->prefer_float32 = 0;
     self->enable_orientation = 1;
     self->reqcolors = 256;
     sixel_allocator_ref(allocator);

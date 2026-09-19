@@ -5109,8 +5109,12 @@ sixel_builtin_load_jpeg_frame(
     *icc_profile = NULL;
     *icc_profile_length = 0u;
 
-    if (enable_cms == 0 &&
-        prefer_float32 == 0 &&
+    if (enable_cms) {
+        (void)sixel_builtin_extract_jpeg_icc(sixel_chunk_get_buffer(chunk),
+            sixel_chunk_get_size(chunk), icc_profile, icc_profile_length,
+            allocator);
+    }
+    if (*icc_profile_length == 0u && prefer_float32 == 0 &&
         sixel_builtin_jpeg_can_use_8bit_api(sixel_chunk_get_buffer(chunk),
                                             sixel_chunk_get_size(chunk))) {
         pixels = stbi__jpeg_load(stb_context,
@@ -5156,11 +5160,7 @@ sixel_builtin_load_jpeg_frame(
     }
 
     if (enable_cms) {
-        if (sixel_builtin_extract_jpeg_icc(sixel_chunk_get_buffer(chunk),
-                                           sixel_chunk_get_size(chunk),
-                                           icc_profile,
-                                           icc_profile_length,
-                                           allocator)) {
+        if (*icc_profile_length != 0u) {
             src_profile = sixel_cms_open_profile_from_mem(*icc_profile,
                                                           *icc_profile_length);
             if (src_profile == NULL) {

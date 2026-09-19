@@ -4362,6 +4362,7 @@ static int
 sixel_encoder_loader_prefers_float32(sixel_encoder_t const *encoder)
 {
     int scale_active;
+    int resize_precision;
 
     scale_active = 0;
     if (encoder == NULL) {
@@ -4384,7 +4385,14 @@ sixel_encoder_loader_prefers_float32(sixel_encoder_t const *encoder)
         encoder->clustering_colorspace != SIXEL_COLORSPACE_GAMMA) {
         return 1;
     }
-    if (scale_active != 0) {
+    /* An explicitly preserved byte resize must not acquire a float source
+     * solely because scaling is active. Required float work still wins. */
+    resize_precision = sixel_runtime_policy_resize_precision(scale_active
+        ? SIXEL_RUNTIME_RESIZE_PRECISION_LINEAR32
+        : SIXEL_RUNTIME_RESIZE_PRECISION_PRESERVE);
+    if (resize_precision == SIXEL_RUNTIME_RESIZE_PRECISION_FLOAT_WORK ||
+        (scale_active &&
+         resize_precision != SIXEL_RUNTIME_RESIZE_PRECISION_PRESERVE)) {
         return 1;
     }
 
@@ -6866,12 +6874,6 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "display-p3 does not support -m/-M palette interchange.");
         return SIXEL_BAD_ARGUMENT;
     }
-    if (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT) {
-        sixel_helper_set_additional_message(
-            "display-p3 requires float precision; use --precision=auto "
-            "or --precision=float instead of an explicit 8bit request.");
-        return SIXEL_BAD_ARGUMENT;
-    }
     if ((encoder->working_colorspace != SIXEL_COLORSPACE_LINEAR &&
              encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA) ||
             encoder->clustering_colorspace != SIXEL_COLORSPACE_LINEAR ||
@@ -7238,7 +7240,10 @@ sixel_encoder_prepare_palette(
 
     clustering_colorspace = encoder->clustering_colorspace;
     working_colorspace = encoder->working_colorspace;
-    prefer_float32 = encoder->prefer_float32;
+    /* The clustering view must preserve precision retained by the planner,
+     * including CMS output when the base preference is auto or 8bit. */
+    prefer_float32 = encoder->prefer_float32 ||
+        SIXEL_PIXELFORMAT_IS_FLOAT32(sixel_frame_get_pixelformat(frame));
     if (reserve_alpha_key) {
         clustering_colorspace = sixel_frame_get_colorspace(frame);
         palette_target_pixelformat = sixel_frame_get_pixelformat(frame);

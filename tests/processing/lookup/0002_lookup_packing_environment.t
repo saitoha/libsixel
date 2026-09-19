@@ -14,7 +14,7 @@ set -v
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 
 bit5_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -v --precision=8bit -Wgamma \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision=8bit -Wgamma \
     --env "SIXEL_LOOKUP_PACKING=MoRtOn" -p 16 "-~5bit" \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "5bit packing environment conversion failed"
@@ -35,7 +35,7 @@ case "${bit5_trace}" in *LSXLUT1\|policy=5bit\|packing=morton**) true ;; *) fals
 }
 
 bit6_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -v --precision=8bit -Wgamma \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision=8bit -Wgamma \
     --env "SIXEL_LOOKUP_PACKING=MoRtOn" -p 16 "-~6bit" \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "6bit packing environment conversion failed"

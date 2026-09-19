@@ -1,5 +1,5 @@
 /*
- * Verify libwebp loader reports float32 RGB output by default and PAL8 when
+ * Verify libwebp loader reports byte RGB output by default and PAL8 when
  * palette promotion is requested for indexed sources.
  */
 
@@ -155,7 +155,7 @@ run_libwebp_loader_test(void)
 
     status = run_libwebp_loader_case_with_options("libwebp loader cms=0",
                                                   WEBP_IMAGE_PATH,
-                                                  SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                                  SIXEL_PIXELFORMAT_RGB888,
                                                   64,
                                                   64,
                                                   0,
@@ -168,7 +168,7 @@ run_libwebp_loader_test(void)
 
     status = run_libwebp_loader_case_with_options("libwebp loader cms=1",
                                                   WEBP_IMAGE_PATH,
-                                                  SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                                  SIXEL_PIXELFORMAT_RGB888,
                                                   64,
                                                   64,
                                                   1,
@@ -182,7 +182,7 @@ run_libwebp_loader_test(void)
     status = run_libwebp_loader_case_with_options(
         "libwebp embedded ICC cms=0",
         "/tests/data/inputs/snake_64_embedded_a98_icc.webp",
-        SIXEL_PIXELFORMAT_RGBFLOAT32,
+        SIXEL_PIXELFORMAT_RGB888,
         64,
         64,
         0,

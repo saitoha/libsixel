@@ -183,6 +183,10 @@ test_loader_0198_png_chrm_samples(int argc, char **argv)
     } else if (probe.source->alpha && probe.source->depth == 8 &&
         !probe.source->background && engine == SIXEL_CMS_ENGINE_NONE) {
         probe.format = SIXEL_PIXELFORMAT_RGBA8888;
+    } else if (probe.source->alpha && probe.source->depth == 8 &&
+        !probe.source->background && !metadata.gamma && !metadata.chrm &&
+        !metadata.icc && !probe.source->srgb_priority) {
+        probe.format = SIXEL_PIXELFORMAT_RGB888;
     }
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {

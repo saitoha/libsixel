@@ -20,7 +20,7 @@ image_lossy_rgb="${TOP_SRCDIR}/tests/data/inputs/snake_64.webp"
 image_lossy_alpha="${TOP_SRCDIR}/tests/data/inputs/formats/webp-static-alpha-keycolor-lossy.webp"
 
 msg_rgb=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! "${image_lossy_rgb}" 2>&1 >/dev/null) || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -.float32 -L libwebp! "${image_lossy_rgb}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "lossy RGB static decode failed"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg_rgb}" >&2
@@ -39,7 +39,7 @@ case "${msg_rgb}" in
 esac
 
 msg_alpha_no_bg=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S "${image_lossy_alpha}" 2>&1 >/dev/null) || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -.float32 -L libwebp! -S "${image_lossy_alpha}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "lossy alpha static decode without -B failed"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg_alpha_no_bg}" >&2
@@ -58,7 +58,7 @@ case "${msg_alpha_no_bg}" in
 esac
 
 msg_alpha_bg=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S -B#000 "${image_lossy_alpha}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -.float32 -L libwebp! -S -B#000 "${image_lossy_alpha}" \
     2>&1 >/dev/null) || {
     echo "not ok" 1 - "lossy alpha static decode with -B failed"
     printf '%s\n' '--- stderr ---' >&2

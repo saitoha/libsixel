@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Observe resize linear byte work on a prepared float frame. */
+/* Observe resize linear float source on a prepared float frame. */
 #include "precision_frame_common.h"
 
 int

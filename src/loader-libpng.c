@@ -462,6 +462,10 @@ png_source_color_chunks(unsigned char const *buffer, size_t size)
             flags |= PNG_INFO_sRGB;
         } else if (memcmp(type, "cHRM", 4u) == 0 && length == 32u) {
             flags |= PNG_INFO_cHRM;
+        } else if (memcmp(type, "gAMA", 4u) == 0 && length == 4u) {
+            flags |= PNG_INFO_gAMA;
+        } else if (memcmp(type, "iCCP", 4u) == 0) {
+            flags |= PNG_INFO_iCCP;
         }
     }
     return flags;
@@ -703,6 +707,7 @@ png_convert_rgb16_rows_to_rgbfloat32(unsigned char      /* out */ **result,
 /* Alpha is never a CMS channel. APNG keeps it until canvas composition. */
 typedef struct sixel_png_alpha {
     float *values;
+    unsigned char *mask;
     double background[3];
     int has_background;
     int defer_composition;
@@ -1000,6 +1005,36 @@ load_png(unsigned char      /* out */ **result,
             allocator, (size_t)rowbytes * height);
         rows = (unsigned char **)sixel_allocator_malloc(
             allocator, (size_t)height * sizeof(*rows));
+        /* A static unmanaged byte image needs neither RGB normalization
+         * nor floating alpha when only exact zero coverage is retained. */
+        if (sample_bytes == 1u && (!enable_cms || color_chunks == 0u) &&
+            !alpha_state->has_background && !alpha_state->defer_composition) {
+            alpha_state->mask = (unsigned char *)sixel_allocator_malloc(
+                allocator, pixel_count);
+            if (raw16_pixels == NULL || rows == NULL ||
+                alpha_state->mask == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto cleanup;
+            }
+            for (y = 0u; y < height; ++y) {
+                rows[y] = raw16_pixels + y * rowbytes;
+            }
+            png_read_image(png_ptr, rows);
+            png_read_end(png_ptr, info_ptr);
+            for (pixel_index = 0u; pixel_index < pixel_count; ++pixel_index) {
+                alpha_state->mask[pixel_index] =
+                    raw16_pixels[pixel_index * 4u + 3u] == 0u;
+                for (channel = 0; channel < 3; ++channel) {
+                    raw16_pixels[pixel_index * 3u + (size_t)channel] =
+                        raw16_pixels[pixel_index * 4u + (size_t)channel];
+                }
+            }
+            *result = raw16_pixels;
+            raw16_pixels = NULL;
+            *pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            status = SIXEL_OK;
+            goto cleanup;
+        }
         *result = (unsigned char *)sixel_allocator_malloc(
             allocator, pixel_count * 3u * sizeof(float));
         alpha_state->values = (float *)sixel_allocator_malloc(
@@ -1376,7 +1411,7 @@ load_png(unsigned char      /* out */ **result,
         }
     }
 
-    if (enable_cms) {
+    if (enable_cms && color_chunks != 0u) {
         color_count = (size_t)*psx * (size_t)*psy;
         palette_colors = (*pixelformat & SIXEL_FORMATTYPE_PALETTE) != 0;
         if (palette_colors) {
@@ -1440,8 +1475,9 @@ load_png(unsigned char      /* out */ **result,
         *cms_applied = cms_converted;
     } else {
         loader_trace_message("PNGCHRM1|role=image|requested=%s|"
-            "actual=not-applicable|reason=cms-disabled",
-            png_arithmetic_name(chrm_arithmetic));
+            "actual=not-applicable|reason=%s",
+            png_arithmetic_name(chrm_arithmetic),
+            enable_cms ? "no-selected-chrm" : "cms-disabled");
     }
 
     status = SIXEL_OK;
@@ -2286,6 +2322,7 @@ end:
     sixel_allocator_free(allocator, emitted);
     sixel_allocator_free(allocator, mask);
     sixel_allocator_free(allocator, alpha_state.values);
+    sixel_allocator_free(allocator, alpha_state.mask);
     sixel_frame_unref(frame);
 
     return status;
@@ -3142,6 +3179,16 @@ load_with_libpng(
     }
     frame->alpha_zero_is_transparent = alpha_zero_is_transparent != 0 ? 1 : 0;
     pixels = NULL;
+    if (alpha_state.mask != NULL) {
+        pixel_count = (size_t)frame->width * (size_t)frame->height;
+        frame->transparent_mask = alpha_state.mask;
+        alpha_state.mask = NULL;
+        frame->transparent_mask_size = pixel_count;
+        for (pixel_index = 0u; pixel_index < pixel_count; ++pixel_index) {
+            frame->alpha_zero_is_transparent |=
+                frame->transparent_mask[pixel_index];
+        }
+    }
     if (alpha_state.values != NULL &&
         (!alpha_state.has_background || loader_transparent_policy() !=
          SIXEL_ALPHA_POLICY_COMPOSITE)) {
@@ -3211,6 +3258,7 @@ load_with_libpng(
 
 end:
     sixel_allocator_free(allocator, alpha_state.values);
+    sixel_allocator_free(allocator, alpha_state.mask);
     sixel_frame_unref(frame);
 
     return status;

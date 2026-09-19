@@ -130,7 +130,7 @@ run_thumbnailer_loader_test(void)
         goto cleanup;
     }
     if (context.callback_count <= 0 ||
-        context.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+        context.pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         fprintf(stderr,
                 "GNOME thumbnailer: pixelformat mismatch (%d)\n",
                 context.pixelformat);

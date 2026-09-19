@@ -22,7 +22,7 @@ short_output="${artifact_dir}/0127-fhedt-first-touch-short-$$.six"
 env_output="${artifact_dir}/0127-fhedt-first-touch-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -v --precision=8bit -Wgamma \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision=8bit -Wgamma \
     "-~fhedt:O1" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "fhedt:first_touch short conversion failed"
     exit 0
@@ -46,7 +46,7 @@ case "${short_trace}" in *LSXFHD1\|*precision=8bit\|*first_touch=1**) true ;; *)
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -v --precision=8bit -Wgamma \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision=8bit -Wgamma \
     --env "SIXEL_LOOKUP_FHEDT_FIRST_TOUCH=1" "-~fhedt" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "fhedt:first_touch environment conversion failed"
@@ -70,7 +70,7 @@ case "${env_trace}" in *LSXFHD1\|*precision=8bit\|*first_touch=1**) true ;; *) f
     exit 0
 }
 float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -v --precision=8bit -Wgamma \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision=8bit -Wgamma \
     --precision=float32 "-~fhedt:O1" "${input_image}" \
     2>&1 >/dev/null) || {
     echo "not ok" 1 - "fhedt first_touch float32 conversion failed"
@@ -87,7 +87,7 @@ cmp -s "${short_output}" "${env_output}" || {
 }
 
 legacy_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -v --precision=8bit -Wgamma \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision=8bit -Wgamma \
     --env "SIXEL_FHEDT_FIRST_TOUCH=1" "-~fhedt" \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "legacy first_touch conversion failed"

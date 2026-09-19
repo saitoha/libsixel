@@ -67,10 +67,12 @@ png_numeric_capture(sixel_frame_t *frame, void *context)
     if (probe->default_srgb && probe->managed) {
         /* Builtin requires gAMA before using isolated cHRM. Its documented
          * fallback keeps opaque bytes/words in their original sRGB transfer. */
-        expected_format = probe->rgba ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 :
+        expected_format = probe->rgba && probe->background
+            ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 :
             probe->depth ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
             SIXEL_PIXELFORMAT_RGB888;
-        expected_space = probe->rgba ? SIXEL_COLORSPACE_LINEAR :
+        expected_space = probe->rgba && probe->background
+            ? SIXEL_COLORSPACE_LINEAR :
             SIXEL_COLORSPACE_GAMMA;
     }
     if (frame->width != (probe->oriented ? 2 : 4) ||

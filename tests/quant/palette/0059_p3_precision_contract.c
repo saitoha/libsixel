@@ -67,7 +67,7 @@ test_palette_0059_p3_precision(int argc, char **argv)
     size_t phase_count;
     int channel;
     int failed;
-    int expect_rejection;
+    int byte_request;
     int pixelformat;
     int width;
     char const *expected_wire;
@@ -97,7 +97,7 @@ test_palette_0059_p3_precision(int argc, char **argv)
     for (phase = 0; phase < phase_count; ++phase) {
         p3_precision_size = 0;
         p3_precision_output[0] = '\0';
-        expect_rejection = strcmp(argv[1], "8bit") == 0;
+        byte_request = strcmp(argv[1], "8bit") == 0;
         if (strcmp(argv[1], "reuse") == 0) {
             if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '.',
                     phases[phase].precision)) ||
@@ -107,8 +107,7 @@ test_palette_0059_p3_precision(int argc, char **argv)
                     encoder->prefer_float32 != phases[phase].effective) {
                 goto end;
             }
-            expect_rejection = phase == 2;
-        } else if (expect_rejection) {
+        } else if (byte_request) {
             if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '.', "8bit"))) {
                 goto end;
             }
@@ -141,13 +140,7 @@ test_palette_0059_p3_precision(int argc, char **argv)
             goto end;
         }
         status = sixel_encoder_encode_frame(encoder, frame, output);
-        if (expect_rejection) {
-            if (status != SIXEL_BAD_ARGUMENT || p3_precision_size != 0 ||
-                    strstr(sixel_helper_get_additional_message(),
-                        "explicit 8bit request") == NULL) {
-                goto end;
-            }
-        } else if (SIXEL_FAILED(status) ||
+        if (SIXEL_FAILED(status) ||
                 strstr(p3_precision_output, expected_wire) == NULL) {
             goto end;
         }

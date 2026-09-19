@@ -1369,7 +1369,10 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
         goto cleanup;
     }
     sixel_frompng_select_source(buffer, size, enable_cms, has_alpha, &source);
-    linear = has_alpha || source.transfer_mode == SIXEL_FROMPNG_TRANSFER_GAMA;
+    /* Alpha without a composition background needs only a zero mask.
+     * Keep RGB bytes until a real transfer/profile transform is required. */
+    linear = (has_alpha && has_background) ||
+        source.transfer_mode == SIXEL_FROMPNG_TRANSFER_GAMA;
     if (linear || is_16bit || source.profile != NULL) {
         pixels = (float *)sixel_allocator_malloc(allocator,
                                                   count * 3u * sizeof(float));
@@ -1460,6 +1463,13 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
     if (!linear && !is_16bit) {
         sixel_allocator_free(allocator, pixels);
         pixels = NULL;
+        if (has_alpha) {
+            for (i = 0u; i < count; ++i) {
+                for (c = 0; c < 3; ++c) {
+                    samples8[i * 3u + c] = samples8[i * 4u + c];
+                }
+            }
+        }
         output = samples8;
         format = SIXEL_PIXELFORMAT_RGB888;
     } else {

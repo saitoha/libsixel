@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Observe linear byte boundary on a prepared float frame. */
+/* Observe byte request linear source on a prepared float frame. */
 #include "precision_frame_common.h"
 
 int
