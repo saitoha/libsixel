@@ -1154,6 +1154,32 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0211_PNG_ARITH_UNAVAILABLE \
     -DBUILD_TEST_0212_PNG_ARITH_TINY \
     -DBUILD_PATH \
+    -DBUILD_TEST_0203_JPEG_DNL_BYTE_NUMERIC \
+    -DBUILD_TEST_0204_JPEG_DNL_FLOAT_NUMERIC \
+    -DBUILD_TEST_0205_JPEG_DNL_12BIT_NUMERIC \
+    -DBUILD_TEST_0206_JPEG_DNL_PROGRESSIVE_NUMERIC \
+    -DBUILD_TEST_0207_JPEG_DNL_LOSSLESS_NUMERIC \
+    -DBUILD_TEST_0208_JPEG_DNL_RESTART_NUMERIC \
+    -DBUILD_TEST_0209_JPEG_DNL_STUFFED_NUMERIC \
+    -DBUILD_TEST_0210_JPEG_DNL_420_DIGEST \
+    -DBUILD_TEST_0211_JPEG_DNL_MISSING_REJECT \
+    -DBUILD_TEST_0212_JPEG_DNL_ZERO_REJECT \
+    -DBUILD_TEST_0213_JPEG_DNL_LENGTH_REJECT \
+    -DBUILD_TEST_0214_JPEG_DNL_TRUNCATED_REJECT \
+    -DBUILD_TEST_0215_JPEG_DNL_PRESCAN_REJECT \
+    -DBUILD_TEST_0216_JPEG_DNL_LATE_REJECT \
+    -DBUILD_TEST_0217_JPEG_DNL_DUPLICATE_REJECT \
+    -DBUILD_TEST_0218_JPEG_DNL_SHORT_HEIGHT_REJECT \
+    -DBUILD_TEST_0219_JPEG_DNL_TALL_HEIGHT_REJECT \
+    -DBUILD_TEST_0220_JPEG_DNL_RESTART_SHORT_REJECT \
+    -DBUILD_TEST_0221_JPEG_DNL_EXTENSION_NUMERIC \
+    -DBUILD_TEST_0222_JPEG_DNL_KNOWN_NUMERIC \
+    -DBUILD_TEST_0223_JPEG_DNL_MISMATCH_REJECT \
+    -DBUILD_TEST_0224_JPEG_DNL_AMPLITUDE_REJECT \
+    -DBUILD_TEST_0225_JPEG_DNL_FILL_NUMERIC \
+    -DBUILD_TEST_0226_JPEG_DNL_EOI_REJECT \
+    -DBUILD_TEST_0227_JPEG_DNL_SEGMENT_REJECT \
+    -DBUILD_JPEG_DNL_TEST_COMMON \
     -DBUILD_JPEG_LOSSLESS_TEST_COMMON \
     -DBUILD_JPEG_CMYK_TEST_COMMON \
     -DBUILD_JPEG_PRECISION_FAULT_TEST_COMMON \
@@ -2002,6 +2028,33 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0014_loader_builtin_pixelformat.c \
     loader/builtin/loader_builtin_memory_test_common.c \
     loader/builtin/loader_builtin_memory_test_common.h \
+    loader/builtin/0203_jpeg_dnl_byte_numeric.c \
+    loader/builtin/0204_jpeg_dnl_float_numeric.c \
+    loader/builtin/0205_jpeg_dnl_12bit_numeric.c \
+    loader/builtin/0206_jpeg_dnl_progressive_numeric.c \
+    loader/builtin/0207_jpeg_dnl_lossless_numeric.c \
+    loader/builtin/0208_jpeg_dnl_restart_numeric.c \
+    loader/builtin/0209_jpeg_dnl_stuffed_numeric.c \
+    loader/builtin/0210_jpeg_dnl_420_digest.c \
+    loader/builtin/0211_jpeg_dnl_missing_reject.c \
+    loader/builtin/0212_jpeg_dnl_zero_reject.c \
+    loader/builtin/0213_jpeg_dnl_length_reject.c \
+    loader/builtin/0214_jpeg_dnl_truncated_reject.c \
+    loader/builtin/0215_jpeg_dnl_prescan_reject.c \
+    loader/builtin/0216_jpeg_dnl_late_reject.c \
+    loader/builtin/0217_jpeg_dnl_duplicate_reject.c \
+    loader/builtin/0218_jpeg_dnl_short_height_reject.c \
+    loader/builtin/0219_jpeg_dnl_tall_height_reject.c \
+    loader/builtin/0220_jpeg_dnl_restart_short_reject.c \
+    loader/builtin/0221_jpeg_dnl_extension_numeric.c \
+    loader/builtin/0222_jpeg_dnl_known_numeric.c \
+    loader/builtin/0223_jpeg_dnl_mismatch_reject.c \
+    loader/builtin/0224_jpeg_dnl_amplitude_reject.c \
+    loader/builtin/0225_jpeg_dnl_fill_numeric.c \
+    loader/builtin/0226_jpeg_dnl_eoi_reject.c \
+    loader/builtin/0227_jpeg_dnl_segment_reject.c \
+    loader/builtin/jpeg_dnl_test_common.c \
+    loader/builtin/jpeg_dnl_test_common.h \
     loader/builtin/jpeg_lossless_test_common.c \
     loader/builtin/jpeg_lossless_test_common.h \
     loader/builtin/loader_builtin_gif_test_common.c \

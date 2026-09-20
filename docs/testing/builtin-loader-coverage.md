@@ -16,7 +16,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 36 | 0 | 0 | 0 | 0 | 0 |
 | [GIF](../loader/builtin/gif.md) | 36 | 8 | 3 | 2 | 2 | 2 | 19 |
 | [PNG and APNG](../loader/builtin/png.md) | 288 | 22 | 59 | 0 | 13 | 7 | 187 |
-| [JPEG](../loader/builtin/jpeg.md) | 33 | 12 | 14 | 1 | 2 | 0 | 4 |
+| [JPEG](../loader/builtin/jpeg.md) | 58 | 23 | 14 | 1 | 16 | 0 | 4 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
 | [PSD and PSB](../loader/builtin/psd.md) | 994 | 13 | 551 | 402 | 9 | 3 | 16 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
@@ -24,7 +24,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 27 | 11 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2205** | **468** | **724** | **652** | **53** | **13** | **295** |
+| **Total** | **2230** | **479** | **724** | **652** | **67** | **13** | **295** |
 
 ## Complete inventory
 
@@ -514,6 +514,31 @@ Primary implementation context: [JPEG builtin component](../loader/builtin/jpeg.
 | [tests/loader/builtin/2030_loader_builtin_jpeg_lossless_predictors_numeric.t](../../tests/loader/builtin/2030_loader_builtin_jpeg_lossless_predictors_numeric.t) | Verify all lossless predictors together while paying one process startup. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/2031_loader_builtin_jpeg_rgb_restart_numeric.t](../../tests/loader/builtin/2031_loader_builtin_jpeg_rgb_restart_numeric.t) | Verify RGB lossless samples across component restart resets. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/2045_loader_builtin_jpeg_source_numeric.t](../../tests/loader/builtin/2045_loader_builtin_jpeg_source_numeric.t) | Verify unmanaged JPEG samples against independently decoded JFIF values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2219_jpeg_dnl_byte_numeric.t](../../tests/loader/builtin/2219_jpeg_dnl_byte_numeric.t) | Resolve delayed height without leaving the RGB888 path. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2220_jpeg_dnl_float_numeric.t](../../tests/loader/builtin/2220_jpeg_dnl_float_numeric.t) | Resolve delayed height with explicit float32 output. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2221_jpeg_dnl_12bit_numeric.t](../../tests/loader/builtin/2221_jpeg_dnl_12bit_numeric.t) | Preserve twelve-bit extended sequential samples with DNL. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2222_jpeg_dnl_progressive_numeric.t](../../tests/loader/builtin/2222_jpeg_dnl_progressive_numeric.t) | Continue progressive AC scans after the first-scan DNL. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2223_jpeg_dnl_lossless_numeric.t](../../tests/loader/builtin/2223_jpeg_dnl_lossless_numeric.t) | Preserve lossless predictor samples after delayed height. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2224_jpeg_dnl_restart_numeric.t](../../tests/loader/builtin/2224_jpeg_dnl_restart_numeric.t) | Resolve delayed height across lossless RGB restart markers. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2225_jpeg_dnl_stuffed_numeric.t](../../tests/loader/builtin/2225_jpeg_dnl_stuffed_numeric.t) | Skip stuffed FF bytes while finding the first-scan DNL. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2226_jpeg_dnl_420_digest.t](../../tests/loader/builtin/2226_jpeg_dnl_420_digest.t) | Preserve the fixed progressive 4:2:0 pixel digest with DNL. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2227_jpeg_dnl_missing_reject.t](../../tests/loader/builtin/2227_jpeg_dnl_missing_reject.t) | Reject absent DNL despite marker-shaped bytes in COM. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/2228_jpeg_dnl_zero_reject.t](../../tests/loader/builtin/2228_jpeg_dnl_zero_reject.t) | Reject a DNL that still declares zero height. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/2229_jpeg_dnl_length_reject.t](../../tests/loader/builtin/2229_jpeg_dnl_length_reject.t) | Reject a DNL length below four. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/2230_jpeg_dnl_truncated_reject.t](../../tests/loader/builtin/2230_jpeg_dnl_truncated_reject.t) | Reject every truncated DNL marker field. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/2231_jpeg_dnl_prescan_reject.t](../../tests/loader/builtin/2231_jpeg_dnl_prescan_reject.t) | Reject DNL before the first scan. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/2232_jpeg_dnl_late_reject.t](../../tests/loader/builtin/2232_jpeg_dnl_late_reject.t) | Reject DNL after the second scan. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/2233_jpeg_dnl_duplicate_reject.t](../../tests/loader/builtin/2233_jpeg_dnl_duplicate_reject.t) | Reject a duplicate DNL. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/2234_jpeg_dnl_short_height_reject.t](../../tests/loader/builtin/2234_jpeg_dnl_short_height_reject.t) | Reject a DNL height that leaves excess encoded blocks. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/2235_jpeg_dnl_tall_height_reject.t](../../tests/loader/builtin/2235_jpeg_dnl_tall_height_reject.t) | Reject a DNL height requiring missing encoded blocks. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/2236_jpeg_dnl_restart_short_reject.t](../../tests/loader/builtin/2236_jpeg_dnl_restart_short_reject.t) | Reject an early DNL at a restart interval boundary. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/2237_jpeg_dnl_extension_numeric.t](../../tests/loader/builtin/2237_jpeg_dnl_extension_numeric.t) | Skip bounded DNL extension bytes without decoding them. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2238_jpeg_dnl_known_numeric.t](../../tests/loader/builtin/2238_jpeg_dnl_known_numeric.t) | Preserve known-height JPEG with a matching DNL. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2239_jpeg_dnl_mismatch_reject.t](../../tests/loader/builtin/2239_jpeg_dnl_mismatch_reject.t) | Reject DNL that contradicts a known SOF height. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/2240_jpeg_dnl_amplitude_reject.t](../../tests/loader/builtin/2240_jpeg_dnl_amplitude_reject.t) | Reject missing amplitude bits before DNL. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/2241_jpeg_dnl_fill_numeric.t](../../tests/loader/builtin/2241_jpeg_dnl_fill_numeric.t) | Accept repeated FF fill bytes before the DNL marker. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2242_jpeg_dnl_eoi_reject.t](../../tests/loader/builtin/2242_jpeg_dnl_eoi_reject.t) | Reject a deferred-height frame truncated after DNL. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/2243_jpeg_dnl_segment_reject.t](../../tests/loader/builtin/2243_jpeg_dnl_segment_reject.t) | Reject an oversized segment while searching for DNL. | Acceptance/rejection | Inventory only |
 
 ### Radiance HDR
 

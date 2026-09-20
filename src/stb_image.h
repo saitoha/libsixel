@@ -2002,6 +2002,11 @@ typedef struct
    int            data_precision;
    int            lossless;
 
+   // Delayed height is resolved before allocation, then checked at scan end.
+   stbi_uc const *dnl_position;
+   int            dnl_pending;
+   int            entropy_short;
+
    int scan_n, order[4];
    int restart_interval, todo;
 
@@ -2085,10 +2090,14 @@ static void stbi__build_fast_ac(stbi__int16 *fast_ac, stbi__huffman *h)
 
 static void stbi__grow_buffer_unsafe(stbi__jpeg *j)
 {
+   unsigned int b;
+   int c;
    do {
-      unsigned int b = j->nomore ? 0 : stbi__get8(j->s);
+      // Do not invent entropy bits while validating the DNL row count.
+      if (j->dnl_pending && j->nomore) return;
+      b = j->nomore ? 0 : stbi__get8(j->s);
       if (b == 0xff) {
-         int c = stbi__get8(j->s);
+         c = stbi__get8(j->s);
          while (c == 0xff) c = stbi__get8(j->s); // consume fill bytes
          if (c != 0) {
             j->marker = (unsigned char) c;
@@ -2170,7 +2179,10 @@ stbi_inline static int stbi__extend_receive(stbi__jpeg *j, int n)
    unsigned int k;
    int sgn;
    if (j->code_bits < n) stbi__grow_buffer_unsafe(j);
-   if (j->code_bits < n) return 0; // ran out of bits from stream, return 0s intead of continuing
+   if (j->code_bits < n) {
+      j->entropy_short = 1;
+      return 0;
+   }
 
    sgn = j->code_buffer >> 31; // sign bit always in MSB; 0 if MSB clear (positive), 1 if MSB set (negative)
    k = stbi_lrot(j->code_buffer, n);
@@ -2185,7 +2197,10 @@ stbi_inline static int stbi__jpeg_get_bits(stbi__jpeg *j, int n)
 {
    unsigned int k;
    if (j->code_bits < n) stbi__grow_buffer_unsafe(j);
-   if (j->code_bits < n) return 0; // ran out of bits from stream, return 0s intead of continuing
+   if (j->code_bits < n) {
+      j->entropy_short = 1;
+      return 0;
+   }
    k = stbi_lrot(j->code_buffer, n);
    j->code_buffer = k & ~stbi__bmask[n];
    k &= stbi__bmask[n];
@@ -2197,7 +2212,10 @@ stbi_inline static int stbi__jpeg_get_bit(stbi__jpeg *j)
 {
    unsigned int k;
    if (j->code_bits < 1) stbi__grow_buffer_unsafe(j);
-   if (j->code_bits < 1) return 0; // ran out of bits from stream, return 0s intead of continuing
+   if (j->code_bits < 1) {
+      j->entropy_short = 1;
+      return 0;
+   }
    k = j->code_buffer;
    j->code_buffer <<= 1;
    --j->code_bits;
@@ -3029,6 +3047,18 @@ static stbi_uc stbi__get_marker(stbi__jpeg *j)
 // of the components is specified by order[]
 #define STBI__RESTART(x)     ((x) >= 0xd0 && (x) <= 0xd7)
 
+// With a deferred height, excess entropy must not be silently discarded.
+static int stbi__jpeg_dnl_padding(stbi__jpeg *j)
+{
+   if (j->entropy_short || j->code_bits < 0 || j->code_bits > 7)
+      return stbi__err("bad DNL scan length", "Corrupt JPEG");
+   if (j->code_bits != 0 &&
+       (j->code_buffer >> (32 - j->code_bits)) !=
+           stbi__bmask[j->code_bits])
+      return stbi__err("bad DNL scan padding", "Corrupt JPEG");
+   return 1;
+}
+
 // after a restart interval, stbi__jpeg_reset the entropy decoder and
 // the dc prediction
 static void stbi__jpeg_reset(stbi__jpeg *j)
@@ -3199,7 +3229,14 @@ static int stbi__parse_entropy_coded_data_lossless(stbi__jpeg *z)
             }
             if (--z->todo <= 0) {
                if (z->code_bits < 24) stbi__grow_buffer_unsafe(z);
-               if (!STBI__RESTART(z->marker)) return 1;
+               if (z->dnl_pending && !stbi__jpeg_dnl_padding(z))
+                  return 0;
+               if (!STBI__RESTART(z->marker)) {
+                  if (z->dnl_pending &&
+                      !(i + 1 == z->img_comp[n].x && j + 1 == z->img_comp[n].y))
+                     return stbi__err("short DNL scan", "Corrupt JPEG");
+                  return 1;
+               }
                stbi__jpeg_reset(z);
                first_in_restart[0] = 1;
                first_in_restart[1] = 1;
@@ -3239,7 +3276,14 @@ static int stbi__parse_entropy_coded_data_lossless(stbi__jpeg *z)
 
          if (--z->todo <= 0) {
             if (z->code_bits < 24) stbi__grow_buffer_unsafe(z);
-            if (!STBI__RESTART(z->marker)) return 1;
+            if (z->dnl_pending && !stbi__jpeg_dnl_padding(z))
+               return 0;
+            if (!STBI__RESTART(z->marker)) {
+               if (z->dnl_pending &&
+                   !(i + 1 == mcu_x && j + 1 == mcu_y))
+                  return stbi__err("short DNL scan", "Corrupt JPEG");
+               return 1;
+            }
             stbi__jpeg_reset(z);
             first_in_restart[0] = 1;
             first_in_restart[1] = 1;
@@ -3279,7 +3323,14 @@ static int stbi__parse_entropy_coded_data(stbi__jpeg *z)
                   if (z->code_bits < 24) stbi__grow_buffer_unsafe(z);
                   // if it's NOT a restart, then just bail, so we get corrupt data
                   // rather than no data
-                  if (!STBI__RESTART(z->marker)) return 1;
+                  if (z->dnl_pending && !stbi__jpeg_dnl_padding(z))
+                     return 0;
+                  if (!STBI__RESTART(z->marker)) {
+                     if (z->dnl_pending &&
+                         !(i + 1 == w && j + 1 == h))
+                        return stbi__err("short DNL scan", "Corrupt JPEG");
+                     return 1;
+                  }
                   stbi__jpeg_reset(z);
                }
             }
@@ -3309,7 +3360,14 @@ static int stbi__parse_entropy_coded_data(stbi__jpeg *z)
                // so now count down the restart interval
                if (--z->todo <= 0) {
                   if (z->code_bits < 24) stbi__grow_buffer_unsafe(z);
-                  if (!STBI__RESTART(z->marker)) return 1;
+                  if (z->dnl_pending && !stbi__jpeg_dnl_padding(z))
+                     return 0;
+                  if (!STBI__RESTART(z->marker)) {
+                     if (z->dnl_pending &&
+                         !(i + 1 == z->img_mcu_x && j + 1 == z->img_mcu_y))
+                        return stbi__err("short DNL scan", "Corrupt JPEG");
+                     return 1;
+                  }
                   stbi__jpeg_reset(z);
                }
             }
@@ -3340,7 +3398,14 @@ static int stbi__parse_entropy_coded_data(stbi__jpeg *z)
                // every data block is an MCU, so countdown the restart interval
                if (--z->todo <= 0) {
                   if (z->code_bits < 24) stbi__grow_buffer_unsafe(z);
-                  if (!STBI__RESTART(z->marker)) return 1;
+                  if (z->dnl_pending && !stbi__jpeg_dnl_padding(z))
+                     return 0;
+                  if (!STBI__RESTART(z->marker)) {
+                     if (z->dnl_pending &&
+                         !(i + 1 == w && j + 1 == h))
+                        return stbi__err("short DNL scan", "Corrupt JPEG");
+                     return 1;
+                  }
                   stbi__jpeg_reset(z);
                }
             }
@@ -3369,7 +3434,14 @@ static int stbi__parse_entropy_coded_data(stbi__jpeg *z)
                // so now count down the restart interval
                if (--z->todo <= 0) {
                   if (z->code_bits < 24) stbi__grow_buffer_unsafe(z);
-                  if (!STBI__RESTART(z->marker)) return 1;
+                  if (z->dnl_pending && !stbi__jpeg_dnl_padding(z))
+                     return 0;
+                  if (!STBI__RESTART(z->marker)) {
+                     if (z->dnl_pending &&
+                         !(i + 1 == z->img_mcu_x && j + 1 == z->img_mcu_y))
+                        return stbi__err("short DNL scan", "Corrupt JPEG");
+                     return 1;
+                  }
                   stbi__jpeg_reset(z);
                }
             }
@@ -3578,6 +3650,57 @@ static int stbi__free_jpeg_components(stbi__jpeg *z, int ncomp, int why)
    return why;
 }
 
+// T.81 B.2.5 places DNL immediately after the first scan. The builtin
+// loader supplies a complete memory buffer, so resolve only zero-height
+// frames with a bounded marker walk before allocating component planes.
+// Segment payloads are opaque: apparent DNL bytes inside APP/COM/table data
+// are not markers. Within entropy data, FF00 and RSTn do not end the scan.
+static int stbi__jpeg_find_dnl(stbi__jpeg *z)
+{
+   stbi_uc const *p;
+   stbi_uc const *end;
+   int marker;
+   int length;
+   int height;
+   int in_scan;
+
+   if (z->s->io.read != NULL)
+      return stbi__err("DNL needs buffered input", "Unsupported JPEG input");
+   p = z->s->img_buffer;
+   end = z->s->img_buffer_end;
+   in_scan = 0;
+   while (p < end) {
+      if (in_scan) {
+         while (p < end && *p != 0xff) ++p;
+      }
+      if (p == end || *p++ != 0xff) break;
+      while (p < end && *p == 0xff) ++p;
+      if (p == end) break;
+      marker = *p++;
+      if (in_scan && (marker == 0 || STBI__RESTART(marker))) continue;
+      if (end - p < 2) break;
+      length = (p[0] << 8) | p[1];
+      if (length < 2 || length > end - p) break;
+      if (in_scan) {
+         if (marker != 0xdc || length < 4) break;
+         height = (p[2] << 8) | p[3];
+         if (height == 0) break;
+         z->s->img_y = height;
+         z->dnl_position = p;
+         z->dnl_pending = 1;
+         return 1;
+      }
+      if (marker == 0xda) {
+         in_scan = 1;
+      } else if (marker != 0xc4 && marker != 0xdb && marker != 0xdd &&
+                 marker != 0xfe && !(marker >= 0xe0 && marker <= 0xef)) {
+         break;
+      }
+      p += length;
+   }
+   return stbi__err("missing or invalid DNL", "Corrupt JPEG");
+}
+
 static int stbi__process_frame_header(stbi__jpeg *z, int scan)
 {
    stbi__context *s = z->s;
@@ -3590,7 +3713,7 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
       if (p < 8 || p > 12) return stbi__err("unsupported precision","JPEG format not supported: only 8-12 bit precision");
    }
    z->data_precision = p;
-   s->img_y = stbi__get16be(s);   if (s->img_y == 0) return stbi__err("no header height", "JPEG format not supported: delayed height"); // Legal, but we don't handle it--but neither does IJG
+   s->img_y = stbi__get16be(s);
    s->img_x = stbi__get16be(s);   if (s->img_x == 0) return stbi__err("0 width","Corrupt JPEG"); // JPEG requires
    if (s->img_y > STBI_MAX_DIMENSIONS) return stbi__err("too large","Very large image (corrupt?)");
    if (s->img_x > STBI_MAX_DIMENSIONS) return stbi__err("too large","Very large image (corrupt?)");
@@ -3617,6 +3740,9 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
       z->img_comp[i].tq = stbi__get8(s);  if (z->img_comp[i].tq > 3) return stbi__err("bad TQ","Corrupt JPEG");
    }
 
+   if (s->img_y == 0 && !stbi__jpeg_find_dnl(z)) return 0;
+   if (s->img_y > STBI_MAX_DIMENSIONS)
+      return stbi__err("too large", "Very large image (corrupt?)");
    if (scan != STBI__SCAN_load) return 1;
 
    if (!stbi__mad3sizes_valid(s->img_x, s->img_y, s->img_n, 0)) return stbi__err("too large", "Image too large to decode");
@@ -3753,6 +3879,10 @@ static stbi_uc stbi__skip_jpeg_junk_at_end(stbi__jpeg *j)
 static int stbi__decode_jpeg_image(stbi__jpeg *j)
 {
    int m;
+   int scans = 0;
+   int dnl_seen = 0;
+   int length;
+   stbi__uint32 height;
    for (m = 0; m < 4; m++) {
       j->img_comp[m].raw_data = NULL;
       j->img_comp[m].data = NULL;
@@ -3768,6 +3898,14 @@ static int stbi__decode_jpeg_image(stbi__jpeg *j)
       if (stbi__SOS(m)) {
          if (!stbi__process_scan_header(j)) return 0;
          if (!stbi__parse_entropy_coded_data(j)) return 0;
+         ++scans;
+         if (j->dnl_pending) {
+            if (j->code_bits < 24) stbi__grow_buffer_unsafe(j);
+            if (!stbi__jpeg_dnl_padding(j)) return 0;
+            if (j->marker != 0xdc ||
+                j->s->img_buffer != j->dnl_position)
+               return stbi__err("bad DNL position", "Corrupt JPEG");
+         }
          if (j->marker == STBI__MARKER_none ) {
          j->marker = stbi__skip_jpeg_junk_at_end(j);
             // if we reach eof without hitting a marker, stbi__get_marker() below will fail and we'll eventually return 0
@@ -3776,13 +3914,27 @@ static int stbi__decode_jpeg_image(stbi__jpeg *j)
          if (STBI__RESTART(m))
             m = stbi__get_marker(j);
       } else if (stbi__DNL(m)) {
-         int Ld = stbi__get16be(j->s);
-         stbi__uint32 NL = stbi__get16be(j->s);
-         if (Ld != 4) return stbi__err("bad DNL len", "Corrupt JPEG");
-         if (NL != j->s->img_y) return stbi__err("bad DNL height", "Corrupt JPEG");
+         if (scans != 1 || dnl_seen)
+            return stbi__err("bad DNL position", "Corrupt JPEG");
+         length = stbi__get16be(j->s);
+         height = stbi__get16be(j->s);
+         if (length < 4)
+            return stbi__err("bad DNL len", "Corrupt JPEG");
+         if (height == 0 || height != j->s->img_y)
+            return stbi__err("bad DNL height", "Corrupt JPEG");
+         // Skip extension bytes only after checking the buffered bounds.
+         if (j->s->io.read == NULL &&
+             length - 4 > j->s->img_buffer_end - j->s->img_buffer)
+            return stbi__err("short DNL", "Corrupt JPEG");
+         stbi__skip(j->s, length - 4);
+         j->dnl_pending = 0;
+         dnl_seen = 1;
          m = stbi__get_marker(j);
       } else {
-         if (!stbi__process_marker(j, m)) return 1;
+         if (!stbi__process_marker(j, m)) {
+            // Deferred-height input must reach EOI, not a partial frame.
+            return j->dnl_position == NULL;
+         }
          m = stbi__get_marker(j);
       }
    }

@@ -858,6 +858,31 @@ int test_loader_0199_channels(int argc, char **argv);
 int test_loader_0200_profile(int argc, char **argv);
 int test_loader_0201_profile(int argc, char **argv);
 int test_loader_0202_profile(int argc, char **argv);
+int test_loader_0203_jpeg_dnl(int argc, char **argv);
+int test_loader_0204_jpeg_dnl(int argc, char **argv);
+int test_loader_0205_jpeg_dnl(int argc, char **argv);
+int test_loader_0206_jpeg_dnl(int argc, char **argv);
+int test_loader_0207_jpeg_dnl(int argc, char **argv);
+int test_loader_0208_jpeg_dnl(int argc, char **argv);
+int test_loader_0209_jpeg_dnl(int argc, char **argv);
+int test_loader_0210_jpeg_dnl(int argc, char **argv);
+int test_loader_0211_jpeg_dnl(int argc, char **argv);
+int test_loader_0212_jpeg_dnl(int argc, char **argv);
+int test_loader_0213_jpeg_dnl(int argc, char **argv);
+int test_loader_0214_jpeg_dnl(int argc, char **argv);
+int test_loader_0215_jpeg_dnl(int argc, char **argv);
+int test_loader_0216_jpeg_dnl(int argc, char **argv);
+int test_loader_0217_jpeg_dnl(int argc, char **argv);
+int test_loader_0218_jpeg_dnl(int argc, char **argv);
+int test_loader_0219_jpeg_dnl(int argc, char **argv);
+int test_loader_0220_jpeg_dnl(int argc, char **argv);
+int test_loader_0221_jpeg_dnl(int argc, char **argv);
+int test_loader_0222_jpeg_dnl(int argc, char **argv);
+int test_loader_0223_jpeg_dnl(int argc, char **argv);
+int test_loader_0224_jpeg_dnl(int argc, char **argv);
+int test_loader_0225_jpeg_dnl(int argc, char **argv);
+int test_loader_0226_jpeg_dnl(int argc, char **argv);
+int test_loader_0227_jpeg_dnl(int argc, char **argv);
 int test_loader_0172_lab(int argc, char **argv);
 int test_loader_0173_lab(int argc, char **argv);
 int test_loader_0174_lab16(int argc, char **argv);
@@ -2215,6 +2240,31 @@ static test_entry_t const test_entries[] = {
       test_loader_0201_profile },
     { "loader/0202_colorsync_cmyk32_profile_layers",
       test_loader_0202_profile },
+    { "loader/0203_jpeg_dnl_byte_numeric", test_loader_0203_jpeg_dnl },
+    { "loader/0204_jpeg_dnl_float_numeric", test_loader_0204_jpeg_dnl },
+    { "loader/0205_jpeg_dnl_12bit_numeric", test_loader_0205_jpeg_dnl },
+    { "loader/0206_jpeg_dnl_progressive_numeric", test_loader_0206_jpeg_dnl },
+    { "loader/0207_jpeg_dnl_lossless_numeric", test_loader_0207_jpeg_dnl },
+    { "loader/0208_jpeg_dnl_restart_numeric", test_loader_0208_jpeg_dnl },
+    { "loader/0209_jpeg_dnl_stuffed_numeric", test_loader_0209_jpeg_dnl },
+    { "loader/0210_jpeg_dnl_420_digest", test_loader_0210_jpeg_dnl },
+    { "loader/0211_jpeg_dnl_missing_reject", test_loader_0211_jpeg_dnl },
+    { "loader/0212_jpeg_dnl_zero_reject", test_loader_0212_jpeg_dnl },
+    { "loader/0213_jpeg_dnl_length_reject", test_loader_0213_jpeg_dnl },
+    { "loader/0214_jpeg_dnl_truncated_reject", test_loader_0214_jpeg_dnl },
+    { "loader/0215_jpeg_dnl_prescan_reject", test_loader_0215_jpeg_dnl },
+    { "loader/0216_jpeg_dnl_late_reject", test_loader_0216_jpeg_dnl },
+    { "loader/0217_jpeg_dnl_duplicate_reject", test_loader_0217_jpeg_dnl },
+    { "loader/0218_jpeg_dnl_short_height_reject", test_loader_0218_jpeg_dnl },
+    { "loader/0219_jpeg_dnl_tall_height_reject", test_loader_0219_jpeg_dnl },
+    { "loader/0220_jpeg_dnl_restart_short_reject", test_loader_0220_jpeg_dnl },
+    { "loader/0221_jpeg_dnl_extension_numeric", test_loader_0221_jpeg_dnl },
+    { "loader/0222_jpeg_dnl_known_numeric", test_loader_0222_jpeg_dnl },
+    { "loader/0223_jpeg_dnl_mismatch_reject", test_loader_0223_jpeg_dnl },
+    { "loader/0224_jpeg_dnl_amplitude_reject", test_loader_0224_jpeg_dnl },
+    { "loader/0225_jpeg_dnl_fill_numeric", test_loader_0225_jpeg_dnl },
+    { "loader/0226_jpeg_dnl_eoi_reject", test_loader_0226_jpeg_dnl },
+    { "loader/0227_jpeg_dnl_segment_reject", test_loader_0227_jpeg_dnl },
     { "loader/0172_lcms_lab_frame", test_loader_0172_lab },
     { "loader/0173_colorsync_lab_frame", test_loader_0173_lab },
     { "loader/0174_lab16_signed_values", test_loader_0174_lab16 },
