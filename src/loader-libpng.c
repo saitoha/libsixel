@@ -713,6 +713,56 @@ typedef struct sixel_png_alpha {
     int defer_composition;
 } sixel_png_alpha_t;
 
+/* Expand decoded indices only after converting the small palette. Keeping
+ * the float palette avoids both a second CMS pass and an sRGB byte boundary.
+ * The decoded rows retain PNG's per-row padding for 1/2/4-bit indices. */
+static SIXELSTATUS
+png_expand_float_palette(unsigned char **result, unsigned char **rows,
+                          int width, int height, int bits,
+                          float const *palette, int ncolors,
+                          sixel_allocator_t *allocator)
+{
+    float *pixels;
+    size_t count;
+    size_t x;
+    size_t y;
+    size_t offset;
+    unsigned int index;
+    unsigned int shift;
+    unsigned int mask;
+
+    count = (size_t)width * (size_t)height;
+    if (count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixels = (float *)sixel_allocator_malloc(
+        allocator, count * 3u * sizeof(float));
+    if (pixels == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    mask = (1u << bits) - 1u;
+    for (y = 0u; y < (size_t)height; ++y) {
+        for (x = 0u; x < (size_t)width; ++x) {
+            offset = x * (size_t)bits;
+            shift = 8u - (unsigned int)bits - (unsigned int)(offset % 8u);
+            index = (rows[y][offset / 8u] >> shift) & mask;
+            if (index >= (unsigned int)ncolors) {
+                sixel_allocator_free(allocator, pixels);
+                sixel_helper_set_additional_message(
+                    "load_png: palette index exceeds PLTE.");
+                return SIXEL_PNG_ERROR;
+            }
+            memcpy(pixels + (y * (size_t)width + x) * 3u,
+                   palette + index * 3u, 3u * sizeof(float));
+        }
+    }
+    /* Publish atomically: failures leave the original indexed allocation
+     * owned by load_png's cleanup, and never expose a partial frame. */
+    sixel_allocator_free(allocator, *result);
+    *result = (unsigned char *)pixels;
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 load_png(unsigned char      /* out */ **result,
          unsigned char const /* in */ *buffer,
@@ -1449,23 +1499,31 @@ load_png(unsigned char      /* out */ **result,
             status = (SIXELSTATUS)-cms_converted;
             goto cleanup;
         }
-        if (cms_converted && !palette_colors) {
+        if (cms_converted && palette_colors) {
+            status = png_expand_float_palette(result, rows, *psx, *psy,
+                *pixelformat == SIXEL_PIXELFORMAT_PAL8 ? 8 : (int)bitdepth,
+                cms_pixels, *pncolors, allocator);
+            if (SIXEL_FAILED(status)) {
+                goto cleanup;
+            }
+            sixel_allocator_free(allocator, *ppalette);
+            *ppalette = NULL;
+            *pncolors = 0;
+            *pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+        } else if (cms_converted) {
             /* Retain CMS output as the canonical frame. Re-encoding it into
              * the original RGB8/16 buffer loses gamut before promotion. */
             sixel_allocator_free(allocator, *result);
             *result = (unsigned char *)cms_pixels;
             cms_pixels = NULL;
             *pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-        } else {
-            /* Indexed palettes still have their explicit byte boundary.
-             * Untagged byte sources keep the existing storage policy. */
+        } else if (!palette_colors) {
+            /* Unapplied metadata keeps the original palette bytes exactly.
+             * Other unconverted sources retain their existing storage. */
             for (dst_index = 0u; dst_index < color_count * 3u; ++dst_index) {
                 value = png_encode_srgb_unit(cms_pixels[dst_index]);
                 if (*pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
                     ((float *)*result)[dst_index] = (float)value;
-                } else if (palette_colors) {
-                    (*ppalette)[dst_index] =
-                        (unsigned char)(value * 255.0 + 0.5);
                 } else if (*pixelformat != SIXEL_PIXELFORMAT_G8) {
                     (*result)[dst_index] =
                         (unsigned char)(value * 255.0 + 0.5);
