@@ -1179,6 +1179,21 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0225_JPEG_DNL_FILL_NUMERIC \
     -DBUILD_TEST_0226_JPEG_DNL_EOI_REJECT \
     -DBUILD_TEST_0227_JPEG_DNL_SEGMENT_REJECT \
+    -DBUILD_TEST_0228_TGA_ORIGIN_RGB_RAW_NUMERIC \
+    -DBUILD_TEST_0229_TGA_ORIGIN_PAL_RAW_NUMERIC \
+    -DBUILD_TEST_0230_TGA_ORIGIN_RGB_RLE_NUMERIC \
+    -DBUILD_TEST_0231_TGA_ORIGIN_PAL_RLE_NUMERIC \
+    -DBUILD_TEST_0232_TGA_ORIGIN_INDEX16_RAW_NUMERIC \
+    -DBUILD_TEST_0233_TGA_ORIGIN_INDEX16_RLE_NUMERIC \
+    -DBUILD_TEST_0234_TGA_ORIGIN_BYTE_MAX_NUMERIC \
+    -DBUILD_TEST_0235_TGA_ORIGIN_WORD_MAX_NUMERIC \
+    -DBUILD_TEST_0236_TGA_ORIGIN_ALPHA_NUMERIC \
+    -DBUILD_TEST_0237_TGA_ORIGIN_BELOW_NUMERIC \
+    -DBUILD_TEST_0238_TGA_ORIGIN_ABOVE_NUMERIC \
+    -DBUILD_TEST_0239_TGA_ORIGIN_PAL_FALLBACK_NUMERIC \
+    -DBUILD_TEST_0240_TGA_ORIGIN_GRAY_NUMERIC \
+    -DBUILD_TEST_0241_TGA_ORIGIN_RGB16_NUMERIC \
+    -DBUILD_TGA_ORIGIN_TEST_COMMON \
     -DBUILD_JPEG_DNL_TEST_COMMON \
     -DBUILD_JPEG_LOSSLESS_TEST_COMMON \
     -DBUILD_JPEG_CMYK_TEST_COMMON \
@@ -2053,6 +2068,22 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0225_jpeg_dnl_fill_numeric.c \
     loader/builtin/0226_jpeg_dnl_eoi_reject.c \
     loader/builtin/0227_jpeg_dnl_segment_reject.c \
+    loader/builtin/0228_tga_origin_rgb_raw_numeric.c \
+    loader/builtin/0229_tga_origin_pal_raw_numeric.c \
+    loader/builtin/0230_tga_origin_rgb_rle_numeric.c \
+    loader/builtin/0231_tga_origin_pal_rle_numeric.c \
+    loader/builtin/0232_tga_origin_index16_raw_numeric.c \
+    loader/builtin/0233_tga_origin_index16_rle_numeric.c \
+    loader/builtin/0234_tga_origin_byte_max_numeric.c \
+    loader/builtin/0235_tga_origin_word_max_numeric.c \
+    loader/builtin/0236_tga_origin_alpha_numeric.c \
+    loader/builtin/0237_tga_origin_below_numeric.c \
+    loader/builtin/0238_tga_origin_above_numeric.c \
+    loader/builtin/0239_tga_origin_pal_fallback_numeric.c \
+    loader/builtin/0240_tga_origin_gray_numeric.c \
+    loader/builtin/0241_tga_origin_rgb16_numeric.c \
+    loader/builtin/tga_origin_test_common.c \
+    loader/builtin/tga_origin_test_common.h \
     loader/builtin/jpeg_dnl_test_common.c \
     loader/builtin/jpeg_dnl_test_common.h \
     loader/builtin/jpeg_lossless_test_common.c \

@@ -39,7 +39,7 @@ The image ID field is skipped. Width and height must be positive and within stb'
 
 The general stb path accepts 8- or 16-bit colormap indices and expands them immediately. The palette-preserving path is narrower: it requires an indexed type, 8-bit indices, and enabled palette fusion, then returns gamma `PAL8` plus at most 256 RGB entries.
 
-The header's first-colormap-entry value is not implemented as a logical index base. Files using a nonzero origin are therefore outside the supported semantic subset even where the byte parser can continue. This is important because the field is not simply cosmetic; compliant indices are relative to that declared origin.
+The header's First Entry Index is the logical index of the first stored palette entry. It does not add padding before the palette: the file stores exactly Color Map Length entries immediately after the optional image ID. For example, origin 342 and length 72 describe file indices 342 through 413, which map to stored palette slots 0 through 71. Both raw and RLE decoding subtract the origin before lookup; the PAL8 fast path stores those zero-based slots, so palette alpha and the transparent key remain aligned. Eight- and sixteen-bit source indices retain their full unsigned range before subtraction. An invalid index below the origin or beyond the stored entries retains the existing general-path compatibility behavior of choosing the first stored color; a failed palette-preserving attempt releases its temporary buffers before taking that RGB fallback.
 
 ## RLE coding and orientation
 
@@ -109,7 +109,7 @@ img2sixel -Lbuiltin! -A keep -B '#202020' rgba32.tga
 
 ## Unsupported behavior and security boundary
 
-Nonzero colormap origins, horizontal right-to-left storage, extension/developer semantics, high-depth samples, alpha-preserving gray-alpha, alpha-preserving indexed fallback, ICC/profile interpretation, and animation are not supported as end-to-end contracts. The descriptor alpha-bit count is not used to turn 15/16-bit direct pixels into alpha.
+Horizontal right-to-left storage, extension/developer semantics, high-depth samples, alpha-preserving gray-alpha, alpha-preserving indexed fallback, ICC/profile interpretation, and animation are not supported as end-to-end contracts. The descriptor alpha-bit count is not used to turn 15/16-bit direct pixels into alpha.
 
 Weak recognition, dimensions, palette sizes, index values, and RLE commands are attacker-controlled. Because TGA lacks a strong magic, fallback order can affect which parser sees a malformed input. `-Lbuiltin!` narrows the component set but does not sandbox the adapted stb decoder.
 
@@ -141,7 +141,21 @@ The rows below are pipeline landmarks rather than the complete suite. The [TGA c
 | TGA-08 | Sixteen-bit palette indices select the exact declared entry. | [tests/loader/builtin/1951_loader_builtin_tga_index16_numeric.t](../../../tests/loader/builtin/1951_loader_builtin_tga_index16_numeric.t) |
 | TGA-09 | Bottom-origin storage is vertically normalized to top-to-bottom frame order. | [tests/loader/builtin/1952_loader_builtin_tga_bottom_origin_numeric.t](../../../tests/loader/builtin/1952_loader_builtin_tga_bottom_origin_numeric.t) |
 | TGA-10 | Raw and repeated type-10 RLE packets preserve exact pixel order. | [tests/loader/builtin/1953_loader_builtin_tga_rle_packet_modes_numeric.t](../../../tests/loader/builtin/1953_loader_builtin_tga_rle_packet_modes_numeric.t) |
-| TGA-11 | The general RGB fallback maps an out-of-range palette index to entry zero instead of reading beyond the palette. | [tests/loader/builtin/1955_loader_builtin_tga_oob_index_fallback_numeric.t](../../../tests/loader/builtin/1955_loader_builtin_tga_oob_index_fallback_numeric.t) |
+| TGA-11 | The general RGB fallback maps an out-of-range palette index to the first stored entry instead of reading beyond the palette. | [tests/loader/builtin/1955_loader_builtin_tga_oob_index_fallback_numeric.t](../../../tests/loader/builtin/1955_loader_builtin_tga_oob_index_fallback_numeric.t) |
+| TGA-12 | Expand raw eight-bit indices relative to a nonzero colormap origin. | [tests/loader/builtin/2244_tga_origin_rgb_raw_numeric.t](../../../tests/loader/builtin/2244_tga_origin_rgb_raw_numeric.t) |
+| TGA-13 | Rebase raw eight-bit file indices to exact zero-based PAL8 slots. | [tests/loader/builtin/2245_tga_origin_pal_raw_numeric.t](../../../tests/loader/builtin/2245_tga_origin_pal_raw_numeric.t) |
+| TGA-14 | Expand raw and run RLE packets relative to the colormap origin. | [tests/loader/builtin/2246_tga_origin_rgb_rle_numeric.t](../../../tests/loader/builtin/2246_tga_origin_rgb_rle_numeric.t) |
+| TGA-15 | Rebase a repeated PAL8 index once when reading its RLE packet. | [tests/loader/builtin/2247_tga_origin_pal_rle_numeric.t](../../../tests/loader/builtin/2247_tga_origin_pal_rle_numeric.t) |
+| TGA-16 | Use the full sixteen-bit colormap origin for raw source indices. | [tests/loader/builtin/2248_tga_origin_index16_raw_numeric.t](../../../tests/loader/builtin/2248_tga_origin_index16_raw_numeric.t) |
+| TGA-17 | Use the full sixteen-bit colormap origin in RLE packets. | [tests/loader/builtin/2249_tga_origin_index16_rle_numeric.t](../../../tests/loader/builtin/2249_tga_origin_index16_rle_numeric.t) |
+| TGA-18 | Rebase source index 255 without overflowing eight-bit PAL8 slots. | [tests/loader/builtin/2250_tga_origin_byte_max_numeric.t](../../../tests/loader/builtin/2250_tga_origin_byte_max_numeric.t) |
+| TGA-19 | Resolve source index 65535 without wrapping the colormap range. | [tests/loader/builtin/2251_tga_origin_word_max_numeric.t](../../../tests/loader/builtin/2251_tga_origin_word_max_numeric.t) |
+| TGA-20 | Preserve the zero-based transparent palette key after index rebasing. | [tests/loader/builtin/2252_tga_origin_alpha_numeric.t](../../../tests/loader/builtin/2252_tga_origin_alpha_numeric.t) |
+| TGA-21 | Map an index below the declared origin to the first stored color. | [tests/loader/builtin/2253_tga_origin_below_numeric.t](../../../tests/loader/builtin/2253_tga_origin_below_numeric.t) |
+| TGA-22 | Map an index above the declared palette range to its first color. | [tests/loader/builtin/2254_tga_origin_above_numeric.t](../../../tests/loader/builtin/2254_tga_origin_above_numeric.t) |
+| TGA-23 | Preserve the RGB index fallback after an invalid PAL8 index. | [tests/loader/builtin/2255_tga_origin_pal_fallback_numeric.t](../../../tests/loader/builtin/2255_tga_origin_pal_fallback_numeric.t) |
+| TGA-24 | Read grayscale palette entries directly after the image ID. | [tests/loader/builtin/2256_tga_origin_gray_numeric.t](../../../tests/loader/builtin/2256_tga_origin_gray_numeric.t) |
+| TGA-25 | Read packed RGB16 palette entries directly after the image ID. | [tests/loader/builtin/2257_tga_origin_rgb16_numeric.t](../../../tests/loader/builtin/2257_tga_origin_rgb16_numeric.t) |
 
 ### Quality regression tests
 

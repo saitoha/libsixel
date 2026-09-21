@@ -883,6 +883,20 @@ int test_loader_0224_jpeg_dnl(int argc, char **argv);
 int test_loader_0225_jpeg_dnl(int argc, char **argv);
 int test_loader_0226_jpeg_dnl(int argc, char **argv);
 int test_loader_0227_jpeg_dnl(int argc, char **argv);
+int test_loader_0228_tga_origin(int argc, char **argv);
+int test_loader_0229_tga_origin(int argc, char **argv);
+int test_loader_0230_tga_origin(int argc, char **argv);
+int test_loader_0231_tga_origin(int argc, char **argv);
+int test_loader_0232_tga_origin(int argc, char **argv);
+int test_loader_0233_tga_origin(int argc, char **argv);
+int test_loader_0234_tga_origin(int argc, char **argv);
+int test_loader_0235_tga_origin(int argc, char **argv);
+int test_loader_0236_tga_origin(int argc, char **argv);
+int test_loader_0237_tga_origin(int argc, char **argv);
+int test_loader_0238_tga_origin(int argc, char **argv);
+int test_loader_0239_tga_origin(int argc, char **argv);
+int test_loader_0240_tga_origin(int argc, char **argv);
+int test_loader_0241_tga_origin(int argc, char **argv);
 int test_loader_0172_lab(int argc, char **argv);
 int test_loader_0173_lab(int argc, char **argv);
 int test_loader_0174_lab16(int argc, char **argv);
@@ -2265,6 +2279,34 @@ static test_entry_t const test_entries[] = {
     { "loader/0225_jpeg_dnl_fill_numeric", test_loader_0225_jpeg_dnl },
     { "loader/0226_jpeg_dnl_eoi_reject", test_loader_0226_jpeg_dnl },
     { "loader/0227_jpeg_dnl_segment_reject", test_loader_0227_jpeg_dnl },
+    { "loader/0228_tga_origin_rgb_raw_numeric",
+      test_loader_0228_tga_origin },
+    { "loader/0229_tga_origin_pal_raw_numeric",
+      test_loader_0229_tga_origin },
+    { "loader/0230_tga_origin_rgb_rle_numeric",
+      test_loader_0230_tga_origin },
+    { "loader/0231_tga_origin_pal_rle_numeric",
+      test_loader_0231_tga_origin },
+    { "loader/0232_tga_origin_index16_raw_numeric",
+      test_loader_0232_tga_origin },
+    { "loader/0233_tga_origin_index16_rle_numeric",
+      test_loader_0233_tga_origin },
+    { "loader/0234_tga_origin_byte_max_numeric",
+      test_loader_0234_tga_origin },
+    { "loader/0235_tga_origin_word_max_numeric",
+      test_loader_0235_tga_origin },
+    { "loader/0236_tga_origin_alpha_numeric",
+      test_loader_0236_tga_origin },
+    { "loader/0237_tga_origin_below_numeric",
+      test_loader_0237_tga_origin },
+    { "loader/0238_tga_origin_above_numeric",
+      test_loader_0238_tga_origin },
+    { "loader/0239_tga_origin_pal_fallback_numeric",
+      test_loader_0239_tga_origin },
+    { "loader/0240_tga_origin_gray_numeric",
+      test_loader_0240_tga_origin },
+    { "loader/0241_tga_origin_rgb16_numeric",
+      test_loader_0241_tga_origin },
     { "loader/0172_lcms_lab_frame", test_loader_0172_lab },
     { "loader/0173_colorsync_lab_frame", test_loader_0173_lab },
     { "loader/0174_lab16_signed_values", test_loader_0174_lab16 },

@@ -7093,13 +7093,12 @@ static stbi_uc *stbi__tga_load_palette(stbi__context *s, int *x, int *y,
    int tga_bits_per_pixel;
    int tga_inverted;
    int palette_comp;
-   int palette_entry_bytes;
    int pixel_count;
    int i;
    int rle_count;
    int rle_repeating;
    int read_next_pixel;
-   stbi_uc index_value;
+   int index_value;
    stbi_uc b;
    stbi_uc g;
    stbi_uc r;
@@ -7122,7 +7121,6 @@ static stbi_uc *stbi__tga_load_palette(stbi__context *s, int *x, int *y,
    tga_bits_per_pixel = 0;
    tga_inverted = 0;
    palette_comp = 0;
-   palette_entry_bytes = 0;
    pixel_count = 0;
    i = 0;
    rle_count = 0;
@@ -7189,16 +7187,12 @@ static stbi_uc *stbi__tga_load_palette(stbi__context *s, int *x, int *y,
 
    if (tga_palette_bits == 32) {
       palette_comp = 4;
-      palette_entry_bytes = 4;
    } else if (tga_palette_bits == 8) {
       palette_comp = 1;
-      palette_entry_bytes = 1;
    } else if (tga_palette_bits == 15 || tga_palette_bits == 16) {
       palette_comp = 3;
-      palette_entry_bytes = 2;
    } else {
       palette_comp = 3;
-      palette_entry_bytes = 3;
    }
 
    if (!stbi__mad2sizes_valid(tga_width, tga_height, 0)) {
@@ -7207,9 +7201,8 @@ static stbi_uc *stbi__tga_load_palette(stbi__context *s, int *x, int *y,
    }
 
    stbi__skip(s, tga_offset);
-   if (tga_palette_start > 0) {
-      stbi__skip(s, tga_palette_start * palette_entry_bytes);
-   }
+   // First Entry Index is a logical base, not padding stored in the file.
+   // The file contains exactly tga_palette_len entries after the image ID.
 
    packed_palette = (stbi_uc *) stbi__malloc_mad2(tga_palette_len,
                                                   palette_comp, 0);
@@ -7265,20 +7258,23 @@ static stbi_uc *stbi__tga_load_palette(stbi__context *s, int *x, int *y,
       }
 
       if (read_next_pixel) {
-         index_value = stbi__get8(s);
+         index_value = (int)stbi__get8(s) - tga_palette_start;
          read_next_pixel = 0;
-         if (index_value >= tga_palette_len) {
+         if (index_value < 0 || index_value >= tga_palette_len) {
             /*
              * Guard against invalid palette indices. Returning NULL lets
              * the caller fall back to the non-paletted loader instead of
              * dereferencing out-of-range palette memory.
              */
             stbi__err("bad index", "Corrupt TGA");
+            STBI_FREE(result);
+            result = NULL;
             goto end;
          }
       }
 
-      result[i] = index_value;
+      // PAL8 uses zero-based slots even when the file's index base is nonzero.
+      result[i] = (stbi_uc)index_value;
       --rle_count;
    }
 
@@ -7332,6 +7328,7 @@ static void *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req
    int read_next_pixel = 1;
    int RLE_cmd = 0;
    int remaining_pixels = 0;
+   int pal_idx;
    STBI_NOTUSED(ri);
    STBI_NOTUSED(tga_x_origin); // @TODO
    STBI_NOTUSED(tga_y_origin); // @TODO
@@ -7387,8 +7384,8 @@ static void *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req
             return stbi__errpuc("bad palette", "Corrupt TGA");
          }
 
-         //   any data to skip? (offset usually = 0)
-         stbi__skip(s, tga_palette_start );
+         // First Entry Index describes logical indices, not a byte offset.
+         // Read the stored entries here and subtract the base at lookup.
          //   load the palette
          tga_palette = (unsigned char*)stbi__malloc_mad2(tga_palette_len, tga_comp, 0);
          if (!tga_palette) {
@@ -7443,9 +7440,11 @@ static void *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req
             if ( tga_indexed )
             {
                // read in index, then perform the lookup
-               int pal_idx = (tga_bits_per_pixel == 8) ? stbi__get8(s) : stbi__get16le(s);
-               if ( pal_idx >= tga_palette_len ) {
-                  // invalid index
+               pal_idx = tga_bits_per_pixel == 8 ? stbi__get8(s) :
+                                                   stbi__get16le(s);
+               pal_idx -= tga_palette_start;
+               if (pal_idx < 0 || pal_idx >= tga_palette_len) {
+                  // Preserve compatibility: use the first stored entry.
                   pal_idx = 0;
                }
                pal_idx *= tga_comp;

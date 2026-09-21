@@ -22,9 +22,9 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
 | [WebP](../loader/builtin/webp.md) | 308 | 13 | 48 | 241 | 0 | 1 | 5 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
-| [TGA](../loader/builtin/tga.md) | 27 | 11 | 8 | 0 | 4 | 0 | 4 |
+| [TGA](../loader/builtin/tga.md) | 41 | 25 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2230** | **479** | **724** | **652** | **67** | **13** | **295** |
+| **Total** | **2244** | **493** | **724** | **652** | **67** | **13** | **295** |
 
 ## Complete inventory
 
@@ -2303,6 +2303,20 @@ Primary implementation context: [TGA builtin component](../loader/builtin/tga.md
 | [tests/loader/builtin/2039_loader_builtin_tga_header_collision_reject.t](../../tests/loader/builtin/2039_loader_builtin_tga_header_collision_reject.t) | Verify a conflicting TGA palette flag cannot claim a direct image. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
 | [tests/loader/builtin/2066_loader_builtin_tga_palette_no_background_isolation.t](../../tests/loader/builtin/2066_loader_builtin_tga_palette_no_background_isolation.t) | TGA no-background palette retains its existing black blend. | Other integration/smoke | Inventory only |
 | [tests/loader/builtin/2067_loader_builtin_tga_palette_background_isolation.t](../../tests/loader/builtin/2067_loader_builtin_tga_palette_background_isolation.t) | TGA explicit background retains its existing byte blend. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/2244_tga_origin_rgb_raw_numeric.t](../../tests/loader/builtin/2244_tga_origin_rgb_raw_numeric.t) | Expand raw eight-bit indices relative to a nonzero colormap origin. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/2245_tga_origin_pal_raw_numeric.t](../../tests/loader/builtin/2245_tga_origin_pal_raw_numeric.t) | Rebase raw eight-bit file indices to exact zero-based PAL8 slots. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/2246_tga_origin_rgb_rle_numeric.t](../../tests/loader/builtin/2246_tga_origin_rgb_rle_numeric.t) | Expand raw and run RLE packets relative to the colormap origin. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/2247_tga_origin_pal_rle_numeric.t](../../tests/loader/builtin/2247_tga_origin_pal_rle_numeric.t) | Rebase a repeated PAL8 index once when reading its RLE packet. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/2248_tga_origin_index16_raw_numeric.t](../../tests/loader/builtin/2248_tga_origin_index16_raw_numeric.t) | Use the full sixteen-bit colormap origin for raw source indices. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/2249_tga_origin_index16_rle_numeric.t](../../tests/loader/builtin/2249_tga_origin_index16_rle_numeric.t) | Use the full sixteen-bit colormap origin in RLE packets. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/2250_tga_origin_byte_max_numeric.t](../../tests/loader/builtin/2250_tga_origin_byte_max_numeric.t) | Rebase source index 255 without overflowing eight-bit PAL8 slots. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/2251_tga_origin_word_max_numeric.t](../../tests/loader/builtin/2251_tga_origin_word_max_numeric.t) | Resolve source index 65535 without wrapping the colormap range. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/2252_tga_origin_alpha_numeric.t](../../tests/loader/builtin/2252_tga_origin_alpha_numeric.t) | Preserve the zero-based transparent palette key after index rebasing. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/2253_tga_origin_below_numeric.t](../../tests/loader/builtin/2253_tga_origin_below_numeric.t) | Map an index below the declared origin to the first stored color. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/2254_tga_origin_above_numeric.t](../../tests/loader/builtin/2254_tga_origin_above_numeric.t) | Map an index above the declared palette range to its first color. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/2255_tga_origin_pal_fallback_numeric.t](../../tests/loader/builtin/2255_tga_origin_pal_fallback_numeric.t) | Release the failed PAL8 attempt and preserve RGB index fallback. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/2256_tga_origin_gray_numeric.t](../../tests/loader/builtin/2256_tga_origin_gray_numeric.t) | Read grayscale palette entries directly after the image ID. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/2257_tga_origin_rgb16_numeric.t](../../tests/loader/builtin/2257_tga_origin_rgb16_numeric.t) | Read packed RGB16 palette entries directly after the image ID. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
 
 ### Softimage PIC
 
