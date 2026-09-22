@@ -5188,7 +5188,7 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
                   ? SIXEL_CMS_PIXELFORMAT_LAB_F32
                   : SIXEL_CMS_PIXELFORMAT_RGB_F32;
     if (source_space == SIXEL_CMS_COLORSPACE_GRAY) {
-        /* PNG expands gray into RGB before this shared profile boundary.
+        /* Loaders replicate gray into RGB before this profile boundary.
          * Pack original gray samples without an intervening byte view. */
         gray = (float *)malloc(pixel_count * sizeof(float));
         if (gray == NULL) {

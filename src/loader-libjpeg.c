@@ -445,56 +445,38 @@ jpeg_convert_rgbf32_gamma_to_linear(float *pixels,
                                            SIXEL_COLORSPACE_LINEAR);
 }
 
-#if HAVE_LCMS2
-static int
-jpeg_convert_icc_rgbf32_to_srgb(float *pixels,
-                                size_t pixel_count,
-                                unsigned char const *profile,
-                                unsigned int profile_length)
+/* Gray profiles need a one-component device source and the shared linear
+ * path's ColorSync power-curve handling. RGB profiles retain their existing
+ * gamma destination. Neither decision depends on optional LCMS linkage. */
+static SIXELSTATUS
+jpeg_normalize_rgbf32(float *pixels, int width, int height,
+                      unsigned char const *profile, size_t profile_length)
 {
-    sixel_cms_profile_t *src_profile;
-    sixel_cms_profile_t *dst_profile;
-    sixel_cms_transform_t *transform;
-    int converted;
+    sixel_cms_profile_t *source;
+    int linear;
 
-    src_profile = NULL;
-    dst_profile = NULL;
-    transform = NULL;
-    converted = 0;
-    if (pixels == NULL || pixel_count == 0u ||
-        profile == NULL || profile_length == 0u) {
-        return 0;
+    source = NULL;
+    linear = 0;
+    if (profile != NULL && profile_length != 0u) {
+        source = sixel_cms_open_profile_from_mem(profile, profile_length);
     }
-
-    src_profile = sixel_cms_open_profile_from_mem(profile, profile_length);
-    if (src_profile == NULL) {
-        goto cleanup;
+    if (source != NULL) {
+        if (sixel_cms_get_color_space(source) == SIXEL_CMS_COLORSPACE_GRAY) {
+            /* The facade packs replicated Gray without a byte intermediary
+             * and publishes only a complete result. On failure, the original
+             * samples remain available for the usual sRGB fallback. */
+            linear = sixel_cms_convert_profile_to_linearrgb(
+                (unsigned char *)pixels, width, height,
+                SIXEL_PIXELFORMAT_RGBFLOAT32, source);
+        } else {
+            (void)sixel_cms_convert_profile_to_srgb((unsigned char *)pixels,
+                width, height, SIXEL_PIXELFORMAT_RGBFLOAT32, source);
+        }
+        sixel_cms_close_profile(source);
     }
-    dst_profile = sixel_cms_create_srgb_profile();
-    if (dst_profile == NULL) {
-        goto cleanup;
-    }
-    transform = sixel_cms_create_transform(src_profile,
-                                           SIXEL_CMS_PIXELFORMAT_RGB_F32,
-                                           dst_profile,
-                                           SIXEL_CMS_PIXELFORMAT_RGB_F32,
-                                           SIXEL_CMS_TRANSFORM_DEFAULT);
-    if (transform == NULL) {
-        goto cleanup;
-    }
-    converted = sixel_cms_do_transform(transform,
-                                       pixels,
-                                       pixels,
-                                       pixel_count);
-
-cleanup:
-    sixel_cms_delete_transform(transform);
-    sixel_cms_close_profile(dst_profile);
-    sixel_cms_close_profile(src_profile);
-    return converted;
+    return linear ? SIXEL_OK : jpeg_convert_rgbf32_gamma_to_linear(
+        pixels, (size_t)width * (size_t)height);
 }
-
-#endif
 
 static int
 jpeg_convert_icc_cmyk8_to_srgb_f32(float *dst_pixels,
@@ -608,24 +590,12 @@ jpeg_promote_rgb888_to_linear_float32(unsigned char **result,
     size_t float_bytes;
     unsigned char *rgb_pixels;
     float *float_pixels;
-#if HAVE_LCMS2
-    sixel_cms_profile_t *src_profile;
-    sixel_cms_profile_t *dst_profile;
-    sixel_cms_transform_t *transform;
-    int cms_converted;
-#endif
 
     status = SIXEL_OK;
     pixel_count = 0u;
     float_bytes = 0u;
     rgb_pixels = NULL;
     float_pixels = NULL;
-#if HAVE_LCMS2
-    src_profile = NULL;
-    dst_profile = NULL;
-    transform = NULL;
-    cms_converted = 0;
-#endif
 
     if (result == NULL || *result == NULL || allocator == NULL ||
         width <= 0 || height <= 0) {
@@ -650,59 +620,15 @@ jpeg_promote_rgb888_to_linear_float32(unsigned char **result,
         return SIXEL_BAD_ALLOCATION;
     }
 
-#if HAVE_LCMS2
-    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-        src_profile = sixel_cms_open_profile_from_mem(icc_profile,
-                                                      icc_profile_length);
-        if (src_profile != NULL) {
-            dst_profile = sixel_cms_create_srgb_profile();
-        }
-        if (src_profile != NULL && dst_profile != NULL) {
-            transform = sixel_cms_create_transform(src_profile,
-                                                   SIXEL_CMS_PIXELFORMAT_RGB_8,
-                                                   dst_profile,
-                                                   SIXEL_CMS_PIXELFORMAT_RGB_F32,
-                                                   SIXEL_CMS_TRANSFORM_DEFAULT);
-        }
-        if (transform != NULL &&
-            sixel_cms_do_transform(transform,
-                                   rgb_pixels,
-                                   float_pixels,
-                                   pixel_count)) {
-            cms_converted = 1;
-        }
-    }
-#endif
-
-#if HAVE_LCMS2
-    if (!cms_converted) {
-        jpeg_unpack_rgb8_to_rgbf32(float_pixels, rgb_pixels, pixel_count);
-    }
-#else
+    /* Use the same profile-aware facade in every build. Grayscale has
+     * already been replicated into RGB; the facade packs its original
+     * normalized samples as GRAY_F32 before applying a Gray ICC profile. */
     jpeg_unpack_rgb8_to_rgbf32(float_pixels, rgb_pixels, pixel_count);
-#endif
-
-#if !HAVE_LCMS2
-    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-        sixel_cms_convert_to_srgb_with_profile_bytes(
-            (unsigned char *)float_pixels,
-            width,
-            height,
-            SIXEL_PIXELFORMAT_RGBFLOAT32,
-            icc_profile,
-            (size_t)icc_profile_length);
-    }
-#endif
-
     if (enable_cms) {
-        status = jpeg_convert_rgbf32_gamma_to_linear(float_pixels, pixel_count);
+        status = jpeg_normalize_rgbf32(float_pixels, width, height,
+                                        icc_profile, icc_profile_length);
         if (SIXEL_FAILED(status)) {
             sixel_allocator_free(allocator, float_pixels);
-#if HAVE_LCMS2
-            sixel_cms_delete_transform(transform);
-            sixel_cms_close_profile(dst_profile);
-            sixel_cms_close_profile(src_profile);
-#endif
             return status;
         }
     }
@@ -710,11 +636,6 @@ jpeg_promote_rgb888_to_linear_float32(unsigned char **result,
     sixel_allocator_free(allocator, *result);
     *result = (unsigned char *)float_pixels;
 
-#if HAVE_LCMS2
-    sixel_cms_delete_transform(transform);
-    sixel_cms_close_profile(dst_profile);
-    sixel_cms_close_profile(src_profile);
-#endif
     return SIXEL_OK;
 }
 
@@ -1381,27 +1302,9 @@ load_jpeg(unsigned char **result,
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
-#if HAVE_LCMS2
             if (enable_cms) {
-                (void)jpeg_convert_icc_rgbf32_to_srgb((float *)*result,
-                                                      pixel_count,
-                                                      icc_profile,
-                                                      icc_profile_length);
-            }
-#else
-            if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-                sixel_cms_convert_to_srgb_with_profile_bytes(
-                    *result,
-                    *pwidth,
-                    *pheight,
-                    SIXEL_PIXELFORMAT_RGBFLOAT32,
-                    icc_profile,
-                    (size_t)icc_profile_length);
-            }
-#endif
-            if (enable_cms) {
-                status = jpeg_convert_rgbf32_gamma_to_linear((float *)*result,
-                                                             pixel_count);
+                status = jpeg_normalize_rgbf32((float *)*result,
+                    *pwidth, *pheight, icc_profile, icc_profile_length);
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }

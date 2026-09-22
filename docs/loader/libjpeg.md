@@ -26,6 +26,12 @@ Float storage preserves the values supplied by the decode/conversion route; it d
 
 Eight-bit RGB and grayscale decode directly to gamma RGB888 when no ICC payload needs interpretation and the encoder has not requested float decoding. This also applies with CMS enabled but no embedded profile. `-.float32` and independent float-work requirements reach the loader through its precision preference. CMYK/YCCK conversion and high-depth decoding retain their existing float paths.
 
+## Grayscale ICC source coordinates
+
+Gray8/12/16 samples retain their source transfer until profile application. Although the decoder presents equal RGB components to the frame pipeline, the common CMS facade packs one original normalized sample per pixel and applies a Gray ICC profile with `GRAY_F32` input and RGB float output. The same facade is used with and without Little CMS compiled in; selecting builtin or ColorSync does not inherit a different source layout from build-time Little CMS availability. Gray ICC conversion uses the shared linear destination, including its ColorSync power-curve correction and failure-safe publication. Unconverted samples retain the existing sRGB fallback interpretation.
+
+CMS-disabled and untagged eight-bit sources retain the RGB888 fast path unless float decoding is requested. Invalid profiles retain the original decoded samples for the existing fallback interpretation. High-depth grayscale and applied profiles do not acquire an intermediate byte boundary. This adapter currently publishes managed output as linear float; shared `cms_target` and `prefer_8bit` settings are not yet reflected in its publication format.
+
 ## CMYK and YCCK ICC source coordinates
 
 libjpeg preserves inverted Adobe CMYK device coordinates, including the CMYK scanlines decoded from Adobe YCCK. ICC CMYK input expresses ink coverage. The adapter complements all four components only for matching APP14 markers: CMYK/transform 0 or YCCK/transform 2. Marker-absent input retains its source values. This follows the [libjpeg decoder](https://github.com/libjpeg-turbo/libjpeg-turbo/blob/3.2.0/src/jdcolor.c) and [Little CMS jpgicc input flavor selection](https://github.com/mm2/Little-CMS/blob/master/utils/jpgicc/jpgicc.c).
@@ -53,6 +59,30 @@ For source-format behavior implemented without libjpeg, see [builtin JPEG](built
 <!-- test-coverage: enforced -->
 
 ### Behavioral contract tests
+
+#### Grayscale ICC
+
+The in-memory fixtures encode constant 8/12-bit DCT blocks with unit quantization and native 16-bit lossless predictor samples. Expected linear values follow the existing `gray-gamma2.icc` profile analytically: `(sample / maximum)^2`. Original sample and fallback checks are separate from profile-application checks; no CMM-generated image is an oracle. Native CMS tolerances cover their existing numerical error, while CMS-disabled Gray8/16 checks require exact float source values and Gray12 allows only the two float roundings of its reciprocal normalization. Existing MS-SSIM tests below remain a separate quality observation.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| JGRAY-01 | Exact source-derived RGB values and frame representation: gray8 builtin; managed cases require actual Gray float apply by the selected engine. | [tests/loader/libjpeg/gray/0001_gray8_builtin.t](../../tests/loader/libjpeg/gray/0001_gray8_builtin.t) |
+| JGRAY-02 | Exact source-derived RGB values and frame representation: gray8 lcms2; managed cases require actual Gray float apply by the selected engine. | [tests/loader/libjpeg/gray/0002_gray8_lcms2.t](../../tests/loader/libjpeg/gray/0002_gray8_lcms2.t) |
+| JGRAY-03 | Exact source-derived RGB values and frame representation: gray8 colorsync; managed cases require actual Gray float apply by the selected engine. | [tests/loader/libjpeg/gray/0003_gray8_colorsync.t](../../tests/loader/libjpeg/gray/0003_gray8_colorsync.t) |
+| JGRAY-04 | Exact source-derived RGB values and frame representation: gray12 builtin; managed cases require actual Gray float apply by the selected engine. | [tests/loader/libjpeg/gray/0004_gray12_builtin.t](../../tests/loader/libjpeg/gray/0004_gray12_builtin.t) |
+| JGRAY-05 | Exact source-derived RGB values and frame representation: gray12 lcms2; managed cases require actual Gray float apply by the selected engine. | [tests/loader/libjpeg/gray/0005_gray12_lcms2.t](../../tests/loader/libjpeg/gray/0005_gray12_lcms2.t) |
+| JGRAY-06 | Exact source-derived RGB values and frame representation: gray12 colorsync; managed cases require actual Gray float apply by the selected engine. | [tests/loader/libjpeg/gray/0006_gray12_colorsync.t](../../tests/loader/libjpeg/gray/0006_gray12_colorsync.t) |
+| JGRAY-07 | Exact source-derived RGB values and frame representation: gray16 builtin; managed cases require actual Gray float apply by the selected engine. | [tests/loader/libjpeg/gray/0007_gray16_builtin.t](../../tests/loader/libjpeg/gray/0007_gray16_builtin.t) |
+| JGRAY-08 | Exact source-derived RGB values and frame representation: gray16 lcms2; managed cases require actual Gray float apply by the selected engine. | [tests/loader/libjpeg/gray/0008_gray16_lcms2.t](../../tests/loader/libjpeg/gray/0008_gray16_lcms2.t) |
+| JGRAY-09 | Exact source-derived RGB values and frame representation: gray16 colorsync; managed cases require actual Gray float apply by the selected engine. | [tests/loader/libjpeg/gray/0009_gray16_colorsync.t](../../tests/loader/libjpeg/gray/0009_gray16_colorsync.t) |
+| JGRAY-10 | Exact source-derived RGB values and frame representation: cms none byte; managed cases require actual Gray float apply by the selected engine. | [tests/loader/libjpeg/gray/0010_cms_none_byte.t](../../tests/loader/libjpeg/gray/0010_cms_none_byte.t) |
+| JGRAY-11 | Exact source-derived RGB values and frame representation: untagged byte; managed cases require actual Gray float apply by the selected engine. | [tests/loader/libjpeg/gray/0011_untagged_byte.t](../../tests/loader/libjpeg/gray/0011_untagged_byte.t) |
+| JGRAY-13 | Exact source-derived RGB values and frame representation: gray12 cms none; managed cases require actual Gray float apply by the selected engine. | [tests/loader/libjpeg/gray/0013_gray12_cms_none.t](../../tests/loader/libjpeg/gray/0013_gray12_cms_none.t) |
+| JGRAY-14 | Exact source-derived RGB values and frame representation: untagged float; managed cases require actual Gray float apply by the selected engine. | [tests/loader/libjpeg/gray/0014_untagged_float.t](../../tests/loader/libjpeg/gray/0014_untagged_float.t) |
+| JGRAY-15 | Exact source-derived RGB values and frame representation: cms none float; managed cases require actual Gray float apply by the selected engine. | [tests/loader/libjpeg/gray/0015_cms_none_float.t](../../tests/loader/libjpeg/gray/0015_cms_none_float.t) |
+| JGRAY-16 | Exact source-derived RGB values and frame representation: gray16 cms none; managed cases require actual Gray float apply by the selected engine. | [tests/loader/libjpeg/gray/0016_gray16_cms_none.t](../../tests/loader/libjpeg/gray/0016_gray16_cms_none.t) |
+
+#### CMYK and YCCK
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
@@ -130,5 +160,8 @@ These tests compare the final SIXEL with independently generated images at the u
 | JGRAY16Q-01 | Existing Gray16 lossless restart JPEG retains the independent image-quality floor. | [tests/loader/libjpeg/0038_loader_libjpeg_jpeg_gray_16bit_lossless_r64_expected_lsqa.t](../../tests/loader/libjpeg/0038_loader_libjpeg_jpeg_gray_16bit_lossless_r64_expected_lsqa.t) |
 
 ### Defensive and malformed-input tests
+
+The [Gray ICC tests](../../tests/loader/libjpeg/gray/) also verify that a rejected ICC profile preserves the original samples under the fallback transfer, without a successful CMS apply.
+
 
 The [CMYK controls](../../tests/loader/libjpeg/cmyk/) separately check source-byte invariance, successful-transform qualification followed by an actual missing-intent apply failure for both marker states, and the historical incomplete profile's default acceptance, strict-relative failure and external rejection. Available CMS engines are qualified at runtime, and unavailable engines are reported as skips.

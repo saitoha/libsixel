@@ -76,7 +76,7 @@ jf_apply(sixel_cms_transform_t const *transform, void const *input,
 #define jpeg_collect_icc_profile jf_local_1
 #define jpeg_convert_icc_cmyk16_to_srgb_f32 jf_local_2
 #define jpeg_convert_icc_cmyk8_to_srgb_f32 jf_local_3
-#define jpeg_convert_icc_rgbf32_to_srgb jf_local_4
+#define jpeg_normalize_rgbf32 jf_local_4
 #define jpeg_convert_rgbf32_gamma_to_linear jf_local_5
 #define jpeg_decode_cmyk16_from_precision jf_local_6
 #define jpeg_decode_to_float32_from_precision jf_local_7
@@ -116,7 +116,7 @@ jf_apply(sixel_cms_transform_t const *transform, void const *input,
 #undef jpeg_collect_icc_profile
 #undef jpeg_convert_icc_cmyk16_to_srgb_f32
 #undef jpeg_convert_icc_cmyk8_to_srgb_f32
-#undef jpeg_convert_icc_rgbf32_to_srgb
+#undef jpeg_normalize_rgbf32
 #undef jpeg_convert_rgbf32_gamma_to_linear
 #undef jpeg_decode_cmyk16_from_precision
 #undef jpeg_decode_to_float32_from_precision

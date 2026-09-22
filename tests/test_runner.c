@@ -424,6 +424,22 @@ int test_loader_0010_loader_gdk_pixbuf_pixelformat(int argc, char **argv);
 int test_loader_0011_loader_gd_pixelformat(int argc, char **argv);
 int test_loader_libpng_contract(int argc, char **argv);
 int test_libpng_indexed_precision(int argc, char **argv);
+int test_jgray_0001(int argc, char **argv);
+int test_jgray_0002(int argc, char **argv);
+int test_jgray_0003(int argc, char **argv);
+int test_jgray_0004(int argc, char **argv);
+int test_jgray_0005(int argc, char **argv);
+int test_jgray_0006(int argc, char **argv);
+int test_jgray_0007(int argc, char **argv);
+int test_jgray_0008(int argc, char **argv);
+int test_jgray_0009(int argc, char **argv);
+int test_jgray_0010(int argc, char **argv);
+int test_jgray_0011(int argc, char **argv);
+int test_jgray_0012(int argc, char **argv);
+int test_jgray_0013(int argc, char **argv);
+int test_jgray_0014(int argc, char **argv);
+int test_jgray_0015(int argc, char **argv);
+int test_jgray_0016(int argc, char **argv);
 int test_loader_0012_loader_libpng_pixelformat(int argc, char **argv);
 int test_loader_0013_loader_libjpeg_pixelformat(int argc, char **argv);
 int test_jp_gray16(int argc, char **argv);
@@ -1905,6 +1921,22 @@ static test_entry_t const test_entries[] = {
       test_loader_0011_loader_gd_pixelformat },
     { "loader/libpng_contract", test_loader_libpng_contract },
     { "loader/libpng_indexed_precision", test_libpng_indexed_precision },
+    { "jpeg-gray/0001_gray8_builtin", test_jgray_0001 },
+    { "jpeg-gray/0002_gray8_lcms2", test_jgray_0002 },
+    { "jpeg-gray/0003_gray8_colorsync", test_jgray_0003 },
+    { "jpeg-gray/0004_gray12_builtin", test_jgray_0004 },
+    { "jpeg-gray/0005_gray12_lcms2", test_jgray_0005 },
+    { "jpeg-gray/0006_gray12_colorsync", test_jgray_0006 },
+    { "jpeg-gray/0007_gray16_builtin", test_jgray_0007 },
+    { "jpeg-gray/0008_gray16_lcms2", test_jgray_0008 },
+    { "jpeg-gray/0009_gray16_colorsync", test_jgray_0009 },
+    { "jpeg-gray/0010_cms_none_byte", test_jgray_0010 },
+    { "jpeg-gray/0011_untagged_byte", test_jgray_0011 },
+    { "jpeg-gray/0012_rejected_profile", test_jgray_0012 },
+    { "jpeg-gray/0013_gray12_cms_none", test_jgray_0013 },
+    { "jpeg-gray/0014_untagged_float", test_jgray_0014 },
+    { "jpeg-gray/0015_cms_none_float", test_jgray_0015 },
+    { "jpeg-gray/0016_gray16_cms_none", test_jgray_0016 },
     { "loader/0012_loader_libpng_pixelformat",
       test_loader_0012_loader_libpng_pixelformat },
     { "loader/0013_loader_libjpeg_pixelformat",

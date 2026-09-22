@@ -1197,6 +1197,23 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TGA_ORIGIN_TEST_COMMON \
     -DBUILD_JPEG_DNL_TEST_COMMON \
     -DBUILD_JPEG_LOSSLESS_TEST_COMMON \
+    -DBUILD_JPEG_GRAY_TEST_COMMON \
+    -DBUILD_TEST_0001_GRAY8_BUILTIN \
+    -DBUILD_TEST_0002_GRAY8_LCMS2 \
+    -DBUILD_TEST_0003_GRAY8_COLORSYNC \
+    -DBUILD_TEST_0004_GRAY12_BUILTIN \
+    -DBUILD_TEST_0005_GRAY12_LCMS2 \
+    -DBUILD_TEST_0006_GRAY12_COLORSYNC \
+    -DBUILD_TEST_0007_GRAY16_BUILTIN \
+    -DBUILD_TEST_0008_GRAY16_LCMS2 \
+    -DBUILD_TEST_0009_GRAY16_COLORSYNC \
+    -DBUILD_TEST_0010_CMS_NONE_BYTE \
+    -DBUILD_TEST_0011_UNTAGGED_BYTE \
+    -DBUILD_TEST_0012_REJECTED_PROFILE \
+    -DBUILD_TEST_0013_GRAY12_CMS_NONE \
+    -DBUILD_TEST_0014_UNTAGGED_FLOAT \
+    -DBUILD_TEST_0015_CMS_NONE_FLOAT \
+    -DBUILD_TEST_0016_GRAY16_CMS_NONE \
     -DBUILD_JPEG_CMYK_TEST_COMMON \
     -DBUILD_JPEG_PRECISION_FAULT_TEST_COMMON \
     -DBUILD_TEST_0001_AFFINE_ADOBE_BUILTIN \
@@ -2020,6 +2037,24 @@ test_runner_SOURCES = test_runner.c \
     loader/libpng/0023_loader_libpng_contract.c \
     loader/libpng/indexed/0001_indexed_precision.c \
     loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
+    loader/jpeg_gray_test_common.c \
+    loader/jpeg_gray_test_common.h \
+    loader/libjpeg/gray/0001_gray8_builtin.c \
+    loader/libjpeg/gray/0002_gray8_lcms2.c \
+    loader/libjpeg/gray/0003_gray8_colorsync.c \
+    loader/libjpeg/gray/0004_gray12_builtin.c \
+    loader/libjpeg/gray/0005_gray12_lcms2.c \
+    loader/libjpeg/gray/0006_gray12_colorsync.c \
+    loader/libjpeg/gray/0007_gray16_builtin.c \
+    loader/libjpeg/gray/0008_gray16_lcms2.c \
+    loader/libjpeg/gray/0009_gray16_colorsync.c \
+    loader/libjpeg/gray/0010_cms_none_byte.c \
+    loader/libjpeg/gray/0011_untagged_byte.c \
+    loader/libjpeg/gray/0012_rejected_profile.c \
+    loader/libjpeg/gray/0013_gray12_cms_none.c \
+    loader/libjpeg/gray/0014_untagged_float.c \
+    loader/libjpeg/gray/0015_cms_none_float.c \
+    loader/libjpeg/gray/0016_gray16_cms_none.c \
     loader/jpeg_cmyk_test_common.c \
     loader/jpeg_precision_fault_test_common.c \
     loader/jpeg_cmyk_test_common.h \
