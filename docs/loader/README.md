@@ -91,7 +91,7 @@ Framework and plugin loaders inherit part of their effective format support from
 
 See [Animation playback](../functionality/animation.md) for the loader/format support matrix, loop and delay metadata, still-frame extraction, and GdkPixbuf's finite-loop and iterator limitations. Successful still-image loading does not establish animation support.
 
-Read format support and color-management support separately. Backend tables should distinguish implemented decoding, implemented ICC application, missing integration and unverified combinations. For example, the [TIFF table](libtiff.md#format-and-color-management-support) records CIELAB8 and CMYK decoding separately from their missing embedded-ICC connection. At loader level, the current [WIC](../../src/loader-wic.c), [GD](../../src/loader-gd.c) and [GdkPixbuf](../../src/loader-gdk-pixbuf2.c) adapters do not implement embedded-ICC conversion; a format converter or gamma normalization alone does not establish that connection.
+Read format support and color-management support separately. Backend tables should distinguish implemented decoding, implemented ICC application, missing integration and unverified combinations. For example, the [TIFF table](libtiff.md#format-and-color-management-support) records original Lab/CMYK ICC integration separately from LOGL and unsupported layout limitations. At loader level, the current [WIC](../../src/loader-wic.c), [GD](../../src/loader-gd.c) and [GdkPixbuf](../../src/loader-gdk-pixbuf2.c) adapters do not implement embedded-ICC conversion; a format converter or gamma normalization alone does not establish that connection.
 
 ## The output is a typed frame, not universal RGBA
 

@@ -32,7 +32,8 @@ EXTRA_DIST = libsixel-config.in \
              generate_tiff_icc_tests.py \
              generate_tiff_lab16_tests.py \
              generate_tiff_lab_linear_tests.py \
-             generate_tiff_lab_layout_tests.py \
+             generate_tiff_device_tests.py \
+    generate_tiff_lab_layout_tests.py \
     generate_tiff_logluv_tests.py \
     generate_tiff_float_tests.py \
     generate_tiff_managed_fixtures.py \

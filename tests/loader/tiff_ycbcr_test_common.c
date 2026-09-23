@@ -194,7 +194,9 @@ yc_target_format(void)
 #define sixel_cms_open_profile_from_mem yc_open
 #define tiff_lab8_ranges tlx_copy_9_ranges
 #define tiff_lab8_to_linear tlx_copy_9_linear
+#define tiff_convert_cmyk_to_linear tiff_ycbcr_ink_linear
 #include "src/loader-libtiff.c"
+#undef tiff_convert_cmyk_to_linear
 #undef tiff_lab8_to_linear
 #undef tiff_lab8_ranges
 #undef sixel_cms_open_profile_from_mem

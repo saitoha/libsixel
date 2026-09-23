@@ -473,7 +473,9 @@ sixel_cxform_free(sixel_color_xform_t *transform);
 #define tiff_try_load_integer_layouts til_ns_14_3
 #define tiff_lab8_ranges tlx_copy_10_ranges
 #define tiff_lab8_to_linear tlx_copy_10_linear
+#define tiff_convert_cmyk_to_linear lab_linearf_ink_linear
 #include "src/loader-libtiff.c"
+#undef tiff_convert_cmyk_to_linear
 #undef tiff_lab8_to_linear
 #undef tiff_lab8_ranges
 #undef tiff_publish_integer_alpha

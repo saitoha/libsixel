@@ -131,7 +131,9 @@ lx_rgba(TIFF *tif, uint32_t w, uint32_t h, uint32_t *raster,
 #define TIFFReadScanline lx_scanline
 #define TIFFReadRGBAImageOriented lx_rgba
 #define sixel_cms_convert_to_linearrgb_with_profile_bytes lx_linear
+#define tiff_convert_cmyk_to_linear tiff_lab_layout_ink_linear
 #include "src/loader-libtiff.c"
+#undef tiff_convert_cmyk_to_linear
 #undef sixel_cms_convert_to_linearrgb_with_profile_bytes
 #undef TIFFReadRGBAImageOriented
 #undef TIFFReadScanline

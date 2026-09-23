@@ -1877,6 +1877,8 @@ def main():
     from generate_tiff_lab_linear_tests import build as tiff_lab_linear_tests
     outputs.update(tiff_lab_linear_tests(outputs['colorsync-lab.json'],
                                         outputs['cli-rgb.icc']))
+    from generate_tiff_device_tests import build as tiff_device_tests
+    outputs.update(tiff_device_tests(outputs['cli-rgb.icc'], outputs['cmyk.icc'], outputs['cmyk.json']))
     from generate_tiff_lab_layout_tests import build as tiff_lab_layout_tests
     outputs.update(tiff_lab_layout_tests(outputs['cli-rgb.icc']))
     from generate_tiff_logluv_tests import build as tiff_logluv_tests

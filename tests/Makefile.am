@@ -1095,6 +1095,72 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0472_YCBCR_ALLOCATION_FAILURE \
     -DBUILD_TEST_0473_YCBCR_PROFILE_FAILURE \
     -DBUILD_TEST_0474_YCBCR_TARGETS \
+    -DBUILD_TIFF_DEVICE_TEST_COMMON \
+    -DBUILD_TEST_0558_DEVICE_LAB8_ASSOCIATED \
+    -DBUILD_TEST_0494_DEVICE_CIELAB8_STRIP_BUILTIN \
+    -DBUILD_TEST_0495_DEVICE_CIELAB8_SEPARATE_BUILTIN \
+    -DBUILD_TEST_0496_DEVICE_CIELAB8_TILE_BUILTIN \
+    -DBUILD_TEST_0497_DEVICE_CIELAB16_TILE_BUILTIN \
+    -DBUILD_TEST_0498_DEVICE_ICCLAB8_SEPARATE_BUILTIN \
+    -DBUILD_TEST_0499_DEVICE_ITULAB8_TILE_BUILTIN \
+    -DBUILD_TEST_0500_DEVICE_CMYK8_STRIP_BUILTIN \
+    -DBUILD_TEST_0501_DEVICE_CMYK8_SEPARATE_BUILTIN \
+    -DBUILD_TEST_0502_DEVICE_CMYK8_TILE_BUILTIN \
+    -DBUILD_TEST_0503_DEVICE_CMYK16_TILE_BUILTIN \
+    -DBUILD_TEST_0504_DEVICE_LAB8_ALPHA_BUILTIN \
+    -DBUILD_TEST_0505_DEVICE_CMYK8_ALPHA_BUILTIN \
+    -DBUILD_TEST_0506_DEVICE_CMYK16_ALPHA_BUILTIN \
+    -DBUILD_TEST_0507_DEVICE_CIELAB16_ROTATED_BUILTIN \
+    -DBUILD_TEST_0508_DEVICE_CMYK8_OPAQUE_ALPHA_BUILTIN \
+    -DBUILD_TEST_0509_DEVICE_CIELAB8_STRIP_LCMS2 \
+    -DBUILD_TEST_0510_DEVICE_CIELAB16_TILE_LCMS2 \
+    -DBUILD_TEST_0511_DEVICE_ICCLAB8_SEPARATE_LCMS2 \
+    -DBUILD_TEST_0512_DEVICE_ITULAB8_TILE_LCMS2 \
+    -DBUILD_TEST_0513_DEVICE_CMYK8_STRIP_LCMS2 \
+    -DBUILD_TEST_0514_DEVICE_CMYK16_TILE_LCMS2 \
+    -DBUILD_TEST_0515_DEVICE_CMYK16_ALPHA_LCMS2 \
+    -DBUILD_TEST_0516_DEVICE_CIELAB8_STRIP_COLORSYNC \
+    -DBUILD_TEST_0517_DEVICE_CIELAB16_TILE_COLORSYNC \
+    -DBUILD_TEST_0518_DEVICE_ICCLAB8_SEPARATE_COLORSYNC \
+    -DBUILD_TEST_0519_DEVICE_ITULAB8_TILE_COLORSYNC \
+    -DBUILD_TEST_0520_DEVICE_CMYK8_STRIP_COLORSYNC \
+    -DBUILD_TEST_0521_DEVICE_CMYK16_TILE_COLORSYNC \
+    -DBUILD_TEST_0522_DEVICE_CMYK16_ALPHA_COLORSYNC \
+    -DBUILD_TEST_0523_DEVICE_CIELAB8_STRIP_NONE \
+    -DBUILD_TEST_0524_DEVICE_CIELAB16_TILE_NONE \
+    -DBUILD_TEST_0525_DEVICE_ICCLAB8_SEPARATE_NONE \
+    -DBUILD_TEST_0526_DEVICE_ITULAB8_TILE_NONE \
+    -DBUILD_TEST_0527_DEVICE_CMYK8_STRIP_NONE \
+    -DBUILD_TEST_0528_DEVICE_CMYK16_TILE_NONE \
+    -DBUILD_TEST_0529_DEVICE_CMYK8_ALPHA_NONE \
+    -DBUILD_TEST_0530_DEVICE_CMYK16_ALPHA_NONE \
+    -DBUILD_TEST_0531_DEVICE_CMYK8_OPAQUE_ALPHA_NONE \
+    -DBUILD_TEST_0532_DEVICE_CIELAB8_STRIP_ABSENT \
+    -DBUILD_TEST_0533_DEVICE_CIELAB8_STRIP_INVALID \
+    -DBUILD_TEST_0534_DEVICE_CIELAB8_STRIP_MISMATCH \
+    -DBUILD_TEST_0535_DEVICE_CMYK8_STRIP_ABSENT \
+    -DBUILD_TEST_0536_DEVICE_CMYK8_STRIP_INVALID \
+    -DBUILD_TEST_0537_DEVICE_CMYK8_STRIP_MISMATCH \
+    -DBUILD_TEST_0538_DEVICE_FRAME_ALLOCATION \
+    -DBUILD_TEST_0539_DEVICE_ROW_ALLOCATION \
+    -DBUILD_TEST_0540_DEVICE_COLOR_ALLOCATION \
+    -DBUILD_TEST_0541_DEVICE_LATE_PLANE \
+    -DBUILD_TEST_0542_DEVICE_SHORT_TILE \
+    -DBUILD_TEST_0543_DEVICE_LAB_DECLINED \
+    -DBUILD_TEST_0544_DEVICE_CMS_ALLOCATION \
+    -DBUILD_TEST_0545_DEVICE_CMYK_PREFIX_FAILURE_BUILTIN \
+    -DBUILD_TEST_0546_DEVICE_CMYK_NONFINITE_RESULT_BUILTIN \
+    -DBUILD_TEST_0547_DEVICE_CMYK_PREFIX_FAILURE_LCMS2 \
+    -DBUILD_TEST_0548_DEVICE_CMYK_NONFINITE_RESULT_LCMS2 \
+    -DBUILD_TEST_0549_DEVICE_CMYK_PREFIX_FAILURE_COLORSYNC \
+    -DBUILD_TEST_0550_DEVICE_CMYK_NONFINITE_RESULT_COLORSYNC \
+    -DBUILD_TEST_0551_DEVICE_LAB_TARGET_GAMMA \
+    -DBUILD_TEST_0552_DEVICE_LAB_TARGET_BYTE \
+    -DBUILD_TEST_0553_DEVICE_CMYK_TARGET_GAMMA \
+    -DBUILD_TEST_0554_DEVICE_CMYK_TARGET_BYTE \
+    -DBUILD_TEST_0555_DEVICE_LAB8_ALPHA_BACKGROUND \
+    -DBUILD_TEST_0556_DEVICE_CMYK8_ALPHA_BACKGROUND \
+    -DBUILD_TEST_0557_DEVICE_CMYK16_ALPHA_BACKGROUND \
     -DBUILD_TIFF_LAB_LAYOUT_TEST_COMMON \
     -DBUILD_TEST_0475_ICCLAB8_SOURCE \
     -DBUILD_TEST_0476_ITULAB8_SOURCE \
@@ -1820,6 +1886,73 @@ test_runner_SOURCES = test_runner.c \
     loader/libtiff/0472_ycbcr_allocation_failure.c \
     loader/libtiff/0473_ycbcr_profile_failure.c \
     loader/libtiff/0474_ycbcr_targets.c \
+    loader/libtiff/0558_device_lab8_associated.c \
+    loader/tiff_device_test_common.c \
+    loader/tiff_device_test_common.h \
+    loader/libtiff/0494_device_cielab8_strip_builtin.c \
+    loader/libtiff/0495_device_cielab8_separate_builtin.c \
+    loader/libtiff/0496_device_cielab8_tile_builtin.c \
+    loader/libtiff/0497_device_cielab16_tile_builtin.c \
+    loader/libtiff/0498_device_icclab8_separate_builtin.c \
+    loader/libtiff/0499_device_itulab8_tile_builtin.c \
+    loader/libtiff/0500_device_cmyk8_strip_builtin.c \
+    loader/libtiff/0501_device_cmyk8_separate_builtin.c \
+    loader/libtiff/0502_device_cmyk8_tile_builtin.c \
+    loader/libtiff/0503_device_cmyk16_tile_builtin.c \
+    loader/libtiff/0504_device_lab8_alpha_builtin.c \
+    loader/libtiff/0505_device_cmyk8_alpha_builtin.c \
+    loader/libtiff/0506_device_cmyk16_alpha_builtin.c \
+    loader/libtiff/0507_device_cielab16_rotated_builtin.c \
+    loader/libtiff/0508_device_cmyk8_opaque_alpha_builtin.c \
+    loader/libtiff/0509_device_cielab8_strip_lcms2.c \
+    loader/libtiff/0510_device_cielab16_tile_lcms2.c \
+    loader/libtiff/0511_device_icclab8_separate_lcms2.c \
+    loader/libtiff/0512_device_itulab8_tile_lcms2.c \
+    loader/libtiff/0513_device_cmyk8_strip_lcms2.c \
+    loader/libtiff/0514_device_cmyk16_tile_lcms2.c \
+    loader/libtiff/0515_device_cmyk16_alpha_lcms2.c \
+    loader/libtiff/0516_device_cielab8_strip_colorsync.c \
+    loader/libtiff/0517_device_cielab16_tile_colorsync.c \
+    loader/libtiff/0518_device_icclab8_separate_colorsync.c \
+    loader/libtiff/0519_device_itulab8_tile_colorsync.c \
+    loader/libtiff/0520_device_cmyk8_strip_colorsync.c \
+    loader/libtiff/0521_device_cmyk16_tile_colorsync.c \
+    loader/libtiff/0522_device_cmyk16_alpha_colorsync.c \
+    loader/libtiff/0523_device_cielab8_strip_none.c \
+    loader/libtiff/0524_device_cielab16_tile_none.c \
+    loader/libtiff/0525_device_icclab8_separate_none.c \
+    loader/libtiff/0526_device_itulab8_tile_none.c \
+    loader/libtiff/0527_device_cmyk8_strip_none.c \
+    loader/libtiff/0528_device_cmyk16_tile_none.c \
+    loader/libtiff/0529_device_cmyk8_alpha_none.c \
+    loader/libtiff/0530_device_cmyk16_alpha_none.c \
+    loader/libtiff/0531_device_cmyk8_opaque_alpha_none.c \
+    loader/libtiff/0532_device_cielab8_strip_absent.c \
+    loader/libtiff/0533_device_cielab8_strip_invalid.c \
+    loader/libtiff/0534_device_cielab8_strip_mismatch.c \
+    loader/libtiff/0535_device_cmyk8_strip_absent.c \
+    loader/libtiff/0536_device_cmyk8_strip_invalid.c \
+    loader/libtiff/0537_device_cmyk8_strip_mismatch.c \
+    loader/libtiff/0538_device_frame_allocation.c \
+    loader/libtiff/0539_device_row_allocation.c \
+    loader/libtiff/0540_device_color_allocation.c \
+    loader/libtiff/0541_device_late_plane.c \
+    loader/libtiff/0542_device_short_tile.c \
+    loader/libtiff/0543_device_lab_declined.c \
+    loader/libtiff/0544_device_cms_allocation.c \
+    loader/libtiff/0545_device_cmyk_prefix_failure_builtin.c \
+    loader/libtiff/0546_device_cmyk_nonfinite_result_builtin.c \
+    loader/libtiff/0547_device_cmyk_prefix_failure_lcms2.c \
+    loader/libtiff/0548_device_cmyk_nonfinite_result_lcms2.c \
+    loader/libtiff/0549_device_cmyk_prefix_failure_colorsync.c \
+    loader/libtiff/0550_device_cmyk_nonfinite_result_colorsync.c \
+    loader/libtiff/0551_device_lab_target_gamma.c \
+    loader/libtiff/0552_device_lab_target_byte.c \
+    loader/libtiff/0553_device_cmyk_target_gamma.c \
+    loader/libtiff/0554_device_cmyk_target_byte.c \
+    loader/libtiff/0555_device_lab8_alpha_background.c \
+    loader/libtiff/0556_device_cmyk8_alpha_background.c \
+    loader/libtiff/0557_device_cmyk16_alpha_background.c \
     loader/tiff_lab_layout_test_common.c \
     loader/tiff_lab_layout_test_common.h \
     loader/libtiff/0475_icclab8_source.c \
