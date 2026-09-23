@@ -1045,6 +1045,32 @@ int test_loader_jp_0155(int argc, char **argv);
 int test_loader_jp_0163(int argc, char **argv);
 int test_loader_jp_0164(int argc, char **argv);
 int test_loader_jp_0165(int argc, char **argv);
+int test_loader_jp_0166(int argc, char **argv);
+int test_loader_jp_0167(int argc, char **argv);
+int test_loader_jp_0168(int argc, char **argv);
+int test_loader_jp_0169(int argc, char **argv);
+int test_loader_jp_0170(int argc, char **argv);
+int test_loader_jp_0171(int argc, char **argv);
+int test_loader_jp_0172(int argc, char **argv);
+int test_loader_jp_0173(int argc, char **argv);
+int test_loader_jp_0174(int argc, char **argv);
+int test_loader_jp_0175(int argc, char **argv);
+int test_loader_jp_0176(int argc, char **argv);
+int test_loader_jp_0177(int argc, char **argv);
+int test_loader_jp_0178(int argc, char **argv);
+int test_loader_jp_0179(int argc, char **argv);
+int test_loader_jp_0180(int argc, char **argv);
+int test_loader_jp_0181(int argc, char **argv);
+int test_loader_jp_0182(int argc, char **argv);
+int test_loader_jp_0183(int argc, char **argv);
+int test_loader_jp_0184(int argc, char **argv);
+int test_loader_jp_0185(int argc, char **argv);
+int test_loader_jp_0186(int argc, char **argv);
+int test_loader_jp_0187(int argc, char **argv);
+int test_loader_jp_0188(int argc, char **argv);
+int test_loader_jp_0189(int argc, char **argv);
+int test_loader_jp_0190(int argc, char **argv);
+int test_loader_jp_0191(int argc, char **argv);
 int test_loader_jp_0162(int argc, char **argv);
 int test_loader_jp_0161(int argc, char **argv);
 int test_loader_jp_0160(int argc, char **argv);
@@ -2700,6 +2726,58 @@ static test_entry_t const test_entries[] = {
     { "loader/jpeg/0163_jp_hier_arith_multiblock_seq", test_loader_jp_0163 },
     { "loader/jpeg/0164_jp_hier_arith_multiblock_prog", test_loader_jp_0164 },
     { "loader/jpeg/0165_jp_hier_short_entropy_reject", test_loader_jp_0165 },
+    { "loader/jpeg/0166_sof3_category16_numeric",
+      test_loader_jp_0166 },
+    { "loader/jpeg/0167_sof3_modulo_numeric",
+      test_loader_jp_0167 },
+    { "loader/jpeg/0168_sof3_pred1_numeric",
+      test_loader_jp_0168 },
+    { "loader/jpeg/0169_sof3_pred2_numeric",
+      test_loader_jp_0169 },
+    { "loader/jpeg/0170_sof3_pred3_numeric",
+      test_loader_jp_0170 },
+    { "loader/jpeg/0171_sof3_pred4_numeric",
+      test_loader_jp_0171 },
+    { "loader/jpeg/0172_sof3_pred5_numeric",
+      test_loader_jp_0172 },
+    { "loader/jpeg/0173_sof3_pred6_numeric",
+      test_loader_jp_0173 },
+    { "loader/jpeg/0174_sof3_pred7_numeric",
+      test_loader_jp_0174 },
+    { "loader/jpeg/0175_sof3_pt3_pred5_numeric",
+      test_loader_jp_0175 },
+    { "loader/jpeg/0176_sof3_pt3_pred6_numeric",
+      test_loader_jp_0176 },
+    { "loader/jpeg/0177_sof3_pt3_pred7_numeric",
+      test_loader_jp_0177 },
+    { "loader/jpeg/0178_sof3_pt15_numeric",
+      test_loader_jp_0178 },
+    { "loader/jpeg/0179_sof3_precision2_numeric",
+      test_loader_jp_0179 },
+    { "loader/jpeg/0180_sof3_precision12_numeric",
+      test_loader_jp_0180 },
+    { "loader/jpeg/0181_sof3_restart16_numeric",
+      test_loader_jp_0181 },
+    { "loader/jpeg/0182_sof3_restart_pt3_numeric",
+      test_loader_jp_0182 },
+    { "loader/jpeg/0183_sof3_rgb_interleaved_numeric",
+      test_loader_jp_0183 },
+    { "loader/jpeg/0184_sof3_rgb_planar_numeric",
+      test_loader_jp_0184 },
+    { "loader/jpeg/0185_sof3_rgb_restart_pt3_numeric",
+      test_loader_jp_0185 },
+    { "loader/jpeg/0186_sof3_planar_restart_pt1_numeric",
+      test_loader_jp_0186 },
+    { "loader/jpeg/0187_sof3_column_numeric",
+      test_loader_jp_0187 },
+    { "loader/jpeg/0188_sof3_row_numeric",
+      test_loader_jp_0188 },
+    { "loader/jpeg/0189_sof3_dnl_zero_numeric",
+      test_loader_jp_0189 },
+    { "loader/jpeg/0190_sof3_dnl_redefine_numeric",
+      test_loader_jp_0190 },
+    { "loader/jpeg/0191_sof3_category16_last_numeric",
+      test_loader_jp_0191 },
     { "loader/jpeg/0162_jp_arith_420_digest", test_loader_jp_0162 },
     { "loader/jpeg/0161_jp_arith_wide_prog", test_loader_jp_0161 },
     { "loader/jpeg/0160_jp_arith_wide_seq", test_loader_jp_0160 },

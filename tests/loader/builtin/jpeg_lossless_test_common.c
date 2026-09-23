@@ -176,9 +176,9 @@ jpeg_lossless_predict(int selector, int left, int above, int upper_left)
     case 4:
         return left + above - upper_left;
     case 5:
-        return left + (above - upper_left) / 2;
+        return left + ((above - upper_left) >> 1);
     case 6:
-        return above + (left - upper_left) / 2;
+        return above + ((left - upper_left) >> 1);
     case 7:
         return (left + above) / 2;
     default:
@@ -204,7 +204,6 @@ jpeg_lossless_build_gray_predictor(unsigned char *buffer,
     int index;
     int predicted;
     int difference;
-    int divisor;
 
     writer.buffer = buffer;
     writer.capacity = capacity;
@@ -218,7 +217,6 @@ jpeg_lossless_build_gray_predictor(unsigned char *buffer,
     index = 0;
     predicted = 0;
     difference = 0;
-    divisor = 1 << point_transform;
 
     jpeg_lossless_put_marker(&writer, 0xd8u);
     jpeg_lossless_put_sof3(&writer, 3, 3, 1);
@@ -228,24 +226,22 @@ jpeg_lossless_build_gray_predictor(unsigned char *buffer,
         for (x = 0; x < 3; ++x) {
             index = y * 3 + x;
             if (x == 0 && y == 0) {
-                predicted = 128;
+                predicted = 128 >> point_transform;
             } else if (y == 0) {
-                predicted = samples[index - 1];
+                predicted = samples[index - 1] >> point_transform;
             } else if (x == 0) {
-                predicted = samples[index - 3];
+                predicted = samples[index - 3] >> point_transform;
             } else {
                 predicted = jpeg_lossless_predict(
                     predictor,
-                    samples[index - 1],
-                    samples[index - 3],
-                    samples[index - 4]);
+                    samples[index - 1] >> point_transform,
+                    samples[index - 3] >> point_transform,
+                    samples[index - 4] >> point_transform);
             }
-            difference = (int)samples[index] - predicted;
-            if (difference % divisor != 0) {
-                writer.failed = 1;
-                continue;
-            }
-            jpeg_lossless_put_difference(&bits, difference / divisor);
+            /* H.1.2 predicts already transformed samples; dividing a
+             * full-precision prediction afterwards can round differently. */
+            difference = ((int)samples[index] >> point_transform) - predicted;
+            jpeg_lossless_put_difference(&bits, difference);
         }
     }
     jpeg_lossless_finish_bits(&bits);

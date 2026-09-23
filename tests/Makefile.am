@@ -1373,6 +1373,32 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0163_JP_HIER_ARITH_MULTIBLOCK_SEQ \
     -DBUILD_TEST_0164_JP_HIER_ARITH_MULTIBLOCK_PROG \
     -DBUILD_TEST_0165_JP_HIER_SHORT_ENTROPY_REJECT \
+    -DBUILD_TEST_0166_SOF3_CATEGORY16_NUMERIC \
+    -DBUILD_TEST_0167_SOF3_MODULO_NUMERIC \
+    -DBUILD_TEST_0168_SOF3_PRED1_NUMERIC \
+    -DBUILD_TEST_0169_SOF3_PRED2_NUMERIC \
+    -DBUILD_TEST_0170_SOF3_PRED3_NUMERIC \
+    -DBUILD_TEST_0171_SOF3_PRED4_NUMERIC \
+    -DBUILD_TEST_0172_SOF3_PRED5_NUMERIC \
+    -DBUILD_TEST_0173_SOF3_PRED6_NUMERIC \
+    -DBUILD_TEST_0174_SOF3_PRED7_NUMERIC \
+    -DBUILD_TEST_0175_SOF3_PT3_PRED5_NUMERIC \
+    -DBUILD_TEST_0176_SOF3_PT3_PRED6_NUMERIC \
+    -DBUILD_TEST_0177_SOF3_PT3_PRED7_NUMERIC \
+    -DBUILD_TEST_0178_SOF3_PT15_NUMERIC \
+    -DBUILD_TEST_0179_SOF3_PRECISION2_NUMERIC \
+    -DBUILD_TEST_0180_SOF3_PRECISION12_NUMERIC \
+    -DBUILD_TEST_0181_SOF3_RESTART16_NUMERIC \
+    -DBUILD_TEST_0182_SOF3_RESTART_PT3_NUMERIC \
+    -DBUILD_TEST_0183_SOF3_RGB_INTERLEAVED_NUMERIC \
+    -DBUILD_TEST_0184_SOF3_RGB_PLANAR_NUMERIC \
+    -DBUILD_TEST_0185_SOF3_RGB_RESTART_PT3_NUMERIC \
+    -DBUILD_TEST_0186_SOF3_PLANAR_RESTART_PT1_NUMERIC \
+    -DBUILD_TEST_0187_SOF3_COLUMN_NUMERIC \
+    -DBUILD_TEST_0188_SOF3_ROW_NUMERIC \
+    -DBUILD_TEST_0189_SOF3_DNL_ZERO_NUMERIC \
+    -DBUILD_TEST_0190_SOF3_DNL_REDEFINE_NUMERIC \
+    -DBUILD_TEST_0191_SOF3_CATEGORY16_LAST_NUMERIC \
     -DBUILD_JPEG_PROCESS_TEST_COMMON \
     -DBUILD_JPEG_DNL_TEST_COMMON \
     -DBUILD_JPEG_LOSSLESS_TEST_COMMON \
@@ -2615,6 +2641,32 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/jpeg/0163_jp_hier_arith_multiblock_seq.c \
     loader/builtin/jpeg/0164_jp_hier_arith_multiblock_prog.c \
     loader/builtin/jpeg/0165_jp_hier_short_entropy_reject.c \
+    loader/builtin/jpeg/0166_sof3_category16_numeric.c \
+    loader/builtin/jpeg/0167_sof3_modulo_numeric.c \
+    loader/builtin/jpeg/0168_sof3_pred1_numeric.c \
+    loader/builtin/jpeg/0169_sof3_pred2_numeric.c \
+    loader/builtin/jpeg/0170_sof3_pred3_numeric.c \
+    loader/builtin/jpeg/0171_sof3_pred4_numeric.c \
+    loader/builtin/jpeg/0172_sof3_pred5_numeric.c \
+    loader/builtin/jpeg/0173_sof3_pred6_numeric.c \
+    loader/builtin/jpeg/0174_sof3_pred7_numeric.c \
+    loader/builtin/jpeg/0175_sof3_pt3_pred5_numeric.c \
+    loader/builtin/jpeg/0176_sof3_pt3_pred6_numeric.c \
+    loader/builtin/jpeg/0177_sof3_pt3_pred7_numeric.c \
+    loader/builtin/jpeg/0178_sof3_pt15_numeric.c \
+    loader/builtin/jpeg/0179_sof3_precision2_numeric.c \
+    loader/builtin/jpeg/0180_sof3_precision12_numeric.c \
+    loader/builtin/jpeg/0181_sof3_restart16_numeric.c \
+    loader/builtin/jpeg/0182_sof3_restart_pt3_numeric.c \
+    loader/builtin/jpeg/0183_sof3_rgb_interleaved_numeric.c \
+    loader/builtin/jpeg/0184_sof3_rgb_planar_numeric.c \
+    loader/builtin/jpeg/0185_sof3_rgb_restart_pt3_numeric.c \
+    loader/builtin/jpeg/0186_sof3_planar_restart_pt1_numeric.c \
+    loader/builtin/jpeg/0187_sof3_column_numeric.c \
+    loader/builtin/jpeg/0188_sof3_row_numeric.c \
+    loader/builtin/jpeg/0189_sof3_dnl_zero_numeric.c \
+    loader/builtin/jpeg/0190_sof3_dnl_redefine_numeric.c \
+    loader/builtin/jpeg/0191_sof3_category16_last_numeric.c \
     loader/builtin/jpeg_process_test_common.c \
     loader/builtin/jpeg_process_test_common.h \
     loader/builtin/jpeg_dnl_test_common.c \

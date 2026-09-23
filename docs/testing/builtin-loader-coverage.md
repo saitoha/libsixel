@@ -16,7 +16,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 36 | 0 | 0 | 0 | 0 | 0 |
 | [GIF](../loader/builtin/gif.md) | 36 | 8 | 3 | 2 | 2 | 2 | 19 |
 | [PNG and APNG](../loader/builtin/png.md) | 288 | 22 | 59 | 0 | 13 | 7 | 187 |
-| [JPEG](../loader/builtin/jpeg.md) | 223 | 76 | 14 | 1 | 57 | 5 | 70 |
+| [JPEG](../loader/builtin/jpeg.md) | 249 | 102 | 14 | 1 | 57 | 5 | 70 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
 | [PSD and PSB](../loader/builtin/psd.md) | 994 | 13 | 551 | 402 | 9 | 3 | 16 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
@@ -24,7 +24,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 41 | 25 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2409** | **546** | **724** | **652** | **108** | **18** | **361** |
+| **Total** | **2435** | **572** | **724** | **652** | **108** | **18** | **361** |
 
 ## Complete inventory
 
@@ -2533,6 +2533,32 @@ Primary implementation context: [JPEG builtin component](../loader/builtin/jpeg.
 | [tests/loader/builtin/jpeg/0163_jp_hier_arith_multiblock_seq.t](../../tests/loader/builtin/jpeg/0163_jp_hier_arith_multiblock_seq.t) | Verify hier arith multiblock seq. | Other integration/smoke | Inventory only |
 | [tests/loader/builtin/jpeg/0164_jp_hier_arith_multiblock_prog.t](../../tests/loader/builtin/jpeg/0164_jp_hier_arith_multiblock_prog.t) | Verify hier arith multiblock prog. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/jpeg/0165_jp_hier_short_entropy_reject.t](../../tests/loader/builtin/jpeg/0165_jp_hier_short_entropy_reject.t) | Verify hier short entropy reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0166_sof3_category16_numeric.t](../../tests/loader/builtin/jpeg/0166_sof3_category16_numeric.t) | Verify sof3 category16 against every original sample. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0167_sof3_modulo_numeric.t](../../tests/loader/builtin/jpeg/0167_sof3_modulo_numeric.t) | Verify sof3 modulo against every original sample. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0168_sof3_pred1_numeric.t](../../tests/loader/builtin/jpeg/0168_sof3_pred1_numeric.t) | Verify sof3 pred1 against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0169_sof3_pred2_numeric.t](../../tests/loader/builtin/jpeg/0169_sof3_pred2_numeric.t) | Verify sof3 pred2 against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0170_sof3_pred3_numeric.t](../../tests/loader/builtin/jpeg/0170_sof3_pred3_numeric.t) | Verify sof3 pred3 against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0171_sof3_pred4_numeric.t](../../tests/loader/builtin/jpeg/0171_sof3_pred4_numeric.t) | Verify sof3 pred4 against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0172_sof3_pred5_numeric.t](../../tests/loader/builtin/jpeg/0172_sof3_pred5_numeric.t) | Verify sof3 pred5 against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0173_sof3_pred6_numeric.t](../../tests/loader/builtin/jpeg/0173_sof3_pred6_numeric.t) | Verify sof3 pred6 against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0174_sof3_pred7_numeric.t](../../tests/loader/builtin/jpeg/0174_sof3_pred7_numeric.t) | Verify sof3 pred7 against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0175_sof3_pt3_pred5_numeric.t](../../tests/loader/builtin/jpeg/0175_sof3_pt3_pred5_numeric.t) | Verify sof3 pt3 pred5 against every original sample. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0176_sof3_pt3_pred6_numeric.t](../../tests/loader/builtin/jpeg/0176_sof3_pt3_pred6_numeric.t) | Verify sof3 pt3 pred6 against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0177_sof3_pt3_pred7_numeric.t](../../tests/loader/builtin/jpeg/0177_sof3_pt3_pred7_numeric.t) | Verify sof3 pt3 pred7 against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0178_sof3_pt15_numeric.t](../../tests/loader/builtin/jpeg/0178_sof3_pt15_numeric.t) | Verify sof3 pt15 against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0179_sof3_precision2_numeric.t](../../tests/loader/builtin/jpeg/0179_sof3_precision2_numeric.t) | Verify sof3 precision2 against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0180_sof3_precision12_numeric.t](../../tests/loader/builtin/jpeg/0180_sof3_precision12_numeric.t) | Verify sof3 precision12 against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0181_sof3_restart16_numeric.t](../../tests/loader/builtin/jpeg/0181_sof3_restart16_numeric.t) | Verify sof3 restart16 against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0182_sof3_restart_pt3_numeric.t](../../tests/loader/builtin/jpeg/0182_sof3_restart_pt3_numeric.t) | Verify sof3 restart pt3 against every original sample. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0183_sof3_rgb_interleaved_numeric.t](../../tests/loader/builtin/jpeg/0183_sof3_rgb_interleaved_numeric.t) | Verify sof3 rgb interleaved against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0184_sof3_rgb_planar_numeric.t](../../tests/loader/builtin/jpeg/0184_sof3_rgb_planar_numeric.t) | Verify sof3 rgb planar against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0185_sof3_rgb_restart_pt3_numeric.t](../../tests/loader/builtin/jpeg/0185_sof3_rgb_restart_pt3_numeric.t) | Verify sof3 rgb restart pt3 against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0186_sof3_planar_restart_pt1_numeric.t](../../tests/loader/builtin/jpeg/0186_sof3_planar_restart_pt1_numeric.t) | Verify sof3 planar restart pt1 against every original sample. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0187_sof3_column_numeric.t](../../tests/loader/builtin/jpeg/0187_sof3_column_numeric.t) | Verify sof3 column against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0188_sof3_row_numeric.t](../../tests/loader/builtin/jpeg/0188_sof3_row_numeric.t) | Verify sof3 row against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0189_sof3_dnl_zero_numeric.t](../../tests/loader/builtin/jpeg/0189_sof3_dnl_zero_numeric.t) | Verify sof3 dnl zero against every original sample. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0190_sof3_dnl_redefine_numeric.t](../../tests/loader/builtin/jpeg/0190_sof3_dnl_redefine_numeric.t) | Verify sof3 dnl redefine against every original sample. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0191_sof3_category16_last_numeric.t](../../tests/loader/builtin/jpeg/0191_sof3_category16_last_numeric.t) | Verify sof3 category16 last against every original sample. | Direct numeric/digest | Inventory only |
 
 <!-- test-plan-end -->
 

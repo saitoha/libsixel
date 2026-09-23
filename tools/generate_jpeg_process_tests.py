@@ -25,6 +25,11 @@ def cosine(x):
 def expected_samples(case):
     source = case['source']
     w, h, precision = case['width'], case['height'], case['precision']
+    if 'lossless_samples' in source:
+        point = source['point_transform']
+        repeats = 3 if source['components'] == 1 else 1
+        return [(v >> point) << point for v in source['lossless_samples']
+                for _ in range(repeats)]
     if 'DC_frames' in source:
         value = max(0, min((1 << precision) - 1, sum(frame[0] for frame in source['DC_frames'])))
         return [value] * (w * h * 3)
