@@ -653,6 +653,49 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0183_LOADER_BUILTIN_JPEG_SOURCE_NUMERIC \
     -DBUILD_TEST_0184_LOADER_BUILTIN_PSD_CMYK_ICC_NUMERIC \
     -DBUILD_PSD_COLOR_TEST_COMMON \
+    -DBUILD_PSD_SPOT_TEST_COMMON \
+    -DBUILD_TEST_0087_UNUSED_IDENTIFIERS_NUMERIC \
+    -DBUILD_TEST_0086_ALTERNATE_MAX_NUMERIC \
+    -DBUILD_TEST_0046_ALTERNATE_ID_NUMERIC \
+    -DBUILD_TEST_0047_ALTERNATE_ORDER_NUMERIC \
+    -DBUILD_TEST_0048_ALTERNATE_PARTIAL_NUMERIC \
+    -DBUILD_TEST_0049_ALTERNATE_LIBRARY_NUMERIC \
+    -DBUILD_TEST_0050_ALTERNATE_SPACE_REJECT \
+    -DBUILD_TEST_0051_ALTERNATE_MISSING_IDS_REJECT \
+    -DBUILD_TEST_0052_ALTERNATE_ID_COUNT_REJECT \
+    -DBUILD_TEST_0053_ALTERNATE_ID_DUPLICATE_REJECT \
+    -DBUILD_TEST_0054_ALTERNATE_DUPLICATE_ID_REJECT \
+    -DBUILD_TEST_0055_ALTERNATE_UNKNOWN_ID_REJECT \
+    -DBUILD_TEST_0056_ALTERNATE_VERSION_REJECT \
+    -DBUILD_TEST_0057_ALTERNATE_COUNT_REJECT \
+    -DBUILD_TEST_0058_ALTERNATE_TRUNCATED_REJECT \
+    -DBUILD_TEST_0059_ALTERNATE_RESOURCE_DUPLICATE_REJECT \
+    -DBUILD_TEST_0060_IDENTIFIERS_TRUNCATED_REJECT \
+    -DBUILD_TEST_0061_IDENTIFIERS_DUPLICATE_REJECT \
+    -DBUILD_TEST_0062_ALTERNATE_EMPTY_NUMERIC \
+    -DBUILD_TEST_0063_ALTERNATE_HIGH_ID_NUMERIC \
+    -DBUILD_TEST_0064_ALTERNATE_NONDISPLAY_REJECT \
+    -DBUILD_TEST_0065_ALTERNATE_NONSPOT_REJECT \
+    -DBUILD_TEST_0066_HSB_RED_NUMERIC \
+    -DBUILD_TEST_0067_HSB_YELLOW_NUMERIC \
+    -DBUILD_TEST_0068_HSB_GREEN_NUMERIC \
+    -DBUILD_TEST_0069_HSB_CYAN_NUMERIC \
+    -DBUILD_TEST_0070_HSB_BLUE_NUMERIC \
+    -DBUILD_TEST_0071_HSB_MAGENTA_NUMERIC \
+    -DBUILD_TEST_0072_HSB_WRAP_NUMERIC \
+    -DBUILD_TEST_0073_HSB_GRAY_NUMERIC \
+    -DBUILD_TEST_0074_HSB_MIXED_NUMERIC \
+    -DBUILD_TEST_0075_CMYK_CYAN_NUMERIC \
+    -DBUILD_TEST_0076_CMYK_RED_NUMERIC \
+    -DBUILD_TEST_0077_CMYK_BLACK_NUMERIC \
+    -DBUILD_TEST_0078_CMYK_GRAY_NUMERIC \
+    -DBUILD_TEST_0079_CMYK_MIXED_NUMERIC \
+    -DBUILD_TEST_0080_ALTERNATE_COUNT_LIMIT_REJECT \
+    -DBUILD_TEST_0081_IDENTIFIERS_COUNT_LIMIT_REJECT \
+    -DBUILD_TEST_0082_ALTERNATE_PSB16_NUMERIC \
+    -DBUILD_TEST_0083_ALTERNATE_OBSOLETE_NUMERIC \
+    -DBUILD_TEST_0084_ALTERNATE_LAB_NUMERIC \
+    -DBUILD_TEST_0085_ALTERNATE_SAVEDMASK_REJECT \
     -DBUILD_TEST_0001_DUOTONE_RAW_NUMERIC \
     -DBUILD_TEST_0002_DUOTONE_RLE_NUMERIC \
     -DBUILD_TEST_0003_DUOTONE_ZIP_NUMERIC \
@@ -2841,6 +2884,50 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0184_loader_builtin_psd_cmyk_icc_numeric.c \
     loader/builtin/psd_color_test_common.c \
     loader/builtin/psd_color_test_common.h \
+    loader/builtin/psd_spot_test_common.c \
+    loader/builtin/psd_spot_test_common.h \
+    loader/builtin/psd/0087_unused_identifiers_numeric.c \
+    loader/builtin/psd/0086_alternate_max_numeric.c \
+    loader/builtin/psd/0046_alternate_id_numeric.c \
+    loader/builtin/psd/0047_alternate_order_numeric.c \
+    loader/builtin/psd/0048_alternate_partial_numeric.c \
+    loader/builtin/psd/0049_alternate_library_numeric.c \
+    loader/builtin/psd/0050_alternate_space_reject.c \
+    loader/builtin/psd/0051_alternate_missing_ids_reject.c \
+    loader/builtin/psd/0052_alternate_id_count_reject.c \
+    loader/builtin/psd/0053_alternate_id_duplicate_reject.c \
+    loader/builtin/psd/0054_alternate_duplicate_id_reject.c \
+    loader/builtin/psd/0055_alternate_unknown_id_reject.c \
+    loader/builtin/psd/0056_alternate_version_reject.c \
+    loader/builtin/psd/0057_alternate_count_reject.c \
+    loader/builtin/psd/0058_alternate_truncated_reject.c \
+    loader/builtin/psd/0059_alternate_resource_duplicate_reject.c \
+    loader/builtin/psd/0060_identifiers_truncated_reject.c \
+    loader/builtin/psd/0061_identifiers_duplicate_reject.c \
+    loader/builtin/psd/0062_alternate_empty_numeric.c \
+    loader/builtin/psd/0063_alternate_high_id_numeric.c \
+    loader/builtin/psd/0064_alternate_nondisplay_reject.c \
+    loader/builtin/psd/0065_alternate_nonspot_reject.c \
+    loader/builtin/psd/0066_hsb_red_numeric.c \
+    loader/builtin/psd/0067_hsb_yellow_numeric.c \
+    loader/builtin/psd/0068_hsb_green_numeric.c \
+    loader/builtin/psd/0069_hsb_cyan_numeric.c \
+    loader/builtin/psd/0070_hsb_blue_numeric.c \
+    loader/builtin/psd/0071_hsb_magenta_numeric.c \
+    loader/builtin/psd/0072_hsb_wrap_numeric.c \
+    loader/builtin/psd/0073_hsb_gray_numeric.c \
+    loader/builtin/psd/0074_hsb_mixed_numeric.c \
+    loader/builtin/psd/0075_cmyk_cyan_numeric.c \
+    loader/builtin/psd/0076_cmyk_red_numeric.c \
+    loader/builtin/psd/0077_cmyk_black_numeric.c \
+    loader/builtin/psd/0078_cmyk_gray_numeric.c \
+    loader/builtin/psd/0079_cmyk_mixed_numeric.c \
+    loader/builtin/psd/0080_alternate_count_limit_reject.c \
+    loader/builtin/psd/0081_identifiers_count_limit_reject.c \
+    loader/builtin/psd/0082_alternate_psb16_numeric.c \
+    loader/builtin/psd/0083_alternate_obsolete_numeric.c \
+    loader/builtin/psd/0084_alternate_lab_numeric.c \
+    loader/builtin/psd/0085_alternate_savedmask_reject.c \
     loader/builtin/psd/0001_duotone_raw_numeric.c \
     loader/builtin/psd/0002_duotone_rle_numeric.c \
     loader/builtin/psd/0003_duotone_zip_numeric.c \

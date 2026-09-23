@@ -52,6 +52,11 @@ psd_render_ink(sixel_color_def_t const *srgb, sixel_psd_ink_t const *ink,
     double rgb[3];
     double a;
     double b;
+    double h;
+    double s;
+    double v;
+    double t;
+    unsigned int sector;
     unsigned int j;
 
     if (ink->space == 7u) {
@@ -74,6 +79,32 @@ psd_render_ink(sixel_color_def_t const *srgb, sixel_psd_ink_t const *ink,
         for (j = 0u; j < 3u; ++j) {
             rgb[j] = ink->component[j] / 65535.0;
         }
+    } else if (ink->space == 1u) {
+        /* HSB uses a full unsigned word for each coordinate. Hue wraps
+         * at one turn; its endpoint is red, not a seventh sector. */
+        h = ink->component[0] * (6.0 / 65535.0);
+        s = ink->component[1] / 65535.0;
+        v = ink->component[2] / 65535.0;
+        sector = (unsigned int)h;
+        t = h - sector;
+        a = v * (1.0 - s);
+        b = v * (1.0 - s * (sector % 2u ? t : 1.0 - t));
+        switch (sector % 6u) {
+        case 0u: rgb[0] = v; rgb[1] = b; rgb[2] = a; break;
+        case 1u: rgb[0] = b; rgb[1] = v; rgb[2] = a; break;
+        case 2u: rgb[0] = a; rgb[1] = v; rgb[2] = b; break;
+        case 3u: rgb[0] = a; rgb[1] = b; rgb[2] = v; break;
+        case 4u: rgb[0] = b; rgb[1] = a; rgb[2] = v; break;
+        default: rgb[0] = v; rgb[1] = a; rgb[2] = b; break;
+        }
+    } else if (ink->space == 2u) {
+        /* Display colors have no CMYK profile of their own. Use an
+         * explicit device preview: inverted C/M/Y times inverted K,
+         * interpreted as sRGB. The document ICC is not an ink profile. */
+        for (j = 0u; j < 3u; ++j) {
+            rgb[j] = (ink->component[j] / 65535.0) *
+                (ink->component[3] / 65535.0);
+        }
     } else if (ink->space == 8u && ink->component[0] <= 10000u) {
         rgb[0] = rgb[1] = rgb[2] = ink->component[0] / 10000.0;
     } else {
@@ -83,6 +114,50 @@ psd_render_ink(sixel_color_def_t const *srgb, sixel_psd_ink_t const *ink,
     }
     for (j = 0u; j < 3u; ++j) {
         linear[j] = sixel_color_decode_srgb(rgb[j]);
+    }
+    return 1;
+}
+
+static int
+psd_render_alternates(sixel_psd_color_data_t *data)
+{
+    unsigned int i;
+    unsigned int j;
+    unsigned int k;
+
+    if (data->alternate_count == 0u) {
+        return 1;
+    }
+    if (data->identifier_count != data->ink_count) {
+        return 0;
+    }
+    for (i = 0u; i < data->identifier_count; ++i) {
+        for (j = 0u; j < i; ++j) {
+            if (data->identifier[i] == data->identifier[j]) {
+                return 0;
+            }
+        }
+    }
+    for (i = 0u; i < data->alternate_count; ++i) {
+        for (j = 0u; j < i; ++j) {
+            if (data->alternate_id[i] == data->alternate_id[j]) {
+                return 0;
+            }
+        }
+        for (k = 0u; k < data->ink_count; ++k) {
+            if (data->alternate_id[i] == data->identifier[k]) {
+                break;
+            }
+        }
+        if (k == data->ink_count || data->ink[k].kind != 2u) {
+            /* Never apply an unmatched ink to a plane by position, or
+             * turn a saved alpha/mask channel into a colorant. */
+            return 0;
+        }
+        data->ink[k].space = data->alternate[i].space;
+        memcpy(data->ink[k].component, data->alternate[i].component,
+               sizeof(data->ink[k].component));
+        /* Solidity and channel kind still belong to DisplayInfo. */
     }
     return 1;
 }
@@ -155,7 +230,7 @@ sixel_psd_render_color_data(sixel_chunk_t const *chunk,
         if (data.duotone_lab == NULL) {
             return SIXEL_FALSE;
         }
-        if (info->channels > 2u) {
+        if (info->channels > 2u || data.alternate_count != 0u) {
             goto unsupported;
         }
         for (k = 0u; k < data.ink_count; ++k) {
@@ -166,6 +241,9 @@ sixel_psd_render_color_data(sixel_chunk_t const *chunk,
         }
     } else {
         if (data.ink_count == 0u) {
+            if (data.alternate_count != 0u) {
+                goto unsupported;
+            }
             return SIXEL_FALSE;
         }
         for (k = 0u; k < data.ink_count; ++k) {
@@ -174,6 +252,9 @@ sixel_psd_render_color_data(sixel_chunk_t const *chunk,
             }
         }
         if (k == data.ink_count) {
+            if (data.alternate_count != 0u) {
+                goto unsupported;
+            }
             if (info->channels == 3u || info->channels == 4u) {
                 return SIXEL_FALSE;
             }
@@ -186,6 +267,9 @@ sixel_psd_render_color_data(sixel_chunk_t const *chunk,
             if (data.ink[k].kind != 2u) {
                 goto unsupported;
             }
+        }
+        if (!psd_render_alternates(&data)) {
+            goto unsupported;
         }
     }
     if (info->depth != 8u && info->depth != 16u && info->depth != 32u) {

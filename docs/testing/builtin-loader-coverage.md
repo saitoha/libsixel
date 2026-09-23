@@ -18,13 +18,13 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [PNG and APNG](../loader/builtin/png.md) | 288 | 22 | 59 | 0 | 13 | 7 | 187 |
 | [JPEG](../loader/builtin/jpeg.md) | 249 | 102 | 14 | 1 | 57 | 5 | 70 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
-| [PSD and PSB](../loader/builtin/psd.md) | 1039 | 42 | 551 | 402 | 25 | 3 | 16 |
+| [PSD and PSB](../loader/builtin/psd.md) | 1081 | 67 | 551 | 402 | 42 | 3 | 16 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
 | [WebP](../loader/builtin/webp.md) | 308 | 13 | 48 | 241 | 0 | 1 | 5 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 41 | 25 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2480** | **601** | **724** | **652** | **124** | **18** | **361** |
+| **Total** | **2522** | **626** | **724** | **652** | **141** | **18** | **361** |
 
 ## Complete inventory
 
@@ -2615,6 +2615,48 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/psd/0043_display_reverse_numeric.t](../../tests/loader/builtin/psd/0043_display_reverse_numeric.t) | Verify display reverse numeric. | Direct numeric/digest | Inventory only |
 | [tests/loader/builtin/psd/0044_duotone_spot_reject.t](../../tests/loader/builtin/psd/0044_duotone_spot_reject.t) | Verify duotone spot reject. | Acceptance/rejection | Inventory only |
 | [tests/loader/builtin/psd/0045_spot_lab_range_reject.t](../../tests/loader/builtin/psd/0045_spot_lab_range_reject.t) | Verify spot lab range reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0046_alternate_id_numeric.t](../../tests/loader/builtin/psd/0046_alternate_id_numeric.t) | Verify alternate id numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0047_alternate_order_numeric.t](../../tests/loader/builtin/psd/0047_alternate_order_numeric.t) | Verify alternate order numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0048_alternate_partial_numeric.t](../../tests/loader/builtin/psd/0048_alternate_partial_numeric.t) | Verify alternate partial numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0049_alternate_library_numeric.t](../../tests/loader/builtin/psd/0049_alternate_library_numeric.t) | Verify alternate library numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0050_alternate_space_reject.t](../../tests/loader/builtin/psd/0050_alternate_space_reject.t) | Verify alternate space reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0051_alternate_missing_ids_reject.t](../../tests/loader/builtin/psd/0051_alternate_missing_ids_reject.t) | Verify alternate missing ids reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0052_alternate_id_count_reject.t](../../tests/loader/builtin/psd/0052_alternate_id_count_reject.t) | Verify alternate id count reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0053_alternate_id_duplicate_reject.t](../../tests/loader/builtin/psd/0053_alternate_id_duplicate_reject.t) | Verify alternate id duplicate reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0054_alternate_duplicate_id_reject.t](../../tests/loader/builtin/psd/0054_alternate_duplicate_id_reject.t) | Verify alternate duplicate id reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0055_alternate_unknown_id_reject.t](../../tests/loader/builtin/psd/0055_alternate_unknown_id_reject.t) | Verify alternate unknown id reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0056_alternate_version_reject.t](../../tests/loader/builtin/psd/0056_alternate_version_reject.t) | Verify alternate version reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0057_alternate_count_reject.t](../../tests/loader/builtin/psd/0057_alternate_count_reject.t) | Verify alternate count reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0058_alternate_truncated_reject.t](../../tests/loader/builtin/psd/0058_alternate_truncated_reject.t) | Verify alternate truncated reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0059_alternate_resource_duplicate_reject.t](../../tests/loader/builtin/psd/0059_alternate_resource_duplicate_reject.t) | Verify alternate resource duplicate reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0060_identifiers_truncated_reject.t](../../tests/loader/builtin/psd/0060_identifiers_truncated_reject.t) | Verify identifiers truncated reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0061_identifiers_duplicate_reject.t](../../tests/loader/builtin/psd/0061_identifiers_duplicate_reject.t) | Verify identifiers duplicate reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0062_alternate_empty_numeric.t](../../tests/loader/builtin/psd/0062_alternate_empty_numeric.t) | Verify alternate empty numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0063_alternate_high_id_numeric.t](../../tests/loader/builtin/psd/0063_alternate_high_id_numeric.t) | Verify alternate high id numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0064_alternate_nondisplay_reject.t](../../tests/loader/builtin/psd/0064_alternate_nondisplay_reject.t) | Verify alternate nondisplay reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0065_alternate_nonspot_reject.t](../../tests/loader/builtin/psd/0065_alternate_nonspot_reject.t) | Verify alternate nonspot reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0066_hsb_red_numeric.t](../../tests/loader/builtin/psd/0066_hsb_red_numeric.t) | Verify hsb red numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0067_hsb_yellow_numeric.t](../../tests/loader/builtin/psd/0067_hsb_yellow_numeric.t) | Verify hsb yellow numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0068_hsb_green_numeric.t](../../tests/loader/builtin/psd/0068_hsb_green_numeric.t) | Verify hsb green numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0069_hsb_cyan_numeric.t](../../tests/loader/builtin/psd/0069_hsb_cyan_numeric.t) | Verify hsb cyan numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0070_hsb_blue_numeric.t](../../tests/loader/builtin/psd/0070_hsb_blue_numeric.t) | Verify hsb blue numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0071_hsb_magenta_numeric.t](../../tests/loader/builtin/psd/0071_hsb_magenta_numeric.t) | Verify hsb magenta numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0072_hsb_wrap_numeric.t](../../tests/loader/builtin/psd/0072_hsb_wrap_numeric.t) | Verify hsb wrap numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0073_hsb_gray_numeric.t](../../tests/loader/builtin/psd/0073_hsb_gray_numeric.t) | Verify hsb gray numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0074_hsb_mixed_numeric.t](../../tests/loader/builtin/psd/0074_hsb_mixed_numeric.t) | Verify hsb mixed numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0075_cmyk_cyan_numeric.t](../../tests/loader/builtin/psd/0075_cmyk_cyan_numeric.t) | Verify cmyk cyan numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0076_cmyk_red_numeric.t](../../tests/loader/builtin/psd/0076_cmyk_red_numeric.t) | Verify cmyk red numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0077_cmyk_black_numeric.t](../../tests/loader/builtin/psd/0077_cmyk_black_numeric.t) | Verify cmyk black numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0078_cmyk_gray_numeric.t](../../tests/loader/builtin/psd/0078_cmyk_gray_numeric.t) | Verify cmyk gray numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0079_cmyk_mixed_numeric.t](../../tests/loader/builtin/psd/0079_cmyk_mixed_numeric.t) | Verify cmyk mixed numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0080_alternate_count_limit_reject.t](../../tests/loader/builtin/psd/0080_alternate_count_limit_reject.t) | Verify alternate count limit reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0081_identifiers_count_limit_reject.t](../../tests/loader/builtin/psd/0081_identifiers_count_limit_reject.t) | Verify identifiers count limit reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0082_alternate_psb16_numeric.t](../../tests/loader/builtin/psd/0082_alternate_psb16_numeric.t) | Verify alternate psb16 numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0083_alternate_obsolete_numeric.t](../../tests/loader/builtin/psd/0083_alternate_obsolete_numeric.t) | Verify alternate obsolete numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0084_alternate_lab_numeric.t](../../tests/loader/builtin/psd/0084_alternate_lab_numeric.t) | Verify alternate lab numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0085_alternate_savedmask_reject.t](../../tests/loader/builtin/psd/0085_alternate_savedmask_reject.t) | Verify alternate savedmask reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0086_alternate_max_numeric.t](../../tests/loader/builtin/psd/0086_alternate_max_numeric.t) | Verify alternate max numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0087_unused_identifiers_numeric.t](../../tests/loader/builtin/psd/0087_unused_identifiers_numeric.t) | Verify unused identifiers numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 
 <!-- test-plan-end -->
 

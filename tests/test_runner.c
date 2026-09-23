@@ -974,6 +974,48 @@ int test_psd_color_0042(int argc, char **argv);
 int test_psd_color_0043(int argc, char **argv);
 int test_psd_color_0044(int argc, char **argv);
 int test_psd_color_0045(int argc, char **argv);
+int test_psd_color_0046(int argc, char **argv);
+int test_psd_color_0047(int argc, char **argv);
+int test_psd_color_0048(int argc, char **argv);
+int test_psd_color_0049(int argc, char **argv);
+int test_psd_color_0050(int argc, char **argv);
+int test_psd_color_0051(int argc, char **argv);
+int test_psd_color_0052(int argc, char **argv);
+int test_psd_color_0053(int argc, char **argv);
+int test_psd_color_0054(int argc, char **argv);
+int test_psd_color_0055(int argc, char **argv);
+int test_psd_color_0056(int argc, char **argv);
+int test_psd_color_0057(int argc, char **argv);
+int test_psd_color_0058(int argc, char **argv);
+int test_psd_color_0059(int argc, char **argv);
+int test_psd_color_0060(int argc, char **argv);
+int test_psd_color_0061(int argc, char **argv);
+int test_psd_color_0062(int argc, char **argv);
+int test_psd_color_0063(int argc, char **argv);
+int test_psd_color_0064(int argc, char **argv);
+int test_psd_color_0065(int argc, char **argv);
+int test_psd_color_0066(int argc, char **argv);
+int test_psd_color_0067(int argc, char **argv);
+int test_psd_color_0068(int argc, char **argv);
+int test_psd_color_0069(int argc, char **argv);
+int test_psd_color_0070(int argc, char **argv);
+int test_psd_color_0071(int argc, char **argv);
+int test_psd_color_0072(int argc, char **argv);
+int test_psd_color_0073(int argc, char **argv);
+int test_psd_color_0074(int argc, char **argv);
+int test_psd_color_0075(int argc, char **argv);
+int test_psd_color_0076(int argc, char **argv);
+int test_psd_color_0077(int argc, char **argv);
+int test_psd_color_0078(int argc, char **argv);
+int test_psd_color_0079(int argc, char **argv);
+int test_psd_color_0080(int argc, char **argv);
+int test_psd_color_0081(int argc, char **argv);
+int test_psd_color_0082(int argc, char **argv);
+int test_psd_color_0083(int argc, char **argv);
+int test_psd_color_0084(int argc, char **argv);
+int test_psd_color_0085(int argc, char **argv);
+int test_psd_color_0086(int argc, char **argv);
+int test_psd_color_0087(int argc, char **argv);
 
 
 int test_loader_0185_png_source_numeric(int argc, char **argv);
@@ -2696,6 +2738,88 @@ static test_entry_t const test_entries[] = {
     { "loader/psd/0043_display_reverse_numeric", test_psd_color_0043 },
     { "loader/psd/0044_duotone_spot_reject", test_psd_color_0044 },
     { "loader/psd/0045_spot_lab_range_reject", test_psd_color_0045 },
+    { "loader/psd/0046_alternate_id_numeric",
+      test_psd_color_0046 },
+    { "loader/psd/0047_alternate_order_numeric",
+      test_psd_color_0047 },
+    { "loader/psd/0048_alternate_partial_numeric",
+      test_psd_color_0048 },
+    { "loader/psd/0049_alternate_library_numeric",
+      test_psd_color_0049 },
+    { "loader/psd/0050_alternate_space_reject",
+      test_psd_color_0050 },
+    { "loader/psd/0051_alternate_missing_ids_reject",
+      test_psd_color_0051 },
+    { "loader/psd/0052_alternate_id_count_reject",
+      test_psd_color_0052 },
+    { "loader/psd/0053_alternate_id_duplicate_reject",
+      test_psd_color_0053 },
+    { "loader/psd/0054_alternate_duplicate_id_reject",
+      test_psd_color_0054 },
+    { "loader/psd/0055_alternate_unknown_id_reject",
+      test_psd_color_0055 },
+    { "loader/psd/0056_alternate_version_reject",
+      test_psd_color_0056 },
+    { "loader/psd/0057_alternate_count_reject",
+      test_psd_color_0057 },
+    { "loader/psd/0058_alternate_truncated_reject",
+      test_psd_color_0058 },
+    { "loader/psd/0059_alternate_resource_duplicate_reject",
+      test_psd_color_0059 },
+    { "loader/psd/0060_identifiers_truncated_reject",
+      test_psd_color_0060 },
+    { "loader/psd/0061_identifiers_duplicate_reject",
+      test_psd_color_0061 },
+    { "loader/psd/0062_alternate_empty_numeric",
+      test_psd_color_0062 },
+    { "loader/psd/0063_alternate_high_id_numeric",
+      test_psd_color_0063 },
+    { "loader/psd/0064_alternate_nondisplay_reject",
+      test_psd_color_0064 },
+    { "loader/psd/0065_alternate_nonspot_reject",
+      test_psd_color_0065 },
+    { "loader/psd/0066_hsb_red_numeric",
+      test_psd_color_0066 },
+    { "loader/psd/0067_hsb_yellow_numeric",
+      test_psd_color_0067 },
+    { "loader/psd/0068_hsb_green_numeric",
+      test_psd_color_0068 },
+    { "loader/psd/0069_hsb_cyan_numeric",
+      test_psd_color_0069 },
+    { "loader/psd/0070_hsb_blue_numeric",
+      test_psd_color_0070 },
+    { "loader/psd/0071_hsb_magenta_numeric",
+      test_psd_color_0071 },
+    { "loader/psd/0072_hsb_wrap_numeric",
+      test_psd_color_0072 },
+    { "loader/psd/0073_hsb_gray_numeric",
+      test_psd_color_0073 },
+    { "loader/psd/0074_hsb_mixed_numeric",
+      test_psd_color_0074 },
+    { "loader/psd/0075_cmyk_cyan_numeric",
+      test_psd_color_0075 },
+    { "loader/psd/0076_cmyk_red_numeric",
+      test_psd_color_0076 },
+    { "loader/psd/0077_cmyk_black_numeric",
+      test_psd_color_0077 },
+    { "loader/psd/0078_cmyk_gray_numeric",
+      test_psd_color_0078 },
+    { "loader/psd/0079_cmyk_mixed_numeric",
+      test_psd_color_0079 },
+    { "loader/psd/0080_alternate_count_limit_reject",
+      test_psd_color_0080 },
+    { "loader/psd/0081_identifiers_count_limit_reject",
+      test_psd_color_0081 },
+    { "loader/psd/0082_alternate_psb16_numeric",
+      test_psd_color_0082 },
+    { "loader/psd/0083_alternate_obsolete_numeric",
+      test_psd_color_0083 },
+    { "loader/psd/0084_alternate_lab_numeric",
+      test_psd_color_0084 },
+    { "loader/psd/0085_alternate_savedmask_reject",
+      test_psd_color_0085 },
+    { "loader/psd/0086_alternate_max_numeric", test_psd_color_0086 },
+    { "loader/psd/0087_unused_identifiers_numeric", test_psd_color_0087 },
 
 
     { "loader/0185_png_source_numeric",

@@ -2,6 +2,7 @@
 #ifndef LIBSIXEL_FROMPSD_COLOR_H
 #define LIBSIXEL_FROMPSD_COLOR_H
 
+#include <stdint.h>
 #include "frompsd.h"
 
 #define SIXEL_PSD_COLOR_CHANNELS 56u
@@ -18,6 +19,11 @@ typedef struct sixel_psd_color_data {
     unsigned char const *duotone_lab;
     unsigned int ink_count;
     sixel_psd_ink_t ink[SIXEL_PSD_COLOR_CHANNELS];
+    unsigned int identifier_count;
+    uint32_t identifier[SIXEL_PSD_COLOR_CHANNELS];
+    unsigned int alternate_count;
+    uint32_t alternate_id[SIXEL_PSD_COLOR_CHANNELS];
+    sixel_psd_ink_t alternate[SIXEL_PSD_COLOR_CHANNELS];
 } sixel_psd_color_data_t;
 
 SIXEL_INTERNAL_API SIXELSTATUS

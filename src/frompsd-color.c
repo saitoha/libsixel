@@ -63,15 +63,21 @@ sixel_psd_read_color_data(sixel_chunk_t const *chunk,
 {
     unsigned char const *p;
     unsigned char const *old_display;
+    unsigned char const *identifiers;
     size_t remaining;
     size_t name_size;
     size_t size;
     size_t old_size;
+    size_t identifier_size;
     size_t offset;
     unsigned int id;
     unsigned int count;
+    unsigned int i;
+    unsigned int j;
     int have_display;
     int have_color;
+    int have_identifiers;
+    int have_alternates;
 
     if (chunk == NULL || info == NULL || data == NULL ||
         sixel_chunk_get_buffer(chunk) == NULL) {
@@ -88,12 +94,16 @@ sixel_psd_read_color_data(sixel_chunk_t const *chunk,
     remaining = info->image_resources_length;
     old_display = NULL;
     old_size = 0u;
+    identifiers = NULL;
+    identifier_size = 0u;
     have_display = 0;
     have_color = 0;
+    have_identifiers = 0;
+    have_alternates = 0;
     while (remaining != 0u) {
         if (remaining >= 6u) {
             id = psd_color_u16(p + 4u);
-            if (id == 1007u || id == 1077u ||
+            if (id == 1007u || id == 1077u || id == 1067u ||
                 (id == 1066u && info->color_mode == 8u)) {
                 have_color = 1;
             }
@@ -139,6 +149,33 @@ sixel_psd_read_color_data(sixel_chunk_t const *chunk,
             }
             old_display = p;
             old_size = size;
+        } else if (id == 1053u) {
+            /* Interpret IDs only when alternate colors need them. An
+             * unused auxiliary list must not disable the legacy path. */
+            have_identifiers = have_identifiers ? 2 : 1;
+            identifiers = p;
+            identifier_size = size;
+        } else if (id == 1067u) {
+            if (have_alternates || size < 4u ||
+                psd_color_u16(p) != 1u) {
+                goto malformed;
+            }
+            have_alternates = 1;
+            count = psd_color_u16(p + 2u);
+            if (count > SIXEL_PSD_COLOR_CHANNELS ||
+                size - 4u != (size_t)count * 14u) {
+                goto malformed;
+            }
+            data->alternate_count = count;
+            for (i = 0u; i < count; ++i) {
+                offset = 4u + (size_t)i * 14u;
+                data->alternate_id[i] = (uint32_t)psd_color_u32(p + offset);
+                data->alternate[i].space = psd_color_u16(p + offset + 4u);
+                for (j = 0u; j < 4u; ++j) {
+                    data->alternate[i].component[j] =
+                        psd_color_u16(p + offset + 6u + j * 2u);
+                }
+            }
         }
         offset = size + (size & 1u);
         p += offset;
@@ -148,6 +185,19 @@ sixel_psd_read_color_data(sixel_chunk_t const *chunk,
     if (!have_display && old_display != NULL &&
         !psd_color_display(old_display, old_size, 0, data)) {
         goto malformed;
+    }
+    if (data->alternate_count != 0u) {
+        /* The resource length already bounds the ID list. Real PSD
+         * files have no additional count word inside resource 1053. */
+        if (have_identifiers != 1 || identifier_size % 4u != 0u ||
+            identifier_size / 4u > SIXEL_PSD_COLOR_CHANNELS) {
+            goto malformed;
+        }
+        data->identifier_count = (unsigned int)(identifier_size / 4u);
+        for (i = 0u; i < data->identifier_count; ++i) {
+            data->identifier[i] =
+                (uint32_t)psd_color_u32(identifiers + i * 4u);
+        }
     }
     return SIXEL_OK;
 
