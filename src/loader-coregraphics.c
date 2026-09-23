@@ -2149,10 +2149,18 @@ coregraphics_png_depth(sixel_chunk_t const *chunk)
     if (size < 33u || memcmp(bytes, "\211PNG\r\n\032\n", 8u) != 0 ||
         memcmp(bytes + 12u, "IHDR", 4u) != 0 ||
         coregraphics_png_be32(bytes + 8u) != 13u ||
-        (bytes[25] != 2u && bytes[25] != 6u)) {
+        (bytes[25] != 2u && bytes[25] != 3u && bytes[25] != 6u)) {
         return 0;
     }
     depth = bytes[24];
+    /* An expanded palette contains eight-bit RGB components regardless of
+     * the original index width. Never interpret index bits as RGB depth. */
+    if (bytes[25] == 3u) {
+        if (depth != 1 && depth != 2 && depth != 4 && depth != 8) {
+            return 0;
+        }
+        depth = 8;
+    }
     if (depth != 8 && depth != 16) {
         return 0;
     }
@@ -2200,6 +2208,7 @@ coregraphics_try_source_png(coregraphics_loader_state_t *state, int *handled)
     CGImageAlphaInfo alpha_info;
     unsigned char const *bytes;
     unsigned char const *pixel;
+    unsigned char *byte_pixels;
     float *pixels;
     unsigned char *mask;
     double background[3];
@@ -2219,11 +2228,21 @@ coregraphics_try_source_png(coregraphics_loader_state_t *state, int *handled)
     int little;
     int preserve_zero;
     int has_zero;
+    int expanded;
+    int byte_path;
+    int needs_composition;
     int c;
 
     *handled = 0;
     depth = coregraphics_png_depth(state->chunk);
     if (depth == 0) {
+        return SIXEL_OK;
+    }
+    source_space = CGImageGetColorSpace(state->image);
+    expanded = sixel_chunk_get_buffer(state->chunk)[25] == 3u;
+    if (depth > 0 && expanded && source_space != NULL &&
+        CGColorSpaceGetModel(source_space) == kCGColorSpaceModelIndexed) {
+        /* Keep native indexed providers in the palette-specific path. */
         return SIXEL_OK;
     }
     *handled = 1;
@@ -2234,11 +2253,11 @@ coregraphics_try_source_png(coregraphics_loader_state_t *state, int *handled)
     data = NULL;
     icc = NULL;
     pixels = NULL;
+    byte_pixels = NULL;
     mask = NULL;
     has_zero = 0;
     source_is_srgb = 0;
     little = 0;
-    source_space = CGImageGetColorSpace(state->image);
     if (depth < 0 || source_space == NULL ||
         CGColorSpaceGetModel(source_space) != kCGColorSpaceModelRGB ||
         CGColorSpaceGetNumberOfComponents(source_space) != 3u ||
@@ -2289,7 +2308,7 @@ coregraphics_try_source_png(coregraphics_loader_state_t *state, int *handled)
     if (sixel_chunk_get_buffer(state->chunk)[25] == 6u && alpha_index < 0) {
         goto cleanup;
     }
-    if (depth == 8 && alpha_index < 0 && source_is_srgb &&
+    if (!expanded && depth == 8 && alpha_index < 0 && source_is_srgb &&
         state->bgcolor == NULL && !state->prefer_float32) {
         *handled = 0;
         status = SIXEL_OK;
@@ -2338,23 +2357,49 @@ coregraphics_try_source_png(coregraphics_loader_state_t *state, int *handled)
     if (bytes == NULL) {
         goto cleanup;
     }
+    peak = depth == 16 ? 65535.0 : 255.0;
+    preserve_zero = state->bgcolor == NULL ||
+        SIXEL_LOADER_ALPHA_POLICY_PRESERVES_ZERO(loader_transparent_policy());
+    needs_composition = 0;
+    /* ImageIO may add an all-opaque alpha channel when expanding Adam7.
+     * Choose precision from actual color/alpha work, not channel count.
+     * Without composition, straight sRGB bytes (even hidden RGB) and zero
+     * coverage can be copied exactly without a float image or a CMM call. */
+    for (i = 0u; expanded && alpha_index >= 0 && i < count; ++i) {
+        pixel = bytes + (i / (size_t)frame->width) * stride +
+            (i % (size_t)frame->width) * pixel_bytes;
+        alpha = pixel[alpha_index];
+        has_zero |= alpha == 0.0;
+        needs_composition |= state->bgcolor != NULL && alpha != peak &&
+            !(preserve_zero && alpha == 0.0);
+    }
+    byte_path = expanded && source_is_srgb && !state->prefer_float32 &&
+        !needs_composition;
     if (!source_is_srgb) {
         icc = CGColorSpaceCopyICCData(source_space);
         if (icc == NULL || CFDataGetLength(icc) <= 0) {
             goto cleanup;
         }
     }
-    pixels = (float *)sixel_allocator_malloc(frame->allocator,
+    if (byte_path) {
+        byte_pixels = (unsigned char *)sixel_allocator_malloc(
+            frame->allocator, count * 3u);
+    } else {
+        pixels = (float *)sixel_allocator_malloc(frame->allocator,
                                                count * 3u * sizeof(float));
-    if (pixels == NULL) {
+    }
+    if (byte_pixels == NULL && pixels == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto cleanup;
     }
-    peak = depth == 16 ? 65535.0 : 255.0;
     for (i = 0u; i < count; ++i) {
         pixel = bytes + (i / (size_t)frame->width) * stride +
             (i % (size_t)frame->width) * pixel_bytes;
         for (c = 0; c < 3; ++c) {
+            if (byte_path) {
+                byte_pixels[i * 3u + c] = pixel[first + c];
+                continue;
+            }
             pixels[i * 3u + c] = (float)(coregraphics_png_sample(
                 pixel + (size_t)(first + c) * (size_t)(depth / 8),
                 depth, little) / peak);
@@ -2363,16 +2408,14 @@ coregraphics_try_source_png(coregraphics_loader_state_t *state, int *handled)
     /* Float destination alone does not prevent lower-precision native draw
      * intermediates. Feed original straight samples directly to the CMM and
      * keep alpha out of color transfer, including fully transparent RGB. */
-    if (!sixel_cms_convert_colorsync_linear(pixels,
+    if (!byte_path && !sixel_cms_convert_colorsync_linear(pixels,
         frame->width, frame->height, source_is_srgb,
         icc == NULL ? NULL : CFDataGetBytePtr(icc),
         icc == NULL ? 0u : (size_t)CFDataGetLength(icc))) {
         status = SIXEL_RUNTIME_ERROR;
         goto cleanup;
     }
-    preserve_zero = state->bgcolor == NULL ||
-        SIXEL_LOADER_ALPHA_POLICY_PRESERVES_ZERO(loader_transparent_policy());
-    if (alpha_index >= 0 && preserve_zero) {
+    if (alpha_index >= 0 && preserve_zero && (!expanded || has_zero)) {
         mask = (unsigned char *)sixel_allocator_malloc(frame->allocator,
                                                          count);
         if (mask == NULL) {
@@ -2397,7 +2440,8 @@ coregraphics_try_source_png(coregraphics_loader_state_t *state, int *handled)
             mask[i] = alpha == 0.0;
             has_zero |= mask[i];
         }
-        if (state->bgcolor == NULL || (preserve_zero && alpha == 0.0)) {
+        if (byte_path || state->bgcolor == NULL ||
+            (preserve_zero && alpha == 0.0)) {
             continue;
         }
         for (c = 0; c < 3; ++c) {
@@ -2407,14 +2451,21 @@ coregraphics_try_source_png(coregraphics_loader_state_t *state, int *handled)
     }
     /* Publish the complete owned frame only after extraction, profile
      * application, coverage allocation and composition have succeeded. */
-    frame->pixels.f32ptr = pixels;
-    pixels = NULL;
+    if (byte_path) {
+        frame->pixels.u8ptr = byte_pixels;
+        byte_pixels = NULL;
+    } else {
+        frame->pixels.f32ptr = pixels;
+        pixels = NULL;
+    }
     frame->owns_pixels = 1;
-    frame->pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    frame->colorspace = SIXEL_COLORSPACE_LINEAR;
+    frame->pixelformat = byte_path ? SIXEL_PIXELFORMAT_RGB888 :
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    frame->colorspace = byte_path ? SIXEL_COLORSPACE_GAMMA :
+        SIXEL_COLORSPACE_LINEAR;
     frame->transparent_mask = mask;
     frame->transparent_mask_size = mask == NULL ? 0u : count;
-    frame->alpha_zero_is_transparent = has_zero;
+    frame->alpha_zero_is_transparent = mask != NULL && has_zero;
     mask = NULL;
     status = SIXEL_OK;
 
@@ -2436,6 +2487,7 @@ cleanup:
         CFRelease(icc);
     }
     sixel_allocator_free(frame->allocator, pixels);
+    sixel_allocator_free(frame->allocator, byte_pixels);
     sixel_allocator_free(frame->allocator, mask);
     return status;
 }

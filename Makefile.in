@@ -671,6 +671,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/loader/librsvg.md \
 	docs/loader/wic.md \
 	docs/loader/coregraphics.md \
+	docs/loader/precision-policy.md \
 	docs/loader/gdk-pixbuf2.md \
 	docs/loader/gd.md \
 	docs/loader/quicklook.md \

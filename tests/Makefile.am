@@ -1197,6 +1197,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TGA_ORIGIN_TEST_COMMON \
     -DBUILD_JPEG_DNL_TEST_COMMON \
     -DBUILD_JPEG_LOSSLESS_TEST_COMMON \
+    -DBUILD_CG_EXPANDED_VALUES \
     -DBUILD_CG_INDEXED_TEST_COMMON \
     -DBUILD_TEST_0001_P3_8 \
     -DBUILD_TEST_0002_P3_1 \
@@ -2049,6 +2050,7 @@ test_runner_SOURCES = test_runner.c \
     loader/libpng/0023_loader_libpng_contract.c \
     loader/libpng/indexed/0001_indexed_precision.c \
     loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
+    loader/cg_expanded_values.c \
     loader/cg_indexed_test_common.c \
     loader/cg_indexed_test_common.h \
     loader/coregraphics/indexed/0001_p3_8.c \

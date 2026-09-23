@@ -21,6 +21,8 @@ precision and the effective working format.
 
 ## Requested precision and effective format
 
+[Loader precision, gamut, and fast paths](../loader/precision-policy.md) defines which decoded representations may remain byte-based and which operations must preserve higher precision before this shared pipeline.
+
 `-.` (or `--precision`) expresses a base preference. `-.8bit` uses byte storage when eight bits are sufficient; it does not force CMS output, high-depth source samples, or color-space calculations through a byte boundary. `-.float32` additionally selects float work when the byte path would otherwise be sufficient. `auto` does not request that extra promotion.
 
 | Input and required work | `-.auto` / `-.8bit` | `-.float32` |

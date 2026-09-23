@@ -10,11 +10,11 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    --env "SIXEL_TEST_COREGRAPHICS_INDEXED_ALPHA_FALLBACK_MASK=1" \
+    --env "SIXEL_TEST_COREGRAPHICS_INDEXED_ALPHA_FLOAT_MASK=1" \
     "loader/0008_loader_coregraphics_pixelformat" || {
-    echo "not ok 1 - loader/0008_loader_coregraphics_pixelformat (indexed alpha fallback mask)"
+    echo "not ok 1 - loader/0008_loader_coregraphics_pixelformat (indexed alpha float mask)"
     exit 0
 }
 
-echo "ok 1 - loader/0008_loader_coregraphics_pixelformat (indexed alpha fallback mask)"
+echo "ok 1 - loader/0008_loader_coregraphics_pixelformat (indexed alpha float mask)"
 exit 0

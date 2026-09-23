@@ -424,6 +424,7 @@ int test_loader_0010_loader_gdk_pixbuf_pixelformat(int argc, char **argv);
 int test_loader_0011_loader_gd_pixelformat(int argc, char **argv);
 int test_loader_libpng_contract(int argc, char **argv);
 int test_libpng_indexed_precision(int argc, char **argv);
+int test_cg_expanded_values(int argc, char **argv);
 int test_cgi_0001(int argc, char **argv);
 int test_cgi_0002(int argc, char **argv);
 int test_cgi_0003(int argc, char **argv);
@@ -1932,6 +1933,7 @@ static test_entry_t const test_entries[] = {
       test_loader_0011_loader_gd_pixelformat },
     { "loader/libpng_contract", test_loader_libpng_contract },
     { "loader/libpng_indexed_precision", test_libpng_indexed_precision },
+    { "cg-expanded/values", test_cg_expanded_values },
     { "cg-indexed/0001_p3_8", test_cgi_0001 },
     { "cg-indexed/0002_p3_1", test_cgi_0002 },
     { "cg-indexed/0003_p3_2", test_cgi_0003 },

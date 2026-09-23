@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "tests/loader/pixelformat_test_common.h"
+#include "src/loader-common.h"
 
 #if HAVE_COREGRAPHICS
 static SIXELSTATUS
@@ -181,7 +182,7 @@ typedef enum coregraphics_pixelformat_case_id {
     COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_ICC_GAMA_POLICY,
     COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_FB_MASK,
     COREGRAPHICS_PIXELFORMAT_INDEXED_REQCOLORS_FALLBACK_RGB,
-    COREGRAPHICS_PIXELFORMAT_INDEXED_ALPHA_FALLBACK_MASK,
+    COREGRAPHICS_PIXELFORMAT_INDEXED_ALPHA_FLOAT_MASK,
     COREGRAPHICS_PIXELFORMAT_INDEXED_ALPHA_BG_COMPOSITE,
     COREGRAPHICS_PIXELFORMAT_HIGHDEPTH_FLOAT32,
     COREGRAPHICS_PIXELFORMAT_CASE_COUNT
@@ -1529,7 +1530,8 @@ run_coregraphics_env_dispatch(
 
 static int
 run_coregraphics_indexed_keycolor_policy_case(char const *label,
-                                               char const *relative_path)
+                                               char const *relative_path,
+                                               int expected_rgb_format)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -1656,9 +1658,11 @@ run_coregraphics_indexed_keycolor_policy_case(char const *label,
      * Runtime behavior differs across ImageIO versions:
      * - indexed+tRNS may stay indexed and return PAL8+transparent.
      * - indexed+tRNS may be expanded to RGBA and then normalized to RGB+mask.
-     * Both are valid as long as transparency semantics are preserved.
+     * Both are valid for sRGB when transparency semantics are preserved.
+     * A non-sRGB source requires canonical float RGB on either route.
      */
-    if (probe.pixelformat == SIXEL_PIXELFORMAT_PAL8) {
+    if (probe.pixelformat == SIXEL_PIXELFORMAT_PAL8 &&
+        expected_rgb_format == SIXEL_PIXELFORMAT_RGB888) {
         if (probe.transparent < 0 || probe.transparent >= 256) {
             fprintf(stderr, "%s: expected keycolor transparent index\n", label);
             goto cleanup;
@@ -1686,7 +1690,7 @@ run_coregraphics_indexed_keycolor_policy_case(char const *label,
                     label);
             goto cleanup;
         }
-    } else if (probe.pixelformat == SIXEL_PIXELFORMAT_RGB888) {
+    } else if (probe.pixelformat == expected_rgb_format) {
         if (probe.transparent != -1) {
             fprintf(stderr, "%s: rgb path transparent index mismatch\n", label);
             goto cleanup;
@@ -1816,10 +1820,10 @@ run_coregraphics_pixelformat_case_by_id(
             new_coregraphics_component
         },
         {
-            "coregraphics indexed keycolor icc/gama emits rgb+mask",
+            "coregraphics indexed keycolor icc/gama emits float+mask",
             "/tests/data/inputs/formats/pal8-trns-key0-gama-icc.png",
             {
-                SIXEL_PIXELFORMAT_RGB888,
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
                 4,
                 1,
                 1,
@@ -1828,8 +1832,8 @@ run_coregraphics_pixelformat_case_by_id(
                 1,
                 FRAME_MASK_VALUE_ANY,
                 1,
-                FRAME_METADATA_ANY,
-                0
+                SIXEL_COLORSPACE_LINEAR,
+                1
             },
             { 1, 1, 256, NULL },
             new_coregraphics_component
@@ -1873,10 +1877,10 @@ run_coregraphics_pixelformat_case_by_id(
             new_coregraphics_component
         },
         {
-            "coregraphics indexed alpha fallback emits rgb+mask",
+            "coregraphics indexed alpha emits float+mask",
             "/tests/data/inputs/formats/libpng-pal8-trns-single0-semi-icc.png",
             {
-                SIXEL_PIXELFORMAT_RGB888,
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
                 6,
                 1,
                 1,
@@ -1885,8 +1889,8 @@ run_coregraphics_pixelformat_case_by_id(
                 1,
                 FRAME_MASK_VALUE_ANY,
                 1,
-                FRAME_METADATA_ANY,
-                0
+                SIXEL_COLORSPACE_LINEAR,
+                1
             },
             { 1, 1, 256, NULL },
             new_coregraphics_component
@@ -1895,7 +1899,7 @@ run_coregraphics_pixelformat_case_by_id(
             "coregraphics indexed alpha with background composites",
             "/tests/data/inputs/formats/libpng-pal8-trns-single0-semi-icc.png",
             {
-                SIXEL_PIXELFORMAT_RGB888,
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
                 6,
                 1,
                 1,
@@ -1904,8 +1908,8 @@ run_coregraphics_pixelformat_case_by_id(
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                FRAME_METADATA_ANY,
-                0
+                SIXEL_COLORSPACE_LINEAR,
+                1
             },
             { 1, 1, 256, white_bg },
             new_coregraphics_component
@@ -1931,17 +1935,21 @@ run_coregraphics_pixelformat_case_by_id(
         }
     };
     size_t index;
+    int previous_policy;
+    int result;
 
     if (case_id == COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_POLICY) {
         return run_coregraphics_indexed_keycolor_policy_case(
             "coregraphics indexed keycolor policy",
-            "/tests/data/inputs/formats/pal8-trns-key0.png");
+            "/tests/data/inputs/formats/pal8-trns-key0.png",
+            SIXEL_PIXELFORMAT_RGB888);
     }
     if (case_id ==
         COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_ICC_GAMA_POLICY) {
         return run_coregraphics_indexed_keycolor_policy_case(
             "coregraphics indexed keycolor icc/gama policy",
-            "/tests/data/inputs/formats/pal8-trns-key0-gama-icc.png");
+            "/tests/data/inputs/formats/pal8-trns-key0-gama-icc.png",
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32);
     }
 
     if ((size_t)case_id >=
@@ -1952,7 +1960,15 @@ run_coregraphics_pixelformat_case_by_id(
     }
 
     index = (size_t)case_id;
-    return run_loader_component_case_from_spec(&specs[index]);
+    previous_policy = loader_transparent_policy();
+    if (case_id == COREGRAPHICS_PIXELFORMAT_INDEXED_ALPHA_BG_COMPOSITE) {
+        /* This is an opaque-composition test, not default clear/keep. */
+        sixel_helper_set_loader_transparent_policy(
+            SIXEL_ALPHA_POLICY_COMPOSITE);
+    }
+    result = run_loader_component_case_from_spec(&specs[index]);
+    sixel_helper_set_loader_transparent_policy(previous_policy);
+    return result;
 }
 
 static int
@@ -2025,10 +2041,10 @@ run_coregraphics_indexed_reqcolors_fallback_rgb_test(void)
 }
 
 static int
-run_coregraphics_indexed_alpha_fallback_mask_test(void)
+run_coregraphics_indexed_alpha_float_mask_test(void)
 {
     return run_coregraphics_pixelformat_case_by_id(
-        COREGRAPHICS_PIXELFORMAT_INDEXED_ALPHA_FALLBACK_MASK);
+        COREGRAPHICS_PIXELFORMAT_INDEXED_ALPHA_FLOAT_MASK);
 }
 
 static int
@@ -2431,8 +2447,8 @@ run_coregraphics_loader_test(void)
           run_coregraphics_indexed_keycolor_reqcolors_fallback_mask_test },
         { "SIXEL_TEST_COREGRAPHICS_INDEXED_REQCOLORS_FALLBACK_RGB",
           run_coregraphics_indexed_reqcolors_fallback_rgb_test },
-        { "SIXEL_TEST_COREGRAPHICS_INDEXED_ALPHA_FALLBACK_MASK",
-          run_coregraphics_indexed_alpha_fallback_mask_test },
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_ALPHA_FLOAT_MASK",
+          run_coregraphics_indexed_alpha_float_mask_test },
         { "SIXEL_TEST_COREGRAPHICS_INDEXED_ALPHA_BG_COMPOSITE",
           run_coregraphics_indexed_alpha_bg_composite_test },
         { "SIXEL_TEST_COREGRAPHICS_HIGHDEPTH_FLOAT32",

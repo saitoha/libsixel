@@ -30,13 +30,14 @@ For document previews rather than ordinary ImageIO decoding, see [Quick Look](qu
 
 ## PNG source precision
 
-The CoreGraphics loader uses ImageIO to decode images and select their source color space. For supported static RGB/RGBA PNG inputs, it reads original straight integer samples from the resulting image provider and converts RGB directly to canonical linear sRGB float32. Alpha is independent coverage and never enters the color transform. See [color definitions and canonical coordinates](../concepts/colorspace.md) and [storage precision](../concepts/pixelformat-precision.md).
+The CoreGraphics loader uses ImageIO to decode images and select their source color space. For supported static RGB/RGBA PNG inputs, including indexed PNGs that ImageIO expands into straight RGB/RGBA, it reads original straight integer samples from the resulting image provider and converts RGB directly to canonical linear sRGB float32. Alpha is independent coverage and never enters the color transform. See [color definitions and canonical coordinates](../concepts/colorspace.md) and [storage precision](../concepts/pixelformat-precision.md).
 
 ## Source and format boundaries
 
 | Input or condition | Path and contract |
 | --- | --- |
 | Static nonindexed RGB/RGBA PNG, original eight- or sixteen-bit samples, supported straight RGB provider | Original samples are normalized once to float32, then passed to the explicit native linear transform. Negative and above-one canonical RGB remain available. |
+| Static indexed PNG expanded by ImageIO to straight RGB/RGBA | Read its eight-bit RGB components and adopted source space directly. Do not reconstruct indices or render through a byte sRGB bitmap. One-, two-, four- and eight-bit source indices all select eight-bit palette components. |
 | Eight-bit opaque static RGB PNG, adopted named sRGB, no background, no float preference | The existing native byte path remains available. Ordinary source bytes remain the compatibility contract. |
 | The same ordinary source with the float preference | The loader request passes through the manager to the CoreGraphics component and selects canonical float storage. |
 | Other formats, grayscale PNG, or PNG carrying `acTL` | These remain outside the static RGB/RGBA PNG precision contract, even when ImageIO returns only one frame. Images returned as indexed RGB by ImageIO follow the separate palette contract below. |
@@ -61,9 +62,17 @@ An indexed image's color table contains coordinates in its **base color space**.
 
 The global CMS engine setting, including `none` and `builtin`, does not override this native conversion. Missing required base-profile data or failed conversion returns failure; converted samples are not retried as unmanaged palette bytes. Expansion validates every index before publishing the frame. Allocation failure likewise emits no partial frame.
 
-For binary PNG palette transparency retained in an indexed provider, source-zero coverage stays independent of RGB: hidden colors remain available without a background and under `keep`/`clear`; `composite` uses the declared linear or gamma background. ImageIO may expand indexed inputs into RGB/RGBA itself; this was observed for both transparent and Adam7 PNGs on the validation host. Such expanded providers use the existing generic path and are outside this direct palette contract.
+For binary PNG palette transparency retained in an indexed provider, source-zero coverage stays independent of RGB: hidden colors remain available without a background and under `keep`/`clear`; `composite` uses the declared linear or gamma background. ImageIO may expand indexed inputs into RGB/RGBA itself; this was observed for both transparent and Adam7 PNGs on the validation host. Such expanded providers follow the source-sample contract above, retaining their actual RGB representation rather than reconstructing a palette.
 
 The indexed fixtures use independently defined `png-samples.h` palette entries and the existing P3 ICC matrix/TRC reference, with a five-pixel row to expose packed-row mistakes. Their generator is [generate_cg_indexed_fixtures.py](../../tools/generate_cg_indexed_fixtures.py). Native color values use the same absolute `1e-4` profile budget as the RGB PNG tests; palette indices, byte values, frame tags and masks use exact assertions. These value tests are distinct from the existing MS-SSIM quality regressions.
+
+## Backend-expanded indexed PNGs
+
+The [loader precision policy](precision-policy.md) separates accepted backend expansion from avoidable adapter loss. For supported expanded static PNG providers, the adapter reads straight RGB and original alpha directly. The adopted native RGB space supplies the source ICC or named sRGB definition; P3 values are converted to extended canonical linear float32 even with an 8bit preference. Binary and fractional palette alpha survive expansion as original coverage values. Hidden RGB remains available at alpha zero; background composition uses the original alpha ratio and the separately interpreted background.
+
+Named sRGB expanded providers retain exact RGB888 bytes when no float preference, color conversion or contributing background composition requires float. A missing background, an all-opaque synthetic alpha channel, or binary transparency preserved under `keep`/`clear` does not itself force a float image. The byte route extracts the zero mask directly, preserving hidden RGB without premultiplication or a CMM call. Explicit float requests and partial-alpha background composition select canonical linear float. Opaque expanded images have no transparency mask; successfully composited images likewise have no mask.
+
+The expanded fixtures cover binary/partial transparency and Adam7 with one-, two-, four- and eight-bit source indices. Tests first verify that ImageIO actually returned an RGB provider, otherwise they skip that host-dependent route. Original PLTE values and an independent matrix/TRC oracle protect gamut and channel interpretation at absolute `1e-4`; a separately validated native reference isolates background/alpha arithmetic at `5e-7`. Exact byte, coverage and allocation checks protect the fast paths. Frame/mask allocation failures must emit no callback and permit retry without leaks. Other formats, APNG and unsupported provider layouts retain their documented boundaries; the repair does not imply every native drawing route preserves source precision.
 
 ## Native conversion and failure
 
@@ -187,3 +196,30 @@ Background tests first validate the uncomposed native result against that indepe
 The explicit native helper rejects nonfinite inputs, invalid dimensions and inconsistent profile arguments atomically. Native stage failures and unsupported provider layouts also have focused external fault-injection controls; these supplement the permanent numerical and rejection tests without implying native API conformance on every platform.
 
 The [indexed tests](../../tests/loader/coregraphics/indexed/) also exercise expansion-allocation failure, callback suppression, allocator balance and reuse of the same loader after failure.
+
+### Expanded provider value contracts
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| CGE-01 | P3 binary transparency retains extended RGB, hidden RGB and exact zero coverage with the byte preference. | [tests/loader/coregraphics/expanded/0001_p3_binary.t](../../tests/loader/coregraphics/expanded/0001_p3_binary.t) |
+| CGE-02 | P3 fractional alpha without a background preserves straight RGB and masks only exact zero. | [tests/loader/coregraphics/expanded/0002_p3_partial.t](../../tests/loader/coregraphics/expanded/0002_p3_partial.t) |
+| CGE-03 | P3 opaque Adam7 preserves extended RGB without an unnecessary transparency mask. | [tests/loader/coregraphics/expanded/0003_p3_adam7.t](../../tests/loader/coregraphics/expanded/0003_p3_adam7.t) |
+| CGE-04 | An explicit float request retains P3 source values and coverage. | [tests/loader/coregraphics/expanded/0004_p3_float.t](../../tests/loader/coregraphics/expanded/0004_p3_float.t) |
+| CGE-05 | Named sRGB binary alpha preserves exact bytes and hidden RGB without CMM apply or image-sized float allocation. | [tests/loader/coregraphics/expanded/0005_srgb_binary_byte.t](../../tests/loader/coregraphics/expanded/0005_srgb_binary_byte.t) |
+| CGE-06 | Named sRGB fractional alpha with no background likewise keeps exact byte RGB and zero coverage. | [tests/loader/coregraphics/expanded/0006_srgb_partial_byte.t](../../tests/loader/coregraphics/expanded/0006_srgb_partial_byte.t) |
+| CGE-07 | Named sRGB opaque Adam7 stays byte-based even when the backend adds an opaque alpha channel. | [tests/loader/coregraphics/expanded/0007_srgb_adam7_byte.t](../../tests/loader/coregraphics/expanded/0007_srgb_adam7_byte.t) |
+| CGE-08 | An explicit float request converts expanded named sRGB to canonical linear coordinates. | [tests/loader/coregraphics/expanded/0008_srgb_float.t](../../tests/loader/coregraphics/expanded/0008_srgb_float.t) |
+| CGE-09 | One-bit Adam7 indices select full eight-bit P3 components across odd-width rows. | [tests/loader/coregraphics/expanded/0009_p3_adam7_1.t](../../tests/loader/coregraphics/expanded/0009_p3_adam7_1.t) |
+| CGE-10 | Two-bit Adam7 indices select full eight-bit P3 components across odd-width rows. | [tests/loader/coregraphics/expanded/0010_p3_adam7_2.t](../../tests/loader/coregraphics/expanded/0010_p3_adam7_2.t) |
+| CGE-11 | Four-bit Adam7 indices select full eight-bit P3 components across odd-width rows. | [tests/loader/coregraphics/expanded/0011_p3_adam7_4.t](../../tests/loader/coregraphics/expanded/0011_p3_adam7_4.t) |
+| CGE-12 | P3 partial alpha uses the original ratio over a gamma background under keep, retaining zero coverage. | [tests/loader/coregraphics/expanded/0012_p3_gamma_keep.t](../../tests/loader/coregraphics/expanded/0012_p3_gamma_keep.t) |
+| CGE-13 | P3 partial alpha uses the original ratio over a linear background under clear, retaining zero coverage. | [tests/loader/coregraphics/expanded/0013_p3_linear_clear.t](../../tests/loader/coregraphics/expanded/0013_p3_linear_clear.t) |
+| CGE-14 | P3 composite over a gamma background includes zero alpha and publishes no mask. | [tests/loader/coregraphics/expanded/0014_p3_gamma_composite.t](../../tests/loader/coregraphics/expanded/0014_p3_gamma_composite.t) |
+| CGE-15 | P3 composite over a linear background includes zero alpha and publishes no mask. | [tests/loader/coregraphics/expanded/0015_p3_linear_composite.t](../../tests/loader/coregraphics/expanded/0015_p3_linear_composite.t) |
+| CGE-16 | Named sRGB partial-alpha composition requires float despite the byte preference. | [tests/loader/coregraphics/expanded/0016_srgb_partial_composite.t](../../tests/loader/coregraphics/expanded/0016_srgb_partial_composite.t) |
+| CGE-17 | A background that contributes to no opaque expanded pixel does not force byte sRGB to float. | [tests/loader/coregraphics/expanded/0017_srgb_opaque_background_byte.t](../../tests/loader/coregraphics/expanded/0017_srgb_opaque_background_byte.t) |
+| CGE-18 | Preserved binary zero coverage and an unused background retain the exact sRGB byte path. | [tests/loader/coregraphics/expanded/0018_srgb_binary_background_byte.t](../../tests/loader/coregraphics/expanded/0018_srgb_binary_background_byte.t) |
+| CGE-19 | Global engine none does not bypass CoreGraphics native P3 interpretation. | [tests/loader/coregraphics/expanded/0019_p3_engine_none.t](../../tests/loader/coregraphics/expanded/0019_p3_engine_none.t) |
+| CGE-20 | Float-frame allocation failure emits no callback; retry succeeds without leaks or byte fallback. | [tests/loader/coregraphics/expanded/0020_float_allocation_retry.t](../../tests/loader/coregraphics/expanded/0020_float_allocation_retry.t) |
+| CGE-21 | Mask allocation failure after native conversion emits no callback; retry succeeds without leaks. | [tests/loader/coregraphics/expanded/0021_mask_allocation_retry.t](../../tests/loader/coregraphics/expanded/0021_mask_allocation_retry.t) |
+| CGE-22 | Byte-path mask allocation failure emits no callback; retry preserves exact bytes without float allocation. | [tests/loader/coregraphics/expanded/0022_byte_mask_allocation_retry.t](../../tests/loader/coregraphics/expanded/0022_byte_mask_allocation_retry.t) |

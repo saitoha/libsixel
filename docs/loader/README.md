@@ -1,5 +1,7 @@
 # Image Loader Architecture
 
+[Loader precision, gamut, and fast paths](precision-policy.md) defines the shared preservation and byte-path policy, including backend-expanded indexed images and the distinction between desired contracts and current backend support.
+
 For engine selection and its limits, read [Loader CMS: builtin and Little CMS](color-management.md). It distinguishes decoder support from CMS support and covers unsupported profiles, best-effort fallback, quality, and performance. For shared PNG metadata precedence and its reference matrix, read [PNG color metadata](png-color-metadata.md). For the subsystem design, read [Builtin CMS specification and architecture](builtin-cms.md).
 
 For the static PNG source and native conversion boundary, see [CoreGraphics PNG source precision](coregraphics.md#png-source-precision).

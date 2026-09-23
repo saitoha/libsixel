@@ -882,7 +882,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/libpng/0023_loader_libpng_contract.c \
 	loader/libpng/indexed/0001_indexed_precision.c \
 	loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
-	loader/cg_indexed_test_common.c \
+	loader/cg_expanded_values.c loader/cg_indexed_test_common.c \
 	loader/cg_indexed_test_common.h \
 	loader/coregraphics/indexed/0001_p3_8.c \
 	loader/coregraphics/indexed/0002_p3_1.c \
@@ -1976,6 +1976,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0023_loader_libpng_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/indexed/test_runner-0001_indexed_precision.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-cg_expanded_values.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-cg_indexed_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/indexed/test_runner-0001_p3_8.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/indexed/test_runner-0002_p3_1.$(OBJEXT) \
@@ -2437,6 +2438,7 @@ am__depfiles_remade =  \
 	loader/$(DEPDIR)/test_runner-0124_loader_manager_open_plan.Po \
 	loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po \
 	loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po \
+	loader/$(DEPDIR)/test_runner-cg_expanded_values.Po \
 	loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Po \
 	loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po \
 	loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po \
@@ -5125,6 +5127,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TGA_ORIGIN_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_JPEG_DNL_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_JPEG_LOSSLESS_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CG_EXPANDED_VALUES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CG_INDEXED_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_P3_8 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_P3_1 \
@@ -6008,6 +6011,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0023_loader_libpng_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/indexed/0001_indexed_precision.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/cg_expanded_values.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/cg_indexed_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/cg_indexed_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/indexed/0001_p3_8.c \
@@ -8965,6 +8969,8 @@ loader/libjpeg/$(DEPDIR)/$(am__dirstamp):
 loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT):  \
 	loader/libjpeg/$(am__dirstamp) \
 	loader/libjpeg/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-cg_expanded_values.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 loader/test_runner-cg_indexed_test_common.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 loader/coregraphics/indexed/$(am__dirstamp):
@@ -10165,6 +10171,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0124_loader_manager_open_plan.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-cg_expanded_values.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po@am__quote@ # am--include-marker
@@ -21608,6 +21615,20 @@ loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.obj: loader/libjpeg/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.obj `if test -f 'loader/libjpeg/0013_loader_libjpeg_pixelformat.c'; then $(CYGPATH_W) 'loader/libjpeg/0013_loader_libjpeg_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/0013_loader_libjpeg_pixelformat.c'; fi`
 
+loader/test_runner-cg_expanded_values.o: loader/cg_expanded_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-cg_expanded_values.o -MD -MP -MF loader/$(DEPDIR)/test_runner-cg_expanded_values.Tpo -c -o loader/test_runner-cg_expanded_values.o `test -f 'loader/cg_expanded_values.c' || echo '$(srcdir)/'`loader/cg_expanded_values.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-cg_expanded_values.Tpo loader/$(DEPDIR)/test_runner-cg_expanded_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/cg_expanded_values.c' object='loader/test_runner-cg_expanded_values.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-cg_expanded_values.o `test -f 'loader/cg_expanded_values.c' || echo '$(srcdir)/'`loader/cg_expanded_values.c
+
+loader/test_runner-cg_expanded_values.obj: loader/cg_expanded_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-cg_expanded_values.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-cg_expanded_values.Tpo -c -o loader/test_runner-cg_expanded_values.obj `if test -f 'loader/cg_expanded_values.c'; then $(CYGPATH_W) 'loader/cg_expanded_values.c'; else $(CYGPATH_W) '$(srcdir)/loader/cg_expanded_values.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-cg_expanded_values.Tpo loader/$(DEPDIR)/test_runner-cg_expanded_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/cg_expanded_values.c' object='loader/test_runner-cg_expanded_values.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-cg_expanded_values.obj `if test -f 'loader/cg_expanded_values.c'; then $(CYGPATH_W) 'loader/cg_expanded_values.c'; else $(CYGPATH_W) '$(srcdir)/loader/cg_expanded_values.c'; fi`
+
 loader/test_runner-cg_indexed_test_common.o: loader/cg_indexed_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-cg_indexed_test_common.o -MD -MP -MF loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Tpo -c -o loader/test_runner-cg_indexed_test_common.o `test -f 'loader/cg_indexed_test_common.c' || echo '$(srcdir)/'`loader/cg_indexed_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Tpo loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Po
@@ -26769,6 +26790,7 @@ distclean: distclean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0124_loader_manager_open_plan.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po
+	-rm -f loader/$(DEPDIR)/test_runner-cg_expanded_values.Po
 	-rm -f loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po
@@ -27889,6 +27911,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0124_loader_manager_open_plan.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po
+	-rm -f loader/$(DEPDIR)/test_runner-cg_expanded_values.Po
 	-rm -f loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po
