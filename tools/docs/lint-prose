@@ -1,0 +1,14 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# Keep prose tooling optional and independent of the normal build/test targets.
+set -u
+
+command -v python3 >/dev/null 2>&1 || {
+    printf '%s\n' 'lint-prose: advisory checks skipped: python3 is not on PATH.'
+    exit 0
+}
+
+python3 "${0%/*}/lint_prose.py" "$@" || {
+    printf '%s\n' 'lint-prose: advisory check could not complete; see diagnostics above.' >&2
+}
+exit 0

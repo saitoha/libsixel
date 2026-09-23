@@ -96,6 +96,12 @@ An exhaustive test-plan inventory serves a different purpose from a behavioral c
 
 The [`staticcheck-test-plan-links`](../tests/_static/sh/staticcheck-test-plan-links.sh) check expands every marked glob and enforces exact, duplicate-free document links and reciprocal `Test-plan:` comments. It also runs the builtin-loader inventory generator in `--check` mode, so generated assertion-mechanism counts and rows cannot drift from test sources. A suite addition, deletion, rename, moved link, one-sided comment change, or stale generated summary therefore fails the static suite until the inventory is regenerated.
 
+## Advisory documentation-set checks
+
+Run [`tools/docs/lint-prose`](../tools/docs/lint-prose) for optional [Vale](https://vale.sh/) terminology, contributor-path, commit-reference, change-history and local timing-protocol findings, plus exact tracked-document inventory coverage. The checks are advisory, return success even when findings or missing tools prevent a clean result, and are not part of staticcheck, CI or either build system. [Configuration, rule scopes and terminology rationale](../tools/docs/vale/README.md) describe the implementation and its limits. Findings are review candidates, not instructions to remove required traceability or evidence.
+
+[`tools/docs/doc-types.tsv`](../tools/docs/doc-types.tsv) records one row per tracked Markdown document under `docs/`: `path` is repository-relative; `type` is the primary [Diátaxis](https://diataxis.fr/start-here/) purpose (`tutorial`, `how-to`, `reference` or `explanation`); `audience` is `user`, `contributor` or `both`; `note` identifies mixed purposes or audiences and is otherwise empty. Classify from the opening sections and headings, not the directory name or the largest section alone. `user` includes CLI users and library integrators; `contributor` means repository development and maintenance; a short implementation/evidence link alone does not make a page `both`. Update the inventory when adding, removing, renaming or materially changing a document. The prototype uses these classifications for page-level rule scopes; it does not add front matter or reorganize existing documents.
+
 ## Adding a document
 
 Add a document only when the topic is durable and materially distinct from the existing references. Give it a stable subject-oriented name, place it in the owning subject directory, and add it to `README.md` when users or contributors should discover it. Add a repository-level link only when contributors must read it before working in that area.

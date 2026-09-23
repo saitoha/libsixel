@@ -1,0 +1,11 @@
+extends: existence
+message: "Review whether commit reference '%s' is needed for current behavior or belongs in history."
+level: warning
+# Link destinations are deliberately inspected only by this rule. Raw scope also
+# catches commit hashes in inline code; it can include examples and comments.
+scope: raw
+ignorecase: true
+nonword: true
+tokens:
+  - 'https?://[^\s<>"()]+/commits?/[0-9a-f]{7,40}\b'
+  - '\bcommit[ \t]+`?[0-9a-f]{7,40}\b'

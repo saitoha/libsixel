@@ -1,0 +1,18 @@
+extends: substitution
+message: "Prefer '%s' to '%s' for the same concept; check the terminology rationale before changing it."
+level: warning
+scope: text
+ignorecase: true
+swap:
+  # Preserve ColorSpace metadata and path components, including link labels.
+  '(?<![\w/.-])(?:(?-i:colorspace|Colorspace)|color-space)(?![\w/-]|\.[A-Za-z0-9_])': color space
+  '(?<![\w/.-])(?:(?-i:colorspaces|Colorspaces)|color-spaces)(?![\w/-]|\.[A-Za-z0-9_])': color spaces
+  'thread budget': worker budget
+  'thread budgets': worker budgets
+  '(configured|requested) (?:thread|worker) count': $1 worker budget
+  'palette budget': palette size
+  'palette budgets': palette sizes
+  'requested (?:color count|number of colors)': requested palette size
+  'palette color count|number of colors in the palette': palette size
+  'palette register|color register': palette entry
+  'palette registers|color registers': palette entries
