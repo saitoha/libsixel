@@ -16,7 +16,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 36 | 0 | 0 | 0 | 0 | 0 |
 | [GIF](../loader/builtin/gif.md) | 36 | 8 | 3 | 2 | 2 | 2 | 19 |
 | [PNG and APNG](../loader/builtin/png.md) | 288 | 22 | 59 | 0 | 13 | 7 | 187 |
-| [JPEG](../loader/builtin/jpeg.md) | 111 | 74 | 14 | 1 | 16 | 2 | 4 |
+| [JPEG](../loader/builtin/jpeg.md) | 223 | 76 | 14 | 1 | 57 | 5 | 70 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
 | [PSD and PSB](../loader/builtin/psd.md) | 994 | 13 | 551 | 402 | 9 | 3 | 16 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
@@ -24,7 +24,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 41 | 25 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2297** | **544** | **724** | **652** | **67** | **15** | **295** |
+| **Total** | **2409** | **546** | **724** | **652** | **108** | **18** | **361** |
 
 ## Complete inventory
 
@@ -499,7 +499,7 @@ Primary implementation context: [JPEG builtin component](../loader/builtin/jpeg.
 | [tests/loader/builtin/0128_loader_builtin_jpeg_cmyk_12bit_seq444_r0_expected_lsqa.t](../../tests/loader/builtin/0128_loader_builtin_jpeg_cmyk_12bit_seq444_r0_expected_lsqa.t) | Verify builtin loader decodes 12-bit CMYK JPEG (sequential 4:4:4) with stable quality against expected PNM reference. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/0129_loader_builtin_jpeg_cmyk_16bit_lossless_r0_decode.t](../../tests/loader/builtin/0129_loader_builtin_jpeg_cmyk_16bit_lossless_r0_decode.t) | Verify builtin loader decodes 16-bit CMYK lossless JPEG without fallback. | Other integration/smoke | Inventory only |
 | [tests/loader/builtin/0130_loader_builtin_jpeg_ycck_12bit_seq444_r0_expected_lsqa.t](../../tests/loader/builtin/0130_loader_builtin_jpeg_ycck_12bit_seq444_r0_expected_lsqa.t) | Verify builtin loader decodes 12-bit YCCK JPEG (sequential 4:4:4) with stable quality against expected PNM reference. | Perceptual quality threshold | Inventory only |
-| [tests/loader/builtin/0131_loader_builtin_rejects_arithmetic_jpeg.t](../../tests/loader/builtin/0131_loader_builtin_rejects_arithmetic_jpeg.t) | Verify builtin loader rejects arithmetic-coded JPEG streams. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/0131_loader_builtin_arithmetic_jpeg.t](../../tests/loader/builtin/0131_loader_builtin_arithmetic_jpeg.t) | Verify builtin loader decodes arithmetic-coded JPEG streams. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/1463_loader_builtin_jpeg_embedded_cmykprofile_skip_trace.t](../../tests/loader/builtin/1463_loader_builtin_jpeg_embedded_cmykprofile_skip_trace.t) | Verify RGB JPEG with non-applicable CMYK ICC keeps silent skip behavior. | Trace/status observation | Inventory only |
 | [tests/loader/builtin/1667_loader_builtin_jpeg_orientation_toggle.t](../../tests/loader/builtin/1667_loader_builtin_jpeg_orientation_toggle.t) | TAP test confirming builtin orientation toggle affects JPEG EXIF decode. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/1963_loader_builtin_jpeg_ycck8_rgb_digest.t](../../tests/loader/builtin/1963_loader_builtin_jpeg_ycck8_rgb_digest.t) | Verify JPEG YCCK conversion with an exact decoded RGB digest. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
@@ -534,7 +534,7 @@ Primary implementation context: [JPEG builtin component](../loader/builtin/jpeg.
 | [tests/loader/builtin/2236_jpeg_dnl_restart_short_reject.t](../../tests/loader/builtin/2236_jpeg_dnl_restart_short_reject.t) | Reject an early DNL at a restart interval boundary. | Acceptance/rejection | Inventory only |
 | [tests/loader/builtin/2237_jpeg_dnl_extension_numeric.t](../../tests/loader/builtin/2237_jpeg_dnl_extension_numeric.t) | Skip bounded DNL extension bytes without decoding them. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/2238_jpeg_dnl_known_numeric.t](../../tests/loader/builtin/2238_jpeg_dnl_known_numeric.t) | Preserve known-height JPEG with a matching DNL. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
-| [tests/loader/builtin/2239_jpeg_dnl_mismatch_reject.t](../../tests/loader/builtin/2239_jpeg_dnl_mismatch_reject.t) | Reject DNL that contradicts a known SOF height. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/2239_jpeg_dnl_redefine_numeric.t](../../tests/loader/builtin/2239_jpeg_dnl_redefine_numeric.t) | Use DNL to redefine a known SOF height. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/2240_jpeg_dnl_amplitude_reject.t](../../tests/loader/builtin/2240_jpeg_dnl_amplitude_reject.t) | Reject missing amplitude bits before DNL. | Acceptance/rejection | Inventory only |
 | [tests/loader/builtin/2241_jpeg_dnl_fill_numeric.t](../../tests/loader/builtin/2241_jpeg_dnl_fill_numeric.t) | Accept repeated FF fill bytes before the DNL marker. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/2242_jpeg_dnl_eoi_reject.t](../../tests/loader/builtin/2242_jpeg_dnl_eoi_reject.t) | Reject a deferred-height frame truncated after DNL. | Acceptance/rejection | Inventory only |
@@ -2421,6 +2421,118 @@ Primary implementation context: [JPEG builtin component](../loader/builtin/jpeg.
 | [tests/loader/builtin/jpeg/0051_bj_gray_none16_float_numeric.t](../../tests/loader/builtin/jpeg/0051_bj_gray_none16_float_numeric.t) | Verify gray none16 float against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/jpeg/0052_bj_ink8_allocation.t](../../tests/loader/builtin/jpeg/0052_bj_ink8_allocation.t) | Verify 8-bit CMYK source and fallback allocation cleanup. | Robustness/liveness | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/jpeg/0053_bj_ink16_allocation.t](../../tests/loader/builtin/jpeg/0053_bj_ink16_allocation.t) | Verify 16-bit CMYK source and fallback allocation cleanup. | Robustness/liveness | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0054_jp_dnl_shrink.t](../../tests/loader/builtin/jpeg/0054_jp_dnl_shrink.t) | DNL replaces an overestimated SOF height. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0055_jp_dnl_grow_float.t](../../tests/loader/builtin/jpeg/0055_jp_dnl_grow_float.t) | DNL growth preserves explicit float output. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0056_jp_dnl_grow_12.t](../../tests/loader/builtin/jpeg/0056_jp_dnl_grow_12.t) | DNL growth preserves twelve-bit samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0057_jp_dnl_grow_prog.t](../../tests/loader/builtin/jpeg/0057_jp_dnl_grow_prog.t) | DNL growth continues progressive scans. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0058_jp_dnl_grow_lossless.t](../../tests/loader/builtin/jpeg/0058_jp_dnl_grow_lossless.t) | DNL growth preserves lossless predictions. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0059_jp_dnl_restart.t](../../tests/loader/builtin/jpeg/0059_jp_dnl_restart.t) | DNL redefinition preserves restart state. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0060_jp_dnl_stuffed.t](../../tests/loader/builtin/jpeg/0060_jp_dnl_stuffed.t) | DNL redefinition skips stuffed entropy. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0061_jp_dnl_420.t](../../tests/loader/builtin/jpeg/0061_jp_dnl_420.t) | DNL redefinition preserves subsampled pixels. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0062_jp_dnl_partial.t](../../tests/loader/builtin/jpeg/0062_jp_dnl_partial.t) | DNL adjusts height within the final MCU row. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0063_jp_dnl_missing_row.t](../../tests/loader/builtin/jpeg/0063_jp_dnl_missing_row.t) | Reject known-height DNL with missing MCU rows. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0064_jp_dnl_extra_row.t](../../tests/loader/builtin/jpeg/0064_jp_dnl_extra_row.t) | Reject known-height DNL with excess MCU rows. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0065_jp_dnl_duplicate.t](../../tests/loader/builtin/jpeg/0065_jp_dnl_duplicate.t) | Reject repeated known-height DNL. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0066_jp_arith_gray_byte.t](../../tests/loader/builtin/jpeg/0066_jp_arith_gray_byte.t) | Preserve numeric arith gray byte samples. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0067_jp_arith_rgb_float.t](../../tests/loader/builtin/jpeg/0067_jp_arith_rgb_float.t) | Preserve numeric arith rgb float samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0068_jp_arith_seq_ac.t](../../tests/loader/builtin/jpeg/0068_jp_arith_seq_ac.t) | Preserve numeric arith seq ac samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0069_jp_arith_prog_ac.t](../../tests/loader/builtin/jpeg/0069_jp_arith_prog_ac.t) | Preserve numeric arith prog ac samples. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0070_jp_arith_custom_dac.t](../../tests/loader/builtin/jpeg/0070_jp_arith_custom_dac.t) | Preserve numeric arith custom dac samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0071_jp_arith_12_seq.t](../../tests/loader/builtin/jpeg/0071_jp_arith_12_seq.t) | Preserve numeric arith 12 seq samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0072_jp_arith_12_prog.t](../../tests/loader/builtin/jpeg/0072_jp_arith_12_prog.t) | Preserve numeric arith 12 prog samples. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0073_jp_arith_loss_p1_8_0.t](../../tests/loader/builtin/jpeg/0073_jp_arith_loss_p1_8_0.t) | Preserve numeric arith loss p1 8 0 samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0074_jp_arith_loss_p2_8_0.t](../../tests/loader/builtin/jpeg/0074_jp_arith_loss_p2_8_0.t) | Preserve numeric arith loss p2 8 0 samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0075_jp_arith_loss_p3_8_0.t](../../tests/loader/builtin/jpeg/0075_jp_arith_loss_p3_8_0.t) | Preserve numeric arith loss p3 8 0 samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0076_jp_arith_loss_p4_8_0.t](../../tests/loader/builtin/jpeg/0076_jp_arith_loss_p4_8_0.t) | Preserve numeric arith loss p4 8 0 samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0077_jp_arith_loss_p4_12_0.t](../../tests/loader/builtin/jpeg/0077_jp_arith_loss_p4_12_0.t) | Preserve numeric arith loss p4 12 0 samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0078_jp_arith_loss_p4_16_0.t](../../tests/loader/builtin/jpeg/0078_jp_arith_loss_p4_16_0.t) | Preserve numeric arith loss p4 16 0 samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0079_jp_arith_loss_p4_16_3.t](../../tests/loader/builtin/jpeg/0079_jp_arith_loss_p4_16_3.t) | Preserve numeric arith loss p4 16 3 samples. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0080_jp_arith_loss_p4_2_0.t](../../tests/loader/builtin/jpeg/0080_jp_arith_loss_p4_2_0.t) | Preserve numeric arith loss p4 2 0 samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0081_jp_arith_loss_p5_8_0.t](../../tests/loader/builtin/jpeg/0081_jp_arith_loss_p5_8_0.t) | Preserve numeric arith loss p5 8 0 samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0082_jp_arith_loss_p6_8_0.t](../../tests/loader/builtin/jpeg/0082_jp_arith_loss_p6_8_0.t) | Preserve numeric arith loss p6 8 0 samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0083_jp_arith_loss_p7_8_0.t](../../tests/loader/builtin/jpeg/0083_jp_arith_loss_p7_8_0.t) | Preserve numeric arith loss p7 8 0 samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0084_jp_hier_huff_seq.t](../../tests/loader/builtin/jpeg/0084_jp_hier_huff_seq.t) | Preserve numeric hier huff seq samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0085_jp_hier_huff_prog.t](../../tests/loader/builtin/jpeg/0085_jp_hier_huff_prog.t) | Preserve numeric hier huff prog samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0086_jp_hier_loss_exp0.t](../../tests/loader/builtin/jpeg/0086_jp_hier_loss_exp0.t) | Preserve numeric hier loss exp0 samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0087_jp_hier_loss_exp1.t](../../tests/loader/builtin/jpeg/0087_jp_hier_loss_exp1.t) | Preserve numeric hier loss exp1 samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0088_jp_hier_loss_exp16.t](../../tests/loader/builtin/jpeg/0088_jp_hier_loss_exp16.t) | Preserve numeric hier loss exp16 samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0089_jp_hier_loss_exp17.t](../../tests/loader/builtin/jpeg/0089_jp_hier_loss_exp17.t) | Preserve numeric hier loss exp17 samples. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0090_jp_hier_arith_seq.t](../../tests/loader/builtin/jpeg/0090_jp_hier_arith_seq.t) | Preserve numeric hier arith seq samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0091_jp_hier_arith_prog.t](../../tests/loader/builtin/jpeg/0091_jp_hier_arith_prog.t) | Preserve numeric hier arith prog samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0092_jp_hier_arith_loss.t](../../tests/loader/builtin/jpeg/0092_jp_hier_arith_loss.t) | Preserve numeric hier arith loss samples. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0093_jp_truncated_eoi_reject.t](../../tests/loader/builtin/jpeg/0093_jp_truncated_eoi_reject.t) | Reject truncated eoi. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0094_jp_missing_eoi_reject.t](../../tests/loader/builtin/jpeg/0094_jp_missing_eoi_reject.t) | Reject missing eoi. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0095_jp_dac_odd_length_reject.t](../../tests/loader/builtin/jpeg/0095_jp_dac_odd_length_reject.t) | Reject dac odd length. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0096_jp_dac_class_reject.t](../../tests/loader/builtin/jpeg/0096_jp_dac_class_reject.t) | Reject dac class. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0097_jp_dac_destination_reject.t](../../tests/loader/builtin/jpeg/0097_jp_dac_destination_reject.t) | Reject dac destination. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0098_jp_dac_bounds_reject.t](../../tests/loader/builtin/jpeg/0098_jp_dac_bounds_reject.t) | Reject dac bounds. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0099_jp_dac_zero_k_reject.t](../../tests/loader/builtin/jpeg/0099_jp_dac_zero_k_reject.t) | Reject dac zero k. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0100_jp_dac_large_k_reject.t](../../tests/loader/builtin/jpeg/0100_jp_dac_large_k_reject.t) | Reject dac large k. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0101_jp_missing_dqt_reject.t](../../tests/loader/builtin/jpeg/0101_jp_missing_dqt_reject.t) | Reject missing dqt. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0102_jp_duplicate_sof_reject.t](../../tests/loader/builtin/jpeg/0102_jp_duplicate_sof_reject.t) | Reject duplicate sof. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0103_jp_zero_sampling_reject.t](../../tests/loader/builtin/jpeg/0103_jp_zero_sampling_reject.t) | Reject zero sampling. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0104_jp_unknown_scan_component_reject.t](../../tests/loader/builtin/jpeg/0104_jp_unknown_scan_component_reject.t) | Reject unknown scan component. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0105_jp_duplicate_scan_component_reject.t](../../tests/loader/builtin/jpeg/0105_jp_duplicate_scan_component_reject.t) | Reject duplicate scan component. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0106_jp_interleaved_ac_scan_reject.t](../../tests/loader/builtin/jpeg/0106_jp_interleaved_ac_scan_reject.t) | Reject interleaved ac scan. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0107_jp_dc_spectral_end_reject.t](../../tests/loader/builtin/jpeg/0107_jp_dc_spectral_end_reject.t) | Reject dc spectral end. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0108_jp_refinement_gap_reject.t](../../tests/loader/builtin/jpeg/0108_jp_refinement_gap_reject.t) | Reject refinement gap. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0109_jp_refine_before_first_reject.t](../../tests/loader/builtin/jpeg/0109_jp_refine_before_first_reject.t) | Reject refine before first. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0110_jp_excessive_approximation_reject.t](../../tests/loader/builtin/jpeg/0110_jp_excessive_approximation_reject.t) | Reject excessive approximation. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0111_jp_restart_length_reject.t](../../tests/loader/builtin/jpeg/0111_jp_restart_length_reject.t) | Reject restart length. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0112_jp_restart_sequence_reject.t](../../tests/loader/builtin/jpeg/0112_jp_restart_sequence_reject.t) | Reject restart sequence. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0113_jp_missing_restart_reject.t](../../tests/loader/builtin/jpeg/0113_jp_missing_restart_reject.t) | Reject missing restart. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0114_jp_entropy_eof_reject.t](../../tests/loader/builtin/jpeg/0114_jp_entropy_eof_reject.t) | Reject entropy eof. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0115_jp_hierarchy_missing_dhp_reject.t](../../tests/loader/builtin/jpeg/0115_jp_hierarchy_missing_dhp_reject.t) | Reject hierarchy missing dhp. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0116_jp_duplicate_dhp_reject.t](../../tests/loader/builtin/jpeg/0116_jp_duplicate_dhp_reject.t) | Reject duplicate dhp. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0117_jp_hierarchy_precision_reject.t](../../tests/loader/builtin/jpeg/0117_jp_hierarchy_precision_reject.t) | Reject hierarchy precision. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0118_jp_incomplete_size_reject.t](../../tests/loader/builtin/jpeg/0118_jp_incomplete_size_reject.t) | Reject incomplete size. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0119_jp_expansion_factor_reject.t](../../tests/loader/builtin/jpeg/0119_jp_expansion_factor_reject.t) | Reject expansion factor. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0120_jp_duplicate_expansion_reject.t](../../tests/loader/builtin/jpeg/0120_jp_duplicate_expansion_reject.t) | Reject duplicate expansion. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0121_jp_expansion_before_scan_reject.t](../../tests/loader/builtin/jpeg/0121_jp_expansion_before_scan_reject.t) | Reject expansion before scan. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0122_jp_differential_first_reject.t](../../tests/loader/builtin/jpeg/0122_jp_differential_first_reject.t) | Reject differential first. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0123_jp_unknown_frame_component_reject.t](../../tests/loader/builtin/jpeg/0123_jp_unknown_frame_component_reject.t) | Reject unknown frame component. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0124_jp_differential_size_reject.t](../../tests/loader/builtin/jpeg/0124_jp_differential_size_reject.t) | Reject differential size. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0125_jp_trailing_expansion_reject.t](../../tests/loader/builtin/jpeg/0125_jp_trailing_expansion_reject.t) | Reject trailing expansion. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0126_jp_lossless_zero_predictor_reject.t](../../tests/loader/builtin/jpeg/0126_jp_lossless_zero_predictor_reject.t) | Reject lossless zero predictor. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0127_jp_lossless_point_transform_reject.t](../../tests/loader/builtin/jpeg/0127_jp_lossless_point_transform_reject.t) | Reject lossless point transform. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0128_jp_lossless_ac_selector_reject.t](../../tests/loader/builtin/jpeg/0128_jp_lossless_ac_selector_reject.t) | Reject lossless ac selector. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0129_jp_lossless_predictor_range_reject.t](../../tests/loader/builtin/jpeg/0129_jp_lossless_predictor_range_reject.t) | Reject lossless predictor range. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0130_jp_truncated_dac_reject.t](../../tests/loader/builtin/jpeg/0130_jp_truncated_dac_reject.t) | Reject truncated dac. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0131_jp_zero_quantizer_reject.t](../../tests/loader/builtin/jpeg/0131_jp_zero_quantizer_reject.t) | Reject zero quantizer. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0132_jp_truncated_dqt_reject.t](../../tests/loader/builtin/jpeg/0132_jp_truncated_dqt_reject.t) | Reject truncated dqt. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0133_jp_sequential_spectral_end_reject.t](../../tests/loader/builtin/jpeg/0133_jp_sequential_spectral_end_reject.t) | Reject sequential spectral end. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0134_jp_unknown_trailing_marker_reject.t](../../tests/loader/builtin/jpeg/0134_jp_unknown_trailing_marker_reject.t) | Reject unknown trailing marker. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/jpeg/0135_jp_arith_plain_cms.t](../../tests/loader/builtin/jpeg/0135_jp_arith_plain_cms.t) | Verify arith plain builtin against analytic JPEG samples. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0136_jp_arith_adobe_cms.t](../../tests/loader/builtin/jpeg/0136_jp_arith_adobe_cms.t) | Verify arith adobe builtin against analytic JPEG samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0137_jp_arith_ycck_cms.t](../../tests/loader/builtin/jpeg/0137_jp_arith_ycck_cms.t) | Verify arith ycck builtin against analytic JPEG samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0138_jp_hier_plain_cms.t](../../tests/loader/builtin/jpeg/0138_jp_hier_plain_cms.t) | Verify hier plain builtin against analytic JPEG samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0139_jp_hier_adobe_cms.t](../../tests/loader/builtin/jpeg/0139_jp_hier_adobe_cms.t) | Verify hier adobe builtin against analytic JPEG samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0140_jp_hier_ycck_cms.t](../../tests/loader/builtin/jpeg/0140_jp_hier_ycck_cms.t) | Verify hier ycck builtin against analytic JPEG samples. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0141_jp_arith_prog_ac_allocation.t](../../tests/loader/builtin/jpeg/0141_jp_arith_prog_ac_allocation.t) | Verify arith_prog_ac allocation failure cleanup. | Robustness/liveness | Inventory only |
+| [tests/loader/builtin/jpeg/0142_jp_arith_loss_p4_16_0_allocation.t](../../tests/loader/builtin/jpeg/0142_jp_arith_loss_p4_16_0_allocation.t) | Verify arith_loss_p4_16_0 allocation failure cleanup. | Robustness/liveness | Inventory only |
+| [tests/loader/builtin/jpeg/0143_jp_hier_loss_exp17_allocation.t](../../tests/loader/builtin/jpeg/0143_jp_hier_loss_exp17_allocation.t) | Verify hier_loss_exp17 allocation failure cleanup. | Robustness/liveness | Inventory only |
+| [tests/loader/builtin/jpeg/0144_jp_hier_loss16_wrap.t](../../tests/loader/builtin/jpeg/0144_jp_hier_loss16_wrap.t) | Preserve numeric hier loss16 wrap samples. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0145_jp_hier_rgb_groups.t](../../tests/loader/builtin/jpeg/0145_jp_hier_rgb_groups.t) | Preserve numeric hier rgb groups samples. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0146_jp_arith_rgb_loss8.t](../../tests/loader/builtin/jpeg/0146_jp_arith_rgb_loss8.t) | Preserve numeric arith rgb loss8 samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0147_jp_arith_rgb_loss16.t](../../tests/loader/builtin/jpeg/0147_jp_arith_rgb_loss16.t) | Preserve numeric arith rgb loss16 samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0148_jp_arith_default_dac.t](../../tests/loader/builtin/jpeg/0148_jp_arith_default_dac.t) | Preserve numeric arith default dac samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0149_jp_arith_prog_dnl_zero.t](../../tests/loader/builtin/jpeg/0149_jp_arith_prog_dnl_zero.t) | Preserve numeric arith prog dnl zero samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0150_jp_arith_prog_dnl_redefine.t](../../tests/loader/builtin/jpeg/0150_jp_arith_prog_dnl_redefine.t) | Preserve numeric arith prog dnl redefine samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0151_jp_arith_marker_fill.t](../../tests/loader/builtin/jpeg/0151_jp_arith_marker_fill.t) | Preserve numeric arith marker fill samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0152_jp_arith_loss_dnl_zero.t](../../tests/loader/builtin/jpeg/0152_jp_arith_loss_dnl_zero.t) | Preserve numeric arith loss dnl zero samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0153_jp_arith_loss_dnl_redefine.t](../../tests/loader/builtin/jpeg/0153_jp_arith_loss_dnl_redefine.t) | Preserve numeric arith loss dnl redefine samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0154_jp_hier_loss_dnl_zero.t](../../tests/loader/builtin/jpeg/0154_jp_hier_loss_dnl_zero.t) | Preserve numeric hier loss dnl zero samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0155_jp_hier_arith_dnl_redefine.t](../../tests/loader/builtin/jpeg/0155_jp_hier_arith_dnl_redefine.t) | Preserve numeric hier arith dnl redefine samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0156_jp_hier_negative_clip.t](../../tests/loader/builtin/jpeg/0156_jp_hier_negative_clip.t) | Verify hier negative clip with independent samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0157_jp_hier_positive_clip.t](../../tests/loader/builtin/jpeg/0157_jp_hier_positive_clip.t) | Verify hier positive clip with independent samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0158_jp_hier_signed_reference.t](../../tests/loader/builtin/jpeg/0158_jp_hier_signed_reference.t) | Verify hier signed reference with independent samples. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0159_jp_hier_quant_redefinition.t](../../tests/loader/builtin/jpeg/0159_jp_hier_quant_redefinition.t) | Verify hier quant redefinition with independent samples. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0160_jp_arith_wide_seq.t](../../tests/loader/builtin/jpeg/0160_jp_arith_wide_seq.t) | Verify arith wide seq with independent samples. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0161_jp_arith_wide_prog.t](../../tests/loader/builtin/jpeg/0161_jp_arith_wide_prog.t) | Verify arith wide prog with independent samples. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0162_jp_arith_420_digest.t](../../tests/loader/builtin/jpeg/0162_jp_arith_420_digest.t) | Verify arithmetic 420 equivalent pixels with independent samples. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/jpeg/0163_jp_hier_arith_multiblock_seq.t](../../tests/loader/builtin/jpeg/0163_jp_hier_arith_multiblock_seq.t) | Verify hier arith multiblock seq. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/jpeg/0164_jp_hier_arith_multiblock_prog.t](../../tests/loader/builtin/jpeg/0164_jp_hier_arith_multiblock_prog.t) | Verify hier arith multiblock prog. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0165_jp_hier_short_entropy_reject.t](../../tests/loader/builtin/jpeg/0165_jp_hier_short_entropy_reject.t) | Verify hier short entropy reject. | Acceptance/rejection | Inventory only |
 
 <!-- test-plan-end -->
 

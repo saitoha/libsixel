@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Reject DNL that contradicts a known SOF height. */
+/* Use DNL to redefine a known SOF height. */
 #include "jpeg_dnl_test_common.h"
 
 int

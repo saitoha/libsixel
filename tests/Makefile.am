@@ -1241,7 +1241,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0220_JPEG_DNL_RESTART_SHORT_REJECT \
     -DBUILD_TEST_0221_JPEG_DNL_EXTENSION_NUMERIC \
     -DBUILD_TEST_0222_JPEG_DNL_KNOWN_NUMERIC \
-    -DBUILD_TEST_0223_JPEG_DNL_MISMATCH_REJECT \
+    -DBUILD_TEST_0223_JPEG_DNL_REDEFINE_NUMERIC \
     -DBUILD_TEST_0224_JPEG_DNL_AMPLITUDE_REJECT \
     -DBUILD_TEST_0225_JPEG_DNL_FILL_NUMERIC \
     -DBUILD_TEST_0226_JPEG_DNL_EOI_REJECT \
@@ -1261,6 +1261,119 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0240_TGA_ORIGIN_GRAY_NUMERIC \
     -DBUILD_TEST_0241_TGA_ORIGIN_RGB16_NUMERIC \
     -DBUILD_TGA_ORIGIN_TEST_COMMON \
+    -DBUILD_TEST_0054_JP_DNL_SHRINK \
+    -DBUILD_TEST_0055_JP_DNL_GROW_FLOAT \
+    -DBUILD_TEST_0056_JP_DNL_GROW_12 \
+    -DBUILD_TEST_0057_JP_DNL_GROW_PROG \
+    -DBUILD_TEST_0058_JP_DNL_GROW_LOSSLESS \
+    -DBUILD_TEST_0059_JP_DNL_RESTART \
+    -DBUILD_TEST_0060_JP_DNL_STUFFED \
+    -DBUILD_TEST_0061_JP_DNL_420 \
+    -DBUILD_TEST_0062_JP_DNL_PARTIAL \
+    -DBUILD_TEST_0063_JP_DNL_MISSING_ROW \
+    -DBUILD_TEST_0064_JP_DNL_EXTRA_ROW \
+    -DBUILD_TEST_0065_JP_DNL_DUPLICATE \
+    -DBUILD_TEST_0066_JP_ARITH_GRAY_BYTE \
+    -DBUILD_TEST_0067_JP_ARITH_RGB_FLOAT \
+    -DBUILD_TEST_0068_JP_ARITH_SEQ_AC \
+    -DBUILD_TEST_0069_JP_ARITH_PROG_AC \
+    -DBUILD_TEST_0070_JP_ARITH_CUSTOM_DAC \
+    -DBUILD_TEST_0071_JP_ARITH_12_SEQ \
+    -DBUILD_TEST_0072_JP_ARITH_12_PROG \
+    -DBUILD_TEST_0073_JP_ARITH_LOSS_P1_8_0 \
+    -DBUILD_TEST_0074_JP_ARITH_LOSS_P2_8_0 \
+    -DBUILD_TEST_0075_JP_ARITH_LOSS_P3_8_0 \
+    -DBUILD_TEST_0076_JP_ARITH_LOSS_P4_8_0 \
+    -DBUILD_TEST_0077_JP_ARITH_LOSS_P4_12_0 \
+    -DBUILD_TEST_0078_JP_ARITH_LOSS_P4_16_0 \
+    -DBUILD_TEST_0079_JP_ARITH_LOSS_P4_16_3 \
+    -DBUILD_TEST_0080_JP_ARITH_LOSS_P4_2_0 \
+    -DBUILD_TEST_0081_JP_ARITH_LOSS_P5_8_0 \
+    -DBUILD_TEST_0082_JP_ARITH_LOSS_P6_8_0 \
+    -DBUILD_TEST_0083_JP_ARITH_LOSS_P7_8_0 \
+    -DBUILD_TEST_0084_JP_HIER_HUFF_SEQ \
+    -DBUILD_TEST_0085_JP_HIER_HUFF_PROG \
+    -DBUILD_TEST_0086_JP_HIER_LOSS_EXP0 \
+    -DBUILD_TEST_0087_JP_HIER_LOSS_EXP1 \
+    -DBUILD_TEST_0088_JP_HIER_LOSS_EXP16 \
+    -DBUILD_TEST_0089_JP_HIER_LOSS_EXP17 \
+    -DBUILD_TEST_0090_JP_HIER_ARITH_SEQ \
+    -DBUILD_TEST_0091_JP_HIER_ARITH_PROG \
+    -DBUILD_TEST_0092_JP_HIER_ARITH_LOSS \
+    -DBUILD_TEST_0093_JP_TRUNCATED_EOI_REJECT \
+    -DBUILD_TEST_0094_JP_MISSING_EOI_REJECT \
+    -DBUILD_TEST_0095_JP_DAC_ODD_LENGTH_REJECT \
+    -DBUILD_TEST_0096_JP_DAC_CLASS_REJECT \
+    -DBUILD_TEST_0097_JP_DAC_DESTINATION_REJECT \
+    -DBUILD_TEST_0098_JP_DAC_BOUNDS_REJECT \
+    -DBUILD_TEST_0099_JP_DAC_ZERO_K_REJECT \
+    -DBUILD_TEST_0100_JP_DAC_LARGE_K_REJECT \
+    -DBUILD_TEST_0101_JP_MISSING_DQT_REJECT \
+    -DBUILD_TEST_0102_JP_DUPLICATE_SOF_REJECT \
+    -DBUILD_TEST_0103_JP_ZERO_SAMPLING_REJECT \
+    -DBUILD_TEST_0104_JP_UNKNOWN_SCAN_COMPONENT_REJECT \
+    -DBUILD_TEST_0105_JP_DUPLICATE_SCAN_COMPONENT_REJECT \
+    -DBUILD_TEST_0106_JP_INTERLEAVED_AC_SCAN_REJECT \
+    -DBUILD_TEST_0107_JP_DC_SPECTRAL_END_REJECT \
+    -DBUILD_TEST_0108_JP_REFINEMENT_GAP_REJECT \
+    -DBUILD_TEST_0109_JP_REFINE_BEFORE_FIRST_REJECT \
+    -DBUILD_TEST_0110_JP_EXCESSIVE_APPROXIMATION_REJECT \
+    -DBUILD_TEST_0111_JP_RESTART_LENGTH_REJECT \
+    -DBUILD_TEST_0112_JP_RESTART_SEQUENCE_REJECT \
+    -DBUILD_TEST_0113_JP_MISSING_RESTART_REJECT \
+    -DBUILD_TEST_0114_JP_ENTROPY_EOF_REJECT \
+    -DBUILD_TEST_0115_JP_HIERARCHY_MISSING_DHP_REJECT \
+    -DBUILD_TEST_0116_JP_DUPLICATE_DHP_REJECT \
+    -DBUILD_TEST_0117_JP_HIERARCHY_PRECISION_REJECT \
+    -DBUILD_TEST_0118_JP_INCOMPLETE_SIZE_REJECT \
+    -DBUILD_TEST_0119_JP_EXPANSION_FACTOR_REJECT \
+    -DBUILD_TEST_0120_JP_DUPLICATE_EXPANSION_REJECT \
+    -DBUILD_TEST_0121_JP_EXPANSION_BEFORE_SCAN_REJECT \
+    -DBUILD_TEST_0122_JP_DIFFERENTIAL_FIRST_REJECT \
+    -DBUILD_TEST_0123_JP_UNKNOWN_FRAME_COMPONENT_REJECT \
+    -DBUILD_TEST_0124_JP_DIFFERENTIAL_SIZE_REJECT \
+    -DBUILD_TEST_0125_JP_TRAILING_EXPANSION_REJECT \
+    -DBUILD_TEST_0126_JP_LOSSLESS_ZERO_PREDICTOR_REJECT \
+    -DBUILD_TEST_0127_JP_LOSSLESS_POINT_TRANSFORM_REJECT \
+    -DBUILD_TEST_0128_JP_LOSSLESS_AC_SELECTOR_REJECT \
+    -DBUILD_TEST_0129_JP_LOSSLESS_PREDICTOR_RANGE_REJECT \
+    -DBUILD_TEST_0130_JP_TRUNCATED_DAC_REJECT \
+    -DBUILD_TEST_0131_JP_ZERO_QUANTIZER_REJECT \
+    -DBUILD_TEST_0132_JP_TRUNCATED_DQT_REJECT \
+    -DBUILD_TEST_0133_JP_SEQUENTIAL_SPECTRAL_END_REJECT \
+    -DBUILD_TEST_0134_JP_UNKNOWN_TRAILING_MARKER_REJECT \
+    -DBUILD_TEST_0135_JP_ARITH_PLAIN_CMS \
+    -DBUILD_TEST_0136_JP_ARITH_ADOBE_CMS \
+    -DBUILD_TEST_0137_JP_ARITH_YCCK_CMS \
+    -DBUILD_TEST_0138_JP_HIER_PLAIN_CMS \
+    -DBUILD_TEST_0139_JP_HIER_ADOBE_CMS \
+    -DBUILD_TEST_0140_JP_HIER_YCCK_CMS \
+    -DBUILD_TEST_0141_JP_ARITH_PROG_AC_ALLOCATION \
+    -DBUILD_TEST_0142_JP_ARITH_LOSS_P4_16_0_ALLOCATION \
+    -DBUILD_TEST_0143_JP_HIER_LOSS_EXP17_ALLOCATION \
+    -DBUILD_TEST_0144_JP_HIER_LOSS16_WRAP \
+    -DBUILD_TEST_0145_JP_HIER_RGB_GROUPS \
+    -DBUILD_TEST_0146_JP_ARITH_RGB_LOSS8 \
+    -DBUILD_TEST_0147_JP_ARITH_RGB_LOSS16 \
+    -DBUILD_TEST_0148_JP_ARITH_DEFAULT_DAC \
+    -DBUILD_TEST_0149_JP_ARITH_PROG_DNL_ZERO \
+    -DBUILD_TEST_0150_JP_ARITH_PROG_DNL_REDEFINE \
+    -DBUILD_TEST_0151_JP_ARITH_MARKER_FILL \
+    -DBUILD_TEST_0152_JP_ARITH_LOSS_DNL_ZERO \
+    -DBUILD_TEST_0153_JP_ARITH_LOSS_DNL_REDEFINE \
+    -DBUILD_TEST_0154_JP_HIER_LOSS_DNL_ZERO \
+    -DBUILD_TEST_0155_JP_HIER_ARITH_DNL_REDEFINE \
+    -DBUILD_TEST_0156_JP_HIER_NEGATIVE_CLIP \
+    -DBUILD_TEST_0157_JP_HIER_POSITIVE_CLIP \
+    -DBUILD_TEST_0158_JP_HIER_SIGNED_REFERENCE \
+    -DBUILD_TEST_0159_JP_HIER_QUANT_REDEFINITION \
+    -DBUILD_TEST_0160_JP_ARITH_WIDE_SEQ \
+    -DBUILD_TEST_0161_JP_ARITH_WIDE_PROG \
+    -DBUILD_TEST_0162_JP_ARITH_420_DIGEST \
+    -DBUILD_TEST_0163_JP_HIER_ARITH_MULTIBLOCK_SEQ \
+    -DBUILD_TEST_0164_JP_HIER_ARITH_MULTIBLOCK_PROG \
+    -DBUILD_TEST_0165_JP_HIER_SHORT_ENTROPY_REJECT \
+    -DBUILD_JPEG_PROCESS_TEST_COMMON \
     -DBUILD_JPEG_DNL_TEST_COMMON \
     -DBUILD_JPEG_LOSSLESS_TEST_COMMON \
     -DBUILD_CG_EXPANDED_VALUES \
@@ -2369,7 +2482,7 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0220_jpeg_dnl_restart_short_reject.c \
     loader/builtin/0221_jpeg_dnl_extension_numeric.c \
     loader/builtin/0222_jpeg_dnl_known_numeric.c \
-    loader/builtin/0223_jpeg_dnl_mismatch_reject.c \
+    loader/builtin/0223_jpeg_dnl_redefine_numeric.c \
     loader/builtin/0224_jpeg_dnl_amplitude_reject.c \
     loader/builtin/0225_jpeg_dnl_fill_numeric.c \
     loader/builtin/0226_jpeg_dnl_eoi_reject.c \
@@ -2390,6 +2503,120 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0241_tga_origin_rgb16_numeric.c \
     loader/builtin/tga_origin_test_common.c \
     loader/builtin/tga_origin_test_common.h \
+    loader/builtin/jpeg/0054_jp_dnl_shrink.c \
+    loader/builtin/jpeg/0055_jp_dnl_grow_float.c \
+    loader/builtin/jpeg/0056_jp_dnl_grow_12.c \
+    loader/builtin/jpeg/0057_jp_dnl_grow_prog.c \
+    loader/builtin/jpeg/0058_jp_dnl_grow_lossless.c \
+    loader/builtin/jpeg/0059_jp_dnl_restart.c \
+    loader/builtin/jpeg/0060_jp_dnl_stuffed.c \
+    loader/builtin/jpeg/0061_jp_dnl_420.c \
+    loader/builtin/jpeg/0062_jp_dnl_partial.c \
+    loader/builtin/jpeg/0063_jp_dnl_missing_row.c \
+    loader/builtin/jpeg/0064_jp_dnl_extra_row.c \
+    loader/builtin/jpeg/0065_jp_dnl_duplicate.c \
+    loader/builtin/jpeg/0066_jp_arith_gray_byte.c \
+    loader/builtin/jpeg/0067_jp_arith_rgb_float.c \
+    loader/builtin/jpeg/0068_jp_arith_seq_ac.c \
+    loader/builtin/jpeg/0069_jp_arith_prog_ac.c \
+    loader/builtin/jpeg/0070_jp_arith_custom_dac.c \
+    loader/builtin/jpeg/0071_jp_arith_12_seq.c \
+    loader/builtin/jpeg/0072_jp_arith_12_prog.c \
+    loader/builtin/jpeg/0073_jp_arith_loss_p1_8_0.c \
+    loader/builtin/jpeg/0074_jp_arith_loss_p2_8_0.c \
+    loader/builtin/jpeg/0075_jp_arith_loss_p3_8_0.c \
+    loader/builtin/jpeg/0076_jp_arith_loss_p4_8_0.c \
+    loader/builtin/jpeg/0077_jp_arith_loss_p4_12_0.c \
+    loader/builtin/jpeg/0078_jp_arith_loss_p4_16_0.c \
+    loader/builtin/jpeg/0079_jp_arith_loss_p4_16_3.c \
+    loader/builtin/jpeg/0080_jp_arith_loss_p4_2_0.c \
+    loader/builtin/jpeg/0081_jp_arith_loss_p5_8_0.c \
+    loader/builtin/jpeg/0082_jp_arith_loss_p6_8_0.c \
+    loader/builtin/jpeg/0083_jp_arith_loss_p7_8_0.c \
+    loader/builtin/jpeg/0084_jp_hier_huff_seq.c \
+    loader/builtin/jpeg/0085_jp_hier_huff_prog.c \
+    loader/builtin/jpeg/0086_jp_hier_loss_exp0.c \
+    loader/builtin/jpeg/0087_jp_hier_loss_exp1.c \
+    loader/builtin/jpeg/0088_jp_hier_loss_exp16.c \
+    loader/builtin/jpeg/0089_jp_hier_loss_exp17.c \
+    loader/builtin/jpeg/0090_jp_hier_arith_seq.c \
+    loader/builtin/jpeg/0091_jp_hier_arith_prog.c \
+    loader/builtin/jpeg/0092_jp_hier_arith_loss.c \
+    loader/builtin/jpeg/0093_jp_truncated_eoi_reject.c \
+    loader/builtin/jpeg/0094_jp_missing_eoi_reject.c \
+    loader/builtin/jpeg/0095_jp_dac_odd_length_reject.c \
+    loader/builtin/jpeg/0096_jp_dac_class_reject.c \
+    loader/builtin/jpeg/0097_jp_dac_destination_reject.c \
+    loader/builtin/jpeg/0098_jp_dac_bounds_reject.c \
+    loader/builtin/jpeg/0099_jp_dac_zero_k_reject.c \
+    loader/builtin/jpeg/0100_jp_dac_large_k_reject.c \
+    loader/builtin/jpeg/0101_jp_missing_dqt_reject.c \
+    loader/builtin/jpeg/0102_jp_duplicate_sof_reject.c \
+    loader/builtin/jpeg/0103_jp_zero_sampling_reject.c \
+    loader/builtin/jpeg/0104_jp_unknown_scan_component_reject.c \
+    loader/builtin/jpeg/0105_jp_duplicate_scan_component_reject.c \
+    loader/builtin/jpeg/0106_jp_interleaved_ac_scan_reject.c \
+    loader/builtin/jpeg/0107_jp_dc_spectral_end_reject.c \
+    loader/builtin/jpeg/0108_jp_refinement_gap_reject.c \
+    loader/builtin/jpeg/0109_jp_refine_before_first_reject.c \
+    loader/builtin/jpeg/0110_jp_excessive_approximation_reject.c \
+    loader/builtin/jpeg/0111_jp_restart_length_reject.c \
+    loader/builtin/jpeg/0112_jp_restart_sequence_reject.c \
+    loader/builtin/jpeg/0113_jp_missing_restart_reject.c \
+    loader/builtin/jpeg/0114_jp_entropy_eof_reject.c \
+    loader/builtin/jpeg/0115_jp_hierarchy_missing_dhp_reject.c \
+    loader/builtin/jpeg/0116_jp_duplicate_dhp_reject.c \
+    loader/builtin/jpeg/0117_jp_hierarchy_precision_reject.c \
+    loader/builtin/jpeg/0118_jp_incomplete_size_reject.c \
+    loader/builtin/jpeg/0119_jp_expansion_factor_reject.c \
+    loader/builtin/jpeg/0120_jp_duplicate_expansion_reject.c \
+    loader/builtin/jpeg/0121_jp_expansion_before_scan_reject.c \
+    loader/builtin/jpeg/0122_jp_differential_first_reject.c \
+    loader/builtin/jpeg/0123_jp_unknown_frame_component_reject.c \
+    loader/builtin/jpeg/0124_jp_differential_size_reject.c \
+    loader/builtin/jpeg/0125_jp_trailing_expansion_reject.c \
+    loader/builtin/jpeg/0126_jp_lossless_zero_predictor_reject.c \
+    loader/builtin/jpeg/0127_jp_lossless_point_transform_reject.c \
+    loader/builtin/jpeg/0128_jp_lossless_ac_selector_reject.c \
+    loader/builtin/jpeg/0129_jp_lossless_predictor_range_reject.c \
+    loader/builtin/jpeg/0130_jp_truncated_dac_reject.c \
+    loader/builtin/jpeg/0131_jp_zero_quantizer_reject.c \
+    loader/builtin/jpeg/0132_jp_truncated_dqt_reject.c \
+    loader/builtin/jpeg/0133_jp_sequential_spectral_end_reject.c \
+    loader/builtin/jpeg/0134_jp_unknown_trailing_marker_reject.c \
+    loader/builtin/jpeg/0135_jp_arith_plain_cms.c \
+    loader/builtin/jpeg/0136_jp_arith_adobe_cms.c \
+    loader/builtin/jpeg/0137_jp_arith_ycck_cms.c \
+    loader/builtin/jpeg/0138_jp_hier_plain_cms.c \
+    loader/builtin/jpeg/0139_jp_hier_adobe_cms.c \
+    loader/builtin/jpeg/0140_jp_hier_ycck_cms.c \
+    loader/builtin/jpeg/0141_jp_arith_prog_ac_allocation.c \
+    loader/builtin/jpeg/0142_jp_arith_loss_p4_16_0_allocation.c \
+    loader/builtin/jpeg/0143_jp_hier_loss_exp17_allocation.c \
+    loader/builtin/jpeg/0144_jp_hier_loss16_wrap.c \
+    loader/builtin/jpeg/0145_jp_hier_rgb_groups.c \
+    loader/builtin/jpeg/0146_jp_arith_rgb_loss8.c \
+    loader/builtin/jpeg/0147_jp_arith_rgb_loss16.c \
+    loader/builtin/jpeg/0148_jp_arith_default_dac.c \
+    loader/builtin/jpeg/0149_jp_arith_prog_dnl_zero.c \
+    loader/builtin/jpeg/0150_jp_arith_prog_dnl_redefine.c \
+    loader/builtin/jpeg/0151_jp_arith_marker_fill.c \
+    loader/builtin/jpeg/0152_jp_arith_loss_dnl_zero.c \
+    loader/builtin/jpeg/0153_jp_arith_loss_dnl_redefine.c \
+    loader/builtin/jpeg/0154_jp_hier_loss_dnl_zero.c \
+    loader/builtin/jpeg/0155_jp_hier_arith_dnl_redefine.c \
+    loader/builtin/jpeg/0156_jp_hier_negative_clip.c \
+    loader/builtin/jpeg/0157_jp_hier_positive_clip.c \
+    loader/builtin/jpeg/0158_jp_hier_signed_reference.c \
+    loader/builtin/jpeg/0159_jp_hier_quant_redefinition.c \
+    loader/builtin/jpeg/0160_jp_arith_wide_seq.c \
+    loader/builtin/jpeg/0161_jp_arith_wide_prog.c \
+    loader/builtin/jpeg/0162_jp_arith_420_digest.c \
+    loader/builtin/jpeg/0163_jp_hier_arith_multiblock_seq.c \
+    loader/builtin/jpeg/0164_jp_hier_arith_multiblock_prog.c \
+    loader/builtin/jpeg/0165_jp_hier_short_entropy_reject.c \
+    loader/builtin/jpeg_process_test_common.c \
+    loader/builtin/jpeg_process_test_common.h \
     loader/builtin/jpeg_dnl_test_common.c \
     loader/builtin/jpeg_dnl_test_common.h \
     loader/builtin/jpeg_lossless_test_common.c \

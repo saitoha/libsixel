@@ -98,7 +98,7 @@ builtin_jpeg_ink_values(int fixture, int engine, int mode)
     };
     static char const *const suffix[] = {
         "", "", "-absent", "-rejected", "-failure", "-mismatch",
-        "", "-absent"
+        "", "-absent", "-arithmetic", "-hierarchical"
     };
     unsigned char fixture_bytes[8192];
     size_t size;
@@ -112,7 +112,7 @@ builtin_jpeg_ink_values(int fixture, int engine, int mode)
     char path[128];
     int n;
 
-    if (mode != 0 && fixture != 1) { return 2; }
+    if (mode != 0 && mode != 8 && mode != 9 && fixture != 1) { return 2; }
     previous = sixel_cms_get_engine();
     sixel_cms_set_engine((sixel_cms_engine_t)engine);
     n = (int)sixel_cms_get_engine() == engine;
@@ -126,7 +126,7 @@ builtin_jpeg_ink_values(int fixture, int engine, int mode)
     }
     probe.fixture = fixture;
     probe.engine = engine;
-    probe.mode = mode;
+    probe.mode = mode >= 8 ? 0 : mode;
     probe.calls = 0;
     loader = NULL;
     chunk = NULL;

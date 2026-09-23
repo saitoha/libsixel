@@ -209,7 +209,8 @@ jd_expect(unsigned char const *data, size_t size, int variant)
         return 1;
     }
     width = variant == 7 ? 64 : variant == 4 || variant == 5 ? 3 : 9;
-    height = variant == 7 ? 64 : variant == 4 ? 3 : variant == 5 ? 1 : 9;
+    height = variant == 7 ? 64 : variant == 4 ? 3 : variant == 5 ? 1 :
+             variant == 33 ? 10 : 9;
     count = (size_t)width * (size_t)height * 3u;
     if (probe.callback_count != 1 || probe.width[0] != width ||
         probe.height[0] != height ||
@@ -259,24 +260,48 @@ jpeg_dnl_test(int variant)
     size_t sos;
     size_t dnl;
     size_t i;
+    int source;
 
+    /* Reuse analytic entropy, but vary the provisional SOF independently. */
+    source = variant;
+    if (variant >= 25) {
+        source = variant >= 26 && variant <= 32 ? variant - 25 : 0;
+    }
     size = 0u;
-    if (variant == 4) {
+    if (source == 4) {
         size = jpeg_lossless_build_gray_predictor(data, sizeof(data), 4, 2);
-    } else if (variant == 5) {
+    } else if (source == 5) {
         size = jpeg_lossless_build_rgb_restart(data, sizeof(data));
-    } else if (variant == 7) {
+    } else if (source == 7) {
         if (edge_read_fixture(
                 "/tests/data/inputs/formats/snake-jpeg-8bit-ycbcr-prog420.jpg",
                 data, sizeof(data), &size) != 0) {
             return 1;
         }
     } else {
-        size = jd_build(data, sizeof(data), variant);
+        size = jd_build(data, sizeof(data), source);
     }
     if (size == 0u ||
         jd_defer(data, &size, sizeof(data), &sof, &sos, &dnl) != 0) {
         return 1;
+    }
+    if (variant >= 25) {
+        data[sof + 6u] = variant == 25 ? 17u : 1u;
+        if (variant == 33) {
+            data[sof + 6u] = 9u;
+            data[dnl + 5u] = 10u;
+        } else if (variant == 34 || variant == 35) {
+            data[sof + 6u] = 9u;
+            data[dnl + 5u] = variant == 34 ? 17u : 1u;
+            return edge_expect_failure("DNL inconsistent MCU rows", data,
+                                       size);
+        } else if (variant == 36) {
+            data[sof + 6u] = 9u;
+            memmove(data + dnl + 6u, data + dnl, size - dnl);
+            return edge_expect_failure("duplicate known-height DNL", data,
+                                       size + 6u);
+        }
+        return jd_expect(data, size, variant == 33 ? 33 : source);
     }
     switch (variant) {
     case 8: /* Missing DNL, with a decoy still present inside COM. */
@@ -353,7 +378,7 @@ jpeg_dnl_test(int variant)
     default:
         break;
     }
-    if ((variant >= 8 && variant <= 17) || variant == 20 ||
+    if ((variant >= 8 && variant <= 17) ||
         variant == 21 || variant >= 23) {
         return edge_expect_failure("invalid JPEG DNL", data, size);
     }

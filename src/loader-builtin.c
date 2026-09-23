@@ -680,7 +680,8 @@ sixel_builtin_jpeg_marker_is_sof(unsigned int marker)
     return marker == 0xc0u ||
         marker == 0xc1u ||
         marker == 0xc2u ||
-        marker == 0xc3u;
+        marker == 0xc3u || marker == 0xc9u || marker == 0xcau ||
+        marker == 0xcbu;
 }
 
 static int
@@ -718,7 +719,8 @@ sixel_builtin_jpeg_can_use_8bit_api(unsigned char const *buffer, size_t size)
 
         marker = (unsigned int)*p;
         ++p;
-        if (marker == 0xd9u || marker == 0xdau) {
+        if (marker == 0xd9u || marker == 0xdau || marker == 0xdeu) {
+            /* Hierarchical reconstruction retains signed differences. */
             return 0;
         }
         if (marker == 0x01u || (marker >= 0xd0u && marker <= 0xd7u)) {
@@ -744,7 +746,7 @@ sixel_builtin_jpeg_can_use_8bit_api(unsigned char const *buffer, size_t size)
         }
 
         /*
-         * stb's 8-bit JPEG API rejects SOF3 lossless streams even when their
+         * The byte API rejects predictive and hierarchical streams even when
          * sample precision is 8. Keep those, and higher precision JPEGs, on the
          * float path so existing quality guarantees stay intact.
          */
@@ -752,7 +754,7 @@ sixel_builtin_jpeg_can_use_8bit_api(unsigned char const *buffer, size_t size)
             return 0;
         }
         precision = (int)p[0];
-        return precision == 8 && marker != 0xc3u;
+        return precision == 8 && marker != 0xc3u && marker != 0xcbu;
     }
 
     return 0;

@@ -1855,6 +1855,8 @@ def main():
     outputs.update(png_keycolor_oracle())
     from generate_png_arithmetic_tests import build as png_arithmetic_fixtures
     outputs.update(png_arithmetic_fixtures())
+    from generate_jpeg_process_tests import build as jpeg_process_tests
+    outputs.update(jpeg_process_tests())
     outputs.update(jpeg_sample_oracles())
     from generate_jpeg_cmyk_tests import build as jpeg_cmyk_tests
     outputs.update(jpeg_cmyk_tests(outputs['cmyk.icc'], outputs['cmyk.json']))

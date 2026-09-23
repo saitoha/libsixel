@@ -8,7 +8,7 @@ The builtin decoder entered libsixel with stb_image 1.33 in commit [`81375f0bd`]
 
 ## Marker container and coding processes
 
-A JPEG interchange stream begins with SOI and is a sequence of markers and entropy-coded scan data ending at EOI. SOF defines dimensions, components, precision, and sampling; DQT and DHT define quantization and Huffman tables; DRI establishes restart intervals; SOS begins a scan. APPn and COM segments carry conventions or metadata outside the coded sample process.
+A JPEG interchange stream begins with SOI and is a sequence of markers and entropy-coded scan data ending at EOI. SOF defines dimensions, components, precision, and sampling; DQT and DHT define quantization and Huffman tables; DAC supplies arithmetic conditioning; DRI establishes restart intervals; SOS begins a scan. APPn and COM segments carry conventions or metadata outside the coded sample process.
 
 | SOF marker | Process | Builtin precision |
 | --- | --- | --- |
@@ -16,18 +16,26 @@ A JPEG interchange stream begins with SOI and is a sequence of markers and entro
 | `SOF1` | Extended sequential DCT | 8 through 12 bits |
 | `SOF2` | Progressive DCT | 8 through 12 bits |
 | `SOF3` | Huffman lossless predictive | 2 through 16 bits |
+| `SOF9`, `SOF10` | Arithmetic sequential / progressive DCT | 8 or 12 bits |
+| `SOF11` | Arithmetic lossless predictive | 2 through 16 bits |
+| `SOF5`, `SOF6`, `SOF7` | Huffman differential sequential / progressive / lossless | DCT: 8 or 12; lossless: 2 through 16 bits |
+| `SOF13`, `SOF14`, `SOF15` | Arithmetic differential sequential / progressive / lossless | DCT: 8 or 12; lossless: 2 through 16 bits |
 
-Lossy modes level-shift samples, divide the image into component blocks, apply an 8×8 DCT and quantization, reorder coefficients, and Huffman-code DC differences and AC runs. Progressive scans deliver coefficient bands or refinements over several scans. Lossless JPEG does not use DCT or quantization: it predicts each sample from neighboring samples with predictor 1 through 7 and Huffman-codes the difference, with a point transform below the sample precision.
+Lossy modes level-shift samples, divide the image into component blocks, apply an 8×8 DCT and quantization, reorder coefficients, and entropy-code DC differences and AC runs with Huffman or arithmetic coding. Progressive scans deliver coefficient bands or refinements over several scans. Lossless JPEG does not use DCT or quantization: it predicts each sample from neighboring samples with predictor 1 through 7 and entropy-codes the difference, with a point transform below the sample precision.
 
 The decoder accepts 8- and 16-bit quantization tables, up to four Huffman tables of each class, restart markers, and multiple scans. Horizontal and vertical sampling factors are 1 through 4 and must divide the maximum factor so component upsampling has an integral ratio.
 
-A zero-height SOF is accepted when DNL supplies a nonzero height immediately after the first scan, as specified in T.81 B.2.2 and B.2.5. The builtin loader already buffers its input: only deferred-height frames perform a bounded marker prepass before component allocation. This covers SOF0 through SOF3 and retains the ordinary byte/float output selection.
+DNL may define a zero SOF height or redefine a nonzero height immediately after the first scan, as specified in T.81 B.2.5. The builtin loader buffers its input and resolves DNL before component allocation, retaining ordinary byte/float output selection. The prepass skips metadata, stuffed entropy bytes, restart markers, and marker fill bytes. Missing, misplaced, duplicate, truncated, or inconsistent DNL is rejected; bounded extension bytes are skipped. Huffman scans must contain exactly the required MCU rows and final one-bit padding. Arithmetic termination instead supplies zero bytes after a real marker; physical EOF is an error. Entropy coding does not detect every possible damaged marker-terminated stream. The private stb callback-input API does not implement the DNL prepass; all public builtin loader inputs use the buffered path.
 
-The prepass skips length-delimited metadata, stuffed entropy bytes, restart markers, and marker fill bytes. Decode then checks that the first scan contains exactly the MCU rows required by DNL, with only final one-bit padding remaining. Missing, misplaced, duplicate, truncated, or inconsistent DNL is rejected. DNL extension bytes are skipped within the segment bounds. For a nonzero SOF height, DNL must still repeat that height; redefining a known height remains unsupported. The private stb callback-input API does not implement this prepass; all public builtin loader inputs use the buffered path.
+Arithmetic decoding implements the T.81 Annex D decision engine and the DCT/progressive/lossless coding models. DAC defaults are DC `L=0,U=1` and AC `K=5`; explicit conditioning supports four destinations, `0 <= L <= U <= 15`, and `1 <= K <= 63`. Statistics reset at scan and restart boundaries. Progressive scans preserve coefficient bands and refinement order. Lossless prediction uses the effective precision after point transformation, independent component histories, and modulo addition rather than saturating prediction differences.
+
+Hierarchical images start with DHP, which describes final dimensions, precision, component identities, and sampling. Each component begins in a non-differential frame; subsequent differential frames reconstruct it from the retained reference plus signed differences. EXP selects horizontal, vertical, or both factor-two expansions. Interpolation truncates horizontally before vertically and replicates the far edge; odd final dimensions crop that expanded edge. Component groups can arrive in separate frames. The decoder enforces consistent entropy processes (with the standard baseline-Huffman exception), source precision, component sampling, and DCT/lossless transitions. Only the completed DHP image reaches color interpretation, CMS, and the frame callback.
+
+Differential DCT omits both DC prediction and the IDCT level shift. Its signed intermediate samples survive subsequent frames and expansion; the final lossy reconstruction is saturated to its source sample range before chroma resampling. Sixteen-bit lossless reconstruction retains all unsigned sample values and modulo-65536 addition. New arithmetic and hierarchical DCT paths use 32-bit dequantized coefficients and 64-bit IDCT accumulators, avoiding truncation through short coefficient storage.
 
 ## Component and color interpretation
 
-One-, three-, and four-component frames are accepted. One component becomes grayscale RGB. Three components are direct RGB when the identifiers are `R`, `G`, `B`, or when the applicable Adobe/JFIF signaling selects RGB; otherwise samples are interpreted as YCbCr and converted to RGB. Chroma-subsampled planes are upsampled before the matrix conversion.
+One-, three-, and four-component images are accepted. Hierarchical frames may also carry a two-component subset of the final image. One component becomes grayscale RGB. Three components are direct RGB when the identifiers are `R`, `G`, `B`, or when the applicable Adobe/JFIF signaling selects RGB; otherwise samples are interpreted as YCbCr and converted to RGB. Chroma-subsampled planes are upsampled before the matrix conversion.
 
 Four-component Adobe transform 0 is treated as complemented CMYK and transform 2 as YCCK. With a matching CMYK ICC, an absent Adobe marker means ordinary, non-complemented CMYK. Other Adobe transforms are not assigned CMYK semantics. The fourth component is never exposed as alpha; JPEG alpha is not supported.
 
@@ -47,18 +55,18 @@ Gray and CMYK profiles convert directly to extended linear sRGB through the sele
 | APP1 Exif | TIFF-formatted orientation is parsed when enabled. Other Exif tags and thumbnails are ignored. |
 | Other APPn and COM | Structurally skipped; XMP, IPTC, and comments are not returned as metadata. |
 
-Arithmetic-coded SOF processes, differential and hierarchical modes, JPEG-LS, JPEG 2000, and extension processes outside SOF0–SOF3 are rejected. The optional `libjpeg` loader is a separate component whose feature set depends on its linked library; this page describes `-Lbuiltin!` only.
+JPEG-LS, JPEG 2000, reserved SOF8, and extension processes outside the table above are unsupported. The optional `libjpeg` loader is a separate component whose feature set depends on its linked library; this page describes `-Lbuiltin!` only.
 
 ## Decode and precision pipeline
 
-The dispatcher recognizes SOI, scans markers to decide whether the byte API is safe, and extracts Exif/ICC only for the policies that need them. The fast byte path is used only for 8-bit SOF0/SOF1/SOF2 when there is no collected ICC and the encoder has not requested a float loader boundary. CMS being enabled alone does not promote an unprofiled image; disabling CMS also disables ICC collection. SOF3 always takes the float path even at eight bits.
+The dispatcher recognizes SOI, scans markers to decide whether the byte API is safe, and extracts Exif/ICC only for the policies that need them. The fast byte path is used only for 8-bit non-hierarchical SOF0/SOF1/SOF2/SOF9/SOF10 when there is no collected ICC and the encoder has not requested a float loader boundary. CMS being enabled alone does not promote an unprofiled image; disabling CMS also disables ICC collection. Predictive and hierarchical JPEG always take the float path, including eight-bit sources. Arithmetic support is in-tree and does not require or fall back to the optional libjpeg loader.
 
 The encoder implicitly requests float loader data when resizing is active, its working colorspace is not gamma, default quantization clusters in a non-gamma space, or another encoder precision policy requests float. That request is distinct from the loader suboption `prefer_8bit`, which does not override this JPEG adapter's byte/float decode or source-domain CMS boundary.
 
 | Decode condition | Initial frame |
 | --- | --- |
 | Eligible 8-bit DCT, no collected ICC, no float request | Gamma `RGB888`. |
-| SOF3, precision above 8, collected ICC, or encoder float request | Gamma `RGBFLOAT32` before any successful Gray/CMYK conversion. |
+| Predictive/hierarchical input, precision above 8, collected ICC, or encoder float request | Gamma `RGBFLOAT32` before any successful Gray/CMYK conversion. |
 | Applicable RGB ICC with CMS enabled | Profile conversion runs on RGB float samples; the existing gamma `RGBFLOAT32` boundary is retained. |
 | Applicable Gray or CMYK ICC with CMS enabled | Extended `LINEARRGBFLOAT32`, tagged linear, without an intermediate byte buffer. |
 
@@ -73,7 +81,7 @@ The byte and float paths share marker and entropy machinery but diverge before c
 | ID | Implementation boundary | State entering → state leaving | Correctness obligation |
 | --- | --- | --- | --- |
 | `JPG-01` | `sixel_builtin_load_jpeg_frame()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | SOI chunk plus encoder/CMS precision request → byte or float JPEG API | The fast byte API is legal only for eligible eight-bit DCT input when no downstream condition requests float. |
-| `JPG-02` | `stbi__decode_jpeg_header()`, `stbi__process_marker()`, and `stbi__process_scan_header()` in [`stb_image.h`](../../../src/stb_image.h) | Marker segments → frame/components, tables, restart state, and scan plan | SOF precision/process, DQT/DHT, Adobe/JFIF hints, and unsupported arithmetic coding must be classified before entropy output is trusted. |
+| `JPG-02` | `stbi__decode_jpeg_header()`, `stbi__process_marker()`, and `stbi__process_scan_header()` in [`stb_image.h`](../../../src/stb_image.h) | Marker segments → frame/components, tables, restart state, and scan plan | Validate SOF precision/process, DQT/DHT/DAC, DHP/EXP transitions, and Adobe/JFIF hints before trusting entropy output. |
 | `JPG-03` | `stbi__parse_entropy_coded_data()` or `stbi__parse_entropy_coded_data_lossless()` in [`stb_image.h`](../../../src/stb_image.h) | Entropy bits → DCT coefficients or predicted source samples | Sequential/progressive coefficient updates, restart handling, lossless predictors, and 9–16-bit sample ranges must remain distinct. |
 | `JPG-04` | `load_jpeg_image_float_high_precision()` and `stbi__YCbCr_to_RGB_row_f32()` in [`stb_image.h`](../../../src/stb_image.h) | Component planes → gamma RGB fallback and, when requested, preserved CMYK floats | Chroma upsampling and Gray/RGB/YCbCr/CMYK/YCCK interpretation must preserve the selected precision and Adobe transform semantics. |
 | `JPG-05` | `sixel_builtin_extract_jpeg_icc()`, `sixel_builtin_load_jpeg_frame()`, and `sixel_builtin_jpeg_cmyk_linear()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | APP2 fragments plus matching source-domain floats → profile-converted RGB | Assemble fragments in sequence, preserve source components and precision, and publish successful Gray/CMYK conversions as linear RGB. |
@@ -122,6 +130,7 @@ The rows below are pipeline landmarks rather than the complete suite. The [JPEG 
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
+| JPG-02 | Arithmetic JPEG succeeds through the explicitly selected builtin loader. | [tests/loader/builtin/0131_loader_builtin_arithmetic_jpeg.t](../../../tests/loader/builtin/0131_loader_builtin_arithmetic_jpeg.t) |
 | JPG-01 | Eligible eight-bit sequential RGB input takes the byte path and produces the fixed complete RGB buffer. | [tests/loader/builtin/1976_loader_builtin_jpeg_rgb8_sequential_digest.t](../../../tests/loader/builtin/1976_loader_builtin_jpeg_rgb8_sequential_digest.t) |
 | JPG-03 | A 16-bit lossless stream produces a gamma `RGBFLOAT32` frame with fixed numeric samples. | [tests/loader/builtin/1983_loader_builtin_jpeg_rgb16_lossless_numeric.t](../../../tests/loader/builtin/1983_loader_builtin_jpeg_rgb16_lossless_numeric.t) |
 | JPG-04 | Adobe YCCK component interpretation produces the fixed complete RGB buffer for the representative stream. | [tests/loader/builtin/1963_loader_builtin_jpeg_ycck8_rgb_digest.t](../../../tests/loader/builtin/1963_loader_builtin_jpeg_ycck8_rgb_digest.t) |
@@ -211,6 +220,30 @@ Builtin CMYK bounds are `max(abs(expected RGB)) * 64 / 16777216`, accounting for
 | JPGI-52 | 8-bit CMYK source-buffer allocation failures release all owned memory; successful optional-profile fallback retains a valid complete frame. | [tests/loader/builtin/jpeg/0052_bj_ink8_allocation.t](../../../tests/loader/builtin/jpeg/0052_bj_ink8_allocation.t) |
 | JPGI-53 | 16-bit CMYK source-buffer allocation failures release all owned memory; successful optional-profile fallback retains a valid complete frame. | [tests/loader/builtin/jpeg/0053_bj_ink16_allocation.t](../../../tests/loader/builtin/jpeg/0053_bj_ink16_allocation.t) |
 
+### Arithmetic, hierarchy, and DNL value tests
+
+The [process fixture manifest](../../../tests/data/color-numeric/jpeg-process-source.json) freezes the encoded bytes, hashes, original samples or DCT coefficients, and encoder provenance. [generate_jpeg_process_tests.py](../../../tools/generate_jpeg_process_tests.py) independently derives expectations, including 80-digit Decimal inverse DCT for AC cases; it does not read decoder output. The fixtures cover libjpeg-turbo 3.2.0 arithmetic DCT, independently constructed Huffman hierarchy, and arithmetic lossless streams from the recorded reference-encoder revision. Its point-transform fixture is encoded at effective precision before changing only the equivalent SOF/SOS parameters; this avoids relying on the external encoder's incorrect initial predictor for nonzero point transforms.
+
+Byte results are exact; normalized float results allow only four float epsilons relative to the expected value, with black exact. CMYK cases reuse the source-domain ICC oracle above and require an actual successful builtin CMS trace. Coefficient-preserving entropy-transcode digests are equivalence regressions, separate from these independently derived value contracts and from MS-SSIM tests.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| JPGP-01 | DNL redefines an already nonzero SOF height. | [tests/loader/builtin/2239_jpeg_dnl_redefine_numeric.t](../../../tests/loader/builtin/2239_jpeg_dnl_redefine_numeric.t) |
+| JPGP-02 | Arithmetic grayscale without a float requirement retains exact RGB888 samples. | [tests/loader/builtin/jpeg/0066_jp_arith_gray_byte.t](../../../tests/loader/builtin/jpeg/0066_jp_arith_gray_byte.t) |
+| JPGP-03 | Arithmetic progressive DC/AC refinement and restart boundaries preserve analytic samples. | [tests/loader/builtin/jpeg/0069_jp_arith_prog_ac.t](../../../tests/loader/builtin/jpeg/0069_jp_arith_prog_ac.t) |
+| JPGP-04 | Custom DAC destination 3 and conditioning preserve twelve-bit progressive samples. | [tests/loader/builtin/jpeg/0072_jp_arith_12_prog.t](../../../tests/loader/builtin/jpeg/0072_jp_arith_12_prog.t) |
+| JPGP-05 | Sixteen-bit arithmetic lossless point transformation preserves the original high bits. | [tests/loader/builtin/jpeg/0079_jp_arith_loss_p4_16_3.t](../../../tests/loader/builtin/jpeg/0079_jp_arith_loss_p4_16_3.t) |
+| JPGP-06 | Horizontal then vertical hierarchical expansion uses the prescribed integer rounding. | [tests/loader/builtin/jpeg/0089_jp_hier_loss_exp17.t](../../../tests/loader/builtin/jpeg/0089_jp_hier_loss_exp17.t) |
+| JPGP-07 | Arithmetic differential progressive DCT omits DC prediction and the level shift across multiple blocks. | [tests/loader/builtin/jpeg/0164_jp_hier_arith_multiblock_prog.t](../../../tests/loader/builtin/jpeg/0164_jp_hier_arith_multiblock_prog.t) |
+| JPGP-08 | Arithmetic differential lossless samples reconstruct the independent source values. | [tests/loader/builtin/jpeg/0092_jp_hier_arith_loss.t](../../../tests/loader/builtin/jpeg/0092_jp_hier_arith_loss.t) |
+| JPGP-09 | Lossless hierarchy preserves category-16 differences and modulo-65536 wrap. | [tests/loader/builtin/jpeg/0144_jp_hier_loss16_wrap.t](../../../tests/loader/builtin/jpeg/0144_jp_hier_loss16_wrap.t) |
+| JPGP-10 | Separate RG and B initial frames reconstruct final RGB in DHP order. | [tests/loader/builtin/jpeg/0145_jp_hier_rgb_groups.t](../../../tests/loader/builtin/jpeg/0145_jp_hier_rgb_groups.t) |
+| JPGP-11 | Signed intermediate DCT references survive until subsequent refinement. | [tests/loader/builtin/jpeg/0158_jp_hier_signed_reference.t](../../../tests/loader/builtin/jpeg/0158_jp_hier_signed_reference.t) |
+| JPGP-12 | A following frame cannot retroactively change progressive dequantization. | [tests/loader/builtin/jpeg/0159_jp_hier_quant_redefinition.t](../../../tests/loader/builtin/jpeg/0159_jp_hier_quant_redefinition.t) |
+| JPGP-13 | Wide progressive dequantization saturates final samples without short overflow. | [tests/loader/builtin/jpeg/0161_jp_arith_wide_prog.t](../../../tests/loader/builtin/jpeg/0161_jp_arith_wide_prog.t) |
+| JPGP-14 | Plain CMYK arithmetic input reaches builtin CMS with ordinary ink polarity. | [tests/loader/builtin/jpeg/0135_jp_arith_plain_cms.t](../../../tests/loader/builtin/jpeg/0135_jp_arith_plain_cms.t) |
+| JPGP-15 | Hierarchical YCCK reaches builtin CMS from reconstructed device inks. | [tests/loader/builtin/jpeg/0140_jp_hier_ycck_cms.t](../../../tests/loader/builtin/jpeg/0140_jp_hier_ycck_cms.t) |
+
 ### Quality regression tests
 
 | ID | Quality floor protected | Owning test |
@@ -223,9 +256,10 @@ Builtin CMYK bounds are `max(abs(expected RGB)) * 64 / 16777216`, accounting for
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| JPG-02 | Arithmetic-coded JPEG is classified as unsupported and rejected before entropy decode. | [tests/loader/builtin/0131_loader_builtin_rejects_arithmetic_jpeg.t](../../../tests/loader/builtin/0131_loader_builtin_rejects_arithmetic_jpeg.t) |
 | JPG-90 | A corrupt JPEG stream fails the builtin decoder rather than yielding a partial frame. | [tests/loader/builtin/0127_loader_builtin_rejects_corrupt_jpeg.t](../../../tests/loader/builtin/0127_loader_builtin_rejects_corrupt_jpeg.t) |
 
-Coverage audit note: direct owners now cover sequential RGB bytes, progressive 4:2:0 output, sub-eight-bit Gray16 values, all seven lossless predictors with a point transform, Gray and RGB restart boundaries, YCbCr 4:4:4, CMYK, YCCK, builtin ICC samples, orientation, and two failure classes. These representatives still do not establish every sampling-factor combination, progressive scan script, restart interval/MCU placement, point transform, or the full Gray/RGB/YCbCr/CMYK/YCCK × precision matrix.
+Coverage audit note: direct owners now cover sequential RGB bytes, progressive 4:2:0 output, sub-eight-bit Gray16 values, all seven lossless predictors with a point transform, Gray and RGB restart boundaries, YCbCr 4:4:4, CMYK, YCCK, builtin ICC samples, orientation, and malformed inputs. These representatives still do not establish every sampling-factor combination, progressive scan script, restart interval/MCU placement, point transform, or the full Gray/RGB/YCbCr/CMYK/YCCK × precision matrix.
 
-DNL defensive coverage in the [builtin test inventory](../../testing/builtin-loader-coverage.md#jpeg) includes missing/zero/short/truncated markers, wrong placement, duplicate markers, known-height disagreement, extra or missing MCU rows, early termination at a restart boundary, and truncated amplitude bits. These are parser/value checks, not MS-SSIM quality thresholds.
+DNL defensive coverage in the [builtin test inventory](../../testing/builtin-loader-coverage.md#jpeg) includes missing/zero/short/truncated markers, wrong placement, duplicate markers, extra or missing MCU rows, early termination at a restart boundary, and truncated amplitude bits. These are parser/value checks, not MS-SSIM quality thresholds.
+
+Arithmetic/hierarchy defensive coverage additionally exercises DAC/DQT bounds and truncation, duplicate components, illegal progressive ordering, restart identity and presence, missing/inconsistent DHP, EXP placement and dimensions, incomplete images, and every allocation failure in representative progressive, predictive, and hierarchical paths. The [inventory](../../testing/builtin-loader-coverage.md#jpeg) keeps these parser/resource observations separate from public value and quality contracts.

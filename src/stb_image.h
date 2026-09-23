@@ -20,7 +20,7 @@
       Primarily of interest to game developers and other people who can
           avoid problematic images and only need the trivial interface
 
-      JPEG baseline & progressive (12 bpc/arithmetic not supported, same as stock IJG lib)
+      JPEG DCT, progressive, lossless and hierarchical (Huffman/arithmetic)
       PNG 1/2/4/8/16-bit-per-channel
 
       TGA (not sure what subset, if a subset)
@@ -133,7 +133,7 @@ RECENT REVISION HISTORY:
 //
 // Limitations:
 //    - no 12-bit-per-channel JPEG from `stbi_load` (8-bit API)
-//    - no JPEGs with arithmetic coding
+//    - JPEG-LS, JPEG 2000 and JPEG extension processes are not supported
 //    - GIF always returns *comp=4
 //
 // Basic usage (see HDR discussion below for HDR usage):
@@ -2001,6 +2001,27 @@ typedef struct
    int            rgb;
    int            data_precision;
    int            lossless;
+   int            arithmetic;
+   /* Annex D registers and F/H statistics, independent of Huffman bits. */
+   stbi__uint32 arith_a, arith_c;
+   int arith_ct, arith_error;
+   stbi_uc arith_dc[4][158], arith_ac[4][256];
+   stbi_uc arith_l[4], arith_u[4], arith_k[4];
+   stbi_uc arith_context[4], arith_fixed;
+   signed char arith_bits[4][64];
+   stbi__int16 *arith_diffs[4];
+   int arith_first_y[4];
+   int hierarchical, differential, frame_open, frame_count;
+   int hierarchy_kind, hierarchy_entropy;
+   int dhp_x, dhp_y, dhp_n, dhp_precision, expansion, frame_expansion;
+   int expansion_seen;
+   struct {
+      int id, h, v, x, y, stride, first_lossless, final_lossless;
+      stbi__uint16 *data;
+      void *raw;
+   } reference[4];
+   stbi__uint16 frame_quant[4][64];
+   unsigned int quant_present;
 
    // Delayed height is resolved before allocation, then checked at scan end.
    stbi_uc const *dnl_position;
@@ -2093,8 +2114,12 @@ static void stbi__grow_buffer_unsafe(stbi__jpeg *j)
    unsigned int b;
    int c;
    do {
-      // Do not invent entropy bits while validating the DNL row count.
-      if (j->dnl_pending && j->nomore) return;
+      // New hierarchy frames and DNL validation require real entropy bits.
+      if ((j->dnl_pending || j->hierarchical) && j->nomore) return;
+      if (j->hierarchical && stbi__at_eof(j->s)) {
+         j->entropy_short = 1;
+         return;
+      }
       b = j->nomore ? 0 : stbi__get8(j->s);
       if (b == 0xff) {
          c = stbi__get8(j->s);
@@ -2239,6 +2264,338 @@ static const stbi_uc stbi__jpeg_dezigzag[64+15] =
    63, 63, 63, 63, 63, 63, 63
 };
 
+/* T.81 Table D.2: Qe, next LPS state (plus MPS switch), next MPS state.
+ * Entry 113 implements the fixed-probability bin of F.1.4.4.2. */
+static const struct {
+   stbi__uint16 qe;
+   stbi_uc lps, mps;
+} stbi__jpeg_qm[114] = {
+   { 0x5a1d, 129,   1 },
+   { 0x2586,  14,   2 },
+   { 0x1114,  16,   3 },
+   { 0x080b,  18,   4 },
+   { 0x03d8,  20,   5 },
+   { 0x01da,  23,   6 },
+   { 0x00e5,  25,   7 },
+   { 0x006f,  28,   8 },
+   { 0x0036,  30,   9 },
+   { 0x001a,  33,  10 },
+   { 0x000d,  35,  11 },
+   { 0x0006,   9,  12 },
+   { 0x0003,  10,  13 },
+   { 0x0001,  12,  13 },
+   { 0x5a7f, 143,  15 },
+   { 0x3f25,  36,  16 },
+   { 0x2cf2,  38,  17 },
+   { 0x207c,  39,  18 },
+   { 0x17b9,  40,  19 },
+   { 0x1182,  42,  20 },
+   { 0x0cef,  43,  21 },
+   { 0x09a1,  45,  22 },
+   { 0x072f,  46,  23 },
+   { 0x055c,  48,  24 },
+   { 0x0406,  49,  25 },
+   { 0x0303,  51,  26 },
+   { 0x0240,  52,  27 },
+   { 0x01b1,  54,  28 },
+   { 0x0144,  56,  29 },
+   { 0x00f5,  57,  30 },
+   { 0x00b7,  59,  31 },
+   { 0x008a,  60,  32 },
+   { 0x0068,  62,  33 },
+   { 0x004e,  63,  34 },
+   { 0x003b,  32,  35 },
+   { 0x002c,  33,   9 },
+   { 0x5ae1, 165,  37 },
+   { 0x484c,  64,  38 },
+   { 0x3a0d,  65,  39 },
+   { 0x2ef1,  67,  40 },
+   { 0x261f,  68,  41 },
+   { 0x1f33,  69,  42 },
+   { 0x19a8,  70,  43 },
+   { 0x1518,  72,  44 },
+   { 0x1177,  73,  45 },
+   { 0x0e74,  74,  46 },
+   { 0x0bfb,  75,  47 },
+   { 0x09f8,  77,  48 },
+   { 0x0861,  78,  49 },
+   { 0x0706,  79,  50 },
+   { 0x05cd,  48,  51 },
+   { 0x04de,  50,  52 },
+   { 0x040f,  50,  53 },
+   { 0x0363,  51,  54 },
+   { 0x02d4,  52,  55 },
+   { 0x025c,  53,  56 },
+   { 0x01f8,  54,  57 },
+   { 0x01a4,  55,  58 },
+   { 0x0160,  56,  59 },
+   { 0x0125,  57,  60 },
+   { 0x00f6,  58,  61 },
+   { 0x00cb,  59,  62 },
+   { 0x00ab,  61,  63 },
+   { 0x008f,  61,  32 },
+   { 0x5b12, 193,  65 },
+   { 0x4d04,  80,  66 },
+   { 0x412c,  81,  67 },
+   { 0x37d8,  82,  68 },
+   { 0x2fe8,  83,  69 },
+   { 0x293c,  84,  70 },
+   { 0x2379,  86,  71 },
+   { 0x1edf,  87,  72 },
+   { 0x1aa9,  87,  73 },
+   { 0x174e,  72,  74 },
+   { 0x1424,  72,  75 },
+   { 0x119c,  74,  76 },
+   { 0x0f6b,  74,  77 },
+   { 0x0d51,  75,  78 },
+   { 0x0bb6,  77,  79 },
+   { 0x0a40,  77,  48 },
+   { 0x5832, 208,  81 },
+   { 0x4d1c,  88,  82 },
+   { 0x438e,  89,  83 },
+   { 0x3bdd,  90,  84 },
+   { 0x34ee,  91,  85 },
+   { 0x2eae,  92,  86 },
+   { 0x299a,  93,  87 },
+   { 0x2516,  86,  71 },
+   { 0x5570, 216,  89 },
+   { 0x4ca9,  95,  90 },
+   { 0x44d9,  96,  91 },
+   { 0x3e22,  97,  92 },
+   { 0x3824,  99,  93 },
+   { 0x32b4,  99,  94 },
+   { 0x2e17,  93,  86 },
+   { 0x56a8, 223,  96 },
+   { 0x4f46, 101,  97 },
+   { 0x47e5, 102,  98 },
+   { 0x41cf, 103,  99 },
+   { 0x3c3d, 104, 100 },
+   { 0x375e,  99,  93 },
+   { 0x5231, 105, 102 },
+   { 0x4c0f, 106, 103 },
+   { 0x4639, 107, 104 },
+   { 0x415e, 103,  99 },
+   { 0x5627, 233, 106 },
+   { 0x50e7, 108, 107 },
+   { 0x4b85, 109, 103 },
+   { 0x5597, 110, 109 },
+   { 0x504f, 111, 107 },
+   { 0x5a10, 238, 111 },
+   { 0x5522, 112, 109 },
+   { 0x59eb, 240, 111 },
+   { 0x5a1d, 113, 113 },
+};
+
+/* Unlike Huffman padding, arithmetic termination supplies zero bytes after
+ * a real marker (D.2.6). Physical EOF is not such a marker. Keep that error
+ * sticky so every finite coding-model loop returns failure before output. */
+static int stbi__arith_byte(stbi__jpeg *j)
+{
+   int b;
+   if (j->marker != 0xff || j->arith_error) return 0;
+   if (stbi__at_eof(j->s)) {
+      j->arith_error = 1;
+      return 0;
+   }
+   b = stbi__get8(j->s);
+   if (b != 255) return b;
+   do {
+      if (stbi__at_eof(j->s)) {
+         j->arith_error = 1;
+         return 0;
+      }
+      b = stbi__get8(j->s);
+   } while (b == 255);
+   if (b == 0) return 255;
+   j->marker = (stbi_uc)b;
+   return 0;
+}
+
+static void stbi__arith_reset(stbi__jpeg *j)
+{
+   memset(j->arith_dc, 0, sizeof(j->arith_dc));
+   memset(j->arith_ac, 0, sizeof(j->arith_ac));
+   memset(j->arith_context, 0, sizeof(j->arith_context));
+   for (j->arith_ct = 0; j->arith_ct < 4; ++j->arith_ct)
+      j->arith_first_y[j->arith_ct] = -1;
+   j->arith_fixed = 113;
+   j->arith_error = 0;
+   j->arith_a = 0x10000;
+   j->arith_c = (stbi__uint32)stbi__arith_byte(j) << 24;
+   j->arith_c |= (stbi__uint32)stbi__arith_byte(j) << 16;
+   j->arith_ct = 0;
+}
+
+/* Direct fixed-register form of Figures D.16 through D.22. Unsigned C
+ * shifts deliberately discard bits above the 16-bit interval register. */
+static int stbi__arith_bit(stbi__jpeg *j, stbi_uc *bin)
+{
+   unsigned int index;
+   unsigned int qe;
+   int bit;
+   int lps;
+
+   index = *bin & 127;
+   qe = stbi__jpeg_qm[index].qe;
+   bit = *bin >> 7;
+   j->arith_a -= qe;
+   if ((j->arith_c >> 16) < j->arith_a) {
+      if (j->arith_a >= 0x8000) return bit;
+      lps = j->arith_a < qe;
+   } else {
+      j->arith_c -= j->arith_a << 16;
+      lps = j->arith_a >= qe;
+      j->arith_a = qe;
+   }
+   *bin = (stbi_uc)((*bin & 128) ^
+       (lps ? stbi__jpeg_qm[index].lps : stbi__jpeg_qm[index].mps));
+   bit ^= lps;
+   do {
+      if (j->arith_ct == 0) {
+         j->arith_c += (stbi__uint32)stbi__arith_byte(j) << 8;
+         j->arith_ct = 8;
+      }
+      j->arith_a <<= 1;
+      j->arith_c <<= 1;
+      --j->arith_ct;
+   } while (j->arith_a < 0x8000);
+   return bit;
+}
+
+/* Tables F.4/H.3 use the same sign/magnitude tree with different bins. */
+static int stbi__arith_difference(stbi__jpeg *j, stbi_uc *stats,
+                                 int context, int magnitude, int *value)
+{
+   int sign;
+   int mask;
+   int bits;
+   int bin;
+
+   *value = 0;
+   if (!stbi__arith_bit(j, stats + context)) return !j->arith_error;
+   sign = stbi__arith_bit(j, stats + context + 1);
+   bin = context + 2 + sign;
+   mask = stbi__arith_bit(j, stats + bin);
+   if (mask) {
+      bin = magnitude;
+      while (stbi__arith_bit(j, stats + bin)) {
+         mask *= 2;
+         if (mask >= 32768)
+            return stbi__err("arithmetic magnitude", "Corrupt JPEG");
+         ++bin;
+      }
+   }
+   bits = mask;
+   bin += 14;
+   while ((mask >>= 1) != 0) {
+      if (stbi__arith_bit(j, stats + bin)) bits |= mask;
+   }
+   *value = sign ? -bits - 1 : bits + 1;
+   return !j->arith_error;
+}
+
+static int stbi__arith_category(stbi__jpeg *j, int table, int value)
+{
+   int magnitude;
+   magnitude = value < 0 ? -value : value;
+   if (magnitude <= (1 << j->arith_l[table]) / 2) return 0;
+   return (magnitude > (1 << j->arith_u[table]) ? 3 : 1) + (value < 0);
+}
+
+/* F.2.4 and G.2.3: reconstruct quantized coefficients, before IDCT or
+ * dequantization. Progressive storage is shared with the Huffman path. */
+static int stbi__arith_block(stbi__jpeg *j, short *data, int component)
+{
+   stbi_uc *stats;
+   int table;
+   int diff;
+   int value;
+   int k;
+   int last;
+   int end;
+   int bin;
+   int sign;
+   int mask;
+   int scale;
+   int index;
+
+   scale = 1 << j->succ_low;
+   end = j->spec_end;
+   if (!j->progressive) memset(data, 0, 64 * sizeof(*data));
+   if (j->spec_start == 0) {
+      if (j->succ_high) {
+         if (stbi__arith_bit(j, &j->arith_fixed))
+            data[0] = (short)((unsigned short)data[0] | scale);
+      } else {
+         table = j->img_comp[component].hd;
+         if (!stbi__arith_difference(j, j->arith_dc[table],
+               4 * j->arith_context[component], 20, &diff)) return 0;
+         j->arith_context[component] =
+             (stbi_uc)stbi__arith_category(j, table, diff);
+         value = (j->differential ? 0 :
+                  j->img_comp[component].dc_pred) + diff;
+         if (!stbi__mul2shorts_valid(value, scale))
+            return stbi__err("arithmetic DC range", "Corrupt JPEG");
+         j->img_comp[component].dc_pred = value;
+         data[0] = (short)(value * scale);
+      }
+      if (j->progressive) return !j->arith_error;
+   }
+   table = j->img_comp[component].ha;
+   stats = j->arith_ac[table];
+   k = j->spec_start ? j->spec_start : 1;
+   last = end;
+   if (j->succ_high) {
+      while (last > 0 && data[stbi__jpeg_dezigzag[last]] == 0) --last;
+   }
+   for (; k <= end; ++k) {
+      bin = 3 * (k - 1);
+      if ((!j->succ_high || k > last) &&
+          stbi__arith_bit(j, stats + bin)) break;
+      for (;;) {
+         index = stbi__jpeg_dezigzag[k];
+         if (j->succ_high && data[index] != 0) {
+            if (stbi__arith_bit(j, stats + bin + 2))
+               data[index] += (short)(data[index] < 0 ? -scale : scale);
+            break;
+         }
+         if (stbi__arith_bit(j, stats + bin + 1)) {
+            sign = stbi__arith_bit(j, &j->arith_fixed);
+            if (j->succ_high) {
+               data[index] = (short)(sign ? -scale : scale);
+               break;
+            }
+            bin += 2;
+            mask = stbi__arith_bit(j, stats + bin);
+            if (mask && stbi__arith_bit(j, stats + bin)) {
+               mask = 2;
+               bin = k <= j->arith_k[table] ? 189 : 217;
+               while (stbi__arith_bit(j, stats + bin)) {
+                  mask *= 2;
+                  if (mask >= 32768)
+                     return stbi__err("arithmetic AC range", "Corrupt JPEG");
+                  ++bin;
+               }
+            }
+            value = mask;
+            bin += 14;
+            while ((mask >>= 1) != 0) {
+               if (stbi__arith_bit(j, stats + bin)) value |= mask;
+            }
+            value = sign ? -value - 1 : value + 1;
+            if (!stbi__mul2shorts_valid(value, scale))
+               return stbi__err("arithmetic AC range", "Corrupt JPEG");
+            data[index] = (short)(value * scale);
+            break;
+         }
+         if (++k > end)
+            return stbi__err("arithmetic spectral run", "Corrupt JPEG");
+         bin += 3;
+      }
+   }
+   return !j->arith_error;
+}
+
 // decode one 64-entry block--
 static int stbi__jpeg_decode_block(stbi__jpeg *j, short data[64], stbi__huffman *hdc, stbi__huffman *hac, stbi__int16 *fac, int b, stbi__uint16 *dequant)
 {
@@ -2254,7 +2611,7 @@ static int stbi__jpeg_decode_block(stbi__jpeg *j, short data[64], stbi__huffman 
 
    diff = t ? stbi__extend_receive(j, t) : 0;
    if (!stbi__addints_valid(j->img_comp[b].dc_pred, diff)) return stbi__err("bad delta","Corrupt JPEG");
-   dc = j->img_comp[b].dc_pred + diff;
+   dc = (j->differential ? 0 : j->img_comp[b].dc_pred) + diff;
    j->img_comp[b].dc_pred = dc;
    if (!stbi__mul2shorts_valid(dc, dequant[0])) return stbi__err("can't merge dc and ac", "Corrupt JPEG");
    data[0] = (short) (dc * dequant[0]);
@@ -2311,7 +2668,7 @@ static int stbi__jpeg_decode_block_prog_dc(stbi__jpeg *j, short data[64], stbi__
       diff = t ? stbi__extend_receive(j, t) : 0;
 
       if (!stbi__addints_valid(j->img_comp[b].dc_pred, diff)) return stbi__err("bad delta", "Corrupt JPEG");
-      dc = j->img_comp[b].dc_pred + diff;
+      dc = (j->differential ? 0 : j->img_comp[b].dc_pred) + diff;
       j->img_comp[b].dc_pred = dc;
       if (!stbi__mul2shorts_valid(dc, 1 << j->succ_low)) return stbi__err("can't merge dc and ac", "Corrupt JPEG");
       data[0] = (short) (dc * (1 << j->succ_low));
@@ -2526,7 +2883,7 @@ static void stbi__idct_block(stbi_uc *out, int out_stride, short data[64])
          //    (1|2|3|4|5|6|7)==0          0     seconds
          //    all separate               -0.047 seconds
          //    1 && 2|3 && 4|5 && 6|7:    -0.047 seconds
-         stbi__idct_int dcterm = d[0]*4;
+         stbi__idct_int dcterm = (stbi__idct_int)d[0]*4;
          v[0] = v[8] = v[16] = v[24] = v[32] = v[40] = v[48] = v[56] = dcterm;
       } else {
          STBI__IDCT_1D(d[ 0],d[ 8],d[16],d[24],d[32],d[40],d[48],d[56])
@@ -2576,17 +2933,21 @@ static void stbi__idct_block(stbi_uc *out, int out_stride, short data[64])
 
 static stbi__uint16 stbi__clamp_16(stbi__idct_int x, int max_value)
 {
+   if (max_value < 0) return (stbi__uint16)x;
    if (x < 0) return 0;
    if (x > (stbi__idct_int)max_value) return (stbi__uint16)max_value;
    return (stbi__uint16)x;
 }
 
-static void stbi__idct_block_16(stbi__uint16 *out, int out_stride, short data[64], int precision)
+static void stbi__idct_block_16(stbi__uint16 *out, int out_stride,
+                                short data[64], int precision,
+                                int differential,
+                                stbi__uint16 const *dequant)
 {
    int i;
    stbi__idct_int val[64],*v=val;
    stbi__uint16 *o;
-   short *d = data;
+   stbi__int32 coefficients[64], *d = coefficients;
    int center;
    int max_value;
    stbi__idct_int round_bias;
@@ -2594,15 +2955,22 @@ static void stbi__idct_block_16(stbi__uint16 *out, int out_stride, short data[64
    if (precision < 8 || precision > 12) {
       precision = 8;
    }
+   /* Keep dequantization out of short coefficient storage. A legal
+    * 16-bit DQT entry times a signed coefficient needs 32 bits; the IDCT
+    * accumulators are 64-bit. The ordinary byte/SIMD path is unchanged. */
+   for (i = 0; i < 64; ++i)
+      coefficients[i] = (stbi__int32)data[i] * (dequant ? dequant[i] : 1);
    center = 1 << (precision - 1);
    max_value = (1 << precision) - 1;
-   round_bias = 65536 + (center << 17);
+   /* Differential IDCT has neither a level shift nor sample saturation. */
+   round_bias = 65536 + (differential ? 0 : (center << 17));
+   if (differential) max_value = -1;
 
    // columns
    for (i=0; i < 8; ++i,++d, ++v) {
       if (d[ 8]==0 && d[16]==0 && d[24]==0 && d[32]==0
            && d[40]==0 && d[48]==0 && d[56]==0) {
-         stbi__idct_int dcterm = d[0]*4;
+         stbi__idct_int dcterm = (stbi__idct_int)d[0]*4;
          v[0] = v[8] = v[16] = v[24] = v[32] = v[40] = v[48] = v[56] = dcterm;
       } else {
          STBI__IDCT_1D(d[ 0],d[ 8],d[16],d[24],d[32],d[40],d[48],d[56])
@@ -3066,6 +3434,8 @@ static void stbi__jpeg_reset(stbi__jpeg *j)
    j->code_bits = 0;
    j->code_buffer = 0;
    j->nomore = 0;
+   j->arith_first_y[0] = j->arith_first_y[1] =
+       j->arith_first_y[2] = j->arith_first_y[3] = -1;
    j->img_comp[0].dc_pred = j->img_comp[1].dc_pred = j->img_comp[2].dc_pred = j->img_comp[3].dc_pred = 0;
    j->marker = STBI__MARKER_none;
    j->todo = j->restart_interval ? j->restart_interval : 0x7fffffff;
@@ -3076,15 +3446,35 @@ static void stbi__jpeg_reset(stbi__jpeg *j)
 
 static void stbi__jpeg_idct_store_block(stbi__jpeg *z, int n, int x, int y, short data[64])
 {
-   if (z->data_precision > 8) {
+   if (z->data_precision > 8 || z->hierarchical) {
       stbi__idct_block_16(z->img_comp[n].data16 + z->img_comp[n].w2 * y + x,
                           z->img_comp[n].w2,
                           data,
-                          z->data_precision);
+                          z->data_precision, z->differential, NULL);
    } else {
       z->idct_block_kernel(z->img_comp[n].data + z->img_comp[n].w2 * y + x,
                            z->img_comp[n].w2,
                            data);
+   }
+}
+
+/* New entropy processes retain quantized coefficients until this boundary.
+ * Use the same integer IDCT rounding with a wide dequantization product. */
+static void stbi__jpeg_wide_store(stbi__jpeg *j, int n, int x, int y,
+                                 short *data, stbi__uint16 const *quant)
+{
+   stbi__uint16 block[64];
+   int row, col, stride;
+   stride = j->img_comp[n].w2;
+   if (j->data_precision > 8 || j->hierarchical) {
+      stbi__idct_block_16(j->img_comp[n].data16 + y * stride + x,
+          stride, data, j->data_precision, j->differential, quant);
+   } else {
+      stbi__idct_block_16(block, 8, data, 8, 0, quant);
+      for (row = 0; row < 8; ++row)
+         for (col = 0; col < 8; ++col)
+            j->img_comp[n].data[(y + row) * stride + x + col] =
+                (stbi_uc)block[row * 8 + col];
    }
 }
 
@@ -3296,8 +3686,156 @@ static int stbi__parse_entropy_coded_data_lossless(stbi__jpeg *z)
    return 1;
 }
 
+/* Arithmetic termination may consume a marker before the last decision.
+ * Leave it cached for the outer marker parser; do not feed the following
+ * marker payload into the entropy decoder. */
+static int stbi__arith_finish(stbi__jpeg *j)
+{
+   while (j->marker == STBI__MARKER_none && !j->arith_error)
+      (void)stbi__arith_byte(j);
+   return !j->arith_error;
+}
+
+/* Lossless arithmetic uses the two-dimensional difference contexts of
+ * H.1.2.3, not the DCT DC predictor. A ring of v+1 rows retains both the
+ * previous strip and every current row during interleaved MCU traversal. */
+static int stbi__jpeg_predictive_sample(stbi__jpeg *j, int n, int x, int y)
+{
+   stbi__int16 *diffs;
+   stbi__uint16 *plane;
+   int stride, rows, first, above, left, context, diff, prediction;
+   int a, b, c, table, point, precision, category;
+
+   stride = j->img_comp[n].w2;
+   rows = j->img_comp[n].v + 1;
+   diffs = j->arith_diffs[n];
+   plane = j->img_comp[n].data16;
+   first = j->arith_first_y[n] < 0;
+   if (first) j->arith_first_y[n] = y;
+   table = j->img_comp[n].hd;
+   point = j->succ_low;
+   precision = j->data_precision - point;
+   if (j->arithmetic) {
+      left = x == 0 || first ? 0 : diffs[(y % rows) * stride + x - 1];
+      above = y == j->arith_first_y[n] ? 0 :
+          diffs[((y - 1) % rows) * stride + x];
+      left = stbi__arith_category(j, table, left);
+      above = stbi__arith_category(j, table, above);
+      context = 20 * left + 4 * above;
+      if (!stbi__arith_difference(j, j->arith_dc[table], context,
+                                 above >= 3 ? 129 : 100, &diff)) return 0;
+      diffs[(y % rows) * stride + x] = (stbi__int16)diff;
+   } else {
+      category = stbi__jpeg_huff_decode(j, j->huff_dc + table);
+      if (category < 0 || category > 16)
+         return stbi__err("lossless category", "Corrupt JPEG");
+      /* H.2: category 16 has no following amplitude bits. */
+      diff = category == 16 ? 32768 : category == 0 ? 0 :
+          stbi__extend_receive(j, category);
+      if (j->entropy_short) return 0;
+   }
+   a = x == 0 ? 0 : plane[y * stride + x - 1] >> point;
+   b = y == 0 ? 0 : plane[(y - 1) * stride + x] >> point;
+   c = x == 0 || y == 0 ? 0 :
+       plane[(y - 1) * stride + x - 1] >> point;
+   if (j->differential) prediction = 0;
+   else if (first) prediction = 1 << (precision - 1);
+   else if (y == j->arith_first_y[n]) prediction = a;
+   else if (x == 0) prediction = b;
+   else prediction = stbi__jpeg_lossless_predictor(j->spec_start, a, b, c);
+   /* H.1.2.1: modulo addition, then undo point transform. Never saturate
+    * a signed prediction difference, including the 16-bit wrap boundary. */
+   plane[y * stride + x] = j->differential ?
+       (stbi__uint16)((unsigned int)diff << point) : (stbi__uint16)(
+       (((unsigned int)(prediction + diff)) & ((1u << precision) - 1))
+       << point);
+   return 1;
+}
+
+static int stbi__parse_extended_jpeg(stbi__jpeg *j)
+{
+   STBI_SIMD_ALIGN(short, block[64]);
+   short *data;
+   stbi__uint16 identity[64];
+   int mx, my, cx, cy, n, c, x, y, w, h, k;
+   int restart;
+   int bx, by;
+   int unit;
+
+   for (k = 0; k < 64; ++k) identity[k] = 1;
+   unit = j->lossless ? 1 : 8;
+   stbi__jpeg_reset(j);
+   if (j->arithmetic) stbi__arith_reset(j);
+   restart = 0;
+   n = j->order[0];
+   mx = j->scan_n == 1 ? (j->img_comp[n].x + unit - 1) / unit :
+       ((int)j->s->img_x + j->img_h_max * unit - 1) /
+       (j->img_h_max * unit);
+   my = j->scan_n == 1 ? (j->img_comp[n].y + unit - 1) / unit :
+       ((int)j->s->img_y + j->img_v_max * unit - 1) /
+       (j->img_v_max * unit);
+   if (j->lossless && j->restart_interval % mx != 0)
+      return stbi__err("lossless restart row", "Corrupt JPEG");
+   for (cy = 0; cy < my; ++cy) {
+      for (cx = 0; cx < mx; ++cx) {
+         for (c = 0; c < j->scan_n; ++c) {
+            n = j->order[c];
+            w = j->scan_n == 1 ? 1 : j->img_comp[n].h;
+            h = j->scan_n == 1 ? 1 : j->img_comp[n].v;
+            for (y = 0; y < h; ++y) {
+               for (x = 0; x < w; ++x) {
+                  bx = cx * w + x;
+                  by = cy * h + y;
+                  if (j->lossless) {
+                     if (!stbi__jpeg_predictive_sample(j, n, bx, by)) return 0;
+                     continue;
+                  }
+                  data = j->progressive ? j->img_comp[n].coeff +
+                      64 * (bx + by * j->img_comp[n].coeff_w) : block;
+                  if (j->arithmetic) {
+                     if (!stbi__arith_block(j, data, n)) return 0;
+                  } else if (j->progressive) {
+                     if (j->spec_start == 0) {
+                        if (!stbi__jpeg_decode_block_prog_dc(j, data,
+                              j->huff_dc + j->img_comp[n].hd, n)) return 0;
+                     } else if (!stbi__jpeg_decode_block_prog_ac(j, data,
+                           j->huff_ac + j->img_comp[n].ha,
+                           j->fast_ac[j->img_comp[n].ha])) return 0;
+                  } else if (!stbi__jpeg_decode_block(j, data,
+                        j->huff_dc + j->img_comp[n].hd,
+                        j->huff_ac + j->img_comp[n].ha,
+                        j->fast_ac[j->img_comp[n].ha], n,
+                        identity)) return 0;
+                  if (!j->progressive)
+                     stbi__jpeg_wide_store(j, n, bx * 8, by * 8, data,
+                         j->dequant[j->img_comp[n].tq]);
+               }
+            }
+         }
+         if (--j->todo == 0 && (cx + 1 < mx || cy + 1 < my)) {
+            if (j->arithmetic) {
+               if (!stbi__arith_finish(j)) return 0;
+            } else {
+               stbi__grow_buffer_unsafe(j);
+               if (!stbi__jpeg_dnl_padding(j)) return 0;
+            }
+            if (j->marker != 0xd0 + restart)
+               return stbi__err("arithmetic restart", "Corrupt JPEG");
+            restart = (restart + 1) & 7;
+            stbi__jpeg_reset(j);
+            if (j->arithmetic) stbi__arith_reset(j);
+         }
+      }
+   }
+   if (j->arithmetic) return stbi__arith_finish(j);
+   if (j->code_bits < 24) stbi__grow_buffer_unsafe(j);
+   return stbi__jpeg_dnl_padding(j);
+}
+
 static int stbi__parse_entropy_coded_data(stbi__jpeg *z)
 {
+   if (z->arithmetic || z->hierarchical)
+      return stbi__parse_extended_jpeg(z);
    stbi__jpeg_reset(z);
    if (z->lossless) {
       return stbi__parse_entropy_coded_data_lossless(z);
@@ -3469,8 +4007,13 @@ static void stbi__jpeg_finish(stbi__jpeg *z)
          for (j=0; j < h; ++j) {
             for (i=0; i < w; ++i) {
                short *data = z->img_comp[n].coeff + 64 * (i + j * z->img_comp[n].coeff_w);
-               stbi__jpeg_dequantize(data, z->dequant[z->img_comp[n].tq]);
-               stbi__jpeg_idct_store_block(z, n, i * 8, j * 8, data);
+               if (z->arithmetic || z->hierarchical) {
+                  stbi__jpeg_wide_store(z, n, i * 8, j * 8, data,
+                                       z->frame_quant[n]);
+               } else {
+                  stbi__jpeg_dequantize(data, z->dequant[z->img_comp[n].tq]);
+                  stbi__jpeg_idct_store_block(z, n, i * 8, j * 8, data);
+               }
             }
          }
       }
@@ -3480,9 +4023,80 @@ static void stbi__jpeg_finish(stbi__jpeg *z)
 static int stbi__process_marker(stbi__jpeg *z, int m)
 {
    int L;
+   int q, value, table, i, id;
    switch (m) {
       case STBI__MARKER_none: // no marker found
          return stbi__err("expected marker","Corrupt JPEG");
+
+      case 0xDE: // DHP: complete image dimensions and component identities.
+         if (z->hierarchical || z->frame_open || z->frame_count)
+            return stbi__err("duplicate or late DHP", "Corrupt JPEG");
+         L = stbi__get16be(z->s);
+         if (L < 11 || (z->s->io.read == NULL &&
+             L - 2 > z->s->img_buffer_end - z->s->img_buffer))
+            return stbi__err("bad DHP length", "Corrupt JPEG");
+         z->dhp_precision = stbi__get8(z->s);
+         z->dhp_y = stbi__get16be(z->s);
+         z->dhp_x = stbi__get16be(z->s);
+         z->dhp_n = stbi__get8(z->s);
+         if (z->dhp_precision < 2 || z->dhp_precision > 16 ||
+             z->dhp_x == 0 || z->dhp_y == 0 ||
+             (z->dhp_n != 1 && z->dhp_n != 3 && z->dhp_n != 4) ||
+             L != 8 + 3 * z->dhp_n)
+            return stbi__err("bad DHP", "Corrupt JPEG");
+         for (i = 0; i < z->dhp_n; ++i) {
+            id = stbi__get8(z->s);
+            for (q = 0; q < i; ++q) {
+               if (z->reference[q].id == id)
+                  return stbi__err("duplicate DHP component", "Corrupt JPEG");
+            }
+            z->reference[i].id = id;
+            q = stbi__get8(z->s);
+            z->reference[i].h = q >> 4;
+            z->reference[i].v = q & 15;
+            if (!(q >> 4) || (q >> 4) > 4 || !(q & 15) ||
+                (q & 15) > 4 || stbi__get8(z->s) != 0)
+               return stbi__err("bad DHP component", "Corrupt JPEG");
+         }
+         z->hierarchical = 1;
+         return 1;
+
+      case 0xDF: // EXP applies only to the next differential frame.
+         if (!z->hierarchical || !z->frame_open || z->expansion_seen ||
+             stbi__get16be(z->s) != 3)
+            return stbi__err("bad EXP position", "Corrupt JPEG");
+         q = stbi__get8(z->s);
+         if (q != 0 && q != 1 && q != 16 && q != 17)
+            return stbi__err("bad EXP factor", "Corrupt JPEG");
+         z->expansion = q;
+         z->expansion_seen = 1;
+         return 1;
+
+      case 0xCC: // DAC: conditioning replaces the SOI defaults.
+         L = stbi__get16be(z->s) - 2;
+         if (L < 2 || (L & 1) != 0 ||
+             (z->s->io.read == NULL &&
+              L > z->s->img_buffer_end - z->s->img_buffer))
+            return stbi__err("bad DAC length", "Corrupt JPEG");
+         while (L > 0) {
+            q = stbi__get8(z->s);
+            value = stbi__get8(z->s);
+            table = q & 15;
+            if (table > 3 || (q >> 4) > 1)
+               return stbi__err("bad DAC table", "Corrupt JPEG");
+            if (q >> 4) {
+               if (value < 1 || value > 63)
+                  return stbi__err("bad DAC K", "Corrupt JPEG");
+               z->arith_k[table] = (stbi_uc)value;
+            } else {
+               if ((value & 15) > (value >> 4))
+                  return stbi__err("bad DAC bounds", "Corrupt JPEG");
+               z->arith_l[table] = (stbi_uc)(value & 15);
+               z->arith_u[table] = (stbi_uc)(value >> 4);
+            }
+            L -= 2;
+         }
+         return 1;
 
       case 0xDD: // DRI - specify restart interval
          if (stbi__get16be(z->s) != 4) return stbi__err("bad DRI len","Corrupt JPEG");
@@ -3491,12 +4105,18 @@ static int stbi__process_marker(stbi__jpeg *z, int m)
 
       case 0xDB: // DQT - define quantization table
          L = stbi__get16be(z->s)-2;
+         if (L < 65 || (z->s->io.read == NULL &&
+             L > z->s->img_buffer_end - z->s->img_buffer))
+            return stbi__err("bad DQT length", "Corrupt JPEG");
          while (L > 0) {
             int q = stbi__get8(z->s);
             int p = q >> 4, sixteen = (p != 0);
             int t = q & 15,i;
             if (p != 0 && p != 1) return stbi__err("bad DQT type","Corrupt JPEG");
             if (t > 3) return stbi__err("bad DQT table","Corrupt JPEG");
+            if (L < (sixteen ? 129 : 65))
+               return stbi__err("short DQT table", "Corrupt JPEG");
+            z->quant_present |= 1u << t;
 
             for (i=0; i < 64; ++i)
                z->dequant[t][stbi__jpeg_dezigzag[i]] = (stbi__uint16)(sixteen ? stbi__get16be(z->s) : stbi__get8(z->s));
@@ -3583,7 +4203,7 @@ static int stbi__process_marker(stbi__jpeg *z, int m)
 // after we see SOS
 static int stbi__process_scan_header(stbi__jpeg *z)
 {
-   int i;
+   int i, k, component, previous;
    int Ls = stbi__get16be(z->s);
    z->scan_n = stbi__get8(z->s);
    if (z->scan_n < 1 || z->scan_n > 4 || z->scan_n > (int) z->s->img_n) return stbi__err("bad SOS component count","Corrupt JPEG");
@@ -3608,7 +4228,8 @@ static int stbi__process_scan_header(stbi__jpeg *z)
       z->succ_high = (aa >> 4);
       z->succ_low  = (aa & 15);
       if (z->lossless) {
-         if (z->spec_start < 1 || z->spec_start > 7 || z->spec_end != 0)
+         if (z->spec_start < (z->differential ? 0 : 1) ||
+             z->spec_start > (z->differential ? 0 : 7) || z->spec_end != 0)
             return stbi__err("bad SOS", "Corrupt JPEG");
          if (z->succ_high != 0)
             return stbi__err("bad SOS", "Corrupt JPEG");
@@ -3618,12 +4239,56 @@ static int stbi__process_scan_header(stbi__jpeg *z)
          if (z->spec_start > 63 || z->spec_end > 63  || z->spec_start > z->spec_end || z->succ_high > 13 || z->succ_low > 13)
             return stbi__err("bad SOS", "Corrupt JPEG");
       } else {
-         if (z->spec_start != 0) return stbi__err("bad SOS","Corrupt JPEG");
+         if (z->spec_start != 0 || ((z->arithmetic || z->hierarchical) &&
+             z->spec_end != 63)) return stbi__err("bad SOS","Corrupt JPEG");
          if (z->succ_high != 0 || z->succ_low != 0) return stbi__err("bad SOS","Corrupt JPEG");
          z->spec_end = 63;
       }
    }
 
+   if (z->arithmetic || z->hierarchical) {
+      if (z->expansion_seen)
+         return stbi__err("EXP before scan", "Corrupt JPEG");
+      if (!z->lossless && z->progressive &&
+          ((z->spec_start == 0 && z->spec_end != 0) ||
+           (z->spec_start != 0 && z->scan_n != 1) ||
+           (z->succ_high && z->succ_high != z->succ_low + 1)))
+         return stbi__err("bad arithmetic scan", "Corrupt JPEG");
+      for (i = 0; i < z->scan_n; ++i) {
+         component = z->order[i];
+         if (!z->lossless) {
+            if (!(z->quant_present & (1u << z->img_comp[component].tq)))
+               return stbi__err("missing DQT", "Corrupt JPEG");
+            for (k = 0; k < 64; ++k) {
+               if (z->dequant[z->img_comp[component].tq][k] == 0)
+                  return stbi__err("zero DQT entry", "Corrupt JPEG");
+            }
+         }
+         memcpy(z->frame_quant[component],
+                z->dequant[z->img_comp[component].tq],
+                sizeof(z->frame_quant[component]));
+         for (k = 0; k < i; ++k) {
+            if (z->order[k] == component)
+               return stbi__err("duplicate SOS component", "Corrupt JPEG");
+         }
+         if (z->progressive && z->spec_start &&
+             z->arith_bits[component][0] < 0)
+            return stbi__err("AC before DC", "Corrupt JPEG");
+         if (z->lossless) {
+            if (z->arith_bits[component][0] != -1 ||
+                z->img_comp[component].ha != 0)
+               return stbi__err("bad lossless scan", "Corrupt JPEG");
+            z->arith_bits[component][0] = 0;
+            continue;
+         }
+         for (k = z->spec_start; k <= z->spec_end; ++k) {
+            previous = z->arith_bits[component][k];
+            if (z->succ_high ? previous != z->succ_high : previous != -1)
+               return stbi__err("arithmetic scan order", "Corrupt JPEG");
+            z->arith_bits[component][k] = (signed char)z->succ_low;
+         }
+      }
+   }
    return 1;
 }
 
@@ -3631,6 +4296,8 @@ static int stbi__free_jpeg_components(stbi__jpeg *z, int ncomp, int why)
 {
    int i;
    for (i=0; i < ncomp; ++i) {
+      STBI_FREE(z->arith_diffs[i]);
+      z->arith_diffs[i] = NULL;
       if (z->img_comp[i].raw_data) {
          STBI_FREE(z->img_comp[i].raw_data);
          z->img_comp[i].raw_data = NULL;
@@ -3650,9 +4317,9 @@ static int stbi__free_jpeg_components(stbi__jpeg *z, int ncomp, int why)
    return why;
 }
 
-// T.81 B.2.5 places DNL immediately after the first scan. The builtin
-// loader supplies a complete memory buffer, so resolve only zero-height
-// frames with a bounded marker walk before allocating component planes.
+// T.81 B.2.5 permits DNL to define or redefine the height after scan one.
+// Resolve it before allocation, including when SOF supplied a nonzero Y.
+// A cheap candidate search avoids parsing an ordinary image a second time.
 // Segment payloads are opaque: apparent DNL bytes inside APP/COM/table data
 // are not markers. Within entropy data, FF00 and RSTn do not end the scan.
 static int stbi__jpeg_find_dnl(stbi__jpeg *z)
@@ -3663,11 +4330,25 @@ static int stbi__jpeg_find_dnl(stbi__jpeg *z)
    int length;
    int height;
    int in_scan;
+   int required;
 
-   if (z->s->io.read != NULL)
+   required = z->s->img_y == 0;
+   if (z->s->io.read != NULL) {
+      if (!required) return 1;
       return stbi__err("DNL needs buffered input", "Unsupported JPEG input");
+   }
    p = z->s->img_buffer;
    end = z->s->img_buffer_end;
+   if (!required) {
+      while (p < end) {
+         p = (stbi_uc const *)memchr(p, 0xff, (size_t)(end - p));
+         if (p == NULL || end - p < 2) return 1;
+         if (p[1] == 0xdc) break;
+         ++p;
+      }
+      if (p == end) return 1;
+      p = z->s->img_buffer;
+   }
    in_scan = 0;
    while (p < end) {
       if (in_scan) {
@@ -3678,11 +4359,12 @@ static int stbi__jpeg_find_dnl(stbi__jpeg *z)
       if (p == end) break;
       marker = *p++;
       if (in_scan && (marker == 0 || STBI__RESTART(marker))) continue;
+      if (in_scan && marker != 0xdc) return !required;
       if (end - p < 2) break;
       length = (p[0] << 8) | p[1];
       if (length < 2 || length > end - p) break;
       if (in_scan) {
-         if (marker != 0xdc || length < 4) break;
+         if (length < 4) break;
          height = (p[2] << 8) | p[3];
          if (height == 0) break;
          z->s->img_y = height;
@@ -3692,7 +4374,8 @@ static int stbi__jpeg_find_dnl(stbi__jpeg *z)
       }
       if (marker == 0xda) {
          in_scan = 1;
-      } else if (marker != 0xc4 && marker != 0xdb && marker != 0xdd &&
+      } else if (marker != 0xc4 && marker != 0xcc &&
+                 marker != 0xdb && marker != 0xdd &&
                  marker != 0xfe && !(marker >= 0xe0 && marker <= 0xef)) {
          break;
       }
@@ -3705,6 +4388,7 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
 {
    stbi__context *s = z->s;
    int Lf,p,i,q, h_max=1,v_max=1,c;
+   int ref, eh, ev;
    Lf = stbi__get16be(s);         if (Lf < 11) return stbi__err("bad SOF len","Corrupt JPEG"); // JPEG
    p  = stbi__get8(s);
    if (z->lossless) {
@@ -3713,12 +4397,17 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
       if (p < 8 || p > 12) return stbi__err("unsupported precision","JPEG format not supported: only 8-12 bit precision");
    }
    z->data_precision = p;
+   if (z->differential && !z->hierarchical)
+      return stbi__err("differential without DHP", "Corrupt JPEG");
+   if (z->hierarchical && p != z->dhp_precision)
+      return stbi__err("hierarchical precision", "Corrupt JPEG");
    s->img_y = stbi__get16be(s);
    s->img_x = stbi__get16be(s);   if (s->img_x == 0) return stbi__err("0 width","Corrupt JPEG"); // JPEG requires
    if (s->img_y > STBI_MAX_DIMENSIONS) return stbi__err("too large","Very large image (corrupt?)");
    if (s->img_x > STBI_MAX_DIMENSIONS) return stbi__err("too large","Very large image (corrupt?)");
    c = stbi__get8(s);
-   if (c != 3 && c != 1 && c != 4) return stbi__err("bad component count","Corrupt JPEG");
+   if (c != 3 && c != 1 && c != 4 && !(z->hierarchical && c == 2))
+      return stbi__err("bad component count", "Corrupt JPEG");
    s->img_n = c;
    for (i=0; i < c; ++i) {
       z->img_comp[i].data = NULL;
@@ -3737,13 +4426,39 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
       q = stbi__get8(s);
       z->img_comp[i].h = (q >> 4);  if (!z->img_comp[i].h || z->img_comp[i].h > 4) return stbi__err("bad H","Corrupt JPEG");
       z->img_comp[i].v = q & 15;    if (!z->img_comp[i].v || z->img_comp[i].v > 4) return stbi__err("bad V","Corrupt JPEG");
+      if (z->arithmetic || z->hierarchical) {
+         for (q = 0; q < i; ++q) {
+            if (z->img_comp[q].id == z->img_comp[i].id)
+               return stbi__err("duplicate frame component", "Corrupt JPEG");
+         }
+      }
+      if (z->hierarchical) {
+         for (ref = 0; ref < z->dhp_n; ++ref) {
+            if (z->reference[ref].id == z->img_comp[i].id) break;
+         }
+         if (ref == z->dhp_n ||
+             z->reference[ref].h != z->img_comp[i].h ||
+             z->reference[ref].v != z->img_comp[i].v ||
+             (z->reference[ref].data != NULL) != z->differential ||
+             z->reference[ref].final_lossless ||
+             (z->reference[ref].first_lossless && !z->lossless))
+            return stbi__err("hierarchical component", "Corrupt JPEG");
+         for (q = 0; q < i; ++q) {
+            if (z->img_comp[q].id == z->img_comp[i].id)
+               return stbi__err("duplicate frame component", "Corrupt JPEG");
+         }
+      }
       z->img_comp[i].tq = stbi__get8(s);  if (z->img_comp[i].tq > 3) return stbi__err("bad TQ","Corrupt JPEG");
    }
 
-   if (s->img_y == 0 && !stbi__jpeg_find_dnl(z)) return 0;
+   if (!stbi__jpeg_find_dnl(z)) return 0;
    if (s->img_y > STBI_MAX_DIMENSIONS)
       return stbi__err("too large", "Very large image (corrupt?)");
    if (scan != STBI__SCAN_load) return 1;
+   if (z->expansion_seen && !z->differential)
+      return stbi__err("EXP before initial frame", "Corrupt JPEG");
+   memset(z->arith_bits, -1, sizeof(z->arith_bits));
+   z->frame_open = 1;
 
    if (!stbi__mad3sizes_valid(s->img_x, s->img_y, s->img_n, 0)) return stbi__err("too large", "Image too large to decode");
 
@@ -3772,6 +4487,17 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
       // number of effective pixels (e.g. for non-interleaved MCU)
       z->img_comp[i].x = (s->img_x * z->img_comp[i].h + h_max-1) / h_max;
       z->img_comp[i].y = (s->img_y * z->img_comp[i].v + v_max-1) / v_max;
+      if (z->hierarchical && z->differential) {
+         for (ref = 0; ref < z->dhp_n; ++ref) {
+            if (z->reference[ref].id == z->img_comp[i].id) break;
+         }
+         eh = 1 << (z->expansion >> 4);
+         ev = 1 << (z->expansion & 15);
+         if ((z->img_comp[i].x + eh - 1) / eh != z->reference[ref].x ||
+             (z->img_comp[i].y + ev - 1) / ev != z->reference[ref].y)
+            return stbi__free_jpeg_components(z, i,
+                stbi__err("hierarchical dimensions", "Corrupt JPEG"));
+      }
       // to simplify generation, we'll allocate enough memory to decode
       // the bogus oversized data from using interleaved MCUs and their
       // big blocks (e.g. a 16x16 iMCU on an image of width 33); we won't
@@ -3784,7 +4510,7 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
       z->img_comp[i].coeff = 0;
       z->img_comp[i].raw_coeff = 0;
       z->img_comp[i].linebuf = NULL;
-      if (z->lossless || z->data_precision > 8) {
+      if (z->lossless || z->data_precision > 8 || z->hierarchical) {
          z->img_comp[i].raw_data = stbi__malloc_mad3(z->img_comp[i].w2,
                                                      z->img_comp[i].h2,
                                                      sizeof(stbi__uint16),
@@ -3797,12 +4523,22 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
       if (z->img_comp[i].raw_data == NULL)
          return stbi__free_jpeg_components(z, i+1, stbi__err("outofmem", "Out of memory"));
       // align blocks for idct using mmx/sse
-      if (z->lossless || z->data_precision > 8) {
+      if (z->lossless || z->data_precision > 8 || z->hierarchical) {
          z->img_comp[i].data = NULL;
          z->img_comp[i].data16 = (stbi__uint16*) (((size_t) z->img_comp[i].raw_data + 15) & ~15);
       } else {
          z->img_comp[i].data = (stbi_uc*) (((size_t) z->img_comp[i].raw_data + 15) & ~15);
          z->img_comp[i].data16 = NULL;
+      }
+      if (z->arithmetic && z->lossless) {
+         z->arith_diffs[i] = (stbi__int16 *)stbi__malloc_mad3(
+             z->img_comp[i].w2, z->img_comp[i].v + 1,
+             sizeof(stbi__int16), 0);
+         if (!z->arith_diffs[i])
+            return stbi__free_jpeg_components(z, i + 1,
+                stbi__err("outofmem", "Out of memory"));
+         memset(z->arith_diffs[i], 0, z->img_comp[i].w2 *
+                (z->img_comp[i].v + 1) * sizeof(stbi__int16));
       }
       if (z->progressive) {
          // w2, h2 are multiples of 8 (see above)
@@ -3812,9 +4548,14 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
          if (z->img_comp[i].raw_coeff == NULL)
             return stbi__free_jpeg_components(z, i+1, stbi__err("outofmem", "Out of memory"));
          z->img_comp[i].coeff = (short*) (((size_t) z->img_comp[i].raw_coeff + 15) & ~15);
+         memset(z->img_comp[i].coeff, 0,
+                z->img_comp[i].w2 * z->img_comp[i].h2 * sizeof(short));
       }
    }
 
+   z->frame_expansion = z->expansion;
+   z->expansion = 0;
+   z->expansion_seen = 0;
    return 1;
 }
 
@@ -3822,15 +4563,40 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
 #define stbi__DNL(x)         ((x) == 0xdc)
 #define stbi__SOI(x)         ((x) == 0xd8)
 #define stbi__EOI(x)         ((x) == 0xd9)
-#define stbi__SOF(x)         ((x) == 0xc0 || (x) == 0xc1 || (x) == 0xc2 || (x) == 0xc3)
-#define stbi__SOS(x)         ((x) == 0xda)
+#define stbi__SOF(x) ((x) >= 0xc0 && (x) <= 0xcf && \
+                      (x) != 0xc4 && (x) != 0xc8 && (x) != 0xcc)
+#define stbi__SOS(x) ((x) == 0xda)
+#define stbi__SOF_progressive(x) (((x) & 3) == 2)
+#define stbi__SOF_lossless(x) (((x) & 3) == 3)
 
-#define stbi__SOF_progressive(x)   ((x) == 0xc2)
-#define stbi__SOF_lossless(x)      ((x) == 0xc3)
+static int stbi__jpeg_process(stbi__jpeg *j, int marker)
+{
+   j->arithmetic = (marker & 8) != 0;
+   j->differential = (marker & 4) != 0;
+   j->progressive = stbi__SOF_progressive(marker);
+   j->lossless = stbi__SOF_lossless(marker);
+   if (j->hierarchical) {
+      /* Annex J permits baseline Huffman frames beside arithmetic frames,
+       * but all other frames must share one entropy coding procedure. */
+      if (marker != 0xc0) j->hierarchy_entropy |= j->arithmetic ? 2 : 1;
+      if (j->hierarchy_entropy == 3)
+         return stbi__err("hierarchical entropy mismatch", "Corrupt JPEG");
+      if (!j->differential) {
+         if (j->hierarchy_kind && j->hierarchy_kind != 1 + j->lossless)
+            return stbi__err("hierarchical process mismatch", "Corrupt JPEG");
+         j->hierarchy_kind = 1 + j->lossless;
+      }
+   }
+   return 1;
+}
 
 static int stbi__decode_jpeg_header(stbi__jpeg *z, int scan)
 {
    int m;
+   memset(z->arith_l, 0, sizeof(z->arith_l));
+   memset(z->arith_u, 1, sizeof(z->arith_u));
+   memset(z->arith_k, 5, sizeof(z->arith_k));
+   memset(z->arith_bits, -1, sizeof(z->arith_bits));
    z->jfif = 0;
    z->app14_color_transform = -1; // valid values are 0,1,2
    z->marker = STBI__MARKER_none; // initialize cached marker to empty
@@ -3847,8 +4613,7 @@ static int stbi__decode_jpeg_header(stbi__jpeg *z, int scan)
          m = stbi__get_marker(z);
       }
    }
-   z->progressive = stbi__SOF_progressive(m);
-   z->lossless = stbi__SOF_lossless(m);
+   if (!stbi__jpeg_process(z, m)) return 0;
    if (!stbi__process_frame_header(z, scan)) return 0;
    return 1;
 }
@@ -3875,6 +4640,139 @@ static stbi_uc stbi__skip_jpeg_junk_at_end(stbi__jpeg *j)
    return STBI__MARKER_none;
 }
 
+static int stbi__jpeg_reference_value(stbi__jpeg *j, int n, int offset)
+{
+   int value;
+   value = j->reference[n].data[offset];
+   if (!j->reference[n].first_lossless && value >= 32768) value -= 65536;
+   return value;
+}
+
+/* Annex J expansion is horizontal first, then vertical, with truncation
+ * after each average. This differs from JPEG chroma upsampling. */
+static int stbi__jpeg_reference(stbi__jpeg *j, int n, int x, int y)
+{
+   int ex, ey, x0, x1, y0, y1, stride;
+   int top, bottom;
+
+   ex = j->frame_expansion >> 4;
+   ey = j->frame_expansion & 15;
+   x0 = x >> ex;
+   y0 = y >> ey;
+   x1 = x0 + (ex && (x & 1));
+   y1 = y0 + (ey && (y & 1));
+   if (x1 >= j->reference[n].x) x1 = x0;
+   if (y1 >= j->reference[n].y) y1 = y0;
+   stride = j->reference[n].stride;
+   top = (stbi__jpeg_reference_value(j, n, y0 * stride + x0) +
+          stbi__jpeg_reference_value(j, n, y0 * stride + x1)) >> 1;
+   bottom = (stbi__jpeg_reference_value(j, n, y1 * stride + x0) +
+             stbi__jpeg_reference_value(j, n, y1 * stride + x1)) >> 1;
+   return (top + bottom) >> 1;
+}
+
+static int stbi__jpeg_commit_frame(stbi__jpeg *j)
+{
+   int c, n, x, y, stride;
+   stbi__uint16 *plane;
+
+   for (c = 0; c < j->s->img_n; ++c) {
+      if (j->arith_bits[c][0] < 0)
+         return stbi__err("missing hierarchy component", "Corrupt JPEG");
+   }
+   if (j->progressive) stbi__jpeg_finish(j);
+   for (c = 0; c < j->s->img_n; ++c) {
+      for (n = 0; n < j->dhp_n; ++n) {
+         if (j->reference[n].id == j->img_comp[c].id) break;
+      }
+      if (n == j->dhp_n) return 0;
+      plane = j->img_comp[c].data16;
+      stride = j->img_comp[c].w2;
+      if (j->differential) {
+         for (y = 0; y < j->img_comp[c].y; ++y) {
+            for (x = 0; x < j->img_comp[c].x; ++x) {
+               plane[y * stride + x] = (stbi__uint16)(
+                   plane[y * stride + x] + stbi__jpeg_reference(j, n, x, y));
+            }
+         }
+         j->reference[n].final_lossless =
+             j->lossless && !j->reference[n].first_lossless;
+      } else {
+         j->reference[n].first_lossless = j->lossless;
+      }
+      STBI_FREE(j->reference[n].raw);
+      j->reference[n].data = plane;
+      j->reference[n].raw = j->img_comp[c].raw_data;
+      j->reference[n].x = j->img_comp[c].x;
+      j->reference[n].y = j->img_comp[c].y;
+      j->reference[n].stride = stride;
+      j->img_comp[c].raw_data = NULL;
+      j->img_comp[c].data16 = NULL;
+   }
+   stbi__free_jpeg_components(j, j->s->img_n, 0);
+   ++j->frame_count;
+   j->frame_open = 0;
+   return 1;
+}
+
+/* Only the completed DHP image escapes to color interpretation or CMS.
+ * Move ownership back to the ordinary component cleanup/output path. */
+static int stbi__jpeg_publish_hierarchy(stbi__jpeg *j)
+{
+   int i, h, v, x, y, value, maximum, offset;
+
+   maximum = (1 << j->dhp_precision) - 1;
+   h = v = 1;
+   if (j->expansion_seen) return stbi__err("unconsumed EXP", "Corrupt JPEG");
+   for (i = 0; i < j->dhp_n; ++i) {
+      if (j->reference[i].h > h) h = j->reference[i].h;
+      if (j->reference[i].v > v) v = j->reference[i].v;
+   }
+   for (i = 0; i < j->dhp_n; ++i) {
+      if (!j->reference[i].data || h % j->reference[i].h ||
+          v % j->reference[i].v ||
+          j->reference[i].x != (j->dhp_x * j->reference[i].h + h - 1) / h ||
+          j->reference[i].y != (j->dhp_y * j->reference[i].v + v - 1) / v)
+         return stbi__err("incomplete hierarchy", "Corrupt JPEG");
+   }
+   /* Lossy differential frames can overshoot the source range. Preserve
+    * those signed references between frames, but saturate the final DCT
+    * reconstruction before unsigned chroma resampling or CMS. A lossless
+    * 16-bit source uses all unsigned values and retains modulo arithmetic. */
+   for (i = 0; i < j->dhp_n; ++i) {
+      if (j->reference[i].first_lossless) continue;
+      for (y = 0; y < j->reference[i].y; ++y) {
+         for (x = 0; x < j->reference[i].x; ++x) {
+            offset = y * j->reference[i].stride + x;
+            value = stbi__jpeg_reference_value(j, i, offset);
+            j->reference[i].data[offset] = (stbi__uint16)(
+                value < 0 ? 0 : value > maximum ? maximum : value);
+         }
+      }
+   }
+   j->s->img_n = j->dhp_n;
+   j->s->img_x = j->dhp_x;
+   j->s->img_y = j->dhp_y;
+   j->img_h_max = h;
+   j->img_v_max = v;
+   j->data_precision = j->dhp_precision;
+   j->rgb = 0;
+   for (i = 0; i < j->dhp_n; ++i) {
+      j->img_comp[i].id = j->reference[i].id;
+      j->img_comp[i].h = j->reference[i].h;
+      j->img_comp[i].v = j->reference[i].v;
+      j->img_comp[i].x = j->reference[i].x;
+      j->img_comp[i].y = j->reference[i].y;
+      j->img_comp[i].w2 = j->reference[i].stride;
+      j->img_comp[i].data16 = j->reference[i].data;
+      j->img_comp[i].raw_data = j->reference[i].raw;
+      j->reference[i].data = NULL;
+      j->reference[i].raw = NULL;
+      if (i < 3 && j->img_comp[i].id == "RGB"[i]) ++j->rgb;
+   }
+   return 1;
+}
+
 // decode image to YCbCr format
 static int stbi__decode_jpeg_image(stbi__jpeg *j)
 {
@@ -3895,13 +4793,25 @@ static int stbi__decode_jpeg_image(stbi__jpeg *j)
    if (!stbi__decode_jpeg_header(j, STBI__SCAN_load)) return 0;
    m = stbi__get_marker(j);
    while (!stbi__EOI(m)) {
-      if (stbi__SOS(m)) {
+      if (stbi__SOF(m)) {
+         if (!j->hierarchical || !j->frame_open || scans == 0 ||
+             j->dnl_pending || !stbi__jpeg_commit_frame(j))
+            return stbi__err("unexpected frame", "Corrupt JPEG");
+         if (!stbi__jpeg_process(j, m)) return 0;
+         j->dnl_position = NULL;
+         j->entropy_short = 0;
+         scans = dnl_seen = 0;
+         if (!stbi__process_frame_header(j, STBI__SCAN_load)) return 0;
+         m = stbi__get_marker(j);
+      } else if (stbi__SOS(m)) {
          if (!stbi__process_scan_header(j)) return 0;
          if (!stbi__parse_entropy_coded_data(j)) return 0;
          ++scans;
          if (j->dnl_pending) {
-            if (j->code_bits < 24) stbi__grow_buffer_unsafe(j);
-            if (!stbi__jpeg_dnl_padding(j)) return 0;
+            if (!j->arithmetic) {
+               if (j->code_bits < 24) stbi__grow_buffer_unsafe(j);
+               if (!stbi__jpeg_dnl_padding(j)) return 0;
+            }
             if (j->marker != 0xdc ||
                 j->s->img_buffer != j->dnl_position)
                return stbi__err("bad DNL position", "Corrupt JPEG");
@@ -3933,9 +4843,21 @@ static int stbi__decode_jpeg_image(stbi__jpeg *j)
       } else {
          if (!stbi__process_marker(j, m)) {
             // Deferred-height input must reach EOI, not a partial frame.
-            return j->dnl_position == NULL;
+            return j->dnl_position == NULL && !j->arithmetic &&
+                !j->hierarchical;
          }
          m = stbi__get_marker(j);
+      }
+   }
+   if (j->hierarchical) {
+      if (scans == 0 || j->dnl_pending || !stbi__jpeg_commit_frame(j))
+         return 0;
+      return stbi__jpeg_publish_hierarchy(j);
+   }
+   if (j->arithmetic) {
+      for (m = 0; m < j->s->img_n; ++m) {
+         if (j->arith_bits[m][0] < 0)
+            return stbi__err("missing arithmetic component", "Corrupt JPEG");
       }
    }
    if (j->progressive)
@@ -4472,6 +5394,12 @@ static void stbi__setup_jpeg(stbi__jpeg *j)
 // clean up the temporary component buffers
 static void stbi__cleanup_jpeg(stbi__jpeg *j)
 {
+   int i;
+   for (i = 0; i < 4; ++i) {
+      STBI_FREE(j->reference[i].raw);
+      j->reference[i].raw = NULL;
+      j->reference[i].data = NULL;
+   }
    stbi__free_jpeg_components(j, j->s->img_n, 0);
 }
 
@@ -4502,7 +5430,7 @@ static stbi_uc *load_jpeg_image(stbi__jpeg *z, int *out_x, int *out_y, int *comp
 
    // load a jpeg image from whichever source, but leave in YCbCr format
    if (!stbi__decode_jpeg_image(z)) { stbi__cleanup_jpeg(z); return NULL; }
-   if (z->lossless || z->data_precision > 8) {
+   if (z->lossless || z->data_precision > 8 || z->hierarchical) {
       stbi__cleanup_jpeg(z);
       return stbi__errpuc("only 8-bit", "JPEG format not supported: use float API for lossless or >8-bit JPEG");
    }
@@ -4781,7 +5709,7 @@ static float *load_jpeg_image_float_high_precision(stbi__jpeg *z,
    }
 
    precision = z->data_precision;
-   if (precision < 8 ||
+   if (precision < (z->lossless ? 2 : 8) ||
        (!z->lossless && precision > 12) ||
        (z->lossless && precision > 16)) {
       stbi__cleanup_jpeg(z);
@@ -4988,7 +5916,7 @@ static float *load_jpeg_image_float(stbi__jpeg *z, int *out_x,
 
    // load a jpeg image from whichever source, but leave in YCbCr format
    if (!stbi__decode_jpeg_image(z)) { stbi__cleanup_jpeg(z); return NULL; }
-   if (z->lossless || z->data_precision > 8) {
+   if (z->lossless || z->data_precision > 8 || z->hierarchical) {
       return load_jpeg_image_float_high_precision(z,
                                                   out_x,
                                                   out_y,

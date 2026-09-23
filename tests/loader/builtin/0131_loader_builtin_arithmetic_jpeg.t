@@ -1,7 +1,7 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/jpeg.md
-# Verify builtin loader rejects arithmetic-coded JPEG streams.
+# Verify builtin loader decodes arithmetic-coded JPEG streams.
 
 set -eux
 
@@ -22,8 +22,8 @@ trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PAT
 run_status=$?
 set -e
 
-test "${run_status}" -ne 0 || {
-    echo "not ok" 1 - "builtin loader unexpectedly decoded arithmetic JPEG"
+test "${run_status}" -eq 0 || {
+    echo "not ok" 1 - "builtin loader failed to decode arithmetic JPEG"
     exit 0
 }
 
@@ -37,13 +37,13 @@ case "${trace_log}" in
 esac
 
 case "${trace_log}" in
-    *"libsixel: loader builtin failed ("*)
+    *"libsixel: loader builtin succeeded"*)
         ;;
     *)
-        echo "not ok" 1 - "builtin loader failure was not reported"
+        echo "not ok" 1 - "builtin loader success was not reported"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "builtin loader rejects arithmetic-coded JPEG"
+echo "ok" 1 - "builtin loader decodes arithmetic-coded JPEG"
 exit 0

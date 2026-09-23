@@ -368,8 +368,8 @@
         {
           "coverage_id": "JPG-02",
           "details": [
-            "build quantization and Huffman state",
-            "reject unsupported arithmetic coding"
+            "build quantization, Huffman and arithmetic state",
+            "validate DAC, DHP, EXP and scan transitions"
           ],
           "phase": "MARKERS",
           "role": "parse",
@@ -385,7 +385,7 @@
           "coverage_id": "JPG-03",
           "details": [
             "inverse-DCT coefficient paths or lossless predictors",
-            "retain 9-16 bit samples for float output"
+            "reconstruct hierarchy; retain high-depth samples"
           ],
           "phase": "ENTROPY",
           "role": "decode",
@@ -446,7 +446,7 @@
           "tests/loader/builtin/1976_loader_builtin_jpeg_rgb8_sequential_digest.t"
         ],
         "JPG-02": [
-          "tests/loader/builtin/0131_loader_builtin_rejects_arithmetic_jpeg.t"
+          "tests/loader/builtin/0131_loader_builtin_arithmetic_jpeg.t"
         ],
         "JPG-03": [
           "tests/loader/builtin/1983_loader_builtin_jpeg_rgb16_lossless_numeric.t"
