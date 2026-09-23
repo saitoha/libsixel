@@ -313,7 +313,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/frompng.h $(srcdir)/fromhdr.c $(srcdir)/fromhdr.h \
 	$(srcdir)/frompsd.c $(srcdir)/frompsd.h \
 	$(srcdir)/frompsd-internal.h $(srcdir)/frompsd-trace.c \
-	$(srcdir)/frompsd-header.c $(srcdir)/fromgif.c \
+	$(srcdir)/frompsd-header.c $(srcdir)/frompsd-color.c \
+	$(srcdir)/frompsd-color.h $(srcdir)/loader-psd-color.c \
+	$(srcdir)/loader-psd-color.h $(srcdir)/fromgif.c \
 	$(srcdir)/fromgif.h $(srcdir)/fromwebp.c $(srcdir)/fromwebp.h \
 	$(srcdir)/fromwebp-container.h $(srcdir)/fromwebp-internal.h \
 	$(srcdir)/fromwebp-vp8-private.h \
@@ -473,6 +475,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompsd.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompsd-trace.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompsd-header.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompsd-color.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-psd-color.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromgif.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromwebp.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromwebp-container.lo \
@@ -609,6 +613,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-fromhdr.Plo \
 	./$(DEPDIR)/libsixel_la-frompng.Plo \
 	./$(DEPDIR)/libsixel_la-frompnm.Plo \
+	./$(DEPDIR)/libsixel_la-frompsd-color.Plo \
 	./$(DEPDIR)/libsixel_la-frompsd-header.Plo \
 	./$(DEPDIR)/libsixel_la-frompsd-trace.Plo \
 	./$(DEPDIR)/libsixel_la-frompsd.Plo \
@@ -640,6 +645,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-loader-libwebp.Plo \
 	./$(DEPDIR)/libsixel_la-loader-manager.Plo \
 	./$(DEPDIR)/libsixel_la-loader-order-schema.Plo \
+	./$(DEPDIR)/libsixel_la-loader-psd-color.Plo \
 	./$(DEPDIR)/libsixel_la-loader-quicklook.Plo \
 	./$(DEPDIR)/libsixel_la-loader-wic.Plo \
 	./$(DEPDIR)/libsixel_la-loader.Plo \
@@ -1279,6 +1285,10 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompsd-internal.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompsd-trace.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompsd-header.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompsd-color.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompsd-color.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-psd-color.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-psd-color.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromgif.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromgif.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp.c \
@@ -1641,6 +1651,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromhdr.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompng.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompnm.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompsd-color.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompsd-header.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompsd-trace.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompsd.Plo@am__quote@ # am--include-marker
@@ -1672,6 +1683,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-libwebp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-manager.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-order-schema.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-psd-color.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-quicklook.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-wic.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader.Plo@am__quote@ # am--include-marker
@@ -2580,6 +2592,20 @@ libsixel_la-frompsd-header.lo: frompsd-header.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-frompsd-header.lo `test -f 'frompsd-header.c' || echo '$(srcdir)/'`frompsd-header.c
 
+libsixel_la-frompsd-color.lo: frompsd-color.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-frompsd-color.lo -MD -MP -MF $(DEPDIR)/libsixel_la-frompsd-color.Tpo -c -o libsixel_la-frompsd-color.lo `test -f 'frompsd-color.c' || echo '$(srcdir)/'`frompsd-color.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-frompsd-color.Tpo $(DEPDIR)/libsixel_la-frompsd-color.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frompsd-color.c' object='libsixel_la-frompsd-color.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-frompsd-color.lo `test -f 'frompsd-color.c' || echo '$(srcdir)/'`frompsd-color.c
+
+libsixel_la-loader-psd-color.lo: loader-psd-color.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-psd-color.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-psd-color.Tpo -c -o libsixel_la-loader-psd-color.lo `test -f 'loader-psd-color.c' || echo '$(srcdir)/'`loader-psd-color.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-psd-color.Tpo $(DEPDIR)/libsixel_la-loader-psd-color.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-psd-color.c' object='libsixel_la-loader-psd-color.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-psd-color.lo `test -f 'loader-psd-color.c' || echo '$(srcdir)/'`loader-psd-color.c
+
 libsixel_la-fromgif.lo: fromgif.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-fromgif.lo -MD -MP -MF $(DEPDIR)/libsixel_la-fromgif.Tpo -c -o libsixel_la-fromgif.lo `test -f 'fromgif.c' || echo '$(srcdir)/'`fromgif.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-fromgif.Tpo $(DEPDIR)/libsixel_la-fromgif.Plo
@@ -3132,6 +3158,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromhdr.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompng.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-frompsd-color.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompsd-header.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompsd-trace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompsd.Plo
@@ -3163,6 +3190,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-libwebp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-manager.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-order-schema.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-psd-color.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-quicklook.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-wic.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader.Plo
@@ -3333,6 +3361,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromhdr.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompng.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-frompsd-color.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompsd-header.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompsd-trace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompsd.Plo
@@ -3364,6 +3393,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-libwebp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-manager.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-order-schema.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-psd-color.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-quicklook.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-wic.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader.Plo

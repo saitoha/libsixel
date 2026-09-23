@@ -652,6 +652,52 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0182_LOADER_BUILTIN_APNG_CALLBACK_ERROR_NO_FALLBACK \
     -DBUILD_TEST_0183_LOADER_BUILTIN_JPEG_SOURCE_NUMERIC \
     -DBUILD_TEST_0184_LOADER_BUILTIN_PSD_CMYK_ICC_NUMERIC \
+    -DBUILD_PSD_COLOR_TEST_COMMON \
+    -DBUILD_TEST_0001_DUOTONE_RAW_NUMERIC \
+    -DBUILD_TEST_0002_DUOTONE_RLE_NUMERIC \
+    -DBUILD_TEST_0003_DUOTONE_ZIP_NUMERIC \
+    -DBUILD_TEST_0004_DUOTONE_PREDICTION_NUMERIC \
+    -DBUILD_TEST_0005_DUOTONE_PSB_RLE_NUMERIC \
+    -DBUILD_TEST_0006_DUOTONE_16_NUMERIC \
+    -DBUILD_TEST_0007_DUOTONE_32_NUMERIC \
+    -DBUILD_TEST_0008_DUOTONE_GAMUT_NUMERIC \
+    -DBUILD_TEST_0009_DUOTONE_ALPHA_NUMERIC \
+    -DBUILD_TEST_0010_DUOTONE_BACKGROUND_NUMERIC \
+    -DBUILD_TEST_0011_DUOTONE_BUILTIN_NUMERIC \
+    -DBUILD_TEST_0012_SPOT_ONE_NUMERIC \
+    -DBUILD_TEST_0013_SPOT_TWO_NUMERIC \
+    -DBUILD_TEST_0014_SPOT_THREE_NUMERIC \
+    -DBUILD_TEST_0015_SPOT_FOUR_NUMERIC \
+    -DBUILD_TEST_0016_SPOT_FIVE_NUMERIC \
+    -DBUILD_TEST_0017_SPOT_MAX_NUMERIC \
+    -DBUILD_TEST_0018_SPOT_16_NUMERIC \
+    -DBUILD_TEST_0019_SPOT_32_NUMERIC \
+    -DBUILD_TEST_0020_SPOT_RLE_NUMERIC \
+    -DBUILD_TEST_0021_SPOT_ZIP_NUMERIC \
+    -DBUILD_TEST_0022_SPOT_PREDICTION_NUMERIC \
+    -DBUILD_TEST_0023_SPOT_PSB_NUMERIC \
+    -DBUILD_TEST_0024_SPOT_OBSOLETE_NUMERIC \
+    -DBUILD_TEST_0025_SPOT_SOLIDITY_NUMERIC \
+    -DBUILD_TEST_0026_DUOTONE_SHORT_REJECT \
+    -DBUILD_TEST_0027_DUOTONE_COUNT_REJECT \
+    -DBUILD_TEST_0028_DUOTONE_VERSION_REJECT \
+    -DBUILD_TEST_0029_DISPLAY_SHORT_REJECT \
+    -DBUILD_TEST_0030_DISPLAY_OPACITY_REJECT \
+    -DBUILD_TEST_0031_DISPLAY_KIND_REJECT \
+    -DBUILD_TEST_0032_DISPLAY_COUNT_REJECT \
+    -DBUILD_TEST_0033_SPOT_SPACE_REJECT \
+    -DBUILD_TEST_0034_SPOT_NONFINITE_REJECT \
+    -DBUILD_TEST_0035_SPOT_RANGE_REJECT \
+    -DBUILD_TEST_0036_SPOT_PLANE_SHORT_REJECT \
+    -DBUILD_TEST_0037_DISPLAY_PRECEDENCE_NUMERIC \
+    -DBUILD_TEST_0038_RESOURCE_PADDING_REJECT \
+    -DBUILD_TEST_0039_DUOTONE_DUPLICATE_REJECT \
+    -DBUILD_TEST_0040_DISPLAY_DUPLICATE_REJECT \
+    -DBUILD_TEST_0041_SPOT_LAB_NUMERIC \
+    -DBUILD_TEST_0042_SPOT_GRAY_NUMERIC \
+    -DBUILD_TEST_0043_DISPLAY_REVERSE_NUMERIC \
+    -DBUILD_TEST_0044_DUOTONE_SPOT_REJECT \
+    -DBUILD_TEST_0045_SPOT_LAB_RANGE_REJECT \
     -DBUILD_TEST_0185_PNG_SOURCE_NUMERIC \
     -DBUILD_TEST_0142_RGB16_SOURCE \
     -DBUILD_TEST_0231_TIFF_ICC_NUMERIC \
@@ -2793,6 +2839,53 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0182_loader_builtin_apng_callback_error_no_fallback.c \
     loader/builtin/0183_loader_builtin_jpeg_source_numeric.c \
     loader/builtin/0184_loader_builtin_psd_cmyk_icc_numeric.c \
+    loader/builtin/psd_color_test_common.c \
+    loader/builtin/psd_color_test_common.h \
+    loader/builtin/psd/0001_duotone_raw_numeric.c \
+    loader/builtin/psd/0002_duotone_rle_numeric.c \
+    loader/builtin/psd/0003_duotone_zip_numeric.c \
+    loader/builtin/psd/0004_duotone_prediction_numeric.c \
+    loader/builtin/psd/0005_duotone_psb_rle_numeric.c \
+    loader/builtin/psd/0006_duotone_16_numeric.c \
+    loader/builtin/psd/0007_duotone_32_numeric.c \
+    loader/builtin/psd/0008_duotone_gamut_numeric.c \
+    loader/builtin/psd/0009_duotone_alpha_numeric.c \
+    loader/builtin/psd/0010_duotone_background_numeric.c \
+    loader/builtin/psd/0011_duotone_builtin_numeric.c \
+    loader/builtin/psd/0012_spot_one_numeric.c \
+    loader/builtin/psd/0013_spot_two_numeric.c \
+    loader/builtin/psd/0014_spot_three_numeric.c \
+    loader/builtin/psd/0015_spot_four_numeric.c \
+    loader/builtin/psd/0016_spot_five_numeric.c \
+    loader/builtin/psd/0017_spot_max_numeric.c \
+    loader/builtin/psd/0018_spot_16_numeric.c \
+    loader/builtin/psd/0019_spot_32_numeric.c \
+    loader/builtin/psd/0020_spot_rle_numeric.c \
+    loader/builtin/psd/0021_spot_zip_numeric.c \
+    loader/builtin/psd/0022_spot_prediction_numeric.c \
+    loader/builtin/psd/0023_spot_psb_numeric.c \
+    loader/builtin/psd/0024_spot_obsolete_numeric.c \
+    loader/builtin/psd/0025_spot_solidity_numeric.c \
+    loader/builtin/psd/0026_duotone_short_reject.c \
+    loader/builtin/psd/0027_duotone_count_reject.c \
+    loader/builtin/psd/0028_duotone_version_reject.c \
+    loader/builtin/psd/0029_display_short_reject.c \
+    loader/builtin/psd/0030_display_opacity_reject.c \
+    loader/builtin/psd/0031_display_kind_reject.c \
+    loader/builtin/psd/0032_display_count_reject.c \
+    loader/builtin/psd/0033_spot_space_reject.c \
+    loader/builtin/psd/0034_spot_nonfinite_reject.c \
+    loader/builtin/psd/0035_spot_range_reject.c \
+    loader/builtin/psd/0036_spot_plane_short_reject.c \
+    loader/builtin/psd/0037_display_precedence_numeric.c \
+    loader/builtin/psd/0038_resource_padding_reject.c \
+    loader/builtin/psd/0039_duotone_duplicate_reject.c \
+    loader/builtin/psd/0040_display_duplicate_reject.c \
+    loader/builtin/psd/0041_spot_lab_numeric.c \
+    loader/builtin/psd/0042_spot_gray_numeric.c \
+    loader/builtin/psd/0043_display_reverse_numeric.c \
+    loader/builtin/psd/0044_duotone_spot_reject.c \
+    loader/builtin/psd/0045_spot_lab_range_reject.c \
     loader/unit/0185_png_source_numeric.c \
     loader/libtiff/0142_rgb16_source.c \
     loader/unit/0186_png_byte_target.c \

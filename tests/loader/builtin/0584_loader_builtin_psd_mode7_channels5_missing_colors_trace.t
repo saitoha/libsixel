@@ -1,6 +1,6 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# Verify Multichannel(mode=7) channels=56 hits explicit unsupported policy.
+# Verify Multichannel(mode=7) without explicit colorants is rejected.
 # Fixture generation command:
 #   python3 tests/data/inputs/formats/generate_psd_policy_trace_fixtures.py
 
@@ -15,15 +15,15 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_mode7_channels56_raw.psd"
+input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_mode7_channels5_raw.psd"
 trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in
-    *"builtin PSD: unsupported Multichannel channel count (56; expected 3 or 4)"*)
-        echo "ok" 1 - "Multichannel channels=56 is rejected by channel-count policy"
+    *"builtin PSD: Multichannel needs explicit colorant definitions (5 channels)"*)
+        echo "ok" 1 - "Multichannel channels=5 requires explicit colorants"
         ;;
     *)
-        echo "not ok" 1 - "Multichannel channels=56 did not emit expected unsupported trace"
+        echo "not ok" 1 - "Multichannel channels=5 did not emit expected unsupported trace"
         ;;
 esac
 

@@ -38,6 +38,7 @@
 #include "allocator.h"
 #include "chunk-view.h"
 #include "frompsd-internal.h"
+#include "frompsd-color.h"
 #include "loader-common.h"
 
 int
@@ -552,6 +553,7 @@ sixel_builtin_validate_psd_info(
     size_t table_bytes;
     size_t row_length_field_size;
     int nwrite;
+    sixel_psd_color_data_t color_data;
 
     ignored_message[0] = '\0';
     ignored_message[1] = '\0';
@@ -810,11 +812,22 @@ sixel_builtin_validate_psd_info(
                 (void)nwrite;
                 return SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED;
             }
+        } else if ((info->depth == 8u || info->depth == 16u ||
+                    info->depth == 32u) &&
+                   SIXEL_SUCCEEDED(sixel_psd_read_color_data(
+                       chunk, info, &color_data)) &&
+                   color_data.ink_count == info->channels) {
+            /* Colorant metadata, not channel count alone, determines how
+             * an arbitrary Multichannel composite can be displayed. */
+            decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_COLORANTS;
+            skip_icc_conversion = 1;
+            colorspace = SIXEL_COLORSPACE_LINEAR;
         } else {
             nwrite = snprintf(
                 message,
                 message_size,
-                "builtin PSD: unsupported Multichannel channel count (%u; expected 3 or 4)",
+                "builtin PSD: Multichannel needs explicit colorant "
+                "definitions (%u channels)",
                 info->channels);
             (void)nwrite;
             return SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED;

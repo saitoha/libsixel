@@ -68,6 +68,7 @@
 #include "fromhdr.h"
 #include "frompng.h"
 #include "frompsd.h"
+#include "loader-psd-color.h"
 #include "fromwebp.h"
 #include "frompnm.h"
 #include "pixelformat.h"
@@ -5636,7 +5637,22 @@ sixel_builtin_load_psd_single_frame(
 
     basic_decode_fn = sixel_builtin_psd_lookup_basic_decode_fn(
         psd_custom_decode_mode);
-    if (basic_decode_fn != NULL) {
+    status = sixel_psd_render_color_data(chunk, &psd_info, bgcolor,
+                                         &pixels, mask, mask_size);
+    if (status != SIXEL_FALSE) {
+        if (SIXEL_FAILED(status)) {
+            sixel_builtin_psd_trace_contract_add_error_code("ERR_DECODE");
+            sixel_builtin_psd_trace_contract_flush(1);
+            return status;
+        }
+        frame->width = (int)psd_info.width;
+        frame->height = (int)psd_info.height;
+        psd_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+        psd_colorspace = SIXEL_COLORSPACE_LINEAR;
+        /* The alternate colors already have their own interpretation. */
+        psd_skip_icc_conversion = 1;
+        psd_custom_decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_COLORANTS;
+    } else if (basic_decode_fn != NULL) {
         status = basic_decode_fn(chunk,
                                  &psd_info,
                                  bgcolor,

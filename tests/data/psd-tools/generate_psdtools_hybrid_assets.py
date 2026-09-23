@@ -13,6 +13,8 @@ import pathlib
 import subprocess
 import urllib.request
 
+from generate_duotone_reference import generate_duotone_expected
+
 
 HERE = pathlib.Path(__file__).resolve().parent
 DEFAULT_INPUT_DIR = HERE
@@ -109,8 +111,8 @@ ASSETS = [
     {
         "upstream": "colormodes/4x4_8bit_duotone.psd",
         "local": "psdtools_colormodes_4x4_8bit_duotone.psd",
-        "expected": "psdtools_colormodes_4x4_8bit_duotone_expected_coregraphics.six",
-        "generator": "coregraphics",
+        "expected": "psdtools_colormodes_4x4_8bit_duotone_expected_lab.ppm",
+        "generator": "duotone-lab",
     },
     {
         "upstream": "blend-and-clipping.psd",
@@ -299,6 +301,8 @@ def main() -> int:
         if asset["generator"] == "psdtools":
             print(f"generate psdtools expected: {dest_path}")
             generate_psdtools_expected(src_path, dest_path)
+        elif asset["generator"] == "duotone-lab":
+            generate_duotone_expected(src_path, dest_path)
         elif asset["generator"] == "coregraphics":
             print(f"generate coregraphics expected: {dest_path}")
             generate_coregraphics_expected(src_path, dest_path, args.img2sixel)

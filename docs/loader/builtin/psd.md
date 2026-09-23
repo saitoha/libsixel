@@ -30,8 +30,8 @@ PSD samples are planar: all samples for one channel are stored before the next c
 | 2 Indexed | 8 bits; at least one channel | Indices expanded through the required 256-entry planar RGB table to gamma `RGB888`. Source indices are not returned as `PAL8`. |
 | 3 RGB | 8, 16, or 32 bits; at least three channels | Gamma `RGB888` at 8 bit or `RGBFLOAT32` on high-depth paths before applicable CMS. |
 | 4 CMYK | 8, 16, or 32 bits; at least four channels | CMYK is converted while its components are available; high-depth work remains float. |
-| 7 Multichannel | Exactly three channels as RGB or exactly four as CMYK; 8, 16, or 32 bits | Reuses the matching RGB/CMYK path. Other channel counts are rejected rather than guessed. |
-| 8 Duotone | 8, 16, or 32 bits; at least one channel | Uses the grayscale sample path. Duotone ink definitions and transfer curves are not rendered. |
+| 7 Multichannel | 1–56 channels with complete supported spot definitions; 8, 16, or 32 bits | Uses the colorant preview path described below. Without spot definitions, the legacy three-channel RGB / four-channel CMYK compatibility paths remain. Other counts require explicit definitions. |
+| 8 Duotone | 8, 16, or 32 bits; at least one channel | Uses an available Alternate Duotone Colors table for the supported merged-image path. Without that table, retains the legacy grayscale fallback; opaque ink definitions and transfer curves are not executed. |
 | 9 Lab | 8, 16, or 32 bits; at least three channels | `CIELABFLOAT32` before applicable Lab-to-target CMS conversion. |
 
 Only numeric mode 8 enters the Duotone path. HSB/HSL, RGBE, and undocumented color modes are unsupported. A caller must use the matrix, not infer support from the `.psd` suffix.
@@ -54,6 +54,21 @@ Eight-bit values are normalized to byte RGB where possible. Sixteen-bit unsigned
 The ICC profile image resource has ID `0x040f`. The loader applies it only when the profile's input domain matches the document path: RGB profiles to RGB, CMYK profiles while CMYK samples still exist, and Lab profiles to Lab. If CMS is disabled, the profile is skipped. If an applicable profile cannot be opened or transformed, format-specific device/fallback conversion remains rather than relabeling unconverted values as the requested target.
 
 Other resources are bounded and skipped unless a decoder feature explicitly needs them. Thumbnails, guides, print settings, slices, XMP, URL lists, and arbitrary plugin resource payloads are not returned as public metadata. PSD does not pass through the common JPEG/PNG Exif scanner, so `builtin:orientation` has no effect on PSD/PSB.
+
+## Colorant previews
+
+The merged-image colorant path consumes the public image-resource definitions in the [Adobe file-format specification](https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/). It is separate from the legacy document-ICC path:
+
+- **Duotone:** resource 1066, version 1, contains 1–4 alternate ink colors followed by a 256-entry, interleaved Lab8 table. The table describes the rendered appearance; it already incorporates the author's ink/curve choices. The decoder indexes it by the original grayscale sample. Eight-bit samples select entries exactly; 16/32-bit samples interpolate adjacent entries in canonical linear RGB. Lab uses D50, `L = byte × 100/255`, and `a,b = byte − 128`. A Gray/RGB document profile is not applied again to these colorimetric entries.
+- **Multichannel:** resource 1077 version 1, or obsolete resource 1007, must describe every plane as a spot channel (`kind = 2`). RGB, Lab, and Gray display colors are supported. RGB display colors use sRGB, Lab colors use D50 with signed `a,b` hundredths, and Gray display colors use the 0–10000 scale. The explicit color definitions take precedence over the legacy three/four-channel interpretation. Resource 1077 takes precedence over 1007 regardless of their order. Unknown proprietary ink-color IDs are rejected on this path.
+
+The Multichannel renderer defines a display preview, not a press simulation or a promise of Photoshop pixel identity. It starts with white paper and applies planes in file order. A normalized sample `v` has ink coverage `1 − v`; black means full ink. For each linear RGB component, underlying value `d`, ink color `c`, and solidity `s = opacity/100`, the next value is `d × v + c × (1 − v) × (s + (1 − s) × d)`. Zero solidity uses transparent multiplicative ink; full solidity uses an opaque overlay. This explicit approximation does not model spectral ink interactions or custom overprint tables. [Adobe's spot-channel documentation](https://helpx.adobe.com/photoshop/using/printing-spot-colors.html) distinguishes display solidity from the density in printed separations.
+
+Both routes produce `LINEARRGBFLOAT32` with a matching linear tag and retain out-of-sRGB values. Their necessary color interpretation runs even with `cms_engine=none`; that switch disables embedded-ICC processing, not PSD color-mode interpretation. Native ink/table coordinates and alpha must be finite and in `[0,1]`; these are bounded density domains, unlike the resulting extended RGB. A Duotone composite may have one additional alpha plane: preserve hidden RGB and exact-zero coverage when no background is supplied, or compose in linear RGB when a background is supplied. Additional spot planes in Duotone are not treated as alpha.
+
+The parser in [`frompsd-color.c`](../../../src/frompsd-color.c) returns borrowed metadata, and `sixel_psd_read_color_planes()` in [`frompsd.c`](../../../src/frompsd.c) returns native big-endian planes without CMS calls. [`loader-psd-color.c`](../../../src/loader-psd-color.c) owns the subsequent interpretation and uses the shared analytic color definition for D50 adaptation. ZIP data is inflated once for all planes. This boundary allows normalization to move after the loader without embedding a CMM or engine-selection policy in the file parser.
+
+The initial scope requires a merged composite. The opaque Duotone ink/curve payload, alternate spot-color resource 1067, CMYK/HSB/library-specific display colors, mixed process-plus-spot documents, and arbitrary missing-composite colorant reconstruction remain unsupported. A missing Duotone lookup table still selects the documented Gray compatibility fallback; a present but malformed required color definition fails instead of silently returning a Gray replacement.
 
 ## Missing-composite layer reconstruction
 
@@ -95,7 +110,7 @@ The composite and layer-reconstruction routes converge only after they have inde
 | --- | --- | --- | --- |
 | `PSD-01` | `sixel_builtin_parse_psd_info()` and `sixel_builtin_validate_psd_info()` in [`frompsd-header.c`](../../../src/frompsd-header.c) | PSD/PSB bytes → validated section windows and document model | Version-dependent lengths, dimensions, depth/mode/channel count, resources, composite bounds, and layer-fallback eligibility must be checked before decode. |
 | `PSD-02` | `sixel_builtin_decode_psd_8bit_channel()`, `sixel_builtin_decode_psd_16bit_channel()`, and `sixel_builtin_decode_psd_32bit_channel()` in [`frompsd.c`](../../../src/frompsd.c) | Raw/RLE/ZIP/predicted-ZIP planes → native-precision component buffers | Row tables, PackBits runs, inflate size, prediction reversal, and endian float/sample conversion must agree for PSD and PSB. |
-| `PSD-03` | `sixel_builtin_psd_lookup_basic_decode_fn()` and `sixel_builtin_psd_decode_cmyk_by_mode()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | Mode/depth-specific component planes → RGB, linear RGB, or CIELAB pixels | Bitmap, Gray/Duotone, Indexed, RGB, CMYK/Multichannel, and Lab must retain the documented precision and fallback semantics. |
+| `PSD-03` | Mode dispatch in [`loader-builtin.c`](../../../src/loader-builtin.c), with `sixel_psd_render_color_data()` in the separate [`loader-psd-color.c`](../../../src/loader-psd-color.c) adapter for explicit colorant definitions | Mode/depth-specific component planes → RGB, linear RGB, or CIELAB pixels | Bitmap, Gray/Duotone, Indexed, RGB, CMYK/Multichannel, and Lab must retain the documented precision and fallback semantics. |
 | `PSD-04` | `sixel_builtin_decode_psd_multilayer_missing_composite()` and `sixel_builtin_psd_composite_layer_over()` in [`frompsd.c`](../../../src/frompsd.c) | Layer/mask/resource graph → reconstructed linear canvas | Only supported pixel/fill/effect semantics may enter the compositor; ordering, clipping, masks, alpha, blend, and deferred effects must remain explicit. |
 | `PSD-05` | `sixel_builtin_psd_apply_embedded_icc()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | Applicable resource ICC plus decoded mode components → configured target color | Profile colorspace must match the source model; conversion must occur before CMYK/Lab components are irreversibly collapsed to fallback RGB. |
 | `PSD-06` | `sixel_builtin_load_psd_single_frame()` and `sixel_builtin_finalize_loaded_frame()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | Decoded pixels plus alpha/mask → one typed frame | Pixel storage kind, colorspace, background composition, separate transparency mask, and ownership must match the selected decode/CMS route. |
@@ -125,7 +140,7 @@ img2sixel -x code:psd_trace=1:psd_header_only=1 -Lbuiltin! document.psb
 
 ## Unsupported behavior and security boundary
 
-Unsupported color modes and depth combinations fail rather than being guessed. Duotone colorants are ignored, Multichannel counts other than exactly three or four are rejected, Bitmap plus ZIP prediction is rejected, spot channels are not exported, unknown resources are not preserved, linked content is not fetched, and document timelines/video are not decoded.
+Unsupported color modes and depth combinations fail rather than being guessed. The colorant preview limits above apply; unsupported Multichannel definitions are rejected, Bitmap plus ZIP prediction is rejected, separate spot planes are not exported, unknown resources are not preserved, linked content is not fetched, and document timelines/video are not decoded.
 
 PSD/PSB is the builtin family's broadest attacker-controlled object graph: nested section lengths, layer counts, rectangles, channel compression, descriptor recursion, masks, vector records, effects, and large-document widths all interact. The reconstruction features improve compatibility but expand software attack surface far beyond a flattened stb decoder. `-Lbuiltin!` narrows fallback; it does not sandbox this parser or establish Photoshop-level conformance.
 
@@ -160,6 +175,19 @@ The rows below are pipeline landmarks rather than the complete suite. The [PSD/P
 | PSD-12 | Allocation failures while parsing and reconstructing a multilayer effect document release all allocations without emitting an invalid frame. | [tests/loader/builtin/2034_loader_builtin_psd_effect_allocation_failures.t](../../../tests/loader/builtin/2034_loader_builtin_psd_effect_allocation_failures.t) |
 | PSD-13 | Original inverted CMYK8 planes pass through a complete independently generated ICC and match all eight float RGB samples. | [tests/loader/builtin/2046_loader_builtin_psd_cmyk_icc_numeric.t](../../../tests/loader/builtin/2046_loader_builtin_psd_cmyk_icc_numeric.t) |
 
+### Colorant value tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| PSD-14 | Duotone Lab-table interpretation produces canonical linear values for every original sample. | [tests/loader/builtin/psd/0001_duotone_raw_numeric.t](../../../tests/loader/builtin/psd/0001_duotone_raw_numeric.t) |
+| PSD-15 | Duotone colorimetric colors above the sRGB gamut survive the float frame boundary. | [tests/loader/builtin/psd/0008_duotone_gamut_numeric.t](../../../tests/loader/builtin/psd/0008_duotone_gamut_numeric.t) |
+| PSD-16 | A Duotone alpha plane preserves hidden color and the exact zero-coverage mask. | [tests/loader/builtin/psd/0009_duotone_alpha_numeric.t](../../../tests/loader/builtin/psd/0009_duotone_alpha_numeric.t) |
+| PSD-17 | An explicit two-ink Multichannel definition renders both planes without treating either as alpha. | [tests/loader/builtin/psd/0013_spot_two_numeric.t](../../../tests/loader/builtin/psd/0013_spot_two_numeric.t) |
+| PSD-18 | All 56 declared spot planes participate in the preview. | [tests/loader/builtin/psd/0017_spot_max_numeric.t](../../../tests/loader/builtin/psd/0017_spot_max_numeric.t) |
+| PSD-19 | Solidity changes the defined linear preview equation. | [tests/loader/builtin/psd/0025_spot_solidity_numeric.t](../../../tests/loader/builtin/psd/0025_spot_solidity_numeric.t) |
+
+The [colorant tests](../../../tests/loader/builtin/psd) additionally cover PSD/PSB lengths, all four merged compression forms at eight-bit depth, 16/32-bit native samples, resource precedence, and malformed resource/plane rejection. These numeric tests do not establish Photoshop preview parity. They are distinct from the perceptual regression suite below.
+
 ### Quality regression tests
 
 | ID | Regression observation protected | Owning test |
@@ -170,6 +198,9 @@ The rows below are pipeline landmarks rather than the complete suite. The [PSD/P
 | PSDQ-04 | Embedded ICC conversion remains visually close to the fixed converted PNM after encoding. | [tests/loader/builtin/0057_builtin_psd_embedded_icc_matches_reference_pnm.t](../../../tests/loader/builtin/0057_builtin_psd_embedded_icc_matches_reference_pnm.t) |
 | PSDQ-05 | A 16-bit Gray/Duotone alpha document produces observably different encoded images over black and white backgrounds. | [tests/loader/builtin/0173_loader_builtin_psd_gray_duotone_16bit_alpha_bgcolor_composite.t](../../../tests/loader/builtin/0173_loader_builtin_psd_gray_duotone_16bit_alpha_bgcolor_composite.t) |
 | PSDQ-06 | A normal CMYK ICC document retains the 0.98 MS-SSIM floor against an independently generated sRGB PNG after encoding. | [tests/loader/builtin/2047_loader_builtin_psd_cmyk_icc_lsqa.t](../../../tests/loader/builtin/2047_loader_builtin_psd_cmyk_icc_lsqa.t) |
+| PSDQ-07 | An external Duotone fixture matches an independently calculated Lab-table PPM at MS-SSIM 0.995. | [tests/loader/builtin/1293_loader_builtin_psd_duotone_alternate_lab_lsqa.t](../../../tests/loader/builtin/1293_loader_builtin_psd_duotone_alternate_lab_lsqa.t) |
+
+The old CoreGraphics-generated Duotone SIXEL is grayscale and is retained only as provenance; it is not the appearance oracle. The [independent generator](../../../tests/data/psd-tools/generate_duotone_reference.py) derives the replacement from the source Lab table, using rational primary/Bradford matrices and an explicit bounded gamma-2.2 PPM boundary. It calls neither libsixel nor a CMS engine. The direct frame tests above separately protect unbounded color values.
 
 The [independent CMYK fixture](../../../tests/data/color-numeric/cmyk.json) separates original inverted PSD planes, a D50-referred affine CMYK model, physical PCS values, and final sRGB PNG quantization. The numeric and quality tests explicitly select relative intent. The historical `stbi_minimal_mode7_cmyk8_mft2_valid_icc_profile.psd` name predates this audit: its embedded ICC has zero version, class, `acsp` signature, and PCS illuminant, so it is an incomplete parser probe rather than a normal ICC color oracle. Its zero mft2 matrix is also distinct from the rule that matrix application depends on the input color space. The old [SIXEL reference](../../../tests/data/colormgmt/reference/custom/cmyk_mft2_valid_psd_builtin.six) is retained only for provenance; it is not used as a color-quality expectation. The original fixture's permissive builtin acceptance and actual LUT application remain separately tested.
 

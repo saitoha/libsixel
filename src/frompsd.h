@@ -69,7 +69,8 @@ typedef enum sixel_builtin_psd_decode_mode {
     SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT = 10,
     SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_32BIT = 11,
     SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_16BIT = 12,
-    SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_16BIT = 13
+    SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_16BIT = 13,
+    SIXEL_BUILTIN_PSD_DECODE_MODE_COLORANTS = 14
 } sixel_builtin_psd_decode_mode_t;
 
 typedef enum sixel_builtin_psd_validation_status {

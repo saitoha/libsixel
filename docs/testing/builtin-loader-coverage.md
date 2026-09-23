@@ -18,13 +18,13 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [PNG and APNG](../loader/builtin/png.md) | 288 | 22 | 59 | 0 | 13 | 7 | 187 |
 | [JPEG](../loader/builtin/jpeg.md) | 249 | 102 | 14 | 1 | 57 | 5 | 70 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
-| [PSD and PSB](../loader/builtin/psd.md) | 994 | 13 | 551 | 402 | 9 | 3 | 16 |
+| [PSD and PSB](../loader/builtin/psd.md) | 1039 | 42 | 551 | 402 | 25 | 3 | 16 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
 | [WebP](../loader/builtin/webp.md) | 308 | 13 | 48 | 241 | 0 | 1 | 5 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 41 | 25 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2435** | **572** | **724** | **652** | **108** | **18** | **361** |
+| **Total** | **2480** | **601** | **724** | **652** | **124** | **18** | **361** |
 
 ## Complete inventory
 
@@ -966,7 +966,7 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/0581_loader_builtin_psd_mode7_cmyk8_raw_decode.t](../../tests/loader/builtin/0581_loader_builtin_psd_mode7_cmyk8_raw_decode.t) | Verify builtin loader maps PSD Multichannel(4ch) to CMYK 8-bit raw decode. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/0582_loader_builtin_psd_mode7_cmyk16_zip_decode.t](../../tests/loader/builtin/0582_loader_builtin_psd_mode7_cmyk16_zip_decode.t) | Verify builtin loader maps PSD Multichannel(4ch) to CMYK 16-bit ZIP decode. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/0583_loader_builtin_psd_mode7_cmyk32_rle_decode.t](../../tests/loader/builtin/0583_loader_builtin_psd_mode7_cmyk32_rle_decode.t) | Verify builtin loader maps PSD Multichannel(4ch) to CMYK 32-bit RLE decode. | Perceptual quality threshold | Inventory only |
-| [tests/loader/builtin/0584_loader_builtin_psd_mode7_channels5_unsupported_trace.t](../../tests/loader/builtin/0584_loader_builtin_psd_mode7_channels5_unsupported_trace.t) | Verify Multichannel(mode=7) with channels!=3/4 is explicitly unsupported. | Trace/status observation | Inventory only |
+| [tests/loader/builtin/0584_loader_builtin_psd_mode7_channels5_missing_colors_trace.t](../../tests/loader/builtin/0584_loader_builtin_psd_mode7_channels5_missing_colors_trace.t) | Verify Multichannel(mode=7) without explicit colorants is rejected. | Trace/status observation | Inventory only |
 | [tests/loader/builtin/0585_loader_builtin_psd_mode7_depth1_unsupported_trace.t](../../tests/loader/builtin/0585_loader_builtin_psd_mode7_depth1_unsupported_trace.t) | Verify Multichannel(mode=7, channels=3) with unsupported depth emits policy trace. | Trace/status observation | Inventory only |
 | [tests/loader/builtin/0586_loader_builtin_psd_missing_composite_duotone8_single_layer_decode.t](../../tests/loader/builtin/0586_loader_builtin_psd_missing_composite_duotone8_single_layer_decode.t) | Verify builtin loader reconstructs Duotone8 from a PSD layer-only file when merged/composite image data is missing. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/0587_loader_builtin_psd_missing_composite_duotone8_single_layer_alpha_no_bgcolor_keycolor_header.t](../../tests/loader/builtin/0587_loader_builtin_psd_missing_composite_duotone8_single_layer_alpha_no_bgcolor_keycolor_header.t) | Verify missing-composite single-layer Duotone8+alpha keeps keycolor without --bgcolor. | Other integration/smoke | Inventory only |
@@ -996,7 +996,7 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/0611_loader_builtin_psd_mode7_rgb32_raw_decode.t](../../tests/loader/builtin/0611_loader_builtin_psd_mode7_rgb32_raw_decode.t) | Verify builtin loader maps PSD Multichannel(3ch) to RGB 32-bit raw decode. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/0612_loader_builtin_psd_mode7_cmyk16_raw_decode.t](../../tests/loader/builtin/0612_loader_builtin_psd_mode7_cmyk16_raw_decode.t) | Verify builtin loader maps PSD Multichannel(4ch) to CMYK 16-bit raw decode. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/0613_loader_builtin_psd_mode7_cmyk32_raw_decode.t](../../tests/loader/builtin/0613_loader_builtin_psd_mode7_cmyk32_raw_decode.t) | Verify builtin loader maps PSD Multichannel(4ch) to CMYK 32-bit raw decode. | Perceptual quality threshold | Inventory only |
-| [tests/loader/builtin/0614_loader_builtin_psd_mode7_channels56_unsupported_trace.t](../../tests/loader/builtin/0614_loader_builtin_psd_mode7_channels56_unsupported_trace.t) | Verify Multichannel(mode=7) channels=56 hits explicit unsupported policy. | Trace/status observation | Inventory only |
+| [tests/loader/builtin/0614_loader_builtin_psd_mode7_channels56_missing_colors_trace.t](../../tests/loader/builtin/0614_loader_builtin_psd_mode7_channels56_missing_colors_trace.t) | Verify Multichannel(mode=7) channels=56 requires explicit colorants. | Trace/status observation | Inventory only |
 | [tests/loader/builtin/0615_loader_builtin_psd_mode7_depth1_channels4_unsupported_trace.t](../../tests/loader/builtin/0615_loader_builtin_psd_mode7_depth1_channels4_unsupported_trace.t) | Verify Multichannel(mode=7) channels=4 with depth=1 is explicitly unsupported. | Trace/status observation | Inventory only |
 | [tests/loader/builtin/0616_loader_builtin_psd_mode7_cmyk8_zip_bad_icc_failure_trace.t](../../tests/loader/builtin/0616_loader_builtin_psd_mode7_cmyk8_zip_bad_icc_failure_trace.t) | Verify Multichannel(4ch->CMYK) ZIP path keeps bad-ICC failure trace behavior. | Trace/status observation | Inventory only |
 | [tests/loader/builtin/0617_loader_builtin_psd_mode7_cmyk8_zip_pred_bad_icc_failure_trace.t](../../tests/loader/builtin/0617_loader_builtin_psd_mode7_cmyk8_zip_pred_bad_icc_failure_trace.t) | Verify Multichannel(4ch->CMYK) ZIP+Prediction path keeps bad-ICC trace behavior. | Trace/status observation | Inventory only |
@@ -1582,7 +1582,7 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/1290_loader_builtin_psd_psdtools_layer_name_emoji_hardcase_lsqa.t](../../tests/loader/builtin/1290_loader_builtin_psd_psdtools_layer_name_emoji_hardcase_lsqa.t) | Verify builtin PSD decode reaches psd-tools baseline for layer-name-emoji.psd. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/1291_loader_builtin_psd_psdtools_transparentbg_gimp_hardcase_lsqa.t](../../tests/loader/builtin/1291_loader_builtin_psd_psdtools_transparentbg_gimp_hardcase_lsqa.t) | Verify builtin PSD decode reaches psd-tools baseline for transparentbg-gimp.psd. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/1292_loader_builtin_psd_psdtools_layers_minimal_type_layer_hardcase_lsqa.t](../../tests/loader/builtin/1292_loader_builtin_psd_psdtools_layers_minimal_type_layer_hardcase_lsqa.t) | Verify builtin PSD decode reaches psd-tools baseline for layers-minimal/type-layer.psd. | Perceptual quality threshold | Inventory only |
-| [tests/loader/builtin/1293_loader_builtin_psd_psdtools_colormodes_4x4_8bit_duotone_hardcase_lsqa.t](../../tests/loader/builtin/1293_loader_builtin_psd_psdtools_colormodes_4x4_8bit_duotone_hardcase_lsqa.t) | Verify builtin PSD decode reaches coregraphics baseline for colormodes/4x4_8bit_duotone.psd. | Perceptual quality threshold | Inventory only |
+| [tests/loader/builtin/1293_loader_builtin_psd_duotone_alternate_lab_lsqa.t](../../tests/loader/builtin/1293_loader_builtin_psd_duotone_alternate_lab_lsqa.t) | Compare the Duotone appearance table with an independent Lab-derived PPM. Regeneration: tests/data/psd-tools/generate_duotone_reference.py INPUT OUTPUT. | Perceptual quality threshold | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/1294_loader_builtin_psd_mode7_cmyk16_tysh_enginedata_default_stylesheet_color_values_named_device_cmyk_trace.t](../../tests/loader/builtin/1294_loader_builtin_psd_mode7_cmyk16_tysh_enginedata_default_stylesheet_color_values_named_device_cmyk_trace.t) | Verify PSD mode7 CMYK16 TySh /DefaultStyleSheet /Color /Values [/DeviceCMYK ...] decode. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/1295_loader_builtin_psd_psb_mode7_cmyk16_tysh_enginedata_default_stylesheet_color_values_named_device_cmyk_trace.t](../../tests/loader/builtin/1295_loader_builtin_psd_psb_mode7_cmyk16_tysh_enginedata_default_stylesheet_color_values_named_device_cmyk_trace.t) | Verify PSB mode7 CMYK16 TySh /DefaultStyleSheet /Color /Values [/DeviceCMYK ...] decode. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/1296_loader_builtin_psd_mode7_cmyk16_tysh_enginedata_default_stylesheet_color_values_named_device_cmyk_valid_icc_no_false_failure_trace.t](../../tests/loader/builtin/1296_loader_builtin_psd_mode7_cmyk16_tysh_enginedata_default_stylesheet_color_values_named_device_cmyk_valid_icc_no_false_failure_trace.t) | Verify PSD mode7 CMYK16 TySh /DefaultStyleSheet /Color DeviceCMYK avoids false failure trace on valid ICC. | Trace/status observation | Inventory only |
@@ -2559,6 +2559,62 @@ Primary implementation context: [JPEG builtin component](../loader/builtin/jpeg.
 | [tests/loader/builtin/jpeg/0189_sof3_dnl_zero_numeric.t](../../tests/loader/builtin/jpeg/0189_sof3_dnl_zero_numeric.t) | Verify sof3 dnl zero against every original sample. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/jpeg/0190_sof3_dnl_redefine_numeric.t](../../tests/loader/builtin/jpeg/0190_sof3_dnl_redefine_numeric.t) | Verify sof3 dnl redefine against every original sample. | Direct numeric/digest | Inventory only |
 | [tests/loader/builtin/jpeg/0191_sof3_category16_last_numeric.t](../../tests/loader/builtin/jpeg/0191_sof3_category16_last_numeric.t) | Verify sof3 category16 last against every original sample. | Direct numeric/digest | Inventory only |
+
+<!-- test-plan-end -->
+
+<!-- test-plan: tests/loader/builtin/psd/*.t -->
+
+### PSD and PSB (psd/)
+
+Primary implementation context: [PSD/PSB builtin component](../loader/builtin/psd.md).
+
+| Test | Observation | Assertion mechanism | Policy context |
+| --- | --- | --- | --- |
+| [tests/loader/builtin/psd/0001_duotone_raw_numeric.t](../../tests/loader/builtin/psd/0001_duotone_raw_numeric.t) | Verify duotone raw numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0002_duotone_rle_numeric.t](../../tests/loader/builtin/psd/0002_duotone_rle_numeric.t) | Verify duotone rle numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0003_duotone_zip_numeric.t](../../tests/loader/builtin/psd/0003_duotone_zip_numeric.t) | Verify duotone zip numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0004_duotone_prediction_numeric.t](../../tests/loader/builtin/psd/0004_duotone_prediction_numeric.t) | Verify duotone prediction numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0005_duotone_psb_rle_numeric.t](../../tests/loader/builtin/psd/0005_duotone_psb_rle_numeric.t) | Verify duotone psb rle numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0006_duotone_16_numeric.t](../../tests/loader/builtin/psd/0006_duotone_16_numeric.t) | Verify duotone 16 numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0007_duotone_32_numeric.t](../../tests/loader/builtin/psd/0007_duotone_32_numeric.t) | Verify duotone 32 numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0008_duotone_gamut_numeric.t](../../tests/loader/builtin/psd/0008_duotone_gamut_numeric.t) | Verify duotone gamut numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0009_duotone_alpha_numeric.t](../../tests/loader/builtin/psd/0009_duotone_alpha_numeric.t) | Verify duotone alpha numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0010_duotone_background_numeric.t](../../tests/loader/builtin/psd/0010_duotone_background_numeric.t) | Verify duotone background numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0011_duotone_builtin_numeric.t](../../tests/loader/builtin/psd/0011_duotone_builtin_numeric.t) | Verify duotone builtin numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0012_spot_one_numeric.t](../../tests/loader/builtin/psd/0012_spot_one_numeric.t) | Verify spot one numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0013_spot_two_numeric.t](../../tests/loader/builtin/psd/0013_spot_two_numeric.t) | Verify spot two numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0014_spot_three_numeric.t](../../tests/loader/builtin/psd/0014_spot_three_numeric.t) | Verify spot three numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0015_spot_four_numeric.t](../../tests/loader/builtin/psd/0015_spot_four_numeric.t) | Verify spot four numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0016_spot_five_numeric.t](../../tests/loader/builtin/psd/0016_spot_five_numeric.t) | Verify spot five numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0017_spot_max_numeric.t](../../tests/loader/builtin/psd/0017_spot_max_numeric.t) | Verify spot max numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0018_spot_16_numeric.t](../../tests/loader/builtin/psd/0018_spot_16_numeric.t) | Verify spot 16 numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0019_spot_32_numeric.t](../../tests/loader/builtin/psd/0019_spot_32_numeric.t) | Verify spot 32 numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0020_spot_rle_numeric.t](../../tests/loader/builtin/psd/0020_spot_rle_numeric.t) | Verify spot rle numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0021_spot_zip_numeric.t](../../tests/loader/builtin/psd/0021_spot_zip_numeric.t) | Verify spot zip numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0022_spot_prediction_numeric.t](../../tests/loader/builtin/psd/0022_spot_prediction_numeric.t) | Verify spot prediction numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0023_spot_psb_numeric.t](../../tests/loader/builtin/psd/0023_spot_psb_numeric.t) | Verify spot psb numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0024_spot_obsolete_numeric.t](../../tests/loader/builtin/psd/0024_spot_obsolete_numeric.t) | Verify spot obsolete numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0025_spot_solidity_numeric.t](../../tests/loader/builtin/psd/0025_spot_solidity_numeric.t) | Verify spot solidity numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0026_duotone_short_reject.t](../../tests/loader/builtin/psd/0026_duotone_short_reject.t) | Verify duotone short reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0027_duotone_count_reject.t](../../tests/loader/builtin/psd/0027_duotone_count_reject.t) | Verify duotone count reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0028_duotone_version_reject.t](../../tests/loader/builtin/psd/0028_duotone_version_reject.t) | Verify duotone version reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0029_display_short_reject.t](../../tests/loader/builtin/psd/0029_display_short_reject.t) | Verify display short reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0030_display_opacity_reject.t](../../tests/loader/builtin/psd/0030_display_opacity_reject.t) | Verify display opacity reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0031_display_kind_reject.t](../../tests/loader/builtin/psd/0031_display_kind_reject.t) | Verify display kind reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0032_display_count_reject.t](../../tests/loader/builtin/psd/0032_display_count_reject.t) | Verify display count reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0033_spot_space_reject.t](../../tests/loader/builtin/psd/0033_spot_space_reject.t) | Verify spot space reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0034_spot_nonfinite_reject.t](../../tests/loader/builtin/psd/0034_spot_nonfinite_reject.t) | Verify spot nonfinite reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0035_spot_range_reject.t](../../tests/loader/builtin/psd/0035_spot_range_reject.t) | Verify spot range reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0036_spot_plane_short_reject.t](../../tests/loader/builtin/psd/0036_spot_plane_short_reject.t) | Verify spot plane short reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0037_display_precedence_numeric.t](../../tests/loader/builtin/psd/0037_display_precedence_numeric.t) | Verify display precedence numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0038_resource_padding_reject.t](../../tests/loader/builtin/psd/0038_resource_padding_reject.t) | Verify resource padding reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0039_duotone_duplicate_reject.t](../../tests/loader/builtin/psd/0039_duotone_duplicate_reject.t) | Verify duotone duplicate reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0040_display_duplicate_reject.t](../../tests/loader/builtin/psd/0040_display_duplicate_reject.t) | Verify display duplicate reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0041_spot_lab_numeric.t](../../tests/loader/builtin/psd/0041_spot_lab_numeric.t) | Verify spot lab numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0042_spot_gray_numeric.t](../../tests/loader/builtin/psd/0042_spot_gray_numeric.t) | Verify spot gray numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0043_display_reverse_numeric.t](../../tests/loader/builtin/psd/0043_display_reverse_numeric.t) | Verify display reverse numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0044_duotone_spot_reject.t](../../tests/loader/builtin/psd/0044_duotone_spot_reject.t) | Verify duotone spot reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0045_spot_lab_range_reject.t](../../tests/loader/builtin/psd/0045_spot_lab_range_reject.t) | Verify spot lab range reject. | Acceptance/rejection | Inventory only |
 
 <!-- test-plan-end -->
 

@@ -42,6 +42,7 @@
 #include "cms.h"
 #include "compat_stub.h"
 #include "frompsd-internal.h"
+#include "frompsd-color.h"
 #include "loader-common.h"
 #include "pixelformat.h"
 
@@ -27744,6 +27745,93 @@ sixel_builtin_psd_decode_zip_planar(sixel_chunk_t const *chunk,
     *pdecoded = decoded;
     *pplane_bytes = plane_bytes;
     return 1;
+}
+
+SIXELSTATUS
+sixel_psd_read_color_planes(sixel_chunk_t const *chunk,
+                            sixel_builtin_psd_info_t const *info,
+                            unsigned char **planes, size_t *plane_bytes)
+{
+    unsigned char const *buffer;
+    unsigned char *decoded;
+    size_t row_bytes;
+    size_t total;
+    size_t rows;
+    size_t entry_size;
+    size_t table_bytes;
+    size_t offset;
+    size_t length;
+    size_t i;
+    size_t size;
+
+    if (chunk == NULL || info == NULL || planes == NULL ||
+        plane_bytes == NULL || info->allocator == NULL ||
+        info->width == 0u || info->height == 0u ||
+        info->channels == 0u || info->channels > SIXEL_FROMPSD_MAX_CHANNELS ||
+        (info->depth != 8u && info->depth != 16u && info->depth != 32u)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *planes = NULL;
+    *plane_bytes = 0u;
+    size = sixel_chunk_get_size(chunk);
+    buffer = sixel_chunk_get_buffer(chunk);
+    if (buffer == NULL || info->image_data_offset > size ||
+        info->width > SIZE_MAX / (info->depth / 8u)) {
+        return SIXEL_BAD_INPUT;
+    }
+    row_bytes = (size_t)info->width * (info->depth / 8u);
+    if (info->height > SIZE_MAX / row_bytes ||
+        info->channels > SIZE_MAX / (row_bytes * info->height)) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    total = row_bytes * info->height * info->channels;
+    decoded = NULL;
+    if (info->compression == 2u || info->compression == 3u) {
+        /* Inflate once for every colorant, not once per requested plane. */
+        if (!sixel_builtin_psd_decode_zip_planar(chunk, info, row_bytes,
+                                                &decoded, plane_bytes)) {
+            return SIXEL_STBI_ERROR;
+        }
+    } else {
+        offset = info->image_data_offset;
+        if (info->compression == 0u && total > size - offset) {
+            return SIXEL_BAD_INPUT;
+        }
+        rows = (size_t)info->height * info->channels;
+        entry_size = info->version == 2u ? 4u : 2u;
+        table_bytes = 0u;
+        if (info->compression == 1u) {
+            if (rows > (size - offset) / entry_size) {
+                return SIXEL_BAD_INPUT;
+            }
+            table_bytes = rows * entry_size;
+        } else if (info->compression != 0u) {
+            return SIXEL_BAD_INPUT;
+        }
+        decoded = sixel_allocator_malloc(info->allocator, total);
+        if (decoded == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        if (info->compression == 0u) {
+            memcpy(decoded, buffer + offset, total);
+        } else {
+            offset += table_bytes;
+            for (i = 0u; i < rows; ++i) {
+                length = sixel_builtin_psd_read_rle_row_length(info,
+                    buffer + info->image_data_offset, i * entry_size);
+                if (length > size - offset ||
+                    !sixel_builtin_psd_unpack_packbits_row(buffer + offset,
+                        length, decoded + i * row_bytes, row_bytes)) {
+                    sixel_allocator_free(info->allocator, decoded);
+                    return SIXEL_BAD_INPUT;
+                }
+                offset += length;
+            }
+        }
+        *plane_bytes = row_bytes * info->height;
+    }
+    *planes = decoded;
+    return SIXEL_OK;
 }
 
 static int
