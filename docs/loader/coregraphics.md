@@ -39,12 +39,31 @@ The CoreGraphics loader uses ImageIO to decode images and select their source co
 | Static nonindexed RGB/RGBA PNG, original eight- or sixteen-bit samples, supported straight RGB provider | Original samples are normalized once to float32, then passed to the explicit native linear transform. Negative and above-one canonical RGB remain available. |
 | Eight-bit opaque static RGB PNG, adopted named sRGB, no background, no float preference | The existing native byte path remains available. Ordinary source bytes remain the compatibility contract. |
 | The same ordinary source with the float preference | The loader request passes through the manager to the CoreGraphics component and selects canonical float storage. |
-| Other formats, grayscale/indexed PNG, or PNG carrying `acTL` | These retain their existing paths. They are outside this static RGB/RGBA precision contract, even when ImageIO returns only one frame. |
+| Other formats, grayscale PNG, or PNG carrying `acTL` | These remain outside the static RGB/RGBA PNG precision contract, even when ImageIO returns only one frame. Images returned as indexed RGB by ImageIO follow the separate palette contract below. |
 | A targeted source with an unsupported provider layout, premultiplied samples, a decode array, missing required profile, or failed native conversion | The component returns failure before emitting a frame. It does not retry its older byte path. The manager's existing selection of another loader is a separate mechanism. |
 
 The provider check validates RGB color model, component depth/count, byte order, alpha position, row stride, data length and overflow before reading samples. Recognized straight first/last alpha and explicit skip channels preserve their positions; premultiplied data cannot guarantee hidden RGB recovery. This is a boundary for decoded provider layouts, not a promise that every OS release supplies the same layout for every PNG.
 
 Missing embedded ICC does not identify an sRGB source: ImageIO can adopt other color metadata. A source is treated as native named sRGB only when its copied name and equality with the native named space both match. That path uses the named sRGB definition. Other RGB sources use the ICC bytes of the color space adopted by ImageIO. A serialized native sRGB profile may contain sampled curves that differ from the named definition; the two are distinct numerical references.
+
+## Indexed palette color management
+
+An indexed image's color table contains coordinates in its **base color space**. Copying those bytes into a palette tagged as sRGB changes the meaning of Display P3 and other non-sRGB palettes. For images ImageIO returns with an indexed RGB color space, the adapter converts each color-table entry once through the explicit native ColorSync transform, then expands indices into canonical linear sRGB float32 pixels. Extended negative and above-one components are retained. The frame has no byte palette after conversion.
+
+| Indexed condition | Representation and interpretation |
+| --- | --- |
+| Native named sRGB base, no float preference, eligible palette request | Original PAL8 indices and RGB palette bytes; no CMS apply or full-image float allocation. |
+| Non-sRGB RGB base | ICC from the **base** color space supplies the source definition; canonical float output is required even with an 8bit preference. |
+| Native named sRGB base with a float preference | Native named sRGB to canonical linear float conversion. |
+| Managed palette with palette output disabled or fewer requested colors than source entries | The same canonical float output; palette requests do not disable source color interpretation. |
+| One-, two-, four-, or eight-bit indices | Provider row stride is respected and packed samples are unpacked before palette expansion. |
+| Non-RGB base model or partial palette alpha | Native generic drawing handles these inputs; the new indexed RGB precision guarantee does not cover them. |
+
+The global CMS engine setting, including `none` and `builtin`, does not override this native conversion. Missing required base-profile data or failed conversion returns failure; converted samples are not retried as unmanaged palette bytes. Expansion validates every index before publishing the frame. Allocation failure likewise emits no partial frame.
+
+For binary PNG palette transparency retained in an indexed provider, source-zero coverage stays independent of RGB: hidden colors remain available without a background and under `keep`/`clear`; `composite` uses the declared linear or gamma background. ImageIO may expand indexed inputs into RGB/RGBA itself; this was observed for both transparent and Adam7 PNGs on the validation host. Such expanded providers use the existing generic path and are outside this direct palette contract.
+
+The indexed fixtures use independently defined `png-samples.h` palette entries and the existing P3 ICC matrix/TRC reference, with a five-pixel row to expose packed-row mistakes. Their generator is [generate_cg_indexed_fixtures.py](../../tools/generate_cg_indexed_fixtures.py). Native color values use the same absolute `1e-4` profile budget as the RGB PNG tests; palette indices, byte values, frame tags and masks use exact assertions. These value tests are distinct from the existing MS-SSIM quality regressions.
 
 ## Native conversion and failure
 
@@ -152,7 +171,19 @@ Background tests first validate the uncomposed native result against that indepe
 | CG-70 | CoreGraphics ignores file bKGD for 16 rgba with no external background. | [tests/loader/coregraphics/0167_loader_coregraphics_bkgd_16_rgba_no_external_background.t](../../tests/loader/coregraphics/0167_loader_coregraphics_bkgd_16_rgba_no_external_background.t) |
 | CG-71 | CoreGraphics ignores file bKGD for 16 rgba with gamma external background. | [tests/loader/coregraphics/0168_loader_coregraphics_bkgd_16_rgba_gamma_external_background.t](../../tests/loader/coregraphics/0168_loader_coregraphics_bkgd_16_rgba_gamma_external_background.t) |
 | CG-72 | CoreGraphics ignores file bKGD for 16 rgba with linear external background. | [tests/loader/coregraphics/0169_loader_coregraphics_bkgd_16_rgba_linear_external_background.t](../../tests/loader/coregraphics/0169_loader_coregraphics_bkgd_16_rgba_linear_external_background.t) |
+| CGI-01 | P3 eight-bit indices expand into extended canonical float values. | [tests/loader/coregraphics/indexed/0001_p3_8.t](../../tests/loader/coregraphics/indexed/0001_p3_8.t) |
+| CGI-02 | P3 one-bit source indices preserve the pixel map across odd-width rows. | [tests/loader/coregraphics/indexed/0002_p3_1.t](../../tests/loader/coregraphics/indexed/0002_p3_1.t) |
+| CGI-03 | P3 two-bit source indices preserve the pixel map across odd-width rows. | [tests/loader/coregraphics/indexed/0003_p3_2.t](../../tests/loader/coregraphics/indexed/0003_p3_2.t) |
+| CGI-04 | P3 four-bit source indices preserve the pixel map across odd-width rows. | [tests/loader/coregraphics/indexed/0004_p3_4.t](../../tests/loader/coregraphics/indexed/0004_p3_4.t) |
+| CGI-05 | Disabling palette output still applies the P3 base profile. | [tests/loader/coregraphics/indexed/0005_p3_no_palette.t](../../tests/loader/coregraphics/indexed/0005_p3_no_palette.t) |
+| CGI-06 | A request for two colors does not bypass the eight-entry P3 source palette transform. | [tests/loader/coregraphics/indexed/0006_p3_reqcolors.t](../../tests/loader/coregraphics/indexed/0006_p3_reqcolors.t) |
+| CGI-07 | Named sRGB retains exact PAL8 indices/bytes without CMS apply or image-sized float allocation. | [tests/loader/coregraphics/indexed/0007_srgb_byte.t](../../tests/loader/coregraphics/indexed/0007_srgb_byte.t) |
+| CGI-08 | A float preference converts named sRGB palette entries to canonical linear coordinates. | [tests/loader/coregraphics/indexed/0008_srgb_float.t](../../tests/loader/coregraphics/indexed/0008_srgb_float.t) |
+| CGI-09 | Global engine none preserves native P3 palette conversion. | [tests/loader/coregraphics/indexed/0009_p3_engine_none.t](../../tests/loader/coregraphics/indexed/0009_p3_engine_none.t) |
+| CGI-10 | Global engine builtin preserves native P3 palette conversion. | [tests/loader/coregraphics/indexed/0010_p3_engine_builtin.t](../../tests/loader/coregraphics/indexed/0010_p3_engine_builtin.t) |
 
 ### Defensive and malformed-input tests
 
 The explicit native helper rejects nonfinite inputs, invalid dimensions and inconsistent profile arguments atomically. Native stage failures and unsupported provider layouts also have focused external fault-injection controls; these supplement the permanent numerical and rejection tests without implying native API conformance on every platform.
+
+The [indexed tests](../../tests/loader/coregraphics/indexed/) also exercise expansion-allocation failure, callback suppression, allocator balance and reuse of the same loader after failure.

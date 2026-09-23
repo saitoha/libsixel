@@ -483,6 +483,7 @@ EXTRA_DIST = libsixel-config.in \
              check_tap_executable.py \
              verify_color_oracles.py \
              generate_color_fixtures.py \
+             generate_cg_indexed_fixtures.py \
              generate_jpeg_cmyk_tests.py \
              generate_jpeg_precision_tests.py \
              generate_cli_color_fixtures.py \

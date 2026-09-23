@@ -1197,6 +1197,18 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TGA_ORIGIN_TEST_COMMON \
     -DBUILD_JPEG_DNL_TEST_COMMON \
     -DBUILD_JPEG_LOSSLESS_TEST_COMMON \
+    -DBUILD_CG_INDEXED_TEST_COMMON \
+    -DBUILD_TEST_0001_P3_8 \
+    -DBUILD_TEST_0002_P3_1 \
+    -DBUILD_TEST_0003_P3_2 \
+    -DBUILD_TEST_0004_P3_4 \
+    -DBUILD_TEST_0005_P3_NO_PALETTE \
+    -DBUILD_TEST_0006_P3_REQCOLORS \
+    -DBUILD_TEST_0007_SRGB_BYTE \
+    -DBUILD_TEST_0008_SRGB_FLOAT \
+    -DBUILD_TEST_0009_P3_ENGINE_NONE \
+    -DBUILD_TEST_0010_P3_ENGINE_BUILTIN \
+    -DBUILD_TEST_0011_ALLOCATION_RETRY \
     -DBUILD_JPEG_GRAY_TEST_COMMON \
     -DBUILD_TEST_0001_GRAY8_BUILTIN \
     -DBUILD_TEST_0002_GRAY8_LCMS2 \
@@ -2037,6 +2049,19 @@ test_runner_SOURCES = test_runner.c \
     loader/libpng/0023_loader_libpng_contract.c \
     loader/libpng/indexed/0001_indexed_precision.c \
     loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
+    loader/cg_indexed_test_common.c \
+    loader/cg_indexed_test_common.h \
+    loader/coregraphics/indexed/0001_p3_8.c \
+    loader/coregraphics/indexed/0002_p3_1.c \
+    loader/coregraphics/indexed/0003_p3_2.c \
+    loader/coregraphics/indexed/0004_p3_4.c \
+    loader/coregraphics/indexed/0005_p3_no_palette.c \
+    loader/coregraphics/indexed/0006_p3_reqcolors.c \
+    loader/coregraphics/indexed/0007_srgb_byte.c \
+    loader/coregraphics/indexed/0008_srgb_float.c \
+    loader/coregraphics/indexed/0009_p3_engine_none.c \
+    loader/coregraphics/indexed/0010_p3_engine_builtin.c \
+    loader/coregraphics/indexed/0011_allocation_retry.c \
     loader/jpeg_gray_test_common.c \
     loader/jpeg_gray_test_common.h \
     loader/libjpeg/gray/0001_gray8_builtin.c \

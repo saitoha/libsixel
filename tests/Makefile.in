@@ -882,6 +882,19 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/libpng/0023_loader_libpng_contract.c \
 	loader/libpng/indexed/0001_indexed_precision.c \
 	loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
+	loader/cg_indexed_test_common.c \
+	loader/cg_indexed_test_common.h \
+	loader/coregraphics/indexed/0001_p3_8.c \
+	loader/coregraphics/indexed/0002_p3_1.c \
+	loader/coregraphics/indexed/0003_p3_2.c \
+	loader/coregraphics/indexed/0004_p3_4.c \
+	loader/coregraphics/indexed/0005_p3_no_palette.c \
+	loader/coregraphics/indexed/0006_p3_reqcolors.c \
+	loader/coregraphics/indexed/0007_srgb_byte.c \
+	loader/coregraphics/indexed/0008_srgb_float.c \
+	loader/coregraphics/indexed/0009_p3_engine_none.c \
+	loader/coregraphics/indexed/0010_p3_engine_builtin.c \
+	loader/coregraphics/indexed/0011_allocation_retry.c \
 	loader/jpeg_gray_test_common.c loader/jpeg_gray_test_common.h \
 	loader/libjpeg/gray/0001_gray8_builtin.c \
 	loader/libjpeg/gray/0002_gray8_lcms2.c \
@@ -1963,6 +1976,18 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0023_loader_libpng_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/indexed/test_runner-0001_indexed_precision.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-cg_indexed_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/indexed/test_runner-0001_p3_8.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/indexed/test_runner-0002_p3_1.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/indexed/test_runner-0003_p3_2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/indexed/test_runner-0004_p3_4.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/indexed/test_runner-0005_p3_no_palette.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/indexed/test_runner-0006_p3_reqcolors.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/indexed/test_runner-0007_srgb_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/indexed/test_runner-0008_srgb_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/indexed/test_runner-0009_p3_engine_none.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/indexed/test_runner-0010_p3_engine_builtin.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/indexed/test_runner-0011_allocation_retry.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-jpeg_gray_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/gray/test_runner-0001_gray8_builtin.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/gray/test_runner-0002_gray8_lcms2.$(OBJEXT) \
@@ -2412,6 +2437,7 @@ am__depfiles_remade =  \
 	loader/$(DEPDIR)/test_runner-0124_loader_manager_open_plan.Po \
 	loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po \
 	loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po \
+	loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Po \
 	loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po \
 	loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po \
 	loader/$(DEPDIR)/test_runner-jpeg_gray_test_common.Po \
@@ -2606,6 +2632,17 @@ am__depfiles_remade =  \
 	loader/builtin/$(DEPDIR)/test_runner-loader_builtin_tga_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-tga_origin_test_common.Po \
 	loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po \
+	loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Po \
+	loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Po \
+	loader/coregraphics/indexed/$(DEPDIR)/test_runner-0003_p3_2.Po \
+	loader/coregraphics/indexed/$(DEPDIR)/test_runner-0004_p3_4.Po \
+	loader/coregraphics/indexed/$(DEPDIR)/test_runner-0005_p3_no_palette.Po \
+	loader/coregraphics/indexed/$(DEPDIR)/test_runner-0006_p3_reqcolors.Po \
+	loader/coregraphics/indexed/$(DEPDIR)/test_runner-0007_srgb_byte.Po \
+	loader/coregraphics/indexed/$(DEPDIR)/test_runner-0008_srgb_float.Po \
+	loader/coregraphics/indexed/$(DEPDIR)/test_runner-0009_p3_engine_none.Po \
+	loader/coregraphics/indexed/$(DEPDIR)/test_runner-0010_p3_engine_builtin.Po \
+	loader/coregraphics/indexed/$(DEPDIR)/test_runner-0011_allocation_retry.Po \
 	loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po \
 	loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po \
 	loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po \
@@ -5088,6 +5125,18 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TGA_ORIGIN_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_JPEG_DNL_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_JPEG_LOSSLESS_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CG_INDEXED_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_P3_8 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_P3_1 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_P3_2 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_P3_4 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_P3_NO_PALETTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_P3_REQCOLORS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_SRGB_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_SRGB_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_P3_ENGINE_NONE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_P3_ENGINE_BUILTIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_ALLOCATION_RETRY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_JPEG_GRAY_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GRAY8_BUILTIN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_GRAY8_LCMS2 \
@@ -5959,6 +6008,19 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0023_loader_libpng_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/indexed/0001_indexed_precision.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/cg_indexed_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/cg_indexed_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/indexed/0001_p3_8.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/indexed/0002_p3_1.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/indexed/0003_p3_2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/indexed/0004_p3_4.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/indexed/0005_p3_no_palette.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/indexed/0006_p3_reqcolors.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/indexed/0007_srgb_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/indexed/0008_srgb_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/indexed/0009_p3_engine_none.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/indexed/0010_p3_engine_builtin.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/indexed/0011_allocation_retry.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/jpeg_gray_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/jpeg_gray_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/gray/0001_gray8_builtin.c \
@@ -8903,6 +8965,47 @@ loader/libjpeg/$(DEPDIR)/$(am__dirstamp):
 loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT):  \
 	loader/libjpeg/$(am__dirstamp) \
 	loader/libjpeg/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-cg_indexed_test_common.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/coregraphics/indexed/$(am__dirstamp):
+	@$(MKDIR_P) loader/coregraphics/indexed
+	@: >>loader/coregraphics/indexed/$(am__dirstamp)
+loader/coregraphics/indexed/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/coregraphics/indexed/$(DEPDIR)
+	@: >>loader/coregraphics/indexed/$(DEPDIR)/$(am__dirstamp)
+loader/coregraphics/indexed/test_runner-0001_p3_8.$(OBJEXT):  \
+	loader/coregraphics/indexed/$(am__dirstamp) \
+	loader/coregraphics/indexed/$(DEPDIR)/$(am__dirstamp)
+loader/coregraphics/indexed/test_runner-0002_p3_1.$(OBJEXT):  \
+	loader/coregraphics/indexed/$(am__dirstamp) \
+	loader/coregraphics/indexed/$(DEPDIR)/$(am__dirstamp)
+loader/coregraphics/indexed/test_runner-0003_p3_2.$(OBJEXT):  \
+	loader/coregraphics/indexed/$(am__dirstamp) \
+	loader/coregraphics/indexed/$(DEPDIR)/$(am__dirstamp)
+loader/coregraphics/indexed/test_runner-0004_p3_4.$(OBJEXT):  \
+	loader/coregraphics/indexed/$(am__dirstamp) \
+	loader/coregraphics/indexed/$(DEPDIR)/$(am__dirstamp)
+loader/coregraphics/indexed/test_runner-0005_p3_no_palette.$(OBJEXT):  \
+	loader/coregraphics/indexed/$(am__dirstamp) \
+	loader/coregraphics/indexed/$(DEPDIR)/$(am__dirstamp)
+loader/coregraphics/indexed/test_runner-0006_p3_reqcolors.$(OBJEXT):  \
+	loader/coregraphics/indexed/$(am__dirstamp) \
+	loader/coregraphics/indexed/$(DEPDIR)/$(am__dirstamp)
+loader/coregraphics/indexed/test_runner-0007_srgb_byte.$(OBJEXT):  \
+	loader/coregraphics/indexed/$(am__dirstamp) \
+	loader/coregraphics/indexed/$(DEPDIR)/$(am__dirstamp)
+loader/coregraphics/indexed/test_runner-0008_srgb_float.$(OBJEXT):  \
+	loader/coregraphics/indexed/$(am__dirstamp) \
+	loader/coregraphics/indexed/$(DEPDIR)/$(am__dirstamp)
+loader/coregraphics/indexed/test_runner-0009_p3_engine_none.$(OBJEXT):  \
+	loader/coregraphics/indexed/$(am__dirstamp) \
+	loader/coregraphics/indexed/$(DEPDIR)/$(am__dirstamp)
+loader/coregraphics/indexed/test_runner-0010_p3_engine_builtin.$(OBJEXT):  \
+	loader/coregraphics/indexed/$(am__dirstamp) \
+	loader/coregraphics/indexed/$(DEPDIR)/$(am__dirstamp)
+loader/coregraphics/indexed/test_runner-0011_allocation_retry.$(OBJEXT):  \
+	loader/coregraphics/indexed/$(am__dirstamp) \
+	loader/coregraphics/indexed/$(DEPDIR)/$(am__dirstamp)
 loader/test_runner-jpeg_gray_test_common.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 loader/libjpeg/gray/$(am__dirstamp):
@@ -9953,6 +10056,7 @@ mostlyclean-compile:
 	-rm -f loader/*.$(OBJEXT)
 	-rm -f loader/builtin/*.$(OBJEXT)
 	-rm -f loader/coregraphics/*.$(OBJEXT)
+	-rm -f loader/coregraphics/indexed/*.$(OBJEXT)
 	-rm -f loader/gd/*.$(OBJEXT)
 	-rm -f loader/gdk-pixbuf2/*.$(OBJEXT)
 	-rm -f loader/gnome-thumbnailer/*.$(OBJEXT)
@@ -10061,6 +10165,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0124_loader_manager_open_plan.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-jpeg_gray_test_common.Po@am__quote@ # am--include-marker
@@ -10255,6 +10360,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-loader_builtin_tga_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-tga_origin_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/indexed/$(DEPDIR)/test_runner-0003_p3_2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/indexed/$(DEPDIR)/test_runner-0004_p3_4.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/indexed/$(DEPDIR)/test_runner-0005_p3_no_palette.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/indexed/$(DEPDIR)/test_runner-0006_p3_reqcolors.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/indexed/$(DEPDIR)/test_runner-0007_srgb_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/indexed/$(DEPDIR)/test_runner-0008_srgb_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/indexed/$(DEPDIR)/test_runner-0009_p3_engine_none.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/indexed/$(DEPDIR)/test_runner-0010_p3_engine_builtin.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/indexed/$(DEPDIR)/test_runner-0011_allocation_retry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po@am__quote@ # am--include-marker
@@ -21492,6 +21608,174 @@ loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.obj: loader/libjpeg/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.obj `if test -f 'loader/libjpeg/0013_loader_libjpeg_pixelformat.c'; then $(CYGPATH_W) 'loader/libjpeg/0013_loader_libjpeg_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/0013_loader_libjpeg_pixelformat.c'; fi`
 
+loader/test_runner-cg_indexed_test_common.o: loader/cg_indexed_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-cg_indexed_test_common.o -MD -MP -MF loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Tpo -c -o loader/test_runner-cg_indexed_test_common.o `test -f 'loader/cg_indexed_test_common.c' || echo '$(srcdir)/'`loader/cg_indexed_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Tpo loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/cg_indexed_test_common.c' object='loader/test_runner-cg_indexed_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-cg_indexed_test_common.o `test -f 'loader/cg_indexed_test_common.c' || echo '$(srcdir)/'`loader/cg_indexed_test_common.c
+
+loader/test_runner-cg_indexed_test_common.obj: loader/cg_indexed_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-cg_indexed_test_common.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Tpo -c -o loader/test_runner-cg_indexed_test_common.obj `if test -f 'loader/cg_indexed_test_common.c'; then $(CYGPATH_W) 'loader/cg_indexed_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/cg_indexed_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Tpo loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/cg_indexed_test_common.c' object='loader/test_runner-cg_indexed_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-cg_indexed_test_common.obj `if test -f 'loader/cg_indexed_test_common.c'; then $(CYGPATH_W) 'loader/cg_indexed_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/cg_indexed_test_common.c'; fi`
+
+loader/coregraphics/indexed/test_runner-0001_p3_8.o: loader/coregraphics/indexed/0001_p3_8.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0001_p3_8.o -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Tpo -c -o loader/coregraphics/indexed/test_runner-0001_p3_8.o `test -f 'loader/coregraphics/indexed/0001_p3_8.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0001_p3_8.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0001_p3_8.c' object='loader/coregraphics/indexed/test_runner-0001_p3_8.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0001_p3_8.o `test -f 'loader/coregraphics/indexed/0001_p3_8.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0001_p3_8.c
+
+loader/coregraphics/indexed/test_runner-0001_p3_8.obj: loader/coregraphics/indexed/0001_p3_8.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0001_p3_8.obj -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Tpo -c -o loader/coregraphics/indexed/test_runner-0001_p3_8.obj `if test -f 'loader/coregraphics/indexed/0001_p3_8.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0001_p3_8.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0001_p3_8.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0001_p3_8.c' object='loader/coregraphics/indexed/test_runner-0001_p3_8.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0001_p3_8.obj `if test -f 'loader/coregraphics/indexed/0001_p3_8.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0001_p3_8.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0001_p3_8.c'; fi`
+
+loader/coregraphics/indexed/test_runner-0002_p3_1.o: loader/coregraphics/indexed/0002_p3_1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0002_p3_1.o -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Tpo -c -o loader/coregraphics/indexed/test_runner-0002_p3_1.o `test -f 'loader/coregraphics/indexed/0002_p3_1.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0002_p3_1.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0002_p3_1.c' object='loader/coregraphics/indexed/test_runner-0002_p3_1.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0002_p3_1.o `test -f 'loader/coregraphics/indexed/0002_p3_1.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0002_p3_1.c
+
+loader/coregraphics/indexed/test_runner-0002_p3_1.obj: loader/coregraphics/indexed/0002_p3_1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0002_p3_1.obj -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Tpo -c -o loader/coregraphics/indexed/test_runner-0002_p3_1.obj `if test -f 'loader/coregraphics/indexed/0002_p3_1.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0002_p3_1.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0002_p3_1.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0002_p3_1.c' object='loader/coregraphics/indexed/test_runner-0002_p3_1.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0002_p3_1.obj `if test -f 'loader/coregraphics/indexed/0002_p3_1.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0002_p3_1.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0002_p3_1.c'; fi`
+
+loader/coregraphics/indexed/test_runner-0003_p3_2.o: loader/coregraphics/indexed/0003_p3_2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0003_p3_2.o -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0003_p3_2.Tpo -c -o loader/coregraphics/indexed/test_runner-0003_p3_2.o `test -f 'loader/coregraphics/indexed/0003_p3_2.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0003_p3_2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0003_p3_2.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0003_p3_2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0003_p3_2.c' object='loader/coregraphics/indexed/test_runner-0003_p3_2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0003_p3_2.o `test -f 'loader/coregraphics/indexed/0003_p3_2.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0003_p3_2.c
+
+loader/coregraphics/indexed/test_runner-0003_p3_2.obj: loader/coregraphics/indexed/0003_p3_2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0003_p3_2.obj -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0003_p3_2.Tpo -c -o loader/coregraphics/indexed/test_runner-0003_p3_2.obj `if test -f 'loader/coregraphics/indexed/0003_p3_2.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0003_p3_2.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0003_p3_2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0003_p3_2.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0003_p3_2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0003_p3_2.c' object='loader/coregraphics/indexed/test_runner-0003_p3_2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0003_p3_2.obj `if test -f 'loader/coregraphics/indexed/0003_p3_2.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0003_p3_2.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0003_p3_2.c'; fi`
+
+loader/coregraphics/indexed/test_runner-0004_p3_4.o: loader/coregraphics/indexed/0004_p3_4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0004_p3_4.o -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0004_p3_4.Tpo -c -o loader/coregraphics/indexed/test_runner-0004_p3_4.o `test -f 'loader/coregraphics/indexed/0004_p3_4.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0004_p3_4.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0004_p3_4.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0004_p3_4.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0004_p3_4.c' object='loader/coregraphics/indexed/test_runner-0004_p3_4.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0004_p3_4.o `test -f 'loader/coregraphics/indexed/0004_p3_4.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0004_p3_4.c
+
+loader/coregraphics/indexed/test_runner-0004_p3_4.obj: loader/coregraphics/indexed/0004_p3_4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0004_p3_4.obj -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0004_p3_4.Tpo -c -o loader/coregraphics/indexed/test_runner-0004_p3_4.obj `if test -f 'loader/coregraphics/indexed/0004_p3_4.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0004_p3_4.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0004_p3_4.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0004_p3_4.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0004_p3_4.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0004_p3_4.c' object='loader/coregraphics/indexed/test_runner-0004_p3_4.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0004_p3_4.obj `if test -f 'loader/coregraphics/indexed/0004_p3_4.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0004_p3_4.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0004_p3_4.c'; fi`
+
+loader/coregraphics/indexed/test_runner-0005_p3_no_palette.o: loader/coregraphics/indexed/0005_p3_no_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0005_p3_no_palette.o -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0005_p3_no_palette.Tpo -c -o loader/coregraphics/indexed/test_runner-0005_p3_no_palette.o `test -f 'loader/coregraphics/indexed/0005_p3_no_palette.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0005_p3_no_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0005_p3_no_palette.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0005_p3_no_palette.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0005_p3_no_palette.c' object='loader/coregraphics/indexed/test_runner-0005_p3_no_palette.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0005_p3_no_palette.o `test -f 'loader/coregraphics/indexed/0005_p3_no_palette.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0005_p3_no_palette.c
+
+loader/coregraphics/indexed/test_runner-0005_p3_no_palette.obj: loader/coregraphics/indexed/0005_p3_no_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0005_p3_no_palette.obj -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0005_p3_no_palette.Tpo -c -o loader/coregraphics/indexed/test_runner-0005_p3_no_palette.obj `if test -f 'loader/coregraphics/indexed/0005_p3_no_palette.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0005_p3_no_palette.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0005_p3_no_palette.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0005_p3_no_palette.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0005_p3_no_palette.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0005_p3_no_palette.c' object='loader/coregraphics/indexed/test_runner-0005_p3_no_palette.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0005_p3_no_palette.obj `if test -f 'loader/coregraphics/indexed/0005_p3_no_palette.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0005_p3_no_palette.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0005_p3_no_palette.c'; fi`
+
+loader/coregraphics/indexed/test_runner-0006_p3_reqcolors.o: loader/coregraphics/indexed/0006_p3_reqcolors.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0006_p3_reqcolors.o -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0006_p3_reqcolors.Tpo -c -o loader/coregraphics/indexed/test_runner-0006_p3_reqcolors.o `test -f 'loader/coregraphics/indexed/0006_p3_reqcolors.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0006_p3_reqcolors.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0006_p3_reqcolors.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0006_p3_reqcolors.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0006_p3_reqcolors.c' object='loader/coregraphics/indexed/test_runner-0006_p3_reqcolors.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0006_p3_reqcolors.o `test -f 'loader/coregraphics/indexed/0006_p3_reqcolors.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0006_p3_reqcolors.c
+
+loader/coregraphics/indexed/test_runner-0006_p3_reqcolors.obj: loader/coregraphics/indexed/0006_p3_reqcolors.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0006_p3_reqcolors.obj -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0006_p3_reqcolors.Tpo -c -o loader/coregraphics/indexed/test_runner-0006_p3_reqcolors.obj `if test -f 'loader/coregraphics/indexed/0006_p3_reqcolors.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0006_p3_reqcolors.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0006_p3_reqcolors.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0006_p3_reqcolors.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0006_p3_reqcolors.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0006_p3_reqcolors.c' object='loader/coregraphics/indexed/test_runner-0006_p3_reqcolors.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0006_p3_reqcolors.obj `if test -f 'loader/coregraphics/indexed/0006_p3_reqcolors.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0006_p3_reqcolors.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0006_p3_reqcolors.c'; fi`
+
+loader/coregraphics/indexed/test_runner-0007_srgb_byte.o: loader/coregraphics/indexed/0007_srgb_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0007_srgb_byte.o -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0007_srgb_byte.Tpo -c -o loader/coregraphics/indexed/test_runner-0007_srgb_byte.o `test -f 'loader/coregraphics/indexed/0007_srgb_byte.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0007_srgb_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0007_srgb_byte.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0007_srgb_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0007_srgb_byte.c' object='loader/coregraphics/indexed/test_runner-0007_srgb_byte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0007_srgb_byte.o `test -f 'loader/coregraphics/indexed/0007_srgb_byte.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0007_srgb_byte.c
+
+loader/coregraphics/indexed/test_runner-0007_srgb_byte.obj: loader/coregraphics/indexed/0007_srgb_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0007_srgb_byte.obj -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0007_srgb_byte.Tpo -c -o loader/coregraphics/indexed/test_runner-0007_srgb_byte.obj `if test -f 'loader/coregraphics/indexed/0007_srgb_byte.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0007_srgb_byte.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0007_srgb_byte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0007_srgb_byte.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0007_srgb_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0007_srgb_byte.c' object='loader/coregraphics/indexed/test_runner-0007_srgb_byte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0007_srgb_byte.obj `if test -f 'loader/coregraphics/indexed/0007_srgb_byte.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0007_srgb_byte.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0007_srgb_byte.c'; fi`
+
+loader/coregraphics/indexed/test_runner-0008_srgb_float.o: loader/coregraphics/indexed/0008_srgb_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0008_srgb_float.o -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0008_srgb_float.Tpo -c -o loader/coregraphics/indexed/test_runner-0008_srgb_float.o `test -f 'loader/coregraphics/indexed/0008_srgb_float.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0008_srgb_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0008_srgb_float.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0008_srgb_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0008_srgb_float.c' object='loader/coregraphics/indexed/test_runner-0008_srgb_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0008_srgb_float.o `test -f 'loader/coregraphics/indexed/0008_srgb_float.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0008_srgb_float.c
+
+loader/coregraphics/indexed/test_runner-0008_srgb_float.obj: loader/coregraphics/indexed/0008_srgb_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0008_srgb_float.obj -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0008_srgb_float.Tpo -c -o loader/coregraphics/indexed/test_runner-0008_srgb_float.obj `if test -f 'loader/coregraphics/indexed/0008_srgb_float.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0008_srgb_float.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0008_srgb_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0008_srgb_float.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0008_srgb_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0008_srgb_float.c' object='loader/coregraphics/indexed/test_runner-0008_srgb_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0008_srgb_float.obj `if test -f 'loader/coregraphics/indexed/0008_srgb_float.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0008_srgb_float.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0008_srgb_float.c'; fi`
+
+loader/coregraphics/indexed/test_runner-0009_p3_engine_none.o: loader/coregraphics/indexed/0009_p3_engine_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0009_p3_engine_none.o -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0009_p3_engine_none.Tpo -c -o loader/coregraphics/indexed/test_runner-0009_p3_engine_none.o `test -f 'loader/coregraphics/indexed/0009_p3_engine_none.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0009_p3_engine_none.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0009_p3_engine_none.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0009_p3_engine_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0009_p3_engine_none.c' object='loader/coregraphics/indexed/test_runner-0009_p3_engine_none.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0009_p3_engine_none.o `test -f 'loader/coregraphics/indexed/0009_p3_engine_none.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0009_p3_engine_none.c
+
+loader/coregraphics/indexed/test_runner-0009_p3_engine_none.obj: loader/coregraphics/indexed/0009_p3_engine_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0009_p3_engine_none.obj -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0009_p3_engine_none.Tpo -c -o loader/coregraphics/indexed/test_runner-0009_p3_engine_none.obj `if test -f 'loader/coregraphics/indexed/0009_p3_engine_none.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0009_p3_engine_none.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0009_p3_engine_none.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0009_p3_engine_none.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0009_p3_engine_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0009_p3_engine_none.c' object='loader/coregraphics/indexed/test_runner-0009_p3_engine_none.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0009_p3_engine_none.obj `if test -f 'loader/coregraphics/indexed/0009_p3_engine_none.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0009_p3_engine_none.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0009_p3_engine_none.c'; fi`
+
+loader/coregraphics/indexed/test_runner-0010_p3_engine_builtin.o: loader/coregraphics/indexed/0010_p3_engine_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0010_p3_engine_builtin.o -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0010_p3_engine_builtin.Tpo -c -o loader/coregraphics/indexed/test_runner-0010_p3_engine_builtin.o `test -f 'loader/coregraphics/indexed/0010_p3_engine_builtin.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0010_p3_engine_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0010_p3_engine_builtin.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0010_p3_engine_builtin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0010_p3_engine_builtin.c' object='loader/coregraphics/indexed/test_runner-0010_p3_engine_builtin.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0010_p3_engine_builtin.o `test -f 'loader/coregraphics/indexed/0010_p3_engine_builtin.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0010_p3_engine_builtin.c
+
+loader/coregraphics/indexed/test_runner-0010_p3_engine_builtin.obj: loader/coregraphics/indexed/0010_p3_engine_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0010_p3_engine_builtin.obj -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0010_p3_engine_builtin.Tpo -c -o loader/coregraphics/indexed/test_runner-0010_p3_engine_builtin.obj `if test -f 'loader/coregraphics/indexed/0010_p3_engine_builtin.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0010_p3_engine_builtin.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0010_p3_engine_builtin.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0010_p3_engine_builtin.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0010_p3_engine_builtin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0010_p3_engine_builtin.c' object='loader/coregraphics/indexed/test_runner-0010_p3_engine_builtin.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0010_p3_engine_builtin.obj `if test -f 'loader/coregraphics/indexed/0010_p3_engine_builtin.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0010_p3_engine_builtin.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0010_p3_engine_builtin.c'; fi`
+
+loader/coregraphics/indexed/test_runner-0011_allocation_retry.o: loader/coregraphics/indexed/0011_allocation_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0011_allocation_retry.o -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0011_allocation_retry.Tpo -c -o loader/coregraphics/indexed/test_runner-0011_allocation_retry.o `test -f 'loader/coregraphics/indexed/0011_allocation_retry.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0011_allocation_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0011_allocation_retry.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0011_allocation_retry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0011_allocation_retry.c' object='loader/coregraphics/indexed/test_runner-0011_allocation_retry.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0011_allocation_retry.o `test -f 'loader/coregraphics/indexed/0011_allocation_retry.c' || echo '$(srcdir)/'`loader/coregraphics/indexed/0011_allocation_retry.c
+
+loader/coregraphics/indexed/test_runner-0011_allocation_retry.obj: loader/coregraphics/indexed/0011_allocation_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/indexed/test_runner-0011_allocation_retry.obj -MD -MP -MF loader/coregraphics/indexed/$(DEPDIR)/test_runner-0011_allocation_retry.Tpo -c -o loader/coregraphics/indexed/test_runner-0011_allocation_retry.obj `if test -f 'loader/coregraphics/indexed/0011_allocation_retry.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0011_allocation_retry.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0011_allocation_retry.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/indexed/$(DEPDIR)/test_runner-0011_allocation_retry.Tpo loader/coregraphics/indexed/$(DEPDIR)/test_runner-0011_allocation_retry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/indexed/0011_allocation_retry.c' object='loader/coregraphics/indexed/test_runner-0011_allocation_retry.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/indexed/test_runner-0011_allocation_retry.obj `if test -f 'loader/coregraphics/indexed/0011_allocation_retry.c'; then $(CYGPATH_W) 'loader/coregraphics/indexed/0011_allocation_retry.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/indexed/0011_allocation_retry.c'; fi`
+
 loader/test_runner-jpeg_gray_test_common.o: loader/jpeg_gray_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-jpeg_gray_test_common.o -MD -MP -MF loader/$(DEPDIR)/test_runner-jpeg_gray_test_common.Tpo -c -o loader/test_runner-jpeg_gray_test_common.o `test -f 'loader/jpeg_gray_test_common.c' || echo '$(srcdir)/'`loader/jpeg_gray_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-jpeg_gray_test_common.Tpo loader/$(DEPDIR)/test_runner-jpeg_gray_test_common.Po
@@ -26329,6 +26613,8 @@ distclean-generic:
 	-$(am__rm_f) loader/builtin/$(am__dirstamp)
 	-$(am__rm_f) loader/coregraphics/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) loader/coregraphics/$(am__dirstamp)
+	-$(am__rm_f) loader/coregraphics/indexed/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/coregraphics/indexed/$(am__dirstamp)
 	-$(am__rm_f) loader/gd/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) loader/gd/$(am__dirstamp)
 	-$(am__rm_f) loader/gdk-pixbuf2/$(DEPDIR)/$(am__dirstamp)
@@ -26483,6 +26769,7 @@ distclean: distclean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0124_loader_manager_open_plan.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po
+	-rm -f loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-jpeg_gray_test_common.Po
@@ -26677,6 +26964,17 @@ distclean: distclean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_tga_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-tga_origin_test_common.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0003_p3_2.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0004_p3_4.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0005_p3_no_palette.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0006_p3_reqcolors.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0007_srgb_byte.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0008_srgb_float.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0009_p3_engine_none.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0010_p3_engine_builtin.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0011_allocation_retry.Po
 	-rm -f loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po
 	-rm -f loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po
 	-rm -f loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
@@ -27591,6 +27889,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0124_loader_manager_open_plan.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po
+	-rm -f loader/$(DEPDIR)/test_runner-cg_indexed_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-jpeg_gray_test_common.Po
@@ -27785,6 +28084,17 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_tga_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-tga_origin_test_common.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0003_p3_2.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0004_p3_4.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0005_p3_no_palette.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0006_p3_reqcolors.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0007_srgb_byte.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0008_srgb_float.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0009_p3_engine_none.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0010_p3_engine_builtin.Po
+	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0011_allocation_retry.Po
 	-rm -f loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po
 	-rm -f loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po
 	-rm -f loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po

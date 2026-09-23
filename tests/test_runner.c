@@ -424,6 +424,17 @@ int test_loader_0010_loader_gdk_pixbuf_pixelformat(int argc, char **argv);
 int test_loader_0011_loader_gd_pixelformat(int argc, char **argv);
 int test_loader_libpng_contract(int argc, char **argv);
 int test_libpng_indexed_precision(int argc, char **argv);
+int test_cgi_0001(int argc, char **argv);
+int test_cgi_0002(int argc, char **argv);
+int test_cgi_0003(int argc, char **argv);
+int test_cgi_0004(int argc, char **argv);
+int test_cgi_0005(int argc, char **argv);
+int test_cgi_0006(int argc, char **argv);
+int test_cgi_0007(int argc, char **argv);
+int test_cgi_0008(int argc, char **argv);
+int test_cgi_0009(int argc, char **argv);
+int test_cgi_0010(int argc, char **argv);
+int test_cgi_0011(int argc, char **argv);
 int test_jgray_0001(int argc, char **argv);
 int test_jgray_0002(int argc, char **argv);
 int test_jgray_0003(int argc, char **argv);
@@ -1921,6 +1932,17 @@ static test_entry_t const test_entries[] = {
       test_loader_0011_loader_gd_pixelformat },
     { "loader/libpng_contract", test_loader_libpng_contract },
     { "loader/libpng_indexed_precision", test_libpng_indexed_precision },
+    { "cg-indexed/0001_p3_8", test_cgi_0001 },
+    { "cg-indexed/0002_p3_1", test_cgi_0002 },
+    { "cg-indexed/0003_p3_2", test_cgi_0003 },
+    { "cg-indexed/0004_p3_4", test_cgi_0004 },
+    { "cg-indexed/0005_p3_no_palette", test_cgi_0005 },
+    { "cg-indexed/0006_p3_reqcolors", test_cgi_0006 },
+    { "cg-indexed/0007_srgb_byte", test_cgi_0007 },
+    { "cg-indexed/0008_srgb_float", test_cgi_0008 },
+    { "cg-indexed/0009_p3_engine_none", test_cgi_0009 },
+    { "cg-indexed/0010_p3_engine_builtin", test_cgi_0010 },
+    { "cg-indexed/0011_allocation_retry", test_cgi_0011 },
     { "jpeg-gray/0001_gray8_builtin", test_jgray_0001 },
     { "jpeg-gray/0002_gray8_lcms2", test_jgray_0002 },
     { "jpeg-gray/0003_gray8_colorsync", test_jgray_0003 },
