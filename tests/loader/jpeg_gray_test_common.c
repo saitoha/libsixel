@@ -7,7 +7,6 @@
 #include "jpeg_gray_test_common.h"
 #include "src/cms.h"
 
-#if HAVE_JPEG
 typedef struct {
     edge_writer_t writer;
     unsigned int byte;
@@ -19,6 +18,7 @@ typedef struct {
     int engine;
     int mode;
     int calls;
+    int builtin;
 } jg_probe_t;
 
 /* DCT blocks are constant, with Q=1 and DC=8*(sample-center).
@@ -199,7 +199,8 @@ jg_capture(sixel_frame_t *frame, void *context)
     width = p->depth == 16 ? 5 : 17;
     height = p->depth == 16 ? 3 : 9;
     byte_frame = p->mode == 3 || p->mode == 4;
-    gamma_frame = byte_frame || p->mode == 6;
+    gamma_frame = byte_frame || p->mode == 6 ||
+        (p->builtin && p->mode != 0);
     managed = p->mode == 0;
     if (frame->width != width || frame->height != height ||
         frame->pixelformat != (byte_frame ? SIXEL_PIXELFORMAT_RGB888 :
@@ -230,11 +231,11 @@ jg_capture(sixel_frame_t *frame, void *context)
             expected = floor(expected * 255.0 + 0.5);
             bound = 0.0;
         } else if (p->mode == 6) {
-            /* Gray12 uses a rounded float reciprocal and multiplication;
+            /* Gray12 and builtin Gray use reciprocal/multiply normalization;
              * two roundings allow 2*u32 relative to the exact source ratio.
-             * Native Gray16 divides directly and must match the float cast. */
-            expected = p->depth == 12 ? source : (float)source;
-            bound = p->depth == 12 ? source * 0x1p-23 : 0.0;
+             * Libjpeg Gray16 divides and must match the single float cast. */
+            expected = p->depth == 12 || p->builtin ? source : (float)source;
+            bound = p->depth == 12 || p->builtin ? source * 0x1p-23 : 0.0;
         }
         for (c = 0u; c < 3u; ++c) {
             actual = byte_frame ? bytes[i * 3u + c] : pixels[i * 3u + c];
@@ -248,12 +249,10 @@ jg_capture(sixel_frame_t *frame, void *context)
     }
     return SIXEL_OK;
 }
-#endif
 
-int
-jpeg_gray_values(int depth, int engine, int mode)
+static int
+jg_values(int depth, int engine, int mode, int builtin)
 {
-#if HAVE_JPEG
     unsigned char fixture[8192];
     size_t size;
     jg_probe_t probe;
@@ -265,11 +264,14 @@ jpeg_gray_values(int depth, int engine, int mode)
     char order[128];
     int n;
 
+#if !HAVE_JPEG
+    if (!builtin) { return 77; }
+#endif
 #if !HAVE_JPEG12_API
-    if (depth == 12) { return 77; }
+    if (!builtin && depth == 12) { return 77; }
 #endif
 #if !HAVE_JPEG16_API
-    if (depth == 16) { return 77; }
+    if (!builtin && depth == 16) { return 77; }
 #endif
     previous = sixel_cms_get_engine();
     sixel_cms_set_engine((sixel_cms_engine_t)engine);
@@ -282,6 +284,7 @@ jpeg_gray_values(int depth, int engine, int mode)
     probe.engine = engine;
     probe.mode = mode;
     probe.calls = 0;
+    probe.builtin = builtin;
     loader = NULL;
     chunk = NULL;
     allocator = NULL;
@@ -293,7 +296,7 @@ jpeg_gray_values(int depth, int engine, int mode)
     status = sixel_loader_new(&loader, NULL);
     if (SIXEL_FAILED(status)) { goto end; }
     n = snprintf(order, sizeof(order),
-        "libjpeg:cms_engine=%s!",
+        "%s:cms_engine=%s!", builtin ? "builtin" : "libjpeg",
         sixel_cms_engine_to_string((sixel_cms_engine_t)engine));
     if (n < 0 || (size_t)n >= sizeof(order)) {
         status = SIXEL_BAD_ARGUMENT;
@@ -318,10 +321,16 @@ end:
         return 1;
     }
     return 0;
-#else
-    (void)depth;
-    (void)engine;
-    (void)mode;
-    return 77;
-#endif
+}
+
+int
+jpeg_gray_values(int depth, int engine, int mode)
+{
+    return jg_values(depth, engine, mode, 0);
+}
+
+int
+builtin_jpeg_gray_values(int depth, int engine, int mode)
+{
+    return jg_values(depth, engine, mode, 1);
 }

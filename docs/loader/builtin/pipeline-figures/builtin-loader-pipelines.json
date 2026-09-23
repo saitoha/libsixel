@@ -414,23 +414,23 @@
         {
           "coverage_id": "JPG-05",
           "details": [
-            "assemble APP2 ICC fragments",
-            "transform float RGB; skip non-RGB profiles"
+            "assemble APP2 ICC fragments; match Gray/RGB/CMYK",
+            "preserve source components; publish complete CMS output"
           ],
           "phase": "PROFILE",
           "role": "color",
           "source": "src/loader-builtin.c",
           "symbols": [
             "sixel_builtin_extract_jpeg_icc",
-            "sixel_cms_convert_profile_to_srgb"
+            "sixel_builtin_jpeg_cmyk_linear"
           ],
-          "title": "Apply embedded RGB ICC when enabled"
+          "title": "Apply matching source-domain ICC"
         },
         {
           "coverage_id": "JPG-06",
           "details": [
             "optionally apply Exif orientation in common finalization",
-            "emit RGB888 or RGBFLOAT32 with gamma colorspace"
+            "emit gamma byte/float or linear float RGB"
           ],
           "phase": "OUTPUT",
           "role": "output",
@@ -758,7 +758,7 @@
           "tests/loader/builtin/2043_loader_builtin_png_post_idat_actl_static_numeric.t"
         ],
         "PNG-02": [
-          "tests/loader/builtin/0143_loader_builtin_png_trns_keycolor_default_enabled_for_palette.t"
+          "tests/loader/builtin/0143_loader_builtin_png_trns_keycolor_default.t"
         ],
         "PNG-03": [
           "tests/loader/builtin/0166_loader_builtin_rgba16_keycolor_precision_parity.t"

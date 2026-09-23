@@ -1858,6 +1858,9 @@ def main():
     outputs.update(jpeg_sample_oracles())
     from generate_jpeg_cmyk_tests import build as jpeg_cmyk_tests
     outputs.update(jpeg_cmyk_tests(outputs['cmyk.icc'], outputs['cmyk.json']))
+    from generate_builtin_jpeg_icc_tests import build as builtin_jpeg_tests
+    outputs.update(builtin_jpeg_tests(outputs['cmyk.icc'],
+        outputs['cmyk.json'], outputs['gray-gamma2.icc']))
     from generate_jpeg_precision_tests import build as jpeg_precision_tests
     outputs.update(jpeg_precision_tests(outputs['cmyk.icc'], outputs['cmyk.json']))
     from generate_tiff_fixtures import build as tiff_fixtures

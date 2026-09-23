@@ -23,6 +23,7 @@ EXTRA_DIST = libsixel-config.in \
              generate_color_fixtures.py \
              generate_cg_indexed_fixtures.py \
              generate_jpeg_cmyk_tests.py \
+             generate_builtin_jpeg_icc_tests.py \
              generate_jpeg_precision_tests.py \
              generate_cli_color_fixtures.py \
              generate_png_chrm_fixtures.py \

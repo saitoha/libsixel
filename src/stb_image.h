@@ -4691,11 +4691,67 @@ static void stbi__jpeg_free_resample16_linebufs(stbi__resample16 *res_comp, int 
    }
 }
 
+/* ICC device inks must be captured before the legacy RGB approximation.
+ * Adobe CMYK stores complemented inks. Adobe YCCK first reconstructs C/M/Y
+ * through the inverse YCbCr matrix; only K remains complemented. With no
+ * Adobe marker, a four-component CMYK profile establishes plain ink order.
+ * Clip only the decoded device coordinates, never CMS-produced RGB. */
+static void stbi__jpeg_cmyk_sample(float *out, unsigned int c0,
+                                  unsigned int c1, unsigned int c2,
+                                  unsigned int c3, int precision,
+                                  int transform)
+{
+   double maximum;
+   double center;
+   double c;
+   double m;
+   double y;
+   double k;
+
+   maximum = (double)((1u << precision) - 1u);
+   center = (double)(1u << (precision - 1));
+   c = (double)c0 / maximum;
+   m = (double)c1 / maximum;
+   y = (double)c2 / maximum;
+   k = (double)c3 / maximum;
+   if (transform == 2) {
+      c = ((double)c0 + 1.402 * ((double)c2 - center)) / maximum;
+      m = ((double)c0 - 0.34414 * ((double)c1 - center)
+          - 0.71414 * ((double)c2 - center)) / maximum;
+      y = ((double)c0 + 1.772 * ((double)c1 - center)) / maximum;
+      k = 1.0 - k;
+   } else if (transform == 0) {
+      c = 1.0 - c;
+      m = 1.0 - m;
+      y = 1.0 - y;
+      k = 1.0 - k;
+   }
+   out[0] = stbi__clampf_0_1((float)c);
+   out[1] = stbi__clampf_0_1((float)m);
+   out[2] = stbi__clampf_0_1((float)y);
+   out[3] = stbi__clampf_0_1((float)k);
+}
+
+/* A separate source buffer preserves the original RGB fallback even if a
+ * CMS backend writes a partial result before failing. Allocate it only for
+ * a matching four-channel request, after validating the decoded geometry. */
+static int stbi__jpeg_cmyk_buffer(stbi__jpeg *z, float **source)
+{
+   if (source == NULL || z->s->img_n != 4 ||
+       (z->app14_color_transform != -1 &&
+        z->app14_color_transform != 0 && z->app14_color_transform != 2))
+      return 1;
+   *source = (float *)stbi__malloc_mad4(4, z->s->img_x, z->s->img_y,
+                                       sizeof(float), 0);
+   return *source != NULL;
+}
+
 static float *load_jpeg_image_float_high_precision(stbi__jpeg *z,
                                                    int *out_x,
                                                    int *out_y,
                                                    int *comp,
-                                                   int req_comp)
+                                                   int req_comp,
+                                                   float **cmyk_source)
 {
    int n;
    int decode_n;
@@ -4708,6 +4764,7 @@ static float *load_jpeg_image_float_high_precision(stbi__jpeg *z,
    unsigned int i;
    unsigned int j;
    float *output;
+   float *inks;
    stbi__uint16 *coutput[4] = { NULL, NULL, NULL, NULL };
    stbi__resample16 res_comp[4];
    stbi__uint16 comps[4];
@@ -4768,6 +4825,14 @@ static float *load_jpeg_image_float_high_precision(stbi__jpeg *z,
       return stbi__errpf("outofmem", "Out of memory");
    }
 
+   if (!stbi__jpeg_cmyk_buffer(z, cmyk_source)) {
+      STBI_FREE(output);
+      stbi__jpeg_free_resample16_linebufs(res_comp, decode_n);
+      stbi__cleanup_jpeg(z);
+      return stbi__errpf("outofmem", "Out of memory");
+   }
+   inks = cmyk_source != NULL ? *cmyk_source : NULL;
+
    for (j = 0; j < (unsigned int)z->s->img_y; ++j) {
       float *out = output + (size_t)n * (size_t)z->s->img_x * j;
 
@@ -4802,6 +4867,12 @@ static float *load_jpeg_image_float_high_precision(stbi__jpeg *z,
          }
          for (; k < 4; ++k) {
             comps[k] = 0;
+         }
+
+         if (inks != NULL) {
+            stbi__jpeg_cmyk_sample(inks + ((size_t)j * z->s->img_x + i) * 4u,
+                comps[0], comps[1], comps[2], comps[3], precision,
+                z->app14_color_transform);
          }
 
          if (n >= 3) {
@@ -4900,13 +4971,16 @@ static float *load_jpeg_image_float_high_precision(stbi__jpeg *z,
    stbi__cleanup_jpeg(z);
    *out_x = z->s->img_x;
    *out_y = z->s->img_y;
-   if (comp) *comp = z->s->img_n >= 3 ? 3 : 1;
+   if (comp) *comp = z->s->img_n;
    return output;
 }
 
-static float *load_jpeg_image_float(stbi__jpeg *z, int *out_x, int *out_y, int *comp, int req_comp)
+static float *load_jpeg_image_float(stbi__jpeg *z, int *out_x,
+                                     int *out_y, int *comp, int req_comp,
+                                     float **cmyk_source)
 {
    int n, decode_n, is_rgb;
+   float *inks;
    z->s->img_n = 0; // make stbi__cleanup_jpeg safe
 
    // validate req_comp
@@ -4919,7 +4993,8 @@ static float *load_jpeg_image_float(stbi__jpeg *z, int *out_x, int *out_y, int *
                                                   out_x,
                                                   out_y,
                                                   comp,
-                                                  req_comp);
+                                                  req_comp,
+                                                  cmyk_source);
    }
 
    // determine actual number of components to generate
@@ -4969,9 +5044,16 @@ static float *load_jpeg_image_float(stbi__jpeg *z, int *out_x, int *out_y, int *
          else                               r->resample = stbi__resample_row_generic;
       }
 
-      // can't error after this so, this is safe
+      // Allocate fallback RGB before optional source-domain storage.
       output = (float *) stbi__malloc_mad4(n, z->s->img_x, z->s->img_y, sizeof(float), 0);
       if (!output) { stbi__cleanup_jpeg(z); return stbi__errpf("outofmem", "Out of memory"); }
+
+      if (!stbi__jpeg_cmyk_buffer(z, cmyk_source)) {
+         STBI_FREE(output);
+         stbi__cleanup_jpeg(z);
+         return stbi__errpf("outofmem", "Out of memory");
+      }
+      inks = cmyk_source != NULL ? *cmyk_source : NULL;
 
       // now go ahead and resample
       for (j=0; j < z->s->img_y; ++j) {
@@ -4988,6 +5070,14 @@ static float *load_jpeg_image_float(stbi__jpeg *z, int *out_x, int *out_y, int *
                r->line0 = r->line1;
                if (++r->ypos < z->img_comp[k].y)
                   r->line1 += z->img_comp[k].w2;
+            }
+         }
+         if (inks != NULL) {
+            for (i = 0; i < z->s->img_x; ++i) {
+               stbi__jpeg_cmyk_sample(
+                   inks + ((size_t)j * z->s->img_x + i) * 4u,
+                   coutput[0][i], coutput[1][i], coutput[2][i],
+                   coutput[3][i], 8, z->app14_color_transform);
             }
          }
          if (n >= 3) {
@@ -5102,7 +5192,7 @@ static float *load_jpeg_image_float(stbi__jpeg *z, int *out_x, int *out_y, int *
       stbi__cleanup_jpeg(z);
       *out_x = z->s->img_x;
       *out_y = z->s->img_y;
-      if (comp) *comp = z->s->img_n >= 3 ? 3 : 1; // report original components, not output
+      if (comp) *comp = z->s->img_n; // report original components, not output
       return output;
    }
 }
@@ -5121,16 +5211,19 @@ static void *stbi__jpeg_load(stbi__context *s, int *x, int *y, int *comp, int re
    return result;
 }
 
-static float *stbi__jpeg_loadf(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)
+static float *stbi__jpeg_loadf(stbi__context *s, int *x, int *y, int *comp,
+                              int req_comp, stbi__result_info *ri,
+                              float **cmyk_source)
 {
    float* result;
    stbi__jpeg* j = (stbi__jpeg*) stbi__malloc(sizeof(stbi__jpeg));
+   if (cmyk_source != NULL) *cmyk_source = NULL;
    if (!j) return stbi__errpf("outofmem", "Out of memory");
    memset(j, 0, sizeof(stbi__jpeg));
    STBI_NOTUSED(ri);
    j->s = s;
    stbi__setup_jpeg(j);
-   result = load_jpeg_image_float(j, x,y,comp,req_comp);
+   result = load_jpeg_image_float(j, x,y,comp,req_comp,cmyk_source);
    STBI_FREE(j);
    return result;
 }

@@ -1210,6 +1210,60 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0009_P3_ENGINE_NONE \
     -DBUILD_TEST_0010_P3_ENGINE_BUILTIN \
     -DBUILD_TEST_0011_ALLOCATION_RETRY \
+    -DBUILD_BUILTIN_JPEG_ICC_TEST_COMMON \
+    -DBUILD_TEST_0001_BJ_GRAY8_BUILTIN_NUMERIC \
+    -DBUILD_TEST_0002_BJ_GRAY8_LCMS2_NUMERIC \
+    -DBUILD_TEST_0003_BJ_GRAY8_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0004_BJ_GRAY12_BUILTIN_NUMERIC \
+    -DBUILD_TEST_0005_BJ_GRAY12_LCMS2_NUMERIC \
+    -DBUILD_TEST_0006_BJ_GRAY12_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0007_BJ_GRAY16_BUILTIN_NUMERIC \
+    -DBUILD_TEST_0008_BJ_GRAY16_LCMS2_NUMERIC \
+    -DBUILD_TEST_0009_BJ_GRAY16_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0010_BJ_PLAIN8_BUILTIN_NUMERIC \
+    -DBUILD_TEST_0011_BJ_PLAIN8_LCMS2_NUMERIC \
+    -DBUILD_TEST_0012_BJ_PLAIN8_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0013_BJ_ADOBE8_BUILTIN_NUMERIC \
+    -DBUILD_TEST_0014_BJ_ADOBE8_LCMS2_NUMERIC \
+    -DBUILD_TEST_0015_BJ_ADOBE8_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0016_BJ_YCCK8_BUILTIN_NUMERIC \
+    -DBUILD_TEST_0017_BJ_YCCK8_LCMS2_NUMERIC \
+    -DBUILD_TEST_0018_BJ_YCCK8_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0019_BJ_PLAIN12_BUILTIN_NUMERIC \
+    -DBUILD_TEST_0020_BJ_PLAIN12_LCMS2_NUMERIC \
+    -DBUILD_TEST_0021_BJ_PLAIN12_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0022_BJ_ADOBE12_BUILTIN_NUMERIC \
+    -DBUILD_TEST_0023_BJ_ADOBE12_LCMS2_NUMERIC \
+    -DBUILD_TEST_0024_BJ_ADOBE12_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0025_BJ_YCCK12_BUILTIN_NUMERIC \
+    -DBUILD_TEST_0026_BJ_YCCK12_LCMS2_NUMERIC \
+    -DBUILD_TEST_0027_BJ_YCCK12_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0028_BJ_PLAIN16_BUILTIN_NUMERIC \
+    -DBUILD_TEST_0029_BJ_PLAIN16_LCMS2_NUMERIC \
+    -DBUILD_TEST_0030_BJ_PLAIN16_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0031_BJ_ADOBE16_BUILTIN_NUMERIC \
+    -DBUILD_TEST_0032_BJ_ADOBE16_LCMS2_NUMERIC \
+    -DBUILD_TEST_0033_BJ_ADOBE16_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0034_BJ_YCCK16_BUILTIN_NUMERIC \
+    -DBUILD_TEST_0035_BJ_YCCK16_LCMS2_NUMERIC \
+    -DBUILD_TEST_0036_BJ_YCCK16_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0037_BJ_PROGRESSIVE8_BUILTIN_NUMERIC \
+    -DBUILD_TEST_0038_BJ_PROGRESSIVE8_LCMS2_NUMERIC \
+    -DBUILD_TEST_0039_BJ_PROGRESSIVE8_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0040_BJ_INK_NONE_BYTE_NUMERIC \
+    -DBUILD_TEST_0041_BJ_INK_ABSENT_BYTE_NUMERIC \
+    -DBUILD_TEST_0042_BJ_INK_REJECTED_NUMERIC \
+    -DBUILD_TEST_0043_BJ_INK_APPLY_FAILURE_NUMERIC \
+    -DBUILD_TEST_0044_BJ_INK_MISMATCH_NUMERIC \
+    -DBUILD_TEST_0045_BJ_INK_NONE_FLOAT_NUMERIC \
+    -DBUILD_TEST_0046_BJ_INK_ABSENT_FLOAT_NUMERIC \
+    -DBUILD_TEST_0047_BJ_GRAY_NONE_BYTE_NUMERIC \
+    -DBUILD_TEST_0048_BJ_GRAY_ABSENT_BYTE_NUMERIC \
+    -DBUILD_TEST_0049_BJ_GRAY_REJECTED_NUMERIC \
+    -DBUILD_TEST_0050_BJ_GRAY_NONE12_FLOAT_NUMERIC \
+    -DBUILD_TEST_0051_BJ_GRAY_NONE16_FLOAT_NUMERIC \
+    -DBUILD_TEST_0052_BJ_INK8_ALLOCATION \
+    -DBUILD_TEST_0053_BJ_INK16_ALLOCATION \
     -DBUILD_JPEG_GRAY_TEST_COMMON \
     -DBUILD_TEST_0001_GRAY8_BUILTIN \
     -DBUILD_TEST_0002_GRAY8_LCMS2 \
@@ -2064,6 +2118,61 @@ test_runner_SOURCES = test_runner.c \
     loader/coregraphics/indexed/0009_p3_engine_none.c \
     loader/coregraphics/indexed/0010_p3_engine_builtin.c \
     loader/coregraphics/indexed/0011_allocation_retry.c \
+    loader/builtin_jpeg_icc_test_common.c \
+    loader/builtin_jpeg_icc_test_common.h \
+    loader/builtin/jpeg/0001_bj_gray8_builtin_numeric.c \
+    loader/builtin/jpeg/0002_bj_gray8_lcms2_numeric.c \
+    loader/builtin/jpeg/0003_bj_gray8_colorsync_numeric.c \
+    loader/builtin/jpeg/0004_bj_gray12_builtin_numeric.c \
+    loader/builtin/jpeg/0005_bj_gray12_lcms2_numeric.c \
+    loader/builtin/jpeg/0006_bj_gray12_colorsync_numeric.c \
+    loader/builtin/jpeg/0007_bj_gray16_builtin_numeric.c \
+    loader/builtin/jpeg/0008_bj_gray16_lcms2_numeric.c \
+    loader/builtin/jpeg/0009_bj_gray16_colorsync_numeric.c \
+    loader/builtin/jpeg/0010_bj_plain8_builtin_numeric.c \
+    loader/builtin/jpeg/0011_bj_plain8_lcms2_numeric.c \
+    loader/builtin/jpeg/0012_bj_plain8_colorsync_numeric.c \
+    loader/builtin/jpeg/0013_bj_adobe8_builtin_numeric.c \
+    loader/builtin/jpeg/0014_bj_adobe8_lcms2_numeric.c \
+    loader/builtin/jpeg/0015_bj_adobe8_colorsync_numeric.c \
+    loader/builtin/jpeg/0016_bj_ycck8_builtin_numeric.c \
+    loader/builtin/jpeg/0017_bj_ycck8_lcms2_numeric.c \
+    loader/builtin/jpeg/0018_bj_ycck8_colorsync_numeric.c \
+    loader/builtin/jpeg/0019_bj_plain12_builtin_numeric.c \
+    loader/builtin/jpeg/0020_bj_plain12_lcms2_numeric.c \
+    loader/builtin/jpeg/0021_bj_plain12_colorsync_numeric.c \
+    loader/builtin/jpeg/0022_bj_adobe12_builtin_numeric.c \
+    loader/builtin/jpeg/0023_bj_adobe12_lcms2_numeric.c \
+    loader/builtin/jpeg/0024_bj_adobe12_colorsync_numeric.c \
+    loader/builtin/jpeg/0025_bj_ycck12_builtin_numeric.c \
+    loader/builtin/jpeg/0026_bj_ycck12_lcms2_numeric.c \
+    loader/builtin/jpeg/0027_bj_ycck12_colorsync_numeric.c \
+    loader/builtin/jpeg/0028_bj_plain16_builtin_numeric.c \
+    loader/builtin/jpeg/0029_bj_plain16_lcms2_numeric.c \
+    loader/builtin/jpeg/0030_bj_plain16_colorsync_numeric.c \
+    loader/builtin/jpeg/0031_bj_adobe16_builtin_numeric.c \
+    loader/builtin/jpeg/0032_bj_adobe16_lcms2_numeric.c \
+    loader/builtin/jpeg/0033_bj_adobe16_colorsync_numeric.c \
+    loader/builtin/jpeg/0034_bj_ycck16_builtin_numeric.c \
+    loader/builtin/jpeg/0035_bj_ycck16_lcms2_numeric.c \
+    loader/builtin/jpeg/0036_bj_ycck16_colorsync_numeric.c \
+    loader/builtin/jpeg/0037_bj_progressive8_builtin_numeric.c \
+    loader/builtin/jpeg/0038_bj_progressive8_lcms2_numeric.c \
+    loader/builtin/jpeg/0039_bj_progressive8_colorsync_numeric.c \
+    loader/builtin/jpeg/0040_bj_ink_none_byte_numeric.c \
+    loader/builtin/jpeg/0041_bj_ink_absent_byte_numeric.c \
+    loader/builtin/jpeg/0042_bj_ink_rejected_numeric.c \
+    loader/builtin/jpeg/0043_bj_ink_apply_failure_numeric.c \
+    loader/builtin/jpeg/0044_bj_ink_mismatch_numeric.c \
+    loader/builtin/jpeg/0045_bj_ink_none_float_numeric.c \
+    loader/builtin/jpeg/0046_bj_ink_absent_float_numeric.c \
+    loader/builtin/jpeg/0047_bj_gray_none_byte_numeric.c \
+    loader/builtin/jpeg/0048_bj_gray_absent_byte_numeric.c \
+    loader/builtin/jpeg/0049_bj_gray_rejected_numeric.c \
+    loader/builtin/jpeg/0050_bj_gray_none12_float_numeric.c \
+    loader/builtin/jpeg/0051_bj_gray_none16_float_numeric.c \
+    loader/builtin/jpeg/0052_bj_ink8_allocation.c \
+    loader/builtin/jpeg/0053_bj_ink16_allocation.c \
     loader/jpeg_gray_test_common.c \
     loader/jpeg_gray_test_common.h \
     loader/libjpeg/gray/0001_gray8_builtin.c \

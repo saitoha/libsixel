@@ -15,7 +15,6 @@ PLAN_DOCUMENT = Path("docs/testing/builtin-loader-coverage.md")
 TEST_DIRECTORY = Path("tests/loader/builtin")
 TEST_PLAN = "docs/testing/builtin-loader-coverage.md"
 TEST_PLAN_COMMENT = f"# Test-plan: {TEST_PLAN}"
-TEST_PLAN_GLOB = "tests/loader/builtin/*.t"
 
 ASSURANCE_KINDS = (
     "Direct numeric/digest",
@@ -176,7 +175,7 @@ def classify(path: Path) -> str:
 
     if path.name in CLASSIFICATION_OVERRIDES:
         return CLASSIFICATION_OVERRIDES[path.name]
-    stem = path.stem.lower()
+    stem = "_".join((*path.parts[3:-1], path.stem)).lower()
     families = family_map()
     for key in CLASSIFICATION_ORDER:
         if has_token(stem, families[key].tokens):
@@ -324,10 +323,10 @@ def policy_context(policies: tuple[str, ...]) -> str:
 
 
 def read_tests(root: Path) -> list[dict[str, object]]:
-    """Read and classify every nonrecursive builtin-loader shell test."""
+    """Read and classify every builtin-loader shell test."""
 
     tests = []
-    for path in sorted((root / TEST_DIRECTORY).glob("*.t")):
+    for path in sorted((root / TEST_DIRECTORY).rglob("*.t")):
         relative = path.relative_to(root)
         lines = path.read_text(encoding="utf-8").splitlines()
         policies = policy_references(lines)
@@ -341,7 +340,7 @@ def read_tests(root: Path) -> list[dict[str, object]]:
             }
         )
     if not tests:
-        raise RuntimeError(f"no tests matched {TEST_DIRECTORY}/*.t")
+        raise RuntimeError(f"no tests matched {TEST_DIRECTORY}/**/*.t")
     return tests
 
 
@@ -385,15 +384,18 @@ def render_summary(tests: list[dict[str, object]]) -> list[str]:
     return lines
 
 
-def render_inventory(tests: list[dict[str, object]]) -> list[str]:
+def render_directory(tests: list[dict[str, object]], directory: Path) -> list[str]:
     """Render every test exactly once inside the enforced marker pair."""
 
-    lines = [f"<!-- test-plan: {TEST_PLAN_GLOB} -->", ""]
+    lines = [f"<!-- test-plan: {directory.as_posix()}/*.t -->", ""]
+    suffix = "" if directory == TEST_DIRECTORY else f" ({directory.name}/)"
     for family in FAMILIES:
         members = [test for test in tests if test["family"] == family.key]
+        if not members:
+            continue
         lines.extend(
             [
-                f"### {family.title}",
+                f"### {family.title}{suffix}",
                 "",
                 f"Primary implementation context: "
                 f"[{family.document_label}]({document_link(family.document)}).",
@@ -415,6 +417,17 @@ def render_inventory(tests: list[dict[str, object]]) -> list[str]:
     return lines
 
 
+def render_inventory(tests: list[dict[str, object]]) -> list[str]:
+    """Use one supported, nonrecursive contract glob per test directory."""
+
+    lines = []
+    for directory in sorted({test["path"].parent for test in tests}):
+        members = [test for test in tests if test["path"].parent == directory]
+        lines.extend(render_directory(members, directory))
+        lines.append("")
+    return lines
+
+
 def render_document(tests: list[dict[str, object]]) -> str:
     """Render the complete durable inventory document."""
 
@@ -425,7 +438,7 @@ def render_document(tests: list[dict[str, object]]) -> str:
         "",
         "This inventory keeps every shell test in `tests/loader/builtin/` discoverable without turning every generated matrix cell, malformed-input probe, or quality smoke test into a public compatibility promise. The format contracts and implementation maps remain owned by the [builtin format component documentation](../loader/builtin/README.md). A `Policy:` backlink records traceability, while the separately generated assertion mechanism records what the test actually observes; a policy link does not turn an LSQA threshold into an exact decoded-value assertion.",
         "",
-        "The observation column is generated from the opening explanatory comment, then from a matrix `CASE_LABEL` when present, and finally from the test filename. Assertion mechanisms are classified conservatively from explicit test vocabulary: LSQA/MS-SSIM use is a perceptual quality threshold, `_numeric` and `_digest` cases directly compare decoded values, `_trace` and `_code` cases observe protocol or status evidence, and remaining names fall into acceptance/rejection, robustness/liveness, or other integration/smoke buckets. The test itself remains authoritative. Filename tokens assign each test to one primary format section; cross-format reference images such as PNM baselines do not create duplicate inventory rows.",
+        "The observation column is generated from the opening explanatory comment, then from a matrix `CASE_LABEL` when present, and finally from the test filename. Assertion mechanisms are classified conservatively from explicit test vocabulary: LSQA/MS-SSIM use is a perceptual quality threshold, `_numeric` and `_digest` cases directly compare decoded values, `_trace` and `_code` cases observe protocol or status evidence, and remaining names fall into acceptance/rejection, robustness/liveness, or other integration/smoke buckets. The test itself remains authoritative. Directory and filename tokens assign each test to one primary format section; cross-format reference images such as PNM baselines do not create duplicate inventory rows.",
         "",
         "## Coverage summary",
         "",

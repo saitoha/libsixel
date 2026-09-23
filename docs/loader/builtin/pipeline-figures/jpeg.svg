@@ -51,9 +51,9 @@
 <rect x="67.0" y="1100.0" width="105.0" height="30.0" rx="15.0" fill="#F4EBFF" stroke="#6941C6" stroke-width="1.2"/>
 <text x="119.5" y="1121.0" fill="#6941C6" font-size="13" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">JPG-05</text>
 <text x="190.0" y="1121.0" fill="#556176" font-size="13" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">PROFILE</text>
-<text x="67.0" y="1157.0" fill="#172033" font-size="21" font-weight="780" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Apply embedded RGB ICC when enabled</text>
-<text x="67.0" y="1185.0" fill="#6941C6" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">sixel_builtin_extract_jpeg_icc()  -&gt;  sixel_cms_convert_profile_to_srgb()</text>
-<text x="67.0" y="1220.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">assemble APP2 ICC fragments</text><text x="67.0" y="1238.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">transform float RGB; skip non-RGB profiles</text>
+<text x="67.0" y="1157.0" fill="#172033" font-size="21" font-weight="780" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Apply matching source-domain ICC</text>
+<text x="67.0" y="1185.0" fill="#6941C6" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">sixel_builtin_extract_jpeg_icc()  -&gt;  sixel_builtin_jpeg_cmyk_linear()</text>
+<text x="67.0" y="1220.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">assemble APP2 ICC fragments; match Gray/RGB/CMYK</text><text x="67.0" y="1238.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">preserve source components; publish complete CMS output</text>
 <text x="893.0" y="1121.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="end">src/loader-builtin.c</text>
 <path d="M 480 1262 V 1296" fill="none" stroke="#6941C6" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
 <rect x="42.0" y="1308.0" width="876.0" height="184.0" rx="16.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5" filter="url(#card-shadow)"/>
@@ -63,7 +63,7 @@
 <text x="190.0" y="1351.0" fill="#556176" font-size="13" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">OUTPUT</text>
 <text x="67.0" y="1387.0" fill="#172033" font-size="21" font-weight="780" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Apply orientation and deliver one frame</text>
 <text x="67.0" y="1415.0" fill="#0F766E" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">sixel_builtin_finalize_loaded_frame()</text>
-<text x="67.0" y="1450.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">optionally apply Exif orientation in common finalization</text><text x="67.0" y="1468.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">emit RGB888 or RGBFLOAT32 with gamma colorspace</text>
+<text x="67.0" y="1450.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">optionally apply Exif orientation in common finalization</text><text x="67.0" y="1468.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">emit gamma byte/float or linear float RGB</text>
 <text x="893.0" y="1351.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="end">src/loader-builtin.c</text>
 <text x="42.0" y="1587.0" fill="#556176" font-size="14" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Coverage IDs join this diagram to the audit table and owning tests in the format document.</text>
 </svg>

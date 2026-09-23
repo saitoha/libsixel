@@ -4,7 +4,7 @@
 
 This inventory keeps every shell test in `tests/loader/builtin/` discoverable without turning every generated matrix cell, malformed-input probe, or quality smoke test into a public compatibility promise. The format contracts and implementation maps remain owned by the [builtin format component documentation](../loader/builtin/README.md). A `Policy:` backlink records traceability, while the separately generated assertion mechanism records what the test actually observes; a policy link does not turn an LSQA threshold into an exact decoded-value assertion.
 
-The observation column is generated from the opening explanatory comment, then from a matrix `CASE_LABEL` when present, and finally from the test filename. Assertion mechanisms are classified conservatively from explicit test vocabulary: LSQA/MS-SSIM use is a perceptual quality threshold, `_numeric` and `_digest` cases directly compare decoded values, `_trace` and `_code` cases observe protocol or status evidence, and remaining names fall into acceptance/rejection, robustness/liveness, or other integration/smoke buckets. The test itself remains authoritative. Filename tokens assign each test to one primary format section; cross-format reference images such as PNM baselines do not create duplicate inventory rows.
+The observation column is generated from the opening explanatory comment, then from a matrix `CASE_LABEL` when present, and finally from the test filename. Assertion mechanisms are classified conservatively from explicit test vocabulary: LSQA/MS-SSIM use is a perceptual quality threshold, `_numeric` and `_digest` cases directly compare decoded values, `_trace` and `_code` cases observe protocol or status evidence, and remaining names fall into acceptance/rejection, robustness/liveness, or other integration/smoke buckets. The test itself remains authoritative. Directory and filename tokens assign each test to one primary format section; cross-format reference images such as PNM baselines do not create duplicate inventory rows.
 
 ## Coverage summary
 
@@ -16,7 +16,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 36 | 0 | 0 | 0 | 0 | 0 |
 | [GIF](../loader/builtin/gif.md) | 36 | 8 | 3 | 2 | 2 | 2 | 19 |
 | [PNG and APNG](../loader/builtin/png.md) | 288 | 22 | 59 | 0 | 13 | 7 | 187 |
-| [JPEG](../loader/builtin/jpeg.md) | 58 | 23 | 14 | 1 | 16 | 0 | 4 |
+| [JPEG](../loader/builtin/jpeg.md) | 111 | 74 | 14 | 1 | 16 | 2 | 4 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
 | [PSD and PSB](../loader/builtin/psd.md) | 994 | 13 | 551 | 402 | 9 | 3 | 16 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
@@ -24,7 +24,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 41 | 25 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2244** | **493** | **724** | **652** | **67** | **13** | **295** |
+| **Total** | **2297** | **544** | **724** | **652** | **67** | **15** | **295** |
 
 ## Complete inventory
 
@@ -2359,6 +2359,71 @@ Primary implementation context: [Softimage PIC builtin component](../loader/buil
 | [tests/loader/builtin/1989_loader_builtin_pic_eleventh_packet_reject.t](../../tests/loader/builtin/1989_loader_builtin_pic_eleventh_packet_reject.t) | Verify the descriptor-table upper bound rejects packet eleven. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
 
 <!-- test-plan-end -->
+
+<!-- test-plan: tests/loader/builtin/jpeg/*.t -->
+
+### JPEG (jpeg/)
+
+Primary implementation context: [JPEG builtin component](../loader/builtin/jpeg.md).
+
+| Test | Observation | Assertion mechanism | Policy context |
+| --- | --- | --- | --- |
+| [tests/loader/builtin/jpeg/0001_bj_gray8_builtin_numeric.t](../../tests/loader/builtin/jpeg/0001_bj_gray8_builtin_numeric.t) | Verify gray8 builtin against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0002_bj_gray8_lcms2_numeric.t](../../tests/loader/builtin/jpeg/0002_bj_gray8_lcms2_numeric.t) | Verify gray8 lcms2 against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0003_bj_gray8_colorsync_numeric.t](../../tests/loader/builtin/jpeg/0003_bj_gray8_colorsync_numeric.t) | Verify gray8 colorsync against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0004_bj_gray12_builtin_numeric.t](../../tests/loader/builtin/jpeg/0004_bj_gray12_builtin_numeric.t) | Verify gray12 builtin against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0005_bj_gray12_lcms2_numeric.t](../../tests/loader/builtin/jpeg/0005_bj_gray12_lcms2_numeric.t) | Verify gray12 lcms2 against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0006_bj_gray12_colorsync_numeric.t](../../tests/loader/builtin/jpeg/0006_bj_gray12_colorsync_numeric.t) | Verify gray12 colorsync against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0007_bj_gray16_builtin_numeric.t](../../tests/loader/builtin/jpeg/0007_bj_gray16_builtin_numeric.t) | Verify gray16 builtin against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0008_bj_gray16_lcms2_numeric.t](../../tests/loader/builtin/jpeg/0008_bj_gray16_lcms2_numeric.t) | Verify gray16 lcms2 against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0009_bj_gray16_colorsync_numeric.t](../../tests/loader/builtin/jpeg/0009_bj_gray16_colorsync_numeric.t) | Verify gray16 colorsync against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0010_bj_plain8_builtin_numeric.t](../../tests/loader/builtin/jpeg/0010_bj_plain8_builtin_numeric.t) | Verify plain8 builtin against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0011_bj_plain8_lcms2_numeric.t](../../tests/loader/builtin/jpeg/0011_bj_plain8_lcms2_numeric.t) | Verify plain8 lcms2 against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0012_bj_plain8_colorsync_numeric.t](../../tests/loader/builtin/jpeg/0012_bj_plain8_colorsync_numeric.t) | Verify plain8 colorsync against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0013_bj_adobe8_builtin_numeric.t](../../tests/loader/builtin/jpeg/0013_bj_adobe8_builtin_numeric.t) | Verify adobe8 builtin against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0014_bj_adobe8_lcms2_numeric.t](../../tests/loader/builtin/jpeg/0014_bj_adobe8_lcms2_numeric.t) | Verify adobe8 lcms2 against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0015_bj_adobe8_colorsync_numeric.t](../../tests/loader/builtin/jpeg/0015_bj_adobe8_colorsync_numeric.t) | Verify adobe8 colorsync against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0016_bj_ycck8_builtin_numeric.t](../../tests/loader/builtin/jpeg/0016_bj_ycck8_builtin_numeric.t) | Verify ycck8 builtin against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0017_bj_ycck8_lcms2_numeric.t](../../tests/loader/builtin/jpeg/0017_bj_ycck8_lcms2_numeric.t) | Verify ycck8 lcms2 against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0018_bj_ycck8_colorsync_numeric.t](../../tests/loader/builtin/jpeg/0018_bj_ycck8_colorsync_numeric.t) | Verify ycck8 colorsync against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0019_bj_plain12_builtin_numeric.t](../../tests/loader/builtin/jpeg/0019_bj_plain12_builtin_numeric.t) | Verify plain12 builtin against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0020_bj_plain12_lcms2_numeric.t](../../tests/loader/builtin/jpeg/0020_bj_plain12_lcms2_numeric.t) | Verify plain12 lcms2 against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0021_bj_plain12_colorsync_numeric.t](../../tests/loader/builtin/jpeg/0021_bj_plain12_colorsync_numeric.t) | Verify plain12 colorsync against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0022_bj_adobe12_builtin_numeric.t](../../tests/loader/builtin/jpeg/0022_bj_adobe12_builtin_numeric.t) | Verify adobe12 builtin against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0023_bj_adobe12_lcms2_numeric.t](../../tests/loader/builtin/jpeg/0023_bj_adobe12_lcms2_numeric.t) | Verify adobe12 lcms2 against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0024_bj_adobe12_colorsync_numeric.t](../../tests/loader/builtin/jpeg/0024_bj_adobe12_colorsync_numeric.t) | Verify adobe12 colorsync against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0025_bj_ycck12_builtin_numeric.t](../../tests/loader/builtin/jpeg/0025_bj_ycck12_builtin_numeric.t) | Verify ycck12 builtin against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0026_bj_ycck12_lcms2_numeric.t](../../tests/loader/builtin/jpeg/0026_bj_ycck12_lcms2_numeric.t) | Verify ycck12 lcms2 against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0027_bj_ycck12_colorsync_numeric.t](../../tests/loader/builtin/jpeg/0027_bj_ycck12_colorsync_numeric.t) | Verify ycck12 colorsync against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0028_bj_plain16_builtin_numeric.t](../../tests/loader/builtin/jpeg/0028_bj_plain16_builtin_numeric.t) | Verify plain16 builtin against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0029_bj_plain16_lcms2_numeric.t](../../tests/loader/builtin/jpeg/0029_bj_plain16_lcms2_numeric.t) | Verify plain16 lcms2 against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0030_bj_plain16_colorsync_numeric.t](../../tests/loader/builtin/jpeg/0030_bj_plain16_colorsync_numeric.t) | Verify plain16 colorsync against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0031_bj_adobe16_builtin_numeric.t](../../tests/loader/builtin/jpeg/0031_bj_adobe16_builtin_numeric.t) | Verify adobe16 builtin against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0032_bj_adobe16_lcms2_numeric.t](../../tests/loader/builtin/jpeg/0032_bj_adobe16_lcms2_numeric.t) | Verify adobe16 lcms2 against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0033_bj_adobe16_colorsync_numeric.t](../../tests/loader/builtin/jpeg/0033_bj_adobe16_colorsync_numeric.t) | Verify adobe16 colorsync against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0034_bj_ycck16_builtin_numeric.t](../../tests/loader/builtin/jpeg/0034_bj_ycck16_builtin_numeric.t) | Verify ycck16 builtin against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0035_bj_ycck16_lcms2_numeric.t](../../tests/loader/builtin/jpeg/0035_bj_ycck16_lcms2_numeric.t) | Verify ycck16 lcms2 against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0036_bj_ycck16_colorsync_numeric.t](../../tests/loader/builtin/jpeg/0036_bj_ycck16_colorsync_numeric.t) | Verify ycck16 colorsync against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0037_bj_progressive8_builtin_numeric.t](../../tests/loader/builtin/jpeg/0037_bj_progressive8_builtin_numeric.t) | Verify progressive8 builtin against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0038_bj_progressive8_lcms2_numeric.t](../../tests/loader/builtin/jpeg/0038_bj_progressive8_lcms2_numeric.t) | Verify progressive8 lcms2 against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0039_bj_progressive8_colorsync_numeric.t](../../tests/loader/builtin/jpeg/0039_bj_progressive8_colorsync_numeric.t) | Verify progressive8 colorsync against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0040_bj_ink_none_byte_numeric.t](../../tests/loader/builtin/jpeg/0040_bj_ink_none_byte_numeric.t) | Verify ink none byte against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0041_bj_ink_absent_byte_numeric.t](../../tests/loader/builtin/jpeg/0041_bj_ink_absent_byte_numeric.t) | Verify ink absent byte against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0042_bj_ink_rejected_numeric.t](../../tests/loader/builtin/jpeg/0042_bj_ink_rejected_numeric.t) | Verify ink rejected against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0043_bj_ink_apply_failure_numeric.t](../../tests/loader/builtin/jpeg/0043_bj_ink_apply_failure_numeric.t) | Verify ink apply failure against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0044_bj_ink_mismatch_numeric.t](../../tests/loader/builtin/jpeg/0044_bj_ink_mismatch_numeric.t) | Verify ink mismatch against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0045_bj_ink_none_float_numeric.t](../../tests/loader/builtin/jpeg/0045_bj_ink_none_float_numeric.t) | Verify ink none float against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0046_bj_ink_absent_float_numeric.t](../../tests/loader/builtin/jpeg/0046_bj_ink_absent_float_numeric.t) | Verify ink absent float against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0047_bj_gray_none_byte_numeric.t](../../tests/loader/builtin/jpeg/0047_bj_gray_none_byte_numeric.t) | Verify gray none byte against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0048_bj_gray_absent_byte_numeric.t](../../tests/loader/builtin/jpeg/0048_bj_gray_absent_byte_numeric.t) | Verify gray absent byte against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0049_bj_gray_rejected_numeric.t](../../tests/loader/builtin/jpeg/0049_bj_gray_rejected_numeric.t) | Verify gray rejected against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0050_bj_gray_none12_float_numeric.t](../../tests/loader/builtin/jpeg/0050_bj_gray_none12_float_numeric.t) | Verify gray none12 float against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0051_bj_gray_none16_float_numeric.t](../../tests/loader/builtin/jpeg/0051_bj_gray_none16_float_numeric.t) | Verify gray none16 float against analytic JPEG samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0052_bj_ink8_allocation.t](../../tests/loader/builtin/jpeg/0052_bj_ink8_allocation.t) | Verify 8-bit CMYK source and fallback allocation cleanup. | Robustness/liveness | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/jpeg/0053_bj_ink16_allocation.t](../../tests/loader/builtin/jpeg/0053_bj_ink16_allocation.t) | Verify 16-bit CMYK source and fallback allocation cleanup. | Robustness/liveness | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+
+<!-- test-plan-end -->
+
 
 ## Related SIXEL suites
 

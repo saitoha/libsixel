@@ -5069,6 +5069,34 @@ sixel_builtin_load_png_single_frame(
                                          bgcolor_source);
 }
 
+/* The CMYK scratch buffer is large enough for packed RGB and supports the
+ * common facade's contracting alias operation. Publish it only after a
+ * complete finite result; the separately decoded device RGB is untouched
+ * on every failure path. Linear output retains out-of-sRGB-gamut colors. */
+static int
+sixel_builtin_jpeg_cmyk_linear(float *pixels, size_t count,
+                                sixel_cms_profile_t *source)
+{
+    sixel_cms_profile_t *destination;
+    sixel_cms_transform_t *transform;
+    size_t i;
+    int converted;
+
+    destination = sixel_cms_create_linear_srgb_profile();
+    transform = sixel_cms_create_transform(source,
+        SIXEL_CMS_PIXELFORMAT_CMYK_F32, destination,
+        SIXEL_CMS_PIXELFORMAT_RGB_F32, SIXEL_CMS_TRANSFORM_DEFAULT);
+    converted = sixel_cms_do_transform(transform, pixels, pixels, count);
+    for (i = 0u; converted && i < count * 3u; ++i) {
+        if (!isfinite(pixels[i])) {
+            converted = 0;
+        }
+    }
+    sixel_cms_delete_transform(transform);
+    sixel_cms_close_profile(destination);
+    return converted;
+}
+
 static SIXELSTATUS
 sixel_builtin_load_jpeg_frame(
     sixel_chunk_t const *chunk,
@@ -5084,7 +5112,9 @@ sixel_builtin_load_jpeg_frame(
     SIXELSTATUS status;
     unsigned char *pixels;
     float *float_pixels;
-    int depth;
+    float *cmyk_pixels;
+    int linear;
+    int components;
     int cms_converted;
     sixel_cms_profile_t *src_profile;
     sixel_cms_color_space_t src_colorspace;
@@ -5092,7 +5122,9 @@ sixel_builtin_load_jpeg_frame(
     status = SIXEL_FALSE;
     pixels = NULL;
     float_pixels = NULL;
-    depth = 0;
+    cmyk_pixels = NULL;
+    linear = 0;
+    components = 0;
     cms_converted = 0;
     src_profile = NULL;
     src_colorspace = SIXEL_CMS_COLORSPACE_UNKNOWN;
@@ -5120,7 +5152,7 @@ sixel_builtin_load_jpeg_frame(
         pixels = stbi__jpeg_load(stb_context,
                                  &frame->width,
                                  &frame->height,
-                                 &depth,
+                                 &components,
                                  3,
                                  ri);
         if (pixels == NULL) {
@@ -5148,47 +5180,65 @@ sixel_builtin_load_jpeg_frame(
         return SIXEL_OK;
     }
 
+    if (*icc_profile_length != 0u) {
+        src_profile = sixel_cms_open_profile_from_mem(*icc_profile,
+                                                       *icc_profile_length);
+        if (src_profile == NULL) {
+            loader_trace_message(
+                "builtin JPEG: embedded ICC conversion failed");
+        } else {
+            src_colorspace = sixel_cms_get_color_space(src_profile);
+        }
+    }
+
     float_pixels = stbi__jpeg_loadf(stb_context,
                                     &frame->width,
                                     &frame->height,
-                                    &depth,
+                                    &components,
                                     3,
-                                    ri);
+                                    ri,
+        src_colorspace == SIXEL_CMS_COLORSPACE_CMYK ? &cmyk_pixels : NULL);
     if (float_pixels == NULL) {
+        sixel_cms_close_profile(src_profile);
+        stbi_image_free(cmyk_pixels);
         sixel_helper_set_additional_message(stbi_failure_reason());
         return SIXEL_STBI_ERROR;
     }
 
-    if (enable_cms) {
-        if (*icc_profile_length != 0u) {
-            src_profile = sixel_cms_open_profile_from_mem(*icc_profile,
-                                                          *icc_profile_length);
-            if (src_profile == NULL) {
-                loader_trace_message(
-                    "builtin JPEG: embedded ICC conversion failed");
-            } else {
-                src_colorspace = sixel_cms_get_color_space(src_profile);
-                if (src_colorspace == SIXEL_CMS_COLORSPACE_RGB) {
-                    cms_converted = sixel_cms_convert_profile_to_srgb(
-                        (unsigned char *)float_pixels,
-                        frame->width,
-                        frame->height,
-                        SIXEL_PIXELFORMAT_RGBFLOAT32,
-                        src_profile);
-                    if (!cms_converted) {
-                        loader_trace_message(
-                            "builtin JPEG: embedded ICC conversion failed");
-                    }
-                }
-                /*
-                 * RGB JPEG float pixels can only consume RGB source profiles.
-                 * Non-RGB profiles are non-applicable and are skipped quietly.
-                 */
-                sixel_cms_close_profile(src_profile);
-                src_profile = NULL;
+    /* A profile's input domain must match the decoded component model.
+     * Gray is still replicated source intensity here; the shared linear
+     * facade packs it without rounding and applies native Gray TRC handling.
+     * CMYK/YCCK consume preserved ink coordinates, never the RGB fallback. */
+    if (src_profile != NULL) {
+        if (src_colorspace == SIXEL_CMS_COLORSPACE_GRAY && components == 1) {
+            cms_converted = sixel_cms_convert_profile_to_linearrgb(
+                (unsigned char *)float_pixels, frame->width, frame->height,
+                SIXEL_PIXELFORMAT_RGBFLOAT32, src_profile);
+            linear = cms_converted;
+        } else if (cmyk_pixels != NULL) {
+            cms_converted = sixel_builtin_jpeg_cmyk_linear(cmyk_pixels,
+                (size_t)frame->width * (size_t)frame->height, src_profile);
+            if (cms_converted) {
+                stbi_image_free(float_pixels);
+                float_pixels = cmyk_pixels;
+                cmyk_pixels = NULL;
+                linear = 1;
             }
+        } else if (src_colorspace == SIXEL_CMS_COLORSPACE_RGB && components == 3) {
+            cms_converted = sixel_cms_convert_profile_to_srgb(
+                (unsigned char *)float_pixels, frame->width, frame->height,
+                SIXEL_PIXELFORMAT_RGBFLOAT32, src_profile);
+        } else {
+            /* Mismatched profiles are inapplicable, not failed transforms. */
+            cms_converted = 1;
         }
+        if (!cms_converted) {
+            loader_trace_message(
+                "builtin JPEG: embedded ICC conversion failed");
+        }
+        sixel_cms_close_profile(src_profile);
     }
+    stbi_image_free(cmyk_pixels);
     status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
         sixel_frame_as_interface(frame),
         &(sixel_frame_pixels_request_t){
@@ -5196,8 +5246,9 @@ sixel_builtin_load_jpeg_frame(
             NULL,
             frame->width,
             frame->height,
-            SIXEL_PIXELFORMAT_RGBFLOAT32,
-            SIXEL_COLORSPACE_GAMMA,
+            linear ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
+                   : SIXEL_PIXELFORMAT_RGBFLOAT32,
+            linear ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA,
             -1,
             SIXEL_FRAME_PIXELS_FLOAT32
         });
