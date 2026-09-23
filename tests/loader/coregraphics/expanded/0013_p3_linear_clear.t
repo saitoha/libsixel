@@ -1,6 +1,5 @@
 #!/bin/sh
 # Policy: docs/loader/coregraphics.md
-# Policy: docs/loader/precision-policy.md
 # Verify p3 linear clear against independent samples and exact frame metadata.
 set -eux
 echo "1..1"

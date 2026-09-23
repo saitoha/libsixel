@@ -131,8 +131,7 @@ are grouped by domain so each area can grow without overloading one document.
 - [libpng cHRM boundary test plan](testing/png-chrm-boundaries.md) inventories integer-grid, exact-collinear fallback, signed-primary acceptance, original-sample, background, and CMS control observations.
 - [PNG cHRM arithmetic test plan](testing/png-chrm-arithmetic.md) separates mode selection, exact rounding, ordinary double budgets, target definition, white adaptation, and terminal availability errors.
 
-- [Testing guide](testing/guide.md) covers test organization, shell TAP rules,
-  registration, portability, and required checks.
+- [Testing guide](testing/guide.md) owns general assertion and evidence rules, test organization, shell TAP rules, registration, portability, and required validation.
 - [Builtin loader coverage inventory](testing/builtin-loader-coverage.md) maps every builtin-loader shell test to its primary format, observation, and traceability role while keeping pipeline landmarks distinct from the exhaustive regression suite.
 - [Mapfile parser coverage inventory](testing/mapfile-parser-coverage.md) maps every structured-palette parser and writer test to its exact observation while keeping behavioral contracts distinct from defensive and supplementary coverage.
 - [Resampling regression coverage](testing/resampling-coverage.md) inventories exact precision, SIMD, thread, discrete-stencil, frequency, isotropy, and moiré regression probes and their numeric tolerance table.
@@ -158,15 +157,10 @@ are grouped by domain so each area can grow without overloading one document.
 
 ## Documentation governance
 
-- [Documentation instructions](AGENTS.md) define the scope, organization, and
-  maintenance policy for this directory.
+- [Documentation instructions](AGENTS.md) define document scope, organization, policy ownership, reference-based reuse, and document/test traceability.
 
 ## Building the HTML site
 
 Run `tools/build-docs` from any directory to build the complete searchable HTML site under `site/`. The command creates and caches a private virtual environment under `.docs-build/`; MkDocs and Material for MkDocs remain optional and are not required for configuring, building, testing, or installing libsixel itself. The first documentation build requires network access to install the versions pinned in `tools/docs/requirements.txt`; subsequent builds reuse the cached environment.
 
 An Autotools build provides the equivalent `make docs` target, and a Meson build provides `meson compile -C BUILDDIR docs`. Both write the generated site to `site/` under their build directory. Pass `--no-bootstrap` to `tools/build-docs` only when the current Python environment already contains the pinned documentation packages.
-
-Keep task-specific investigations, temporary measurements, rollout logs, and
-private reports outside the tracked `docs/` tree unless they are deliberately
-promoted into durable project documentation.

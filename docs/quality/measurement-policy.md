@@ -69,8 +69,7 @@ look best after seeing the result.
 
 ## Semantic assertions
 
-Perceptual similarity cannot prove all image contracts. Pair quality metrics
-with exact assertions for relevant properties, including:
+Apply the [general assertion rules](../testing/guide.md#assertions-and-evidence) when interpreting image-quality measurements. Relevant image properties to check alongside the metrics include:
 
 - width and height;
 - frame count, timing, and disposal behavior;
@@ -80,8 +79,6 @@ with exact assertions for relevant properties, including:
 - background composition;
 - deterministic output or stable decoded pixels;
 - error handling for malformed or unsupported input.
-
-Security and bounds tests must not be replaced by image-quality thresholds.
 
 ## Standard inputs
 

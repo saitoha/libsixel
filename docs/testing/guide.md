@@ -8,6 +8,18 @@ Place a test at the narrowest boundary that owns the behavior. Use functional or
 
 An end-to-end test is valuable when integration is the contract. It is not a substitute for a smaller test that identifies the failing layer.
 
+## Assertions and evidence
+
+Choose assertions from the contract being tested. Value and state assertions establish numeric results, metadata, representation, branch selection and error behavior. Perceptual metrics establish a stated image-quality floor; they do not substitute for those assertions or for safety checks. The [image-quality measurement policy](../quality/measurement-policy.md) owns metric selection, acceptance thresholds and image-quality comparison conditions.
+
+For a numerical-correctness claim, derive expected values from the documented contract and an independent reference, such as literal source samples or a separately derived formula. Agreement between two paths that share the same converter or expected-value generator establishes consistency, not independent correctness. State which kind of evidence a test provides. A regression test should fail against the faulty behavior it is intended to detect.
+
+Use exact comparisons for properties the contract makes exact, such as integer samples, dimensions, indices, masks and format tags. For floating-point results, document the reference, error metric and tolerance at the owning numeric contract. Separate external-library approximation from adapter arithmetic where both contribute to the result; an external-library error budget must not conceal an implementation error in later arithmetic. Do not relax a tolerance merely to accept current output.
+
+When implementation selection is part of the observation, verify the path that actually executed, not only the requested configuration. An unintended backend, engine or fallback must not satisfy a test for another path. Test an intentional fallback as its own behavior. Likewise, protect a no-conversion or no-allocation contract with an observable trace or counter; correct output alone does not establish that unnecessary work was avoided.
+
+Fixture size and execution cost follow [organization and naming](#organization-and-naming) and [process and file cost](#process-and-file-cost). Subject documents supply their own numeric contracts, reference values, tolerances and supported execution paths, and link here for these general assertion rules.
+
 ## Organization and naming
 
 - Put every test under the most specific suitable category in `tests/`.
@@ -105,15 +117,7 @@ Skip output must explain the unavailable capability. A missing optional dependen
 
 ## Image-quality tests
 
-Follow [Quality Measurement Policy](../quality/measurement-policy.md). In particular:
-
-- use `images/snake.png` at approximately 16 by 16 pixels for ordinary `lsqa` tests;
-- use approximately 64 by 64 pixels for dithering-quality tests;
-- prepare alpha/transparency cases with ImageMagick;
-- normally omit `-p` and exercise the 256-color default;
-- use `MS-SSIM:0.98` as the normal gate;
-- never lower a quality threshold below `0.95`;
-- assert semantic properties separately from perceptual similarity.
+Use the [image-quality measurement policy](../quality/measurement-policy.md) for [metrics and thresholds](../quality/measurement-policy.md#primary-and-secondary-metrics), [standard inputs](../quality/measurement-policy.md#standard-inputs) and [controlled comparisons](../quality/measurement-policy.md#controlled-comparisons). The general assertion rules are defined in [Assertions and evidence](#assertions-and-evidence).
 
 ## C tests
 
@@ -146,11 +150,7 @@ Register a test in every build path that supports its feature. Depending on the 
 
 Keep numbering, filenames, registrations, build defines, and test purpose in sync. Run the existing static checks that enforce these relationships.
 
-Behavioral policy documents with an enforced coverage inventory also require reciprocal document/test path references. Follow the [documentation-to-test traceability policy](../AGENTS.md#documentation-to-test-traceability) and run `staticcheck-doc-test-links` after changing either side.
-
-Use a reciprocal `Policy:` reference only when the test directly proves a documented user-visible contract. Parser robustness cases, malformed-input probes, resource-limit checks, and implementation-specific failure paths should remain discoverable through a separately described defensive test category unless the policy document promises their exact observable behavior. In that case, promote the behavior to a stable coverage ID and add the reciprocal direct link. A suite-directory link is an index of defensive breadth, not a substitute for contract-level coverage.
-
-When a suite has a marked exhaustive test-plan inventory, add its exact test link to the delimited inventory and add the reciprocal `Test-plan: docs/...` comment near the beginning of the test. `staticcheck-test-plan-links` compares the marker glob, inventory links, and comments as complete sets. Use both `Policy:` and `Test-plan:` when a test is simultaneously public-contract evidence and a member of the exhaustive suite inventory.
+Documentation links are part of test registration. Follow the [documentation-to-test traceability policy](../AGENTS.md#documentation-to-test-traceability) for coverage IDs, `Policy:` ownership and `Test-plan:` inventories. Update the owning document and test backlinks together, then run the applicable `staticcheck-doc-test-links` and `staticcheck-test-plan-links` checks.
 
 ## Test coverage
 
@@ -174,7 +174,7 @@ Each automated contract has a stable ID and an owning static check. The reciproc
 
 ### Coverage boundary
 
-These checks enforce the repository-wide invariants stated in their contract rows. The test-plan link check proves set completeness and reciprocity, not whether an inventory description accurately characterizes the assertion. Naming quality, fixture minimality, whether separate values provide genuinely distinct observations, and the necessity of file or process work still require review because they cannot be inferred reliably from syntax alone. Other syntactic rules in this guide are requirements even where the current static suite does not yet enforce them; the table must not be read as claiming broader mechanical coverage than its rows state.
+These checks enforce the repository-wide invariants stated in their contract rows. The test-plan link check proves set completeness and reciprocity, not whether an inventory description accurately characterizes the assertion. Assertion choice, reference independence, numerical error budgets, actual-path verification, naming quality, fixture minimality, whether separate values provide distinct observations, and the necessity of file or process work still require review because they cannot be inferred reliably from syntax alone. Other syntactic rules in this guide are requirements even where the current static suite does not yet enforce them; the table must not be read as claiming broader mechanical coverage than its rows state.
 
 ## Required validation
 

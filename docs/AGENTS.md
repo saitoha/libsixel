@@ -48,13 +48,32 @@ Start from the [documentation index](README.md). Read the relevant document befo
 - Keep issue investigations, temporary measurements, rollout logs, and private task reports in a local backup or external tracking system, not in `docs/`.
 - Describe experimental terminal extensions through receiver-independent protocol proposals. Do not name private consumers, link to their repositories, or include their launch commands, internal interfaces, or integration records in public documentation or commit messages. Separate proposed behavior from implemented libsixel behavior.
 
+## Policy ownership and references
+
+Each normative policy has one owning document. Before adding guidance, locate that owner through the documentation index; extend an existing owner when the subject already has one. Guidance that applies unchanged to unrelated subsystems belongs in a shared document, not in each subsystem's page.
+
+| Subject | Owning document |
+| --- | --- |
+| General test design, assertion evidence, test structure and execution | [Testing guide](testing/guide.md) |
+| Image-quality metrics, thresholds, fixtures and comparison conditions | [Image-quality measurement policy](quality/measurement-policy.md) |
+| Documentation structure, policy reuse and document/test traceability | This document |
+| A subsystem's behavior, supported inputs, numeric contracts and implementation limits | Its subject-specific reference, linked from the [index](README.md) |
+
+Other documents link to the relevant section of the owner. A short, explicitly scoped introduction may explain why the policy applies, but must not create a second normative definition. Do not copy general instructions, threshold lists, defaults or entire contract tables merely to make a topic page self-contained. Topic-specific examples and error budgets belong with the topic; the shared method for choosing or validating them belongs with the general policy.
+
+A topic's `Test coverage` section maps that topic's contracts to evidence and states its coverage limits. It is not a place to restate project-wide testing advice. Keep detailed backend contract tables and exhaustive test inventories at their respective owners, and refer to them from broader policy pages. A test may support distinct contracts at different levels, but that does not justify duplicating the same table or policy text.
+
+When changing a policy, update the owner and any affected references in the same change. When consolidating existing duplicates, preserve the applicable requirements, reconcile differing scopes or conflicting wording in the owner, and replace the other definitions with links. Do not silently choose one version based on its location or recency. An exception must have an explicit scope recorded by the owner rather than forming a competing policy in another page.
+
+Review documentation changes for ownership, duplication, reference accuracy and consistency of scope. These are editorial requirements; link and coverage checks do not establish that two passages have the same meaning or detect policy drift.
+
 ## Documentation-to-test traceability
 
 Durable behavioral policy documents must make their automated coverage externally auditable when their normative claims are spread across multiple test categories. Opt such a document into enforcement with the exact marker `<!-- test-coverage: enforced -->` and include a `Test coverage` section.
 
 The coverage inventory must follow these rules:
 
-- Separate tests that fix documented, user-visible behavior from perceptual quality regressions and defensive tests that exercise malformed input, resource limits, internal assertions, or implementation-specific failure paths. When a document discusses all three, put them under distinct `Behavioral contract tests`, `Quality regression tests`, and `Defensive and malformed-input tests` subsections. An LSQA or MS-SSIM threshold protects only its stated quality floor; it does not substitute for an exact pixel, metadata, branch-selection, or error-behavior assertion.
+- Keep behavioral-contract, quality-regression and defensive coverage inventories distinct. When a document discusses all three, use separate `Behavioral contract tests`, `Quality regression tests`, and `Defensive and malformed-input tests` subsections. The [testing guide](testing/guide.md#assertions-and-evidence) defines what their assertions can establish.
 - Give each independently testable contract a stable coverage ID.
 - Link each automated contract directly to its owning test with a Markdown link whose label is the repository-relative `tests/...` path.
 - Add a reciprocal `Policy: docs/...` repository-relative path in a source comment near the beginning of every listed test. A test owned by multiple policy documents carries one reciprocal line for each document.
