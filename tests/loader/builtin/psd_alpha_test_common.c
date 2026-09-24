@@ -11,6 +11,7 @@
 #include "tests/data/color-numeric/minimal-profiles.h"
 #include "tests/data/color-numeric/gray-samples.h"
 #include "tests/data/color-numeric/cmyk.h"
+#include "tests/data/color-numeric/profile-format.h"
 
 #define PSDA_ICC 1u
 #define PSDA_BG 2u
@@ -28,6 +29,11 @@
 #define PSDA_BAD_ALPHA 8192u
 #define PSDA_DISABLED 16384u
 #define PSDA_REAL 32768u
+#define PSDA_NEUTRAL 65536u
+#define PSDA_MINIMUM 131072u
+#define PSDA_CONSTANT 262144u
+#define PSDA_SHORT 524288u
+#define PSDA_BAD_ICC 1048576u
 
 static void
 psda_u32(edge_writer_t *w, uint32_t value)
@@ -106,6 +112,36 @@ psda_cmyk(double const inverted[4], double rgb[3])
     }
 }
 
+static void
+psda_lab(double l, double a, double b, double rgb[3])
+{
+    /* Inverse sRGB primaries times Bradford D50->D65, derived with the
+     * rational oracle in data/psd-tools/generate_duotone_reference.py. */
+    static double const matrix[3][3] = {
+        {3.134186364236819, -1.6172089589982748, -0.49069406400638393},
+        {-0.9787485041906944, 1.9161300967735873, 0.03343339915999554},
+        {0.07196392780224674, -0.22899387345320327, 1.4057537328964445}
+    };
+    static double const white[3] = {0.9642, 1.0, 0.8249};
+    double xyz[3];
+    unsigned int i;
+    unsigned int j;
+
+    xyz[1] = (l + 16.0) / 116.0;
+    xyz[0] = xyz[1] + a / 500.0;
+    xyz[2] = xyz[1] - b / 200.0;
+    for (i = 0u; i < 3u; ++i) {
+        xyz[i] = white[i] * (xyz[i] > 6.0 / 29.0 ? pow(xyz[i], 3.0) :
+            (xyz[i] - 4.0 / 29.0) * 108.0 / 841.0);
+    }
+    for (i = 0u; i < 3u; ++i) {
+        rgb[i] = 0.0;
+        for (j = 0u; j < 3u; ++j) {
+            rgb[i] += matrix[i][j] * xyz[j];
+        }
+    }
+}
+
 int
 psd_alpha_test(int specimen)
 {
@@ -132,7 +168,22 @@ psd_alpha_test(int specimen)
         {4, 32, 0, PSDA_BAD_ALPHA},
         {1, 8, 0, PSDA_ICC | PSDA_WRONG_ICC},
         {4, 8, 0, PSDA_ICC | PSDA_WRONG_ICC},
-        {1, 16, 0, PSDA_REAL}, {4, 8, 0, PSDA_REAL}
+        {1, 16, 0, PSDA_REAL}, {4, 8, 0, PSDA_REAL},
+        {9, 8, 0, 0}, {9, 16, 0, 0},
+        {9, 8, 0, PSDA_ICC}, {9, 16, 0, PSDA_ICC},
+        {9, 16, 0, PSDA_ICC | PSDA_CONSTANT},
+        {9, 16, 0, PSDA_ICC | PSDA_CONSTANT | PSDA_DISABLED},
+        {9, 16, 0, PSDA_BG}, {9, 8, 0, PSDA_REORDER},
+        {9, 16, 0, PSDA_OMIT}, {9, 16, 0, PSDA_TWO},
+        {9, 16, 1, PSDA_PSB}, {9, 16, 3, PSDA_PSB}, {9, 8, 2, 0},
+        {9, 16, 0, PSDA_NEUTRAL}, {9, 16, 0, PSDA_MINIMUM},
+        {9, 8, 0, PSDA_ICC | PSDA_WRONG_ICC},
+        {9, 8, 0, PSDA_REAL}, {9, 16, 0, PSDA_REAL},
+        {9, 32, 0, 0}, {9, 16, 0, PSDA_SHORT},
+        {9, 16, 0, PSDA_EXTENDED},
+        {9, 16, 0, PSDA_BG | PSDA_ICC | PSDA_CONSTANT},
+        {9, 8, 0, PSDA_ICC | PSDA_BAD_ICC},
+        {9, 8, 3, PSDA_PSB}, {9, 16, 1, 0}
     };
     static unsigned int const alpha8[8] = {0, 255, 128, 64, 1, 160, 0, 128};
     static unsigned int const alpha16[8] = {
@@ -142,9 +193,9 @@ psd_alpha_test(int specimen)
     static double const p3[3] = {
         1.224939473660301, -0.04204725979332884, -0.019642226052377188
     };
-    unsigned char file[4096];
-    unsigned char resources[2048];
-    unsigned char record[256];
+    unsigned char file[8192];
+    unsigned char resources[4096];
+    unsigned char record[4096];
     unsigned char layer[256];
     unsigned char raw[256];
     edge_writer_t fw;
@@ -165,6 +216,10 @@ psd_alpha_test(int specimen)
     double color;
     double opacity;
     double next;
+    double maximum;
+    double neutral;
+    double unit;
+    double matte;
     double blend;
     float value;
     float actual[24];
@@ -210,7 +265,7 @@ psd_alpha_test(int specimen)
         specimen == 153 ? 3u : 0u;
     mode = 3u;
     flags = 0u;
-    if (specimen >= 198 && specimen <= 235) {
+    if (specimen >= 198 && specimen <= 260) {
         mode = cases[specimen - 198].mode;
         depth = cases[specimen - 198].depth;
         flags = cases[specimen - 198].flags;
@@ -224,9 +279,14 @@ psd_alpha_test(int specimen)
         profiled = (flags & PSDA_ICC) != 0u;
         bgcolor = (flags & PSDA_BG) != 0u;
         reject = (flags & (PSDA_OVERFLOW | PSDA_NAN | PSDA_RANGE |
-                           PSDA_BAD_ALPHA | PSDA_WRONG_ICC)) != 0u;
+                           PSDA_BAD_ALPHA | PSDA_WRONG_ICC | PSDA_SHORT |
+                           PSDA_BAD_ICC)) != 0u ||
+            (mode == 9u && depth == 32u);
     }
     base = mode == 1u ? 1u : mode == 4u ? 4u : 3u;
+    maximum = depth == 16u ? 65535.0 : 255.0;
+    neutral = depth == 16u ? 32768.0 : 128.0;
+    unit = depth == 16u ? 256.0 : 1.0;
     fw = (edge_writer_t){file, sizeof(file), 0u, 0};
     rw = (edge_writer_t){resources, sizeof(resources), 0u, 0};
     dw = (edge_writer_t){record, sizeof(record), 0u, 0};
@@ -270,6 +330,15 @@ psd_alpha_test(int specimen)
                            sizeof(color_minimal_display_p3));
         } else if (mode == 1u) {
             psda_resource(&rw, 1039u, color_gray_icc, sizeof(color_gray_icc));
+        } else if (mode == 9u) {
+            memcpy(record, pf_icc_6, sizeof(pf_icc_6));
+            if (flags & PSDA_CONSTANT) {
+                /* Fixed neutral output separates ICC execution/order
+                 * from the analytic Lab interpretation control. */
+                memset(record + 1980u + 48u + 768u, 128, 24u);
+            }
+            psda_resource(&rw, 1039u, record,
+                flags & PSDA_BAD_ICC ? 8u : sizeof(pf_icc_6));
         } else {
             psda_resource(&rw, 1039u, color_cmyk_icc, sizeof(color_cmyk_icc));
         }
@@ -322,13 +391,15 @@ psd_alpha_test(int specimen)
     for (i = 0u; i < 8u; ++i) {
         alpha[i] = psda_quantize(depth == 16u ? alpha16[i] / 65535.0 :
                                  alpha8[i] / 255.0, depth);
-        if (specimen == 148 || (flags & PSDA_TINY)) {
+        if (flags & PSDA_MINIMUM) {
+            alpha[i] = 1.0 / maximum;
+        } else if (specimen == 148 || (flags & PSDA_TINY)) {
             bits = 1u;
             memcpy(&value, &bits, sizeof(value));
             alpha[i] = value;
         } else if (specimen == 149 || specimen == 150 ||
                    (flags & (PSDA_OVERFLOW | PSDA_EXTENDED | PSDA_RANGE))) {
-            alpha[i] = 0.5;
+            alpha[i] = psda_quantize(0.5, depth);
         } else if (specimen == 157) {
             alpha[i] = 0.0;
         }
@@ -337,12 +408,22 @@ psd_alpha_test(int specimen)
                 (i + 1u + j * 2u) / 16.0) : profiled ? (j == 0u ? 1.0 : 0.0) :
                 j == 0u ? (i + 1u) / 16.0 : j == 1u ? (8u - i) / 16.0 : 0.75;
             if (flags & PSDA_EXTENDED) {
-                color = i % 2u ? 1.25 : -0.25;
+                color = i % 2u ? (mode == 9u ? 0.75 : 1.25) : -0.25;
             } else if (specimen == 130) {
                 color = j == 0u ? -0.25 : j == 1u ? 1.5 : 0.5;
             }
+            matte = mode == 9u && j != 0u ? neutral / maximum : 1.0;
+            if (mode == 9u && j != 0u && (flags & PSDA_NEUTRAL)) {
+                color = matte;
+            } else if (mode == 9u && j != 0u && (flags & PSDA_EXTENDED)) {
+                color = (neutral + (j == 1u ? 160.0 : -150.0) * unit) /
+                        maximum;
+            }
             samples[j][i] = psda_quantize(alpha[i] == 0.0 ? color :
-                1.0 - alpha[i] + alpha[i] * color, depth);
+                matte * (1.0 - alpha[i]) + alpha[i] * color, depth);
+            if (flags & PSDA_MINIMUM) {
+                samples[j][i] = matte;
+            }
             if (specimen == 148 || (flags & PSDA_TINY)) {
                 samples[j][i] = 1.0;
             } else if ((specimen == 149 || (flags & PSDA_OVERFLOW)) &&
@@ -361,6 +442,13 @@ psd_alpha_test(int specimen)
             if (mode == 1u) {
                 alpha[i] = 25012.0 / 65535.0;
                 samples[0][i] = 63243.0 / 65535.0;
+            } else if (mode == 9u) {
+                /* Native epistemex_LABA8/16 words: independent layer
+                 * and merged planes establish the neutral white matte. */
+                alpha[i] = (depth == 8u ? 242.0 : 62193.0) / maximum;
+                samples[0][i] = (depth == 8u ? 210.0 : 54071.0) / maximum;
+                samples[1][i] = (depth == 8u ? 142.0 : 36411.0) / maximum;
+                samples[2][i] = (depth == 8u ? 198.0 : 50745.0) / maximum;
             } else {
                 alpha[i] = 73.0 / 255.0;
                 samples[0][i] = 211.0 / 255.0;
@@ -374,7 +462,7 @@ psd_alpha_test(int specimen)
                 0.0 : psda_quantize(plate[(i + (k == 3u ? 3u : 0u)) % 8u] /
                                    255.0, depth);
             if ((specimen == 148 || specimen == 157 ||
-                 (flags & PSDA_TINY)) && k >= 2u) {
+                 (flags & (PSDA_TINY | PSDA_MINIMUM))) && k >= 2u) {
                 samples[base + k][i] = 1.0;
             }
         }
@@ -382,6 +470,9 @@ psd_alpha_test(int specimen)
     for (k = 0u; k < base + extras; ++k) {
         for (i = 0u; i < 8u; ++i) {
             if (depth != 32u) {
+                if (samples[k][i] < 0.0 || samples[k][i] > 1.0) {
+                    return 1;
+                }
                 code = (unsigned int)(samples[k][i] *
                        (depth == 16u ? 65535.0 : 255.0) + 0.5);
                 if (depth == 8u) {
@@ -465,8 +556,9 @@ psd_alpha_test(int specimen)
     }
     memset(&probe, 0, sizeof(probe));
     status = SIXEL_FALSE;
-    result = edge_load_buffer_options("PSD spot alpha", file, fw.length,
-                                       &options, &probe, &status);
+    result = edge_load_buffer_options("PSD spot alpha", file,
+        fw.length - ((flags & PSDA_SHORT) ? 1u : 0u),
+        &options, &probe, &status);
     if (reject) {
         return result != 0 || SIXEL_SUCCEEDED(status) || probe.callback_count;
     }
@@ -488,7 +580,26 @@ psd_alpha_test(int specimen)
                 specimen == 148 || (flags & PSDA_TINY) ? 1.0 :
                 (samples[j][i] - (1.0 - a)) / a;
         }
-        if (mode == 4u && profiled && !(flags & PSDA_DISABLED)) {
+        if (mode == 9u) {
+            /* Recover in native code units, independently of the
+             * renderer's normalized facade coordinates. Opponent white
+             * is the neutral code, not the maximum unsigned code. */
+            for (j = 0u; j < 3u; ++j) {
+                color = floor(samples[j][i] * maximum + 0.5);
+                if (j == 0u) {
+                    color = a == 0.0 ? color :
+                        (color - maximum * (1.0 - a)) / a;
+                    restored[j] = color * 100.0 / maximum;
+                } else {
+                    restored[j] = (color - neutral) / unit /
+                                  (a == 0.0 ? 1.0 : a);
+                }
+            }
+            psda_lab(restored[0], restored[1], restored[2], expected);
+            if ((flags & PSDA_CONSTANT) && !(flags & PSDA_DISABLED)) {
+                psda_lab(12800.0 / 255.0, 0.0, 0.0, expected);
+            }
+        } else if (mode == 4u && profiled && !(flags & PSDA_DISABLED)) {
             psda_cmyk(restored, expected);
         } else {
             for (j = 0u; j < 3u; ++j) {

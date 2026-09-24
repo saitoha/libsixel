@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Verify lab alpha reject. */
+/* Verify lab alpha zero numeric. */
 #include "../psd_model_test_common.h"
 
 int

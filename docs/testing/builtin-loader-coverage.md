@@ -18,13 +18,13 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [PNG and APNG](../loader/builtin/png.md) | 288 | 22 | 59 | 0 | 13 | 7 | 187 |
 | [JPEG](../loader/builtin/jpeg.md) | 249 | 102 | 14 | 1 | 57 | 5 | 70 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
-| [PSD and PSB](../loader/builtin/psd.md) | 1229 | 174 | 551 | 402 | 81 | 3 | 18 |
+| [PSD and PSB](../loader/builtin/psd.md) | 1254 | 196 | 551 | 402 | 84 | 3 | 18 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
 | [WebP](../loader/builtin/webp.md) | 308 | 13 | 48 | 241 | 0 | 1 | 5 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 41 | 25 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2670** | **733** | **724** | **652** | **180** | **18** | **363** |
+| **Total** | **2695** | **755** | **724** | **652** | **183** | **18** | **363** |
 
 ## Complete inventory
 
@@ -2758,7 +2758,7 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/psd/0186_lab16_neutral_numeric.t](../../tests/loader/builtin/psd/0186_lab16_neutral_numeric.t) | Verify lab16 neutral numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/psd/0187_lab16_endpoints_numeric.t](../../tests/loader/builtin/psd/0187_lab16_endpoints_numeric.t) | Verify lab16 endpoints numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/psd/0188_lab32_spot_reject.t](../../tests/loader/builtin/psd/0188_lab32_spot_reject.t) | Verify lab32 spot reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
-| [tests/loader/builtin/psd/0189_lab_alpha_reject.t](../../tests/loader/builtin/psd/0189_lab_alpha_reject.t) | Verify lab alpha reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0189_lab_alpha_zero_numeric.t](../../tests/loader/builtin/psd/0189_lab_alpha_zero_numeric.t) | Verify lab alpha zero numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/psd/0190_lab_rle_numeric.t](../../tests/loader/builtin/psd/0190_lab_rle_numeric.t) | Verify lab rle numeric. | Direct numeric/digest | Inventory only |
 | [tests/loader/builtin/psd/0191_lab_zip_numeric.t](../../tests/loader/builtin/psd/0191_lab_zip_numeric.t) | Verify lab zip numeric. | Direct numeric/digest | Inventory only |
 | [tests/loader/builtin/psd/0192_lab_psb_prediction_numeric.t](../../tests/loader/builtin/psd/0192_lab_psb_prediction_numeric.t) | Verify lab psb prediction numeric. | Direct numeric/digest | Inventory only |
@@ -2805,6 +2805,31 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/psd/0233_cmyk_alpha_icc_domain_reject.t](../../tests/loader/builtin/psd/0233_cmyk_alpha_icc_domain_reject.t) | Verify cmyk alpha icc domain reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/psd/0234_gray_alpha_native16_numeric.t](../../tests/loader/builtin/psd/0234_gray_alpha_native16_numeric.t) | Verify gray alpha native16 numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/psd/0235_cmyk_alpha_native8_numeric.t](../../tests/loader/builtin/psd/0235_cmyk_alpha_native8_numeric.t) | Verify cmyk alpha native8 numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0236_lab8_alpha_numeric.t](../../tests/loader/builtin/psd/0236_lab8_alpha_numeric.t) | Verify lab8 alpha numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0237_lab16_alpha_numeric.t](../../tests/loader/builtin/psd/0237_lab16_alpha_numeric.t) | Verify lab16 alpha numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0238_lab8_alpha_icc_numeric.t](../../tests/loader/builtin/psd/0238_lab8_alpha_icc_numeric.t) | Verify lab8 alpha icc numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0239_lab16_alpha_icc_numeric.t](../../tests/loader/builtin/psd/0239_lab16_alpha_icc_numeric.t) | Verify lab16 alpha icc numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0240_lab_alpha_icc_effect_numeric.t](../../tests/loader/builtin/psd/0240_lab_alpha_icc_effect_numeric.t) | Verify lab alpha icc effect numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0241_lab_alpha_icc_disabled_numeric.t](../../tests/loader/builtin/psd/0241_lab_alpha_icc_disabled_numeric.t) | Verify lab alpha icc disabled numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0242_lab_alpha_background_numeric.t](../../tests/loader/builtin/psd/0242_lab_alpha_background_numeric.t) | Verify lab alpha background numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0243_lab_alpha_reordered_numeric.t](../../tests/loader/builtin/psd/0243_lab_alpha_reordered_numeric.t) | Verify lab alpha reordered numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0244_lab_alpha_display_omitted_numeric.t](../../tests/loader/builtin/psd/0244_lab_alpha_display_omitted_numeric.t) | Verify lab alpha display omitted numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0245_lab_alpha_spot_order_numeric.t](../../tests/loader/builtin/psd/0245_lab_alpha_spot_order_numeric.t) | Verify lab alpha spot order numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0246_lab_alpha_psb_rle_numeric.t](../../tests/loader/builtin/psd/0246_lab_alpha_psb_rle_numeric.t) | Verify lab alpha psb rle numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0247_lab_alpha_psb_prediction_numeric.t](../../tests/loader/builtin/psd/0247_lab_alpha_psb_prediction_numeric.t) | Verify lab alpha psb prediction numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0248_lab_alpha_zip_numeric.t](../../tests/loader/builtin/psd/0248_lab_alpha_zip_numeric.t) | Verify lab alpha zip numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0249_lab_alpha_neutral_numeric.t](../../tests/loader/builtin/psd/0249_lab_alpha_neutral_numeric.t) | Verify lab alpha neutral numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0250_lab_alpha_minimum_numeric.t](../../tests/loader/builtin/psd/0250_lab_alpha_minimum_numeric.t) | Verify lab alpha minimum numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0251_lab_alpha_icc_domain_reject.t](../../tests/loader/builtin/psd/0251_lab_alpha_icc_domain_reject.t) | Verify lab alpha icc domain reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0252_lab_alpha_native8_numeric.t](../../tests/loader/builtin/psd/0252_lab_alpha_native8_numeric.t) | Verify lab alpha native8 numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0253_lab_alpha_native16_numeric.t](../../tests/loader/builtin/psd/0253_lab_alpha_native16_numeric.t) | Verify lab alpha native16 numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0254_lab32_alpha_reject.t](../../tests/loader/builtin/psd/0254_lab32_alpha_reject.t) | Verify lab32 alpha reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0255_lab_alpha_truncated_reject.t](../../tests/loader/builtin/psd/0255_lab_alpha_truncated_reject.t) | Verify lab alpha truncated reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0256_lab_alpha_extended_numeric.t](../../tests/loader/builtin/psd/0256_lab_alpha_extended_numeric.t) | Verify lab alpha extended numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0257_lab_alpha_background_icc_numeric.t](../../tests/loader/builtin/psd/0257_lab_alpha_background_icc_numeric.t) | Verify lab alpha background icc numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0258_lab_alpha_icc_malformed_reject.t](../../tests/loader/builtin/psd/0258_lab_alpha_icc_malformed_reject.t) | Verify lab alpha icc malformed reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0259_lab_alpha_psb8_prediction_numeric.t](../../tests/loader/builtin/psd/0259_lab_alpha_psb8_prediction_numeric.t) | Verify lab alpha psb8 prediction numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.t](../../tests/loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.t) | Verify lab alpha psd16 rle numeric. | Direct numeric/digest | Inventory only |
 
 <!-- test-plan-end -->
 

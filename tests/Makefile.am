@@ -687,7 +687,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0186_LAB16_NEUTRAL_NUMERIC \
     -DBUILD_TEST_0187_LAB16_ENDPOINTS_NUMERIC \
     -DBUILD_TEST_0188_LAB32_SPOT_REJECT \
-    -DBUILD_TEST_0189_LAB_ALPHA_REJECT \
+    -DBUILD_TEST_0189_LAB_ALPHA_ZERO_NUMERIC \
     -DBUILD_TEST_0190_LAB_RLE_NUMERIC \
     -DBUILD_TEST_0191_LAB_ZIP_NUMERIC \
     -DBUILD_TEST_0192_LAB_PSB_PREDICTION_NUMERIC \
@@ -734,6 +734,31 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0233_CMYK_ALPHA_ICC_DOMAIN_REJECT \
     -DBUILD_TEST_0234_GRAY_ALPHA_NATIVE16_NUMERIC \
     -DBUILD_TEST_0235_CMYK_ALPHA_NATIVE8_NUMERIC \
+    -DBUILD_TEST_0236_LAB8_ALPHA_NUMERIC \
+    -DBUILD_TEST_0237_LAB16_ALPHA_NUMERIC \
+    -DBUILD_TEST_0238_LAB8_ALPHA_ICC_NUMERIC \
+    -DBUILD_TEST_0239_LAB16_ALPHA_ICC_NUMERIC \
+    -DBUILD_TEST_0240_LAB_ALPHA_ICC_EFFECT_NUMERIC \
+    -DBUILD_TEST_0241_LAB_ALPHA_ICC_DISABLED_NUMERIC \
+    -DBUILD_TEST_0242_LAB_ALPHA_BACKGROUND_NUMERIC \
+    -DBUILD_TEST_0243_LAB_ALPHA_REORDERED_NUMERIC \
+    -DBUILD_TEST_0244_LAB_ALPHA_DISPLAY_OMITTED_NUMERIC \
+    -DBUILD_TEST_0245_LAB_ALPHA_SPOT_ORDER_NUMERIC \
+    -DBUILD_TEST_0246_LAB_ALPHA_PSB_RLE_NUMERIC \
+    -DBUILD_TEST_0247_LAB_ALPHA_PSB_PREDICTION_NUMERIC \
+    -DBUILD_TEST_0248_LAB_ALPHA_ZIP_NUMERIC \
+    -DBUILD_TEST_0249_LAB_ALPHA_NEUTRAL_NUMERIC \
+    -DBUILD_TEST_0250_LAB_ALPHA_MINIMUM_NUMERIC \
+    -DBUILD_TEST_0251_LAB_ALPHA_ICC_DOMAIN_REJECT \
+    -DBUILD_TEST_0252_LAB_ALPHA_NATIVE8_NUMERIC \
+    -DBUILD_TEST_0253_LAB_ALPHA_NATIVE16_NUMERIC \
+    -DBUILD_TEST_0254_LAB32_ALPHA_REJECT \
+    -DBUILD_TEST_0255_LAB_ALPHA_TRUNCATED_REJECT \
+    -DBUILD_TEST_0256_LAB_ALPHA_EXTENDED_NUMERIC \
+    -DBUILD_TEST_0257_LAB_ALPHA_BACKGROUND_ICC_NUMERIC \
+    -DBUILD_TEST_0258_LAB_ALPHA_ICC_MALFORMED_REJECT \
+    -DBUILD_TEST_0259_LAB_ALPHA_PSB8_PREDICTION_NUMERIC \
+    -DBUILD_TEST_0260_LAB_ALPHA_PSD16_RLE_NUMERIC \
     -DBUILD_TEST_0127_PROCESS_ALPHA_RGB8_NUMERIC \
     -DBUILD_TEST_0128_PROCESS_ALPHA_BACKGROUND_NUMERIC \
     -DBUILD_TEST_0129_PROCESS_ALPHA_RGB16_NUMERIC \
@@ -3073,7 +3098,7 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/psd/0186_lab16_neutral_numeric.c \
     loader/builtin/psd/0187_lab16_endpoints_numeric.c \
     loader/builtin/psd/0188_lab32_spot_reject.c \
-    loader/builtin/psd/0189_lab_alpha_reject.c \
+    loader/builtin/psd/0189_lab_alpha_zero_numeric.c \
     loader/builtin/psd/0190_lab_rle_numeric.c \
     loader/builtin/psd/0191_lab_zip_numeric.c \
     loader/builtin/psd/0192_lab_psb_prediction_numeric.c \
@@ -3120,6 +3145,31 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/psd/0233_cmyk_alpha_icc_domain_reject.c \
     loader/builtin/psd/0234_gray_alpha_native16_numeric.c \
     loader/builtin/psd/0235_cmyk_alpha_native8_numeric.c \
+    loader/builtin/psd/0236_lab8_alpha_numeric.c \
+    loader/builtin/psd/0237_lab16_alpha_numeric.c \
+    loader/builtin/psd/0238_lab8_alpha_icc_numeric.c \
+    loader/builtin/psd/0239_lab16_alpha_icc_numeric.c \
+    loader/builtin/psd/0240_lab_alpha_icc_effect_numeric.c \
+    loader/builtin/psd/0241_lab_alpha_icc_disabled_numeric.c \
+    loader/builtin/psd/0242_lab_alpha_background_numeric.c \
+    loader/builtin/psd/0243_lab_alpha_reordered_numeric.c \
+    loader/builtin/psd/0244_lab_alpha_display_omitted_numeric.c \
+    loader/builtin/psd/0245_lab_alpha_spot_order_numeric.c \
+    loader/builtin/psd/0246_lab_alpha_psb_rle_numeric.c \
+    loader/builtin/psd/0247_lab_alpha_psb_prediction_numeric.c \
+    loader/builtin/psd/0248_lab_alpha_zip_numeric.c \
+    loader/builtin/psd/0249_lab_alpha_neutral_numeric.c \
+    loader/builtin/psd/0250_lab_alpha_minimum_numeric.c \
+    loader/builtin/psd/0251_lab_alpha_icc_domain_reject.c \
+    loader/builtin/psd/0252_lab_alpha_native8_numeric.c \
+    loader/builtin/psd/0253_lab_alpha_native16_numeric.c \
+    loader/builtin/psd/0254_lab32_alpha_reject.c \
+    loader/builtin/psd/0255_lab_alpha_truncated_reject.c \
+    loader/builtin/psd/0256_lab_alpha_extended_numeric.c \
+    loader/builtin/psd/0257_lab_alpha_background_icc_numeric.c \
+    loader/builtin/psd/0258_lab_alpha_icc_malformed_reject.c \
+    loader/builtin/psd/0259_lab_alpha_psb8_prediction_numeric.c \
+    loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.c \
     loader/builtin/psd/0127_process_alpha_rgb8_numeric.c \
     loader/builtin/psd/0128_process_alpha_background_numeric.c \
     loader/builtin/psd/0129_process_alpha_rgb16_numeric.c \

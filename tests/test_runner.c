@@ -1164,6 +1164,31 @@ int test_psd_color_0232(int argc, char **argv);
 int test_psd_color_0233(int argc, char **argv);
 int test_psd_color_0234(int argc, char **argv);
 int test_psd_color_0235(int argc, char **argv);
+int test_psd_color_0236(int argc, char **argv);
+int test_psd_color_0237(int argc, char **argv);
+int test_psd_color_0238(int argc, char **argv);
+int test_psd_color_0239(int argc, char **argv);
+int test_psd_color_0240(int argc, char **argv);
+int test_psd_color_0241(int argc, char **argv);
+int test_psd_color_0242(int argc, char **argv);
+int test_psd_color_0243(int argc, char **argv);
+int test_psd_color_0244(int argc, char **argv);
+int test_psd_color_0245(int argc, char **argv);
+int test_psd_color_0246(int argc, char **argv);
+int test_psd_color_0247(int argc, char **argv);
+int test_psd_color_0248(int argc, char **argv);
+int test_psd_color_0249(int argc, char **argv);
+int test_psd_color_0250(int argc, char **argv);
+int test_psd_color_0251(int argc, char **argv);
+int test_psd_color_0252(int argc, char **argv);
+int test_psd_color_0253(int argc, char **argv);
+int test_psd_color_0254(int argc, char **argv);
+int test_psd_color_0255(int argc, char **argv);
+int test_psd_color_0256(int argc, char **argv);
+int test_psd_color_0257(int argc, char **argv);
+int test_psd_color_0258(int argc, char **argv);
+int test_psd_color_0259(int argc, char **argv);
+int test_psd_color_0260(int argc, char **argv);
 
 
 int test_loader_0185_png_source_numeric(int argc, char **argv);
@@ -3140,7 +3165,7 @@ static test_entry_t const test_entries[] = {
     { "loader/psd/0186_lab16_neutral_numeric", test_psd_color_0186 },
     { "loader/psd/0187_lab16_endpoints_numeric", test_psd_color_0187 },
     { "loader/psd/0188_lab32_spot_reject", test_psd_color_0188 },
-    { "loader/psd/0189_lab_alpha_reject", test_psd_color_0189 },
+    { "loader/psd/0189_lab_alpha_zero_numeric", test_psd_color_0189 },
     { "loader/psd/0190_lab_rle_numeric", test_psd_color_0190 },
     { "loader/psd/0191_lab_zip_numeric", test_psd_color_0191 },
     { "loader/psd/0192_lab_psb_prediction_numeric", test_psd_color_0192 },
@@ -3187,6 +3212,33 @@ static test_entry_t const test_entries[] = {
     { "loader/psd/0233_cmyk_alpha_icc_domain_reject", test_psd_color_0233 },
     { "loader/psd/0234_gray_alpha_native16_numeric", test_psd_color_0234 },
     { "loader/psd/0235_cmyk_alpha_native8_numeric", test_psd_color_0235 },
+    { "loader/psd/0236_lab8_alpha_numeric", test_psd_color_0236 },
+    { "loader/psd/0237_lab16_alpha_numeric", test_psd_color_0237 },
+    { "loader/psd/0238_lab8_alpha_icc_numeric", test_psd_color_0238 },
+    { "loader/psd/0239_lab16_alpha_icc_numeric", test_psd_color_0239 },
+    { "loader/psd/0240_lab_alpha_icc_effect_numeric", test_psd_color_0240 },
+    { "loader/psd/0241_lab_alpha_icc_disabled_numeric", test_psd_color_0241 },
+    { "loader/psd/0242_lab_alpha_background_numeric", test_psd_color_0242 },
+    { "loader/psd/0243_lab_alpha_reordered_numeric", test_psd_color_0243 },
+    { "loader/psd/0244_lab_alpha_display_omitted_numeric",
+      test_psd_color_0244 },
+    { "loader/psd/0245_lab_alpha_spot_order_numeric", test_psd_color_0245 },
+    { "loader/psd/0246_lab_alpha_psb_rle_numeric", test_psd_color_0246 },
+    { "loader/psd/0247_lab_alpha_psb_prediction_numeric", test_psd_color_0247 },
+    { "loader/psd/0248_lab_alpha_zip_numeric", test_psd_color_0248 },
+    { "loader/psd/0249_lab_alpha_neutral_numeric", test_psd_color_0249 },
+    { "loader/psd/0250_lab_alpha_minimum_numeric", test_psd_color_0250 },
+    { "loader/psd/0251_lab_alpha_icc_domain_reject", test_psd_color_0251 },
+    { "loader/psd/0252_lab_alpha_native8_numeric", test_psd_color_0252 },
+    { "loader/psd/0253_lab_alpha_native16_numeric", test_psd_color_0253 },
+    { "loader/psd/0254_lab32_alpha_reject", test_psd_color_0254 },
+    { "loader/psd/0255_lab_alpha_truncated_reject", test_psd_color_0255 },
+    { "loader/psd/0256_lab_alpha_extended_numeric", test_psd_color_0256 },
+    { "loader/psd/0257_lab_alpha_background_icc_numeric", test_psd_color_0257 },
+    { "loader/psd/0258_lab_alpha_icc_malformed_reject", test_psd_color_0258 },
+    { "loader/psd/0259_lab_alpha_psb8_prediction_numeric",
+      test_psd_color_0259 },
+    { "loader/psd/0260_lab_alpha_psd16_rle_numeric", test_psd_color_0260 },
 
 
     { "loader/0185_png_source_numeric",

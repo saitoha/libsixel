@@ -159,13 +159,6 @@ sixel_psd_render_process_data(sixel_chunk_t const *chunk,
         goto unsupported;
     }
     alpha = alpha_plane != UINT_MAX;
-    if (alpha && info->color_mode == 9u) {
-        /* Lab's stored matte needs its own source-coordinate contract;
-         * its opponent coordinates cannot use an all-one white matte. */
-        sixel_helper_set_additional_message(
-            "builtin PSD: process spots with merged transparency unsupported");
-        return SIXEL_BAD_INPUT;
-    }
     if (info->color_mode == 9u && info->depth == 32u) {
         /* The legacy Lab32 route guesses physical versus normalized units
          * from each value. Do not extend that ambiguous rule to spots. */
@@ -219,26 +212,30 @@ sixel_psd_render_process_data(sixel_chunk_t const *chunk,
                                         info->depth, channels == 4u, &sample)) {
                 goto cleanup;
             }
+            if (info->color_mode == 9u && j != 0u) {
+                /* PSD opponent words use 256 codes per Lab unit with
+                 * neutral at 32768; expanding Lab8 by 257 is incorrect.
+                 * L uses the full unsigned range, unlike ICC v2 PCS L.
+                 * The facade stores physical a/b divided by 128. Decode
+                 * before matte recovery so neutral is exactly zero. */
+                sample = info->depth == 16u ?
+                    (sample * 65535.0 - 32768.0) / 32768.0 :
+                    (sample * 255.0 - 128.0) / 128.0;
+            }
             if (alpha && opacity > 0.0) {
                 /* RGB, Gray and native inverted CMYK store a white
                  * matte in each process plane. Undo it before CMS (and
                  * before CMYK inversion), not after nonlinear conversion.
                  * Subtract white first: (sample + alpha - 1) loses tiny
                  * alpha at sample == 1. At zero alpha retain hidden data;
-                 * do not clip finite recovery outside the source gamut. */
-                sample = 1.0 + (sample - 1.0) / opacity;
+                 * do not clip finite recovery outside the source gamut.
+                 * Lab white is L=100, a=b=0, so decoded opponent
+                 * coordinates have a zero matte, not an all-one matte. */
+                sample = info->color_mode == 9u && j != 0u ?
+                    sample / opacity : 1.0 + (sample - 1.0) / opacity;
                 if (!isfinite(sample) || fabs(sample) > FLT_MAX) {
                     goto cleanup;
                 }
-            }
-            if (info->color_mode == 9u && j != 0u) {
-                /* PSD opponent words use 256 codes per Lab unit with
-                 * neutral at 32768; expanding Lab8 by 257 is incorrect.
-                 * L uses the full unsigned range, unlike ICC v2 PCS L.
-                 * The facade stores physical a/b divided by 128. */
-                sample = info->depth == 16u ?
-                    (sample * 65535.0 - 32768.0) / 32768.0 :
-                    (sample * 255.0 - 128.0) / 128.0;
             }
             base[i * channels + j] =
                 (float)(channels == 4u ? 1.0 - sample : sample);
