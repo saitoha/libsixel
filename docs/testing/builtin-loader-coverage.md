@@ -18,13 +18,13 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [PNG and APNG](../loader/builtin/png.md) | 288 | 22 | 59 | 0 | 13 | 7 | 187 |
 | [JPEG](../loader/builtin/jpeg.md) | 249 | 102 | 14 | 1 | 57 | 5 | 70 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
-| [PSD and PSB](../loader/builtin/psd.md) | 1120 | 87 | 551 | 402 | 60 | 3 | 17 |
+| [PSD and PSB](../loader/builtin/psd.md) | 1152 | 115 | 551 | 402 | 64 | 3 | 17 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
 | [WebP](../loader/builtin/webp.md) | 308 | 13 | 48 | 241 | 0 | 1 | 5 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 41 | 25 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2561** | **646** | **724** | **652** | **159** | **18** | **362** |
+| **Total** | **2593** | **674** | **724** | **652** | **163** | **18** | **362** |
 
 ## Complete inventory
 
@@ -2674,12 +2674,12 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/psd/0102_process_icc_malformed_reject.t](../../tests/loader/builtin/psd/0102_process_icc_malformed_reject.t) | Verify process icc malformed reject. | Acceptance/rejection | Inventory only |
 | [tests/loader/builtin/psd/0103_process_icc_unsupported_reject.t](../../tests/loader/builtin/psd/0103_process_icc_unsupported_reject.t) | Verify process icc unsupported reject. | Acceptance/rejection | Inventory only |
 | [tests/loader/builtin/psd/0104_process_rgb_byte_control.t](../../tests/loader/builtin/psd/0104_process_rgb_byte_control.t) | Verify process rgb byte control. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
-| [tests/loader/builtin/psd/0105_process_alpha_id_reject.t](../../tests/loader/builtin/psd/0105_process_alpha_id_reject.t) | Verify process alpha id reject. | Acceptance/rejection | Inventory only |
-| [tests/loader/builtin/psd/0106_process_alpha_layer_reject.t](../../tests/loader/builtin/psd/0106_process_alpha_layer_reject.t) | Verify process alpha layer reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
-| [tests/loader/builtin/psd/0107_process_alpha_mtrn_reject.t](../../tests/loader/builtin/psd/0107_process_alpha_mtrn_reject.t) | Verify process alpha mtrn reject. | Acceptance/rejection | Inventory only |
-| [tests/loader/builtin/psd/0108_process_alpha_mt16_reject.t](../../tests/loader/builtin/psd/0108_process_alpha_mt16_reject.t) | Verify process alpha mt16 reject. | Acceptance/rejection | Inventory only |
-| [tests/loader/builtin/psd/0109_process_alpha_mt32_psb_reject.t](../../tests/loader/builtin/psd/0109_process_alpha_mt32_psb_reject.t) | Verify process alpha mt32 psb reject. | Acceptance/rejection | Inventory only |
-| [tests/loader/builtin/psd/0110_process_alpha_lr16_reject.t](../../tests/loader/builtin/psd/0110_process_alpha_lr16_reject.t) | Verify process alpha lr16 reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0105_process_alpha_id_numeric.t](../../tests/loader/builtin/psd/0105_process_alpha_id_numeric.t) | Verify process alpha id numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0106_process_alpha_layer_numeric.t](../../tests/loader/builtin/psd/0106_process_alpha_layer_numeric.t) | Verify process alpha layer numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0107_process_alpha_mtrn_numeric.t](../../tests/loader/builtin/psd/0107_process_alpha_mtrn_numeric.t) | Verify process alpha mtrn numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0108_process_alpha_mt16_numeric.t](../../tests/loader/builtin/psd/0108_process_alpha_mt16_numeric.t) | Verify process alpha mt16 numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0109_process_alpha_mt32_psb_numeric.t](../../tests/loader/builtin/psd/0109_process_alpha_mt32_psb_numeric.t) | Verify process alpha mt32 psb numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0110_process_alpha_lr16_numeric.t](../../tests/loader/builtin/psd/0110_process_alpha_lr16_numeric.t) | Verify process alpha lr16 numeric. | Direct numeric/digest | Inventory only |
 | [tests/loader/builtin/psd/0111_process_display_count_reject.t](../../tests/loader/builtin/psd/0111_process_display_count_reject.t) | Verify process display count reject. | Acceptance/rejection | Inventory only |
 | [tests/loader/builtin/psd/0112_process_mask_alternate_reject.t](../../tests/loader/builtin/psd/0112_process_mask_alternate_reject.t) | Verify process mask alternate reject. | Acceptance/rejection | Inventory only |
 | [tests/loader/builtin/psd/0113_process_spot_nan_reject.t](../../tests/loader/builtin/psd/0113_process_spot_nan_reject.t) | Verify process spot nan reject. | Acceptance/rejection | Inventory only |
@@ -2696,6 +2696,38 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/psd/0124_process_identifier_duplicate_reject.t](../../tests/loader/builtin/psd/0124_process_identifier_duplicate_reject.t) | Verify process identifier duplicate reject. | Acceptance/rejection | Inventory only |
 | [tests/loader/builtin/psd/0125_process_real_spot_metadata_numeric.t](../../tests/loader/builtin/psd/0125_process_real_spot_metadata_numeric.t) | Verify process real spot metadata numeric. | Direct numeric/digest | Inventory only |
 | [tests/loader/builtin/psd/0126_process_spot_order_numeric.t](../../tests/loader/builtin/psd/0126_process_spot_order_numeric.t) | Verify process spot order numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0127_process_alpha_rgb8_numeric.t](../../tests/loader/builtin/psd/0127_process_alpha_rgb8_numeric.t) | Verify process alpha rgb8 numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0128_process_alpha_background_numeric.t](../../tests/loader/builtin/psd/0128_process_alpha_background_numeric.t) | Verify process alpha background numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0129_process_alpha_rgb16_numeric.t](../../tests/loader/builtin/psd/0129_process_alpha_rgb16_numeric.t) | Verify process alpha rgb16 numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0130_process_alpha_rgb32_extended_numeric.t](../../tests/loader/builtin/psd/0130_process_alpha_rgb32_extended_numeric.t) | Verify process alpha rgb32 extended numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0131_process_alpha_p3_icc_numeric.t](../../tests/loader/builtin/psd/0131_process_alpha_p3_icc_numeric.t) | Verify process alpha p3 icc numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0132_process_alpha_p3_background_numeric.t](../../tests/loader/builtin/psd/0132_process_alpha_p3_background_numeric.t) | Verify process alpha p3 background numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0133_process_alpha_icc_disabled_numeric.t](../../tests/loader/builtin/psd/0133_process_alpha_icc_disabled_numeric.t) | Verify process alpha icc disabled numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0134_process_alpha_omitted_display_numeric.t](../../tests/loader/builtin/psd/0134_process_alpha_omitted_display_numeric.t) | Verify process alpha omitted display numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0135_process_alpha_omitted_ids_numeric.t](../../tests/loader/builtin/psd/0135_process_alpha_omitted_ids_numeric.t) | Verify process alpha omitted ids numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0136_process_alpha_omitted_alternate_numeric.t](../../tests/loader/builtin/psd/0136_process_alpha_omitted_alternate_numeric.t) | Verify process alpha omitted alternate numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0137_process_alpha_layer_no_ids_numeric.t](../../tests/loader/builtin/psd/0137_process_alpha_layer_no_ids_numeric.t) | Verify process alpha layer no ids numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0138_process_alpha_id_reordered_numeric.t](../../tests/loader/builtin/psd/0138_process_alpha_id_reordered_numeric.t) | Verify process alpha id reordered numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0139_process_alpha_role_conflict_reject.t](../../tests/loader/builtin/psd/0139_process_alpha_role_conflict_reject.t) | Verify process alpha role conflict reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0140_process_alpha_spot_id_reject.t](../../tests/loader/builtin/psd/0140_process_alpha_spot_id_reject.t) | Verify process alpha spot id reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0141_process_alpha_omission_unmarked_reject.t](../../tests/loader/builtin/psd/0141_process_alpha_omission_unmarked_reject.t) | Verify process alpha omission unmarked reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0142_process_alpha_identifier_count_reject.t](../../tests/loader/builtin/psd/0142_process_alpha_identifier_count_reject.t) | Verify process alpha identifier count reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0143_process_alpha_duplicate_zero_reject.t](../../tests/loader/builtin/psd/0143_process_alpha_duplicate_zero_reject.t) | Verify process alpha duplicate zero reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0144_process_alpha_savedmask_nan_numeric.t](../../tests/loader/builtin/psd/0144_process_alpha_savedmask_nan_numeric.t) | Verify process alpha savedmask nan numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0145_process_alpha_nan_reject.t](../../tests/loader/builtin/psd/0145_process_alpha_nan_reject.t) | Verify process alpha nan reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0146_process_alpha_negative_reject.t](../../tests/loader/builtin/psd/0146_process_alpha_negative_reject.t) | Verify process alpha negative reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0147_process_alpha_over_one_reject.t](../../tests/loader/builtin/psd/0147_process_alpha_over_one_reject.t) | Verify process alpha over one reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0148_process_alpha_tiny_white_numeric.t](../../tests/loader/builtin/psd/0148_process_alpha_tiny_white_numeric.t) | Verify process alpha tiny white numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0149_process_alpha_unmatte_overflow_reject.t](../../tests/loader/builtin/psd/0149_process_alpha_unmatte_overflow_reject.t) | Verify process alpha unmatte overflow reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0150_process_alpha_unmatte_gamut_numeric.t](../../tests/loader/builtin/psd/0150_process_alpha_unmatte_gamut_numeric.t) | Verify process alpha unmatte gamut numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0151_process_alpha_rle_numeric.t](../../tests/loader/builtin/psd/0151_process_alpha_rle_numeric.t) | Verify process alpha rle numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0152_process_alpha_zip16_numeric.t](../../tests/loader/builtin/psd/0152_process_alpha_zip16_numeric.t) | Verify process alpha zip16 numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0153_process_alpha_prediction_numeric.t](../../tests/loader/builtin/psd/0153_process_alpha_prediction_numeric.t) | Verify process alpha prediction numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0154_process_alpha_psb32_numeric.t](../../tests/loader/builtin/psd/0154_process_alpha_psb32_numeric.t) | Verify process alpha psb32 numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0155_process_alpha_spot_order_numeric.t](../../tests/loader/builtin/psd/0155_process_alpha_spot_order_numeric.t) | Verify process alpha spot order numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0156_process_alpha_rgb16_icc_numeric.t](../../tests/loader/builtin/psd/0156_process_alpha_rgb16_icc_numeric.t) | Verify process alpha rgb16 icc numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0157_process_alpha_zero_background_numeric.t](../../tests/loader/builtin/psd/0157_process_alpha_zero_background_numeric.t) | Verify process alpha zero background numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0158_process_alpha_cmyk_reject.t](../../tests/loader/builtin/psd/0158_process_alpha_cmyk_reject.t) | Verify process alpha cmyk reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 
 <!-- test-plan-end -->
 

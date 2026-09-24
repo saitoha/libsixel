@@ -5642,7 +5642,8 @@ sixel_builtin_load_psd_single_frame(
                                          &pixels, mask, mask_size);
     if (status == SIXEL_FALSE) {
         status = sixel_psd_render_process_data(chunk, &psd_info,
-            psd_icc_status, psd_icc_profile, psd_icc_profile_length, &pixels);
+            psd_icc_status, psd_icc_profile, psd_icc_profile_length,
+            bgcolor, &pixels, mask, mask_size);
     }
     if (status != SIXEL_FALSE) {
         if (SIXEL_FAILED(status)) {

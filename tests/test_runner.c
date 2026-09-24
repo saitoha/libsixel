@@ -1055,6 +1055,38 @@ int test_psd_color_0123(int argc, char **argv);
 int test_psd_color_0124(int argc, char **argv);
 int test_psd_color_0125(int argc, char **argv);
 int test_psd_color_0126(int argc, char **argv);
+int test_psd_color_0127(int argc, char **argv);
+int test_psd_color_0128(int argc, char **argv);
+int test_psd_color_0129(int argc, char **argv);
+int test_psd_color_0130(int argc, char **argv);
+int test_psd_color_0131(int argc, char **argv);
+int test_psd_color_0132(int argc, char **argv);
+int test_psd_color_0133(int argc, char **argv);
+int test_psd_color_0134(int argc, char **argv);
+int test_psd_color_0135(int argc, char **argv);
+int test_psd_color_0136(int argc, char **argv);
+int test_psd_color_0137(int argc, char **argv);
+int test_psd_color_0138(int argc, char **argv);
+int test_psd_color_0139(int argc, char **argv);
+int test_psd_color_0140(int argc, char **argv);
+int test_psd_color_0141(int argc, char **argv);
+int test_psd_color_0142(int argc, char **argv);
+int test_psd_color_0143(int argc, char **argv);
+int test_psd_color_0144(int argc, char **argv);
+int test_psd_color_0145(int argc, char **argv);
+int test_psd_color_0146(int argc, char **argv);
+int test_psd_color_0147(int argc, char **argv);
+int test_psd_color_0148(int argc, char **argv);
+int test_psd_color_0149(int argc, char **argv);
+int test_psd_color_0150(int argc, char **argv);
+int test_psd_color_0151(int argc, char **argv);
+int test_psd_color_0152(int argc, char **argv);
+int test_psd_color_0153(int argc, char **argv);
+int test_psd_color_0154(int argc, char **argv);
+int test_psd_color_0155(int argc, char **argv);
+int test_psd_color_0156(int argc, char **argv);
+int test_psd_color_0157(int argc, char **argv);
+int test_psd_color_0158(int argc, char **argv);
 
 
 int test_loader_0185_png_source_numeric(int argc, char **argv);
@@ -2893,17 +2925,17 @@ static test_entry_t const test_entries[] = {
       test_psd_color_0103 },
     { "loader/psd/0104_process_rgb_byte_control",
       test_psd_color_0104 },
-    { "loader/psd/0105_process_alpha_id_reject",
+    { "loader/psd/0105_process_alpha_id_numeric",
       test_psd_color_0105 },
-    { "loader/psd/0106_process_alpha_layer_reject",
+    { "loader/psd/0106_process_alpha_layer_numeric",
       test_psd_color_0106 },
-    { "loader/psd/0107_process_alpha_mtrn_reject",
+    { "loader/psd/0107_process_alpha_mtrn_numeric",
       test_psd_color_0107 },
-    { "loader/psd/0108_process_alpha_mt16_reject",
+    { "loader/psd/0108_process_alpha_mt16_numeric",
       test_psd_color_0108 },
-    { "loader/psd/0109_process_alpha_mt32_psb_reject",
+    { "loader/psd/0109_process_alpha_mt32_psb_numeric",
       test_psd_color_0109 },
-    { "loader/psd/0110_process_alpha_lr16_reject",
+    { "loader/psd/0110_process_alpha_lr16_numeric",
       test_psd_color_0110 },
     { "loader/psd/0111_process_display_count_reject",
       test_psd_color_0111 },
@@ -2937,6 +2969,70 @@ static test_entry_t const test_entries[] = {
       test_psd_color_0125 },
     { "loader/psd/0126_process_spot_order_numeric",
       test_psd_color_0126 },
+    { "loader/psd/0127_process_alpha_rgb8_numeric",
+      test_psd_color_0127 },
+    { "loader/psd/0128_process_alpha_background_numeric",
+      test_psd_color_0128 },
+    { "loader/psd/0129_process_alpha_rgb16_numeric",
+      test_psd_color_0129 },
+    { "loader/psd/0130_process_alpha_rgb32_extended_numeric",
+      test_psd_color_0130 },
+    { "loader/psd/0131_process_alpha_p3_icc_numeric",
+      test_psd_color_0131 },
+    { "loader/psd/0132_process_alpha_p3_background_numeric",
+      test_psd_color_0132 },
+    { "loader/psd/0133_process_alpha_icc_disabled_numeric",
+      test_psd_color_0133 },
+    { "loader/psd/0134_process_alpha_omitted_display_numeric",
+      test_psd_color_0134 },
+    { "loader/psd/0135_process_alpha_omitted_ids_numeric",
+      test_psd_color_0135 },
+    { "loader/psd/0136_process_alpha_omitted_alternate_numeric",
+      test_psd_color_0136 },
+    { "loader/psd/0137_process_alpha_layer_no_ids_numeric",
+      test_psd_color_0137 },
+    { "loader/psd/0138_process_alpha_id_reordered_numeric",
+      test_psd_color_0138 },
+    { "loader/psd/0139_process_alpha_role_conflict_reject",
+      test_psd_color_0139 },
+    { "loader/psd/0140_process_alpha_spot_id_reject",
+      test_psd_color_0140 },
+    { "loader/psd/0141_process_alpha_omission_unmarked_reject",
+      test_psd_color_0141 },
+    { "loader/psd/0142_process_alpha_identifier_count_reject",
+      test_psd_color_0142 },
+    { "loader/psd/0143_process_alpha_duplicate_zero_reject",
+      test_psd_color_0143 },
+    { "loader/psd/0144_process_alpha_savedmask_nan_numeric",
+      test_psd_color_0144 },
+    { "loader/psd/0145_process_alpha_nan_reject",
+      test_psd_color_0145 },
+    { "loader/psd/0146_process_alpha_negative_reject",
+      test_psd_color_0146 },
+    { "loader/psd/0147_process_alpha_over_one_reject",
+      test_psd_color_0147 },
+    { "loader/psd/0148_process_alpha_tiny_white_numeric",
+      test_psd_color_0148 },
+    { "loader/psd/0149_process_alpha_unmatte_overflow_reject",
+      test_psd_color_0149 },
+    { "loader/psd/0150_process_alpha_unmatte_gamut_numeric",
+      test_psd_color_0150 },
+    { "loader/psd/0151_process_alpha_rle_numeric",
+      test_psd_color_0151 },
+    { "loader/psd/0152_process_alpha_zip16_numeric",
+      test_psd_color_0152 },
+    { "loader/psd/0153_process_alpha_prediction_numeric",
+      test_psd_color_0153 },
+    { "loader/psd/0154_process_alpha_psb32_numeric",
+      test_psd_color_0154 },
+    { "loader/psd/0155_process_alpha_spot_order_numeric",
+      test_psd_color_0155 },
+    { "loader/psd/0156_process_alpha_rgb16_icc_numeric",
+      test_psd_color_0156 },
+    { "loader/psd/0157_process_alpha_zero_background_numeric",
+      test_psd_color_0157 },
+    { "loader/psd/0158_process_alpha_cmyk_reject",
+      test_psd_color_0158 },
 
 
     { "loader/0185_png_source_numeric",

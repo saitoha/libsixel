@@ -43,4 +43,12 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_psd_merged_alpha(sixel_chunk_t const *chunk,
                        sixel_builtin_psd_info_t const *info, int *present);
 
+/* Resolve extra-plane roles and align identifiers with display records.
+ * UINT_MAX denotes no merged transparency. No pixels or CMS are involved. */
+SIXEL_INTERNAL_API int
+sixel_psd_process_layout(sixel_psd_color_data_t *data,
+                         unsigned int channels, unsigned int process,
+                         int merged, unsigned int *alpha_plane,
+                         unsigned int *display_plane);
+
 #endif

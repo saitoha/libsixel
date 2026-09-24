@@ -4,6 +4,7 @@
 #endif
 
 #include <stdint.h>
+#include <limits.h>
 #include <string.h>
 #include "chunk-view.h"
 #include "frompsd-color.h"
@@ -151,8 +152,8 @@ sixel_psd_read_color_data(sixel_chunk_t const *chunk,
             old_display = p;
             old_size = size;
         } else if (id == 1053u) {
-            /* Interpret IDs only when alternate colors need them. An
-             * unused auxiliary list must not disable the legacy path. */
+            /* Collect valid IDs for colorants and transparency mapping.
+             * An unused malformed list must not disable the legacy path. */
             have_identifiers = have_identifiers ? 2 : 1;
             identifiers = p;
             identifier_size = size;
@@ -234,6 +235,74 @@ psd_color_length(unsigned char const *p, size_t remaining, int wide,
         return 0;
     }
     *length = (size_t)value;
+    return 1;
+}
+
+int
+sixel_psd_process_layout(sixel_psd_color_data_t *data,
+                         unsigned int channels, unsigned int process,
+                         int merged, unsigned int *alpha_plane,
+                         unsigned int *display_plane)
+{
+    unsigned int extras;
+    unsigned int offset;
+    unsigned int i;
+    unsigned int j;
+
+    if (data == NULL || alpha_plane == NULL || display_plane == NULL ||
+        channels <= process) {
+        return 0;
+    }
+    extras = channels - process;
+    offset = 0u;
+    if (data->ink_count != extras) {
+        if (!merged || data->ink_count != extras - 1u) {
+            return 0;
+        }
+        /* Some writers omit the leading merged transparency from
+         * DisplayInfo. Only explicit section metadata permits this gap. */
+        offset = 1u;
+    }
+    *alpha_plane = merged ? process : UINT_MAX;
+    *display_plane = process + offset;
+    if (data->identifier_present) {
+        for (i = 0u; i < data->identifier_count; ++i) {
+            for (j = 0u; j < i; ++j) {
+                if (data->identifier[i] == data->identifier[j]) {
+                    return 0;
+                }
+            }
+        }
+        if (offset && data->identifier_count == extras) {
+            if (data->identifier[0] != 0u) {
+                return 0;
+            }
+            /* The ID list may include transparency even if DisplayInfo
+             * does not. Align it once, before alternate-color lookup. */
+            --data->identifier_count;
+            for (i = 0u; i < data->identifier_count; ++i) {
+                data->identifier[i] = data->identifier[i + 1u];
+            }
+        }
+        if (data->identifier_count != data->ink_count) {
+            return 0;
+        }
+        for (i = 0u; i < data->identifier_count; ++i) {
+            if (data->identifier[i] == 0u) {
+                if (offset || data->ink[i].kind == 2u ||
+                    (merged && i != 0u)) {
+                    return 0;
+                }
+                *alpha_plane = process + i;
+            }
+        }
+        if (merged && !offset && data->identifier[0] != 0u) {
+            return 0;
+        }
+    }
+    if (merged && !offset && data->ink[0].kind == 2u) {
+        return 0;
+    }
     return 1;
 }
 

@@ -68,7 +68,6 @@ psd_process_test(int specimen)
     edge_loader_options_t options;
     edge_frame_probe_t probe;
     SIXELSTATUS status;
-    char const *message;
     double source[8][4];
     double coverage[8];
     double expected[3];
@@ -99,15 +98,16 @@ psd_process_test(int specimen)
 
     cmyk = specimen == 89 || specimen == 91 || specimen == 93 ||
         specimen == 95 || (specimen >= 97 && specimen <= 99) ||
-        specimen == 115 || specimen == 125;
+        specimen == 115 || specimen == 125 || specimen == 158;
     mask = specimen == 90 || specimen == 91 || specimen == 111 ||
         specimen == 112 ||
         (specimen >= 105 && specimen <= 110) ||
-        (specimen >= 123 && specimen <= 125);
+        (specimen >= 123 && specimen <= 125) || specimen == 158;
     profiled = specimen >= 96 && specimen <= 103;
     reject = (specimen >= 101 && specimen <= 103) ||
-        (specimen >= 105 && specimen <= 116) ||
-        specimen == 121 || specimen == 122 || specimen == 124;
+        (specimen >= 111 && specimen <= 116) ||
+        specimen == 121 || specimen == 122 || specimen == 124 ||
+        specimen == 158;
     depth = specimen == 92 || specimen == 93 || specimen == 98 ||
         specimen == 108 || specimen == 110 || specimen == 120 ? 16u :
         specimen == 94 || specimen == 95 || specimen == 99 ||
@@ -148,11 +148,14 @@ psd_process_test(int specimen)
                        dw.length - (specimen == 111 ? 13u : 0u));
         dw.length = 0u;
         for (k = 0u; k < extras; ++k) {
-            psdp_u32(&dw, specimen == 105 && k == 0u ? 0u :
+            psdp_u32(&dw, (specimen == 105 || specimen == 158) &&
+                k == 0u ? 0u :
                 specimen == 124 || k == spot ? 3u :
                 specimen == 126 ? 4u : 2u);
         }
-        psdp_resource(&rw, 1053u, definition, dw.length);
+        if (specimen < 106 || specimen > 110) {
+            psdp_resource(&rw, 1053u, definition, dw.length);
+        }
         if (specimen == 112 || specimen == 125) {
             dw.length = 0u;
             edge_put_u16be(&dw, 1u);
@@ -339,16 +342,12 @@ psd_process_test(int specimen)
         if (result != 0 || SIXEL_SUCCEEDED(status) || probe.callback_count) {
             return 1;
         }
-        message = sixel_helper_get_additional_message();
-        if (specimen >= 105 && specimen <= 110 && (message == NULL ||
-            strstr(message, "merged transparency unsupported") == NULL)) {
-            return 1;
-        }
         return 0;
     }
     if (result != 0 || SIXEL_FAILED(status) || probe.callback_count != 1 ||
         probe.width[0] != 8 || probe.height[0] != 1 ||
-        probe.mask_size[0] != 0u) {
+        probe.mask_size[0] !=
+            (specimen >= 105 && specimen <= 110 ? 8u : 0u)) {
         fprintf(stderr, "PSD process case=%d status=%x callbacks=%d\n",
             specimen, status, probe.callback_count);
         return 1;
@@ -373,6 +372,10 @@ psd_process_test(int specimen)
     }
     memcpy(actual, probe.rgb[0], sizeof(actual));
     for (i = 0u; i < 8u; ++i) {
+        if (specimen >= 105 && specimen <= 110 &&
+            probe.mask[0][i] != (coverage[i] == 1.0 ? 1u : 0u)) {
+            return 1;
+        }
         for (j = 0u; j < 3u; ++j) {
             expected[j] = specimen == 96 ? p3[j] :
                 specimen == 98 || specimen == 99 ?
@@ -390,6 +393,12 @@ psd_process_test(int specimen)
                     color_cmyk_linear16[i][j] : specimen == 97 ?
                     color_cmyk_linear[i][j] : psdp_linear(
                     source[i][j] * (cmyk ? source[i][3] : 1.0))));
+            }
+            if (specimen >= 105 && specimen <= 110) {
+                /* The process is transparent. Independent green ink is
+                 * visible except where its plate contains no ink. */
+                expected[j] = coverage[i] == 1.0 ?
+                    psdp_linear(source[i][j]) : (j == 1u ? 1.0 : 0.0);
             }
             if (specimen == 126) {
                 /* A second magenta ink follows green, with different

@@ -4,6 +4,7 @@
 #endif
 
 #include <float.h>
+#include <limits.h>
 #include <math.h>
 #include <stdint.h>
 #include "allocator.h"
@@ -89,27 +90,36 @@ sixel_psd_render_process_data(sixel_chunk_t const *chunk,
                               sixel_builtin_psd_info_t const *info,
                               int icc_status,
                               unsigned char const *icc, size_t icc_size,
-                              unsigned char **pixels)
+                              unsigned char const *bgcolor,
+                              unsigned char **pixels,
+                              unsigned char **mask, size_t *mask_size)
 {
     sixel_psd_color_data_t data;
     SIXELSTATUS status;
     unsigned char *planes;
+    unsigned char *coverage;
     float *base;
     float *output;
     double palette[SIXEL_PSD_COLOR_CHANNELS][3];
     double rgb[3];
+    double bg[3];
     double sample;
     double solidity;
+    double opacity;
+    double next_opacity;
     size_t plane_bytes;
     size_t count;
     size_t i;
     unsigned int channels;
     unsigned int stride;
+    unsigned int alpha_plane;
+    unsigned int display_plane;
     unsigned int k;
     unsigned int j;
     int alpha;
 
-    if (chunk == NULL || info == NULL || pixels == NULL) {
+    if (chunk == NULL || info == NULL || pixels == NULL ||
+        mask == NULL || mask_size == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     channels = info->color_mode == 3u ? 3u :
@@ -129,28 +139,18 @@ sixel_psd_render_process_data(sixel_chunk_t const *chunk,
     if (k == data.ink_count && data.alternate_count == 0u) {
         return SIXEL_FALSE;
     }
-    if (data.ink_count != info->channels - channels ||
-        (data.identifier_present &&
-         data.identifier_count != data.ink_count)) {
-        goto unsupported;
-    }
     status = sixel_psd_merged_alpha(chunk, info, &alpha);
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    for (k = 0u; k < data.identifier_count; ++k) {
-        if (data.identifier[k] == 0u) {
-            alpha = 1;
-        }
-        for (j = 0u; j < k; ++j) {
-            if (data.identifier[j] == data.identifier[k]) {
-                goto unsupported;
-            }
-        }
+    if (!sixel_psd_process_layout(&data, info->channels, channels, alpha,
+                                   &alpha_plane, &display_plane)) {
+        goto unsupported;
     }
-    if (alpha) {
-        /* A merged RGB preview may already contain a white matte. Do not
-         * silently double-compose it or mistake it for a saved mask. */
+    alpha = alpha_plane != UINT_MAX;
+    if (alpha && channels != 3u) {
+        /* CMYK's stored matte and profile order need their own contract;
+         * RGB source-coordinate recovery is not assumed to cover inks. */
         sixel_helper_set_additional_message(
             "builtin PSD: process spots with merged transparency unsupported");
         return SIXEL_BAD_INPUT;
@@ -162,6 +162,7 @@ sixel_psd_render_process_data(sixel_chunk_t const *chunk,
         goto unsupported;
     }
     planes = NULL;
+    coverage = NULL;
     base = NULL;
     output = NULL;
     status = sixel_psd_read_color_planes(chunk, info, &planes, &plane_bytes);
@@ -182,12 +183,35 @@ sixel_psd_render_process_data(sixel_chunk_t const *chunk,
         status = SIXEL_BAD_ALLOCATION;
         goto cleanup;
     }
+    if (alpha && bgcolor == NULL) {
+        coverage = sixel_allocator_malloc(info->allocator, count);
+        if (coverage == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+    }
     status = SIXEL_BAD_INPUT;
     for (i = 0u; i < count; ++i) {
+        opacity = 1.0;
+        if (alpha && !sixel_psd_color_sample(
+                planes + alpha_plane * plane_bytes + i * stride,
+                info->depth, 1, &opacity)) {
+            goto cleanup;
+        }
         for (j = 0u; j < channels; ++j) {
             if (!sixel_psd_color_sample(planes + j * plane_bytes + i * stride,
                                         info->depth, channels == 4u, &sample)) {
                 goto cleanup;
+            }
+            if (alpha && opacity > 0.0) {
+                /* Undo the source RGB white matte before CMS. Subtract
+                 * white first: (sample + alpha - 1) loses tiny alpha at
+                 * sample == 1. At alpha zero the original color is lost;
+                 * retain the stored hidden components without division. */
+                sample = 1.0 + (sample - 1.0) / opacity;
+                if (!isfinite(sample) || fabs(sample) > FLT_MAX) {
+                    goto cleanup;
+                }
             }
             base[i * channels + j] =
                 (float)(channels == 4u ? 1.0 - sample : sample);
@@ -199,24 +223,60 @@ sixel_psd_render_process_data(sixel_chunk_t const *chunk,
             "builtin PSD: process color conversion failed");
         goto cleanup;
     }
+    for (j = 0u; j < 3u; ++j) {
+        bg[j] = bgcolor == NULL ? 0.0 : bgcolor[j] / 255.0;
+    }
+    (void)sixel_color_convert(bg, bg, SIXEL_COLORSPACE_GAMMA,
+                              SIXEL_COLORSPACE_LINEAR);
     for (i = 0u; i < count; ++i) {
+        opacity = 1.0;
+        if (alpha) {
+            (void)sixel_psd_color_sample(
+                planes + alpha_plane * plane_bytes + i * stride,
+                info->depth, 1, &opacity);
+        }
         for (j = 0u; j < 3u; ++j) {
             rgb[j] = output[i * 3u + j];
+            if (bgcolor != NULL) {
+                rgb[j] = rgb[j] * opacity + bg[j] * (1.0 - opacity);
+            }
+        }
+        if (bgcolor != NULL) {
+            opacity = 1.0;
         }
         for (k = 0u; k < data.ink_count; ++k) {
             if (data.ink[k].kind != 2u) {
                 continue;
             }
             if (!sixel_psd_color_sample(
-                    planes + (channels + k) * plane_bytes + i * stride,
+                    planes + (display_plane + k) * plane_bytes + i * stride,
                     info->depth, 1, &sample)) {
                 goto cleanup;
             }
-            solidity = data.ink[k].opacity / 100.0;
-            for (j = 0u; j < 3u; ++j) {
-                rgb[j] = rgb[j] * sample + palette[k][j] *
-                    (1.0 - sample) * (solidity + (1.0 - solidity) * rgb[j]);
+            if (sample == 1.0) {
+                continue;
             }
+            solidity = data.ink[k].opacity / 100.0;
+            next_opacity = opacity * sample + (1.0 - sample);
+            for (j = 0u; j < 3u; ++j) {
+                if (opacity == 1.0) {
+                    rgb[j] = rgb[j] * sample + palette[k][j] *
+                        (1.0 - sample) *
+                        (solidity + (1.0 - solidity) * rgb[j]);
+                } else {
+                    /* Source-over with the established spot blend.
+                     * Spots also cover transparent process pixels; the
+                     * process alpha must not clip independent ink planes. */
+                    rgb[j] = (rgb[j] * opacity * sample +
+                        palette[k][j] * (1.0 - sample) *
+                        (1.0 - opacity + opacity * solidity +
+                         opacity * (1.0 - solidity) * rgb[j])) / next_opacity;
+                }
+            }
+            opacity = next_opacity;
+        }
+        if (coverage != NULL) {
+            coverage[i] = opacity == 0.0 ? 1u : 0u;
         }
         for (j = 0u; j < 3u; ++j) {
             if (!isfinite(rgb[j]) || fabs(rgb[j]) > FLT_MAX) {
@@ -226,13 +286,17 @@ sixel_psd_render_process_data(sixel_chunk_t const *chunk,
         }
     }
     *pixels = (unsigned char *)output;
+    *mask = coverage;
+    *mask_size = coverage == NULL ? 0u : count;
     output = NULL;
+    coverage = NULL;
     status = SIXEL_OK;
 
 cleanup:
     sixel_allocator_free(info->allocator, planes);
     sixel_allocator_free(info->allocator, base);
     sixel_allocator_free(info->allocator, output);
+    sixel_allocator_free(info->allocator, coverage);
     return status;
 
 unsupported:

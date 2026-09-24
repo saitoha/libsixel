@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Verify process alpha layer reject. */
+/* Verify process alpha layer numeric. */
 #include "../psd_process_test_common.h"
 
 int

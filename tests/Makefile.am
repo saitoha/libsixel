@@ -655,6 +655,39 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_PSD_COLOR_TEST_COMMON \
     -DBUILD_PSD_SPOT_TEST_COMMON \
     -DBUILD_PSD_PROCESS_TEST_COMMON \
+    -DBUILD_PSD_ALPHA_TEST_COMMON \
+    -DBUILD_TEST_0127_PROCESS_ALPHA_RGB8_NUMERIC \
+    -DBUILD_TEST_0128_PROCESS_ALPHA_BACKGROUND_NUMERIC \
+    -DBUILD_TEST_0129_PROCESS_ALPHA_RGB16_NUMERIC \
+    -DBUILD_TEST_0130_PROCESS_ALPHA_RGB32_EXTENDED_NUMERIC \
+    -DBUILD_TEST_0131_PROCESS_ALPHA_P3_ICC_NUMERIC \
+    -DBUILD_TEST_0132_PROCESS_ALPHA_P3_BACKGROUND_NUMERIC \
+    -DBUILD_TEST_0133_PROCESS_ALPHA_ICC_DISABLED_NUMERIC \
+    -DBUILD_TEST_0134_PROCESS_ALPHA_OMITTED_DISPLAY_NUMERIC \
+    -DBUILD_TEST_0135_PROCESS_ALPHA_OMITTED_IDS_NUMERIC \
+    -DBUILD_TEST_0136_PROCESS_ALPHA_OMITTED_ALTERNATE_NUMERIC \
+    -DBUILD_TEST_0137_PROCESS_ALPHA_LAYER_NO_IDS_NUMERIC \
+    -DBUILD_TEST_0138_PROCESS_ALPHA_ID_REORDERED_NUMERIC \
+    -DBUILD_TEST_0139_PROCESS_ALPHA_ROLE_CONFLICT_REJECT \
+    -DBUILD_TEST_0140_PROCESS_ALPHA_SPOT_ID_REJECT \
+    -DBUILD_TEST_0141_PROCESS_ALPHA_OMISSION_UNMARKED_REJECT \
+    -DBUILD_TEST_0142_PROCESS_ALPHA_IDENTIFIER_COUNT_REJECT \
+    -DBUILD_TEST_0143_PROCESS_ALPHA_DUPLICATE_ZERO_REJECT \
+    -DBUILD_TEST_0144_PROCESS_ALPHA_SAVEDMASK_NAN_NUMERIC \
+    -DBUILD_TEST_0145_PROCESS_ALPHA_NAN_REJECT \
+    -DBUILD_TEST_0146_PROCESS_ALPHA_NEGATIVE_REJECT \
+    -DBUILD_TEST_0147_PROCESS_ALPHA_OVER_ONE_REJECT \
+    -DBUILD_TEST_0148_PROCESS_ALPHA_TINY_WHITE_NUMERIC \
+    -DBUILD_TEST_0149_PROCESS_ALPHA_UNMATTE_OVERFLOW_REJECT \
+    -DBUILD_TEST_0150_PROCESS_ALPHA_UNMATTE_GAMUT_NUMERIC \
+    -DBUILD_TEST_0151_PROCESS_ALPHA_RLE_NUMERIC \
+    -DBUILD_TEST_0152_PROCESS_ALPHA_ZIP16_NUMERIC \
+    -DBUILD_TEST_0153_PROCESS_ALPHA_PREDICTION_NUMERIC \
+    -DBUILD_TEST_0154_PROCESS_ALPHA_PSB32_NUMERIC \
+    -DBUILD_TEST_0155_PROCESS_ALPHA_SPOT_ORDER_NUMERIC \
+    -DBUILD_TEST_0156_PROCESS_ALPHA_RGB16_ICC_NUMERIC \
+    -DBUILD_TEST_0157_PROCESS_ALPHA_ZERO_BACKGROUND_NUMERIC \
+    -DBUILD_TEST_0158_PROCESS_ALPHA_CMYK_REJECT \
     -DBUILD_TEST_0088_PROCESS_RGB_NUMERIC \
     -DBUILD_TEST_0089_PROCESS_CMYK_NUMERIC \
     -DBUILD_TEST_0090_PROCESS_RGB_SAVEDMASK_NUMERIC \
@@ -672,12 +705,12 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0102_PROCESS_ICC_MALFORMED_REJECT \
     -DBUILD_TEST_0103_PROCESS_ICC_UNSUPPORTED_REJECT \
     -DBUILD_TEST_0104_PROCESS_RGB_BYTE_CONTROL \
-    -DBUILD_TEST_0105_PROCESS_ALPHA_ID_REJECT \
-    -DBUILD_TEST_0106_PROCESS_ALPHA_LAYER_REJECT \
-    -DBUILD_TEST_0107_PROCESS_ALPHA_MTRN_REJECT \
-    -DBUILD_TEST_0108_PROCESS_ALPHA_MT16_REJECT \
-    -DBUILD_TEST_0109_PROCESS_ALPHA_MT32_PSB_REJECT \
-    -DBUILD_TEST_0110_PROCESS_ALPHA_LR16_REJECT \
+    -DBUILD_TEST_0105_PROCESS_ALPHA_ID_NUMERIC \
+    -DBUILD_TEST_0106_PROCESS_ALPHA_LAYER_NUMERIC \
+    -DBUILD_TEST_0107_PROCESS_ALPHA_MTRN_NUMERIC \
+    -DBUILD_TEST_0108_PROCESS_ALPHA_MT16_NUMERIC \
+    -DBUILD_TEST_0109_PROCESS_ALPHA_MT32_PSB_NUMERIC \
+    -DBUILD_TEST_0110_PROCESS_ALPHA_LR16_NUMERIC \
     -DBUILD_TEST_0111_PROCESS_DISPLAY_COUNT_REJECT \
     -DBUILD_TEST_0112_PROCESS_MASK_ALTERNATE_REJECT \
     -DBUILD_TEST_0113_PROCESS_SPOT_NAN_REJECT \
@@ -2928,6 +2961,40 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/psd_spot_test_common.h \
     loader/builtin/psd_process_test_common.c \
     loader/builtin/psd_process_test_common.h \
+    loader/builtin/psd_alpha_test_common.c \
+    loader/builtin/psd_alpha_test_common.h \
+    loader/builtin/psd/0127_process_alpha_rgb8_numeric.c \
+    loader/builtin/psd/0128_process_alpha_background_numeric.c \
+    loader/builtin/psd/0129_process_alpha_rgb16_numeric.c \
+    loader/builtin/psd/0130_process_alpha_rgb32_extended_numeric.c \
+    loader/builtin/psd/0131_process_alpha_p3_icc_numeric.c \
+    loader/builtin/psd/0132_process_alpha_p3_background_numeric.c \
+    loader/builtin/psd/0133_process_alpha_icc_disabled_numeric.c \
+    loader/builtin/psd/0134_process_alpha_omitted_display_numeric.c \
+    loader/builtin/psd/0135_process_alpha_omitted_ids_numeric.c \
+    loader/builtin/psd/0136_process_alpha_omitted_alternate_numeric.c \
+    loader/builtin/psd/0137_process_alpha_layer_no_ids_numeric.c \
+    loader/builtin/psd/0138_process_alpha_id_reordered_numeric.c \
+    loader/builtin/psd/0139_process_alpha_role_conflict_reject.c \
+    loader/builtin/psd/0140_process_alpha_spot_id_reject.c \
+    loader/builtin/psd/0141_process_alpha_omission_unmarked_reject.c \
+    loader/builtin/psd/0142_process_alpha_identifier_count_reject.c \
+    loader/builtin/psd/0143_process_alpha_duplicate_zero_reject.c \
+    loader/builtin/psd/0144_process_alpha_savedmask_nan_numeric.c \
+    loader/builtin/psd/0145_process_alpha_nan_reject.c \
+    loader/builtin/psd/0146_process_alpha_negative_reject.c \
+    loader/builtin/psd/0147_process_alpha_over_one_reject.c \
+    loader/builtin/psd/0148_process_alpha_tiny_white_numeric.c \
+    loader/builtin/psd/0149_process_alpha_unmatte_overflow_reject.c \
+    loader/builtin/psd/0150_process_alpha_unmatte_gamut_numeric.c \
+    loader/builtin/psd/0151_process_alpha_rle_numeric.c \
+    loader/builtin/psd/0152_process_alpha_zip16_numeric.c \
+    loader/builtin/psd/0153_process_alpha_prediction_numeric.c \
+    loader/builtin/psd/0154_process_alpha_psb32_numeric.c \
+    loader/builtin/psd/0155_process_alpha_spot_order_numeric.c \
+    loader/builtin/psd/0156_process_alpha_rgb16_icc_numeric.c \
+    loader/builtin/psd/0157_process_alpha_zero_background_numeric.c \
+    loader/builtin/psd/0158_process_alpha_cmyk_reject.c \
     loader/builtin/psd/0088_process_rgb_numeric.c \
     loader/builtin/psd/0089_process_cmyk_numeric.c \
     loader/builtin/psd/0090_process_rgb_savedmask_numeric.c \
@@ -2945,12 +3012,12 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/psd/0102_process_icc_malformed_reject.c \
     loader/builtin/psd/0103_process_icc_unsupported_reject.c \
     loader/builtin/psd/0104_process_rgb_byte_control.c \
-    loader/builtin/psd/0105_process_alpha_id_reject.c \
-    loader/builtin/psd/0106_process_alpha_layer_reject.c \
-    loader/builtin/psd/0107_process_alpha_mtrn_reject.c \
-    loader/builtin/psd/0108_process_alpha_mt16_reject.c \
-    loader/builtin/psd/0109_process_alpha_mt32_psb_reject.c \
-    loader/builtin/psd/0110_process_alpha_lr16_reject.c \
+    loader/builtin/psd/0105_process_alpha_id_numeric.c \
+    loader/builtin/psd/0106_process_alpha_layer_numeric.c \
+    loader/builtin/psd/0107_process_alpha_mtrn_numeric.c \
+    loader/builtin/psd/0108_process_alpha_mt16_numeric.c \
+    loader/builtin/psd/0109_process_alpha_mt32_psb_numeric.c \
+    loader/builtin/psd/0110_process_alpha_lr16_numeric.c \
     loader/builtin/psd/0111_process_display_count_reject.c \
     loader/builtin/psd/0112_process_mask_alternate_reject.c \
     loader/builtin/psd/0113_process_spot_nan_reject.c \
