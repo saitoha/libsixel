@@ -759,6 +759,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0258_LAB_ALPHA_ICC_MALFORMED_REJECT \
     -DBUILD_TEST_0259_LAB_ALPHA_PSB8_PREDICTION_NUMERIC \
     -DBUILD_TEST_0260_LAB_ALPHA_PSD16_RLE_NUMERIC \
+    -DBUILD_TEST_0261_DUOTONE_TABLE_NATIVE_PRECEDENCE \
+    -DBUILD_TEST_0262_DUOTONE_TABLE_UNKNOWN_NATIVE \
     -DBUILD_TEST_0127_PROCESS_ALPHA_RGB8_NUMERIC \
     -DBUILD_TEST_0128_PROCESS_ALPHA_BACKGROUND_NUMERIC \
     -DBUILD_TEST_0129_PROCESS_ALPHA_RGB16_NUMERIC \
@@ -3170,6 +3172,8 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/psd/0258_lab_alpha_icc_malformed_reject.c \
     loader/builtin/psd/0259_lab_alpha_psb8_prediction_numeric.c \
     loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.c \
+    loader/builtin/psd/0261_duotone_table_native_precedence.c \
+    loader/builtin/psd/0262_duotone_table_unknown_native.c \
     loader/builtin/psd/0127_process_alpha_rgb8_numeric.c \
     loader/builtin/psd/0128_process_alpha_background_numeric.c \
     loader/builtin/psd/0129_process_alpha_rgb16_numeric.c \

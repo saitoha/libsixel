@@ -1476,6 +1476,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/builtin/psd/0258_lab_alpha_icc_malformed_reject.c \
 	loader/builtin/psd/0259_lab_alpha_psb8_prediction_numeric.c \
 	loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.c \
+	loader/builtin/psd/0261_duotone_table_native_precedence.c \
+	loader/builtin/psd/0262_duotone_table_unknown_native.c \
 	loader/builtin/psd/0127_process_alpha_rgb8_numeric.c \
 	loader/builtin/psd/0128_process_alpha_background_numeric.c \
 	loader/builtin/psd/0129_process_alpha_rgb16_numeric.c \
@@ -3086,6 +3088,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0258_lab_alpha_icc_malformed_reject.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0259_lab_alpha_psb8_prediction_numeric.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0260_lab_alpha_psd16_rle_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0261_duotone_table_native_precedence.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0127_process_alpha_rgb8_numeric.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0128_process_alpha_background_numeric.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0129_process_alpha_rgb16_numeric.$(OBJEXT) \
@@ -4148,6 +4152,8 @@ am__depfiles_remade =  \
 	loader/builtin/psd/$(DEPDIR)/test_runner-0258_lab_alpha_icc_malformed_reject.Po \
 	loader/builtin/psd/$(DEPDIR)/test_runner-0259_lab_alpha_psb8_prediction_numeric.Po \
 	loader/builtin/psd/$(DEPDIR)/test_runner-0260_lab_alpha_psd16_rle_numeric.Po \
+	loader/builtin/psd/$(DEPDIR)/test_runner-0261_duotone_table_native_precedence.Po \
+	loader/builtin/psd/$(DEPDIR)/test_runner-0262_duotone_table_unknown_native.Po \
 	loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po \
 	loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Po \
 	loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Po \
@@ -6269,6 +6275,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0258_LAB_ALPHA_ICC_MALFORMED_REJECT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0259_LAB_ALPHA_PSB8_PREDICTION_NUMERIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0260_LAB_ALPHA_PSD16_RLE_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0261_DUOTONE_TABLE_NATIVE_PRECEDENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0262_DUOTONE_TABLE_UNKNOWN_NATIVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0127_PROCESS_ALPHA_RGB8_NUMERIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0128_PROCESS_ALPHA_BACKGROUND_NUMERIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0129_PROCESS_ALPHA_RGB16_NUMERIC \
@@ -8711,6 +8719,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0258_lab_alpha_icc_malformed_reject.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0259_lab_alpha_psb8_prediction_numeric.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0261_duotone_table_native_precedence.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0262_duotone_table_unknown_native.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0127_process_alpha_rgb8_numeric.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0128_process_alpha_background_numeric.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0129_process_alpha_rgb16_numeric.c \
@@ -13361,6 +13371,12 @@ loader/builtin/psd/test_runner-0259_lab_alpha_psb8_prediction_numeric.$(OBJEXT):
 loader/builtin/psd/test_runner-0260_lab_alpha_psd16_rle_numeric.$(OBJEXT):  \
 	loader/builtin/psd/$(am__dirstamp) \
 	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/psd/test_runner-0261_duotone_table_native_precedence.$(OBJEXT):  \
+	loader/builtin/psd/$(am__dirstamp) \
+	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.$(OBJEXT):  \
+	loader/builtin/psd/$(am__dirstamp) \
+	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
 loader/builtin/psd/test_runner-0127_process_alpha_rgb8_numeric.$(OBJEXT):  \
 	loader/builtin/psd/$(am__dirstamp) \
 	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
@@ -15047,6 +15063,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0258_lab_alpha_icc_malformed_reject.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0259_lab_alpha_psb8_prediction_numeric.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0260_lab_alpha_psd16_rle_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0261_duotone_table_native_precedence.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0262_duotone_table_unknown_native.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Po@am__quote@ # am--include-marker
@@ -34453,6 +34471,34 @@ loader/builtin/psd/test_runner-0260_lab_alpha_psd16_rle_numeric.obj: loader/buil
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0260_lab_alpha_psd16_rle_numeric.obj `if test -f 'loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.c'; fi`
 
+loader/builtin/psd/test_runner-0261_duotone_table_native_precedence.o: loader/builtin/psd/0261_duotone_table_native_precedence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0261_duotone_table_native_precedence.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0261_duotone_table_native_precedence.Tpo -c -o loader/builtin/psd/test_runner-0261_duotone_table_native_precedence.o `test -f 'loader/builtin/psd/0261_duotone_table_native_precedence.c' || echo '$(srcdir)/'`loader/builtin/psd/0261_duotone_table_native_precedence.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0261_duotone_table_native_precedence.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0261_duotone_table_native_precedence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0261_duotone_table_native_precedence.c' object='loader/builtin/psd/test_runner-0261_duotone_table_native_precedence.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0261_duotone_table_native_precedence.o `test -f 'loader/builtin/psd/0261_duotone_table_native_precedence.c' || echo '$(srcdir)/'`loader/builtin/psd/0261_duotone_table_native_precedence.c
+
+loader/builtin/psd/test_runner-0261_duotone_table_native_precedence.obj: loader/builtin/psd/0261_duotone_table_native_precedence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0261_duotone_table_native_precedence.obj -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0261_duotone_table_native_precedence.Tpo -c -o loader/builtin/psd/test_runner-0261_duotone_table_native_precedence.obj `if test -f 'loader/builtin/psd/0261_duotone_table_native_precedence.c'; then $(CYGPATH_W) 'loader/builtin/psd/0261_duotone_table_native_precedence.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0261_duotone_table_native_precedence.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0261_duotone_table_native_precedence.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0261_duotone_table_native_precedence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0261_duotone_table_native_precedence.c' object='loader/builtin/psd/test_runner-0261_duotone_table_native_precedence.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0261_duotone_table_native_precedence.obj `if test -f 'loader/builtin/psd/0261_duotone_table_native_precedence.c'; then $(CYGPATH_W) 'loader/builtin/psd/0261_duotone_table_native_precedence.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0261_duotone_table_native_precedence.c'; fi`
+
+loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.o: loader/builtin/psd/0262_duotone_table_unknown_native.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0262_duotone_table_unknown_native.Tpo -c -o loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.o `test -f 'loader/builtin/psd/0262_duotone_table_unknown_native.c' || echo '$(srcdir)/'`loader/builtin/psd/0262_duotone_table_unknown_native.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0262_duotone_table_unknown_native.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0262_duotone_table_unknown_native.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0262_duotone_table_unknown_native.c' object='loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.o `test -f 'loader/builtin/psd/0262_duotone_table_unknown_native.c' || echo '$(srcdir)/'`loader/builtin/psd/0262_duotone_table_unknown_native.c
+
+loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.obj: loader/builtin/psd/0262_duotone_table_unknown_native.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.obj -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0262_duotone_table_unknown_native.Tpo -c -o loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.obj `if test -f 'loader/builtin/psd/0262_duotone_table_unknown_native.c'; then $(CYGPATH_W) 'loader/builtin/psd/0262_duotone_table_unknown_native.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0262_duotone_table_unknown_native.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0262_duotone_table_unknown_native.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0262_duotone_table_unknown_native.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0262_duotone_table_unknown_native.c' object='loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.obj `if test -f 'loader/builtin/psd/0262_duotone_table_unknown_native.c'; then $(CYGPATH_W) 'loader/builtin/psd/0262_duotone_table_unknown_native.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0262_duotone_table_unknown_native.c'; fi`
+
 loader/builtin/psd/test_runner-0127_process_alpha_rgb8_numeric.o: loader/builtin/psd/0127_process_alpha_rgb8_numeric.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0127_process_alpha_rgb8_numeric.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0127_process_alpha_rgb8_numeric.Tpo -c -o loader/builtin/psd/test_runner-0127_process_alpha_rgb8_numeric.o `test -f 'loader/builtin/psd/0127_process_alpha_rgb8_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0127_process_alpha_rgb8_numeric.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0127_process_alpha_rgb8_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0127_process_alpha_rgb8_numeric.Po
@@ -39530,6 +39576,8 @@ distclean: distclean-am
 	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0258_lab_alpha_icc_malformed_reject.Po
 	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0259_lab_alpha_psb8_prediction_numeric.Po
 	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0260_lab_alpha_psd16_rle_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0261_duotone_table_native_precedence.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0262_duotone_table_unknown_native.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
 	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Po
 	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Po
@@ -41175,6 +41223,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0258_lab_alpha_icc_malformed_reject.Po
 	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0259_lab_alpha_psb8_prediction_numeric.Po
 	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0260_lab_alpha_psd16_rle_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0261_duotone_table_native_precedence.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0262_duotone_table_unknown_native.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
 	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Po
 	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Po

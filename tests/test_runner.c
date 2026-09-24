@@ -1189,6 +1189,8 @@ int test_psd_color_0257(int argc, char **argv);
 int test_psd_color_0258(int argc, char **argv);
 int test_psd_color_0259(int argc, char **argv);
 int test_psd_color_0260(int argc, char **argv);
+int test_psd_color_0261(int argc, char **argv);
+int test_psd_color_0262(int argc, char **argv);
 
 
 int test_loader_0185_png_source_numeric(int argc, char **argv);
@@ -3239,6 +3241,10 @@ static test_entry_t const test_entries[] = {
     { "loader/psd/0259_lab_alpha_psb8_prediction_numeric",
       test_psd_color_0259 },
     { "loader/psd/0260_lab_alpha_psd16_rle_numeric", test_psd_color_0260 },
+    { "loader/psd/0261_duotone_table_native_precedence",
+      test_psd_color_0261 },
+    { "loader/psd/0262_duotone_table_unknown_native",
+      test_psd_color_0262 },
 
 
     { "loader/0185_png_source_numeric",

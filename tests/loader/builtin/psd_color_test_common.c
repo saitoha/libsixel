@@ -48,6 +48,7 @@ psd_color_test(int specimen)
     unsigned char file[8192];
     unsigned char resources[4096];
     unsigned char definition[1024];
+    unsigned char native[524];
     unsigned char raw[2048];
     edge_writer_t fw;
     edge_writer_t rw;
@@ -92,13 +93,14 @@ psd_color_test(int specimen)
         (specimen == 3 || specimen == 21) ? 2u :
         (specimen == 4 || specimen == 22) ? 3u : 0u;
     duotone = specimen <= 11 || (specimen >= 26 && specimen <= 28) ||
-        specimen == 39 || specimen == 44;
+        specimen == 39 || specimen == 44 || specimen == 46 || specimen == 47;
     channels = duotone ? ((specimen == 9 || specimen == 10) ? 2u : 1u) :
         (specimen == 12 || specimen == 41 || specimen == 42 ||
          specimen == 45) ? 1u : specimen == 13 ? 2u : specimen == 14 ? 3u :
         specimen == 15 ? 4u : specimen == 17 ? 56u : 5u;
     reject = (specimen >= 26 && specimen <= 36) ||
-        (specimen >= 38 && specimen <= 40) || specimen >= 44;
+        (specimen >= 38 && specimen <= 40) ||
+        specimen == 44 || specimen == 45;
     fw = (edge_writer_t){file, sizeof(file), 0u, 0};
     rw = (edge_writer_t){resources, sizeof(resources), 0u, 0};
     dw = (edge_writer_t){definition, sizeof(definition), 0u, 0};
@@ -197,7 +199,38 @@ psd_color_test(int specimen)
     psdt_u32(&fw, 4u);
     edge_put_u16be(&fw, depth);
     edge_put_u16be(&fw, duotone ? 8u : 7u);
-    psdt_u32(&fw, 0u);
+    if (specimen == 46 || specimen == 47) {
+        /* Observed native Duotone blocks match the fixed ADO layout:
+         * header, four colors, four names, four curves, dot gain and
+         * eleven overprints. This conflicting blue ink and constant
+         * full-density curve must not recolor the saved Lab appearance.
+         * A future native renderer must also leave unfamiliar opaque
+         * variants alone when a usable rendered table is present. */
+        memset(native, 0, sizeof(native));
+        native[1] = specimen == 46 ? 1u : 255u;
+        native[3] = 1u;
+        native[10] = native[11] = 255u;
+        native[44] = 4u;
+        memcpy(native + 45u, "Blue", 4u);
+        for (ink = 0u; ink < 4u; ++ink) {
+            for (i = 0u; i < 13u; ++i) {
+                code = ink == 0u || i == 12u ? 1000u :
+                    i == 0u ? 0u : 65535u;
+                offset = 300u + ink * 28u + i * 2u;
+                native[offset] = (unsigned char)(code >> 8);
+                native[offset + 1u] = (unsigned char)code;
+            }
+        }
+        native[413] = 20u;
+        for (i = 0u; i < 11u; ++i) {
+            native[414u + i * 10u] = 255u;
+            native[415u + i * 10u] = 255u;
+        }
+        psdt_u32(&fw, (uint32_t)sizeof(native));
+        edge_put_bytes(&fw, native, sizeof(native));
+    } else {
+        psdt_u32(&fw, 0u);
+    }
     psdt_u32(&fw, (uint32_t)rw.length);
     edge_put_bytes(&fw, resources, rw.length);
     psdt_u32(&fw, 0u);

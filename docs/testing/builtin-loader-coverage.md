@@ -18,13 +18,13 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [PNG and APNG](../loader/builtin/png.md) | 288 | 22 | 59 | 0 | 13 | 7 | 187 |
 | [JPEG](../loader/builtin/jpeg.md) | 249 | 102 | 14 | 1 | 57 | 5 | 70 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
-| [PSD and PSB](../loader/builtin/psd.md) | 1254 | 196 | 551 | 402 | 84 | 3 | 18 |
+| [PSD and PSB](../loader/builtin/psd.md) | 1256 | 196 | 551 | 402 | 84 | 3 | 20 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
 | [WebP](../loader/builtin/webp.md) | 308 | 13 | 48 | 241 | 0 | 1 | 5 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 41 | 25 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2695** | **755** | **724** | **652** | **183** | **18** | **363** |
+| **Total** | **2697** | **755** | **724** | **652** | **183** | **18** | **365** |
 
 ## Complete inventory
 
@@ -2830,6 +2830,8 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/psd/0258_lab_alpha_icc_malformed_reject.t](../../tests/loader/builtin/psd/0258_lab_alpha_icc_malformed_reject.t) | Verify lab alpha icc malformed reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/psd/0259_lab_alpha_psb8_prediction_numeric.t](../../tests/loader/builtin/psd/0259_lab_alpha_psb8_prediction_numeric.t) | Verify lab alpha psb8 prediction numeric. | Direct numeric/digest | Inventory only |
 | [tests/loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.t](../../tests/loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.t) | Verify lab alpha psd16 rle numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0261_duotone_table_native_precedence.t](../../tests/loader/builtin/psd/0261_duotone_table_native_precedence.t) | Verify the saved Lab table overrides conflicting native ink curves. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0262_duotone_table_unknown_native.t](../../tests/loader/builtin/psd/0262_duotone_table_unknown_native.t) | Verify the saved Lab table remains usable with an opaque native version. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 
 <!-- test-plan-end -->
 
