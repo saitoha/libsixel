@@ -656,6 +656,46 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_PSD_SPOT_TEST_COMMON \
     -DBUILD_PSD_PROCESS_TEST_COMMON \
     -DBUILD_PSD_ALPHA_TEST_COMMON \
+    -DBUILD_PSD_MODEL_TEST_COMMON \
+    -DBUILD_TEST_0159_GRAY8_SPOT_NUMERIC \
+    -DBUILD_TEST_0160_GRAY16_SPOT_NUMERIC \
+    -DBUILD_TEST_0161_GRAY32_SPOT_NUMERIC \
+    -DBUILD_TEST_0162_GRAY8_ICC_NUMERIC \
+    -DBUILD_TEST_0163_GRAY16_ICC_NUMERIC \
+    -DBUILD_TEST_0164_GRAY32_ICC_NUMERIC \
+    -DBUILD_TEST_0165_GRAY_ICC_DISABLED_NUMERIC \
+    -DBUILD_TEST_0166_GRAY_SAVEDMASK_NUMERIC \
+    -DBUILD_TEST_0167_GRAY_ALTERNATE_NUMERIC \
+    -DBUILD_TEST_0168_GRAY_ICC_DOMAIN_REJECT \
+    -DBUILD_TEST_0169_GRAY_ICC_MALFORMED_REJECT \
+    -DBUILD_TEST_0170_GRAY_ICC_UNSUPPORTED_REJECT \
+    -DBUILD_TEST_0171_GRAY_NAN_REJECT \
+    -DBUILD_TEST_0172_GRAY_ALPHA_REJECT \
+    -DBUILD_TEST_0173_GRAY_RLE_NUMERIC \
+    -DBUILD_TEST_0174_GRAY_ZIP_NUMERIC \
+    -DBUILD_TEST_0175_GRAY_PSB_PREDICTION_NUMERIC \
+    -DBUILD_TEST_0176_GRAY_BYTE_CONTROL \
+    -DBUILD_TEST_0177_LAB8_SPOT_NUMERIC \
+    -DBUILD_TEST_0178_LAB16_SPOT_NUMERIC \
+    -DBUILD_TEST_0179_LAB8_ICC_NUMERIC \
+    -DBUILD_TEST_0180_LAB16_ICC_NUMERIC \
+    -DBUILD_TEST_0181_LAB_ICC_DISABLED_NUMERIC \
+    -DBUILD_TEST_0182_LAB_SAVEDMASK_NUMERIC \
+    -DBUILD_TEST_0183_LAB_ALTERNATE_NUMERIC \
+    -DBUILD_TEST_0184_LAB_ICC_DOMAIN_REJECT \
+    -DBUILD_TEST_0185_LAB_ICC_MALFORMED_REJECT \
+    -DBUILD_TEST_0186_LAB16_NEUTRAL_NUMERIC \
+    -DBUILD_TEST_0187_LAB16_ENDPOINTS_NUMERIC \
+    -DBUILD_TEST_0188_LAB32_SPOT_REJECT \
+    -DBUILD_TEST_0189_LAB_ALPHA_REJECT \
+    -DBUILD_TEST_0190_LAB_RLE_NUMERIC \
+    -DBUILD_TEST_0191_LAB_ZIP_NUMERIC \
+    -DBUILD_TEST_0192_LAB_PSB_PREDICTION_NUMERIC \
+    -DBUILD_TEST_0193_LAB_SPOT_ORDER_NUMERIC \
+    -DBUILD_TEST_0194_GRAY_SPOT_ORDER_NUMERIC \
+    -DBUILD_TEST_0195_LAB_TRUNCATED_REJECT \
+    -DBUILD_TEST_0196_GRAY_SPOT_NAN_REJECT \
+    -DBUILD_TEST_0197_LAB_ICC_EFFECT_NUMERIC \
     -DBUILD_TEST_0127_PROCESS_ALPHA_RGB8_NUMERIC \
     -DBUILD_TEST_0128_PROCESS_ALPHA_BACKGROUND_NUMERIC \
     -DBUILD_TEST_0129_PROCESS_ALPHA_RGB16_NUMERIC \
@@ -2963,6 +3003,47 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/psd_process_test_common.h \
     loader/builtin/psd_alpha_test_common.c \
     loader/builtin/psd_alpha_test_common.h \
+    loader/builtin/psd_model_test_common.c \
+    loader/builtin/psd_model_test_common.h \
+    loader/builtin/psd/0159_gray8_spot_numeric.c \
+    loader/builtin/psd/0160_gray16_spot_numeric.c \
+    loader/builtin/psd/0161_gray32_spot_numeric.c \
+    loader/builtin/psd/0162_gray8_icc_numeric.c \
+    loader/builtin/psd/0163_gray16_icc_numeric.c \
+    loader/builtin/psd/0164_gray32_icc_numeric.c \
+    loader/builtin/psd/0165_gray_icc_disabled_numeric.c \
+    loader/builtin/psd/0166_gray_savedmask_numeric.c \
+    loader/builtin/psd/0167_gray_alternate_numeric.c \
+    loader/builtin/psd/0168_gray_icc_domain_reject.c \
+    loader/builtin/psd/0169_gray_icc_malformed_reject.c \
+    loader/builtin/psd/0170_gray_icc_unsupported_reject.c \
+    loader/builtin/psd/0171_gray_nan_reject.c \
+    loader/builtin/psd/0172_gray_alpha_reject.c \
+    loader/builtin/psd/0173_gray_rle_numeric.c \
+    loader/builtin/psd/0174_gray_zip_numeric.c \
+    loader/builtin/psd/0175_gray_psb_prediction_numeric.c \
+    loader/builtin/psd/0176_gray_byte_control.c \
+    loader/builtin/psd/0177_lab8_spot_numeric.c \
+    loader/builtin/psd/0178_lab16_spot_numeric.c \
+    loader/builtin/psd/0179_lab8_icc_numeric.c \
+    loader/builtin/psd/0180_lab16_icc_numeric.c \
+    loader/builtin/psd/0181_lab_icc_disabled_numeric.c \
+    loader/builtin/psd/0182_lab_savedmask_numeric.c \
+    loader/builtin/psd/0183_lab_alternate_numeric.c \
+    loader/builtin/psd/0184_lab_icc_domain_reject.c \
+    loader/builtin/psd/0185_lab_icc_malformed_reject.c \
+    loader/builtin/psd/0186_lab16_neutral_numeric.c \
+    loader/builtin/psd/0187_lab16_endpoints_numeric.c \
+    loader/builtin/psd/0188_lab32_spot_reject.c \
+    loader/builtin/psd/0189_lab_alpha_reject.c \
+    loader/builtin/psd/0190_lab_rle_numeric.c \
+    loader/builtin/psd/0191_lab_zip_numeric.c \
+    loader/builtin/psd/0192_lab_psb_prediction_numeric.c \
+    loader/builtin/psd/0193_lab_spot_order_numeric.c \
+    loader/builtin/psd/0194_gray_spot_order_numeric.c \
+    loader/builtin/psd/0195_lab_truncated_reject.c \
+    loader/builtin/psd/0196_gray_spot_nan_reject.c \
+    loader/builtin/psd/0197_lab_icc_effect_numeric.c \
     loader/builtin/psd/0127_process_alpha_rgb8_numeric.c \
     loader/builtin/psd/0128_process_alpha_background_numeric.c \
     loader/builtin/psd/0129_process_alpha_rgb16_numeric.c \

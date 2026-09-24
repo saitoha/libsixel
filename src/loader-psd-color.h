@@ -23,4 +23,9 @@ SIXEL_INTERNAL_API int
 sixel_psd_color_sample(unsigned char const *p, unsigned int depth,
                         int bounded, double *sample);
 
+/* Convert normalized L/100, a/128, b/128 using PSD's D50 white point.
+ * This is intrinsic Lab interpretation, independent of embedded ICC policy. */
+SIXEL_INTERNAL_API int
+sixel_psd_lab_to_linear(float const *source, float *output, size_t count);
+
 #endif

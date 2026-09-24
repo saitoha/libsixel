@@ -18,13 +18,13 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [PNG and APNG](../loader/builtin/png.md) | 288 | 22 | 59 | 0 | 13 | 7 | 187 |
 | [JPEG](../loader/builtin/jpeg.md) | 249 | 102 | 14 | 1 | 57 | 5 | 70 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
-| [PSD and PSB](../loader/builtin/psd.md) | 1152 | 115 | 551 | 402 | 64 | 3 | 17 |
+| [PSD and PSB](../loader/builtin/psd.md) | 1191 | 142 | 551 | 402 | 75 | 3 | 18 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
 | [WebP](../loader/builtin/webp.md) | 308 | 13 | 48 | 241 | 0 | 1 | 5 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 41 | 25 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2593** | **674** | **724** | **652** | **163** | **18** | **362** |
+| **Total** | **2632** | **701** | **724** | **652** | **174** | **18** | **363** |
 
 ## Complete inventory
 
@@ -2728,6 +2728,45 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/psd/0156_process_alpha_rgb16_icc_numeric.t](../../tests/loader/builtin/psd/0156_process_alpha_rgb16_icc_numeric.t) | Verify process alpha rgb16 icc numeric. | Direct numeric/digest | Inventory only |
 | [tests/loader/builtin/psd/0157_process_alpha_zero_background_numeric.t](../../tests/loader/builtin/psd/0157_process_alpha_zero_background_numeric.t) | Verify process alpha zero background numeric. | Direct numeric/digest | Inventory only |
 | [tests/loader/builtin/psd/0158_process_alpha_cmyk_reject.t](../../tests/loader/builtin/psd/0158_process_alpha_cmyk_reject.t) | Verify process alpha cmyk reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0159_gray8_spot_numeric.t](../../tests/loader/builtin/psd/0159_gray8_spot_numeric.t) | Verify gray8 spot numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0160_gray16_spot_numeric.t](../../tests/loader/builtin/psd/0160_gray16_spot_numeric.t) | Verify gray16 spot numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0161_gray32_spot_numeric.t](../../tests/loader/builtin/psd/0161_gray32_spot_numeric.t) | Verify gray32 spot numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0162_gray8_icc_numeric.t](../../tests/loader/builtin/psd/0162_gray8_icc_numeric.t) | Verify gray8 icc numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0163_gray16_icc_numeric.t](../../tests/loader/builtin/psd/0163_gray16_icc_numeric.t) | Verify gray16 icc numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0164_gray32_icc_numeric.t](../../tests/loader/builtin/psd/0164_gray32_icc_numeric.t) | Verify gray32 icc numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0165_gray_icc_disabled_numeric.t](../../tests/loader/builtin/psd/0165_gray_icc_disabled_numeric.t) | Verify gray icc disabled numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0166_gray_savedmask_numeric.t](../../tests/loader/builtin/psd/0166_gray_savedmask_numeric.t) | Verify gray savedmask numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0167_gray_alternate_numeric.t](../../tests/loader/builtin/psd/0167_gray_alternate_numeric.t) | Verify gray alternate numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0168_gray_icc_domain_reject.t](../../tests/loader/builtin/psd/0168_gray_icc_domain_reject.t) | Verify gray icc domain reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0169_gray_icc_malformed_reject.t](../../tests/loader/builtin/psd/0169_gray_icc_malformed_reject.t) | Verify gray icc malformed reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0170_gray_icc_unsupported_reject.t](../../tests/loader/builtin/psd/0170_gray_icc_unsupported_reject.t) | Verify gray icc unsupported reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0171_gray_nan_reject.t](../../tests/loader/builtin/psd/0171_gray_nan_reject.t) | Verify gray nan reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0172_gray_alpha_reject.t](../../tests/loader/builtin/psd/0172_gray_alpha_reject.t) | Verify gray alpha reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0173_gray_rle_numeric.t](../../tests/loader/builtin/psd/0173_gray_rle_numeric.t) | Verify gray rle numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0174_gray_zip_numeric.t](../../tests/loader/builtin/psd/0174_gray_zip_numeric.t) | Verify gray zip numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0175_gray_psb_prediction_numeric.t](../../tests/loader/builtin/psd/0175_gray_psb_prediction_numeric.t) | Verify gray psb prediction numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0176_gray_byte_control.t](../../tests/loader/builtin/psd/0176_gray_byte_control.t) | Verify gray byte control. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0177_lab8_spot_numeric.t](../../tests/loader/builtin/psd/0177_lab8_spot_numeric.t) | Verify lab8 spot numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0178_lab16_spot_numeric.t](../../tests/loader/builtin/psd/0178_lab16_spot_numeric.t) | Verify lab16 spot numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0179_lab8_icc_numeric.t](../../tests/loader/builtin/psd/0179_lab8_icc_numeric.t) | Verify lab8 icc numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0180_lab16_icc_numeric.t](../../tests/loader/builtin/psd/0180_lab16_icc_numeric.t) | Verify lab16 icc numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0181_lab_icc_disabled_numeric.t](../../tests/loader/builtin/psd/0181_lab_icc_disabled_numeric.t) | Verify lab icc disabled numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0182_lab_savedmask_numeric.t](../../tests/loader/builtin/psd/0182_lab_savedmask_numeric.t) | Verify lab savedmask numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0183_lab_alternate_numeric.t](../../tests/loader/builtin/psd/0183_lab_alternate_numeric.t) | Verify lab alternate numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0184_lab_icc_domain_reject.t](../../tests/loader/builtin/psd/0184_lab_icc_domain_reject.t) | Verify lab icc domain reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0185_lab_icc_malformed_reject.t](../../tests/loader/builtin/psd/0185_lab_icc_malformed_reject.t) | Verify lab icc malformed reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0186_lab16_neutral_numeric.t](../../tests/loader/builtin/psd/0186_lab16_neutral_numeric.t) | Verify lab16 neutral numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0187_lab16_endpoints_numeric.t](../../tests/loader/builtin/psd/0187_lab16_endpoints_numeric.t) | Verify lab16 endpoints numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0188_lab32_spot_reject.t](../../tests/loader/builtin/psd/0188_lab32_spot_reject.t) | Verify lab32 spot reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0189_lab_alpha_reject.t](../../tests/loader/builtin/psd/0189_lab_alpha_reject.t) | Verify lab alpha reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0190_lab_rle_numeric.t](../../tests/loader/builtin/psd/0190_lab_rle_numeric.t) | Verify lab rle numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0191_lab_zip_numeric.t](../../tests/loader/builtin/psd/0191_lab_zip_numeric.t) | Verify lab zip numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0192_lab_psb_prediction_numeric.t](../../tests/loader/builtin/psd/0192_lab_psb_prediction_numeric.t) | Verify lab psb prediction numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0193_lab_spot_order_numeric.t](../../tests/loader/builtin/psd/0193_lab_spot_order_numeric.t) | Verify lab spot order numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0194_gray_spot_order_numeric.t](../../tests/loader/builtin/psd/0194_gray_spot_order_numeric.t) | Verify gray spot order numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0195_lab_truncated_reject.t](../../tests/loader/builtin/psd/0195_lab_truncated_reject.t) | Verify lab truncated reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0196_gray_spot_nan_reject.t](../../tests/loader/builtin/psd/0196_gray_spot_nan_reject.t) | Verify gray spot nan reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0197_lab_icc_effect_numeric.t](../../tests/loader/builtin/psd/0197_lab_icc_effect_numeric.t) | Verify lab icc effect numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 
 <!-- test-plan-end -->
 

@@ -118,6 +118,39 @@ psd_render_ink(sixel_color_def_t const *srgb, sixel_psd_ink_t const *ink,
     return 1;
 }
 
+int
+sixel_psd_lab_to_linear(float const *source, float *output, size_t count)
+{
+    sixel_color_def_t *srgb;
+    double rgb[3];
+    size_t i;
+    unsigned int j;
+    int result;
+
+    srgb = sixel_cdef_name("srgb");
+    if (srgb == NULL) {
+        return 0;
+    }
+    result = 0;
+    for (i = 0u; i < count; ++i) {
+        if (!psd_render_lab(srgb, source[i * 3u] * 100.0,
+                source[i * 3u + 1u] * 128.0,
+                source[i * 3u + 2u] * 128.0, rgb)) {
+            goto cleanup;
+        }
+        for (j = 0u; j < 3u; ++j) {
+            if (!isfinite(rgb[j]) || fabs(rgb[j]) > FLT_MAX) {
+                goto cleanup;
+            }
+            output[i * 3u + j] = (float)rgb[j];
+        }
+    }
+    result = 1;
+cleanup:
+    sixel_cdef_free(srgb);
+    return result;
+}
+
 static int
 psd_render_alternates(sixel_psd_color_data_t *data)
 {

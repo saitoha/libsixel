@@ -15,23 +15,28 @@
 
 static int
 psd_process_normalize(float *base, float *output, size_t count,
-                        unsigned int channels, int width, int height,
+                        unsigned int mode, int width, int height,
                         unsigned char const *icc, size_t icc_size)
 {
     sixel_cms_profile_t *source;
     sixel_cms_profile_t *destination;
     sixel_cms_transform_t *transform;
+    sixel_cms_color_space_t domain;
     double rgb[3];
     size_t i;
     unsigned int j;
     int result;
 
     if (icc == NULL) {
+        if (mode == 9u) {
+            return sixel_psd_lab_to_linear(base, output, count);
+        }
         for (i = 0u; i < count; ++i) {
             for (j = 0u; j < 3u; ++j) {
                 /* Unprofiled process colors keep the legacy canonical
                  * gamma convention. CMYK here has non-inverted inks. */
-                rgb[j] = channels == 3u ? base[i * 3u + j] :
+                rgb[j] = mode == 1u ? base[i] :
+                    mode == 3u ? base[i * 3u + j] :
                     (1.0 - base[i * 4u + j]) *
                     (1.0 - base[i * 4u + 3u]);
             }
@@ -55,20 +60,24 @@ psd_process_normalize(float *base, float *output, size_t count,
     result = 0;
     destination = NULL;
     transform = NULL;
-    if (channels == 3u &&
-        sixel_cms_get_color_space(source) == SIXEL_CMS_COLORSPACE_RGB) {
+    domain = mode == 1u ? SIXEL_CMS_COLORSPACE_GRAY :
+        mode == 9u ? SIXEL_CMS_COLORSPACE_LAB :
+        mode == 4u ? SIXEL_CMS_COLORSPACE_CMYK : SIXEL_CMS_COLORSPACE_RGB;
+    if (sixel_cms_get_color_space(source) != domain) {
+        goto cleanup;
+    }
+    if (mode != 4u) {
         /* This shared entry also owns ColorSync's float preparation; do
-         * not duplicate backend policy in the PSD interpretation stage. */
-        result = sixel_cms_convert_profile_to_linearrgb(
-            (unsigned char *)base, width, height,
-            SIXEL_PIXELFORMAT_RGBFLOAT32, source);
-        if (result) {
-            for (i = 0u; i < count * 3u; ++i) {
-                output[i] = base[i];
-            }
+         * not duplicate backend policy in the PSD interpretation stage.
+         * Gray is replicated for its existing packed-Gray adapter. */
+        for (i = 0u; i < count * 3u; ++i) {
+            output[i] = base[mode == 1u ? i / 3u : i];
         }
-    } else if (channels == 4u &&
-               sixel_cms_get_color_space(source) == SIXEL_CMS_COLORSPACE_CMYK) {
+        result = sixel_cms_convert_profile_to_linearrgb(
+            (unsigned char *)output, width, height,
+            mode == 9u ? SIXEL_PIXELFORMAT_CIELABFLOAT32 :
+                         SIXEL_PIXELFORMAT_RGBFLOAT32, source);
+    } else {
         destination = sixel_cms_create_linear_srgb_profile();
         if (destination != NULL) {
             transform = sixel_cms_create_transform(source,
@@ -79,6 +88,7 @@ psd_process_normalize(float *base, float *output, size_t count,
             result = sixel_cms_do_transform(transform, base, output, count);
         }
     }
+cleanup:
     sixel_cms_delete_transform(transform);
     sixel_cms_close_profile(destination);
     sixel_cms_close_profile(source);
@@ -122,7 +132,8 @@ sixel_psd_render_process_data(sixel_chunk_t const *chunk,
         mask == NULL || mask_size == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    channels = info->color_mode == 3u ? 3u :
+    channels = info->color_mode == 1u ? 1u :
+        info->color_mode == 3u || info->color_mode == 9u ? 3u :
         info->color_mode == 4u ? 4u : 0u;
     if (channels == 0u || info->channels <= channels) {
         return SIXEL_FALSE;
@@ -148,12 +159,17 @@ sixel_psd_render_process_data(sixel_chunk_t const *chunk,
         goto unsupported;
     }
     alpha = alpha_plane != UINT_MAX;
-    if (alpha && channels != 3u) {
-        /* CMYK's stored matte and profile order need their own contract;
-         * RGB source-coordinate recovery is not assumed to cover inks. */
+    if (alpha && info->color_mode != 3u) {
+        /* Other models' stored matte and profile order need independent
+         * contracts; RGB source recovery must not be applied to Lab/inks. */
         sixel_helper_set_additional_message(
             "builtin PSD: process spots with merged transparency unsupported");
         return SIXEL_BAD_INPUT;
+    }
+    if (info->color_mode == 9u && info->depth == 32u) {
+        /* The legacy Lab32 route guesses physical versus normalized units
+         * from each value. Do not extend that ambiguous rule to spots. */
+        goto unsupported;
     }
     if (!sixel_psd_prepare_spots(&data, palette)) {
         goto unsupported;
@@ -172,7 +188,7 @@ sixel_psd_render_process_data(sixel_chunk_t const *chunk,
     stride = info->depth / 8u;
     count = plane_bytes / stride;
     status = SIXEL_BAD_INTEGER_OVERFLOW;
-    if (count > SIZE_MAX / (channels * sizeof(float))) {
+    if (count > SIZE_MAX / (4u * sizeof(float))) {
         goto cleanup;
     }
     base = sixel_allocator_malloc(info->allocator,
@@ -213,11 +229,20 @@ sixel_psd_render_process_data(sixel_chunk_t const *chunk,
                     goto cleanup;
                 }
             }
+            if (info->color_mode == 9u && j != 0u) {
+                /* PSD opponent words use 256 codes per Lab unit with
+                 * neutral at 32768; expanding Lab8 by 257 is incorrect.
+                 * L uses the full unsigned range, unlike ICC v2 PCS L.
+                 * The facade stores physical a/b divided by 128. */
+                sample = info->depth == 16u ?
+                    (sample * 65535.0 - 32768.0) / 32768.0 :
+                    (sample * 255.0 - 128.0) / 128.0;
+            }
             base[i * channels + j] =
                 (float)(channels == 4u ? 1.0 - sample : sample);
         }
     }
-    if (!psd_process_normalize(base, output, count, channels,
+    if (!psd_process_normalize(base, output, count, info->color_mode,
             (int)info->width, (int)info->height, icc, icc_size)) {
         sixel_helper_set_additional_message(
             "builtin PSD: process color conversion failed");
