@@ -164,6 +164,7 @@ typedef struct sixel_assessment_metrics {
     float clip_b_rel;
     float delta_chroma_mean;
     float delta_e00_mean;
+    float delta_e00_max;
     float gmsd_value;
     float psnr_y;
 } sixel_assessment_metrics_t;
@@ -2671,6 +2672,10 @@ evaluate_metrics(sixel_assessment_t *assessment,
     size_t pixels;
     size_t iter;
     double sum_value;
+    double maximum;
+    static double const thresholds[5] = {1, 5, 10, 20, 50};
+    size_t peak;
+    int threshold;
 
     int want_ms_ssim;
     int want_high_freq_out;
@@ -2686,6 +2691,7 @@ evaluate_metrics(sixel_assessment_t *assessment,
     int want_clip_rel;
     int want_delta_chroma_mean;
     int want_delta_e00_mean;
+    int want_delta_e00_max;
     int want_gmsd;
     int want_psnr_y;
     int need_luma;
@@ -2786,6 +2792,8 @@ evaluate_metrics(sixel_assessment_t *assessment,
                               SIXEL_ASSESSMENT_METRIC_DELTA_CHROMA);
     want_delta_e00_mean = assessment_metric_selected(assessment,
                            SIXEL_ASSESSMENT_METRIC_DELTA_E00);
+    want_delta_e00_max = assessment_metric_selected(assessment,
+                           SIXEL_ASSESSMENT_METRIC_DELTA_E00_MAX);
     want_gmsd = assessment_metric_selected(assessment,
                  SIXEL_ASSESSMENT_METRIC_GMSD);
     want_psnr_y = assessment_metric_selected(assessment,
@@ -2793,7 +2801,8 @@ evaluate_metrics(sixel_assessment_t *assessment,
     need_luma = want_ms_ssim || want_high_freq_out || want_high_freq_ref ||
                 want_stripe_out || want_stripe_ref || want_banding_run_rel ||
                 want_banding_grad_rel || want_gmsd || want_psnr_y;
-    need_lab = want_delta_chroma_mean || want_delta_e00_mean;
+    need_lab = want_delta_chroma_mean || want_delta_e00_mean ||
+        want_delta_e00_max;
     need_clip = want_clip_ref || want_clip_out;
 
     if (need_luma != 0) {
@@ -2961,16 +2970,47 @@ evaluate_metrics(sixel_assessment_t *assessment,
                                    SIXEL_ASSESSMENT_METRIC_DELTA_CHROMA,
                                    metrics.delta_chroma_mean);
         }
-        if (want_delta_e00_mean) {
+        if (want_delta_e00_mean || want_delta_e00_max) {
             de00 = deltaE00(&ref_lab, &out_lab, pixels);
             sum_value = 0.0;
+            maximum = 0.0;
+            peak = 0;
+            memset(assessment->delta_e00_above, 0,
+                   sizeof(assessment->delta_e00_above));
             for (iter = 0; iter < pixels; ++iter) {
                 sum_value += de00.values[iter];
+                if (want_delta_e00_max) {
+                    /* An undefined sample must not become a valid zero
+                     * maximum just because comparisons with NaN are false.
+                     * metric_mark omits nonfinite results and diagnostics. */
+                    if (!isfinite((double)de00.values[iter])) {
+                        maximum = NAN;
+                    }
+                    if (de00.values[iter] > maximum) {
+                        maximum = de00.values[iter];
+                        peak = iter;
+                    }
+                    for (threshold = 0; threshold < 5; ++threshold) {
+                        if (de00.values[iter] > thresholds[threshold]) {
+                            ++assessment->delta_e00_above[threshold];
+                        }
+                    }
+                }
             }
-            metrics.delta_e00_mean = (float)(sum_value / (double)pixels);
-            assessment_metric_mark(&metrics,
-                                   SIXEL_ASSESSMENT_METRIC_DELTA_E00,
-                                   metrics.delta_e00_mean);
+            if (want_delta_e00_mean) {
+                metrics.delta_e00_mean = (float)(sum_value / (double)pixels);
+                assessment_metric_mark(&metrics,
+                                       SIXEL_ASSESSMENT_METRIC_DELTA_E00,
+                                       metrics.delta_e00_mean);
+            }
+            if (want_delta_e00_max) {
+                metrics.delta_e00_max = (float)maximum;
+                assessment->delta_e00_max_x = (int)(peak % (size_t)width);
+                assessment->delta_e00_max_y = (int)(peak / (size_t)width);
+                assessment_metric_mark(&metrics,
+                                       SIXEL_ASSESSMENT_METRIC_DELTA_E00_MAX,
+                                       metrics.delta_e00_max);
+            }
         }
     }
     if (want_gmsd && need_luma) {
@@ -3100,6 +3140,7 @@ static const MetricDescriptor g_metric_table[] = {
     {SIXEL_ASSESSMENT_METRIC_CLIP_B_REL, "ClipRate_B_rel"},
     {SIXEL_ASSESSMENT_METRIC_DELTA_CHROMA, "Δ Chroma_mean"},
     {SIXEL_ASSESSMENT_METRIC_DELTA_E00, "Δ E00_mean"},
+    {SIXEL_ASSESSMENT_METRIC_DELTA_E00_MAX, "DE00_max"},
     {SIXEL_ASSESSMENT_METRIC_GMSD, "GMSD"},
     {SIXEL_ASSESSMENT_METRIC_PSNR_Y, "PSNR_Y"},
     {SIXEL_ASSESSMENT_METRIC_REGION_MEAN, "DE00_region_mean"},
@@ -3225,6 +3266,10 @@ store_metrics(sixel_assessment_t *assessment,
                           mask,
                           SIXEL_ASSESSMENT_METRIC_DELTA_E00,
                           metrics->delta_e00_mean);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_DELTA_E00_MAX,
+                          metrics->delta_e00_max);
     store_metric_if_valid(results,
                           mask,
                           SIXEL_ASSESSMENT_METRIC_GMSD,
@@ -3775,6 +3820,8 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
     need_xyz = need_regions || assessment_metric_selected(assessment,
         SIXEL_ASSESSMENT_METRIC_DELTA_E00)
         || assessment_metric_selected(assessment,
+        SIXEL_ASSESSMENT_METRIC_DELTA_E00_MAX)
+        || assessment_metric_selected(assessment,
         SIXEL_ASSESSMENT_METRIC_DELTA_CHROMA);
     if (need_xyz) {
         buffers->ref_xyz = (double *)malloc(pixels * 3 * sizeof(double));
@@ -3950,6 +3997,26 @@ assessment_emit_color_context(sixel_assessment_t *assessment,
         assessment->signal_bytes ? "0..1" : "extended, nominal 0..1",
         assessment->grayscale ? "true" : "false",
         assessment->region_window, assessment->region_count);
+    if (n < 0 || (size_t)n >= sizeof(line)) {
+        return SIXEL_RUNTIME_ERROR;
+    }
+    callback(line, (size_t)n, user_data);
+    if ((assessment->results_valid_mask & SIXEL_ASSESSMENT_METRIC_MASK(
+            SIXEL_ASSESSMENT_METRIC_DELTA_E00_MAX)) != 0u) {
+        n = snprintf(line, sizeof(line),
+            "    \"pixel_delta_e00\": {\n"
+            "      \"maximum_xy\": [%d, %d],\n"
+            "      \"strictly_above\": {\"1\": %zu, \"5\": %zu, "
+            "\"10\": %zu, \"20\": %zu, \"50\": %zu}\n"
+            "    },\n",
+            assessment->delta_e00_max_x, assessment->delta_e00_max_y,
+            assessment->delta_e00_above[0], assessment->delta_e00_above[1],
+            assessment->delta_e00_above[2], assessment->delta_e00_above[3],
+            assessment->delta_e00_above[4]);
+    } else {
+        n = snprintf(line, sizeof(line),
+                     "    \"pixel_delta_e00\": null,\n");
+    }
     if (n < 0 || (size_t)n >= sizeof(line)) {
         return SIXEL_RUNTIME_ERROR;
     }

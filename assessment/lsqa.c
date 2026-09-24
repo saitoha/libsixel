@@ -904,6 +904,7 @@ typedef struct Metrics {
     float clip_b_rel;
     float delta_chroma_mean;
     float delta_e00_mean;
+    float delta_e00_max;
     float gmsd_value;
     float psnr_y;
     float region_mean;
@@ -968,6 +969,8 @@ static const MetricBinding g_metric_bindings[] = {
      SIXEL_ASSESSMENT_METRIC_DELTA_CHROMA},
     {"Δ E00_mean", offsetof(Metrics, delta_e00_mean),
      SIXEL_ASSESSMENT_METRIC_DELTA_E00},
+    {"DE00_max", offsetof(Metrics, delta_e00_max),
+     SIXEL_ASSESSMENT_METRIC_DELTA_E00_MAX},
     {"GMSD", offsetof(Metrics, gmsd_value),
      SIXEL_ASSESSMENT_METRIC_GMSD},
     {"PSNR_Y", offsetof(Metrics, psnr_y),
@@ -1031,6 +1034,8 @@ static const MetricSpec sixel_metric_specs[] = {
     {"DELTA_CHROMA", "Δ Chroma_mean",
      SIXEL_ASSESSMENT_METRIC_DELTA_CHROMA},
     {"DELTA_E00", "Δ E00_mean", SIXEL_ASSESSMENT_METRIC_DELTA_E00},
+    {"DE00_max", "DE00_max", SIXEL_ASSESSMENT_METRIC_DELTA_E00_MAX},
+    {"DELTA_E00_MAX", "DE00_max", SIXEL_ASSESSMENT_METRIC_DELTA_E00_MAX},
     {"GMSD", "GMSD", SIXEL_ASSESSMENT_METRIC_GMSD},
     {"PSNR_Y", "PSNR_Y", SIXEL_ASSESSMENT_METRIC_PSNR_Y},
 };
@@ -1418,6 +1423,7 @@ verbose_print(const Metrics *m)
         {"ClipRate_B_rel", m->clip_b_rel},
         {"Δ Chroma_mean", m->delta_chroma_mean},
         {"Δ E00_mean", m->delta_e00_mean},
+        {"DE00_max", m->delta_e00_max},
         {"GMSD", m->gmsd_value},
         {"PSNR_Y", m->psnr_y},
     };
@@ -2077,7 +2083,8 @@ static cli_option_help_t const g_option_help_table[] = {
         'm',
         "metrics",
         "-m NAME, --metrics=NAME    limit computation to NAME and print\n"
-        "                           only that value.\n"
+        "                           only that value. DELTA_E00: mean;\n"
+        "                           DE00_max: maximum pixel color error.\n"
     },
     {
         'b',

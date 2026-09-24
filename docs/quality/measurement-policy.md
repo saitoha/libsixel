@@ -48,7 +48,7 @@ characterize. Depending on the defect, useful measurements include:
 
 See [color-aware evaluation](color-evaluation.md) for input interpretation, common XYZ D50 measurement, comparison signal controls, and regional color means. Wide-gamut PNG loading remains a separate integration gate.
 
-`lsqa` reports two complementary per-pixel color summaries:
+`lsqa` reports complementary per-pixel color summaries:
 
 - `Δ E00_mean` is the arithmetic mean of CIEDE2000 color difference after
   converting the reference and output pixels to CIELAB. It combines
@@ -62,6 +62,8 @@ primary explanatory curves. MS-SSIM spatially pools a luminance comparison and
 can conceal the direct color error being investigated. Retain MS-SSIM as a
 general perceptual gate, and use PSNR-Y when a separate luma error view is
 required.
+
+For sparse corruption, also inspect the maximum per-pixel color error and its location and tail counts, as defined in [color-aware evaluation](color-evaluation.md#per-pixel-and-regional-differences). Spatial and arithmetic means can hide isolated faults. In dither comparisons, inspect regional average colors alongside individual errors: intended high-frequency modulation is not automatically an artifact. A fixed palette has the same convex hull with or without error clamping; removing clamps may improve attainable spatial averages within that hull, but does not guarantee better local structure.
 
 A secondary metric is diagnostic unless its interpretation and threshold are
 defined for the tested behavior. Do not select whichever metric makes a change

@@ -80,6 +80,8 @@ Explicit SIXEL inputs use linear float32 after interpretation. Unpainted pixels 
 
 `-m DELTA_E00` prints `Δ E00_mean`, the arithmetic mean of per-pixel CIEDE2000. `Δ Chroma_mean` averages absolute differences in CIELAB chroma magnitude. Both are lower-is-better and use the common D50 white.
 
+`-m DE00_max` (alias `DELTA_E00_MAX`) reports the maximum per-pixel CIEDE2000 before any spatial averaging. In the full JSON report, `color_evaluation.pixel_delta_e00` gives the zero-based `maximum_xy` (first row-major occurrence for ties; `[0, 0]` when all errors are zero) and counts strictly above 1, 5, 10, 20 and 50. These fields are null when the maximum metric was not computed. Unlike a mean, the maximum cannot hide an isolated black or white fault among many correct pixels. Normal dithering can also produce large individual errors: compare the tail counts, locations and regional means under identical settings instead of imposing a universal maximum threshold.
+
 The regional metrics first average XYZ within each tile, convert the two mean colors to Lab, then compute CIEDE2000:
 
 - `-m DE00_region_mean`: area-weighted mean of tile color differences.
@@ -141,7 +143,6 @@ See the [measurement policy](measurement-policy.md) for unchanged sRGB MS-SSIM g
 | CE-28 | Two stdin readers are rejected. | [tests/quality_gate/cms/0030_dual_stdin_error.t](../../tests/quality_gate/cms/0030_dual_stdin_error.t) |
 | CE-29 | Unsupported window sizes are rejected. | [tests/quality_gate/cms/0031_invalid_region_window_error.t](../../tests/quality_gate/cms/0031_invalid_region_window_error.t) |
 | CE-30 | Explicit target definition and dequantization are rejected together. | [tests/quality_gate/cms/0032_explicit_dequantize_error.t](../../tests/quality_gate/cms/0032_explicit_dequantize_error.t) |
-
 | CE-31 | Direct auto target retains paint-time colors. | [tests/quality_gate/direct/0001_auto_target.t](../../tests/quality_gate/direct/0001_auto_target.t) |
 | CE-32 | Direct auto reference retains paint-time colors. | [tests/quality_gate/direct/0002_auto_reference.t](../../tests/quality_gate/direct/0002_auto_reference.t) |
 | CE-33 | Direct explicit sRGB preserves palette redefinition. | [tests/quality_gate/direct/0003_srgb_target.t](../../tests/quality_gate/direct/0003_srgb_target.t) |
@@ -181,6 +182,13 @@ See the [measurement policy](measurement-policy.md) for unchanged sRGB MS-SSIM g
 | CE-67 | Direct selective_blur retains unpainted background. | [tests/quality_gate/direct/0037_background_selective_blur.t](../../tests/quality_gate/direct/0037_background_selective_blur.t) |
 | CE-68 | Direct auto target accepts stdin. | [tests/quality_gate/direct/0038_target_auto_stdin.t](../../tests/quality_gate/direct/0038_target_auto_stdin.t) |
 | CE-69 | Direct P3 reference accepts stdin. | [tests/quality_gate/direct/0039_reference_p3_stdin.t](../../tests/quality_gate/direct/0039_reference_p3_stdin.t) |
+| CE-70 | Maximum-only selection reports a sparse black/white error of 100, its position and tail counts. | [tests/processing/assessment/0013_pixel_delta_peak.t](../../tests/processing/assessment/0013_pixel_delta_peak.t) |
+| CE-71 | A single corrupt pixel has mean 100/4096 but maximum 100. | [tests/processing/assessment/0014_pixel_delta_mean.t](../../tests/processing/assessment/0014_pixel_delta_mean.t) |
+| CE-72 | Equal maxima select the first position; repeat analysis clears previous statistics. | [tests/processing/assessment/0015_pixel_delta_reset.t](../../tests/processing/assessment/0015_pixel_delta_reset.t) |
+| CE-73 | CLI maximum-only selection. | [tests/quality_gate/cms/0035_pixel_delta_max.t](../../tests/quality_gate/cms/0035_pixel_delta_max.t) |
+| CE-74 | The DELTA_E00_MAX alias selects the same metric. | [tests/quality_gate/cms/0036_pixel_delta_max_alias.t](../../tests/quality_gate/cms/0036_pixel_delta_max_alias.t) |
+| CE-75 | Full JSON includes maximum, position and tail counts. | [tests/quality_gate/cms/0037_pixel_delta_json.t](../../tests/quality_gate/cms/0037_pixel_delta_json.t) |
+| CE-76 | Neutral sRGB samples independently exercise each tail threshold. | [tests/processing/assessment/0016_pixel_delta_tails.t](../../tests/processing/assessment/0016_pixel_delta_tails.t) |
 
 ### Quality regression tests
 

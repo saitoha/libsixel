@@ -98,7 +98,7 @@ sixel_assessment_frame_get_pixels_view(sixel_frame_t const *frame,
 #define SIXEL_ASSESSMENT_INDEX_MASK      0x00000fff
 #define SIXEL_ASSESSMENT_INDEX(value) \
     ((value) & SIXEL_ASSESSMENT_INDEX_MASK)
-#define SIXEL_ASSESSMENT_METRIC_COUNT    27
+#define SIXEL_ASSESSMENT_METRIC_COUNT    28
 
 #define SIXEL_ASSESSMENT_METRIC_MS_SSIM \
     (SIXEL_ASSESSMENT_KIND_RELATIVE | \
@@ -182,6 +182,9 @@ sixel_assessment_frame_get_pixels_view(sixel_frame_t const *frame,
 #define SIXEL_ASSESSMENT_METRIC_REGION_MAX \
     (SIXEL_ASSESSMENT_KIND_RELATIVE | \
      SIXEL_ASSESSMENT_SCOPE_COMPOSITE | 0x001a)
+#define SIXEL_ASSESSMENT_METRIC_DELTA_E00_MAX \
+    (SIXEL_ASSESSMENT_KIND_RELATIVE | \
+     SIXEL_ASSESSMENT_SCOPE_COMPOSITE | 0x001b)
 
 #define SIXEL_ASSESSMENT_METRIC_MASK(metric_id) \
     (1u << SIXEL_ASSESSMENT_INDEX(metric_id))
@@ -264,6 +267,11 @@ struct sixel_assessment {
     int grayscale;
     int region_window;
     size_t region_count;
+    /* First row-major maximum and counts strictly above 1, 5, 10, 20, 50.
+     * Valid only with DELTA_E00_MAX; computed before spatial averaging. */
+    int delta_e00_max_x;
+    int delta_e00_max_y;
+    size_t delta_e00_above[5];
     int current_space[2];
     int current_format[2];
     char const *color_spec[2];

@@ -110,6 +110,7 @@ int test_qa_0009(int argc, char **argv);
 int test_qa_0010(int argc, char **argv);
 int test_qa_0011(int argc, char **argv);
 int test_qa_0012(int argc, char **argv);
+int test_qa_0013(int argc, char **argv);
 int test_cdef_0001(int argc, char **argv);
 int test_cdef_0002(int argc, char **argv);
 int test_cdef_0003(int argc, char **argv);
@@ -2298,6 +2299,7 @@ static test_entry_t const test_entries[] = {
     { "assessment/0010_frame_linear_din99d", test_qa_0010 },
     { "assessment/0011_spec_parse_valid", test_qa_0011 },
     { "assessment/0012_spec_parse_invalid", test_qa_0012 },
+    { "assessment/0013_pixel_delta_peak", test_qa_0013 },
     { "cms/0001_named_xyz", test_cdef_0001 },
     { "cms/0002_simple_power", test_cdef_0002 },
     { "cms/0003_icc_source_lifetime", test_cdef_0003 },

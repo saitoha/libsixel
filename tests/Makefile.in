@@ -124,6 +124,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/assessment/0010_frame_linear_din99d.c \
 	processing/assessment/0011_spec_parse_valid.c \
 	processing/assessment/0012_spec_parse_invalid.c \
+	processing/assessment/0013_pixel_delta_peak.c \
 	processing/cms/0011_separate_intents.c \
 	processing/cms/0012_engine_independence.c \
 	processing/cms/0013_queued_transform_lifetime.c \
@@ -1805,6 +1806,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0010_frame_linear_din99d.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0011_spec_parse_valid.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0012_spec_parse_invalid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0013_pixel_delta_peak.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0011_separate_intents.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0012_engine_independence.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0013_queued_transform_lifetime.$(OBJEXT) \
@@ -4704,6 +4706,7 @@ am__depfiles_remade =  \
 	processing/assessment/$(DEPDIR)/test_runner-0010_frame_linear_din99d.Po \
 	processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Po \
 	processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Po \
 	processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po \
 	processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po \
 	processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po \
@@ -5775,6 +5778,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_FRAME_LINEAR_DIN99D \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_SPEC_PARSE_VALID \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_SPEC_PARSE_INVALID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_PIXEL_DELTA_PEAK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_EXTENDED_FAILURE_ATOMIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_INVALID_RGB_DEFINITION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_ICC_LENGTH_OWNERSHIP \
@@ -7447,6 +7451,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0010_frame_linear_din99d.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0011_spec_parse_valid.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0012_spec_parse_invalid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0013_pixel_delta_peak.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0011_separate_intents.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0012_engine_independence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0013_queued_transform_lifetime.c \
@@ -9358,6 +9363,9 @@ processing/assessment/test_runner-0011_spec_parse_valid.$(OBJEXT):  \
 	processing/assessment/$(am__dirstamp) \
 	processing/assessment/$(DEPDIR)/$(am__dirstamp)
 processing/assessment/test_runner-0012_spec_parse_invalid.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0013_pixel_delta_peak.$(OBJEXT):  \
 	processing/assessment/$(am__dirstamp) \
 	processing/assessment/$(DEPDIR)/$(am__dirstamp)
 processing/cms/$(am__dirstamp):
@@ -15743,6 +15751,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0010_frame_linear_din99d.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po@am__quote@ # am--include-marker
@@ -16379,6 +16388,20 @@ processing/assessment/test_runner-0012_spec_parse_invalid.obj: processing/assess
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0012_spec_parse_invalid.c' object='processing/assessment/test_runner-0012_spec_parse_invalid.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0012_spec_parse_invalid.obj `if test -f 'processing/assessment/0012_spec_parse_invalid.c'; then $(CYGPATH_W) 'processing/assessment/0012_spec_parse_invalid.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0012_spec_parse_invalid.c'; fi`
+
+processing/assessment/test_runner-0013_pixel_delta_peak.o: processing/assessment/0013_pixel_delta_peak.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0013_pixel_delta_peak.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Tpo -c -o processing/assessment/test_runner-0013_pixel_delta_peak.o `test -f 'processing/assessment/0013_pixel_delta_peak.c' || echo '$(srcdir)/'`processing/assessment/0013_pixel_delta_peak.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Tpo processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0013_pixel_delta_peak.c' object='processing/assessment/test_runner-0013_pixel_delta_peak.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0013_pixel_delta_peak.o `test -f 'processing/assessment/0013_pixel_delta_peak.c' || echo '$(srcdir)/'`processing/assessment/0013_pixel_delta_peak.c
+
+processing/assessment/test_runner-0013_pixel_delta_peak.obj: processing/assessment/0013_pixel_delta_peak.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0013_pixel_delta_peak.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Tpo -c -o processing/assessment/test_runner-0013_pixel_delta_peak.obj `if test -f 'processing/assessment/0013_pixel_delta_peak.c'; then $(CYGPATH_W) 'processing/assessment/0013_pixel_delta_peak.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0013_pixel_delta_peak.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Tpo processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0013_pixel_delta_peak.c' object='processing/assessment/test_runner-0013_pixel_delta_peak.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0013_pixel_delta_peak.obj `if test -f 'processing/assessment/0013_pixel_delta_peak.c'; then $(CYGPATH_W) 'processing/assessment/0013_pixel_delta_peak.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0013_pixel_delta_peak.c'; fi`
 
 processing/cms/test_runner-0011_separate_intents.o: processing/cms/0011_separate_intents.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0011_separate_intents.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Tpo -c -o processing/cms/test_runner-0011_separate_intents.o `test -f 'processing/cms/0011_separate_intents.c' || echo '$(srcdir)/'`processing/cms/0011_separate_intents.c
@@ -40571,6 +40594,7 @@ distclean: distclean-am
 	-rm -f processing/assessment/$(DEPDIR)/test_runner-0010_frame_linear_din99d.Po
 	-rm -f processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Po
 	-rm -f processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Po
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po
@@ -42239,6 +42263,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/assessment/$(DEPDIR)/test_runner-0010_frame_linear_din99d.Po
 	-rm -f processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Po
 	-rm -f processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Po
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po
