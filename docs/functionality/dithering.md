@@ -34,6 +34,8 @@ kernels. The current base methods are:
   perturbations;
 - `interframe` and `stbn` provide animation-aware temporal behavior.
 
+The [dither clamp policy](clamp-policy.md) controls signed error-feedback headroom independently of the selected kernel.
+
 Methods have suboptions for concerns such as scan order, kernel variants,
 strength, temporal sources, and scene changes. Use `img2sixel -H` or the
 [`img2sixel(1)` manual](../../converters/img2sixel.1) as the detailed option
@@ -493,7 +495,7 @@ frame `t`, libsixel adds the previous stored residual before lookup, then
 stores the new residual for the next frame:
 
 ```text
-candidate[t,p] = clamp(source[t,p] + frame_error[t-1,p])
+candidate[t,p] = limit_feedback(source[t,p], frame_error[t-1,p])
 index[t,p] = nearest_palette_index(candidate[t,p])
 frame_error[t,p] = candidate[t,p] - palette[index[t,p]]
 ```
@@ -526,7 +528,7 @@ position-indexed perturbation before palette lookup. For paths that enable
 that bias, its high-level candidate is:
 
 ```text
-candidate[t,p] = clamp(source[t,p] + frame_error[t-1,p]
+candidate[t,p] = limit_feedback(source[t,p], frame_error[t-1,p]
                        + strength * sample(t, p, channel))
 ```
 

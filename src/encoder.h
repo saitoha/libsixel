@@ -242,6 +242,11 @@ struct sixel_encoder {
     int cover_policy_grow;
     int cover_policy_mode_override;
     int cover_policy_mode;
+    /* Dither-only feedback control; never used by CMS or colorspaces. */
+    int clamp_policy;
+    int clamp_policy_override;
+    double clamp_threshold;
+    int clamp_threshold_override;
     int snap_policy_override;
     int snap_policy;
     int snap_policy_timing_override;

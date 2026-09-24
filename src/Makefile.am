@@ -183,6 +183,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-policy-x-dither.h \
                 $(srcdir)/dither-policy-bluenoise.h \
                 $(srcdir)/dither-policy-interframe.h \
+                $(srcdir)/dither-clamp.c \
+                $(srcdir)/dither-clamp.h \
                 $(srcdir)/dither-common-pipeline.c \
                 $(srcdir)/dither-common-pipeline.h \
                 $(srcdir)/gpu-dequant.c \

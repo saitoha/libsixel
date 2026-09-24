@@ -385,6 +385,25 @@ Supported suboptions:
 .br
 The corresponding \fBSIXEL_PALETTE_SNAP_*\fP environments provide defaults.
 .TP 5
+.B \-0 \fIPOLICY\fP, \-\-clamp\-policy=\fIPOLICY\fP
+limit error-diffusion feedback. Values are \fBauto\fP, \fBsoft\fP,
+\fBhard\fP and \fBnone\fP. The default \fBauto\fP selects \fBsoft\fP.
+This option does not clamp loader, CMS, resize or color-space conversions.
+Original extended-range source coordinates remain intact.
+.br
+\fBsoft\fP scales the correction vector to fit the source-containing
+working-coordinate bounds plus headroom. \fBhard\fP clips channels to the
+source-containing bounds without headroom. \fBnone\fP leaves feedback open.
+.br
+Suboption \fBthreshold\fP (short form \fBTFACTOR\fP) accepts a finite
+value from 1 through 16; default 1.01. The soft margin per channel is
+(threshold - 1) times that channel's nominal working-coordinate range.
+The threshold is accepted but inactive with hard and none.
+.br
+\fBSIXEL_DITHER_CLAMP_POLICY\fP and \fBSIXEL_DITHER_CLAMP_THRESHOLD\fP
+provide defaults. Explicit options take precedence. A repeated option
+resets its suboptions before applying environment defaults again.
+.TP 5
 .B \-m \fIFILE\fP, \-\-mapfile=\fIFILE\fP
 transform image colors to match this set of colors. Accepts image files
 and palette files in Adobe Color Table (*.act), JASC/RIFF PAL (*.pal),
@@ -2354,6 +2373,14 @@ emphasise L* weight in Lab-family distances before snapping (0.0-1.0).
 .br
 emphasise L* weight during final merge distances independently of snap tuning
 (0.0-1.0).
+.TP 5
+.B SIXEL_DITHER_CLAMP_POLICY
+Default error-diffusion clamp policy: auto, soft, hard or none.
+The \fB-0\fP option takes precedence.
+.TP 5
+.B SIXEL_DITHER_CLAMP_THRESHOLD
+Default soft headroom factor, from 1 through 16; default 1.01.
+An explicit \fB-0 soft:threshold=FACTOR\fP takes precedence.
 .TP 5
 .B SIXEL_PALETTE_SNAP_POLICY
 .br

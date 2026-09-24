@@ -164,6 +164,41 @@ int test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv);
 int test_filter_0012_filter_encode_6delta_plane(int argc, char **argv);
 int test_filter_0013_filter_encode_6delta_keycolor(int argc, char **argv);
 int test_filter_0014_filter_sample_solid(int argc, char **argv);
+int test_clamp_0001(int argc, char **argv);
+int test_clamp_0002(int argc, char **argv);
+int test_clamp_0003(int argc, char **argv);
+int test_clamp_0004(int argc, char **argv);
+int test_clamp_0005(int argc, char **argv);
+int test_clamp_0006(int argc, char **argv);
+int test_clamp_0007(int argc, char **argv);
+int test_clamp_0008(int argc, char **argv);
+int test_clamp_0009(int argc, char **argv);
+int test_clamp_0010(int argc, char **argv);
+int test_clamp_0011(int argc, char **argv);
+int test_clamp_0012(int argc, char **argv);
+int test_clamp_0013(int argc, char **argv);
+int test_clamp_0014(int argc, char **argv);
+int test_clamp_0015(int argc, char **argv);
+int test_clamp_0016(int argc, char **argv);
+int test_clamp_0017(int argc, char **argv);
+int test_clamp_0018(int argc, char **argv);
+int test_clamp_0019(int argc, char **argv);
+int test_clamp_0020(int argc, char **argv);
+int test_clamp_0021(int argc, char **argv);
+int test_clamp_0022(int argc, char **argv);
+int test_clamp_0023(int argc, char **argv);
+int test_clamp_0024(int argc, char **argv);
+int test_clamp_0025(int argc, char **argv);
+int test_clamp_0026(int argc, char **argv);
+int test_clamp_0027(int argc, char **argv);
+int test_clamp_0028(int argc, char **argv);
+int test_clamp_0029(int argc, char **argv);
+int test_clamp_0030(int argc, char **argv);
+int test_clamp_0031(int argc, char **argv);
+int test_clamp_0033(int argc, char **argv);
+int test_clamp_0034(int argc, char **argv);
+int test_clamp_0035(int argc, char **argv);
+int test_clamp_0032(int argc, char **argv);
 int test_filter_0015_filter_dither_6delta_lso2(int argc, char **argv);
 int test_perturb_0002_api(int argc, char **argv);
 int test_perturb_0001_weights(int argc, char **argv);
@@ -1994,6 +2029,41 @@ static test_entry_t const test_entries[] = {
     { "perturb/0018_perturb_keep_lookup", test_perturb_0018_keep_lookup },
     { "perturb/0001_perturb_weights", test_perturb_0001_weights },
     { "perturb/0002_perturb_api", test_perturb_0002_api },
+    { "dither/clamp/0001_soft_vector", test_clamp_0001 },
+    { "dither/clamp/0002_auto_soft", test_clamp_0002 },
+    { "dither/clamp/0003_hard_channels", test_clamp_0003 },
+    { "dither/clamp/0004_none_extended", test_clamp_0004 },
+    { "dither/clamp/0005_source_fixed_point", test_clamp_0005 },
+    { "dither/clamp/0006_negative_headroom", test_clamp_0006 },
+    { "dither/clamp/0007_zero_headroom", test_clamp_0007 },
+    { "dither/clamp/0008_kernel_fs", test_clamp_0008 },
+    { "dither/clamp/0009_kernel_atkinson", test_clamp_0009 },
+    { "dither/clamp/0010_kernel_jajuni", test_clamp_0010 },
+    { "dither/clamp/0011_kernel_stucki", test_clamp_0011 },
+    { "dither/clamp/0012_kernel_burkes", test_clamp_0012 },
+    { "dither/clamp/0013_kernel_sierra1", test_clamp_0013 },
+    { "dither/clamp/0014_kernel_sierra2", test_clamp_0014 },
+    { "dither/clamp/0015_kernel_sierra3", test_clamp_0015 },
+    { "dither/clamp/0016_kernel_lso2", test_clamp_0016 },
+    { "dither/clamp/0017_keep_fs", test_clamp_0017 },
+    { "dither/clamp/0018_keep_atkinson", test_clamp_0018 },
+    { "dither/clamp/0019_keep_jajuni", test_clamp_0019 },
+    { "dither/clamp/0020_keep_stucki", test_clamp_0020 },
+    { "dither/clamp/0021_keep_burkes", test_clamp_0021 },
+    { "dither/clamp/0022_keep_sierra1", test_clamp_0022 },
+    { "dither/clamp/0023_keep_sierra2", test_clamp_0023 },
+    { "dither/clamp/0024_keep_sierra3", test_clamp_0024 },
+    { "dither/clamp/0025_keep_lso2", test_clamp_0025 },
+    { "dither/clamp/0026_option_default", test_clamp_0026 },
+    { "dither/clamp/0027_option_short", test_clamp_0027 },
+    { "dither/clamp/0028_option_repeat", test_clamp_0028 },
+    { "dither/clamp/0029_option_nan", test_clamp_0029 },
+    { "dither/clamp/0030_option_minimum", test_clamp_0030 },
+    { "dither/clamp/0031_option_maximum", test_clamp_0031 },
+    { "dither/clamp/0033_lso2_oklab_lightness", test_clamp_0033 },
+    { "dither/clamp/0034_lso2_cielab_lightness", test_clamp_0034 },
+    { "dither/clamp/0035_lso2_din99d_lightness", test_clamp_0035 },
+    { "dither/clamp/0032_kernel_interframe", test_clamp_0032 },
     { "filter/0015_filter_dither_6delta_lso2",
       test_filter_0015_filter_dither_6delta_lso2 },
     { "filter/0016_filter_dither_6delta_jajuni",

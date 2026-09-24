@@ -555,6 +555,24 @@ _img2sixel()
             -- "${base}" ) )
     }
 
+    _img2sixel_complete_clamp_policy()
+    {
+        local item prefix candidate
+
+        if [[ ${cur} == *:* ]]; then
+            item="${cur##*:}"
+            prefix="${cur%"${item}"}"
+            for candidate in threshold= threshold=1 threshold=1.01 \
+                threshold=1.025 threshold=1.05 threshold=1.1 threshold=1.2 \
+                T1.01; do
+                [[ ${candidate} == ${item}* ]] || continue
+                COMPREPLY+=("${prefix}${candidate}")
+            done
+            return 0
+        fi
+        COMPREPLY=( $( compgen -W 'auto soft hard none' -- "${cur}" ) )
+    }
+
     _img2sixel_complete_snap_policy()
     {
         local base item key value prefix candidate candidates
@@ -743,6 +761,10 @@ _img2sixel()
         ;;
     -a|--cover-policy)
         _img2sixel_complete_cover_policy
+        return 0
+        ;;
+    -0|--clamp-policy)
+        _img2sixel_complete_clamp_policy
         return 0
         ;;
     '-_'|--snap-policy)
@@ -1069,6 +1091,7 @@ _img2sixel()
                                    -5 --binning-policy \
                                    -F --merge-policy \
                                    -a --cover-policy \
+                                   -0 --clamp-policy \
                                    -_ --snap-policy \
                                    -m --mapfile \
                                    -M --mapfile-output \

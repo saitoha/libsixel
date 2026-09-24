@@ -820,6 +820,26 @@ _coverpolicy() {
     'all[anchor corners, faces, and edges]'
 }
 
+_clamppolicy() {
+  local current segment prefix
+
+  current=${words[CURRENT]}
+  if [[ ${current} == *:* ]]; then
+    segment=${current##*:}
+    prefix=${current%"${segment}"}
+    compadd -- "${prefix}threshold=" "${prefix}threshold=1" \
+               "${prefix}threshold=1.01" "${prefix}threshold=1.025" \
+               "${prefix}threshold=1.05" "${prefix}threshold=1.1" \
+               "${prefix}threshold=1.2" "${prefix}T1.01"
+    return 0
+  fi
+  _values 'CLAMPPOLICY' \
+    'auto[use soft feedback limiting]' \
+    'soft[allow working-coordinate headroom]' \
+    'hard[clip feedback at source-containing bounds]' \
+    'none[do not limit feedback]'
+}
+
 _snappolicy() {
   local current base segment key prefix
 
@@ -1090,6 +1110,7 @@ _arguments -S -s -A "-*" -S \
 '[choose weighted-point aggregation]':binningpolicy:_binningpolicy \
   {-F,--merge-policy=}'[choose final palette merge policy]':mergepolicy:_mergepolicy \
   {-a,--cover-policy=}'[choose palette coverage policy]':coverpolicy:_coverpolicy \
+  {-0,--clamp-policy=}'[limit error-diffusion feedback]':clamppolicy:_clamppolicy \
   {-_,--snap-policy=}'[choose reversible tone snap policy]':snappolicy:_snappolicy \
   {-m,--mapfile=}'[transform image colors using a map image or ACT/PAL/GPL palette; TYPE:PATH prefixes (TYPE:- for stdin) allowed]':files:_files \
   {-M,--mapfile-output=}'[export the computed palette; TYPE:PATH (TYPE:- for stdout) or .act/.pal/.gpl extensions choose the format]':files:_files \

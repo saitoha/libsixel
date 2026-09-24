@@ -947,7 +947,9 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             "encode_threads=%d|threads_max=%u|threads_max_override=%d|"
             "pin_threads=%d|pin_threads_override=%d|gpu_threshold=%zu|"
             "gpu_threshold_override=%d|perturb=%.9g|perturb_override=%d|"
-            "perturb_seed=%d|perturb_seed_override=%d|codes=",
+            "perturb_seed=%d|perturb_seed_override=%d|"
+            "clamp_requested=%d|clamp_effective=%d|"
+            "clamp_threshold=%.9g|codes=",
             status,
             sixel_encoder_dither_diffuse_name(dither->method_for_diffuse),
             sixel_encoder_dither_scan_name(dither->method_for_scan),
@@ -998,7 +1000,11 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             (double)dither->diffusion_perturb,
             dither->diffusion_perturb_override,
             dither->diffusion_perturb_seed,
-            dither->diffusion_perturb_seed_override);
+            dither->diffusion_perturb_seed_override,
+            dither->clamp_policy,
+            dither->clamp_policy == SIXEL_DITHER_CLAMP_AUTO
+                ? SIXEL_DITHER_CLAMP_SOFT : dither->clamp_policy,
+            dither->clamp_threshold);
     if (dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         sixel_encoder_emit_contract_code(stderr, &first, "INTERFRAME_ENABLED");
     }
@@ -5279,6 +5285,8 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
     sixel_dither_set_diffusion_type(context->dither, method_for_diffuse);
+    context->dither->clamp_policy = context->encoder->clamp_policy;
+    context->dither->clamp_threshold = context->encoder->clamp_threshold;
     context->dither->diffusion_perturb =
         context->encoder->diffusion_perturb;
     context->dither->diffusion_perturb_override =
@@ -9136,6 +9144,10 @@ sixel_encoder_new(
     (*ppencoder)->cover_policy_mode_override = 0;
     (*ppencoder)->cover_policy_mode = SIXEL_PALETTE_COVER_MODE_SOFT;
     (*ppencoder)->cover_policy = SIXEL_PALETTE_COVER_AUTO;
+    (*ppencoder)->clamp_policy = SIXEL_DITHER_CLAMP_AUTO;
+    (*ppencoder)->clamp_policy_override = 0;
+    (*ppencoder)->clamp_threshold = SIXEL_DITHER_CLAMP_THRESHOLD;
+    (*ppencoder)->clamp_threshold_override = 0;
     (*ppencoder)->snap_policy_override = 0;
     (*ppencoder)->snap_policy =
         SIXEL_PALETTE_SNAP_POLICY_NONE;
@@ -9419,6 +9431,22 @@ sixel_encoder_new(
             &policy_value)) {
         (*ppencoder)->cover_policy = policy_value;
         (*ppencoder)->cover_policy_override = 1;
+    }
+
+    policy_schema = sixel_option_registry_get(
+        SIXEL_OPTION_SCHEMA_CLAMP_POLICY);
+    sixel_option_apply_suboption_environment(
+        policy_schema,
+        policy_schema != NULL ? policy_schema->values : NULL,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        *ppencoder,
+        SIXEL_SUBOPTION_TARGET_ENCODER);
+    if (sixel_option_resolve_registered_base_environment(
+            SIXEL_OPTION_SCHEMA_CLAMP_POLICY,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            &policy_value)) {
+        (*ppencoder)->clamp_policy = policy_value;
+        (*ppencoder)->clamp_policy_override = 1;
     }
 
     policy_schema = sixel_option_registry_get(
@@ -10186,6 +10214,9 @@ sixel_encoder_apply_registered_policy_argument(
         return status;
     }
 
+    if (option_id == SIXEL_OPTION_SCHEMA_CLAMP_POLICY) {
+        encoder->clamp_threshold = SIXEL_DITHER_CLAMP_THRESHOLD;
+    }
     sixel_option_reset_suboption_overrides(
         schema,
         SIXEL_OPTION_SCOPE_ENCODER,
@@ -11845,6 +11876,19 @@ sixel_encoder_setopt(
             value,
             &encoder->cover_policy,
             &encoder->cover_policy_override,
+            match_detail,
+            sizeof(match_detail));
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_CLAMP_POLICY:  /* 0 */
+        status = sixel_encoder_apply_registered_policy_argument(
+            encoder,
+            SIXEL_OPTION_SCHEMA_CLAMP_POLICY,
+            value,
+            &encoder->clamp_policy,
+            &encoder->clamp_policy_override,
             match_detail,
             sizeof(match_detail));
         if (SIXEL_FAILED(status)) {

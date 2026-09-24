@@ -123,3 +123,4 @@ docs/threading/encoder.md	explanation	both	encoder scheduling model + budget ref
 docs/threading/measurement.md	how-to	contributor	measurement reproduction + artifact reference and normative band-seam protocol
 docs/threading/overview.md	explanation	both	threading mental model + budget terminology and implementation ownership
 docs/writers/png.md	reference	both	writer/API contracts + contributor benchmark and test ledger
+docs/functionality/clamp-policy.md	reference	both	feedback bounds and precision contracts

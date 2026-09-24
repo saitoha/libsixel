@@ -341,6 +341,42 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0012_FILTER_ENCODE_6DELTA_PLANE \
     -DBUILD_TEST_0013_FILTER_ENCODE_6DELTA_KEYCOLOR \
     -DBUILD_TEST_0014_FILTER_SAMPLE_SOLID \
+    -DBUILD_TEST_0001_SOFT_VECTOR \
+    -DBUILD_TEST_0002_AUTO_SOFT \
+    -DBUILD_TEST_0003_HARD_CHANNELS \
+    -DBUILD_TEST_0004_NONE_EXTENDED \
+    -DBUILD_TEST_0005_SOURCE_FIXED_POINT \
+    -DBUILD_TEST_0006_NEGATIVE_HEADROOM \
+    -DBUILD_TEST_0007_ZERO_HEADROOM \
+    -DBUILD_TEST_0008_KERNEL_FS \
+    -DBUILD_TEST_0009_KERNEL_ATKINSON \
+    -DBUILD_TEST_0010_KERNEL_JAJUNI \
+    -DBUILD_TEST_0011_KERNEL_STUCKI \
+    -DBUILD_TEST_0012_KERNEL_BURKES \
+    -DBUILD_TEST_0013_KERNEL_SIERRA1 \
+    -DBUILD_TEST_0014_KERNEL_SIERRA2 \
+    -DBUILD_TEST_0015_KERNEL_SIERRA3 \
+    -DBUILD_TEST_0016_KERNEL_LSO2 \
+    -DBUILD_TEST_0017_KEEP_FS \
+    -DBUILD_TEST_0018_KEEP_ATKINSON \
+    -DBUILD_TEST_0019_KEEP_JAJUNI \
+    -DBUILD_TEST_0020_KEEP_STUCKI \
+    -DBUILD_TEST_0021_KEEP_BURKES \
+    -DBUILD_TEST_0022_KEEP_SIERRA1 \
+    -DBUILD_TEST_0023_KEEP_SIERRA2 \
+    -DBUILD_TEST_0024_KEEP_SIERRA3 \
+    -DBUILD_TEST_0025_KEEP_LSO2 \
+    -DBUILD_TEST_0026_OPTION_DEFAULT \
+    -DBUILD_TEST_0027_OPTION_SHORT \
+    -DBUILD_TEST_0028_OPTION_REPEAT \
+    -DBUILD_TEST_0029_OPTION_NAN \
+    -DBUILD_TEST_0030_OPTION_MINIMUM \
+    -DBUILD_TEST_0031_OPTION_MAXIMUM \
+    -DBUILD_TEST_0032_KERNEL_INTERFRAME \
+    -DBUILD_TEST_0033_LSO2_OKLAB_LIGHTNESS \
+    -DBUILD_TEST_0034_LSO2_CIELAB_LIGHTNESS \
+    -DBUILD_TEST_0035_LSO2_DIN99D_LIGHTNESS \
+    -DBUILD_CLAMP_TEST_COMMON \
     -DBUILD_TEST_0015_FILTER_DITHER_6DELTA_LSO2 \
     -DBUILD_TEST_0016_FILTER_DITHER_6DELTA_JAJUNI \
     -DBUILD_TEST_0017_FILTER_DITHER_6DELTA_STUCKI \
@@ -2478,6 +2514,43 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0012_filter_encode_6delta_plane.c \
     processing/filter/0013_filter_encode_6delta_keycolor.c \
     processing/filter/0014_filter_sample_solid.c \
+    processing/dither/clamp/0001_soft_vector.c \
+    processing/dither/clamp/0002_auto_soft.c \
+    processing/dither/clamp/0003_hard_channels.c \
+    processing/dither/clamp/0004_none_extended.c \
+    processing/dither/clamp/0005_source_fixed_point.c \
+    processing/dither/clamp/0006_negative_headroom.c \
+    processing/dither/clamp/0007_zero_headroom.c \
+    processing/dither/clamp/0008_kernel_fs.c \
+    processing/dither/clamp/0009_kernel_atkinson.c \
+    processing/dither/clamp/0010_kernel_jajuni.c \
+    processing/dither/clamp/0011_kernel_stucki.c \
+    processing/dither/clamp/0012_kernel_burkes.c \
+    processing/dither/clamp/0013_kernel_sierra1.c \
+    processing/dither/clamp/0014_kernel_sierra2.c \
+    processing/dither/clamp/0015_kernel_sierra3.c \
+    processing/dither/clamp/0016_kernel_lso2.c \
+    processing/dither/clamp/0033_lso2_oklab_lightness.c \
+    processing/dither/clamp/0034_lso2_cielab_lightness.c \
+    processing/dither/clamp/0035_lso2_din99d_lightness.c \
+    processing/dither/clamp/clamp_test_common.c \
+    processing/dither/clamp/clamp_test_common.h \
+    processing/dither/clamp/0017_keep_fs.c \
+    processing/dither/clamp/0018_keep_atkinson.c \
+    processing/dither/clamp/0019_keep_jajuni.c \
+    processing/dither/clamp/0020_keep_stucki.c \
+    processing/dither/clamp/0021_keep_burkes.c \
+    processing/dither/clamp/0022_keep_sierra1.c \
+    processing/dither/clamp/0023_keep_sierra2.c \
+    processing/dither/clamp/0024_keep_sierra3.c \
+    processing/dither/clamp/0025_keep_lso2.c \
+    processing/dither/clamp/0026_option_default.c \
+    processing/dither/clamp/0027_option_short.c \
+    processing/dither/clamp/0028_option_repeat.c \
+    processing/dither/clamp/0029_option_nan.c \
+    processing/dither/clamp/0030_option_minimum.c \
+    processing/dither/clamp/0031_option_maximum.c \
+    processing/dither/clamp/0032_kernel_interframe.c \
     processing/filter/0015_filter_dither_6delta_lso2.c \
     processing/filter/0016_filter_dither_6delta_jajuni.c \
     processing/filter/0017_filter_dither_6delta_stucki.c \

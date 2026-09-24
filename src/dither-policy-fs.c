@@ -47,6 +47,7 @@
  * Keep only members used by this translation unit.
  */
 typedef struct sixel_dither_policy_fs_context {
+    sixel_dither_clamp_t clamp;
     sixel_index_t *result;
     unsigned char *pixels;
     float *pixels_float;
@@ -61,7 +62,6 @@ typedef struct sixel_dither_policy_fs_context {
     struct sixel_lookup_policy_interface *lookup_policy;
     int pixelformat;
     int float_depth;
-    int preserve_extended_rgb;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
@@ -515,8 +515,7 @@ fs_error_diffuse_float(float *data,
                     float numerator,
                     int denominator,
                     int pixelformat,
-                    int channel_index,
-                    int preserve_extended_rgb)
+                    int channel_index)
 {
     float *channel;
     float delta;
@@ -524,13 +523,9 @@ fs_error_diffuse_float(float *data,
     channel = data + ((size_t)pos * (size_t)depth);
     delta = error * ((float)numerator / (float)denominator);
     *channel += delta;
-    /* P3 errors live in canonical coordinates, beyond the sRGB cube.
-     * The consumer validates finiteness before the next lookup. */
-    if (!preserve_extended_rgb) {
-        *channel = sixel_pixelformat_float_channel_clamp(pixelformat,
-                                                       channel_index,
-                                                       *channel);
-    }
+    /* Limiting happens once before lookup, after all incoming taps. */
+    (void)pixelformat;
+    (void)channel_index;
 }
 
 static void
@@ -567,8 +562,7 @@ fs_diffuse_fs_float(float *data,
                  int pixelformat,
                  int channel_index,
                  int absolute_y,
-                 sixel_dither_perturb_t const *perturb,
-                 int preserve_extended_rgb)
+                 sixel_dither_perturb_t const *perturb)
 {
     int pos;
     int forward;
@@ -583,24 +577,20 @@ fs_diffuse_fs_float(float *data,
         step = forward ? 1 : -1;
         if (x + step >= 0 && x + step < width) {
             fs_error_diffuse_float(data, pos + step, depth, error,
-                                  weights[0], 1, pixelformat, channel_index,
-                                  preserve_extended_rgb);
+                                  weights[0], 1, pixelformat, channel_index);
         }
         if (y < height - 1) {
             if (x - step >= 0 && x - step < width) {
                 fs_error_diffuse_float(data, pos + width - step,
                                       depth, error, weights[1], 1,
-                                      pixelformat, channel_index,
-                                      preserve_extended_rgb);
+                                      pixelformat, channel_index);
             }
             fs_error_diffuse_float(data, pos + width, depth, error,
-                                  weights[2], 1, pixelformat, channel_index,
-                                  preserve_extended_rgb);
+                                  weights[2], 1, pixelformat, channel_index);
             if (x + step >= 0 && x + step < width) {
                 fs_error_diffuse_float(data, pos + width + step,
                                       depth, error, weights[3], 1,
-                                      pixelformat, channel_index,
-                                      preserve_extended_rgb);
+                                      pixelformat, channel_index);
             }
         }
         return;
@@ -616,8 +606,7 @@ fs_diffuse_fs_float(float *data,
                                 7,
                                 16,
                                 pixelformat,
-                                channel_index,
-                                preserve_extended_rgb);
+                                channel_index);
         }
         if (y < height - 1) {
             if (x > 0) {
@@ -628,8 +617,7 @@ fs_diffuse_fs_float(float *data,
                                     3,
                                     16,
                                     pixelformat,
-                                    channel_index,
-                                preserve_extended_rgb);
+                                    channel_index);
             }
             fs_error_diffuse_float(data,
                                 pos + width,
@@ -638,8 +626,7 @@ fs_diffuse_fs_float(float *data,
                                 5,
                                 16,
                                 pixelformat,
-                                channel_index,
-                                preserve_extended_rgb);
+                                channel_index);
             if (x < width - 1) {
                 fs_error_diffuse_float(data,
                                     pos + width + 1,
@@ -648,8 +635,7 @@ fs_diffuse_fs_float(float *data,
                                     1,
                                     16,
                                     pixelformat,
-                                    channel_index,
-                                preserve_extended_rgb);
+                                    channel_index);
             }
         }
     } else {
@@ -661,8 +647,7 @@ fs_diffuse_fs_float(float *data,
                                 7,
                                 16,
                                 pixelformat,
-                                channel_index,
-                                preserve_extended_rgb);
+                                channel_index);
         }
         if (y < height - 1) {
             if (x < width - 1) {
@@ -673,8 +658,7 @@ fs_diffuse_fs_float(float *data,
                                     3,
                                     16,
                                     pixelformat,
-                                    channel_index,
-                                preserve_extended_rgb);
+                                    channel_index);
             }
             fs_error_diffuse_float(data,
                                 pos + width,
@@ -683,8 +667,7 @@ fs_diffuse_fs_float(float *data,
                                 5,
                                 16,
                                 pixelformat,
-                                channel_index,
-                                preserve_extended_rgb);
+                                channel_index);
             if (x > 0) {
                 fs_error_diffuse_float(data,
                                     pos + width - 1,
@@ -693,8 +676,7 @@ fs_diffuse_fs_float(float *data,
                                     1,
                                     16,
                                     pixelformat,
-                                    channel_index,
-                                preserve_extended_rgb);
+                                    channel_index);
             }
         }
     }
@@ -707,6 +689,9 @@ sixel_dither_apply_fs_float32(
     )
 {
     SIXELSTATUS status;
+    float selected[SIXEL_MAX_CHANNELS];
+    float retained[SIXEL_MAX_CHANNELS];
+    int keep;
     float *palette_float;
     int float_depth;
     int serpentine;
@@ -813,12 +798,17 @@ sixel_dither_apply_fs_float32(
             source_pixel = data + base;
             for (n = 0; n < context->depth; ++n) {
                 working_float[n] = source_pixel[n];
-                if (context->preserve_extended_rgb &&
-                        !isfinite(working_float[n])) {
+                if (!isfinite(working_float[n])) {
                     sixel_helper_set_additional_message(
-                        "P3 diffusion: nonfinite working sample.");
+                        "Diffusion: nonfinite working sample.");
                     return SIXEL_BAD_INPUT;
                 }
+            }
+
+            status = sixel_dither_clamp_pixel(
+                &context->clamp, (size_t)pos, working_float);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
 
             lookup_pixel = (unsigned char const *)(void const *)
@@ -827,28 +817,53 @@ sixel_dither_apply_fs_float32(
                 context->lookup_policy,
                 lookup_pixel);
 
-                output_index = color_index;
-                if (absolute_y >= context->output_start) {
-                    context->result[pos] = (sixel_index_t)output_index;
-                }
+            /* Preserve retained-color competition when byte input has been
+             * promoted for signed diffusion headroom. */
+            for (n = 0; n < context->depth; ++n) {
+                selected[n] = have_palette_float
+                    ? palette_float[color_index * float_depth + n]
+                    : sixel_pixelformat_byte_to_float(context->pixelformat,
+                        n, palette[color_index * context->depth + n]);
+            }
+            keep = 0;
+            if (absolute_y >= 0) {
+                keep = sixel_dither_6delta_keep_float(dither,
+                    (size_t)absolute_y * (size_t)context->width + (size_t)x,
+                    x, absolute_y, context->pixelformat, working_float,
+                    selected, absolute_y >= context->output_start, retained);
+            }
+
+            output_index = keep
+                ? dither->pipeline_accumulation_keycolor : color_index;
+            if (absolute_y >= context->output_start) {
+                context->result[pos] = (sixel_index_t)output_index;
+            }
+
+            if (keep && sixel_dither_pipeline_6delta_error_mode(dither)
+                    != SIXEL_6DELTA_ERROR_DIFFUSE) {
+                continue;
+            }
 
             for (n = 0; n < context->depth; ++n) {
-                    palette_value_u8 =
-                        palette[color_index * context->depth + n];
-                    if (have_palette_float) {
-                        palette_value_float =
-                            palette_float[color_index * float_depth + n];
-                    } else {
-                        palette_value_float
-                            = sixel_pixelformat_byte_to_float(
-                                  context->pixelformat,
-                                  n,
-                                  palette_value_u8);
-                    }
+                palette_value_u8 =
+                    palette[color_index * context->depth + n];
+                if (have_palette_float) {
+                    palette_value_float =
+                        palette_float[color_index * float_depth + n];
+                } else {
+                    palette_value_float
+                        = sixel_pixelformat_byte_to_float(
+                              context->pixelformat,
+                              n,
+                              palette_value_u8);
+                }
+                if (keep) {
+                    palette_value_float = retained[n];
+                }
                 error = working_float[n] - palette_value_float;
-                if (context->preserve_extended_rgb && !isfinite(error)) {
+                if (!isfinite(error)) {
                     sixel_helper_set_additional_message(
-                        "P3 diffusion: nonfinite error.");
+                        "Diffusion: nonfinite error.");
                     return SIXEL_BAD_INPUT;
                 }
                 source_pixel[n] = palette_value_float;
@@ -863,8 +878,7 @@ sixel_dither_apply_fs_float32(
                           context->pixelformat,
                           n,
                           absolute_y,
-                          &context->perturb,
-                          context->preserve_extended_rgb);
+                          &context->perturb);
             }
         }
         if (absolute_y >= context->output_start) {
@@ -1029,8 +1043,6 @@ sixel_dither_policy_fs_build_context(
 
     dither = request->dither;
     if (dither != NULL) {
-        context->preserve_extended_rgb = dither->output_color_definition ==
-            SIXEL_PALETTE_OUTPUT_DISPLAY_P3;
         sixel_dither_perturb_init(&context->perturb,
                                   dither->diffusion_perturb,
                                   dither->diffusion_perturb_seed);
@@ -1132,9 +1144,21 @@ sixel_dither_policy_fs_apply_float32(
         return status;
     }
 
-    return sixel_dither_apply_fs_float32(
+    if (effective.dither == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = sixel_dither_clamp_init(
+        &context.clamp, context.pixels_float, context.width, context.height,
+        context.depth, context.pixelformat, effective.dither->clamp_policy,
+        effective.dither->clamp_threshold, effective.dither->allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_dither_apply_fs_float32(
         effective.dither,
         &context);
+    sixel_dither_clamp_finish(&context.clamp);
+    return status;
 }
 
 static sixel_dither_policy_supports_parallel_result_t

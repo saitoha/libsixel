@@ -426,6 +426,17 @@ static cli_option_help_t const g_option_help_table[] = {
         "    environments provide defaults.\n"
     },
     {
+        '0',
+        "clamp-policy",
+        "-0 POLICY, --clamp-policy=POLICY\n"
+        "    control dither feedback only: auto, soft, hard, none.\n"
+        "    Default auto selects soft; colorspace conversion is unaffected.\n"
+        "    :threshold=VALUE (:TVALUE), 1.0-16.0, soft headroom boundary.\n"
+        "    Default threshold: 1.01.\n"
+        "    SIXEL_DITHER_CLAMP_POLICY and SIXEL_DITHER_CLAMP_THRESHOLD\n"
+        "    provide environment defaults.\n"
+    },
+    {
         '_',
         "snap-policy",
         "-_ POLICY, --snap-policy=POLICY\n"
@@ -2148,6 +2159,15 @@ static cli_env_help_t const g_env_help_table[] = {
         "Accepts 0.0-8.0, default 0.0."
     },
     {
+        "SIXEL_DITHER_CLAMP_POLICY",
+        "Dither feedback policy: auto, soft, hard, none. Default auto\n"
+        "selects soft; does not affect CMS or colorspace conversion."
+    },
+    {
+        "SIXEL_DITHER_CLAMP_THRESHOLD",
+        "Soft dither feedback headroom boundary, 1.0-16.0."
+    },
+    {
         "SIXEL_PALETTE_SNAP_POLICY",
         "Control palette snap target search. Accepts 'reversible' for\n"
         "legacy fixed points or 'nearest'/'auto' for nearby fixed points\n"
@@ -2312,7 +2332,7 @@ img2sixel_option_help_count(void)
 
 static char const g_img2sixel_optstring[] =
     "o:"
-    "=:"
+    "=:0:"
     ".:"
     "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:_:~:G:j:x:J:y:z:K:"
     "kil:T:t:ugvSn:"
@@ -3322,6 +3342,7 @@ img2sixel_main(int argc, char *argv[])
         {"binning-policy",        required_argument,  &long_opt, '5'},
         {"merge-policy",          required_argument,  &long_opt, 'F'},
         {"cover-policy",          required_argument,  &long_opt, 'a'},
+        {"clamp-policy",          required_argument,  &long_opt, '0'},
         {"snap-policy",           required_argument,  &long_opt, '_'},
         {"mapfile",               required_argument,  &long_opt, 'm'},
         {"mapfile-output",        required_argument,  &long_opt, 'M'},

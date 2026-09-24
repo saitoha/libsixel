@@ -57,7 +57,7 @@ test_palette_0062_p3_fs_error(int argc, char **argv)
     SIXELSTATUS status;
     int channel;
     int failed;
-    int legacy;
+    int hard;
 
     dither = NULL;
     policy = NULL;
@@ -72,7 +72,7 @@ test_palette_0062_p3_fs_error(int argc, char **argv)
     if (argc != 2) {
         return 1;
     }
-    legacy = strcmp(argv[1], "legacy") == 0;
+    hard = strcmp(argv[1], "hard") == 0;
     if (SIXEL_FAILED(sixel_dither_new(&dither, 1, NULL)) ||
             SIXEL_FAILED(sixel_dither_policy_fs_float32_new(
                 dither->allocator, &object))) {
@@ -122,8 +122,12 @@ test_palette_0062_p3_fs_error(int argc, char **argv)
     }
     capture_vtbl.map_pixel = p3_fs_map;
     capture.vtbl = &capture_vtbl;
-    dither->output_color_definition = legacy
+    dither->output_color_definition = hard
         ? SIXEL_PALETTE_OUTPUT_LEGACY : SIXEL_PALETTE_OUTPUT_DISPLAY_P3;
+    /* Open feedback protects the historical extended-error contract.
+     * Hard feedback limits compensation without clipping the source itself. */
+    dither->clamp_policy = hard
+        ? SIXEL_DITHER_CLAMP_HARD : SIXEL_DITHER_CLAMP_NONE;
     prep.dither = dither;
     prep.depth = 3;
     prep.method_for_scan = SIXEL_SCAN_RASTER;
@@ -152,9 +156,9 @@ test_palette_0062_p3_fs_error(int argc, char **argv)
             p3_fs_calls != 2 || indices[0] != 0 || indices[1] != 0) {
         goto end;
     }
-    if (legacy) {
+    if (hard) {
         expected[0] = 1.0f;
-        expected[1] = 0.0f;
+        expected[1] = next[1];
     }
     for (channel = 0; channel < 3; ++channel) {
         /* Allow float32 storage rounding of the independently derived

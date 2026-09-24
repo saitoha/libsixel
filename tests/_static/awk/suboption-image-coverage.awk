@@ -90,6 +90,9 @@ function inspect_registry(row, fields, count, option_id, name, alias,
              fields[2] ~ /SIXEL_DIFFUSION_BASE_STBN/)) {
         expected_dither_contract[key] = 1
     }
+    if (option_id == "SIXEL_OPTION_SCHEMA_CLAMP_POLICY") {
+        expected_dither_contract[key] = 1
+    }
     if (option_id == "SIXEL_OPTION_SCHEMA_LUT_POLICY") {
         expected_lookup_contract[key] = 1
     }

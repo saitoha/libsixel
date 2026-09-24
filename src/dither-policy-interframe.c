@@ -47,6 +47,7 @@
  * Keep only members used by this translation unit.
  */
 typedef struct sixel_dither_policy_interframe_context {
+    sixel_dither_clamp_t clamp;
     sixel_index_t *result;
     unsigned char *pixels;
     float *pixels_float;
@@ -1961,9 +1962,9 @@ interframe_error_diffuse_float(float *data,
     channel = data + ((size_t)pos * (size_t)depth);
     delta = error * ((float)numerator / (float)denominator);
     *channel += delta;
-    *channel = sixel_pixelformat_float_channel_clamp(pixelformat,
-                                                     channel_index,
-                                                     *channel);
+    /* Limiting happens once before lookup, after all incoming taps. */
+    (void)pixelformat;
+    (void)channel_index;
 }
 
 static void
@@ -2781,10 +2782,6 @@ sixel_interframe_diffusion_load_pixel_float32(
             interframe_delta = 0.0f;
         }
         interframe_corrected = source_pixel[n] + interframe_delta;
-        interframe_corrected = sixel_pixelformat_float_channel_clamp(
-            pixelformat,
-            n,
-            interframe_corrected);
         working_float[n] = interframe_corrected;
         corrected[n] = (unsigned char)sixel_pixelformat_float_channel_to_byte(
             pixelformat,
@@ -3651,6 +3648,16 @@ sixel_dither_apply_interframe_float32(
                 }                                                       \
             }                                                           \
                                                                         \
+            status = sixel_dither_clamp_pixel(                          \
+                &context->clamp, (size_t)pos, working_float);           \
+            if (SIXEL_FAILED(status)) {                                 \
+                return status;                                          \
+            }                                                           \
+            for (n = 0; n < context->depth; ++n) {                      \
+                corrected[n] = (unsigned char)                          \
+                    sixel_pixelformat_float_channel_to_byte(            \
+                        context->pixelformat, n, working_float[n]);     \
+            }                                                           \
             lookup_pixel = (unsigned char const *)(void const *)        \
                 working_float;                                          \
             color_index = context->lookup_policy->vtbl->map_pixel(       \
@@ -4040,10 +4047,22 @@ sixel_dither_policy_interframe_apply_float32(
         return status;
     }
 
-    return sixel_dither_apply_interframe_float32(
+    if (effective.dither == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = sixel_dither_clamp_init(
+        &context.clamp, context.pixels_float, context.width, context.height,
+        context.depth, context.pixelformat, effective.dither->clamp_policy,
+        effective.dither->clamp_threshold, effective.dither->allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_dither_apply_interframe_float32(
         effective.dither,
         &context,
         SIXEL_DIFFUSE_INTERFRAME);
+    sixel_dither_clamp_finish(&context.clamp);
+    return status;
 }
 
 static sixel_dither_policy_supports_parallel_result_t

@@ -8,11 +8,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
+# Keep byte-backend coverage independent of default soft headroom.
 echo "1..1"
 set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision=8bit -Wgamma \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision=8bit -Wgamma -0hard \
     --env "SIXEL_FHEDT_TILE_DEPTH=9" \
     --env "SIXEL_LOOKUP_FHEDT_TILE_DEPTH=6" -p 16 "-~fhedt" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {

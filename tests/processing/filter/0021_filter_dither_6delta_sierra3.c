@@ -71,6 +71,9 @@ test_filter_0021_filter_dither_6delta_sierra3(int argc, char **argv)
         fprintf(stderr, "dither setup failed: %04x\n", status);
         goto end;
     }
+    /* This regression observes byte-buffer mutation. Keep its original
+     * byte arithmetic; soft feedback owns a separate float work buffer. */
+    dither->clamp_policy = SIXEL_DITHER_CLAMP_HARD;
     sixel_dither_set_palette(dither, palette);
     sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_RGB888);
     sixel_dither_set_diffusion_type(dither, SIXEL_DIFFUSE_SIERRA3);

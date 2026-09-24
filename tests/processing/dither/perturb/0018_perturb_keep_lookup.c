@@ -71,6 +71,8 @@ test_perturb_0018_keep_lookup(int argc, char **argv)
         fprintf(stderr, "dither setup failed: %04x\n", status);
         goto end;
     }
+    /* This contract observes legacy in-place byte rounding. */
+    dither->clamp_policy = SIXEL_DITHER_CLAMP_HARD;
     status = sixel_dither_set_diffusion_perturb(dither, 0.5f);
     if (SIXEL_FAILED(status)) {
         goto end;

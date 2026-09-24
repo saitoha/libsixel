@@ -101,6 +101,8 @@ srcs = [
   'dither-policy-bluenoise.c',
   'dither-policy-interframe.c',
   'dither-policy-lso2.c',
+  'dither-clamp.c',
+  'dither-clamp.h',
   'dither-common-pipeline.c',
   'gpu-palette.c',
   'gpu-palette.h',

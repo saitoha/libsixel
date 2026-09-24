@@ -435,6 +435,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/functionality/cover-policy-figures/cover-policy-figures.json \
 	docs/functionality/cover-policy-figures/cover-reachability-limits.svg \
 	docs/functionality/cover-policy-figures/cover-rgb-corners.svg \
+	docs/functionality/clamp-policy.md \
 	docs/functionality/snap-policy.md \
 	docs/functionality/snap-policies/measurements/snap-policy-controls.csv \
 	docs/functionality/snap-policies/measurements/snap-policy-controls.png \

@@ -15,6 +15,8 @@ The working color space changes the geometry used by palette lookup and the comp
 
 `-W` does not describe the source image profile and does not select the RGB coordinates serialized into the SIXEL palette. Loader color management and the complete `-X` / `-W` / `-U` model are introduced in [Color spaces and loader color management](../concepts/colorspace.md).
 
+[Dither clamp policy](clamp-policy.md) governs added error feedback in these coordinates. Its limits do not apply to working-space conversion itself.
+
 ## Pipeline boundary
 
 For a generated palette, the relevant path is:

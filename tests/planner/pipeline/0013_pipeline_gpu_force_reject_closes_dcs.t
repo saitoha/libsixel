@@ -21,9 +21,10 @@ out_file="${ARTIFACT_LOCAL_DIR}/pipeline-gpu-force-reject.six"
 probe_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 expected="2638293190 15"
 
+# Soft diffusion promotes the buffer; GPU force must still reject it.
 set +e
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
-        --env SIXEL_GPU_POLICY=force \
+        --env SIXEL_GPU_POLICY=force -0soft \
         "${probe_image}" >"${out_file}" 2>/dev/null
 rc=$?
 set -e

@@ -42,6 +42,7 @@
  * Keep only members used by this translation unit.
  */
 typedef struct sixel_dither_policy_lso2_context {
+    sixel_dither_clamp_t clamp;
     sixel_index_t *result;
     unsigned char *pixels;
     float *pixels_float;
@@ -100,9 +101,8 @@ sixel_varcoeff_safe_denom_8bit(int value)
 {
     if (value == 0) {
         /*
-         * The first row of `lso2.h` ships a zero denominator.  Older builds
-         * happened to avoid the division but the refactor now makes the edge
-         * visible, so guard it explicitly.
+         * Current generated rows have nonzero denominators. Keep this guard
+         * so an empty row in a replacement coefficient table stays harmless.
          */
         return 1;
     }
@@ -607,9 +607,9 @@ diffuse_varerr_apply_direct_float(float *target,
 
     index = offset * (size_t)depth;
     target[index] += delta;
-    target[index] = sixel_pixelformat_float_channel_clamp(pixelformat,
-                                                          channel,
-                                                          target[index]);
+    /* Limiting happens once before lookup, after all incoming taps. */
+    (void)pixelformat;
+    (void)channel;
 }
 
 static void
@@ -814,6 +814,9 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                                 )
 {
     SIXELSTATUS status;
+    float selected[SIXEL_MAX_CHANNELS];
+    float retained[SIXEL_MAX_CHANNELS];
+    int keep;
     float *data;
     unsigned char *palette;
     float *source_pixel;
@@ -959,14 +962,13 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                     break;
                 }
                 quantized_float = source_pixel[n];
-                quantized_float = sixel_pixelformat_float_channel_clamp(
-                    context->pixelformat,
-                    n,
-                    quantized_float);
-                if (source_pixel == data + base) {
-                    source_pixel[n] = quantized_float;
-                }
                 lookup_pixel_float[n] = quantized_float;
+            }
+
+            status = sixel_dither_clamp_pixel(
+                &context->clamp, (size_t)pos, lookup_pixel_float);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
 
             lookup_pixel = (unsigned char const *)(void const *)
@@ -975,9 +977,31 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                 context->lookup_policy,
                 lookup_pixel);
 
-            output_index = color_index;
+            /* Preserve retained-color competition when byte input has been
+             * promoted for signed diffusion headroom. */
+            for (n = 0; n < context->depth; ++n) {
+                selected[n] = have_palette_float
+                    ? palette_float[color_index * float_depth + n]
+                    : sixel_pixelformat_byte_to_float(context->pixelformat,
+                        n, palette[color_index * context->depth + n]);
+            }
+            keep = 0;
+            if (absolute_y >= 0) {
+                keep = sixel_dither_6delta_keep_float(dither,
+                    (size_t)absolute_y * (size_t)context->width + (size_t)x,
+                    x, absolute_y, context->pixelformat, lookup_pixel_float,
+                    selected, absolute_y >= context->output_start, retained);
+            }
+
+            output_index = keep
+                ? dither->pipeline_accumulation_keycolor : color_index;
             if (absolute_y >= context->output_start) {
                 context->result[pos] = (sixel_index_t)output_index;
+            }
+
+            if (keep && sixel_dither_pipeline_6delta_error_mode(dither)
+                    != SIXEL_6DELTA_ERROR_DIFFUSE) {
+                continue;
             }
 
             for (n = 0; n < channel_count; ++n) {
@@ -1005,14 +1029,21 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                         n,
                         palette_value);
                 }
-                error = source_pixel[n] - palette_value_float;
-                if (error < 0.0f) {
+                if (keep) {
+                    palette_value_float = retained[n];
+                }
+                error = lookup_pixel_float[n] - palette_value_float;
+                /* Saturate the coefficient index before integer conversion;
+                 * an extended coordinate need not fit an integer. */
+                if (!isfinite(error)) {
+                    return SIXEL_BAD_INPUT;
+                }
+                if (error <= -1.0f || error >= 1.0f) {
+                    diff = 255;
+                } else if (error < 0.0f) {
                     diff = (int)(-error * 255.0f + 0.5f);
                 } else {
                     diff = (int)(error * 255.0f + 0.5f);
-                }
-                if (diff > 255) {
-                    diff = 255;
                 }
                 table_index = diff;
                 diffuse_lso2_float(data + n,
@@ -1287,9 +1318,21 @@ sixel_dither_policy_lso2_apply_float32(
         return status;
     }
 
-    return sixel_dither_apply_lso2_float32(
+    if (effective.dither == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = sixel_dither_clamp_init(
+        &context.clamp, context.pixels_float, context.width, context.height,
+        context.depth, context.pixelformat, effective.dither->clamp_policy,
+        effective.dither->clamp_threshold, effective.dither->allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_dither_apply_lso2_float32(
         effective.dither,
         &context);
+    sixel_dither_clamp_finish(&context.clamp);
+    return status;
 }
 
 static sixel_dither_policy_supports_parallel_result_t

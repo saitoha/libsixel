@@ -371,6 +371,30 @@ sixel_dither_method_supports_float_pipeline(sixel_dither_t const *dither)
 }
 
 
+/* Soft and open feedback require signed headroom even for byte input.
+ * This promotes only the palette-application buffer, not loader storage or
+ * palette construction. Positional noise and no-dither keep byte fast paths. */
+static int
+sixel_dither_clamp_requires_float(sixel_dither_t const *dither)
+{
+    switch (dither->method_for_diffuse) {
+    case SIXEL_DIFFUSE_FS:
+    case SIXEL_DIFFUSE_ATKINSON:
+    case SIXEL_DIFFUSE_JAJUNI:
+    case SIXEL_DIFFUSE_STUCKI:
+    case SIXEL_DIFFUSE_BURKES:
+    case SIXEL_DIFFUSE_SIERRA1:
+    case SIXEL_DIFFUSE_SIERRA2:
+    case SIXEL_DIFFUSE_SIERRA3:
+    case SIXEL_DIFFUSE_LSO2:
+    case SIXEL_DIFFUSE_INTERFRAME:
+        return dither->clamp_policy != SIXEL_DITHER_CLAMP_HARD;
+    default:
+        return 0;
+    }
+}
+
+
 static const unsigned char pal_mono_dark[] = {
     0x00, 0x00, 0x00, 0xff, 0xff, 0xff
 };
@@ -1699,6 +1723,54 @@ sixel_dither_pipeline_6delta_try_keep_after_lookup(
     return 1;
 }
 
+
+/* The byte-input promotion used by soft/none must retain 6delta's existing
+ * keep gate. Compare in double without clipping or rounding the corrected
+ * sample, then return the actual retained RGB for error propagation. */
+SIXEL_INTERNAL_API int
+sixel_dither_6delta_keep_float(
+    sixel_dither_t *dither, size_t index, int x, int y, int pixelformat,
+    float const *rgb, float const *chosen, int record, float *retained)
+{
+    unsigned char const *pixel;
+    double threshold;
+    double keep_distance;
+    double chosen_distance;
+    double delta;
+    int within;
+    int n;
+
+    if (pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+            dither == NULL || !dither->clamp_promoted_rgb888 ||
+            dither->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY) {
+        return 0;
+    }
+    pixel = sixel_dither_pipeline_6delta_plane_pixel(dither, x, y);
+    if (pixel == NULL) {
+        return 0;
+    }
+    threshold = (double)dither->pipeline_6delta_threshold / 255.0;
+    within = 1;
+    keep_distance = 0.0;
+    chosen_distance = 0.0;
+    for (n = 0; n < 3; ++n) {
+        retained[n] = (float)pixel[n] / 255.0f;
+        delta = (double)rgb[n] - retained[n];
+        within = within && fabs(delta) <= threshold;
+        keep_distance += delta * delta;
+        delta = (double)rgb[n] - chosen[n];
+        chosen_distance += delta * delta;
+    }
+    if (!within && keep_distance > chosen_distance) {
+        return 0;
+    }
+    if (record && dither->pipeline_accumulation_result_mask != NULL &&
+            index < dither->pipeline_accumulation_result_mask_size) {
+        dither->pipeline_accumulation_result_mask[index] = 1U;
+    }
+    return 1;
+}
+
 SIXEL_INTERNAL_API int
 sixel_dither_pipeline_6delta_error_mode(sixel_dither_t const *dither)
 {
@@ -2027,6 +2099,9 @@ sixel_dither_new(
     (*ppdither)->requested_quality_mode = quality_mode;
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     (*ppdither)->prefer_float32 = 0;
+    (*ppdither)->clamp_policy = SIXEL_DITHER_CLAMP_AUTO;
+    (*ppdither)->clamp_threshold = SIXEL_DITHER_CLAMP_THRESHOLD;
+    (*ppdither)->clamp_promoted_rgb888 = 0;
     (*ppdither)->palette_snap_exact = 0;
     (*ppdither)->output_color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
     (*ppdither)->allocator = allocator;
@@ -4097,6 +4172,7 @@ sixel_dither_apply_palette_with_mode(
     }
 
     pipeline_pixelformat = dither->pixelformat;
+    dither->clamp_promoted_rgb888 = 0;
     /*
      * Reuse the externally allocated index buffer when the pipeline has
      * already provisioned storage for the producer/worker hand-off.
@@ -4140,7 +4216,8 @@ sixel_dither_apply_palette_with_mode(
         (float_channels > 0) ? float_channels : 3);
     prefer_float_pipeline = 0;
     if (float_backend_available != 0
-            && (dither->prefer_float32 != 0
+            && (sixel_dither_clamp_requires_float(dither)
+                || dither->prefer_float32 != 0
                 || source_has_float != 0
                 || palette_has_float != 0)) {
         prefer_float_pipeline = 1;
@@ -4209,7 +4286,13 @@ sixel_dither_apply_palette_with_mode(
             input_pixels = (unsigned char *)float_pipeline_pixels;
             pipeline_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
             owns_float_pipeline = 1;
+            dither->clamp_promoted_rgb888 =
+                sixel_dither_clamp_requires_float(dither);
         } else {
+            /* A byte fallback would silently change the clamp contract. */
+            if (sixel_dither_clamp_requires_float(dither)) {
+                goto end;
+            }
             prefer_float_pipeline = 0;
             status = SIXEL_OK;
         }
@@ -4310,7 +4393,8 @@ sixel_dither_apply_palette_with_mode(
         palette_entry_capacity =
             entries_view.entries_size / (size_t)entries_view.depth;
     }
-    if (pipeline_pixelformat == SIXEL_PIXELFORMAT_RGB888) {
+    if (pipeline_pixelformat == SIXEL_PIXELFORMAT_RGB888 ||
+            pipeline_pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
         if (sixel_dither_has_compatible_accumulation_hint(dither,
                                                           width,
                                                           height,
@@ -4327,7 +4411,11 @@ sixel_dither_apply_palette_with_mode(
             goto end;
         }
     }
-    if (pipeline_pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+    /* A promoted diffusion buffer is unsupported by the GPU today, but
+     * force still must reach capability validation instead of silently
+     * succeeding on the CPU. Auto may skip this unsupported candidate. */
+    if ((pipeline_pixelformat == SIXEL_PIXELFORMAT_RGB888 ||
+            dither->gpu_policy == SIXEL_GPU_POLICY_FORCE) &&
             dither->gpu_policy != SIXEL_GPU_POLICY_OFF) {
         memset(&gpu_request, 0, sizeof(gpu_request));
         gpu_request.policy = dither->gpu_policy;

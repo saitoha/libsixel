@@ -30,6 +30,7 @@
 
 #include "sixel_atomic.h"
 #include "palette.h"
+#include "dither-clamp.h"
 #include "timeline-logger.h"
 
 #if !defined(SIXEL_DIFFUSE_INTERFRAME)
@@ -122,6 +123,9 @@ sixel_dither_perturb_float(sixel_dither_perturb_t const *context,
 
 /* dither context object */
 struct sixel_dither {
+    int clamp_policy;
+    double clamp_threshold;
+    int clamp_promoted_rgb888;
     sixel_atomic_u32_t ref;         /* reference counter */
     sixel_palette_t *palette;       /* palette definition */
     int reqcolors;                  /* requested colors */
@@ -407,6 +411,11 @@ sixel_dither_pipeline_6delta_try_keep_after_lookup(
     int record_result,
     unsigned char const **accumulation_rgb_out,
     int *keycolor_out);
+
+SIXEL_INTERNAL_API int
+sixel_dither_6delta_keep_float(
+    sixel_dither_t *dither, size_t index, int x, int y, int pixelformat,
+    float const *rgb, float const *chosen, int record, float *retained);
 
 SIXEL_INTERNAL_API int
 sixel_dither_pipeline_6delta_error_mode(sixel_dither_t const *dither);

@@ -30,6 +30,7 @@ precision and the effective working format.
 | Byte input, no applied CMS, gamma working coordinates, no independent float requirement | byte path | float path |
 | Float loader input, including CMS or high-depth source samples | retain float | retain float |
 | Working color-space conversion or Display P3 output | float as required | float |
+| Soft or open error-diffusion feedback | float dither buffer; byte loading and palette construction remain eligible | float dither buffer |
 | Resize | the resize policy controls its workspace; source float precision is retained | retain float work |
 
 An enabled CMS engine alone is not a reason to promote an image: when no applicable source definition is present, supported byte decoders retain byte samples. The loader preference reaches the selectable JPEG and WebP decoding paths as well as the builtin and CoreGraphics loaders. Lossless byte decoders may leave explicit float promotion to the shared planner. Linear-light background composition, profile conversion and high-depth source decoding retain their precision requirements. The CMS suboption `prefer_8bit` remains a separate explicit post-CMS representation boundary.
@@ -49,6 +50,8 @@ selections create a float32 palette-building view without necessarily
 promoting an otherwise gamma `rgb888` main path. Their matched `--precision`
 pairs compare the shared pipeline before and after the same float32 clustering
 stage, not two numeric representations of that stage.
+
+[Dither clamp policy](clamp-policy.md) can promote the palette-application buffer separately from the planner's image representation. Its signed-headroom requirement does not promote the loader.
 
 Use verbose planner output to audit the effective path. A controlled 8-bit run must report this working field; the loader and resize formats can independently be float:
 

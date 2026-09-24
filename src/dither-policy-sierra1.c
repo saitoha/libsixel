@@ -46,6 +46,7 @@
  * Keep only members used by this translation unit.
  */
 typedef struct sixel_dither_policy_sierra1_context {
+    sixel_dither_clamp_t clamp;
     sixel_index_t *result;
     unsigned char *pixels;
     float *pixels_float;
@@ -403,9 +404,9 @@ sierra1_error_diffuse_float(float *data,
     channel = data + ((size_t)pos * (size_t)depth);
     delta = error * ((float)numerator / (float)denominator);
     *channel += delta;
-    *channel = sixel_pixelformat_float_channel_clamp(pixelformat,
-                                                     channel_index,
-                                                     *channel);
+    /* Limiting happens once before lookup, after all incoming taps. */
+    (void)pixelformat;
+    (void)channel_index;
 }
 
 static void
@@ -547,6 +548,9 @@ sixel_dither_apply_sierra1_float32(
     )
 {
     SIXELSTATUS status;
+    float selected[SIXEL_MAX_CHANNELS];
+    float retained[SIXEL_MAX_CHANNELS];
+    int keep;
     float *palette_float;
     int float_depth;
     int serpentine;
@@ -655,30 +659,61 @@ sixel_dither_apply_sierra1_float32(
                 working_float[n] = source_pixel[n];
             }
 
+            status = sixel_dither_clamp_pixel(
+                &context->clamp, (size_t)pos, working_float);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+
             lookup_pixel = (unsigned char const *)(void const *)
                 working_float;
             color_index = context->lookup_policy->vtbl->map_pixel(
                 context->lookup_policy,
                 lookup_pixel);
 
-                output_index = color_index;
-                if (absolute_y >= context->output_start) {
-                    context->result[pos] = (sixel_index_t)output_index;
-                }
+            /* Preserve retained-color competition when byte input has been
+             * promoted for signed diffusion headroom. */
+            for (n = 0; n < context->depth; ++n) {
+                selected[n] = have_palette_float
+                    ? palette_float[color_index * float_depth + n]
+                    : sixel_pixelformat_byte_to_float(context->pixelformat,
+                        n, palette[color_index * context->depth + n]);
+            }
+            keep = 0;
+            if (absolute_y >= 0) {
+                keep = sixel_dither_6delta_keep_float(dither,
+                    (size_t)absolute_y * (size_t)context->width + (size_t)x,
+                    x, absolute_y, context->pixelformat, working_float,
+                    selected, absolute_y >= context->output_start, retained);
+            }
+
+            output_index = keep
+                ? dither->pipeline_accumulation_keycolor : color_index;
+            if (absolute_y >= context->output_start) {
+                context->result[pos] = (sixel_index_t)output_index;
+            }
+
+            if (keep && sixel_dither_pipeline_6delta_error_mode(dither)
+                    != SIXEL_6DELTA_ERROR_DIFFUSE) {
+                continue;
+            }
 
             for (n = 0; n < context->depth; ++n) {
-                    palette_value_u8 =
-                        palette[color_index * context->depth + n];
-                    if (have_palette_float) {
-                        palette_value_float =
-                            palette_float[color_index * float_depth + n];
-                    } else {
-                        palette_value_float
-                            = sixel_pixelformat_byte_to_float(
-                                  context->pixelformat,
-                                  n,
-                                  palette_value_u8);
-                    }
+                palette_value_u8 =
+                    palette[color_index * context->depth + n];
+                if (have_palette_float) {
+                    palette_value_float =
+                        palette_float[color_index * float_depth + n];
+                } else {
+                    palette_value_float
+                        = sixel_pixelformat_byte_to_float(
+                              context->pixelformat,
+                              n,
+                              palette_value_u8);
+                }
+                if (keep) {
+                    palette_value_float = retained[n];
+                }
                 error = working_float[n] - palette_value_float;
                 source_pixel[n] = palette_value_float;
                 sierra1_diffuse_sierra1_float(data + (size_t)n,
@@ -951,9 +986,21 @@ sixel_dither_policy_sierra1_apply_float32(
         return status;
     }
 
-    return sixel_dither_apply_sierra1_float32(
+    if (effective.dither == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = sixel_dither_clamp_init(
+        &context.clamp, context.pixels_float, context.width, context.height,
+        context.depth, context.pixelformat, effective.dither->clamp_policy,
+        effective.dither->clamp_threshold, effective.dither->allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_dither_apply_sierra1_float32(
         effective.dither,
         &context);
+    sixel_dither_clamp_finish(&context.clamp);
+    return status;
 }
 
 static sixel_dither_policy_supports_parallel_result_t

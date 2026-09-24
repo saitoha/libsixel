@@ -589,6 +589,8 @@ typedef int SIXELSTATUS;
                                                     cover_mode
                                                       (or Wvalue): soft, hard
                                                 */
+#define SIXEL_OPTFLAG_CLAMP_POLICY     ('0')  /* -0, --clamp-policy:
+                                                  dither error limiting */
 #define SIXEL_OPTFLAG_SNAP_POLICY       ('_')  /*
                                                   -_ POLICY,
                                                   --snap-policy=POLICY:

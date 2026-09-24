@@ -32,7 +32,8 @@ test -f "${reference_six}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=none! "${input_tiff}" >"${output_six}" || {
+# The SIXEL reference uses legacy byte diffusion; isolate loader CMS.
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -0hard -Llibtiff:cms_engine=none! "${input_tiff}" >"${output_six}" || {
     echo "not ok" 1 - "libtiff decode failed with cms=0: rgb/img_tiff_rgb_icc1_wp1_pc0_trc1"
     exit 0
 }

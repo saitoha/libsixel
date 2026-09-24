@@ -59,6 +59,7 @@
 #include "options-registry.h"
 #include "palette-common-cover.h"
 #include "palette-common-snap.h"
+#include "dither-clamp.h"
 #include "palette-heckbert.h"
 #include "palette-kcenter.h"
 #include "palette-kmeans.h"
@@ -1132,6 +1133,13 @@ static sixel_option_value_schema_t const g_cover_policy_values[] = {
     { "1", SIXEL_PALETTE_COVER_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
 };
 
+static sixel_option_value_schema_t const g_clamp_policy_values[] = {
+    { "auto", SIXEL_DITHER_CLAMP_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "soft", SIXEL_DITHER_CLAMP_SOFT, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "hard", SIXEL_DITHER_CLAMP_HARD, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "none", SIXEL_DITHER_CLAMP_NONE, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+};
+
 static sixel_option_value_schema_t const g_snap_policy_values[] = {
     {
         "none", SIXEL_PALETTE_SNAP_POLICY_NONE, 0u,
@@ -2038,6 +2046,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "cover_mode", 'W', "SIXEL_PALETTE_COVER_MODE", NULL, NULL,
         g_palette_cover_mode_choices,
         cover_policy_mode, cover_policy_mode_override),
+    SIXEL_REGISTRY_ENCODER_DOUBLE(
+        SIXEL_OPTION_SCHEMA_CLAMP_POLICY, NULL,
+        "threshold", 'T', "SIXEL_DITHER_CLAMP_THRESHOLD", NULL, NULL,
+        1.0, 16.0, "-0 threshold must be in range 1.0-16.0.",
+        clamp_threshold, clamp_threshold_override),
     SIXEL_REGISTRY_ENCODER_CHOICE(
         SIXEL_OPTION_SCHEMA_SNAP_POLICY, NULL,
         "timing", 'I', "SIXEL_PALETTE_SNAP_TIMING_POLICY", NULL, NULL,
@@ -3214,6 +3227,16 @@ static sixel_option_argument_schema_t const g_options[] = {
         "SIXEL_LOADER_CMS_COLORSYNC_NATIVE_GAMMA",
         "SIXEL_LOADER_CMS_COLORSYNC_NATIVE_GAMMA must be 0 or 1.",
         0),
+    SIXEL_REGISTRY_OPTION_SCHEMA(
+        SIXEL_OPTION_SCHEMA_CLAMP_POLICY,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        SIXEL_OPTFLAG_CLAMP_POLICY,
+        "clamp-policy",
+        SIXEL_OPTION_ARGUMENT_SINGLE,
+        SIXEL_OPTION_DEFAULT_FIXED,
+        SIXEL_DITHER_CLAMP_AUTO,
+        g_clamp_policy_values,
+        "SIXEL_DITHER_CLAMP_POLICY"),
 };
 
 typedef char sixel_option_count_check[

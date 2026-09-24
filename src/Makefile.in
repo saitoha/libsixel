@@ -241,8 +241,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-policy-a-dither.h \
 	$(srcdir)/dither-policy-x-dither.h \
 	$(srcdir)/dither-policy-bluenoise.h \
-	$(srcdir)/dither-policy-interframe.h \
-	$(srcdir)/dither-common-pipeline.c \
+	$(srcdir)/dither-policy-interframe.h $(srcdir)/dither-clamp.c \
+	$(srcdir)/dither-clamp.h $(srcdir)/dither-common-pipeline.c \
 	$(srcdir)/dither-common-pipeline.h $(srcdir)/gpu-dequant.c \
 	$(srcdir)/gpu-dequant.h $(srcdir)/gpu-palette.c \
 	$(srcdir)/gpu-palette.h $(srcdir)/bluenoise_64x64.h \
@@ -415,6 +415,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-bluenoise.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-interframe.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-lso2.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-clamp.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-common-pipeline.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-dequant.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-palette.lo \
@@ -561,6 +562,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-cpu.Plo \
 	./$(DEPDIR)/libsixel_la-decoder-parallel.Plo \
 	./$(DEPDIR)/libsixel_la-decoder.Plo \
+	./$(DEPDIR)/libsixel_la-dither-clamp.Plo \
 	./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo \
 	./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo \
 	./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-hash.Plo \
@@ -1160,6 +1162,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-x-dither.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-bluenoise.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-interframe.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-clamp.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-clamp.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-common-pipeline.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-common-pipeline.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-dequant.c \
@@ -1602,6 +1606,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-cpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder-parallel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-clamp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-hash.Plo@am__quote@ # am--include-marker
@@ -2170,6 +2175,13 @@ libsixel_la-dither-policy-lso2.lo: dither-policy-lso2.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-lso2.c' object='libsixel_la-dither-policy-lso2.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-lso2.lo `test -f 'dither-policy-lso2.c' || echo '$(srcdir)/'`dither-policy-lso2.c
+
+libsixel_la-dither-clamp.lo: dither-clamp.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-clamp.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-clamp.Tpo -c -o libsixel_la-dither-clamp.lo `test -f 'dither-clamp.c' || echo '$(srcdir)/'`dither-clamp.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-clamp.Tpo $(DEPDIR)/libsixel_la-dither-clamp.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-clamp.c' object='libsixel_la-dither-clamp.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-clamp.lo `test -f 'dither-clamp.c' || echo '$(srcdir)/'`dither-clamp.c
 
 libsixel_la-dither-common-pipeline.lo: dither-common-pipeline.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-common-pipeline.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-common-pipeline.Tpo -c -o libsixel_la-dither-common-pipeline.lo `test -f 'dither-common-pipeline.c' || echo '$(srcdir)/'`dither-common-pipeline.c
@@ -3117,6 +3129,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-cpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder-parallel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-clamp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-hash.Plo
@@ -3321,6 +3334,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-cpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder-parallel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-clamp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-hash.Plo
