@@ -106,7 +106,11 @@ psd_render_ink(sixel_color_def_t const *srgb, sixel_psd_ink_t const *ink,
                 (ink->component[3] / 65535.0);
         }
     } else if (ink->space == 8u && ink->component[0] <= 10000u) {
-        rgb[0] = rgb[1] = rgb[2] = ink->component[0] / 10000.0;
+        /* The shared Photoshop color record stores Gray as black ink
+         * percentage: zero is white and 10000 is black. This is distinct
+         * from a Gray image sample or the spot plane's coverage. Convert
+         * to brightness before the display preview's sRGB transfer. */
+        rgb[0] = rgb[1] = rgb[2] = 1.0 - ink->component[0] / 10000.0;
     } else {
         /* Library-specific inks require their alternate color definition;
          * do not mistake proprietary color IDs for document RGB. */

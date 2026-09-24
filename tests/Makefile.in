@@ -1368,6 +1368,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/builtin/psd_color_test_common.h \
 	loader/builtin/psd_spot_test_common.c \
 	loader/builtin/psd_spot_test_common.h \
+	loader/builtin/psd_gray_ink_test_common.c \
+	loader/builtin/psd_gray_ink_test_common.h \
 	loader/builtin/psd_process_test_common.c \
 	loader/builtin/psd_process_test_common.h \
 	loader/builtin/psd_alpha_test_common.c \
@@ -1478,6 +1480,18 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.c \
 	loader/builtin/psd/0261_duotone_table_native_precedence.c \
 	loader/builtin/psd/0262_duotone_table_unknown_native.c \
+	loader/builtin/psd/0263_gray_ink_white_numeric.c \
+	loader/builtin/psd/0264_gray_ink_black_numeric.c \
+	loader/builtin/psd/0265_gray_ink_quarter_numeric.c \
+	loader/builtin/psd/0266_gray_ink_dark_numeric.c \
+	loader/builtin/psd/0267_gray_ink_minimum_numeric.c \
+	loader/builtin/psd/0268_gray_ink_maximum_numeric.c \
+	loader/builtin/psd/0269_gray_ink_range_reject.c \
+	loader/builtin/psd/0270_gray_ink_unsigned_reject.c \
+	loader/builtin/psd/0271_gray_ink_legacy_numeric.c \
+	loader/builtin/psd/0272_gray_ink_alternate_numeric.c \
+	loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c \
+	loader/builtin/psd/0274_gray_ink_gray_process_numeric.c \
 	loader/builtin/psd/0127_process_alpha_rgb8_numeric.c \
 	loader/builtin/psd/0128_process_alpha_background_numeric.c \
 	loader/builtin/psd/0129_process_alpha_rgb16_numeric.c \
@@ -2983,6 +2997,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0184_loader_builtin_psd_cmyk_icc_numeric.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-psd_color_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-psd_spot_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-psd_gray_ink_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-psd_process_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-psd_alpha_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-psd_model_test_common.$(OBJEXT) \
@@ -3090,6 +3105,18 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0260_lab_alpha_psd16_rle_numeric.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0261_duotone_table_native_precedence.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0263_gray_ink_white_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0264_gray_ink_black_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0265_gray_ink_quarter_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0266_gray_ink_dark_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0267_gray_ink_minimum_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0268_gray_ink_maximum_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0269_gray_ink_range_reject.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0270_gray_ink_unsigned_reject.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0271_gray_ink_legacy_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0272_gray_ink_alternate_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0273_gray_ink_rgb_process_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0274_gray_ink_gray_process_numeric.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0127_process_alpha_rgb8_numeric.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0128_process_alpha_background_numeric.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/psd/test_runner-0129_process_alpha_rgb16_numeric.$(OBJEXT) \
@@ -3697,6 +3724,7 @@ am__depfiles_remade =  \
 	loader/builtin/$(DEPDIR)/test_runner-loader_builtin_tga_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-psd_alpha_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-psd_color_test_common.Po \
+	loader/builtin/$(DEPDIR)/test_runner-psd_gray_ink_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-psd_model_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-psd_process_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-psd_spot_test_common.Po \
@@ -4154,6 +4182,18 @@ am__depfiles_remade =  \
 	loader/builtin/psd/$(DEPDIR)/test_runner-0260_lab_alpha_psd16_rle_numeric.Po \
 	loader/builtin/psd/$(DEPDIR)/test_runner-0261_duotone_table_native_precedence.Po \
 	loader/builtin/psd/$(DEPDIR)/test_runner-0262_duotone_table_unknown_native.Po \
+	loader/builtin/psd/$(DEPDIR)/test_runner-0263_gray_ink_white_numeric.Po \
+	loader/builtin/psd/$(DEPDIR)/test_runner-0264_gray_ink_black_numeric.Po \
+	loader/builtin/psd/$(DEPDIR)/test_runner-0265_gray_ink_quarter_numeric.Po \
+	loader/builtin/psd/$(DEPDIR)/test_runner-0266_gray_ink_dark_numeric.Po \
+	loader/builtin/psd/$(DEPDIR)/test_runner-0267_gray_ink_minimum_numeric.Po \
+	loader/builtin/psd/$(DEPDIR)/test_runner-0268_gray_ink_maximum_numeric.Po \
+	loader/builtin/psd/$(DEPDIR)/test_runner-0269_gray_ink_range_reject.Po \
+	loader/builtin/psd/$(DEPDIR)/test_runner-0270_gray_ink_unsigned_reject.Po \
+	loader/builtin/psd/$(DEPDIR)/test_runner-0271_gray_ink_legacy_numeric.Po \
+	loader/builtin/psd/$(DEPDIR)/test_runner-0272_gray_ink_alternate_numeric.Po \
+	loader/builtin/psd/$(DEPDIR)/test_runner-0273_gray_ink_rgb_process_numeric.Po \
+	loader/builtin/psd/$(DEPDIR)/test_runner-0274_gray_ink_gray_process_numeric.Po \
 	loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po \
 	loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Po \
 	loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Po \
@@ -6170,6 +6210,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0184_LOADER_BUILTIN_PSD_CMYK_ICC_NUMERIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PSD_COLOR_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PSD_SPOT_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PSD_GRAY_INK_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PSD_PROCESS_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PSD_ALPHA_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PSD_MODEL_TEST_COMMON \
@@ -6277,6 +6318,18 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0260_LAB_ALPHA_PSD16_RLE_NUMERIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0261_DUOTONE_TABLE_NATIVE_PRECEDENCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0262_DUOTONE_TABLE_UNKNOWN_NATIVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0263_GRAY_INK_WHITE_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0264_GRAY_INK_BLACK_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0265_GRAY_INK_QUARTER_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0266_GRAY_INK_DARK_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0267_GRAY_INK_MINIMUM_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0268_GRAY_INK_MAXIMUM_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0269_GRAY_INK_RANGE_REJECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0270_GRAY_INK_UNSIGNED_REJECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0271_GRAY_INK_LEGACY_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0272_GRAY_INK_ALTERNATE_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0273_GRAY_INK_RGB_PROCESS_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0274_GRAY_INK_GRAY_PROCESS_NUMERIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0127_PROCESS_ALPHA_RGB8_NUMERIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0128_PROCESS_ALPHA_BACKGROUND_NUMERIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0129_PROCESS_ALPHA_RGB16_NUMERIC \
@@ -8611,6 +8664,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd_color_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd_spot_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd_spot_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd_gray_ink_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd_gray_ink_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd_process_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd_process_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd_alpha_test_common.c \
@@ -8721,6 +8776,18 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0261_duotone_table_native_precedence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0262_duotone_table_unknown_native.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0263_gray_ink_white_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0264_gray_ink_black_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0265_gray_ink_quarter_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0266_gray_ink_dark_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0267_gray_ink_minimum_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0268_gray_ink_maximum_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0269_gray_ink_range_reject.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0270_gray_ink_unsigned_reject.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0271_gray_ink_legacy_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0272_gray_ink_alternate_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0274_gray_ink_gray_process_numeric.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0127_process_alpha_rgb8_numeric.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0128_process_alpha_background_numeric.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd/0129_process_alpha_rgb16_numeric.c \
@@ -13050,6 +13117,9 @@ loader/builtin/test_runner-psd_color_test_common.$(OBJEXT):  \
 loader/builtin/test_runner-psd_spot_test_common.$(OBJEXT):  \
 	loader/builtin/$(am__dirstamp) \
 	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-psd_gray_ink_test_common.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
 loader/builtin/test_runner-psd_process_test_common.$(OBJEXT):  \
 	loader/builtin/$(am__dirstamp) \
 	loader/builtin/$(DEPDIR)/$(am__dirstamp)
@@ -13375,6 +13445,42 @@ loader/builtin/psd/test_runner-0261_duotone_table_native_precedence.$(OBJEXT):  
 	loader/builtin/psd/$(am__dirstamp) \
 	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
 loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.$(OBJEXT):  \
+	loader/builtin/psd/$(am__dirstamp) \
+	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/psd/test_runner-0263_gray_ink_white_numeric.$(OBJEXT):  \
+	loader/builtin/psd/$(am__dirstamp) \
+	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/psd/test_runner-0264_gray_ink_black_numeric.$(OBJEXT):  \
+	loader/builtin/psd/$(am__dirstamp) \
+	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/psd/test_runner-0265_gray_ink_quarter_numeric.$(OBJEXT):  \
+	loader/builtin/psd/$(am__dirstamp) \
+	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/psd/test_runner-0266_gray_ink_dark_numeric.$(OBJEXT):  \
+	loader/builtin/psd/$(am__dirstamp) \
+	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/psd/test_runner-0267_gray_ink_minimum_numeric.$(OBJEXT):  \
+	loader/builtin/psd/$(am__dirstamp) \
+	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/psd/test_runner-0268_gray_ink_maximum_numeric.$(OBJEXT):  \
+	loader/builtin/psd/$(am__dirstamp) \
+	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/psd/test_runner-0269_gray_ink_range_reject.$(OBJEXT):  \
+	loader/builtin/psd/$(am__dirstamp) \
+	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/psd/test_runner-0270_gray_ink_unsigned_reject.$(OBJEXT):  \
+	loader/builtin/psd/$(am__dirstamp) \
+	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/psd/test_runner-0271_gray_ink_legacy_numeric.$(OBJEXT):  \
+	loader/builtin/psd/$(am__dirstamp) \
+	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/psd/test_runner-0272_gray_ink_alternate_numeric.$(OBJEXT):  \
+	loader/builtin/psd/$(am__dirstamp) \
+	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/psd/test_runner-0273_gray_ink_rgb_process_numeric.$(OBJEXT):  \
+	loader/builtin/psd/$(am__dirstamp) \
+	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/psd/test_runner-0274_gray_ink_gray_process_numeric.$(OBJEXT):  \
 	loader/builtin/psd/$(am__dirstamp) \
 	loader/builtin/psd/$(DEPDIR)/$(am__dirstamp)
 loader/builtin/psd/test_runner-0127_process_alpha_rgb8_numeric.$(OBJEXT):  \
@@ -14608,6 +14714,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-loader_builtin_tga_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-psd_alpha_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-psd_color_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-psd_gray_ink_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-psd_model_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-psd_process_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-psd_spot_test_common.Po@am__quote@ # am--include-marker
@@ -15065,6 +15172,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0260_lab_alpha_psd16_rle_numeric.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0261_duotone_table_native_precedence.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0262_duotone_table_unknown_native.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0263_gray_ink_white_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0264_gray_ink_black_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0265_gray_ink_quarter_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0266_gray_ink_dark_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0267_gray_ink_minimum_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0268_gray_ink_maximum_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0269_gray_ink_range_reject.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0270_gray_ink_unsigned_reject.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0271_gray_ink_legacy_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0272_gray_ink_alternate_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0273_gray_ink_rgb_process_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/psd/$(DEPDIR)/test_runner-0274_gray_ink_gray_process_numeric.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Po@am__quote@ # am--include-marker
@@ -33001,6 +33120,20 @@ loader/builtin/test_runner-psd_spot_test_common.obj: loader/builtin/psd_spot_tes
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-psd_spot_test_common.obj `if test -f 'loader/builtin/psd_spot_test_common.c'; then $(CYGPATH_W) 'loader/builtin/psd_spot_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd_spot_test_common.c'; fi`
 
+loader/builtin/test_runner-psd_gray_ink_test_common.o: loader/builtin/psd_gray_ink_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-psd_gray_ink_test_common.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-psd_gray_ink_test_common.Tpo -c -o loader/builtin/test_runner-psd_gray_ink_test_common.o `test -f 'loader/builtin/psd_gray_ink_test_common.c' || echo '$(srcdir)/'`loader/builtin/psd_gray_ink_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-psd_gray_ink_test_common.Tpo loader/builtin/$(DEPDIR)/test_runner-psd_gray_ink_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd_gray_ink_test_common.c' object='loader/builtin/test_runner-psd_gray_ink_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-psd_gray_ink_test_common.o `test -f 'loader/builtin/psd_gray_ink_test_common.c' || echo '$(srcdir)/'`loader/builtin/psd_gray_ink_test_common.c
+
+loader/builtin/test_runner-psd_gray_ink_test_common.obj: loader/builtin/psd_gray_ink_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-psd_gray_ink_test_common.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-psd_gray_ink_test_common.Tpo -c -o loader/builtin/test_runner-psd_gray_ink_test_common.obj `if test -f 'loader/builtin/psd_gray_ink_test_common.c'; then $(CYGPATH_W) 'loader/builtin/psd_gray_ink_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd_gray_ink_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-psd_gray_ink_test_common.Tpo loader/builtin/$(DEPDIR)/test_runner-psd_gray_ink_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd_gray_ink_test_common.c' object='loader/builtin/test_runner-psd_gray_ink_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-psd_gray_ink_test_common.obj `if test -f 'loader/builtin/psd_gray_ink_test_common.c'; then $(CYGPATH_W) 'loader/builtin/psd_gray_ink_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd_gray_ink_test_common.c'; fi`
+
 loader/builtin/test_runner-psd_process_test_common.o: loader/builtin/psd_process_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-psd_process_test_common.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-psd_process_test_common.Tpo -c -o loader/builtin/test_runner-psd_process_test_common.o `test -f 'loader/builtin/psd_process_test_common.c' || echo '$(srcdir)/'`loader/builtin/psd_process_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-psd_process_test_common.Tpo loader/builtin/$(DEPDIR)/test_runner-psd_process_test_common.Po
@@ -34498,6 +34631,174 @@ loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.obj: loader/bui
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0262_duotone_table_unknown_native.c' object='loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0262_duotone_table_unknown_native.obj `if test -f 'loader/builtin/psd/0262_duotone_table_unknown_native.c'; then $(CYGPATH_W) 'loader/builtin/psd/0262_duotone_table_unknown_native.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0262_duotone_table_unknown_native.c'; fi`
+
+loader/builtin/psd/test_runner-0263_gray_ink_white_numeric.o: loader/builtin/psd/0263_gray_ink_white_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0263_gray_ink_white_numeric.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0263_gray_ink_white_numeric.Tpo -c -o loader/builtin/psd/test_runner-0263_gray_ink_white_numeric.o `test -f 'loader/builtin/psd/0263_gray_ink_white_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0263_gray_ink_white_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0263_gray_ink_white_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0263_gray_ink_white_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0263_gray_ink_white_numeric.c' object='loader/builtin/psd/test_runner-0263_gray_ink_white_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0263_gray_ink_white_numeric.o `test -f 'loader/builtin/psd/0263_gray_ink_white_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0263_gray_ink_white_numeric.c
+
+loader/builtin/psd/test_runner-0263_gray_ink_white_numeric.obj: loader/builtin/psd/0263_gray_ink_white_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0263_gray_ink_white_numeric.obj -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0263_gray_ink_white_numeric.Tpo -c -o loader/builtin/psd/test_runner-0263_gray_ink_white_numeric.obj `if test -f 'loader/builtin/psd/0263_gray_ink_white_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0263_gray_ink_white_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0263_gray_ink_white_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0263_gray_ink_white_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0263_gray_ink_white_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0263_gray_ink_white_numeric.c' object='loader/builtin/psd/test_runner-0263_gray_ink_white_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0263_gray_ink_white_numeric.obj `if test -f 'loader/builtin/psd/0263_gray_ink_white_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0263_gray_ink_white_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0263_gray_ink_white_numeric.c'; fi`
+
+loader/builtin/psd/test_runner-0264_gray_ink_black_numeric.o: loader/builtin/psd/0264_gray_ink_black_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0264_gray_ink_black_numeric.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0264_gray_ink_black_numeric.Tpo -c -o loader/builtin/psd/test_runner-0264_gray_ink_black_numeric.o `test -f 'loader/builtin/psd/0264_gray_ink_black_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0264_gray_ink_black_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0264_gray_ink_black_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0264_gray_ink_black_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0264_gray_ink_black_numeric.c' object='loader/builtin/psd/test_runner-0264_gray_ink_black_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0264_gray_ink_black_numeric.o `test -f 'loader/builtin/psd/0264_gray_ink_black_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0264_gray_ink_black_numeric.c
+
+loader/builtin/psd/test_runner-0264_gray_ink_black_numeric.obj: loader/builtin/psd/0264_gray_ink_black_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0264_gray_ink_black_numeric.obj -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0264_gray_ink_black_numeric.Tpo -c -o loader/builtin/psd/test_runner-0264_gray_ink_black_numeric.obj `if test -f 'loader/builtin/psd/0264_gray_ink_black_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0264_gray_ink_black_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0264_gray_ink_black_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0264_gray_ink_black_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0264_gray_ink_black_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0264_gray_ink_black_numeric.c' object='loader/builtin/psd/test_runner-0264_gray_ink_black_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0264_gray_ink_black_numeric.obj `if test -f 'loader/builtin/psd/0264_gray_ink_black_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0264_gray_ink_black_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0264_gray_ink_black_numeric.c'; fi`
+
+loader/builtin/psd/test_runner-0265_gray_ink_quarter_numeric.o: loader/builtin/psd/0265_gray_ink_quarter_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0265_gray_ink_quarter_numeric.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0265_gray_ink_quarter_numeric.Tpo -c -o loader/builtin/psd/test_runner-0265_gray_ink_quarter_numeric.o `test -f 'loader/builtin/psd/0265_gray_ink_quarter_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0265_gray_ink_quarter_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0265_gray_ink_quarter_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0265_gray_ink_quarter_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0265_gray_ink_quarter_numeric.c' object='loader/builtin/psd/test_runner-0265_gray_ink_quarter_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0265_gray_ink_quarter_numeric.o `test -f 'loader/builtin/psd/0265_gray_ink_quarter_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0265_gray_ink_quarter_numeric.c
+
+loader/builtin/psd/test_runner-0265_gray_ink_quarter_numeric.obj: loader/builtin/psd/0265_gray_ink_quarter_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0265_gray_ink_quarter_numeric.obj -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0265_gray_ink_quarter_numeric.Tpo -c -o loader/builtin/psd/test_runner-0265_gray_ink_quarter_numeric.obj `if test -f 'loader/builtin/psd/0265_gray_ink_quarter_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0265_gray_ink_quarter_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0265_gray_ink_quarter_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0265_gray_ink_quarter_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0265_gray_ink_quarter_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0265_gray_ink_quarter_numeric.c' object='loader/builtin/psd/test_runner-0265_gray_ink_quarter_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0265_gray_ink_quarter_numeric.obj `if test -f 'loader/builtin/psd/0265_gray_ink_quarter_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0265_gray_ink_quarter_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0265_gray_ink_quarter_numeric.c'; fi`
+
+loader/builtin/psd/test_runner-0266_gray_ink_dark_numeric.o: loader/builtin/psd/0266_gray_ink_dark_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0266_gray_ink_dark_numeric.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0266_gray_ink_dark_numeric.Tpo -c -o loader/builtin/psd/test_runner-0266_gray_ink_dark_numeric.o `test -f 'loader/builtin/psd/0266_gray_ink_dark_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0266_gray_ink_dark_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0266_gray_ink_dark_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0266_gray_ink_dark_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0266_gray_ink_dark_numeric.c' object='loader/builtin/psd/test_runner-0266_gray_ink_dark_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0266_gray_ink_dark_numeric.o `test -f 'loader/builtin/psd/0266_gray_ink_dark_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0266_gray_ink_dark_numeric.c
+
+loader/builtin/psd/test_runner-0266_gray_ink_dark_numeric.obj: loader/builtin/psd/0266_gray_ink_dark_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0266_gray_ink_dark_numeric.obj -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0266_gray_ink_dark_numeric.Tpo -c -o loader/builtin/psd/test_runner-0266_gray_ink_dark_numeric.obj `if test -f 'loader/builtin/psd/0266_gray_ink_dark_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0266_gray_ink_dark_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0266_gray_ink_dark_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0266_gray_ink_dark_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0266_gray_ink_dark_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0266_gray_ink_dark_numeric.c' object='loader/builtin/psd/test_runner-0266_gray_ink_dark_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0266_gray_ink_dark_numeric.obj `if test -f 'loader/builtin/psd/0266_gray_ink_dark_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0266_gray_ink_dark_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0266_gray_ink_dark_numeric.c'; fi`
+
+loader/builtin/psd/test_runner-0267_gray_ink_minimum_numeric.o: loader/builtin/psd/0267_gray_ink_minimum_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0267_gray_ink_minimum_numeric.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0267_gray_ink_minimum_numeric.Tpo -c -o loader/builtin/psd/test_runner-0267_gray_ink_minimum_numeric.o `test -f 'loader/builtin/psd/0267_gray_ink_minimum_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0267_gray_ink_minimum_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0267_gray_ink_minimum_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0267_gray_ink_minimum_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0267_gray_ink_minimum_numeric.c' object='loader/builtin/psd/test_runner-0267_gray_ink_minimum_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0267_gray_ink_minimum_numeric.o `test -f 'loader/builtin/psd/0267_gray_ink_minimum_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0267_gray_ink_minimum_numeric.c
+
+loader/builtin/psd/test_runner-0267_gray_ink_minimum_numeric.obj: loader/builtin/psd/0267_gray_ink_minimum_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0267_gray_ink_minimum_numeric.obj -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0267_gray_ink_minimum_numeric.Tpo -c -o loader/builtin/psd/test_runner-0267_gray_ink_minimum_numeric.obj `if test -f 'loader/builtin/psd/0267_gray_ink_minimum_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0267_gray_ink_minimum_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0267_gray_ink_minimum_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0267_gray_ink_minimum_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0267_gray_ink_minimum_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0267_gray_ink_minimum_numeric.c' object='loader/builtin/psd/test_runner-0267_gray_ink_minimum_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0267_gray_ink_minimum_numeric.obj `if test -f 'loader/builtin/psd/0267_gray_ink_minimum_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0267_gray_ink_minimum_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0267_gray_ink_minimum_numeric.c'; fi`
+
+loader/builtin/psd/test_runner-0268_gray_ink_maximum_numeric.o: loader/builtin/psd/0268_gray_ink_maximum_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0268_gray_ink_maximum_numeric.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0268_gray_ink_maximum_numeric.Tpo -c -o loader/builtin/psd/test_runner-0268_gray_ink_maximum_numeric.o `test -f 'loader/builtin/psd/0268_gray_ink_maximum_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0268_gray_ink_maximum_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0268_gray_ink_maximum_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0268_gray_ink_maximum_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0268_gray_ink_maximum_numeric.c' object='loader/builtin/psd/test_runner-0268_gray_ink_maximum_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0268_gray_ink_maximum_numeric.o `test -f 'loader/builtin/psd/0268_gray_ink_maximum_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0268_gray_ink_maximum_numeric.c
+
+loader/builtin/psd/test_runner-0268_gray_ink_maximum_numeric.obj: loader/builtin/psd/0268_gray_ink_maximum_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0268_gray_ink_maximum_numeric.obj -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0268_gray_ink_maximum_numeric.Tpo -c -o loader/builtin/psd/test_runner-0268_gray_ink_maximum_numeric.obj `if test -f 'loader/builtin/psd/0268_gray_ink_maximum_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0268_gray_ink_maximum_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0268_gray_ink_maximum_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0268_gray_ink_maximum_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0268_gray_ink_maximum_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0268_gray_ink_maximum_numeric.c' object='loader/builtin/psd/test_runner-0268_gray_ink_maximum_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0268_gray_ink_maximum_numeric.obj `if test -f 'loader/builtin/psd/0268_gray_ink_maximum_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0268_gray_ink_maximum_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0268_gray_ink_maximum_numeric.c'; fi`
+
+loader/builtin/psd/test_runner-0269_gray_ink_range_reject.o: loader/builtin/psd/0269_gray_ink_range_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0269_gray_ink_range_reject.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0269_gray_ink_range_reject.Tpo -c -o loader/builtin/psd/test_runner-0269_gray_ink_range_reject.o `test -f 'loader/builtin/psd/0269_gray_ink_range_reject.c' || echo '$(srcdir)/'`loader/builtin/psd/0269_gray_ink_range_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0269_gray_ink_range_reject.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0269_gray_ink_range_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0269_gray_ink_range_reject.c' object='loader/builtin/psd/test_runner-0269_gray_ink_range_reject.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0269_gray_ink_range_reject.o `test -f 'loader/builtin/psd/0269_gray_ink_range_reject.c' || echo '$(srcdir)/'`loader/builtin/psd/0269_gray_ink_range_reject.c
+
+loader/builtin/psd/test_runner-0269_gray_ink_range_reject.obj: loader/builtin/psd/0269_gray_ink_range_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0269_gray_ink_range_reject.obj -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0269_gray_ink_range_reject.Tpo -c -o loader/builtin/psd/test_runner-0269_gray_ink_range_reject.obj `if test -f 'loader/builtin/psd/0269_gray_ink_range_reject.c'; then $(CYGPATH_W) 'loader/builtin/psd/0269_gray_ink_range_reject.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0269_gray_ink_range_reject.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0269_gray_ink_range_reject.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0269_gray_ink_range_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0269_gray_ink_range_reject.c' object='loader/builtin/psd/test_runner-0269_gray_ink_range_reject.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0269_gray_ink_range_reject.obj `if test -f 'loader/builtin/psd/0269_gray_ink_range_reject.c'; then $(CYGPATH_W) 'loader/builtin/psd/0269_gray_ink_range_reject.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0269_gray_ink_range_reject.c'; fi`
+
+loader/builtin/psd/test_runner-0270_gray_ink_unsigned_reject.o: loader/builtin/psd/0270_gray_ink_unsigned_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0270_gray_ink_unsigned_reject.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0270_gray_ink_unsigned_reject.Tpo -c -o loader/builtin/psd/test_runner-0270_gray_ink_unsigned_reject.o `test -f 'loader/builtin/psd/0270_gray_ink_unsigned_reject.c' || echo '$(srcdir)/'`loader/builtin/psd/0270_gray_ink_unsigned_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0270_gray_ink_unsigned_reject.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0270_gray_ink_unsigned_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0270_gray_ink_unsigned_reject.c' object='loader/builtin/psd/test_runner-0270_gray_ink_unsigned_reject.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0270_gray_ink_unsigned_reject.o `test -f 'loader/builtin/psd/0270_gray_ink_unsigned_reject.c' || echo '$(srcdir)/'`loader/builtin/psd/0270_gray_ink_unsigned_reject.c
+
+loader/builtin/psd/test_runner-0270_gray_ink_unsigned_reject.obj: loader/builtin/psd/0270_gray_ink_unsigned_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0270_gray_ink_unsigned_reject.obj -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0270_gray_ink_unsigned_reject.Tpo -c -o loader/builtin/psd/test_runner-0270_gray_ink_unsigned_reject.obj `if test -f 'loader/builtin/psd/0270_gray_ink_unsigned_reject.c'; then $(CYGPATH_W) 'loader/builtin/psd/0270_gray_ink_unsigned_reject.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0270_gray_ink_unsigned_reject.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0270_gray_ink_unsigned_reject.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0270_gray_ink_unsigned_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0270_gray_ink_unsigned_reject.c' object='loader/builtin/psd/test_runner-0270_gray_ink_unsigned_reject.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0270_gray_ink_unsigned_reject.obj `if test -f 'loader/builtin/psd/0270_gray_ink_unsigned_reject.c'; then $(CYGPATH_W) 'loader/builtin/psd/0270_gray_ink_unsigned_reject.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0270_gray_ink_unsigned_reject.c'; fi`
+
+loader/builtin/psd/test_runner-0271_gray_ink_legacy_numeric.o: loader/builtin/psd/0271_gray_ink_legacy_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0271_gray_ink_legacy_numeric.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0271_gray_ink_legacy_numeric.Tpo -c -o loader/builtin/psd/test_runner-0271_gray_ink_legacy_numeric.o `test -f 'loader/builtin/psd/0271_gray_ink_legacy_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0271_gray_ink_legacy_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0271_gray_ink_legacy_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0271_gray_ink_legacy_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0271_gray_ink_legacy_numeric.c' object='loader/builtin/psd/test_runner-0271_gray_ink_legacy_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0271_gray_ink_legacy_numeric.o `test -f 'loader/builtin/psd/0271_gray_ink_legacy_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0271_gray_ink_legacy_numeric.c
+
+loader/builtin/psd/test_runner-0271_gray_ink_legacy_numeric.obj: loader/builtin/psd/0271_gray_ink_legacy_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0271_gray_ink_legacy_numeric.obj -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0271_gray_ink_legacy_numeric.Tpo -c -o loader/builtin/psd/test_runner-0271_gray_ink_legacy_numeric.obj `if test -f 'loader/builtin/psd/0271_gray_ink_legacy_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0271_gray_ink_legacy_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0271_gray_ink_legacy_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0271_gray_ink_legacy_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0271_gray_ink_legacy_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0271_gray_ink_legacy_numeric.c' object='loader/builtin/psd/test_runner-0271_gray_ink_legacy_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0271_gray_ink_legacy_numeric.obj `if test -f 'loader/builtin/psd/0271_gray_ink_legacy_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0271_gray_ink_legacy_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0271_gray_ink_legacy_numeric.c'; fi`
+
+loader/builtin/psd/test_runner-0272_gray_ink_alternate_numeric.o: loader/builtin/psd/0272_gray_ink_alternate_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0272_gray_ink_alternate_numeric.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0272_gray_ink_alternate_numeric.Tpo -c -o loader/builtin/psd/test_runner-0272_gray_ink_alternate_numeric.o `test -f 'loader/builtin/psd/0272_gray_ink_alternate_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0272_gray_ink_alternate_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0272_gray_ink_alternate_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0272_gray_ink_alternate_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0272_gray_ink_alternate_numeric.c' object='loader/builtin/psd/test_runner-0272_gray_ink_alternate_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0272_gray_ink_alternate_numeric.o `test -f 'loader/builtin/psd/0272_gray_ink_alternate_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0272_gray_ink_alternate_numeric.c
+
+loader/builtin/psd/test_runner-0272_gray_ink_alternate_numeric.obj: loader/builtin/psd/0272_gray_ink_alternate_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0272_gray_ink_alternate_numeric.obj -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0272_gray_ink_alternate_numeric.Tpo -c -o loader/builtin/psd/test_runner-0272_gray_ink_alternate_numeric.obj `if test -f 'loader/builtin/psd/0272_gray_ink_alternate_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0272_gray_ink_alternate_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0272_gray_ink_alternate_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0272_gray_ink_alternate_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0272_gray_ink_alternate_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0272_gray_ink_alternate_numeric.c' object='loader/builtin/psd/test_runner-0272_gray_ink_alternate_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0272_gray_ink_alternate_numeric.obj `if test -f 'loader/builtin/psd/0272_gray_ink_alternate_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0272_gray_ink_alternate_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0272_gray_ink_alternate_numeric.c'; fi`
+
+loader/builtin/psd/test_runner-0273_gray_ink_rgb_process_numeric.o: loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0273_gray_ink_rgb_process_numeric.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0273_gray_ink_rgb_process_numeric.Tpo -c -o loader/builtin/psd/test_runner-0273_gray_ink_rgb_process_numeric.o `test -f 'loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0273_gray_ink_rgb_process_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0273_gray_ink_rgb_process_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c' object='loader/builtin/psd/test_runner-0273_gray_ink_rgb_process_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0273_gray_ink_rgb_process_numeric.o `test -f 'loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c
+
+loader/builtin/psd/test_runner-0273_gray_ink_rgb_process_numeric.obj: loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0273_gray_ink_rgb_process_numeric.obj -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0273_gray_ink_rgb_process_numeric.Tpo -c -o loader/builtin/psd/test_runner-0273_gray_ink_rgb_process_numeric.obj `if test -f 'loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0273_gray_ink_rgb_process_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0273_gray_ink_rgb_process_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c' object='loader/builtin/psd/test_runner-0273_gray_ink_rgb_process_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0273_gray_ink_rgb_process_numeric.obj `if test -f 'loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c'; fi`
+
+loader/builtin/psd/test_runner-0274_gray_ink_gray_process_numeric.o: loader/builtin/psd/0274_gray_ink_gray_process_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0274_gray_ink_gray_process_numeric.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0274_gray_ink_gray_process_numeric.Tpo -c -o loader/builtin/psd/test_runner-0274_gray_ink_gray_process_numeric.o `test -f 'loader/builtin/psd/0274_gray_ink_gray_process_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0274_gray_ink_gray_process_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0274_gray_ink_gray_process_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0274_gray_ink_gray_process_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0274_gray_ink_gray_process_numeric.c' object='loader/builtin/psd/test_runner-0274_gray_ink_gray_process_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0274_gray_ink_gray_process_numeric.o `test -f 'loader/builtin/psd/0274_gray_ink_gray_process_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0274_gray_ink_gray_process_numeric.c
+
+loader/builtin/psd/test_runner-0274_gray_ink_gray_process_numeric.obj: loader/builtin/psd/0274_gray_ink_gray_process_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0274_gray_ink_gray_process_numeric.obj -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0274_gray_ink_gray_process_numeric.Tpo -c -o loader/builtin/psd/test_runner-0274_gray_ink_gray_process_numeric.obj `if test -f 'loader/builtin/psd/0274_gray_ink_gray_process_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0274_gray_ink_gray_process_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0274_gray_ink_gray_process_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/psd/$(DEPDIR)/test_runner-0274_gray_ink_gray_process_numeric.Tpo loader/builtin/psd/$(DEPDIR)/test_runner-0274_gray_ink_gray_process_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/psd/0274_gray_ink_gray_process_numeric.c' object='loader/builtin/psd/test_runner-0274_gray_ink_gray_process_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/psd/test_runner-0274_gray_ink_gray_process_numeric.obj `if test -f 'loader/builtin/psd/0274_gray_ink_gray_process_numeric.c'; then $(CYGPATH_W) 'loader/builtin/psd/0274_gray_ink_gray_process_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd/0274_gray_ink_gray_process_numeric.c'; fi`
 
 loader/builtin/psd/test_runner-0127_process_alpha_rgb8_numeric.o: loader/builtin/psd/0127_process_alpha_rgb8_numeric.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/psd/test_runner-0127_process_alpha_rgb8_numeric.o -MD -MP -MF loader/builtin/psd/$(DEPDIR)/test_runner-0127_process_alpha_rgb8_numeric.Tpo -c -o loader/builtin/psd/test_runner-0127_process_alpha_rgb8_numeric.o `test -f 'loader/builtin/psd/0127_process_alpha_rgb8_numeric.c' || echo '$(srcdir)/'`loader/builtin/psd/0127_process_alpha_rgb8_numeric.c
@@ -39121,6 +39422,7 @@ distclean: distclean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_tga_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-psd_alpha_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-psd_color_test_common.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-psd_gray_ink_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-psd_model_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-psd_process_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-psd_spot_test_common.Po
@@ -39578,6 +39880,18 @@ distclean: distclean-am
 	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0260_lab_alpha_psd16_rle_numeric.Po
 	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0261_duotone_table_native_precedence.Po
 	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0262_duotone_table_unknown_native.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0263_gray_ink_white_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0264_gray_ink_black_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0265_gray_ink_quarter_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0266_gray_ink_dark_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0267_gray_ink_minimum_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0268_gray_ink_maximum_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0269_gray_ink_range_reject.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0270_gray_ink_unsigned_reject.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0271_gray_ink_legacy_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0272_gray_ink_alternate_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0273_gray_ink_rgb_process_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0274_gray_ink_gray_process_numeric.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
 	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Po
 	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Po
@@ -40768,6 +41082,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_tga_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-psd_alpha_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-psd_color_test_common.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-psd_gray_ink_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-psd_model_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-psd_process_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-psd_spot_test_common.Po
@@ -41225,6 +41540,18 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0260_lab_alpha_psd16_rle_numeric.Po
 	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0261_duotone_table_native_precedence.Po
 	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0262_duotone_table_unknown_native.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0263_gray_ink_white_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0264_gray_ink_black_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0265_gray_ink_quarter_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0266_gray_ink_dark_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0267_gray_ink_minimum_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0268_gray_ink_maximum_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0269_gray_ink_range_reject.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0270_gray_ink_unsigned_reject.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0271_gray_ink_legacy_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0272_gray_ink_alternate_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0273_gray_ink_rgb_process_numeric.Po
+	-rm -f loader/builtin/psd/$(DEPDIR)/test_runner-0274_gray_ink_gray_process_numeric.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
 	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0001_p3_8.Po
 	-rm -f loader/coregraphics/indexed/$(DEPDIR)/test_runner-0002_p3_1.Po

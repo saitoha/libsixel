@@ -1191,6 +1191,18 @@ int test_psd_color_0259(int argc, char **argv);
 int test_psd_color_0260(int argc, char **argv);
 int test_psd_color_0261(int argc, char **argv);
 int test_psd_color_0262(int argc, char **argv);
+int test_psd_color_0263(int argc, char **argv);
+int test_psd_color_0264(int argc, char **argv);
+int test_psd_color_0265(int argc, char **argv);
+int test_psd_color_0266(int argc, char **argv);
+int test_psd_color_0267(int argc, char **argv);
+int test_psd_color_0268(int argc, char **argv);
+int test_psd_color_0269(int argc, char **argv);
+int test_psd_color_0270(int argc, char **argv);
+int test_psd_color_0271(int argc, char **argv);
+int test_psd_color_0272(int argc, char **argv);
+int test_psd_color_0273(int argc, char **argv);
+int test_psd_color_0274(int argc, char **argv);
 
 
 int test_loader_0185_png_source_numeric(int argc, char **argv);
@@ -3245,6 +3257,30 @@ static test_entry_t const test_entries[] = {
       test_psd_color_0261 },
     { "loader/psd/0262_duotone_table_unknown_native",
       test_psd_color_0262 },
+    { "loader/psd/0263_gray_ink_white_numeric",
+      test_psd_color_0263 },
+    { "loader/psd/0264_gray_ink_black_numeric",
+      test_psd_color_0264 },
+    { "loader/psd/0265_gray_ink_quarter_numeric",
+      test_psd_color_0265 },
+    { "loader/psd/0266_gray_ink_dark_numeric",
+      test_psd_color_0266 },
+    { "loader/psd/0267_gray_ink_minimum_numeric",
+      test_psd_color_0267 },
+    { "loader/psd/0268_gray_ink_maximum_numeric",
+      test_psd_color_0268 },
+    { "loader/psd/0269_gray_ink_range_reject",
+      test_psd_color_0269 },
+    { "loader/psd/0270_gray_ink_unsigned_reject",
+      test_psd_color_0270 },
+    { "loader/psd/0271_gray_ink_legacy_numeric",
+      test_psd_color_0271 },
+    { "loader/psd/0272_gray_ink_alternate_numeric",
+      test_psd_color_0272 },
+    { "loader/psd/0273_gray_ink_rgb_process_numeric",
+      test_psd_color_0273 },
+    { "loader/psd/0274_gray_ink_gray_process_numeric",
+      test_psd_color_0274 },
 
 
     { "loader/0185_png_source_numeric",

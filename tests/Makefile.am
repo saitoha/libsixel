@@ -654,6 +654,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0184_LOADER_BUILTIN_PSD_CMYK_ICC_NUMERIC \
     -DBUILD_PSD_COLOR_TEST_COMMON \
     -DBUILD_PSD_SPOT_TEST_COMMON \
+    -DBUILD_PSD_GRAY_INK_TEST_COMMON \
     -DBUILD_PSD_PROCESS_TEST_COMMON \
     -DBUILD_PSD_ALPHA_TEST_COMMON \
     -DBUILD_PSD_MODEL_TEST_COMMON \
@@ -761,6 +762,18 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0260_LAB_ALPHA_PSD16_RLE_NUMERIC \
     -DBUILD_TEST_0261_DUOTONE_TABLE_NATIVE_PRECEDENCE \
     -DBUILD_TEST_0262_DUOTONE_TABLE_UNKNOWN_NATIVE \
+    -DBUILD_TEST_0263_GRAY_INK_WHITE_NUMERIC \
+    -DBUILD_TEST_0264_GRAY_INK_BLACK_NUMERIC \
+    -DBUILD_TEST_0265_GRAY_INK_QUARTER_NUMERIC \
+    -DBUILD_TEST_0266_GRAY_INK_DARK_NUMERIC \
+    -DBUILD_TEST_0267_GRAY_INK_MINIMUM_NUMERIC \
+    -DBUILD_TEST_0268_GRAY_INK_MAXIMUM_NUMERIC \
+    -DBUILD_TEST_0269_GRAY_INK_RANGE_REJECT \
+    -DBUILD_TEST_0270_GRAY_INK_UNSIGNED_REJECT \
+    -DBUILD_TEST_0271_GRAY_INK_LEGACY_NUMERIC \
+    -DBUILD_TEST_0272_GRAY_INK_ALTERNATE_NUMERIC \
+    -DBUILD_TEST_0273_GRAY_INK_RGB_PROCESS_NUMERIC \
+    -DBUILD_TEST_0274_GRAY_INK_GRAY_PROCESS_NUMERIC \
     -DBUILD_TEST_0127_PROCESS_ALPHA_RGB8_NUMERIC \
     -DBUILD_TEST_0128_PROCESS_ALPHA_BACKGROUND_NUMERIC \
     -DBUILD_TEST_0129_PROCESS_ALPHA_RGB16_NUMERIC \
@@ -3064,6 +3077,8 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/psd_color_test_common.h \
     loader/builtin/psd_spot_test_common.c \
     loader/builtin/psd_spot_test_common.h \
+    loader/builtin/psd_gray_ink_test_common.c \
+    loader/builtin/psd_gray_ink_test_common.h \
     loader/builtin/psd_process_test_common.c \
     loader/builtin/psd_process_test_common.h \
     loader/builtin/psd_alpha_test_common.c \
@@ -3174,6 +3189,18 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.c \
     loader/builtin/psd/0261_duotone_table_native_precedence.c \
     loader/builtin/psd/0262_duotone_table_unknown_native.c \
+    loader/builtin/psd/0263_gray_ink_white_numeric.c \
+    loader/builtin/psd/0264_gray_ink_black_numeric.c \
+    loader/builtin/psd/0265_gray_ink_quarter_numeric.c \
+    loader/builtin/psd/0266_gray_ink_dark_numeric.c \
+    loader/builtin/psd/0267_gray_ink_minimum_numeric.c \
+    loader/builtin/psd/0268_gray_ink_maximum_numeric.c \
+    loader/builtin/psd/0269_gray_ink_range_reject.c \
+    loader/builtin/psd/0270_gray_ink_unsigned_reject.c \
+    loader/builtin/psd/0271_gray_ink_legacy_numeric.c \
+    loader/builtin/psd/0272_gray_ink_alternate_numeric.c \
+    loader/builtin/psd/0273_gray_ink_rgb_process_numeric.c \
+    loader/builtin/psd/0274_gray_ink_gray_process_numeric.c \
     loader/builtin/psd/0127_process_alpha_rgb8_numeric.c \
     loader/builtin/psd/0128_process_alpha_background_numeric.c \
     loader/builtin/psd/0129_process_alpha_rgb16_numeric.c \

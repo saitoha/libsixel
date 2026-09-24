@@ -18,13 +18,13 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [PNG and APNG](../loader/builtin/png.md) | 288 | 22 | 59 | 0 | 13 | 7 | 187 |
 | [JPEG](../loader/builtin/jpeg.md) | 249 | 102 | 14 | 1 | 57 | 5 | 70 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
-| [PSD and PSB](../loader/builtin/psd.md) | 1256 | 196 | 551 | 402 | 84 | 3 | 20 |
+| [PSD and PSB](../loader/builtin/psd.md) | 1268 | 206 | 551 | 402 | 86 | 3 | 20 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
 | [WebP](../loader/builtin/webp.md) | 308 | 13 | 48 | 241 | 0 | 1 | 5 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 41 | 25 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2697** | **755** | **724** | **652** | **183** | **18** | **365** |
+| **Total** | **2709** | **765** | **724** | **652** | **185** | **18** | **365** |
 
 ## Complete inventory
 
@@ -2832,6 +2832,18 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.t](../../tests/loader/builtin/psd/0260_lab_alpha_psd16_rle_numeric.t) | Verify lab alpha psd16 rle numeric. | Direct numeric/digest | Inventory only |
 | [tests/loader/builtin/psd/0261_duotone_table_native_precedence.t](../../tests/loader/builtin/psd/0261_duotone_table_native_precedence.t) | Verify the saved Lab table overrides conflicting native ink curves. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/psd/0262_duotone_table_unknown_native.t](../../tests/loader/builtin/psd/0262_duotone_table_unknown_native.t) | Verify the saved Lab table remains usable with an opaque native version. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0263_gray_ink_white_numeric.t](../../tests/loader/builtin/psd/0263_gray_ink_white_numeric.t) | Verify gray ink white numeric at the public loader boundary. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0264_gray_ink_black_numeric.t](../../tests/loader/builtin/psd/0264_gray_ink_black_numeric.t) | Verify gray ink black numeric at the public loader boundary. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0265_gray_ink_quarter_numeric.t](../../tests/loader/builtin/psd/0265_gray_ink_quarter_numeric.t) | Verify gray ink quarter numeric at the public loader boundary. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0266_gray_ink_dark_numeric.t](../../tests/loader/builtin/psd/0266_gray_ink_dark_numeric.t) | Verify gray ink dark numeric at the public loader boundary. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0267_gray_ink_minimum_numeric.t](../../tests/loader/builtin/psd/0267_gray_ink_minimum_numeric.t) | Verify gray ink minimum numeric at the public loader boundary. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0268_gray_ink_maximum_numeric.t](../../tests/loader/builtin/psd/0268_gray_ink_maximum_numeric.t) | Verify gray ink maximum numeric at the public loader boundary. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0269_gray_ink_range_reject.t](../../tests/loader/builtin/psd/0269_gray_ink_range_reject.t) | Verify gray ink range reject at the public loader boundary. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0270_gray_ink_unsigned_reject.t](../../tests/loader/builtin/psd/0270_gray_ink_unsigned_reject.t) | Verify gray ink unsigned reject at the public loader boundary. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0271_gray_ink_legacy_numeric.t](../../tests/loader/builtin/psd/0271_gray_ink_legacy_numeric.t) | Verify gray ink legacy numeric at the public loader boundary. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0272_gray_ink_alternate_numeric.t](../../tests/loader/builtin/psd/0272_gray_ink_alternate_numeric.t) | Verify gray ink alternate numeric at the public loader boundary. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0273_gray_ink_rgb_process_numeric.t](../../tests/loader/builtin/psd/0273_gray_ink_rgb_process_numeric.t) | Verify gray ink rgb process numeric at the public loader boundary. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0274_gray_ink_gray_process_numeric.t](../../tests/loader/builtin/psd/0274_gray_ink_gray_process_numeric.t) | Verify gray ink gray process numeric at the public loader boundary. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 
 <!-- test-plan-end -->
 
