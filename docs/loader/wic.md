@@ -20,6 +20,8 @@ ICO entries are alternative image sizes rather than animation frames. The `ico_m
 
 The adapter retains eligible indexed pixels with byte RGB palette entries; otherwise it requests `GUID_WICPixelFormat32bppRGBA`, an 8-bit-per-channel conversion. libsixel then normalizes alpha/background and hands a typed frame to the shared encoder. High-depth sources therefore cross a byte decode boundary in this adapter, even if later processing promotes the frame to float32. The adapter does not add the ICC/orientation integration documented for libpng, libjpeg, or CoreGraphics.
 
+WIC itself provides [frame color contexts](https://learn.microsoft.com/en-us/windows/win32/api/wincodec/nf-wincodec-iwicbitmapframedecode-getcolorcontexts) and [color transforms](https://learn.microsoft.com/en-us/windows/win32/wic/-wic-colormanagement). The current adapter does not retrieve those contexts or invoke `IWICColorTransform`; `IWICFormatConverter` and `CopyPixels` are not that connection. This is an adapter integration gap, not a claim that WIC cannot expose ICC data. The [CMS integration policy](color-management.md#cms-integration-policy) prioritizes using these backend APIs over adding a separate file-header parser. That pending connection does not remove the independent byte-precision limit above.
+
 There is no `wic:orientation` or `wic:cms_engine` selector in the current backend-specific option registry. Do not transfer another loader's option spelling or metadata guarantees to WIC. Use the frame representation and controlled reference pixels to establish the actual route, especially for transparent icons and multi-frame GIF extraction.
 
 ## Implementation and validation

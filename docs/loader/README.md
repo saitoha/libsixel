@@ -2,7 +2,7 @@
 
 [Loader precision, gamut, and fast paths](precision-policy.md) defines the shared preservation and byte-path policy, including backend-expanded indexed images and the distinction between desired contracts and current backend support.
 
-For engine selection and its limits, read [Loader CMS: builtin and Little CMS](color-management.md). It distinguishes decoder support from CMS support and covers unsupported profiles, best-effort fallback, quality, and performance. For shared PNG metadata precedence and its reference matrix, read [PNG color metadata](png-color-metadata.md). For the subsystem design, read [Builtin CMS specification and architecture](builtin-cms.md).
+For the [CMS integration policy](color-management.md#cms-integration-policy), current [loader/format support tables](color-management.md#loader-connections-and-wide-gamut-boundaries), engine selection and its limits, read [Loader Color Management](color-management.md). It distinguishes available backend color APIs, implemented adapter connections and precision preservation, and covers unsupported profiles, best-effort fallback, quality, and performance. For shared PNG metadata precedence and its reference matrix, read [PNG color metadata](png-color-metadata.md). For the subsystem design, read [Builtin CMS specification and architecture](builtin-cms.md).
 
 For the static PNG source and native conversion boundary, see [CoreGraphics PNG source precision](coregraphics.md#png-source-precision).
 
@@ -74,7 +74,7 @@ The registry order below is also the automatic priority order for components pre
 
 | Loader name | Availability | Primary role | Representative output character |
 | --- | --- | --- | --- |
-| [`libpng`](libpng.md) | With libpng | PNG and APNG | Indexed or RGB/RGBA; static 16-bit and CMS paths can produce float32. APNG has a separate RGBA8 pipeline. |
+| [`libpng`](libpng.md) | With libpng | PNG and APNG | Eligible indexed/byte output or managed float32; APNG uses shared source interpretation and a linear float RGB/alpha canvas. |
 | [`libjpeg`](libjpeg.md) | With libjpeg | JPEG, including library-supported high-depth variants | RGB float32 on precision-preserving paths; CMS may produce a typed target colorspace. |
 | [`libwebp`](libwebp.md) | With libwebp | Static and animated WebP | RGB/RGBA or indexed animation frames; float32 after supported color management. |
 | [`libtiff`](libtiff.md) | With libtiff | TIFF | Selected high-precision paths and an RGBA8 fallback; embedded ICC is not connected for every photometric type. See the [format/CMS support table](libtiff.md#format-and-color-management-support). |
@@ -91,7 +91,7 @@ Framework and plugin loaders inherit part of their effective format support from
 
 See [Animation playback](../functionality/animation.md) for the loader/format support matrix, loop and delay metadata, still-frame extraction, and GdkPixbuf's finite-loop and iterator limitations. Successful still-image loading does not establish animation support.
 
-Read format support and color-management support separately. Backend tables should distinguish implemented decoding, implemented ICC application, missing integration and unverified combinations. For example, the [TIFF table](libtiff.md#format-and-color-management-support) records original Lab/CMYK ICC integration separately from LOGL and unsupported layout limitations. At loader level, the current [WIC](../../src/loader-wic.c), [GD](../../src/loader-gd.c) and [GdkPixbuf](../../src/loader-gdk-pixbuf2.c) adapters do not implement embedded-ICC conversion; a format converter or gamma normalization alone does not establish that connection.
+Read format support and color-management support separately. The [CMS support tables](color-management.md#loader-connections-and-wide-gamut-boundaries) distinguish implemented connections, unused backend capabilities and unsupported metadata interpretation; the linked backend pages own exact format/layout limits. For example, the [TIFF table](libtiff.md#format-and-color-management-support) records original Lab/CMYK ICC integration separately from LOGL and unsupported layout limitations. A format converter or gamma normalization alone does not establish an ICC connection.
 
 ## The output is a typed frame, not universal RGBA
 
