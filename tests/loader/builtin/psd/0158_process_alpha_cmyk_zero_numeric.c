@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Verify process alpha cmyk reject. */
+/* Verify process alpha cmyk zero numeric. */
 #include "../psd_process_test_common.h"
 
 int

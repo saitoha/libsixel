@@ -191,8 +191,8 @@ psd_model_test(int specimen)
     extras = flags & PSDM_NO_SPOT ? 0u :
         spot || (flags & PSDM_TWO) ? 2u : 1u;
     reject = (flags & (PSDM_WRONG_ICC | PSDM_BAD_ICC | PSDM_BAD_TRC |
-        PSDM_NAN | PSDM_ALPHA | PSDM_SHORT | PSDM_SPOT_NAN)) != 0u ||
-        (mode == 9u && depth == 32u);
+        PSDM_NAN | PSDM_SHORT | PSDM_SPOT_NAN)) != 0u ||
+        (mode == 9u && (depth == 32u || (flags & PSDM_ALPHA)));
     fw = (edge_writer_t){file, sizeof(file), 0u, 0};
     rw = (edge_writer_t){resources, sizeof(resources), 0u, 0};
     dw = (edge_writer_t){record, sizeof(record), 0u, 0};
@@ -366,7 +366,7 @@ psd_model_test(int specimen)
     }
     if (result != 0 || SIXEL_FAILED(status) || probe.callback_count != 1 ||
         probe.width[0] != 8 || probe.height[0] != 1 ||
-        probe.mask_size[0] != 0u) {
+        probe.mask_size[0] != ((flags & PSDM_ALPHA) ? 8u : 0u)) {
         fprintf(stderr, "PSD model=%d status=%x calls=%d\n", specimen,
                 status, probe.callback_count);
         return 1;
@@ -414,6 +414,15 @@ psd_model_test(int specimen)
                 expected[j] = (1.0 - ink) * expected[j] + ink *
                     (solidity * color + (1.0 - solidity) *
                      expected[j] * color);
+            }
+        }
+        if (flags & PSDM_ALPHA) {
+            if (probe.mask[0][i] != (coverage[0][i] == 1.0 ? 1u : 0u)) {
+                return 1;
+            }
+            for (j = 0u; j < 3u; ++j) {
+                expected[j] = coverage[0][i] == 1.0 ?
+                    psdm_linear(source[0][i]) : (j == 1u ? 1.0 : 0.0);
             }
         }
         for (j = 0u; j < 3u; ++j) {

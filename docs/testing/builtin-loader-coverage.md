@@ -18,13 +18,13 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [PNG and APNG](../loader/builtin/png.md) | 288 | 22 | 59 | 0 | 13 | 7 | 187 |
 | [JPEG](../loader/builtin/jpeg.md) | 249 | 102 | 14 | 1 | 57 | 5 | 70 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
-| [PSD and PSB](../loader/builtin/psd.md) | 1191 | 142 | 551 | 402 | 75 | 3 | 18 |
+| [PSD and PSB](../loader/builtin/psd.md) | 1229 | 174 | 551 | 402 | 81 | 3 | 18 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
 | [WebP](../loader/builtin/webp.md) | 308 | 13 | 48 | 241 | 0 | 1 | 5 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 41 | 25 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2632** | **701** | **724** | **652** | **174** | **18** | **363** |
+| **Total** | **2670** | **733** | **724** | **652** | **180** | **18** | **363** |
 
 ## Complete inventory
 
@@ -2727,7 +2727,7 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/psd/0155_process_alpha_spot_order_numeric.t](../../tests/loader/builtin/psd/0155_process_alpha_spot_order_numeric.t) | Verify process alpha spot order numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/psd/0156_process_alpha_rgb16_icc_numeric.t](../../tests/loader/builtin/psd/0156_process_alpha_rgb16_icc_numeric.t) | Verify process alpha rgb16 icc numeric. | Direct numeric/digest | Inventory only |
 | [tests/loader/builtin/psd/0157_process_alpha_zero_background_numeric.t](../../tests/loader/builtin/psd/0157_process_alpha_zero_background_numeric.t) | Verify process alpha zero background numeric. | Direct numeric/digest | Inventory only |
-| [tests/loader/builtin/psd/0158_process_alpha_cmyk_reject.t](../../tests/loader/builtin/psd/0158_process_alpha_cmyk_reject.t) | Verify process alpha cmyk reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0158_process_alpha_cmyk_zero_numeric.t](../../tests/loader/builtin/psd/0158_process_alpha_cmyk_zero_numeric.t) | Verify process alpha cmyk zero numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/psd/0159_gray8_spot_numeric.t](../../tests/loader/builtin/psd/0159_gray8_spot_numeric.t) | Verify gray8 spot numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/psd/0160_gray16_spot_numeric.t](../../tests/loader/builtin/psd/0160_gray16_spot_numeric.t) | Verify gray16 spot numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/psd/0161_gray32_spot_numeric.t](../../tests/loader/builtin/psd/0161_gray32_spot_numeric.t) | Verify gray32 spot numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
@@ -2741,7 +2741,7 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/psd/0169_gray_icc_malformed_reject.t](../../tests/loader/builtin/psd/0169_gray_icc_malformed_reject.t) | Verify gray icc malformed reject. | Acceptance/rejection | Inventory only |
 | [tests/loader/builtin/psd/0170_gray_icc_unsupported_reject.t](../../tests/loader/builtin/psd/0170_gray_icc_unsupported_reject.t) | Verify gray icc unsupported reject. | Acceptance/rejection | Inventory only |
 | [tests/loader/builtin/psd/0171_gray_nan_reject.t](../../tests/loader/builtin/psd/0171_gray_nan_reject.t) | Verify gray nan reject. | Acceptance/rejection | Inventory only |
-| [tests/loader/builtin/psd/0172_gray_alpha_reject.t](../../tests/loader/builtin/psd/0172_gray_alpha_reject.t) | Verify gray alpha reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0172_gray_alpha_zero_numeric.t](../../tests/loader/builtin/psd/0172_gray_alpha_zero_numeric.t) | Verify gray alpha zero numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/psd/0173_gray_rle_numeric.t](../../tests/loader/builtin/psd/0173_gray_rle_numeric.t) | Verify gray rle numeric. | Direct numeric/digest | Inventory only |
 | [tests/loader/builtin/psd/0174_gray_zip_numeric.t](../../tests/loader/builtin/psd/0174_gray_zip_numeric.t) | Verify gray zip numeric. | Direct numeric/digest | Inventory only |
 | [tests/loader/builtin/psd/0175_gray_psb_prediction_numeric.t](../../tests/loader/builtin/psd/0175_gray_psb_prediction_numeric.t) | Verify gray psb prediction numeric. | Direct numeric/digest | Inventory only |
@@ -2767,6 +2767,44 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/psd/0195_lab_truncated_reject.t](../../tests/loader/builtin/psd/0195_lab_truncated_reject.t) | Verify lab truncated reject. | Acceptance/rejection | Inventory only |
 | [tests/loader/builtin/psd/0196_gray_spot_nan_reject.t](../../tests/loader/builtin/psd/0196_gray_spot_nan_reject.t) | Verify gray spot nan reject. | Acceptance/rejection | Inventory only |
 | [tests/loader/builtin/psd/0197_lab_icc_effect_numeric.t](../../tests/loader/builtin/psd/0197_lab_icc_effect_numeric.t) | Verify lab icc effect numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0198_gray8_alpha_numeric.t](../../tests/loader/builtin/psd/0198_gray8_alpha_numeric.t) | Verify gray8 alpha numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0199_gray16_alpha_numeric.t](../../tests/loader/builtin/psd/0199_gray16_alpha_numeric.t) | Verify gray16 alpha numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0200_gray32_alpha_extended_numeric.t](../../tests/loader/builtin/psd/0200_gray32_alpha_extended_numeric.t) | Verify gray32 alpha extended numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0201_gray8_alpha_icc_numeric.t](../../tests/loader/builtin/psd/0201_gray8_alpha_icc_numeric.t) | Verify gray8 alpha icc numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0202_gray16_alpha_icc_numeric.t](../../tests/loader/builtin/psd/0202_gray16_alpha_icc_numeric.t) | Verify gray16 alpha icc numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0203_gray32_alpha_icc_numeric.t](../../tests/loader/builtin/psd/0203_gray32_alpha_icc_numeric.t) | Verify gray32 alpha icc numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0204_gray_alpha_icc_disabled_numeric.t](../../tests/loader/builtin/psd/0204_gray_alpha_icc_disabled_numeric.t) | Verify gray alpha icc disabled numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0205_gray_alpha_background_numeric.t](../../tests/loader/builtin/psd/0205_gray_alpha_background_numeric.t) | Verify gray alpha background numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0206_gray_alpha_tiny_numeric.t](../../tests/loader/builtin/psd/0206_gray_alpha_tiny_numeric.t) | Verify gray alpha tiny numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0207_gray_alpha_overflow_reject.t](../../tests/loader/builtin/psd/0207_gray_alpha_overflow_reject.t) | Verify gray alpha overflow reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0208_gray_alpha_nan_reject.t](../../tests/loader/builtin/psd/0208_gray_alpha_nan_reject.t) | Verify gray alpha nan reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0209_gray_alpha_psb_prediction_numeric.t](../../tests/loader/builtin/psd/0209_gray_alpha_psb_prediction_numeric.t) | Verify gray alpha psb prediction numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0210_gray_alpha_reordered_numeric.t](../../tests/loader/builtin/psd/0210_gray_alpha_reordered_numeric.t) | Verify gray alpha reordered numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0211_gray_alpha_display_omitted_numeric.t](../../tests/loader/builtin/psd/0211_gray_alpha_display_omitted_numeric.t) | Verify gray alpha display omitted numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0212_gray_alpha_mask_nan_numeric.t](../../tests/loader/builtin/psd/0212_gray_alpha_mask_nan_numeric.t) | Verify gray alpha mask nan numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0213_gray_alpha_spot_order_numeric.t](../../tests/loader/builtin/psd/0213_gray_alpha_spot_order_numeric.t) | Verify gray alpha spot order numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0214_cmyk8_alpha_numeric.t](../../tests/loader/builtin/psd/0214_cmyk8_alpha_numeric.t) | Verify cmyk8 alpha numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0215_cmyk16_alpha_numeric.t](../../tests/loader/builtin/psd/0215_cmyk16_alpha_numeric.t) | Verify cmyk16 alpha numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0216_cmyk32_alpha_numeric.t](../../tests/loader/builtin/psd/0216_cmyk32_alpha_numeric.t) | Verify cmyk32 alpha numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0217_cmyk8_alpha_icc_numeric.t](../../tests/loader/builtin/psd/0217_cmyk8_alpha_icc_numeric.t) | Verify cmyk8 alpha icc numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0218_cmyk16_alpha_icc_numeric.t](../../tests/loader/builtin/psd/0218_cmyk16_alpha_icc_numeric.t) | Verify cmyk16 alpha icc numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0219_cmyk32_alpha_icc_numeric.t](../../tests/loader/builtin/psd/0219_cmyk32_alpha_icc_numeric.t) | Verify cmyk32 alpha icc numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0220_cmyk_alpha_icc_disabled_numeric.t](../../tests/loader/builtin/psd/0220_cmyk_alpha_icc_disabled_numeric.t) | Verify cmyk alpha icc disabled numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0221_cmyk_alpha_background_numeric.t](../../tests/loader/builtin/psd/0221_cmyk_alpha_background_numeric.t) | Verify cmyk alpha background numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0222_cmyk_alpha_stored_range_reject.t](../../tests/loader/builtin/psd/0222_cmyk_alpha_stored_range_reject.t) | Verify cmyk alpha stored range reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0223_cmyk_alpha_tiny_numeric.t](../../tests/loader/builtin/psd/0223_cmyk_alpha_tiny_numeric.t) | Verify cmyk alpha tiny numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0224_cmyk_alpha_nan_reject.t](../../tests/loader/builtin/psd/0224_cmyk_alpha_nan_reject.t) | Verify cmyk alpha nan reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0225_cmyk_alpha_psb_zip_numeric.t](../../tests/loader/builtin/psd/0225_cmyk_alpha_psb_zip_numeric.t) | Verify cmyk alpha psb zip numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0226_cmyk_alpha_psb_rle_numeric.t](../../tests/loader/builtin/psd/0226_cmyk_alpha_psb_rle_numeric.t) | Verify cmyk alpha psb rle numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0227_cmyk_alpha_display_omitted_numeric.t](../../tests/loader/builtin/psd/0227_cmyk_alpha_display_omitted_numeric.t) | Verify cmyk alpha display omitted numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/psd/0228_cmyk_alpha_reordered_numeric.t](../../tests/loader/builtin/psd/0228_cmyk_alpha_reordered_numeric.t) | Verify cmyk alpha reordered numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0229_cmyk_alpha_spot_order_numeric.t](../../tests/loader/builtin/psd/0229_cmyk_alpha_spot_order_numeric.t) | Verify cmyk alpha spot order numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0230_gray_alpha_negative_reject.t](../../tests/loader/builtin/psd/0230_gray_alpha_negative_reject.t) | Verify gray alpha negative reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0231_cmyk_alpha_negative_reject.t](../../tests/loader/builtin/psd/0231_cmyk_alpha_negative_reject.t) | Verify cmyk alpha negative reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/psd/0232_gray_alpha_icc_domain_reject.t](../../tests/loader/builtin/psd/0232_gray_alpha_icc_domain_reject.t) | Verify gray alpha icc domain reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0233_cmyk_alpha_icc_domain_reject.t](../../tests/loader/builtin/psd/0233_cmyk_alpha_icc_domain_reject.t) | Verify cmyk alpha icc domain reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0234_gray_alpha_native16_numeric.t](../../tests/loader/builtin/psd/0234_gray_alpha_native16_numeric.t) | Verify gray alpha native16 numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/psd/0235_cmyk_alpha_native8_numeric.t](../../tests/loader/builtin/psd/0235_cmyk_alpha_native8_numeric.t) | Verify cmyk alpha native8 numeric. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 
 <!-- test-plan-end -->
 

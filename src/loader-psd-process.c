@@ -159,9 +159,9 @@ sixel_psd_render_process_data(sixel_chunk_t const *chunk,
         goto unsupported;
     }
     alpha = alpha_plane != UINT_MAX;
-    if (alpha && info->color_mode != 3u) {
-        /* Other models' stored matte and profile order need independent
-         * contracts; RGB source recovery must not be applied to Lab/inks. */
+    if (alpha && info->color_mode == 9u) {
+        /* Lab's stored matte needs its own source-coordinate contract;
+         * its opponent coordinates cannot use an all-one white matte. */
         sixel_helper_set_additional_message(
             "builtin PSD: process spots with merged transparency unsupported");
         return SIXEL_BAD_INPUT;
@@ -220,10 +220,12 @@ sixel_psd_render_process_data(sixel_chunk_t const *chunk,
                 goto cleanup;
             }
             if (alpha && opacity > 0.0) {
-                /* Undo the source RGB white matte before CMS. Subtract
-                 * white first: (sample + alpha - 1) loses tiny alpha at
-                 * sample == 1. At alpha zero the original color is lost;
-                 * retain the stored hidden components without division. */
+                /* RGB, Gray and native inverted CMYK store a white
+                 * matte in each process plane. Undo it before CMS (and
+                 * before CMYK inversion), not after nonlinear conversion.
+                 * Subtract white first: (sample + alpha - 1) loses tiny
+                 * alpha at sample == 1. At zero alpha retain hidden data;
+                 * do not clip finite recovery outside the source gamut. */
                 sample = 1.0 + (sample - 1.0) / opacity;
                 if (!isfinite(sample) || fabs(sample) > FLT_MAX) {
                     goto cleanup;

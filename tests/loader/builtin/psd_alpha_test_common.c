@@ -9,6 +9,25 @@
 #include "loader_builtin_memory_test_common.h"
 #include "psd_alpha_test_common.h"
 #include "tests/data/color-numeric/minimal-profiles.h"
+#include "tests/data/color-numeric/gray-samples.h"
+#include "tests/data/color-numeric/cmyk.h"
+
+#define PSDA_ICC 1u
+#define PSDA_BG 2u
+#define PSDA_PSB 4u
+#define PSDA_OMIT 8u
+#define PSDA_TWO 16u
+#define PSDA_EXTENDED 32u
+#define PSDA_OVERFLOW 64u
+#define PSDA_TINY 128u
+#define PSDA_NAN 256u
+#define PSDA_RANGE 512u
+#define PSDA_WRONG_ICC 1024u
+#define PSDA_MASK_NAN 2048u
+#define PSDA_REORDER 4096u
+#define PSDA_BAD_ALPHA 8192u
+#define PSDA_DISABLED 16384u
+#define PSDA_REAL 32768u
 
 static void
 psda_u32(edge_writer_t *w, uint32_t value)
@@ -54,9 +73,67 @@ psda_quantize(double value, unsigned int depth)
     return floor(value * scale + 0.5) / scale;
 }
 
+static void
+psda_cmyk(double const inverted[4], double rgb[3])
+{
+    /* Independent affine ICC model: native inverted inks weight the
+     * stored u1.15 D50 vertices. The matrix is derived with the rational
+     * oracle in data/psd-tools/generate_duotone_reference.py. */
+    static unsigned int const weights[4][3] = {
+        {12859u, 6561u, 411u}, {11357u, 21142u, 2863u},
+        {4219u, 1787u, 21054u}, {3160u, 3278u, 2702u}
+    };
+    static double const matrix[3][3] = {
+        {3.134186364236819, -1.6172089589982748, -0.49069406400638393},
+        {-0.9787485041906944, 1.9161300967735873, 0.03343339915999554},
+        {0.07196392780224674, -0.22899387345320327, 1.4057537328964445}
+    };
+    double xyz[3];
+    unsigned int j;
+    unsigned int k;
+
+    for (j = 0u; j < 3u; ++j) {
+        xyz[j] = 0.0;
+        for (k = 0u; k < 4u; ++k) {
+            xyz[j] += inverted[k] * weights[k][j] / 32768.0;
+        }
+    }
+    for (j = 0u; j < 3u; ++j) {
+        rgb[j] = 0.0;
+        for (k = 0u; k < 3u; ++k) {
+            rgb[j] += matrix[j][k] * xyz[k];
+        }
+    }
+}
+
 int
 psd_alpha_test(int specimen)
 {
+    static struct {
+        unsigned int mode, depth, compression, flags;
+    } const cases[] = {
+        {1, 8, 0, 0}, {1, 16, 0, 0},
+        {1, 32, 0, PSDA_EXTENDED},
+        {1, 8, 0, PSDA_ICC}, {1, 16, 0, PSDA_ICC},
+        {1, 32, 0, PSDA_ICC}, {1, 16, 0, PSDA_ICC | PSDA_DISABLED},
+        {1, 16, 0, PSDA_BG}, {1, 32, 0, PSDA_TINY},
+        {1, 32, 0, PSDA_OVERFLOW}, {1, 32, 0, PSDA_NAN},
+        {1, 16, 3, PSDA_PSB}, {1, 8, 0, PSDA_REORDER},
+        {1, 8, 0, PSDA_OMIT}, {1, 32, 0, PSDA_MASK_NAN},
+        {1, 16, 0, PSDA_TWO},
+        {4, 8, 0, 0}, {4, 16, 0, 0}, {4, 32, 0, 0},
+        {4, 8, 0, PSDA_ICC}, {4, 16, 0, PSDA_ICC},
+        {4, 32, 0, PSDA_ICC}, {4, 16, 0, PSDA_ICC | PSDA_DISABLED},
+        {4, 16, 0, PSDA_BG}, {4, 32, 0, PSDA_RANGE},
+        {4, 32, 0, PSDA_TINY}, {4, 32, 0, PSDA_NAN},
+        {4, 16, 2, PSDA_PSB}, {4, 16, 1, PSDA_PSB},
+        {4, 8, 0, PSDA_OMIT}, {4, 8, 0, PSDA_REORDER},
+        {4, 16, 0, PSDA_TWO}, {1, 32, 0, PSDA_BAD_ALPHA},
+        {4, 32, 0, PSDA_BAD_ALPHA},
+        {1, 8, 0, PSDA_ICC | PSDA_WRONG_ICC},
+        {4, 8, 0, PSDA_ICC | PSDA_WRONG_ICC},
+        {1, 16, 0, PSDA_REAL}, {4, 8, 0, PSDA_REAL}
+    };
     static unsigned int const alpha8[8] = {0, 255, 128, 64, 1, 160, 0, 128};
     static unsigned int const alpha16[8] = {
         0, 65535, 32769, 16641, 1, 41121, 0, 32897
@@ -78,7 +155,8 @@ psd_alpha_test(int specimen)
     edge_loader_options_t options;
     edge_frame_probe_t probe;
     SIXELSTATUS status;
-    double samples[7][8];
+    double samples[8][8];
+    double restored[4];
     double alpha[8];
     double expected[3];
     double background[3];
@@ -93,6 +171,9 @@ psd_alpha_test(int specimen)
     uint32_t bits;
     uint32_t s1;
     uint32_t s2;
+    unsigned int mode;
+    unsigned int base;
+    unsigned int flags;
     unsigned int depth;
     unsigned int version;
     unsigned int extras;
@@ -127,6 +208,25 @@ psd_alpha_test(int specimen)
         (specimen >= 145 && specimen <= 147) || specimen == 149;
     compression = specimen == 151 ? 1u : specimen == 152 ? 2u :
         specimen == 153 ? 3u : 0u;
+    mode = 3u;
+    flags = 0u;
+    if (specimen >= 198 && specimen <= 235) {
+        mode = cases[specimen - 198].mode;
+        depth = cases[specimen - 198].depth;
+        flags = cases[specimen - 198].flags;
+        compression = cases[specimen - 198].compression;
+        version = flags & PSDA_PSB ? 2u : 1u;
+        extras = flags & PSDA_TWO ? 4u : 3u;
+        alpha_slot = flags & PSDA_REORDER ? 1u : 0u;
+        offset = (flags & PSDA_OMIT) != 0u;
+        flag = !(flags & PSDA_REORDER);
+        ids = 1;
+        profiled = (flags & PSDA_ICC) != 0u;
+        bgcolor = (flags & PSDA_BG) != 0u;
+        reject = (flags & (PSDA_OVERFLOW | PSDA_NAN | PSDA_RANGE |
+                           PSDA_BAD_ALPHA | PSDA_WRONG_ICC)) != 0u;
+    }
+    base = mode == 1u ? 1u : mode == 4u ? 4u : 3u;
     fw = (edge_writer_t){file, sizeof(file), 0u, 0};
     rw = (edge_writer_t){resources, sizeof(resources), 0u, 0};
     dw = (edge_writer_t){record, sizeof(record), 0u, 0};
@@ -165,8 +265,14 @@ psd_alpha_test(int specimen)
         psda_resource(&rw, 1067u, record, dw.length);
     }
     if (profiled) {
-        psda_resource(&rw, 1039u, color_minimal_display_p3,
-                       sizeof(color_minimal_display_p3));
+        if (mode == 3u || (flags & PSDA_WRONG_ICC)) {
+            psda_resource(&rw, 1039u, color_minimal_display_p3,
+                           sizeof(color_minimal_display_p3));
+        } else if (mode == 1u) {
+            psda_resource(&rw, 1039u, color_gray_icc, sizeof(color_gray_icc));
+        } else {
+            psda_resource(&rw, 1039u, color_cmyk_icc, sizeof(color_cmyk_icc));
+        }
     }
     if (specimen == 137) {
         psda_u32(&lw, 48u);
@@ -199,11 +305,11 @@ psd_alpha_test(int specimen)
     for (i = 0u; i < 6u; ++i) {
         edge_put_u8(&fw, 0u);
     }
-    edge_put_u16be(&fw, 3u + extras);
+    edge_put_u16be(&fw, base + extras);
     psda_u32(&fw, 1u);
     psda_u32(&fw, 8u);
     edge_put_u16be(&fw, depth);
-    edge_put_u16be(&fw, 3u);
+    edge_put_u16be(&fw, mode);
     psda_u32(&fw, 0u);
     psda_u32(&fw, (uint32_t)rw.length);
     edge_put_bytes(&fw, resources, rw.length);
@@ -216,41 +322,64 @@ psd_alpha_test(int specimen)
     for (i = 0u; i < 8u; ++i) {
         alpha[i] = psda_quantize(depth == 16u ? alpha16[i] / 65535.0 :
                                  alpha8[i] / 255.0, depth);
-        if (specimen == 148) {
+        if (specimen == 148 || (flags & PSDA_TINY)) {
             bits = 1u;
             memcpy(&value, &bits, sizeof(value));
             alpha[i] = value;
-        } else if (specimen == 149 || specimen == 150) {
+        } else if (specimen == 149 || specimen == 150 ||
+                   (flags & (PSDA_OVERFLOW | PSDA_EXTENDED | PSDA_RANGE))) {
             alpha[i] = 0.5;
         } else if (specimen == 157) {
             alpha[i] = 0.0;
         }
-        for (j = 0u; j < 3u; ++j) {
-            color = profiled ? (j == 0u ? 1.0 : 0.0) :
+        for (j = 0u; j < base; ++j) {
+            color = mode != 3u ? (j == 3u ? 0.625 :
+                (i + 1u + j * 2u) / 16.0) : profiled ? (j == 0u ? 1.0 : 0.0) :
                 j == 0u ? (i + 1u) / 16.0 : j == 1u ? (8u - i) / 16.0 : 0.75;
-            if (specimen == 130) {
+            if (flags & PSDA_EXTENDED) {
+                color = i % 2u ? 1.25 : -0.25;
+            } else if (specimen == 130) {
                 color = j == 0u ? -0.25 : j == 1u ? 1.5 : 0.5;
             }
             samples[j][i] = psda_quantize(alpha[i] == 0.0 ? color :
                 1.0 - alpha[i] + alpha[i] * color, depth);
-            if (specimen == 148) {
+            if (specimen == 148 || (flags & PSDA_TINY)) {
                 samples[j][i] = 1.0;
-            } else if (specimen == 149 && i == 7u) {
+            } else if ((specimen == 149 || (flags & PSDA_OVERFLOW)) &&
+                       i == 7u) {
                 samples[j][i] = FLT_MAX;
+            } else if (flags & PSDA_RANGE) {
+                samples[j][i] = 1.5;
             } else if (specimen == 150) {
                 samples[j][i] = j == 0u ? 0.25 : j == 1u ? 1.25 : 0.5;
             }
         }
+        /* Native Photoshop pairs, read independently from a single
+         * normal layer and the merged image. Do not regenerate them by
+         * the fixture's forward matte equation. */
+        if ((flags & PSDA_REAL) && i == 1u) {
+            if (mode == 1u) {
+                alpha[i] = 25012.0 / 65535.0;
+                samples[0][i] = 63243.0 / 65535.0;
+            } else {
+                alpha[i] = 73.0 / 255.0;
+                samples[0][i] = 211.0 / 255.0;
+                samples[1][i] = 238.0 / 255.0;
+                samples[2][i] = 248.0 / 255.0;
+                samples[3][i] = 1.0;
+            }
+        }
         for (k = 0u; k < extras; ++k) {
-            samples[3u + k][i] = k == alpha_slot ? alpha[i] : k < 2u ?
+            samples[base + k][i] = k == alpha_slot ? alpha[i] : k < 2u ?
                 0.0 : psda_quantize(plate[(i + (k == 3u ? 3u : 0u)) % 8u] /
                                    255.0, depth);
-            if ((specimen == 148 || specimen == 157) && k >= 2u) {
-                samples[3u + k][i] = 1.0;
+            if ((specimen == 148 || specimen == 157 ||
+                 (flags & PSDA_TINY)) && k >= 2u) {
+                samples[base + k][i] = 1.0;
             }
         }
     }
-    for (k = 0u; k < 3u + extras; ++k) {
+    for (k = 0u; k < base + extras; ++k) {
         for (i = 0u; i < 8u; ++i) {
             if (depth != 32u) {
                 code = (unsigned int)(samples[k][i] *
@@ -264,9 +393,12 @@ psd_alpha_test(int specimen)
                 value = (float)samples[k][i];
                 memcpy(&bits, &value, sizeof(bits));
                 if ((specimen == 144 && k == 4u) ||
-                    (specimen == 145 && k == 3u)) {
+                    (specimen == 145 && k == 3u) ||
+                    ((flags & PSDA_MASK_NAN) && k == base + 1u) ||
+                    ((flags & PSDA_NAN) && k == base)) {
                     bits = UINT32_C(0x7fc00000);
-                } else if (specimen == 146 && k == 3u) {
+                } else if ((specimen == 146 && k == 3u) ||
+                           ((flags & PSDA_BAD_ALPHA) && k == base)) {
                     bits = UINT32_C(0xbf000000);
                 } else if (specimen == 147 && k == 3u) {
                     bits = UINT32_C(0x3fc00000);
@@ -277,18 +409,29 @@ psd_alpha_test(int specimen)
     }
     row = 8u * (depth / 8u);
     if (compression == 1u) {
-        for (k = 0u; k < 3u + extras; ++k) {
+        for (k = 0u; k < base + extras; ++k) {
+            if (version == 2u) {
+                edge_put_u16be(&fw, 0u);
+            }
             edge_put_u16be(&fw, (unsigned int)row + 1u);
         }
-        for (k = 0u; k < 3u + extras; ++k) {
+        for (k = 0u; k < base + extras; ++k) {
             edge_put_u8(&fw, (unsigned int)row - 1u);
             edge_put_bytes(&fw, raw + k * row, row);
         }
     } else if (compression >= 2u) {
         if (compression == 3u) {
-            for (k = 0u; k < 3u + extras; ++k) {
-                for (n = row - 1u; n > 0u; --n) {
-                    raw[k * row + n] -= raw[k * row + n - 1u];
+            for (k = 0u; k < base + extras; ++k) {
+                for (n = row - depth / 8u; n > 0u; n -= depth / 8u) {
+                    i = (unsigned int)(k * row + n);
+                    if (depth == 16u) {
+                        code = (raw[i] * 256u + raw[i + 1u] -
+                            raw[i - 2u] * 256u - raw[i - 1u]) & 65535u;
+                        raw[i] = (unsigned char)(code >> 8);
+                        raw[i + 1u] = (unsigned char)code;
+                    } else {
+                        raw[i] -= raw[i - 1u];
+                    }
                 }
             }
         }
@@ -317,7 +460,7 @@ psd_alpha_test(int specimen)
         options.bgcolor[j] = (unsigned char)(32u + 64u * j);
         background[j] = psda_linear(options.bgcolor[j] / 255.0);
     }
-    if (profiled && specimen != 133) {
+    if (profiled && specimen != 133 && !(flags & PSDA_DISABLED)) {
         options.cms_engine = SIXEL_CMS_ENGINE_BUILTIN;
     }
     memset(&probe, 0, sizeof(probe));
@@ -340,11 +483,28 @@ psd_alpha_test(int specimen)
     memcpy(actual, probe.rgb[0], sizeof(actual));
     for (i = 0u; i < 8u; ++i) {
         a = alpha[i];
-        for (j = 0u; j < 3u; ++j) {
-            color = a == 0.0 ? samples[j][i] : specimen == 148 ? 1.0 :
+        for (j = 0u; j < base; ++j) {
+            restored[j] = a == 0.0 ? samples[j][i] :
+                specimen == 148 || (flags & PSDA_TINY) ? 1.0 :
                 (samples[j][i] - (1.0 - a)) / a;
-            expected[j] = profiled ? (specimen == 133 ?
-                (j == 0u ? 1.0 : 0.0) : p3[j]) : psda_linear(color);
+        }
+        if (mode == 4u && profiled && !(flags & PSDA_DISABLED)) {
+            psda_cmyk(restored, expected);
+        } else {
+            for (j = 0u; j < 3u; ++j) {
+                color = restored[mode == 1u ? 0u : j];
+                if (mode == 1u && profiled && !(flags & PSDA_DISABLED)) {
+                    expected[j] = color * color;
+                } else if (mode == 3u && profiled) {
+                    expected[j] = specimen == 133 ?
+                        (j == 0u ? 1.0 : 0.0) : p3[j];
+                } else {
+                    expected[j] = psda_linear(color *
+                        (mode == 4u ? restored[3] : 1.0));
+                }
+            }
+        }
+        for (j = 0u; j < 3u; ++j) {
             if (bgcolor) {
                 expected[j] = expected[j] * a + background[j] * (1.0 - a);
             }
@@ -353,7 +513,7 @@ psd_alpha_test(int specimen)
             a = 1.0;
         }
         for (k = 2u; k < extras; ++k) {
-            ink = 1.0 - samples[3u + k][i];
+            ink = 1.0 - samples[base + k][i];
             opacity = k == 3u ? 0.25 : 0.5;
             next = a + ink * (1.0 - a);
             if (ink == 0.0) {

@@ -106,8 +106,7 @@ psd_process_test(int specimen)
     profiled = specimen >= 96 && specimen <= 103;
     reject = (specimen >= 101 && specimen <= 103) ||
         (specimen >= 111 && specimen <= 116) ||
-        specimen == 121 || specimen == 122 || specimen == 124 ||
-        specimen == 158;
+        specimen == 121 || specimen == 122 || specimen == 124;
     depth = specimen == 92 || specimen == 93 || specimen == 98 ||
         specimen == 108 || specimen == 110 || specimen == 120 ? 16u :
         specimen == 94 || specimen == 95 || specimen == 99 ||
@@ -347,7 +346,8 @@ psd_process_test(int specimen)
     if (result != 0 || SIXEL_FAILED(status) || probe.callback_count != 1 ||
         probe.width[0] != 8 || probe.height[0] != 1 ||
         probe.mask_size[0] !=
-            (specimen >= 105 && specimen <= 110 ? 8u : 0u)) {
+            ((specimen >= 105 && specimen <= 110) || specimen == 158 ?
+             8u : 0u)) {
         fprintf(stderr, "PSD process case=%d status=%x callbacks=%d\n",
             specimen, status, probe.callback_count);
         return 1;
@@ -372,7 +372,7 @@ psd_process_test(int specimen)
     }
     memcpy(actual, probe.rgb[0], sizeof(actual));
     for (i = 0u; i < 8u; ++i) {
-        if (specimen >= 105 && specimen <= 110 &&
+        if (((specimen >= 105 && specimen <= 110) || specimen == 158) &&
             probe.mask[0][i] != (coverage[i] == 1.0 ? 1u : 0u)) {
             return 1;
         }
@@ -394,11 +394,12 @@ psd_process_test(int specimen)
                     color_cmyk_linear[i][j] : psdp_linear(
                     source[i][j] * (cmyk ? source[i][3] : 1.0))));
             }
-            if (specimen >= 105 && specimen <= 110) {
+            if ((specimen >= 105 && specimen <= 110) || specimen == 158) {
                 /* The process is transparent. Independent green ink is
                  * visible except where its plate contains no ink. */
                 expected[j] = coverage[i] == 1.0 ?
-                    psdp_linear(source[i][j]) : (j == 1u ? 1.0 : 0.0);
+                    psdp_linear(source[i][j] * (cmyk ? source[i][3] : 1.0)) :
+                    (j == 1u ? 1.0 : 0.0);
             }
             if (specimen == 126) {
                 /* A second magenta ink follows green, with different
