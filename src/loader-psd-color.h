@@ -15,4 +15,12 @@ sixel_psd_render_color_data(sixel_chunk_t const *chunk,
                             unsigned char **pixels,
                             unsigned char **mask, size_t *mask_size);
 
+/* Shared interpretation helpers; saved masks have no display-ink value. */
+SIXEL_INTERNAL_API int
+sixel_psd_prepare_spots(sixel_psd_color_data_t *data, double palette[][3]);
+
+SIXEL_INTERNAL_API int
+sixel_psd_color_sample(unsigned char const *p, unsigned int depth,
+                        int bounded, double *sample);
+
 #endif

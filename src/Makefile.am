@@ -316,6 +316,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/frompsd-color.h \
                 $(srcdir)/loader-psd-color.c \
                 $(srcdir)/loader-psd-color.h \
+                $(srcdir)/loader-psd-process.c \
+                $(srcdir)/loader-psd-process.h \
                 $(srcdir)/fromgif.c \
                 $(srcdir)/fromgif.h \
                 $(srcdir)/fromwebp.c \

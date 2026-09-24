@@ -1,0 +1,11 @@
+/* SPDX-License-Identifier: MIT */
+/* Verify process spot order numeric. */
+#include "../psd_process_test_common.h"
+
+int
+test_psd_color_0126(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    return psd_process_test(126);
+}

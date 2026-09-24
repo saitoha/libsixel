@@ -119,8 +119,8 @@ xargs -0 -n 2 -P "$jobs" sh -c '
     item_id=$1
     item_path=$2
     log_path="${CODESPELL_LOG_DIR}/${item_id}.log"
-    # "doub" and "alis" are PSD descriptor type identifiers.
-    if "$CODESPELL_BIN" -L "ser,sie,doub,alis" "$item_path" >"$log_path" 2>&1; then
+    # "doub"/"alis" are PSD descriptor types; "Alph" is a PSB section key.
+    if "$CODESPELL_BIN" -L "ser,sie,doub,alis,alph" "$item_path" >"$log_path" 2>&1; then
         printf "OK\t%s\t%s\n" "$item_id" "$item_path"
     else
         printf "NG\t%s\t%s\n" "$item_id" "$item_path"

@@ -19,6 +19,7 @@ typedef struct sixel_psd_color_data {
     unsigned char const *duotone_lab;
     unsigned int ink_count;
     sixel_psd_ink_t ink[SIXEL_PSD_COLOR_CHANNELS];
+    unsigned int identifier_present;
     unsigned int identifier_count;
     uint32_t identifier[SIXEL_PSD_COLOR_CHANNELS];
     unsigned int alternate_count;
@@ -36,5 +37,10 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_psd_read_color_planes(sixel_chunk_t const *chunk,
                             sixel_builtin_psd_info_t const *info,
                             unsigned char **planes, size_t *plane_bytes);
+
+/* Read explicit merged-transparency flags without interpreting pixels. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_psd_merged_alpha(sixel_chunk_t const *chunk,
+                       sixel_builtin_psd_info_t const *info, int *present);
 
 #endif

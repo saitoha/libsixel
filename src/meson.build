@@ -198,6 +198,8 @@ srcs = [
   'frompsd-color.h',
   'loader-psd-color.c',
   'loader-psd-color.h',
+  'loader-psd-process.c',
+  'loader-psd-process.h',
   'fromgif.c',
   'fromwebp.c',
   'fromwebp.h',

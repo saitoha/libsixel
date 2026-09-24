@@ -3,6 +3,7 @@
 #include "config.h"
 #endif
 
+#include <stdint.h>
 #include <string.h>
 #include "chunk-view.h"
 #include "frompsd-color.h"
@@ -186,7 +187,10 @@ sixel_psd_read_color_data(sixel_chunk_t const *chunk,
         !psd_color_display(old_display, old_size, 0, data)) {
         goto malformed;
     }
-    if (data->alternate_count != 0u) {
+    data->identifier_present = have_identifiers != 0;
+    if (data->alternate_count != 0u || (have_identifiers == 1 &&
+        identifier_size % 4u == 0u &&
+        identifier_size / 4u <= SIXEL_PSD_COLOR_CHANNELS)) {
         /* The resource length already bounds the ID list. Real PSD
          * files have no additional count word inside resource 1053. */
         if (have_identifiers != 1 || identifier_size % 4u != 0u ||
@@ -211,4 +215,112 @@ malformed:
     sixel_helper_set_additional_message(
         "builtin PSD: malformed color resource");
     return SIXEL_BAD_INPUT;
+}
+
+static int
+psd_color_length(unsigned char const *p, size_t remaining, int wide,
+                   size_t *length)
+{
+    uint64_t value;
+
+    if (remaining < (wide ? 8u : 4u)) {
+        return 0;
+    }
+    value = psd_color_u32(p);
+    if (wide) {
+        value = (value << 32) | psd_color_u32(p + 4u);
+    }
+    if (value > SIZE_MAX) {
+        return 0;
+    }
+    *length = (size_t)value;
+    return 1;
+}
+
+SIXELSTATUS
+sixel_psd_merged_alpha(sixel_chunk_t const *chunk,
+                       sixel_builtin_psd_info_t const *info, int *present)
+{
+    static char const wide_keys[][5] = {
+        "LMsk", "Lr16", "Lr32", "Layr", "Mt16", "Mt32", "Mtrn",
+        "Alph", "FMsk", "lnk2", "FEid", "FXid", "PxSD"
+    };
+    unsigned char const *p;
+    unsigned char const *key;
+    size_t remaining;
+    size_t length;
+    size_t header;
+    size_t padding;
+    size_t i;
+    int wide;
+
+    if (chunk == NULL || info == NULL || present == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *present = 0;
+    remaining = sixel_chunk_get_size(chunk);
+    if (info->layer_mask_offset > remaining ||
+        info->layer_mask_length > remaining - info->layer_mask_offset) {
+        return SIXEL_BAD_INPUT;
+    }
+    remaining = info->layer_mask_length;
+    if (remaining == 0u) {
+        return SIXEL_OK;
+    }
+    p = sixel_chunk_get_buffer(chunk) + info->layer_mask_offset;
+    wide = info->version == 2u;
+    header = wide ? 8u : 4u;
+    if (!psd_color_length(p, remaining, wide, &length) ||
+        length > remaining - header || length == 1u) {
+        return SIXEL_BAD_INPUT;
+    }
+    if (length >= 2u && psd_color_u16(p + header) >= 32768u) {
+        *present = 1;
+    }
+    p += header + length;
+    remaining -= header + length;
+    if (!psd_color_length(p, remaining, 0, &length) ||
+        length > remaining - 4u) {
+        return SIXEL_BAD_INPUT;
+    }
+    p += 4u + length;
+    remaining -= 4u + length;
+    while (remaining != 0u) {
+        if (remaining < 12u ||
+            (memcmp(p, "8BIM", 4u) != 0 && memcmp(p, "8B64", 4u) != 0)) {
+            return SIXEL_BAD_INPUT;
+        }
+        key = p + 4u;
+        wide = memcmp(p, "8B64", 4u) == 0;
+        if (info->version == 2u) {
+            for (i = 0u; i < sizeof(wide_keys) / sizeof(wide_keys[0]); ++i) {
+                if (memcmp(key, wide_keys[i], 4u) == 0) {
+                    wide = 1;
+                }
+            }
+        }
+        header = wide ? 16u : 12u;
+        if (!psd_color_length(p + 8u, remaining - 8u, wide, &length) ||
+            length > remaining - header) {
+            return SIXEL_BAD_INPUT;
+        }
+        if (memcmp(key, "Mtrn", 4u) == 0 ||
+            memcmp(key, "Mt16", 4u) == 0 ||
+            memcmp(key, "Mt32", 4u) == 0) {
+            *present = 1;
+        } else if ((memcmp(key, "Lr16", 4u) == 0 ||
+                    memcmp(key, "Lr32", 4u) == 0 ||
+                    memcmp(key, "Layr", 4u) == 0) && length >= 2u &&
+                   psd_color_u16(p + header) >= 32768u) {
+            *present = 1;
+        }
+        /* Global tagged blocks are padded to four bytes. */
+        padding = (4u - length % 4u) % 4u;
+        if (padding > remaining - header - length) {
+            return SIXEL_BAD_INPUT;
+        }
+        p += header + length + padding;
+        remaining -= header + length + padding;
+    }
+    return SIXEL_OK;
 }

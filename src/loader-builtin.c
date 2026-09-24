@@ -69,6 +69,7 @@
 #include "frompng.h"
 #include "frompsd.h"
 #include "loader-psd-color.h"
+#include "loader-psd-process.h"
 #include "fromwebp.h"
 #include "frompnm.h"
 #include "pixelformat.h"
@@ -5639,6 +5640,10 @@ sixel_builtin_load_psd_single_frame(
         psd_custom_decode_mode);
     status = sixel_psd_render_color_data(chunk, &psd_info, bgcolor,
                                          &pixels, mask, mask_size);
+    if (status == SIXEL_FALSE) {
+        status = sixel_psd_render_process_data(chunk, &psd_info,
+            psd_icc_status, psd_icc_profile, psd_icc_profile_length, &pixels);
+    }
     if (status != SIXEL_FALSE) {
         if (SIXEL_FAILED(status)) {
             sixel_builtin_psd_trace_contract_add_error_code("ERR_DECODE");
@@ -5649,7 +5654,8 @@ sixel_builtin_load_psd_single_frame(
         frame->height = (int)psd_info.height;
         psd_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
         psd_colorspace = SIXEL_COLORSPACE_LINEAR;
-        /* The alternate colors already have their own interpretation. */
+        /* Both adapters return canonical color. Process profiles have
+         * already been applied before spot composition. */
         psd_skip_icc_conversion = 1;
         psd_custom_decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_COLORANTS;
     } else if (basic_decode_fn != NULL) {

@@ -162,9 +162,35 @@ psd_render_alternates(sixel_psd_color_data_t *data)
     return 1;
 }
 
-static int
-psd_render_sample(unsigned char const *p, unsigned int depth,
-                    double *sample)
+int
+sixel_psd_prepare_spots(sixel_psd_color_data_t *data, double palette[][3])
+{
+    sixel_color_def_t *srgb;
+    unsigned int k;
+    int result;
+
+    if (!psd_render_alternates(data)) {
+        return 0;
+    }
+    srgb = sixel_cdef_name("srgb");
+    if (srgb == NULL) {
+        return 0;
+    }
+    result = 1;
+    for (k = 0u; k < data->ink_count; ++k) {
+        if (data->ink[k].kind == 2u &&
+            !psd_render_ink(srgb, &data->ink[k], palette[k])) {
+            result = 0;
+            break;
+        }
+    }
+    sixel_cdef_free(srgb);
+    return result;
+}
+
+int
+sixel_psd_color_sample(unsigned char const *p, unsigned int depth,
+                        int bounded, double *sample)
 {
     uint32_t bits;
     float value;
@@ -179,9 +205,10 @@ psd_render_sample(unsigned char const *p, unsigned int depth,
         memcpy(&value, &bits, sizeof(value));
         *sample = value;
     }
-    /* These samples are ink coverage or a table coordinate, not extended
-     * RGB. Reject invalid density instead of silently clipping color. */
-    return isfinite(*sample) && *sample >= 0.0 && *sample <= 1.0;
+    /* Ink/table coordinates and alpha are bounded densities. Process RGB
+     * can be extended; every path still rejects nonfinite source values. */
+    return isfinite(*sample) &&
+        (!bounded || (*sample >= 0.0 && *sample <= 1.0));
 }
 
 SIXELSTATUS
@@ -331,8 +358,9 @@ sixel_psd_render_color_data(sixel_chunk_t const *chunk,
     for (i = 0u; i < count; ++i) {
         rgb[0] = rgb[1] = rgb[2] = 1.0;
         for (k = 0u; k < (duotone ? 1u : data.ink_count); ++k) {
-            if (!psd_render_sample(planes + k * plane_bytes + i * stride,
-                                    info->depth, &sample)) {
+            if (!sixel_psd_color_sample(
+                    planes + k * plane_bytes + i * stride,
+                    info->depth, 1, &sample)) {
                 status = SIXEL_BAD_INPUT;
                 goto cleanup;
             }
@@ -358,8 +386,8 @@ sixel_psd_render_color_data(sixel_chunk_t const *chunk,
             }
         }
         if (duotone && info->channels == 2u) {
-            if (!psd_render_sample(planes + plane_bytes + i * stride,
-                                    info->depth, &alpha)) {
+            if (!sixel_psd_color_sample(planes + plane_bytes + i * stride,
+                                        info->depth, 1, &alpha)) {
                 status = SIXEL_BAD_INPUT;
                 goto cleanup;
             }
