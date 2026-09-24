@@ -1,7 +1,0 @@
-extends: existence
-message: "Review whether repository path '%s' belongs in this page's user-facing prose."
-level: warning
-scope: text
-nonword: true
-tokens:
-  - '\b(?:src|tests|tools)/[A-Za-z0-9_./*+-]+'

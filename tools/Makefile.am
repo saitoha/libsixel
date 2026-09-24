@@ -55,6 +55,7 @@ EXTRA_DIST = libsixel-config.in \
              verify_jpeg_color_source.c \
              verify_jpeg_cmyk_source.c \
              build-docs \
+             docs/doc-types.tsv \
              docs/mkdocs_hooks.py \
              docs/requirements.txt \
              quicklook-extension.bash \

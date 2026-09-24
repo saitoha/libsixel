@@ -1009,6 +1009,11 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-doc-types-inventory',
+    [meson.current_source_dir() / '_static/sh/staticcheck-doc-types-inventory.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-doc-test-links',
     [meson.current_source_dir() / '_static/sh/staticcheck-doc-test-links.sh',
       meson.project_source_root()],

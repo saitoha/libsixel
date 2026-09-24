@@ -3462,6 +3462,7 @@ staticcheck-loader-cms-boundary \
 	staticcheck-docs-bash-vs-zsh-completion \
 	staticcheck-docs-envvars-help-table \
 	staticcheck-docs-github-math \
+	staticcheck-doc-types-inventory \
 	staticcheck-doc-test-links \
 	staticcheck-test-plan-links \
 	staticcheck-c-header-modeline
@@ -3540,6 +3541,7 @@ staticcheck-docs-man-vs-bash-completion \
 staticcheck-docs-bash-vs-zsh-completion \
 staticcheck-docs-envvars-help-table \
 staticcheck-docs-github-math \
+staticcheck-doc-types-inventory \
 staticcheck-doc-test-links \
 staticcheck-test-plan-links \
 staticcheck-c-header-modeline: \
@@ -4247,6 +4249,16 @@ staticcheck-docs-github-math:
 		--trs-file staticcheck-docs-github-math.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-docs-github-math.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-doc-types-inventory:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-doc-types-inventory" \
+		--log-file staticcheck-doc-types-inventory.log \
+		--trs-file staticcheck-doc-types-inventory.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-doc-types-inventory.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-doc-test-links:
@@ -5258,12 +5270,14 @@ EXTRA_DIST = loader/libpng/chrm_trace_control.sh \
     _static/sh/staticcheck-docs-bash-vs-zsh-completion.sh \
     _static/sh/staticcheck-docs-envvars-help-table.sh \
     _static/sh/staticcheck-docs-github-math.sh \
+    _static/sh/staticcheck-doc-types-inventory.sh \
     _static/sh/staticcheck-doc-test-links.sh \
     _static/sh/staticcheck-test-plan-links.sh \
     _static/sh/tap-case.sh \
     _static/awk/tap-status.awk \
     _static/awk/suboption-image-coverage.awk \
     _static/awk/docs-github-math.awk \
+    _static/awk/doc-types-inventory.awk \
     _static/awk/dllexport-declarations.awk \
     _static/data/github-math-macros.txt \
     _static/sh/staticcheck-c-header-modeline.sh \
