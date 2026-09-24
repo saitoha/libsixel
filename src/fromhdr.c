@@ -1533,7 +1533,12 @@ sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
         channel = (int)(index % 3u);
         channel_scale = exposure_scale_rgb[channel];
         value = (double)float_pixels[index];
-        if (!isfinite(value) || value < 0.0) {
+        /* Negative RGB can represent valid out-of-gamut XYZ colors.
+         * Only the explicitly bounded tone mapper discards that part;
+         * exposure and color correction must preserve the signed value. */
+        if (!isfinite(value) ||
+            (tonemap_mode == SIXEL_BUILTIN_HDR_TONEMAP_REINHARD &&
+             value < 0.0)) {
             value = 0.0;
         }
 
@@ -1542,11 +1547,12 @@ sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
             if (tonemap_mode == SIXEL_BUILTIN_HDR_TONEMAP_REINHARD) {
                 value = DBL_MAX;
             } else {
-                value = (double)FLT_MAX;
+                value = signbit(value) ? -(double)FLT_MAX : (double)FLT_MAX;
             }
         }
-        if (value < 0.0) {
-            value = 0.0;
+        if (tonemap_mode == SIXEL_BUILTIN_HDR_TONEMAP_NONE &&
+            value < -(double)FLT_MAX) {
+            value = -(double)FLT_MAX;
         } else if (tonemap_mode == SIXEL_BUILTIN_HDR_TONEMAP_NONE &&
                    value > (double)FLT_MAX) {
             value = (double)FLT_MAX;
@@ -1959,19 +1965,12 @@ sixel_builtin_hdr_xyz_to_linearrgb(double xyz[3])
       + -0.203976958888977 * y
       + 1.056971514242878 * z;
 
-    if (!isfinite(r) || r < 0.0) {
-        r = 0.0;
-    }
-    if (!isfinite(g) || g < 0.0) {
-        g = 0.0;
-    }
-    if (!isfinite(b) || b < 0.0) {
-        b = 0.0;
-    }
-
-    xyz[0] = r;
-    xyz[1] = g;
-    xyz[2] = b;
+    /* Preserve finite extended coordinates through the matrix. RGBE's
+     * largest exponent can exceed float32 after XYZ conversion, so limit
+     * only at that representation boundary before the caller casts. */
+    xyz[0] = isfinite(r) ? fmax(-FLT_MAX, fmin(FLT_MAX, r)) : 0.0;
+    xyz[1] = isfinite(g) ? fmax(-FLT_MAX, fmin(FLT_MAX, g)) : 0.0;
+    xyz[2] = isfinite(b) ? fmax(-FLT_MAX, fmin(FLT_MAX, b)) : 0.0;
 }
 
 static int

@@ -198,7 +198,7 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "1",
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
         SIXEL_COLORSPACE_LINEAR,
-        { 1.1738129f, 0.0f, 0.10894224f },
+        { 1.1738129f, -0.01043556f, 0.10894224f },
         0.0012f,
         HDR_NUMERIC_CASE_VALIDATE_EXACT,
         0.0f,

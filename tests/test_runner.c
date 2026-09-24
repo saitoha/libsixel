@@ -1203,6 +1203,13 @@ int test_psd_color_0271(int argc, char **argv);
 int test_psd_color_0272(int argc, char **argv);
 int test_psd_color_0273(int argc, char **argv);
 int test_psd_color_0274(int argc, char **argv);
+int test_hdr_2258(int argc, char **argv);
+int test_hdr_2259(int argc, char **argv);
+int test_hdr_2260(int argc, char **argv);
+int test_hdr_2261(int argc, char **argv);
+int test_hdr_2262(int argc, char **argv);
+int test_hdr_2263(int argc, char **argv);
+int test_hdr_2264(int argc, char **argv);
 
 
 int test_loader_0185_png_source_numeric(int argc, char **argv);
@@ -3281,6 +3288,13 @@ static test_entry_t const test_entries[] = {
       test_psd_color_0273 },
     { "loader/psd/0274_gray_ink_gray_process_numeric",
       test_psd_color_0274 },
+    { "loader/hdr/2258_hdr_xyze_signed_raw", test_hdr_2258 },
+    { "loader/hdr/2259_hdr_xyze_signed_rle", test_hdr_2259 },
+    { "loader/hdr/2260_hdr_xyze_signed_exposure", test_hdr_2260 },
+    { "loader/hdr/2261_hdr_xyze_signed_colorcorr", test_hdr_2261 },
+    { "loader/hdr/2262_hdr_xyze_reinhard_bounded", test_hdr_2262 },
+    { "loader/hdr/2263_hdr_xyze_signed_saturation", test_hdr_2263 },
+    { "loader/hdr/2264_hdr_xyze_float_limits", test_hdr_2264 },
 
 
     { "loader/0185_png_source_numeric",

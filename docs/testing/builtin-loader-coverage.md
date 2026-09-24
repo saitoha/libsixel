@@ -17,14 +17,14 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [GIF](../loader/builtin/gif.md) | 36 | 8 | 3 | 2 | 2 | 2 | 19 |
 | [PNG and APNG](../loader/builtin/png.md) | 288 | 22 | 59 | 0 | 13 | 7 | 187 |
 | [JPEG](../loader/builtin/jpeg.md) | 249 | 102 | 14 | 1 | 57 | 5 | 70 |
-| [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
+| [Radiance HDR](../loader/builtin/hdr.md) | 273 | 219 | 37 | 1 | 5 | 0 | 11 |
 | [PSD and PSB](../loader/builtin/psd.md) | 1268 | 206 | 551 | 402 | 86 | 3 | 20 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
 | [WebP](../loader/builtin/webp.md) | 308 | 13 | 48 | 241 | 0 | 1 | 5 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 41 | 25 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2709** | **765** | **724** | **652** | **185** | **18** | **365** |
+| **Total** | **2716** | **765** | **724** | **652** | **185** | **18** | **372** |
 
 ## Complete inventory
 
@@ -812,6 +812,13 @@ Primary implementation context: [Radiance HDR builtin component](../loader/built
 | [tests/loader/builtin/1998_loader_builtin_hdr_new_rle_truncated_reject.t](../../tests/loader/builtin/1998_loader_builtin_hdr_new_rle_truncated_reject.t) | Verify a truncated component-RLE stream is rejected. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
 | [tests/loader/builtin/1999_loader_builtin_hdr_legacy_repeat_first_reject.t](../../tests/loader/builtin/1999_loader_builtin_hdr_legacy_repeat_first_reject.t) | Verify legacy RLE cannot repeat before a source pixel exists. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
 | [tests/loader/builtin/2000_loader_builtin_hdr_legacy_repeat_overrun_reject.t](../../tests/loader/builtin/2000_loader_builtin_hdr_legacy_repeat_overrun_reject.t) | Verify legacy RLE cannot repeat beyond the raster. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
+| [tests/loader/builtin/2258_hdr_xyze_signed_raw.t](../../tests/loader/builtin/2258_hdr_xyze_signed_raw.t) | Verify hdr xyze signed raw against independent XYZ matrix values. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
+| [tests/loader/builtin/2259_hdr_xyze_signed_rle.t](../../tests/loader/builtin/2259_hdr_xyze_signed_rle.t) | Verify hdr xyze signed rle against independent XYZ matrix values. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
+| [tests/loader/builtin/2260_hdr_xyze_signed_exposure.t](../../tests/loader/builtin/2260_hdr_xyze_signed_exposure.t) | Verify hdr xyze signed exposure against independent XYZ matrix values. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
+| [tests/loader/builtin/2261_hdr_xyze_signed_colorcorr.t](../../tests/loader/builtin/2261_hdr_xyze_signed_colorcorr.t) | Verify hdr xyze signed colorcorr against independent XYZ matrix values. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
+| [tests/loader/builtin/2262_hdr_xyze_reinhard_bounded.t](../../tests/loader/builtin/2262_hdr_xyze_reinhard_bounded.t) | Verify hdr xyze reinhard bounded against independent XYZ matrix values. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
+| [tests/loader/builtin/2263_hdr_xyze_signed_saturation.t](../../tests/loader/builtin/2263_hdr_xyze_signed_saturation.t) | Verify hdr xyze signed saturation against independent XYZ matrix values. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
+| [tests/loader/builtin/2264_hdr_xyze_float_limits.t](../../tests/loader/builtin/2264_hdr_xyze_float_limits.t) | Verify hdr xyze float limits against independent XYZ matrix values. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
 
 ### PSD and PSB
 

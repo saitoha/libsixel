@@ -655,6 +655,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_PSD_COLOR_TEST_COMMON \
     -DBUILD_PSD_SPOT_TEST_COMMON \
     -DBUILD_PSD_GRAY_INK_TEST_COMMON \
+    -DBUILD_HDR_EXTENDED_TEST_COMMON \
+    -DBUILD_TEST_2258_HDR_XYZE_SIGNED_RAW \
+    -DBUILD_TEST_2259_HDR_XYZE_SIGNED_RLE \
+    -DBUILD_TEST_2260_HDR_XYZE_SIGNED_EXPOSURE \
+    -DBUILD_TEST_2261_HDR_XYZE_SIGNED_COLORCORR \
+    -DBUILD_TEST_2262_HDR_XYZE_REINHARD_BOUNDED \
+    -DBUILD_TEST_2263_HDR_XYZE_SIGNED_SATURATION \
+    -DBUILD_TEST_2264_HDR_XYZE_FLOAT_LIMITS \
     -DBUILD_PSD_PROCESS_TEST_COMMON \
     -DBUILD_PSD_ALPHA_TEST_COMMON \
     -DBUILD_PSD_MODEL_TEST_COMMON \
@@ -3079,6 +3087,15 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/psd_spot_test_common.h \
     loader/builtin/psd_gray_ink_test_common.c \
     loader/builtin/psd_gray_ink_test_common.h \
+    loader/builtin/hdr_extended_test_common.c \
+    loader/builtin/hdr_extended_test_common.h \
+    loader/builtin/2258_hdr_xyze_signed_raw.c \
+    loader/builtin/2259_hdr_xyze_signed_rle.c \
+    loader/builtin/2260_hdr_xyze_signed_exposure.c \
+    loader/builtin/2261_hdr_xyze_signed_colorcorr.c \
+    loader/builtin/2262_hdr_xyze_reinhard_bounded.c \
+    loader/builtin/2263_hdr_xyze_signed_saturation.c \
+    loader/builtin/2264_hdr_xyze_float_limits.c \
     loader/builtin/psd_process_test_common.c \
     loader/builtin/psd_process_test_common.h \
     loader/builtin/psd_alpha_test_common.c \

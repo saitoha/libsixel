@@ -1370,6 +1370,15 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/builtin/psd_spot_test_common.h \
 	loader/builtin/psd_gray_ink_test_common.c \
 	loader/builtin/psd_gray_ink_test_common.h \
+	loader/builtin/hdr_extended_test_common.c \
+	loader/builtin/hdr_extended_test_common.h \
+	loader/builtin/2258_hdr_xyze_signed_raw.c \
+	loader/builtin/2259_hdr_xyze_signed_rle.c \
+	loader/builtin/2260_hdr_xyze_signed_exposure.c \
+	loader/builtin/2261_hdr_xyze_signed_colorcorr.c \
+	loader/builtin/2262_hdr_xyze_reinhard_bounded.c \
+	loader/builtin/2263_hdr_xyze_signed_saturation.c \
+	loader/builtin/2264_hdr_xyze_float_limits.c \
 	loader/builtin/psd_process_test_common.c \
 	loader/builtin/psd_process_test_common.h \
 	loader/builtin/psd_alpha_test_common.c \
@@ -2998,6 +3007,14 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-psd_color_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-psd_spot_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-psd_gray_ink_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-hdr_extended_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-2258_hdr_xyze_signed_raw.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-2259_hdr_xyze_signed_rle.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-2260_hdr_xyze_signed_exposure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-2261_hdr_xyze_signed_colorcorr.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-2262_hdr_xyze_reinhard_bounded.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-2263_hdr_xyze_signed_saturation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-2264_hdr_xyze_float_limits.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-psd_process_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-psd_alpha_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-psd_model_test_common.$(OBJEXT) \
@@ -3715,6 +3732,14 @@ am__depfiles_remade =  \
 	loader/builtin/$(DEPDIR)/test_runner-0239_tga_origin_pal_fallback_numeric.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0240_tga_origin_gray_numeric.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0241_tga_origin_rgb16_numeric.Po \
+	loader/builtin/$(DEPDIR)/test_runner-2258_hdr_xyze_signed_raw.Po \
+	loader/builtin/$(DEPDIR)/test_runner-2259_hdr_xyze_signed_rle.Po \
+	loader/builtin/$(DEPDIR)/test_runner-2260_hdr_xyze_signed_exposure.Po \
+	loader/builtin/$(DEPDIR)/test_runner-2261_hdr_xyze_signed_colorcorr.Po \
+	loader/builtin/$(DEPDIR)/test_runner-2262_hdr_xyze_reinhard_bounded.Po \
+	loader/builtin/$(DEPDIR)/test_runner-2263_hdr_xyze_signed_saturation.Po \
+	loader/builtin/$(DEPDIR)/test_runner-2264_hdr_xyze_float_limits.Po \
+	loader/builtin/$(DEPDIR)/test_runner-hdr_extended_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-jpeg_dnl_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-jpeg_process_test_common.Po \
@@ -6211,6 +6236,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PSD_COLOR_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PSD_SPOT_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PSD_GRAY_INK_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_HDR_EXTENDED_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_2258_HDR_XYZE_SIGNED_RAW \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_2259_HDR_XYZE_SIGNED_RLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_2260_HDR_XYZE_SIGNED_EXPOSURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_2261_HDR_XYZE_SIGNED_COLORCORR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_2262_HDR_XYZE_REINHARD_BOUNDED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_2263_HDR_XYZE_SIGNED_SATURATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_2264_HDR_XYZE_FLOAT_LIMITS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PSD_PROCESS_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PSD_ALPHA_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PSD_MODEL_TEST_COMMON \
@@ -8666,6 +8699,15 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd_spot_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd_gray_ink_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd_gray_ink_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/hdr_extended_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/hdr_extended_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/2258_hdr_xyze_signed_raw.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/2259_hdr_xyze_signed_rle.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/2260_hdr_xyze_signed_exposure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/2261_hdr_xyze_signed_colorcorr.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/2262_hdr_xyze_reinhard_bounded.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/2263_hdr_xyze_signed_saturation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/2264_hdr_xyze_float_limits.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd_process_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd_process_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/psd_alpha_test_common.c \
@@ -13120,6 +13162,30 @@ loader/builtin/test_runner-psd_spot_test_common.$(OBJEXT):  \
 loader/builtin/test_runner-psd_gray_ink_test_common.$(OBJEXT):  \
 	loader/builtin/$(am__dirstamp) \
 	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-hdr_extended_test_common.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-2258_hdr_xyze_signed_raw.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-2259_hdr_xyze_signed_rle.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-2260_hdr_xyze_signed_exposure.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-2261_hdr_xyze_signed_colorcorr.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-2262_hdr_xyze_reinhard_bounded.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-2263_hdr_xyze_signed_saturation.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-2264_hdr_xyze_float_limits.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
 loader/builtin/test_runner-psd_process_test_common.$(OBJEXT):  \
 	loader/builtin/$(am__dirstamp) \
 	loader/builtin/$(DEPDIR)/$(am__dirstamp)
@@ -14705,6 +14771,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0239_tga_origin_pal_fallback_numeric.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0240_tga_origin_gray_numeric.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0241_tga_origin_rgb16_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-2258_hdr_xyze_signed_raw.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-2259_hdr_xyze_signed_rle.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-2260_hdr_xyze_signed_exposure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-2261_hdr_xyze_signed_colorcorr.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-2262_hdr_xyze_reinhard_bounded.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-2263_hdr_xyze_signed_saturation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-2264_hdr_xyze_float_limits.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-hdr_extended_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-jpeg_dnl_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-jpeg_process_test_common.Po@am__quote@ # am--include-marker
@@ -33134,6 +33208,118 @@ loader/builtin/test_runner-psd_gray_ink_test_common.obj: loader/builtin/psd_gray
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-psd_gray_ink_test_common.obj `if test -f 'loader/builtin/psd_gray_ink_test_common.c'; then $(CYGPATH_W) 'loader/builtin/psd_gray_ink_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/psd_gray_ink_test_common.c'; fi`
 
+loader/builtin/test_runner-hdr_extended_test_common.o: loader/builtin/hdr_extended_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-hdr_extended_test_common.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-hdr_extended_test_common.Tpo -c -o loader/builtin/test_runner-hdr_extended_test_common.o `test -f 'loader/builtin/hdr_extended_test_common.c' || echo '$(srcdir)/'`loader/builtin/hdr_extended_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-hdr_extended_test_common.Tpo loader/builtin/$(DEPDIR)/test_runner-hdr_extended_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/hdr_extended_test_common.c' object='loader/builtin/test_runner-hdr_extended_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-hdr_extended_test_common.o `test -f 'loader/builtin/hdr_extended_test_common.c' || echo '$(srcdir)/'`loader/builtin/hdr_extended_test_common.c
+
+loader/builtin/test_runner-hdr_extended_test_common.obj: loader/builtin/hdr_extended_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-hdr_extended_test_common.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-hdr_extended_test_common.Tpo -c -o loader/builtin/test_runner-hdr_extended_test_common.obj `if test -f 'loader/builtin/hdr_extended_test_common.c'; then $(CYGPATH_W) 'loader/builtin/hdr_extended_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/hdr_extended_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-hdr_extended_test_common.Tpo loader/builtin/$(DEPDIR)/test_runner-hdr_extended_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/hdr_extended_test_common.c' object='loader/builtin/test_runner-hdr_extended_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-hdr_extended_test_common.obj `if test -f 'loader/builtin/hdr_extended_test_common.c'; then $(CYGPATH_W) 'loader/builtin/hdr_extended_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/hdr_extended_test_common.c'; fi`
+
+loader/builtin/test_runner-2258_hdr_xyze_signed_raw.o: loader/builtin/2258_hdr_xyze_signed_raw.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-2258_hdr_xyze_signed_raw.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-2258_hdr_xyze_signed_raw.Tpo -c -o loader/builtin/test_runner-2258_hdr_xyze_signed_raw.o `test -f 'loader/builtin/2258_hdr_xyze_signed_raw.c' || echo '$(srcdir)/'`loader/builtin/2258_hdr_xyze_signed_raw.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-2258_hdr_xyze_signed_raw.Tpo loader/builtin/$(DEPDIR)/test_runner-2258_hdr_xyze_signed_raw.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/2258_hdr_xyze_signed_raw.c' object='loader/builtin/test_runner-2258_hdr_xyze_signed_raw.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-2258_hdr_xyze_signed_raw.o `test -f 'loader/builtin/2258_hdr_xyze_signed_raw.c' || echo '$(srcdir)/'`loader/builtin/2258_hdr_xyze_signed_raw.c
+
+loader/builtin/test_runner-2258_hdr_xyze_signed_raw.obj: loader/builtin/2258_hdr_xyze_signed_raw.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-2258_hdr_xyze_signed_raw.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-2258_hdr_xyze_signed_raw.Tpo -c -o loader/builtin/test_runner-2258_hdr_xyze_signed_raw.obj `if test -f 'loader/builtin/2258_hdr_xyze_signed_raw.c'; then $(CYGPATH_W) 'loader/builtin/2258_hdr_xyze_signed_raw.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/2258_hdr_xyze_signed_raw.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-2258_hdr_xyze_signed_raw.Tpo loader/builtin/$(DEPDIR)/test_runner-2258_hdr_xyze_signed_raw.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/2258_hdr_xyze_signed_raw.c' object='loader/builtin/test_runner-2258_hdr_xyze_signed_raw.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-2258_hdr_xyze_signed_raw.obj `if test -f 'loader/builtin/2258_hdr_xyze_signed_raw.c'; then $(CYGPATH_W) 'loader/builtin/2258_hdr_xyze_signed_raw.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/2258_hdr_xyze_signed_raw.c'; fi`
+
+loader/builtin/test_runner-2259_hdr_xyze_signed_rle.o: loader/builtin/2259_hdr_xyze_signed_rle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-2259_hdr_xyze_signed_rle.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-2259_hdr_xyze_signed_rle.Tpo -c -o loader/builtin/test_runner-2259_hdr_xyze_signed_rle.o `test -f 'loader/builtin/2259_hdr_xyze_signed_rle.c' || echo '$(srcdir)/'`loader/builtin/2259_hdr_xyze_signed_rle.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-2259_hdr_xyze_signed_rle.Tpo loader/builtin/$(DEPDIR)/test_runner-2259_hdr_xyze_signed_rle.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/2259_hdr_xyze_signed_rle.c' object='loader/builtin/test_runner-2259_hdr_xyze_signed_rle.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-2259_hdr_xyze_signed_rle.o `test -f 'loader/builtin/2259_hdr_xyze_signed_rle.c' || echo '$(srcdir)/'`loader/builtin/2259_hdr_xyze_signed_rle.c
+
+loader/builtin/test_runner-2259_hdr_xyze_signed_rle.obj: loader/builtin/2259_hdr_xyze_signed_rle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-2259_hdr_xyze_signed_rle.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-2259_hdr_xyze_signed_rle.Tpo -c -o loader/builtin/test_runner-2259_hdr_xyze_signed_rle.obj `if test -f 'loader/builtin/2259_hdr_xyze_signed_rle.c'; then $(CYGPATH_W) 'loader/builtin/2259_hdr_xyze_signed_rle.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/2259_hdr_xyze_signed_rle.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-2259_hdr_xyze_signed_rle.Tpo loader/builtin/$(DEPDIR)/test_runner-2259_hdr_xyze_signed_rle.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/2259_hdr_xyze_signed_rle.c' object='loader/builtin/test_runner-2259_hdr_xyze_signed_rle.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-2259_hdr_xyze_signed_rle.obj `if test -f 'loader/builtin/2259_hdr_xyze_signed_rle.c'; then $(CYGPATH_W) 'loader/builtin/2259_hdr_xyze_signed_rle.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/2259_hdr_xyze_signed_rle.c'; fi`
+
+loader/builtin/test_runner-2260_hdr_xyze_signed_exposure.o: loader/builtin/2260_hdr_xyze_signed_exposure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-2260_hdr_xyze_signed_exposure.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-2260_hdr_xyze_signed_exposure.Tpo -c -o loader/builtin/test_runner-2260_hdr_xyze_signed_exposure.o `test -f 'loader/builtin/2260_hdr_xyze_signed_exposure.c' || echo '$(srcdir)/'`loader/builtin/2260_hdr_xyze_signed_exposure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-2260_hdr_xyze_signed_exposure.Tpo loader/builtin/$(DEPDIR)/test_runner-2260_hdr_xyze_signed_exposure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/2260_hdr_xyze_signed_exposure.c' object='loader/builtin/test_runner-2260_hdr_xyze_signed_exposure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-2260_hdr_xyze_signed_exposure.o `test -f 'loader/builtin/2260_hdr_xyze_signed_exposure.c' || echo '$(srcdir)/'`loader/builtin/2260_hdr_xyze_signed_exposure.c
+
+loader/builtin/test_runner-2260_hdr_xyze_signed_exposure.obj: loader/builtin/2260_hdr_xyze_signed_exposure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-2260_hdr_xyze_signed_exposure.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-2260_hdr_xyze_signed_exposure.Tpo -c -o loader/builtin/test_runner-2260_hdr_xyze_signed_exposure.obj `if test -f 'loader/builtin/2260_hdr_xyze_signed_exposure.c'; then $(CYGPATH_W) 'loader/builtin/2260_hdr_xyze_signed_exposure.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/2260_hdr_xyze_signed_exposure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-2260_hdr_xyze_signed_exposure.Tpo loader/builtin/$(DEPDIR)/test_runner-2260_hdr_xyze_signed_exposure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/2260_hdr_xyze_signed_exposure.c' object='loader/builtin/test_runner-2260_hdr_xyze_signed_exposure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-2260_hdr_xyze_signed_exposure.obj `if test -f 'loader/builtin/2260_hdr_xyze_signed_exposure.c'; then $(CYGPATH_W) 'loader/builtin/2260_hdr_xyze_signed_exposure.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/2260_hdr_xyze_signed_exposure.c'; fi`
+
+loader/builtin/test_runner-2261_hdr_xyze_signed_colorcorr.o: loader/builtin/2261_hdr_xyze_signed_colorcorr.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-2261_hdr_xyze_signed_colorcorr.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-2261_hdr_xyze_signed_colorcorr.Tpo -c -o loader/builtin/test_runner-2261_hdr_xyze_signed_colorcorr.o `test -f 'loader/builtin/2261_hdr_xyze_signed_colorcorr.c' || echo '$(srcdir)/'`loader/builtin/2261_hdr_xyze_signed_colorcorr.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-2261_hdr_xyze_signed_colorcorr.Tpo loader/builtin/$(DEPDIR)/test_runner-2261_hdr_xyze_signed_colorcorr.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/2261_hdr_xyze_signed_colorcorr.c' object='loader/builtin/test_runner-2261_hdr_xyze_signed_colorcorr.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-2261_hdr_xyze_signed_colorcorr.o `test -f 'loader/builtin/2261_hdr_xyze_signed_colorcorr.c' || echo '$(srcdir)/'`loader/builtin/2261_hdr_xyze_signed_colorcorr.c
+
+loader/builtin/test_runner-2261_hdr_xyze_signed_colorcorr.obj: loader/builtin/2261_hdr_xyze_signed_colorcorr.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-2261_hdr_xyze_signed_colorcorr.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-2261_hdr_xyze_signed_colorcorr.Tpo -c -o loader/builtin/test_runner-2261_hdr_xyze_signed_colorcorr.obj `if test -f 'loader/builtin/2261_hdr_xyze_signed_colorcorr.c'; then $(CYGPATH_W) 'loader/builtin/2261_hdr_xyze_signed_colorcorr.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/2261_hdr_xyze_signed_colorcorr.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-2261_hdr_xyze_signed_colorcorr.Tpo loader/builtin/$(DEPDIR)/test_runner-2261_hdr_xyze_signed_colorcorr.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/2261_hdr_xyze_signed_colorcorr.c' object='loader/builtin/test_runner-2261_hdr_xyze_signed_colorcorr.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-2261_hdr_xyze_signed_colorcorr.obj `if test -f 'loader/builtin/2261_hdr_xyze_signed_colorcorr.c'; then $(CYGPATH_W) 'loader/builtin/2261_hdr_xyze_signed_colorcorr.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/2261_hdr_xyze_signed_colorcorr.c'; fi`
+
+loader/builtin/test_runner-2262_hdr_xyze_reinhard_bounded.o: loader/builtin/2262_hdr_xyze_reinhard_bounded.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-2262_hdr_xyze_reinhard_bounded.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-2262_hdr_xyze_reinhard_bounded.Tpo -c -o loader/builtin/test_runner-2262_hdr_xyze_reinhard_bounded.o `test -f 'loader/builtin/2262_hdr_xyze_reinhard_bounded.c' || echo '$(srcdir)/'`loader/builtin/2262_hdr_xyze_reinhard_bounded.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-2262_hdr_xyze_reinhard_bounded.Tpo loader/builtin/$(DEPDIR)/test_runner-2262_hdr_xyze_reinhard_bounded.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/2262_hdr_xyze_reinhard_bounded.c' object='loader/builtin/test_runner-2262_hdr_xyze_reinhard_bounded.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-2262_hdr_xyze_reinhard_bounded.o `test -f 'loader/builtin/2262_hdr_xyze_reinhard_bounded.c' || echo '$(srcdir)/'`loader/builtin/2262_hdr_xyze_reinhard_bounded.c
+
+loader/builtin/test_runner-2262_hdr_xyze_reinhard_bounded.obj: loader/builtin/2262_hdr_xyze_reinhard_bounded.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-2262_hdr_xyze_reinhard_bounded.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-2262_hdr_xyze_reinhard_bounded.Tpo -c -o loader/builtin/test_runner-2262_hdr_xyze_reinhard_bounded.obj `if test -f 'loader/builtin/2262_hdr_xyze_reinhard_bounded.c'; then $(CYGPATH_W) 'loader/builtin/2262_hdr_xyze_reinhard_bounded.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/2262_hdr_xyze_reinhard_bounded.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-2262_hdr_xyze_reinhard_bounded.Tpo loader/builtin/$(DEPDIR)/test_runner-2262_hdr_xyze_reinhard_bounded.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/2262_hdr_xyze_reinhard_bounded.c' object='loader/builtin/test_runner-2262_hdr_xyze_reinhard_bounded.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-2262_hdr_xyze_reinhard_bounded.obj `if test -f 'loader/builtin/2262_hdr_xyze_reinhard_bounded.c'; then $(CYGPATH_W) 'loader/builtin/2262_hdr_xyze_reinhard_bounded.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/2262_hdr_xyze_reinhard_bounded.c'; fi`
+
+loader/builtin/test_runner-2263_hdr_xyze_signed_saturation.o: loader/builtin/2263_hdr_xyze_signed_saturation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-2263_hdr_xyze_signed_saturation.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-2263_hdr_xyze_signed_saturation.Tpo -c -o loader/builtin/test_runner-2263_hdr_xyze_signed_saturation.o `test -f 'loader/builtin/2263_hdr_xyze_signed_saturation.c' || echo '$(srcdir)/'`loader/builtin/2263_hdr_xyze_signed_saturation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-2263_hdr_xyze_signed_saturation.Tpo loader/builtin/$(DEPDIR)/test_runner-2263_hdr_xyze_signed_saturation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/2263_hdr_xyze_signed_saturation.c' object='loader/builtin/test_runner-2263_hdr_xyze_signed_saturation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-2263_hdr_xyze_signed_saturation.o `test -f 'loader/builtin/2263_hdr_xyze_signed_saturation.c' || echo '$(srcdir)/'`loader/builtin/2263_hdr_xyze_signed_saturation.c
+
+loader/builtin/test_runner-2263_hdr_xyze_signed_saturation.obj: loader/builtin/2263_hdr_xyze_signed_saturation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-2263_hdr_xyze_signed_saturation.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-2263_hdr_xyze_signed_saturation.Tpo -c -o loader/builtin/test_runner-2263_hdr_xyze_signed_saturation.obj `if test -f 'loader/builtin/2263_hdr_xyze_signed_saturation.c'; then $(CYGPATH_W) 'loader/builtin/2263_hdr_xyze_signed_saturation.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/2263_hdr_xyze_signed_saturation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-2263_hdr_xyze_signed_saturation.Tpo loader/builtin/$(DEPDIR)/test_runner-2263_hdr_xyze_signed_saturation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/2263_hdr_xyze_signed_saturation.c' object='loader/builtin/test_runner-2263_hdr_xyze_signed_saturation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-2263_hdr_xyze_signed_saturation.obj `if test -f 'loader/builtin/2263_hdr_xyze_signed_saturation.c'; then $(CYGPATH_W) 'loader/builtin/2263_hdr_xyze_signed_saturation.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/2263_hdr_xyze_signed_saturation.c'; fi`
+
+loader/builtin/test_runner-2264_hdr_xyze_float_limits.o: loader/builtin/2264_hdr_xyze_float_limits.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-2264_hdr_xyze_float_limits.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-2264_hdr_xyze_float_limits.Tpo -c -o loader/builtin/test_runner-2264_hdr_xyze_float_limits.o `test -f 'loader/builtin/2264_hdr_xyze_float_limits.c' || echo '$(srcdir)/'`loader/builtin/2264_hdr_xyze_float_limits.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-2264_hdr_xyze_float_limits.Tpo loader/builtin/$(DEPDIR)/test_runner-2264_hdr_xyze_float_limits.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/2264_hdr_xyze_float_limits.c' object='loader/builtin/test_runner-2264_hdr_xyze_float_limits.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-2264_hdr_xyze_float_limits.o `test -f 'loader/builtin/2264_hdr_xyze_float_limits.c' || echo '$(srcdir)/'`loader/builtin/2264_hdr_xyze_float_limits.c
+
+loader/builtin/test_runner-2264_hdr_xyze_float_limits.obj: loader/builtin/2264_hdr_xyze_float_limits.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-2264_hdr_xyze_float_limits.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-2264_hdr_xyze_float_limits.Tpo -c -o loader/builtin/test_runner-2264_hdr_xyze_float_limits.obj `if test -f 'loader/builtin/2264_hdr_xyze_float_limits.c'; then $(CYGPATH_W) 'loader/builtin/2264_hdr_xyze_float_limits.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/2264_hdr_xyze_float_limits.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-2264_hdr_xyze_float_limits.Tpo loader/builtin/$(DEPDIR)/test_runner-2264_hdr_xyze_float_limits.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/2264_hdr_xyze_float_limits.c' object='loader/builtin/test_runner-2264_hdr_xyze_float_limits.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-2264_hdr_xyze_float_limits.obj `if test -f 'loader/builtin/2264_hdr_xyze_float_limits.c'; then $(CYGPATH_W) 'loader/builtin/2264_hdr_xyze_float_limits.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/2264_hdr_xyze_float_limits.c'; fi`
+
 loader/builtin/test_runner-psd_process_test_common.o: loader/builtin/psd_process_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-psd_process_test_common.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-psd_process_test_common.Tpo -c -o loader/builtin/test_runner-psd_process_test_common.o `test -f 'loader/builtin/psd_process_test_common.c' || echo '$(srcdir)/'`loader/builtin/psd_process_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-psd_process_test_common.Tpo loader/builtin/$(DEPDIR)/test_runner-psd_process_test_common.Po
@@ -39413,6 +39599,14 @@ distclean: distclean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0239_tga_origin_pal_fallback_numeric.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0240_tga_origin_gray_numeric.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0241_tga_origin_rgb16_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-2258_hdr_xyze_signed_raw.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-2259_hdr_xyze_signed_rle.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-2260_hdr_xyze_signed_exposure.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-2261_hdr_xyze_signed_colorcorr.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-2262_hdr_xyze_reinhard_bounded.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-2263_hdr_xyze_signed_saturation.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-2264_hdr_xyze_float_limits.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-hdr_extended_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-jpeg_dnl_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-jpeg_process_test_common.Po
@@ -41073,6 +41267,14 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0239_tga_origin_pal_fallback_numeric.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0240_tga_origin_gray_numeric.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0241_tga_origin_rgb16_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-2258_hdr_xyze_signed_raw.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-2259_hdr_xyze_signed_rle.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-2260_hdr_xyze_signed_exposure.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-2261_hdr_xyze_signed_colorcorr.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-2262_hdr_xyze_reinhard_bounded.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-2263_hdr_xyze_signed_saturation.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-2264_hdr_xyze_float_limits.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-hdr_extended_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-jpeg_dnl_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-jpeg_process_test_common.Po
