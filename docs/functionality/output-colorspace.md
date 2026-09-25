@@ -39,7 +39,7 @@ Loaded image with a known color interpretation
                          SIXEL color definitions / -M palette file
 ```
 
-`-X` controls the geometry used to construct a palette. `-W` controls the geometry used to choose a palette index and propagate dither error. In these legacy paths, `-U` converts the resulting palette for output; it does not rerun either operation. Changing only `-U` can therefore change the displayed colors while retaining the index assignments for a static image. The P3 path instead finalizes the sent palette before lookup, as described below.
+`-X` controls the geometry used to construct a palette. `-W` controls the geometry used to choose a palette index and propagate dither error. In these legacy paths, `-U` converts the resulting palette for output; it does not rerun either operation. Changing only `-U` can therefore change the displayed colors while retaining the index assignments for a static image. The selected P3 and ordinary sRGB float paths instead finalize the sent palette before lookup, as described below.
 
 Unlike the implicit coupling from an explicit `-W` to an unspecified `-X`, `-U` does not change either earlier choice. For example:
 
@@ -109,6 +109,12 @@ Gamma working coordinates use the existing sRGB transfer function with sign-pres
 
 Repeated `-U` settings replace the output definition. Reusing one encoder and output object for P3, gamma and P3 again restores the corresponding behavior on each job. The private precision opt-in is scoped to one palette-generation call and does not change the installed component request structures.
 
+## Selected ordinary sRGB float path
+
+The same extended-palette/RGB101 preparation is selected for ordinary `-Ugamma` when a static opaque RGB frame already uses float storage or explicit float precision, and the options match the CPU K-means path described above: linear clustering, gamma/linear working space, full-frame sampling, no binning, exact lookup, none/FS diffusion, and disabled merge/cover/snap. It does not promote byte-eligible input merely to select this algorithm. Other settings retain their existing path.
+
+Palette generation retains extended coordinates. The destination palette is clamped and rounded to RGB101 once, then those codes are decoded back into the working coordinates before lookup and error diffusion. The writer emits the stored codes directly. Source color interpretation, working coordinates and destination RGB definition remain separate decisions. The `dither_contract` trace reports `rgb101=1` for this path and `rgb101=0` for legacy palette finalization.
+
 ## SIXEL syntax and receiver interpretation
 
 With `-t rgb`, a palette definition has this form:
@@ -153,7 +159,7 @@ Capability may be reused within one invocation, but each image's current policy 
 
 ## Precision, rounding, and cost
 
-The legacy output encoder converts a private palette copy and preserves the reusable dither palette in working coordinates. When a usable float32 palette is available, it converts those typed values before packing bytes. Otherwise it converts the byte palette. The P3 path commits its RGB101 palette before lookup. Increasing working precision can reduce conversion rounding, but it cannot increase the precision of SIXEL's integer percentage fields.
+The legacy output encoder converts a private palette copy and preserves the reusable dither palette in working coordinates. When a usable float32 palette is available, it converts those typed values before packing bytes. Otherwise it converts the byte palette. The selected P3 and ordinary sRGB float paths commit their RGB101 palette before lookup. Increasing working precision can reduce conversion rounding, but it cannot increase the precision of SIXEL's integer percentage fields.
 
 For RGB definitions, the byte path rounds a channel `b` with integer arithmetic:
 
@@ -177,7 +183,7 @@ The preparation of fixed palettes also matters:
 
 | Palette source | Current preparation and output boundary |
 | --- | --- |
-| Generated palette | Constructed in `-X`, converted to `-W` for application, then converted to `-U` for output. |
+| Generated palette | Constructed in `-X` and prepared for `-W`. The selected P3 and ordinary sRGB float paths finalize RGB101 before application; other paths convert to `-U` afterward. |
 | Image mapfile, such as `-m swatches.png` | Loaded as an image and prepared in the selected working representation before output conversion. Loader/CMS settings can affect its colors. |
 | Structured ACT/PAL/GPL input or built-in `-b` palette | Supplied byte entries are installed directly; this path does not perform the same image-loader conversion into `-W`. Output conversion uses the prepared palette and the frame's working-space setting. |
 | Monochrome `-e` | Uses a fixed black/white palette and bypasses palette construction. Black and white alone are poor probes of a nonlinear output transfer. |
@@ -282,6 +288,11 @@ Likewise, `-U` does not configure decoder interpretation, embed an output ICC pr
 | OC-54 | The existing library OSC11 reader owns encoding, and CLI policy restoration resumes after its cleanup. | [tests/cli/color/session/0066_encoder_reader.t](../../tests/cli/color/session/0066_encoder_reader.t) |
 | OC-55 | Auto rejects DRCS before color queries or image output; a later gamma choice and explicit choices keep their existing behavior. | [tests/cli/color/session/0067_drcs_auto.t](../../tests/cli/color/session/0067_drcs_auto.t), [tests/cli/color/session/0068_drcs_env.t](../../tests/cli/color/session/0068_drcs_env.t), [tests/cli/color/session/0069_drcs_assignment.t](../../tests/cli/color/session/0069_drcs_assignment.t), [tests/cli/color/session/0070_drcs_overridden.t](../../tests/cli/color/session/0070_drcs_overridden.t), [tests/cli/color/session/0071_drcs_gamma.t](../../tests/cli/color/session/0071_drcs_gamma.t), [tests/cli/color/session/0072_drcs_p3.t](../../tests/cli/color/session/0072_drcs_p3.t) |
 | OC-56 | At a simulated interrupted-encoder boundary, actual CLI controller cleanup ends an unfinished DCS before the independent receiver accepts the saved-policy restoration. This is distinct from the real CLI signal cases. | [tests/cli/color/session/0073_partial_encode.t](../../tests/cli/color/session/0073_partial_encode.t) |
+| OC-57 | Gamma sRGB lookup uses the exact transmitted RGB101 palette. | [tests/quant/palette/0065_srgb_gamma_wire_lookup.t](../../tests/quant/palette/0065_srgb_gamma_wire_lookup.t) |
+| OC-58 | Linear sRGB lookup uses the inverse of exact transmitted RGB101 codes. | [tests/quant/palette/0066_srgb_linear_wire_lookup.t](../../tests/quant/palette/0066_srgb_linear_wire_lookup.t) |
+| OC-59 | Extended source values survive clustering and gamma working conversion before sRGB output. | [tests/quant/palette/0067_srgb_gamma_extended_source.t](../../tests/quant/palette/0067_srgb_gamma_extended_source.t) |
+| OC-60 | Extended source values survive clustering and linear working conversion before sRGB output. | [tests/quant/palette/0068_srgb_linear_extended_source.t](../../tests/quant/palette/0068_srgb_linear_extended_source.t) |
+| OC-61 | Byte-eligible sRGB input retains legacy palette construction under matching algorithm options. | [tests/cli/color/0013_srgb_byte_eligibility.t](../../tests/cli/color/0013_srgb_byte_eligibility.t) |
 
 ### Defensive and malformed-input tests
 

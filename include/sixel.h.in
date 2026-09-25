@@ -128,6 +128,12 @@ typedef int SIXELSTATUS;
 #define SIXEL_SCAN_RASTER         0x1  /* scan from left to right on each line */
 #define SIXEL_SCAN_SERPENTINE     0x2  /* alternate scan direction per line */
 
+/* Error-diffusion correction policy; AUTO currently selects SOFT. */
+#define SIXEL_DITHER_CLAMP_AUTO   0
+#define SIXEL_DITHER_CLAMP_SOFT   1
+#define SIXEL_DITHER_CLAMP_HARD   2
+#define SIXEL_DITHER_CLAMP_NONE   3
+
 /* diffusion carry buffer mode */
 
 /* quality modes */
@@ -1239,6 +1245,18 @@ SIXELAPI SIXELSTATUS
 sixel_dither_set_diffusion_perturb_seed(
     sixel_dither_t *dither,
     int seed);
+
+/*
+ * Set error-diffusion correction limits (default AUTO, threshold 1.01).
+ * Threshold must be finite and in [1, 16], including for HARD/NONE where
+ * it is inactive. Invalid arguments leave both settings unchanged.
+ * Settings belong to this dither instance and ignore environment defaults.
+ */
+SIXELAPI SIXELSTATUS
+sixel_dither_set_clamp_policy(
+    sixel_dither_t *dither,
+    int policy,
+    double threshold);
 
 /* get number of palette colors */
 SIXELAPI int

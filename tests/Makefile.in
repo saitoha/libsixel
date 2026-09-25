@@ -781,6 +781,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/dither/clamp/0033_lso2_oklab_lightness.c \
 	processing/dither/clamp/0034_lso2_cielab_lightness.c \
 	processing/dither/clamp/0035_lso2_din99d_lightness.c \
+	processing/dither/clamp/0036_api_invalid.c \
+	processing/dither/clamp/0037_dither_instances.c \
+	processing/dither/clamp/0038_encoder_instances.c \
+	processing/dither/clamp/0039_temporal_history.c \
+	processing/dither/clamp/0040_temporal_reset.c \
+	processing/dither/clamp/0041_fs_vertical_residual.c \
+	processing/dither/clamp/0042_fs_serpentine_residual.c \
+	processing/dither/clamp/0043_parallel_overlap.c \
 	processing/dither/clamp/clamp_test_common.c \
 	processing/dither/clamp/clamp_test_common.h \
 	processing/dither/clamp/0017_keep_fs.c \
@@ -1802,6 +1810,12 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/0054_p3_encoder_contract.c \
 	quant/palette/0059_p3_precision_contract.c \
 	quant/palette/0062_p3_fs_error_contract.c \
+	quant/palette/0065_srgb_gamma_wire_lookup.c \
+	quant/palette/0066_srgb_linear_wire_lookup.c \
+	quant/palette/0067_srgb_gamma_extended_source.c \
+	quant/palette/0068_srgb_linear_extended_source.c \
+	quant/palette/srgb_contract_common.c \
+	quant/palette/srgb_contract_common.h \
 	diagnostics/probe/0001_probe_parse.c \
 	diagnostics/status/0001_status_timeout.c \
 	diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
@@ -2478,6 +2492,14 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0033_lso2_oklab_lightness.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0034_lso2_cielab_lightness.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0035_lso2_din99d_lightness.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0036_api_invalid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0037_dither_instances.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0038_encoder_instances.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0039_temporal_history.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0040_temporal_reset.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0041_fs_vertical_residual.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0042_fs_serpentine_residual.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0043_parallel_overlap.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-clamp_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0017_keep_fs.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0018_keep_atkinson.$(OBJEXT) \
@@ -3463,6 +3485,11 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0054_p3_encoder_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0059_p3_precision_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0062_p3_fs_error_contract.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0065_srgb_gamma_wire_lookup.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0066_srgb_linear_wire_lookup.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0067_srgb_gamma_extended_source.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0068_srgb_linear_extended_source.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-srgb_contract_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/status/test_runner-0001_status_timeout.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.$(OBJEXT) \
@@ -5054,6 +5081,14 @@ am__depfiles_remade =  \
 	processing/dither/clamp/$(DEPDIR)/test_runner-0033_lso2_oklab_lightness.Po \
 	processing/dither/clamp/$(DEPDIR)/test_runner-0034_lso2_cielab_lightness.Po \
 	processing/dither/clamp/$(DEPDIR)/test_runner-0035_lso2_din99d_lightness.Po \
+	processing/dither/clamp/$(DEPDIR)/test_runner-0036_api_invalid.Po \
+	processing/dither/clamp/$(DEPDIR)/test_runner-0037_dither_instances.Po \
+	processing/dither/clamp/$(DEPDIR)/test_runner-0038_encoder_instances.Po \
+	processing/dither/clamp/$(DEPDIR)/test_runner-0039_temporal_history.Po \
+	processing/dither/clamp/$(DEPDIR)/test_runner-0040_temporal_reset.Po \
+	processing/dither/clamp/$(DEPDIR)/test_runner-0041_fs_vertical_residual.Po \
+	processing/dither/clamp/$(DEPDIR)/test_runner-0042_fs_serpentine_residual.Po \
+	processing/dither/clamp/$(DEPDIR)/test_runner-0043_parallel_overlap.Po \
 	processing/dither/clamp/$(DEPDIR)/test_runner-clamp_test_common.Po \
 	processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po \
 	processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po \
@@ -5209,6 +5244,11 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-0054_p3_encoder_contract.Po \
 	quant/palette/$(DEPDIR)/test_runner-0059_p3_precision_contract.Po \
 	quant/palette/$(DEPDIR)/test_runner-0062_p3_fs_error_contract.Po \
+	quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Po \
+	quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Po \
+	quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po \
+	quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po \
+	quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po \
 	quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po
@@ -6070,6 +6110,19 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_LSO2_CIELAB_LIGHTNESS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_LSO2_DIN99D_LIGHTNESS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLAMP_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0036_API_INVALID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_DITHER_INSTANCES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_ENCODER_INSTANCES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_TEMPORAL_HISTORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_TEMPORAL_RESET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_FS_VERTICAL_RESIDUAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_FS_SERPENTINE_RESIDUAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_PARALLEL_OVERLAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_SRGB_GAMMA_WIRE_LOOKUP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_SRGB_LINEAR_WIRE_LOOKUP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0067_SRGB_GAMMA_EXTENDED_SOURCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0068_SRGB_LINEAR_EXTENDED_SOURCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_SRGB_CONTRACT_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_FILTER_DITHER_6DELTA_LSO2 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_FILTER_DITHER_6DELTA_JAJUNI \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_FILTER_DITHER_6DELTA_STUCKI \
@@ -8257,6 +8310,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/0033_lso2_oklab_lightness.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/0034_lso2_cielab_lightness.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/0035_lso2_din99d_lightness.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/0036_api_invalid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/0037_dither_instances.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/0038_encoder_instances.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/0039_temporal_history.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/0040_temporal_reset.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/0041_fs_vertical_residual.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/0042_fs_serpentine_residual.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/0043_parallel_overlap.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/clamp_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/clamp_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/0017_keep_fs.c \
@@ -9280,6 +9341,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0054_p3_encoder_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0059_p3_precision_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0062_p3_fs_error_contract.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0065_srgb_gamma_wire_lookup.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0066_srgb_linear_wire_lookup.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0067_srgb_gamma_extended_source.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0068_srgb_linear_extended_source.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/srgb_contract_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/srgb_contract_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/status/0001_status_timeout.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
@@ -11494,6 +11561,30 @@ processing/dither/clamp/test_runner-0034_lso2_cielab_lightness.$(OBJEXT):  \
 	processing/dither/clamp/$(am__dirstamp) \
 	processing/dither/clamp/$(DEPDIR)/$(am__dirstamp)
 processing/dither/clamp/test_runner-0035_lso2_din99d_lightness.$(OBJEXT):  \
+	processing/dither/clamp/$(am__dirstamp) \
+	processing/dither/clamp/$(DEPDIR)/$(am__dirstamp)
+processing/dither/clamp/test_runner-0036_api_invalid.$(OBJEXT):  \
+	processing/dither/clamp/$(am__dirstamp) \
+	processing/dither/clamp/$(DEPDIR)/$(am__dirstamp)
+processing/dither/clamp/test_runner-0037_dither_instances.$(OBJEXT):  \
+	processing/dither/clamp/$(am__dirstamp) \
+	processing/dither/clamp/$(DEPDIR)/$(am__dirstamp)
+processing/dither/clamp/test_runner-0038_encoder_instances.$(OBJEXT):  \
+	processing/dither/clamp/$(am__dirstamp) \
+	processing/dither/clamp/$(DEPDIR)/$(am__dirstamp)
+processing/dither/clamp/test_runner-0039_temporal_history.$(OBJEXT):  \
+	processing/dither/clamp/$(am__dirstamp) \
+	processing/dither/clamp/$(DEPDIR)/$(am__dirstamp)
+processing/dither/clamp/test_runner-0040_temporal_reset.$(OBJEXT):  \
+	processing/dither/clamp/$(am__dirstamp) \
+	processing/dither/clamp/$(DEPDIR)/$(am__dirstamp)
+processing/dither/clamp/test_runner-0041_fs_vertical_residual.$(OBJEXT):  \
+	processing/dither/clamp/$(am__dirstamp) \
+	processing/dither/clamp/$(DEPDIR)/$(am__dirstamp)
+processing/dither/clamp/test_runner-0042_fs_serpentine_residual.$(OBJEXT):  \
+	processing/dither/clamp/$(am__dirstamp) \
+	processing/dither/clamp/$(DEPDIR)/$(am__dirstamp)
+processing/dither/clamp/test_runner-0043_parallel_overlap.$(OBJEXT):  \
 	processing/dither/clamp/$(am__dirstamp) \
 	processing/dither/clamp/$(DEPDIR)/$(am__dirstamp)
 processing/dither/clamp/test_runner-clamp_test_common.$(OBJEXT):  \
@@ -14636,6 +14727,21 @@ quant/palette/test_runner-0059_p3_precision_contract.$(OBJEXT):  \
 quant/palette/test_runner-0062_p3_fs_error_contract.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0065_srgb_gamma_wire_lookup.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0066_srgb_linear_wire_lookup.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0067_srgb_gamma_extended_source.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0068_srgb_linear_extended_source.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-srgb_contract_common.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
 diagnostics/probe/$(am__dirstamp):
 	@$(MKDIR_P) diagnostics/probe
 	@: >>diagnostics/probe/$(am__dirstamp)
@@ -16323,6 +16429,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0033_lso2_oklab_lightness.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0034_lso2_cielab_lightness.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0035_lso2_din99d_lightness.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0036_api_invalid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0037_dither_instances.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0038_encoder_instances.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0039_temporal_history.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0040_temporal_reset.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0041_fs_vertical_residual.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0042_fs_serpentine_residual.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0043_parallel_overlap.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-clamp_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po@am__quote@ # am--include-marker
@@ -16478,6 +16592,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0054_p3_encoder_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0059_p3_precision_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0062_p3_fs_error_contract.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po@am__quote@ # am--include-marker
@@ -25611,6 +25730,118 @@ processing/dither/clamp/test_runner-0035_lso2_din99d_lightness.obj: processing/d
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0035_lso2_din99d_lightness.c' object='processing/dither/clamp/test_runner-0035_lso2_din99d_lightness.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0035_lso2_din99d_lightness.obj `if test -f 'processing/dither/clamp/0035_lso2_din99d_lightness.c'; then $(CYGPATH_W) 'processing/dither/clamp/0035_lso2_din99d_lightness.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0035_lso2_din99d_lightness.c'; fi`
+
+processing/dither/clamp/test_runner-0036_api_invalid.o: processing/dither/clamp/0036_api_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0036_api_invalid.o -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0036_api_invalid.Tpo -c -o processing/dither/clamp/test_runner-0036_api_invalid.o `test -f 'processing/dither/clamp/0036_api_invalid.c' || echo '$(srcdir)/'`processing/dither/clamp/0036_api_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0036_api_invalid.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0036_api_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0036_api_invalid.c' object='processing/dither/clamp/test_runner-0036_api_invalid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0036_api_invalid.o `test -f 'processing/dither/clamp/0036_api_invalid.c' || echo '$(srcdir)/'`processing/dither/clamp/0036_api_invalid.c
+
+processing/dither/clamp/test_runner-0036_api_invalid.obj: processing/dither/clamp/0036_api_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0036_api_invalid.obj -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0036_api_invalid.Tpo -c -o processing/dither/clamp/test_runner-0036_api_invalid.obj `if test -f 'processing/dither/clamp/0036_api_invalid.c'; then $(CYGPATH_W) 'processing/dither/clamp/0036_api_invalid.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0036_api_invalid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0036_api_invalid.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0036_api_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0036_api_invalid.c' object='processing/dither/clamp/test_runner-0036_api_invalid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0036_api_invalid.obj `if test -f 'processing/dither/clamp/0036_api_invalid.c'; then $(CYGPATH_W) 'processing/dither/clamp/0036_api_invalid.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0036_api_invalid.c'; fi`
+
+processing/dither/clamp/test_runner-0037_dither_instances.o: processing/dither/clamp/0037_dither_instances.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0037_dither_instances.o -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0037_dither_instances.Tpo -c -o processing/dither/clamp/test_runner-0037_dither_instances.o `test -f 'processing/dither/clamp/0037_dither_instances.c' || echo '$(srcdir)/'`processing/dither/clamp/0037_dither_instances.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0037_dither_instances.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0037_dither_instances.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0037_dither_instances.c' object='processing/dither/clamp/test_runner-0037_dither_instances.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0037_dither_instances.o `test -f 'processing/dither/clamp/0037_dither_instances.c' || echo '$(srcdir)/'`processing/dither/clamp/0037_dither_instances.c
+
+processing/dither/clamp/test_runner-0037_dither_instances.obj: processing/dither/clamp/0037_dither_instances.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0037_dither_instances.obj -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0037_dither_instances.Tpo -c -o processing/dither/clamp/test_runner-0037_dither_instances.obj `if test -f 'processing/dither/clamp/0037_dither_instances.c'; then $(CYGPATH_W) 'processing/dither/clamp/0037_dither_instances.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0037_dither_instances.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0037_dither_instances.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0037_dither_instances.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0037_dither_instances.c' object='processing/dither/clamp/test_runner-0037_dither_instances.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0037_dither_instances.obj `if test -f 'processing/dither/clamp/0037_dither_instances.c'; then $(CYGPATH_W) 'processing/dither/clamp/0037_dither_instances.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0037_dither_instances.c'; fi`
+
+processing/dither/clamp/test_runner-0038_encoder_instances.o: processing/dither/clamp/0038_encoder_instances.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0038_encoder_instances.o -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0038_encoder_instances.Tpo -c -o processing/dither/clamp/test_runner-0038_encoder_instances.o `test -f 'processing/dither/clamp/0038_encoder_instances.c' || echo '$(srcdir)/'`processing/dither/clamp/0038_encoder_instances.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0038_encoder_instances.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0038_encoder_instances.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0038_encoder_instances.c' object='processing/dither/clamp/test_runner-0038_encoder_instances.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0038_encoder_instances.o `test -f 'processing/dither/clamp/0038_encoder_instances.c' || echo '$(srcdir)/'`processing/dither/clamp/0038_encoder_instances.c
+
+processing/dither/clamp/test_runner-0038_encoder_instances.obj: processing/dither/clamp/0038_encoder_instances.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0038_encoder_instances.obj -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0038_encoder_instances.Tpo -c -o processing/dither/clamp/test_runner-0038_encoder_instances.obj `if test -f 'processing/dither/clamp/0038_encoder_instances.c'; then $(CYGPATH_W) 'processing/dither/clamp/0038_encoder_instances.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0038_encoder_instances.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0038_encoder_instances.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0038_encoder_instances.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0038_encoder_instances.c' object='processing/dither/clamp/test_runner-0038_encoder_instances.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0038_encoder_instances.obj `if test -f 'processing/dither/clamp/0038_encoder_instances.c'; then $(CYGPATH_W) 'processing/dither/clamp/0038_encoder_instances.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0038_encoder_instances.c'; fi`
+
+processing/dither/clamp/test_runner-0039_temporal_history.o: processing/dither/clamp/0039_temporal_history.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0039_temporal_history.o -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0039_temporal_history.Tpo -c -o processing/dither/clamp/test_runner-0039_temporal_history.o `test -f 'processing/dither/clamp/0039_temporal_history.c' || echo '$(srcdir)/'`processing/dither/clamp/0039_temporal_history.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0039_temporal_history.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0039_temporal_history.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0039_temporal_history.c' object='processing/dither/clamp/test_runner-0039_temporal_history.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0039_temporal_history.o `test -f 'processing/dither/clamp/0039_temporal_history.c' || echo '$(srcdir)/'`processing/dither/clamp/0039_temporal_history.c
+
+processing/dither/clamp/test_runner-0039_temporal_history.obj: processing/dither/clamp/0039_temporal_history.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0039_temporal_history.obj -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0039_temporal_history.Tpo -c -o processing/dither/clamp/test_runner-0039_temporal_history.obj `if test -f 'processing/dither/clamp/0039_temporal_history.c'; then $(CYGPATH_W) 'processing/dither/clamp/0039_temporal_history.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0039_temporal_history.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0039_temporal_history.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0039_temporal_history.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0039_temporal_history.c' object='processing/dither/clamp/test_runner-0039_temporal_history.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0039_temporal_history.obj `if test -f 'processing/dither/clamp/0039_temporal_history.c'; then $(CYGPATH_W) 'processing/dither/clamp/0039_temporal_history.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0039_temporal_history.c'; fi`
+
+processing/dither/clamp/test_runner-0040_temporal_reset.o: processing/dither/clamp/0040_temporal_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0040_temporal_reset.o -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0040_temporal_reset.Tpo -c -o processing/dither/clamp/test_runner-0040_temporal_reset.o `test -f 'processing/dither/clamp/0040_temporal_reset.c' || echo '$(srcdir)/'`processing/dither/clamp/0040_temporal_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0040_temporal_reset.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0040_temporal_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0040_temporal_reset.c' object='processing/dither/clamp/test_runner-0040_temporal_reset.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0040_temporal_reset.o `test -f 'processing/dither/clamp/0040_temporal_reset.c' || echo '$(srcdir)/'`processing/dither/clamp/0040_temporal_reset.c
+
+processing/dither/clamp/test_runner-0040_temporal_reset.obj: processing/dither/clamp/0040_temporal_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0040_temporal_reset.obj -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0040_temporal_reset.Tpo -c -o processing/dither/clamp/test_runner-0040_temporal_reset.obj `if test -f 'processing/dither/clamp/0040_temporal_reset.c'; then $(CYGPATH_W) 'processing/dither/clamp/0040_temporal_reset.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0040_temporal_reset.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0040_temporal_reset.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0040_temporal_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0040_temporal_reset.c' object='processing/dither/clamp/test_runner-0040_temporal_reset.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0040_temporal_reset.obj `if test -f 'processing/dither/clamp/0040_temporal_reset.c'; then $(CYGPATH_W) 'processing/dither/clamp/0040_temporal_reset.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0040_temporal_reset.c'; fi`
+
+processing/dither/clamp/test_runner-0041_fs_vertical_residual.o: processing/dither/clamp/0041_fs_vertical_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0041_fs_vertical_residual.o -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0041_fs_vertical_residual.Tpo -c -o processing/dither/clamp/test_runner-0041_fs_vertical_residual.o `test -f 'processing/dither/clamp/0041_fs_vertical_residual.c' || echo '$(srcdir)/'`processing/dither/clamp/0041_fs_vertical_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0041_fs_vertical_residual.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0041_fs_vertical_residual.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0041_fs_vertical_residual.c' object='processing/dither/clamp/test_runner-0041_fs_vertical_residual.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0041_fs_vertical_residual.o `test -f 'processing/dither/clamp/0041_fs_vertical_residual.c' || echo '$(srcdir)/'`processing/dither/clamp/0041_fs_vertical_residual.c
+
+processing/dither/clamp/test_runner-0041_fs_vertical_residual.obj: processing/dither/clamp/0041_fs_vertical_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0041_fs_vertical_residual.obj -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0041_fs_vertical_residual.Tpo -c -o processing/dither/clamp/test_runner-0041_fs_vertical_residual.obj `if test -f 'processing/dither/clamp/0041_fs_vertical_residual.c'; then $(CYGPATH_W) 'processing/dither/clamp/0041_fs_vertical_residual.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0041_fs_vertical_residual.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0041_fs_vertical_residual.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0041_fs_vertical_residual.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0041_fs_vertical_residual.c' object='processing/dither/clamp/test_runner-0041_fs_vertical_residual.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0041_fs_vertical_residual.obj `if test -f 'processing/dither/clamp/0041_fs_vertical_residual.c'; then $(CYGPATH_W) 'processing/dither/clamp/0041_fs_vertical_residual.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0041_fs_vertical_residual.c'; fi`
+
+processing/dither/clamp/test_runner-0042_fs_serpentine_residual.o: processing/dither/clamp/0042_fs_serpentine_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0042_fs_serpentine_residual.o -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0042_fs_serpentine_residual.Tpo -c -o processing/dither/clamp/test_runner-0042_fs_serpentine_residual.o `test -f 'processing/dither/clamp/0042_fs_serpentine_residual.c' || echo '$(srcdir)/'`processing/dither/clamp/0042_fs_serpentine_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0042_fs_serpentine_residual.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0042_fs_serpentine_residual.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0042_fs_serpentine_residual.c' object='processing/dither/clamp/test_runner-0042_fs_serpentine_residual.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0042_fs_serpentine_residual.o `test -f 'processing/dither/clamp/0042_fs_serpentine_residual.c' || echo '$(srcdir)/'`processing/dither/clamp/0042_fs_serpentine_residual.c
+
+processing/dither/clamp/test_runner-0042_fs_serpentine_residual.obj: processing/dither/clamp/0042_fs_serpentine_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0042_fs_serpentine_residual.obj -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0042_fs_serpentine_residual.Tpo -c -o processing/dither/clamp/test_runner-0042_fs_serpentine_residual.obj `if test -f 'processing/dither/clamp/0042_fs_serpentine_residual.c'; then $(CYGPATH_W) 'processing/dither/clamp/0042_fs_serpentine_residual.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0042_fs_serpentine_residual.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0042_fs_serpentine_residual.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0042_fs_serpentine_residual.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0042_fs_serpentine_residual.c' object='processing/dither/clamp/test_runner-0042_fs_serpentine_residual.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0042_fs_serpentine_residual.obj `if test -f 'processing/dither/clamp/0042_fs_serpentine_residual.c'; then $(CYGPATH_W) 'processing/dither/clamp/0042_fs_serpentine_residual.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0042_fs_serpentine_residual.c'; fi`
+
+processing/dither/clamp/test_runner-0043_parallel_overlap.o: processing/dither/clamp/0043_parallel_overlap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0043_parallel_overlap.o -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0043_parallel_overlap.Tpo -c -o processing/dither/clamp/test_runner-0043_parallel_overlap.o `test -f 'processing/dither/clamp/0043_parallel_overlap.c' || echo '$(srcdir)/'`processing/dither/clamp/0043_parallel_overlap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0043_parallel_overlap.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0043_parallel_overlap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0043_parallel_overlap.c' object='processing/dither/clamp/test_runner-0043_parallel_overlap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0043_parallel_overlap.o `test -f 'processing/dither/clamp/0043_parallel_overlap.c' || echo '$(srcdir)/'`processing/dither/clamp/0043_parallel_overlap.c
+
+processing/dither/clamp/test_runner-0043_parallel_overlap.obj: processing/dither/clamp/0043_parallel_overlap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0043_parallel_overlap.obj -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0043_parallel_overlap.Tpo -c -o processing/dither/clamp/test_runner-0043_parallel_overlap.obj `if test -f 'processing/dither/clamp/0043_parallel_overlap.c'; then $(CYGPATH_W) 'processing/dither/clamp/0043_parallel_overlap.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0043_parallel_overlap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/clamp/$(DEPDIR)/test_runner-0043_parallel_overlap.Tpo processing/dither/clamp/$(DEPDIR)/test_runner-0043_parallel_overlap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/clamp/0043_parallel_overlap.c' object='processing/dither/clamp/test_runner-0043_parallel_overlap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/clamp/test_runner-0043_parallel_overlap.obj `if test -f 'processing/dither/clamp/0043_parallel_overlap.c'; then $(CYGPATH_W) 'processing/dither/clamp/0043_parallel_overlap.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/clamp/0043_parallel_overlap.c'; fi`
 
 processing/dither/clamp/test_runner-clamp_test_common.o: processing/dither/clamp/clamp_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-clamp_test_common.o -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-clamp_test_common.Tpo -c -o processing/dither/clamp/test_runner-clamp_test_common.o `test -f 'processing/dither/clamp/clamp_test_common.c' || echo '$(srcdir)/'`processing/dither/clamp/clamp_test_common.c
@@ -39402,6 +39633,76 @@ quant/palette/test_runner-0062_p3_fs_error_contract.obj: quant/palette/0062_p3_f
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0062_p3_fs_error_contract.obj `if test -f 'quant/palette/0062_p3_fs_error_contract.c'; then $(CYGPATH_W) 'quant/palette/0062_p3_fs_error_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0062_p3_fs_error_contract.c'; fi`
 
+quant/palette/test_runner-0065_srgb_gamma_wire_lookup.o: quant/palette/0065_srgb_gamma_wire_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0065_srgb_gamma_wire_lookup.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Tpo -c -o quant/palette/test_runner-0065_srgb_gamma_wire_lookup.o `test -f 'quant/palette/0065_srgb_gamma_wire_lookup.c' || echo '$(srcdir)/'`quant/palette/0065_srgb_gamma_wire_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Tpo quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0065_srgb_gamma_wire_lookup.c' object='quant/palette/test_runner-0065_srgb_gamma_wire_lookup.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0065_srgb_gamma_wire_lookup.o `test -f 'quant/palette/0065_srgb_gamma_wire_lookup.c' || echo '$(srcdir)/'`quant/palette/0065_srgb_gamma_wire_lookup.c
+
+quant/palette/test_runner-0065_srgb_gamma_wire_lookup.obj: quant/palette/0065_srgb_gamma_wire_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0065_srgb_gamma_wire_lookup.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Tpo -c -o quant/palette/test_runner-0065_srgb_gamma_wire_lookup.obj `if test -f 'quant/palette/0065_srgb_gamma_wire_lookup.c'; then $(CYGPATH_W) 'quant/palette/0065_srgb_gamma_wire_lookup.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0065_srgb_gamma_wire_lookup.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Tpo quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0065_srgb_gamma_wire_lookup.c' object='quant/palette/test_runner-0065_srgb_gamma_wire_lookup.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0065_srgb_gamma_wire_lookup.obj `if test -f 'quant/palette/0065_srgb_gamma_wire_lookup.c'; then $(CYGPATH_W) 'quant/palette/0065_srgb_gamma_wire_lookup.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0065_srgb_gamma_wire_lookup.c'; fi`
+
+quant/palette/test_runner-0066_srgb_linear_wire_lookup.o: quant/palette/0066_srgb_linear_wire_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0066_srgb_linear_wire_lookup.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Tpo -c -o quant/palette/test_runner-0066_srgb_linear_wire_lookup.o `test -f 'quant/palette/0066_srgb_linear_wire_lookup.c' || echo '$(srcdir)/'`quant/palette/0066_srgb_linear_wire_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Tpo quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0066_srgb_linear_wire_lookup.c' object='quant/palette/test_runner-0066_srgb_linear_wire_lookup.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0066_srgb_linear_wire_lookup.o `test -f 'quant/palette/0066_srgb_linear_wire_lookup.c' || echo '$(srcdir)/'`quant/palette/0066_srgb_linear_wire_lookup.c
+
+quant/palette/test_runner-0066_srgb_linear_wire_lookup.obj: quant/palette/0066_srgb_linear_wire_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0066_srgb_linear_wire_lookup.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Tpo -c -o quant/palette/test_runner-0066_srgb_linear_wire_lookup.obj `if test -f 'quant/palette/0066_srgb_linear_wire_lookup.c'; then $(CYGPATH_W) 'quant/palette/0066_srgb_linear_wire_lookup.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0066_srgb_linear_wire_lookup.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Tpo quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0066_srgb_linear_wire_lookup.c' object='quant/palette/test_runner-0066_srgb_linear_wire_lookup.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0066_srgb_linear_wire_lookup.obj `if test -f 'quant/palette/0066_srgb_linear_wire_lookup.c'; then $(CYGPATH_W) 'quant/palette/0066_srgb_linear_wire_lookup.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0066_srgb_linear_wire_lookup.c'; fi`
+
+quant/palette/test_runner-0067_srgb_gamma_extended_source.o: quant/palette/0067_srgb_gamma_extended_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0067_srgb_gamma_extended_source.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Tpo -c -o quant/palette/test_runner-0067_srgb_gamma_extended_source.o `test -f 'quant/palette/0067_srgb_gamma_extended_source.c' || echo '$(srcdir)/'`quant/palette/0067_srgb_gamma_extended_source.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Tpo quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0067_srgb_gamma_extended_source.c' object='quant/palette/test_runner-0067_srgb_gamma_extended_source.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0067_srgb_gamma_extended_source.o `test -f 'quant/palette/0067_srgb_gamma_extended_source.c' || echo '$(srcdir)/'`quant/palette/0067_srgb_gamma_extended_source.c
+
+quant/palette/test_runner-0067_srgb_gamma_extended_source.obj: quant/palette/0067_srgb_gamma_extended_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0067_srgb_gamma_extended_source.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Tpo -c -o quant/palette/test_runner-0067_srgb_gamma_extended_source.obj `if test -f 'quant/palette/0067_srgb_gamma_extended_source.c'; then $(CYGPATH_W) 'quant/palette/0067_srgb_gamma_extended_source.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0067_srgb_gamma_extended_source.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Tpo quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0067_srgb_gamma_extended_source.c' object='quant/palette/test_runner-0067_srgb_gamma_extended_source.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0067_srgb_gamma_extended_source.obj `if test -f 'quant/palette/0067_srgb_gamma_extended_source.c'; then $(CYGPATH_W) 'quant/palette/0067_srgb_gamma_extended_source.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0067_srgb_gamma_extended_source.c'; fi`
+
+quant/palette/test_runner-0068_srgb_linear_extended_source.o: quant/palette/0068_srgb_linear_extended_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0068_srgb_linear_extended_source.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Tpo -c -o quant/palette/test_runner-0068_srgb_linear_extended_source.o `test -f 'quant/palette/0068_srgb_linear_extended_source.c' || echo '$(srcdir)/'`quant/palette/0068_srgb_linear_extended_source.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Tpo quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0068_srgb_linear_extended_source.c' object='quant/palette/test_runner-0068_srgb_linear_extended_source.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0068_srgb_linear_extended_source.o `test -f 'quant/palette/0068_srgb_linear_extended_source.c' || echo '$(srcdir)/'`quant/palette/0068_srgb_linear_extended_source.c
+
+quant/palette/test_runner-0068_srgb_linear_extended_source.obj: quant/palette/0068_srgb_linear_extended_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0068_srgb_linear_extended_source.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Tpo -c -o quant/palette/test_runner-0068_srgb_linear_extended_source.obj `if test -f 'quant/palette/0068_srgb_linear_extended_source.c'; then $(CYGPATH_W) 'quant/palette/0068_srgb_linear_extended_source.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0068_srgb_linear_extended_source.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Tpo quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0068_srgb_linear_extended_source.c' object='quant/palette/test_runner-0068_srgb_linear_extended_source.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0068_srgb_linear_extended_source.obj `if test -f 'quant/palette/0068_srgb_linear_extended_source.c'; then $(CYGPATH_W) 'quant/palette/0068_srgb_linear_extended_source.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0068_srgb_linear_extended_source.c'; fi`
+
+quant/palette/test_runner-srgb_contract_common.o: quant/palette/srgb_contract_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-srgb_contract_common.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Tpo -c -o quant/palette/test_runner-srgb_contract_common.o `test -f 'quant/palette/srgb_contract_common.c' || echo '$(srcdir)/'`quant/palette/srgb_contract_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Tpo quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/srgb_contract_common.c' object='quant/palette/test_runner-srgb_contract_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-srgb_contract_common.o `test -f 'quant/palette/srgb_contract_common.c' || echo '$(srcdir)/'`quant/palette/srgb_contract_common.c
+
+quant/palette/test_runner-srgb_contract_common.obj: quant/palette/srgb_contract_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-srgb_contract_common.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Tpo -c -o quant/palette/test_runner-srgb_contract_common.obj `if test -f 'quant/palette/srgb_contract_common.c'; then $(CYGPATH_W) 'quant/palette/srgb_contract_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/srgb_contract_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Tpo quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/srgb_contract_common.c' object='quant/palette/test_runner-srgb_contract_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-srgb_contract_common.obj `if test -f 'quant/palette/srgb_contract_common.c'; then $(CYGPATH_W) 'quant/palette/srgb_contract_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/srgb_contract_common.c'; fi`
+
 diagnostics/probe/test_runner-0001_probe_parse.o: diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/probe/test_runner-0001_probe_parse.o -MD -MP -MF diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo -c -o diagnostics/probe/test_runner-0001_probe_parse.o `test -f 'diagnostics/probe/0001_probe_parse.c' || echo '$(srcdir)/'`diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
@@ -41708,6 +42009,14 @@ distclean: distclean-am
 	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0033_lso2_oklab_lightness.Po
 	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0034_lso2_cielab_lightness.Po
 	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0035_lso2_din99d_lightness.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0036_api_invalid.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0037_dither_instances.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0038_encoder_instances.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0039_temporal_history.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0040_temporal_reset.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0041_fs_vertical_residual.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0042_fs_serpentine_residual.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0043_parallel_overlap.Po
 	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-clamp_test_common.Po
 	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po
 	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po
@@ -41863,6 +42172,11 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0054_p3_encoder_contract.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0059_p3_precision_contract.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0062_p3_fs_error_contract.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po
@@ -43413,6 +43727,14 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0033_lso2_oklab_lightness.Po
 	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0034_lso2_cielab_lightness.Po
 	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0035_lso2_din99d_lightness.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0036_api_invalid.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0037_dither_instances.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0038_encoder_instances.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0039_temporal_history.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0040_temporal_reset.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0041_fs_vertical_residual.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0042_fs_serpentine_residual.Po
+	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-0043_parallel_overlap.Po
 	-rm -f processing/dither/clamp/$(DEPDIR)/test_runner-clamp_test_common.Po
 	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po
 	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po
@@ -43568,6 +43890,11 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0054_p3_encoder_contract.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0059_p3_precision_contract.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0062_p3_fs_error_contract.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po

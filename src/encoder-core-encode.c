@@ -4559,15 +4559,14 @@ sixel_encode_dither(
     int image_started;
     unsigned char const *output_rgb101;
     unsigned int output_rgb101_count;
-    int output_is_p3;
+    int use_rgb101_palette;
 
     if (output == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     output_rgb101 = NULL;
     output_rgb101_count = 0U;
-    output_is_p3 = dither->output_color_definition ==
-        SIXEL_PALETTE_OUTPUT_DISPLAY_P3;
+    use_rgb101_palette = dither->use_rgb101_palette != 0;
 
     /*
      * Preserve the effective geometry for the post-encode contract trace.
@@ -4848,7 +4847,7 @@ sixel_encode_dither(
                palette_float_view.entries,
                palette_float_bytes);
     }
-    if (output_is_p3) {
+    if (use_rgb101_palette) {
         status = sixel_palette_get_rgb101(palette_obj, &output_rgb101,
                                            &output_rgb101_count);
         if (SIXEL_FAILED(status) || palette_entries_float32 == NULL ||
@@ -4867,7 +4866,7 @@ sixel_encode_dither(
                 (output_rgb101[palette_index] * 255U + 50U) / 100U);
         }
     }
-    if (!output_is_p3 &&
+    if (!use_rgb101_palette &&
             palette_entries != NULL && palette_entries_float32 != NULL
             && palette_count == palette_float_count
             && palette_count > 0U
@@ -4881,7 +4880,7 @@ sixel_encode_dither(
                                            palette_count,
                                            palette_float_pixelformat);
     }
-    if (!output_is_p3 && palette_entries != NULL && palette_count > 0U
+    if (!use_rgb101_palette && palette_entries != NULL && palette_count > 0U
             && output != NULL
             && output->source_colorspace != output->colorspace) {
         palette_bytes = palette_count * 3U;
@@ -4935,7 +4934,7 @@ sixel_encode_dither(
             }
         }
     }
-    if (!output_is_p3 && dither->palette_snap_exact != 0) {
+    if (!use_rgb101_palette && dither->palette_snap_exact != 0) {
         sixel_palette_snap_output(palette_entries, palette_entries_float32,
                                    (unsigned int)palette_count);
     }

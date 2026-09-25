@@ -16,6 +16,7 @@
 #include "src/dither-policy-sierra3.h"
 #include "src/dither-policy-lso2.h"
 #include "src/dither-policy-interframe.h"
+#include "src/dither-interframe-method.h"
 #include "clamp_test_common.h"
 
 int
@@ -103,6 +104,7 @@ clamp_test_numeric(int scenario)
 typedef struct clamp_lookup {
     sixel_lookup_policy_interface_t base;
     float *last;
+    float *seen;
     int *calls;
 } clamp_lookup_t;
 
@@ -114,6 +116,9 @@ clamp_lookup_pixel(sixel_lookup_policy_interface_t const *base,
 
     lookup = (clamp_lookup_t const *)base;
     memcpy(lookup->last, pixel, 3U * sizeof(float));
+    if (lookup->seen != NULL && *lookup->calls < 4) {
+        memcpy(lookup->seen + *lookup->calls * 3, pixel, 3U * sizeof(float));
+    }
     ++*lookup->calls;
     return 0;
 }
@@ -149,17 +154,43 @@ clamp_test_kernel(int method)
     clamp_lookup_t lookup;
     SIXELSTATUS status;
     void *object;
-    float pixels[6] = { .99f, .99f, .99f, .99f, .99f, .99f };
+    float pixels[12] = { .99f, .99f, .99f, .99f, .99f, .99f };
+    float seen[12];
+    double grid[4] = { .95, 1.1, .603125, .7669921875 };
     double expected[3] = { 1.1, 1.1, 1.1 };
     int pixelformat;
     float last[3] = { 0.0f, 0.0f, 0.0f };
     unsigned char palette[6] = { 0, 0, 0, 255, 255, 255 };
-    sixel_index_t result[2];
+    sixel_index_t result[4];
     int calls;
     int ok;
     int n;
+    int temporal;
+    int reset;
+    int spatial;
+    int serpentine;
 
     pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    temporal = method == 13 || method == 14;
+    reset = method == 14;
+    spatial = method >= 15;
+    serpentine = method == 16;
+    if (spatial) {
+        method = 0;
+        for (n = 0; n < 12; ++n) {
+            pixels[n] = n < 6 ? .95f : .1f;
+        }
+        if (serpentine) {
+            grid[2] = .503125;
+            grid[3] = .8232421875;
+        }
+        for (n = 0; n < 3; ++n) {
+            expected[n] = grid[3];
+        }
+    }
+    if (temporal) {
+        method = 9;
+    }
     if (method >= 10) {
         pixelformat = lab_formats[method - 10];
         method = 8;
@@ -180,6 +211,7 @@ clamp_test_kernel(int method)
     memset(&request, 0, sizeof(request));
     lookup.base.vtbl = &clamp_lookup_vtbl;
     lookup.last = last;
+    lookup.seen = spatial ? seen : NULL;
     lookup.calls = &calls;
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
@@ -190,8 +222,21 @@ clamp_test_kernel(int method)
         goto end;
     }
     sixel_dither_set_palette(dither, palette);
-    dither->clamp_policy = SIXEL_DITHER_CLAMP_SOFT;
-    dither->clamp_threshold = 1.1;
+    status = sixel_dither_set_clamp_policy(dither,
+        SIXEL_DITHER_CLAMP_SOFT, 1.1);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (temporal) {
+        /* Kernel-level invocation supplies the consuming-apply contract
+         * normally established by PaletteApply, but generates real history. */
+        dither->interframe_state.last_apply_consumed = 1;
+        dither->interframe_strategy_override = 1;
+        dither->interframe_strategy_token =
+            SIXEL_INTERFRAME_STRATEGY_TOKEN_DIFFUSION;
+        dither->interframe_spatial_diffuse_override = 1;
+        dither->interframe_spatial_diffuse = SIXEL_DIFFUSE_NONE;
+    }
     status = create[method](allocator, &object);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -200,14 +245,15 @@ clamp_test_kernel(int method)
     prepare.dither = dither;
     prepare.depth = 3;
     prepare.pixelformat = pixelformat;
-    prepare.method_for_scan = SIXEL_SCAN_RASTER;
+    prepare.method_for_scan = serpentine ? SIXEL_SCAN_SERPENTINE
+                                        : SIXEL_SCAN_RASTER;
     status = policy->vtbl->prepare(policy, &prepare);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
     request.dither = dither;
-    request.width = 2;
-    request.height = 1;
+    request.width = temporal ? 1 : 2;
+    request.height = spatial ? 2 : 1;
     request.depth = 3;
     request.pixelformat = prepare.pixelformat;
     request.method_for_scan = prepare.method_for_scan;
@@ -216,7 +262,42 @@ clamp_test_kernel(int method)
     request.result = result;
     request.lookup_policy = &lookup.base;
     status = policy->vtbl->apply(policy, &request);
-    ok = SIXEL_SUCCEEDED(status) && calls == 2;
+    if (temporal) {
+        /* .99 rounds to byte 252. A black target retains 252/255 of
+         * temporal correction, independently of the limiter formula. */
+        if (SIXEL_FAILED(status) || calls != 1 ||
+                dither->interframe_state.error_frame == NULL ||
+                ((int32_t *)dither->interframe_state.error_frame)[0] !=
+                    252 * SIXEL_INTERFRAME_VARERR_SCALE) {
+            goto end;
+        }
+        if (reset) {
+            sixel_dither_clear_frame_context(dither);
+            dither->interframe_state.last_apply_consumed = 1;
+        }
+        for (n = 0; n < 3; ++n) {
+            pixels[n] = .99f;
+            expected[n] = reset ? .99 : 1.1;
+        }
+        status = policy->vtbl->apply(policy, &request);
+        if (SIXEL_FAILED(status) ||
+                dither->interframe_state.error_frame == NULL ||
+                ((int32_t *)dither->interframe_state.error_frame)[0] !=
+                    (reset ? 252 : 255) * SIXEL_INTERFRAME_VARERR_SCALE) {
+            goto end;
+        }
+    }
+    ok = SIXEL_SUCCEEDED(status) && calls == (spatial ? 4 : 2);
+    if (spatial) {
+        /* Analytic FS taps: 7/16 right, 3/16 down-left, 5/16 down,
+         * 1/16 down-right. Pixel 1 clips to 1.1; propagate that residual. */
+        for (n = 0; n < 12; ++n) {
+            if (!isfinite(seen[n]) ||
+                    fabs(seen[n] - grid[n / 3]) > .000001) {
+                ok = 0;
+            }
+        }
+    }
     for (n = 0; n < 3; ++n) {
         if (!isfinite(last[n]) || fabs(last[n] - expected[n]) > 0.000001) {
             fprintf(stderr, "method %d channel %d: %.9g != %.9g\n",
@@ -230,6 +311,88 @@ end:
     }
     sixel_dither_unref(dither);
     sixel_allocator_unref(allocator);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+clamp_test_api(int scenario)
+{
+    sixel_dither_t *a;
+    sixel_dither_t *b;
+    sixel_encoder_t *ea;
+    sixel_encoder_t *eb;
+    SIXELSTATUS status;
+    int ok;
+
+    a = NULL;
+    b = NULL;
+    ea = NULL;
+    eb = NULL;
+    ok = 0;
+    if (scenario == 2) {
+        if (SIXEL_FAILED(sixel_encoder_new(&ea, NULL)) ||
+                SIXEL_FAILED(sixel_encoder_new(&eb, NULL))) {
+            goto end;
+        }
+        if (SIXEL_FAILED(sixel_encoder_setopt(ea,
+                SIXEL_OPTFLAG_CLAMP_POLICY, "soft:T1.2")) ||
+                SIXEL_FAILED(sixel_encoder_setopt(eb,
+                SIXEL_OPTFLAG_CLAMP_POLICY, "hard:T1.5")) ||
+                SIXEL_FAILED(sixel_encoder_setopt(ea,
+                SIXEL_OPTFLAG_CLAMP_POLICY, "none:T1.3"))) {
+            goto end;
+        }
+        sixel_encoder_unref(ea);
+        ea = NULL;
+        ok = eb->clamp_policy == SIXEL_DITHER_CLAMP_HARD &&
+            eb->clamp_threshold == 1.5;
+        goto end;
+    }
+    if (SIXEL_FAILED(sixel_dither_new(&a, 2, NULL)) ||
+            SIXEL_FAILED(sixel_dither_new(&b, 2, NULL))) {
+        goto end;
+    }
+    status = sixel_dither_set_clamp_policy(a, SIXEL_DITHER_CLAMP_SOFT, 1.2);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (scenario == 0) {
+        /* All rejected updates preserve the complete last valid pair. */
+        ok = sixel_dither_set_clamp_policy(NULL,
+                 SIXEL_DITHER_CLAMP_HARD, 1.0) == SIXEL_BAD_ARGUMENT &&
+            sixel_dither_set_clamp_policy(a, -1, 1.0) ==
+                 SIXEL_BAD_ARGUMENT &&
+            sixel_dither_set_clamp_policy(a, 4, 1.0) ==
+                 SIXEL_BAD_ARGUMENT &&
+            sixel_dither_set_clamp_policy(a, SIXEL_DITHER_CLAMP_HARD,
+                 NAN) == SIXEL_BAD_ARGUMENT &&
+            sixel_dither_set_clamp_policy(a, SIXEL_DITHER_CLAMP_NONE,
+                 INFINITY) == SIXEL_BAD_ARGUMENT &&
+            sixel_dither_set_clamp_policy(a, SIXEL_DITHER_CLAMP_AUTO,
+                 .99) == SIXEL_BAD_ARGUMENT &&
+            sixel_dither_set_clamp_policy(a, SIXEL_DITHER_CLAMP_HARD,
+                 16.1) == SIXEL_BAD_ARGUMENT &&
+            a->clamp_policy == SIXEL_DITHER_CLAMP_SOFT &&
+            a->clamp_threshold == 1.2;
+    } else {
+        if (b->clamp_policy != SIXEL_DITHER_CLAMP_AUTO ||
+                b->clamp_threshold != 1.01 ||
+                SIXEL_FAILED(sixel_dither_set_clamp_policy(b,
+                    SIXEL_DITHER_CLAMP_HARD, 16.0)) ||
+                SIXEL_FAILED(sixel_dither_set_clamp_policy(a,
+                    SIXEL_DITHER_CLAMP_NONE, 1.0))) {
+            goto end;
+        }
+        sixel_dither_unref(a);
+        a = NULL;
+        ok = b->clamp_policy == SIXEL_DITHER_CLAMP_HARD &&
+            b->clamp_threshold == 16.0;
+    }
+end:
+    sixel_dither_unref(a);
+    sixel_dither_unref(b);
+    sixel_encoder_unref(ea);
+    sixel_encoder_unref(eb);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 

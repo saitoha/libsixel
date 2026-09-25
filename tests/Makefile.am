@@ -377,6 +377,19 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0034_LSO2_CIELAB_LIGHTNESS \
     -DBUILD_TEST_0035_LSO2_DIN99D_LIGHTNESS \
     -DBUILD_CLAMP_TEST_COMMON \
+    -DBUILD_TEST_0036_API_INVALID \
+    -DBUILD_TEST_0037_DITHER_INSTANCES \
+    -DBUILD_TEST_0038_ENCODER_INSTANCES \
+    -DBUILD_TEST_0039_TEMPORAL_HISTORY \
+    -DBUILD_TEST_0040_TEMPORAL_RESET \
+    -DBUILD_TEST_0041_FS_VERTICAL_RESIDUAL \
+    -DBUILD_TEST_0042_FS_SERPENTINE_RESIDUAL \
+    -DBUILD_TEST_0043_PARALLEL_OVERLAP \
+    -DBUILD_TEST_0065_SRGB_GAMMA_WIRE_LOOKUP \
+    -DBUILD_TEST_0066_SRGB_LINEAR_WIRE_LOOKUP \
+    -DBUILD_TEST_0067_SRGB_GAMMA_EXTENDED_SOURCE \
+    -DBUILD_TEST_0068_SRGB_LINEAR_EXTENDED_SOURCE \
+    -DBUILD_SRGB_CONTRACT_COMMON \
     -DBUILD_TEST_0015_FILTER_DITHER_6DELTA_LSO2 \
     -DBUILD_TEST_0016_FILTER_DITHER_6DELTA_JAJUNI \
     -DBUILD_TEST_0017_FILTER_DITHER_6DELTA_STUCKI \
@@ -2533,6 +2546,14 @@ test_runner_SOURCES = test_runner.c \
     processing/dither/clamp/0033_lso2_oklab_lightness.c \
     processing/dither/clamp/0034_lso2_cielab_lightness.c \
     processing/dither/clamp/0035_lso2_din99d_lightness.c \
+    processing/dither/clamp/0036_api_invalid.c \
+    processing/dither/clamp/0037_dither_instances.c \
+    processing/dither/clamp/0038_encoder_instances.c \
+    processing/dither/clamp/0039_temporal_history.c \
+    processing/dither/clamp/0040_temporal_reset.c \
+    processing/dither/clamp/0041_fs_vertical_residual.c \
+    processing/dither/clamp/0042_fs_serpentine_residual.c \
+    processing/dither/clamp/0043_parallel_overlap.c \
     processing/dither/clamp/clamp_test_common.c \
     processing/dither/clamp/clamp_test_common.h \
     processing/dither/clamp/0017_keep_fs.c \
@@ -3556,6 +3577,12 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0054_p3_encoder_contract.c \
     quant/palette/0059_p3_precision_contract.c \
     quant/palette/0062_p3_fs_error_contract.c \
+    quant/palette/0065_srgb_gamma_wire_lookup.c \
+    quant/palette/0066_srgb_linear_wire_lookup.c \
+    quant/palette/0067_srgb_gamma_extended_source.c \
+    quant/palette/0068_srgb_linear_extended_source.c \
+    quant/palette/srgb_contract_common.c \
+    quant/palette/srgb_contract_common.h \
     diagnostics/probe/0001_probe_parse.c \
     diagnostics/status/0001_status_timeout.c \
     diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \

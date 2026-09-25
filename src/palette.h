@@ -95,10 +95,11 @@ sixel_palette_generate_extended(
     sixel_palette_t *palette,
     sixel_palette_generate_request_t const *request);
 
-/* Commit P3 RGB101 codes and their inverse canonical float coordinates
+/* Commit destination RGB101 codes and their inverse canonical float coordinates
  * together. The byte entries are only a compatibility projection. */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace);
+sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace,
+                             int output_definition);
 
 /* Borrow immutable wire codes until the next palette initialization. */
 SIXEL_INTERNAL_API SIXELSTATUS

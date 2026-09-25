@@ -31,13 +31,6 @@
 /* Keep a small correction margin at nominal working-space boundaries. */
 #define SIXEL_DITHER_CLAMP_THRESHOLD 1.01
 
-enum sixel_dither_clamp_policy {
-    SIXEL_DITHER_CLAMP_AUTO = 0,
-    SIXEL_DITHER_CLAMP_SOFT,
-    SIXEL_DITHER_CLAMP_HARD,
-    SIXEL_DITHER_CLAMP_NONE
-};
-
 /* Each apply request owns an immutable source snapshot. Work bands never
  * share writable limiter state, including during overlap warm-up. */
 typedef struct sixel_dither_clamp {

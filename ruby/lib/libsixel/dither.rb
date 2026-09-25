@@ -79,6 +79,12 @@ class Dither
     Libsixel::API.sixel_dither_get_num_of_palette_colors(@ptr)
   end
 
+  def set_clamp_policy(policy, threshold = 1.01)
+    status = Libsixel::API.sixel_dither_set_clamp_policy(@ptr, policy.to_i, threshold.to_f)
+    raise RuntimeError, Libsixel::API::Err.message(status) if Libsixel::API.failed?(status)
+    nil
+  end
+
   def num_histogram_colors
     Libsixel::API.sixel_dither_get_num_of_histogram_colors(@ptr)
   end

@@ -218,6 +218,7 @@ module Libsixel
     extern "int sixel_dither_initialize(void *, char *, int, int, int, int, int, int)"
     extern "void sixel_dither_set_diffusion_type(void *, int)"
     extern "void sixel_dither_set_diffusion_scan(void *, int)"
+    extern "int sixel_dither_set_clamp_policy(void *, int, double)"
     extern "int sixel_dither_get_num_of_palette_colors(void *)"
     extern "int sixel_dither_get_num_of_histogram_colors(void *)"
     extern "int sixel_dither_get_num_of_histgram_colors(void *)"

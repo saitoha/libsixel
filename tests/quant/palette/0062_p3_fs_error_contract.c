@@ -101,7 +101,7 @@ test_palette_0062_p3_fs_error(int argc, char **argv)
             SIXEL_FAILED(dither->palette->vtbl->init_entries_float32(
                 dither->palette, &float_request)) ||
             SIXEL_FAILED(sixel_palette_prepare_rgb101(dither->palette,
-                SIXEL_COLORSPACE_LINEAR)) ||
+                SIXEL_COLORSPACE_LINEAR, SIXEL_PALETTE_OUTPUT_DISPLAY_P3)) ||
             SIXEL_FAILED(sixel_palette_get_rgb101(dither->palette,
                 &codes, &count)) || count != 1 || codes[0] != 100 ||
                 codes[1] != 0 || codes[2] != 0 ||
@@ -122,8 +122,7 @@ test_palette_0062_p3_fs_error(int argc, char **argv)
     }
     capture_vtbl.map_pixel = p3_fs_map;
     capture.vtbl = &capture_vtbl;
-    dither->output_color_definition = hard
-        ? SIXEL_PALETTE_OUTPUT_LEGACY : SIXEL_PALETTE_OUTPUT_DISPLAY_P3;
+    dither->use_rgb101_palette = !hard;
     /* Open feedback protects the historical extended-error contract.
      * Hard feedback limits compensation without clipping the source itself. */
     dither->clamp_policy = hard

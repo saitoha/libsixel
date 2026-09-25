@@ -56,6 +56,11 @@ final class Constants
     public const SIXEL_SCAN_RASTER = 0x1;
     public const SIXEL_SCAN_SERPENTINE = 0x2;
 
+    public const SIXEL_DITHER_CLAMP_AUTO = 0;
+    public const SIXEL_DITHER_CLAMP_SOFT = 1;
+    public const SIXEL_DITHER_CLAMP_HARD = 2;
+    public const SIXEL_DITHER_CLAMP_NONE = 3;
+
     public const SIXEL_QUALITY_AUTO = 0x0;
     public const SIXEL_QUALITY_HIGH = 0x1;
     public const SIXEL_QUALITY_LOW = 0x2;

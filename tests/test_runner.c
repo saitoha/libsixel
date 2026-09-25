@@ -198,6 +198,14 @@ int test_clamp_0031(int argc, char **argv);
 int test_clamp_0033(int argc, char **argv);
 int test_clamp_0034(int argc, char **argv);
 int test_clamp_0035(int argc, char **argv);
+int test_clamp_0036(int argc, char **argv);
+int test_clamp_0037(int argc, char **argv);
+int test_clamp_0038(int argc, char **argv);
+int test_clamp_0039(int argc, char **argv);
+int test_clamp_0040(int argc, char **argv);
+int test_clamp_0041(int argc, char **argv);
+int test_clamp_0042(int argc, char **argv);
+int test_clamp_0043(int argc, char **argv);
 int test_clamp_0032(int argc, char **argv);
 int test_filter_0015_filter_dither_6delta_lso2(int argc, char **argv);
 int test_perturb_0002_api(int argc, char **argv);
@@ -447,6 +455,10 @@ int test_cli_0037_color_parser(int argc, char **argv);
 int test_cli_0038_color_tty(int argc, char **argv);
 int test_cli_0039_color_auto(int argc, char **argv);
 int test_cli_0040_color_job(int argc, char **argv);
+int test_srgb_0065(int argc, char **argv);
+int test_srgb_0066(int argc, char **argv);
+int test_srgb_0067(int argc, char **argv);
+int test_srgb_0068(int argc, char **argv);
 int test_palette_0051_p3_contract(int argc, char **argv);
 int test_palette_0054_p3_encoder(int argc, char **argv);
 int test_palette_0059_p3_precision(int argc, char **argv);
@@ -2063,6 +2075,14 @@ static test_entry_t const test_entries[] = {
     { "dither/clamp/0033_lso2_oklab_lightness", test_clamp_0033 },
     { "dither/clamp/0034_lso2_cielab_lightness", test_clamp_0034 },
     { "dither/clamp/0035_lso2_din99d_lightness", test_clamp_0035 },
+    { "dither/clamp/0036_api_invalid", test_clamp_0036 },
+    { "dither/clamp/0037_dither_instances", test_clamp_0037 },
+    { "dither/clamp/0038_encoder_instances", test_clamp_0038 },
+    { "dither/clamp/0039_temporal_history", test_clamp_0039 },
+    { "dither/clamp/0040_temporal_reset", test_clamp_0040 },
+    { "dither/clamp/0041_fs_vertical_residual", test_clamp_0041 },
+    { "dither/clamp/0042_fs_serpentine_residual", test_clamp_0042 },
+    { "dither/clamp/0043_parallel_overlap", test_clamp_0043 },
     { "dither/clamp/0032_kernel_interframe", test_clamp_0032 },
     { "filter/0015_filter_dither_6delta_lso2",
       test_filter_0015_filter_dither_6delta_lso2 },
@@ -2530,6 +2550,10 @@ static test_entry_t const test_entries[] = {
     { "cli/0038_cli_color_tty", test_cli_0038_color_tty },
     { "cli/0039_cli_color_auto", test_cli_0039_color_auto },
     { "cli/0040_cli_color_job", test_cli_0040_color_job },
+    { "palette/0065_srgb_gamma_wire_lookup", test_srgb_0065 },
+    { "palette/0066_srgb_linear_wire_lookup", test_srgb_0066 },
+    { "palette/0067_srgb_gamma_extended_source", test_srgb_0067 },
+    { "palette/0068_srgb_linear_extended_source", test_srgb_0068 },
     { "palette/0051_p3_palette_contract", test_palette_0051_p3_contract },
     { "palette/0054_p3_encoder_contract", test_palette_0054_p3_encoder },
     { "palette/0059_p3_precision_contract", test_palette_0059_p3_precision },

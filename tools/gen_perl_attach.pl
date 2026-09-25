@@ -70,6 +70,7 @@ sub map_type {
     }
 
     return 'void' if $t eq 'void';
+    return 'double' if $t eq 'double';
     return 'string' if $t eq 'char*';
     return 'int' if $t =~ /^(?:SIXELSTATUS|int|unsigned int|size_t)$/;
     return 'opaque*' if $t =~ /\*\*$/;

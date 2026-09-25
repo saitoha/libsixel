@@ -51,16 +51,16 @@ promoting an otherwise gamma `rgb888` main path. Their matched `--precision`
 pairs compare the shared pipeline before and after the same float32 clustering
 stage, not two numeric representations of that stage.
 
-[Dither clamp policy](clamp-policy.md) can promote the palette-application buffer separately from the planner's image representation. Its signed-headroom requirement does not promote the loader.
+[Dither clamp policy](clamp-policy.md) can promote the palette-application buffer separately from the planner's image representation. Its signed-headroom requirement does not promote the loader. A planner trace such as `work=rgb888` describes the image representation before that promotion. Check the palette-application lookup trace for the effective byte/float path and the clamp trace for `clamp_requested`, `clamp_effective`, and `clamp_threshold`.
 
-Use verbose planner output to audit the effective path. A controlled 8-bit run must report this working field; the loader and resize formats can independently be float:
+Use verbose planner output to audit the effective path. A controlled 8-bit image-storage run must report this working field; the loader and resize formats can independently be float:
 
 ```text
 work=rgb888
 ```
 
 The corresponding float32 run must report `work=rgb-f32`. Measurement scripts
-must validate this field rather than infer the path from the command line.
+must validate this field rather than infer the image path from the command line. To claim byte diffusion too, verify a byte lookup/application path and a compatible clamp policy; the planner field alone is insufficient.
 
 ## Resize precision and memory
 

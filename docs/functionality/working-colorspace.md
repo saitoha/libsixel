@@ -64,26 +64,29 @@ The implementation evaluates an ordinary squared Euclidean distance across all t
 For an error-diffusion method, the value presented to lookup also contains error accumulated from earlier pixels. After choosing palette entry `q`, a representative recurrence is:
 
 ```text
-y_t = clamp_W(phi_W(c_t) + accumulated_error_t)
+s_t = phi_W(c_t)
+y_t = limit_policy(s_t, s_t + accumulated_error_t)
 e_t = y_t - phi_W(P[q])
 accumulated_error_j += a_j * e_t
 ```
 
-The coefficients `a_j` and scan order are properties of `-d`; the components of `e_t`, their ranges, and the clamping boundary are properties of `-W` and the effective pixel format. Thus `-W` and `-d` are not independent quality decisions. The detailed kernels and their spatial behavior are covered by [Dithering](dithering.md).
+The coefficients `a_j` and scan order are properties of `-d`. The components of `e_t` and their nominal ranges depend on `-W` and the effective pixel format. [Clamp policy](clamp-policy.md) determines the correction limit: float soft/hard bounds include the original source `s_t`, so extended source coordinates are not cut off. `none` retains the correction without limiting it. The hard byte path retains per-tap rounding and saturation. Thus `-W` and `-d` are not independent quality decisions. The detailed kernels and their spatial behavior are covered by [Dithering](dithering.md).
 
 The Lab-family formats use libsixel's normalized component ranges. Consequently, Euclidean lookup in `cielab` is not literally Delta E76 in unscaled CIELAB units, and none of these lookup distances is CIEDE2000. The Delta E00 values in this document are evaluation metrics computed by `lsqa` after decoding, not the encoder's lookup objective.
+
+The extended frame-conversion API preserves finite out-of-range coordinates. Some legacy palette-generation/conversion paths still use bounded converters or rebuild a float view from byte entries. Those earlier boundaries are independent of the diffusion clamp policy; selecting `-0none` does not remove them. See [pixel-format precision](../concepts/pixelformat-precision.md) for the representation contract.
 
 ## Cost model
 
 For `N` image pixels, `K` palette entries, and fixed depth `d = 3`, converting the main image to `-W` is `O(N)` and converting a generated palette from `-X` to `-W` is `O(K)`. Exact exhaustive lookup is `O(N K d)`, while a fixed-neighborhood diffusion kernel adds `O(N d)` work. Selecting a different working color space does not change these asymptotic orders, but it changes conversion cost, pixel representation, per-channel clamping, and memory traffic.
 
-In normal use, `-Wgamma` can retain `RGB888`, which uses three bytes per pixel, or use `RGBFLOAT32` when `--precision=float32` is requested. Every non-gamma `-W` requires a typed float32 representation with three four-byte components, so it uses twelve bytes per RGB pixel before additional pipeline buffers. The resulting precision and implicit-promotion rules are described in [Pixel-format precision](../concepts/pixelformat-precision.md) and [Encoder working precision](precision.md).
+For image storage, `-Wgamma` can retain `RGB888`, which uses three bytes per pixel, or use `RGBFLOAT32` when `--precision=float32` is requested. Soft/none error diffusion separately promotes a byte palette-application buffer to float32; byte image storage does not imply byte diffusion. Every non-gamma `-W` requires a typed float32 representation with three four-byte components, so it uses twelve bytes per RGB pixel before additional pipeline buffers. The resulting precision and implicit-promotion rules are described in [Pixel-format precision](../concepts/pixelformat-precision.md) and [Encoder working precision](precision.md).
 
 The formal comparison below forces float32 for all spaces. It therefore measures color geometry and its implementation constants without giving `gamma` the separate advantage of an 8-bit path. Real commands that leave precision at its default can show a larger or differently distributed runtime and memory gap.
 
 ## `gamma`: gamma-encoded sRGB coordinates
 
-`-Wgamma` compares and diffuses the displayed sRGB code values. Its normalized vector is `(R_srgb, G_srgb, B_srgb)`, with each component in `[0, 1]` on the float32 path or `[0, 255]` on the byte path.
+`-Wgamma` compares and diffuses the displayed sRGB code values. Its normalized vector is `(R_srgb, G_srgb, B_srgb)`, with nominal components in `[0, 1]` on the float32 path or `[0, 255]` on the byte path. Extended float paths can retain values outside the nominal range.
 
 This space is inexpensive when image and palette data are already gamma-encoded sRGB, and it is the compatibility default. Its geometry is not perceptually uniform and arithmetic differences do not represent additive light, but the nonlinear transfer devotes more code-value resolution to dark linear-light values. That can be beneficial for some pointwise errors even when a perceptual space produces better spatial structure.
 
@@ -97,7 +100,7 @@ Unweighted Euclidean distance in linear RGB is not perceptually uniform. A numer
 
 ## `oklab`: approximately perceptual opponent coordinates
 
-`-Woklab` converts linear sRGB through the published Oklab matrices and cube-root nonlinearity, then compares and diffuses `(L, a, b)` coordinates. libsixel stores `L` in `[0, 1]` and the opponent components in their native float range clamped to `[-0.5, 0.5]`.
+`-Woklab` converts linear sRGB through the published Oklab matrices and cube-root nonlinearity, then compares and diffuses `(L, a, b)` coordinates. The nominal normalized range is `[0, 1]` for `L` and `[-0.5, 0.5]` for the opponent components. These are coordinate conventions, not limits of float storage.
 
 Oklab was designed so that Euclidean geometry behaves more consistently with perceived lightness, chroma, and hue than ordinary RGB coordinates. It is still an approximation rather than a promise to minimize CIEDE2000 or an image-wide structural metric. The definition and motivation are in Bjorn Ottosson's [A perceptual color space for image processing](https://bottosson.github.io/posts/oklab/).
 
@@ -105,7 +108,7 @@ The checked-in fixture shows the distinction clearly: with Floyd--Steinberg dith
 
 ## `cielab`: normalized CIE 1976 L*a*b*
 
-`-Wcielab` uses CIELAB derived through D65 XYZ. libsixel normalizes `L*` by `100`, normalizes `a*` and `b*` by `128`, and clamps the two opponent coordinates to `[-1.5, 1.5]` for typed float storage.
+`-Wcielab` uses CIELAB derived through D65 XYZ. libsixel normalizes `L*` by `100`, normalizes `a*` and `b*` by `128`, with a nominal range of `[-1.5, 1.5]` for the opponent coordinates.
 
 This normalization is part of the working metric because lookup applies equal Euclidean weights to the stored coordinates. It must not be confused with running a CIEDE2000 calculation for every palette candidate. CIELAB reduces several distortions of RGB geometry, but it is not uniformly perceptual across its full gamut and its conversions cost more than staying in gamma sRGB.
 

@@ -1742,7 +1742,7 @@ sixel_dither_6delta_keep_float(
 
     if (pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
             dither == NULL || !dither->clamp_promoted_rgb888 ||
-            dither->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY) {
+            dither->use_rgb101_palette != 0) {
         return 0;
     }
     pixel = sixel_dither_pipeline_6delta_plane_pixel(dither, x, y);
@@ -2103,7 +2103,7 @@ sixel_dither_new(
     (*ppdither)->clamp_threshold = SIXEL_DITHER_CLAMP_THRESHOLD;
     (*ppdither)->clamp_promoted_rgb888 = 0;
     (*ppdither)->palette_snap_exact = 0;
-    (*ppdither)->output_color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
+    (*ppdither)->use_rgb101_palette = 0;
     (*ppdither)->allocator = allocator;
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->lut_policy_override = 0;
@@ -2592,8 +2592,7 @@ sixel_dither_initialize_internal(
             palette_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
             input_pixels = (unsigned char *)float_pixels;
         } else {
-            if (dither->output_color_definition ==
-                    SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+            if (dither->use_rgb101_palette != 0) {
                 goto end;
             }
             prefer_float32 = 0;
@@ -2635,7 +2634,7 @@ sixel_dither_initialize_internal(
         }
         palette_attempt_active = 1;
     }
-    if (dither->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+    if (dither->use_rgb101_palette != 0) {
         status = sixel_palette_generate_extended(dither->palette,
                                                    &palette_request);
     } else {
@@ -2669,7 +2668,7 @@ sixel_dither_initialize_internal(
      * The private extended RGB path likewise owns a typed float view even
      * without snapping. Other unsnapped paths retain byte-derived behavior.
      */
-    if (dither->output_color_definition != SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
+    if (dither->use_rgb101_palette == 0 &&
             (!palette_request.use_reversible ||
              !SIXEL_PIXELFORMAT_IS_FLOAT32(palette_pixelformat))) {
         memset(&drop_float_request, 0, sizeof(drop_float_request));
@@ -2906,6 +2905,22 @@ sixel_dither_set_diffusion_perturb_seed(sixel_dither_t *dither, int seed)
     }
     dither->diffusion_perturb_seed = seed;
     dither->diffusion_perturb_seed_override = 1;
+    return SIXEL_OK;
+}
+
+
+/* Update the two settings together only after complete validation. */
+SIXELAPI SIXELSTATUS
+sixel_dither_set_clamp_policy(sixel_dither_t *dither, int policy,
+                              double threshold)
+{
+    if (dither == NULL || policy < SIXEL_DITHER_CLAMP_AUTO ||
+            policy > SIXEL_DITHER_CLAMP_NONE || !isfinite(threshold) ||
+            threshold < 1.0 || threshold > 16.0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    dither->clamp_policy = policy;
+    dither->clamp_threshold = threshold;
     return SIXEL_OK;
 }
 
@@ -4222,11 +4237,11 @@ sixel_dither_apply_palette_with_mode(
                 || palette_has_float != 0)) {
         prefer_float_pipeline = 1;
     }
-    if (dither->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
+    if (dither->use_rgb101_palette != 0 &&
             (!prefer_float_pipeline || !source_has_float ||
              !palette_has_float || dither->optimized != 0)) {
         sixel_helper_set_additional_message(
-            "display-p3 requires authoritative float lookup and palette.");
+            "RGB101 output requires authoritative float lookup and palette.");
         status = SIXEL_LOGIC_ERROR;
         goto end;
     }
@@ -4645,8 +4660,8 @@ sixel_dither_apply_palette_with_mode(
         ncolors <= keycolor_for_mask) {
         ncolors = keycolor_for_mask + 1;
     }
-    if ((dither->force_palette != 0 || dither->output_color_definition ==
-            SIXEL_PALETTE_OUTPUT_DISPLAY_P3) && palette_entry_limit > 0) {
+    if ((dither->force_palette != 0 || dither->use_rgb101_palette != 0) &&
+            palette_entry_limit > 0) {
         /*
          * Keep output palette slots stable for forced-palette mode.
          * Index resolution may touch fewer colors per frame, but callers
@@ -4657,9 +4672,9 @@ sixel_dither_apply_palette_with_mode(
     }
 
     dither->ncolors = ncolors;
-    /* The P3 owner already committed all three views in a fixed order.
+    /* The RGB101 owner already committed all three views in a fixed order.
      * Reinitializing even identical byte entries invalidates its wire codes. */
-    if (dither->output_color_definition != SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
+    if (dither->use_rgb101_palette == 0 &&
             ncolors >= 0 &&
             entries_view.entries != NULL &&
             entries_view.depth > 0 &&

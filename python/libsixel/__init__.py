@@ -29,6 +29,7 @@ from ctypes import (
     cdll,
     c_void_p,
     c_int,
+    c_double,
     c_byte,
     c_char_p,
     POINTER,
@@ -247,6 +248,11 @@ def _detect_library_bits(bin_path: pathlib.Path) -> str:
 SIXEL_SCAN_AUTO       = 0x0  # choose scan order automatically
 SIXEL_SCAN_RASTER     = 0x1  # scan from left to right on each line
 SIXEL_SCAN_SERPENTINE = 0x2  # alternate scan direction per line
+
+SIXEL_DITHER_CLAMP_AUTO = 0
+SIXEL_DITHER_CLAMP_SOFT = 1
+SIXEL_DITHER_CLAMP_HARD = 2
+SIXEL_DITHER_CLAMP_NONE = 3
 
 # quality modes
 SIXEL_QUALITY_AUTO      = 0x0  # choose quality mode automatically
@@ -1189,6 +1195,14 @@ def sixel_dither_set_diffusion_scan(dither, method_for_scan):
     _sixel.sixel_dither_set_diffusion_scan.restype = None
     _sixel.sixel_dither_set_diffusion_scan.argtypes = [c_void_p, c_int]
     _sixel.sixel_dither_set_diffusion_scan(dither, method_for_scan)
+
+
+def sixel_dither_set_clamp_policy(dither, policy, threshold=1.01):
+    _sixel.sixel_dither_set_clamp_policy.restype = c_int
+    _sixel.sixel_dither_set_clamp_policy.argtypes = [c_void_p, c_int, c_double]
+    status = _sixel.sixel_dither_set_clamp_policy(dither, policy, threshold)
+    if SIXEL_FAILED(status):
+        raise RuntimeError(sixel_helper_format_error(status))
 
 
 # get number of palette colors

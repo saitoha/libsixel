@@ -193,7 +193,7 @@ libsixel normalizes these values for the solver:
 phi_din99d(c) = (L99d / 100, a99d / 100, b99d / 100)
 ```
 
-The common divisor preserves the native Euclidean distance up to one overall scale factor. Axis-specific rescaling would change the metric. Lightness is bounded to `[0, 1]` and opponent components to `[-1, 1]` in storage. The logarithmic transforms reshape lightness and chroma spacing, and rotation with unequal intermediate-axis scaling reshapes the opponent plane. The source and motivation for the family are documented in [Uniform colour spaces based on the DIN99 colour-difference formula](https://doi.org/10.1002/col.10066).
+The common divisor preserves the native Euclidean distance up to one overall scale factor. Axis-specific rescaling would change the metric. The nominal range is `[0, 1]` for lightness and `[-1, 1]` for opponent components. Extended float storage can represent values outside those ranges; legacy bounded palette paths may still restrict them. The logarithmic transforms reshape lightness and chroma spacing, and rotation with unequal intermediate-axis scaling reshapes the opponent plane. The source and motivation for the family are documented in [Uniform colour spaces based on the DIN99 colour-difference formula](https://doi.org/10.1002/col.10066).
 
 ## Cost model
 

@@ -1865,7 +1865,8 @@ sixel_palette_generate_extended(
 }
 
 SIXELSTATUS
-sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace)
+sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace,
+                             int output_definition)
 {
     sixel_palette_storage_t *storage;
     sixel_color_def_t *srgb;
@@ -1885,6 +1886,8 @@ sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace)
     int pixelformat;
 
     if (palette == NULL ||
+            (output_definition != SIXEL_PALETTE_OUTPUT_LEGACY &&
+             output_definition != SIXEL_PALETTE_OUTPUT_DISPLAY_P3) ||
             (source_colorspace != SIXEL_COLORSPACE_LINEAR &&
              source_colorspace != SIXEL_COLORSPACE_GAMMA)) {
         return SIXEL_BAD_ARGUMENT;
@@ -1900,17 +1903,21 @@ sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace)
         return SIXEL_BAD_ARGUMENT;
     }
     status = SIXEL_BAD_ALLOCATION;
-    srgb = sixel_cdef_name("srgb");
-    p3 = sixel_cdef_name("display-p3");
+    srgb = NULL;
+    p3 = NULL;
     forward = NULL;
     inverse = NULL;
-    if (srgb == NULL || p3 == NULL) {
-        goto end;
-    }
-    forward = sixel_cxform_new(srgb, p3, 1);
-    inverse = sixel_cxform_new(p3, srgb, 1);
-    if (forward == NULL || inverse == NULL) {
-        goto end;
+    if (output_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+        srgb = sixel_cdef_name("srgb");
+        p3 = sixel_cdef_name("display-p3");
+        if (srgb == NULL || p3 == NULL) {
+            goto end;
+        }
+        forward = sixel_cxform_new(srgb, p3, 1);
+        inverse = sixel_cxform_new(p3, srgb, 1);
+        if (forward == NULL || inverse == NULL) {
+            goto end;
+        }
     }
     pixelformat = source_colorspace == SIXEL_COLORSPACE_LINEAR
         ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 : SIXEL_PIXELFORMAT_RGBFLOAT32;
@@ -1921,9 +1928,15 @@ sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace)
             source[channel] = storage->entries_float32[offset + channel];
         }
         if (!sixel_color_convert(gamma, source, source_colorspace,
-                                  SIXEL_COLORSPACE_GAMMA) ||
-                !sixel_cxform_apply(forward, gamma, output)) {
+                                  SIXEL_COLORSPACE_GAMMA)) {
             goto end;
+        }
+        if (forward != NULL) {
+            if (!sixel_cxform_apply(forward, gamma, output)) {
+                goto end;
+            }
+        } else {
+            memcpy(output, gamma, sizeof(output));
         }
         /* This is the only gamut clamp and output quantization. Keep the
          * integer codes so writer and lookup cannot round independently. */
@@ -1937,9 +1950,15 @@ sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace)
                 (unsigned char)(output[channel] * 100.0 + 0.5);
             output[channel] = (double)codes[offset + channel] / 100.0;
         }
-        if (!sixel_cxform_apply(inverse, output, gamma) ||
-                !sixel_color_convert(source, gamma, SIXEL_COLORSPACE_GAMMA,
-                                      source_colorspace)) {
+        if (inverse != NULL) {
+            if (!sixel_cxform_apply(inverse, output, gamma)) {
+                goto end;
+            }
+        } else {
+            memcpy(gamma, output, sizeof(gamma));
+        }
+        if (!sixel_color_convert(source, gamma, SIXEL_COLORSPACE_GAMMA,
+                                  source_colorspace)) {
             goto end;
         }
         for (channel = 0U; channel < 3U; ++channel) {

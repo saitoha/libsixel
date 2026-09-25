@@ -13,6 +13,10 @@
 
 `threshold` (`T`) is a finite factor from 1 through 16, default 1.01. `-0 soft:threshold=1.1` and `-0 soft:T1.1` are equivalent. The threshold is accepted but inactive for `hard` and `none`. `SIXEL_DITHER_CLAMP_POLICY` and `SIXEL_DITHER_CLAMP_THRESHOLD` provide defaults; explicit arguments win. Repeating `-0` resets the previous suboptions before reapplying the environment and the new argument. Invalid explicit values are errors; invalid environment values are ignored.
 
+## Library configuration
+
+`sixel_dither_set_clamp_policy(dither, policy, threshold)` configures the low-level dither API with `SIXEL_DITHER_CLAMP_AUTO`, `SOFT`, `HARD`, or `NONE`. The initial settings are auto and 1.01, independently of environment variables. A null context, unknown policy, or non-finite/out-of-range threshold returns `SIXEL_BAD_ARGUMENT` without changing either setting. Configure before applying a palette. Each dither and encoder owns independent settings; changing or destroying one instance does not change another.
+
 ## Numeric contract
 
 Let `s` be the original working-space source vector, `e` the accumulated correction, and `u = s + e` the candidate passed to nearest-palette lookup. Each channel has nominal working-coordinate limits `a` and `b`. The bounds are expanded to include the original source: `lo = min(a, s)` and `hi = max(b, s)`.
@@ -78,10 +82,18 @@ The default threshold 1.01 retains a small correction margin. It is a compromise
 | DC-29 | option nan | [tests/processing/dither/clamp/0029_option_nan.t](../../tests/processing/dither/clamp/0029_option_nan.t) |
 | DC-30 | option minimum | [tests/processing/dither/clamp/0030_option_minimum.t](../../tests/processing/dither/clamp/0030_option_minimum.t) |
 | DC-31 | option maximum | [tests/processing/dither/clamp/0031_option_maximum.t](../../tests/processing/dither/clamp/0031_option_maximum.t) |
-| DC-32 | Interframe spatial and temporal correction reach the common limiter. | [tests/processing/dither/clamp/0032_kernel_interframe.t](../../tests/processing/dither/clamp/0032_kernel_interframe.t) |
+| DC-32 | Interframe spatial correction reaches the common limiter without temporal history. | [tests/processing/dither/clamp/0032_kernel_interframe.t](../../tests/processing/dither/clamp/0032_kernel_interframe.t) |
 | DC-33 | LSO2 oklab limits L correction without changing extended source chroma or letting it suppress lightness compensation. | [tests/processing/dither/clamp/0033_lso2_oklab_lightness.t](../../tests/processing/dither/clamp/0033_lso2_oklab_lightness.t) |
 | DC-34 | LSO2 cielab limits L correction without changing extended source chroma or letting it suppress lightness compensation. | [tests/processing/dither/clamp/0034_lso2_cielab_lightness.t](../../tests/processing/dither/clamp/0034_lso2_cielab_lightness.t) |
 | DC-35 | LSO2 din99d limits L correction without changing extended source chroma or letting it suppress lightness compensation. | [tests/processing/dither/clamp/0035_lso2_din99d_lightness.t](../../tests/processing/dither/clamp/0035_lso2_din99d_lightness.t) |
+| DC-36 | Invalid low-level updates preserve both settings. | [tests/processing/dither/clamp/0036_api_invalid.t](../../tests/processing/dither/clamp/0036_api_invalid.t) |
+| DC-37 | Low-level dither settings survive another instance changing and being destroyed. | [tests/processing/dither/clamp/0037_dither_instances.t](../../tests/processing/dither/clamp/0037_dither_instances.t) |
+| DC-38 | Encoder clamp settings survive another instance changing and being destroyed. | [tests/processing/dither/clamp/0038_encoder_instances.t](../../tests/processing/dither/clamp/0038_encoder_instances.t) |
+| DC-39 | Accumulated temporal correction reaches the limiter and stores its bounded residual. | [tests/processing/dither/clamp/0039_temporal_history.t](../../tests/processing/dither/clamp/0039_temporal_history.t) |
+| DC-40 | Clearing temporal history removes prior correction before the next apply. | [tests/processing/dither/clamp/0040_temporal_reset.t](../../tests/processing/dither/clamp/0040_temporal_reset.t) |
+| DC-41 | FS vertical taps propagate the limited residual in raster order. | [tests/processing/dither/clamp/0041_fs_vertical_residual.t](../../tests/processing/dither/clamp/0041_fs_vertical_residual.t) |
+| DC-42 | FS reverses horizontal taps while propagating limited residuals in serpentine order. | [tests/processing/dither/clamp/0042_fs_serpentine_residual.t](../../tests/processing/dither/clamp/0042_fs_serpentine_residual.t) |
+| DC-43 | Parallel soft-clamp bands match independently reconstructed bands including their overlap warm-up. | [tests/processing/dither/clamp/0043_parallel_overlap.t](../../tests/processing/dither/clamp/0043_parallel_overlap.t) |
 
 ### Quality regression tests
 

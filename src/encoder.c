@@ -949,7 +949,7 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             "gpu_threshold_override=%d|perturb=%.9g|perturb_override=%d|"
             "perturb_seed=%d|perturb_seed_override=%d|"
             "clamp_requested=%d|clamp_effective=%d|"
-            "clamp_threshold=%.9g|codes=",
+            "clamp_threshold=%.9g|rgb101=%d|codes=",
             status,
             sixel_encoder_dither_diffuse_name(dither->method_for_diffuse),
             sixel_encoder_dither_scan_name(dither->method_for_scan),
@@ -1004,7 +1004,7 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             dither->clamp_policy,
             dither->clamp_policy == SIXEL_DITHER_CLAMP_AUTO
                 ? SIXEL_DITHER_CLAMP_SOFT : dither->clamp_policy,
-            dither->clamp_threshold);
+            dither->clamp_threshold, dither->use_rgb101_palette);
     if (dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         sixel_encoder_emit_contract_code(stderr, &first, "INTERFRAME_ENABLED");
     }
@@ -6868,21 +6868,14 @@ sixel_encoder_resolve_direct_binning(
 }
 
 
-/* Reject unconnected P3 combinations before starting any output. The first
- * path deliberately owns one CPU solver/lookup and opaque static RGB frames.
- * Its output definition never changes the meaning of frame coordinates. */
-static SIXELSTATUS
-sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
+/* The bounded RGB101 pipeline owns all palette edits before lookup. Keep
+ * this predicate shared with P3 validation so sRGB cannot enter with an
+ * unconnected merge, snap, alpha, cache or alternate lookup policy. */
+static int
+sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
 {
-    if (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
-        return SIXEL_OK;
-    }
-    if (encoder->mapfile != NULL || encoder->palette_output != NULL) {
-        sixel_helper_set_additional_message(
-            "display-p3 does not support -m/-M palette interchange.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if ((encoder->working_colorspace != SIXEL_COLORSPACE_LINEAR &&
+    return encoder->mapfile == NULL && encoder->palette_output == NULL &&
+        !((encoder->working_colorspace != SIXEL_COLORSPACE_LINEAR &&
              encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA) ||
             encoder->clustering_colorspace != SIXEL_COLORSPACE_LINEAR ||
             encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS ||
@@ -6903,7 +6896,46 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             encoder->ormode != 0 || encoder->fdrcs != 0 ||
             encoder->fuse_macro != 0 || encoder->macro_number >= 0 ||
             encoder->sixdelta_enabled != 0 || encoder->output_is_png != 0 ||
-            encoder->capture_quantized != 0) {
+            encoder->capture_quantized != 0);
+}
+
+static int
+sixel_encoder_rgb101_frame(sixel_encoder_t const *encoder,
+                            sixel_frame_t *frame)
+{
+    int format;
+
+    if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+        return 1;
+    }
+    format = sixel_frame_get_pixelformat(frame);
+    /* Never promote a byte-eligible job merely to enable this path. The
+     * planner's effective float storage also covers CMS-retained precision. */
+    return encoder->output_colorspace == SIXEL_COLORSPACE_GAMMA &&
+        (encoder->prefer_float32 || SIXEL_PIXELFORMAT_IS_FLOAT32(format)) &&
+        (format == SIXEL_PIXELFORMAT_RGB888 ||
+         format == SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+         format == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) &&
+        sixel_frame_get_multiframe(frame) == 0 &&
+        !sixel_encoder_frame_preserves_alpha_key(frame) &&
+        sixel_encoder_rgb101_options(encoder);
+}
+
+/* Reject unconnected P3 combinations before starting any output. The first
+ * path deliberately owns one CPU solver/lookup and opaque static RGB frames.
+ * Its output definition never changes the meaning of frame coordinates. */
+static SIXELSTATUS
+sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
+{
+    if (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+        return SIXEL_OK;
+    }
+    if (encoder->mapfile != NULL || encoder->palette_output != NULL) {
+        sixel_helper_set_additional_message(
+            "display-p3 does not support -m/-M palette interchange.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (!sixel_encoder_rgb101_options(encoder)) {
         sixel_helper_set_additional_message(
             "display-p3 requires the CPU float K-means pilot: "
             "--precision=auto|float -Xlinear -Wlinear|gamma -Qkmeans -~none "
@@ -6987,7 +7019,7 @@ sixel_encoder_prepare_palette(
 
     target_logger = logger;
     cache_allowed = allow_cache != 0 &&
-        encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY;
+        !sixel_encoder_rgb101_frame(encoder, frame);
     palette_frame = frame;
     cluster_frame = NULL;
     palette_pixels = NULL;
@@ -7233,7 +7265,8 @@ sixel_encoder_prepare_palette(
         }
         goto end;
     }
-    (*dither)->output_color_definition = encoder->output_color_definition;
+    (*dither)->use_rgb101_palette =
+        sixel_encoder_rgb101_frame(encoder, frame);
     if (reserve_alpha_key) {
         /*
          * Signal dither_initialize() to keep alpha-bearing input so palette
@@ -7285,8 +7318,7 @@ sixel_encoder_prepare_palette(
             status = sixel_encoder_convert_frame_colorspace(
                 palette_frame,
                 clustering_colorspace,
-                encoder->output_color_definition ==
-                    SIXEL_PALETTE_OUTPUT_DISPLAY_P3);
+                (*dither)->use_rgb101_palette);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
@@ -7673,15 +7705,15 @@ sixel_encoder_prepare_palette(
             (*dither)->palette,
             clustering_colorspace,
             working_colorspace,
-            encoder->output_color_definition ==
-                SIXEL_PALETTE_OUTPUT_DISPLAY_P3);
+            (*dither)->use_rgb101_palette);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
     }
-    if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+    if ((*dither)->use_rgb101_palette) {
         status = sixel_palette_prepare_rgb101((*dither)->palette,
-                                               working_colorspace);
+                                               working_colorspace,
+            encoder->output_color_definition);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -8133,8 +8165,7 @@ sixel_encoder_output_without_macro(
     output_colorspace = encoder->output_colorspace;
 
     if (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT) {
-        if (encoder->force_palette || encoder->output_color_definition ==
-                SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+        if (encoder->force_palette || dither->use_rgb101_palette) {
             /* Keep every explicitly requested palette slot available. */
             sixel_dither_set_optimize_palette(dither, 0);
         } else {
