@@ -71,6 +71,7 @@ def measure():
             wrapper.write_text('#include "config.h"\n#undef HAVE_CONFIG_H\n'
                                '#undef HAVE_LIBPNG\n#define HAVE_LIBPNG %d\n'
                                '#define sixel_helper_write_image_file benchmark_write\n'
+                               '#define sixel_write_image_color benchmark_color\n'
                                '#include "src/writer.c"\n' % enabled)
             target = temp / (backend + '.so')
             subprocess.run(compiler + ['-O2', '-fPIC', '-shared', '-I.', '-Iinclude',

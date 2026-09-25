@@ -13812,6 +13812,13 @@ write_png_from_sixel(char const *sixel_path,
         goto end;
     }
 
+    /* An inherited decoder default cannot relabel the encoder's snapshot. */
+    status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT_COLORSPACE,
+                                   "srgb");
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
     status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT, sixel_path);
     if (SIXEL_FAILED(status)) {
         sixel_encoder_log_stage(encoder,

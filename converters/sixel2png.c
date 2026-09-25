@@ -116,6 +116,14 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           before saving to disk.\n"
     },
     {
+        'T',
+        "input-colorspace",
+        "-T SPACE, --input-colorspace=SPACE\n"
+        "                           interpret decoded RGB as srgb (default)\n"
+        "                           or display-p3; tag PNG, preserving RGB.\n"
+        "                           env: SIXEL_DECODER_INPUT_COLORSPACE\n"
+    },
+    {
         'd',
         "dequantize",
         "-d METHOD, --dequantize=METHOD\n"
@@ -259,7 +267,7 @@ sixel2png_option_help_count(void)
 }
 
 static char const g_sixel2png_optstring[] =
-    "i:o:d:S:e:s:=:G:j:x:J:y:%:DVH";
+    "i:o:T:d:S:e:s:=:G:j:x:J:y:%:DVH";
 
 typedef struct sixel2png_parsed_option {
     int code;
@@ -575,6 +583,7 @@ main(int argc, char *argv[])
     struct option long_options[] = {
         {"input",            required_argument,  NULL, 'i'},
         {"output",           required_argument,  NULL, 'o'},
+        {"input-colorspace",  required_argument,  NULL, 'T'},
         {"dequantize",       required_argument,  NULL, 'd'},
         {"similarity",       required_argument,  NULL, 'S'},
         {"size",             required_argument,  NULL, 's'},

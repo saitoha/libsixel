@@ -1422,6 +1422,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "1 enables it; unset, empty, invalid, and 0 keep the 8-bit path."
     },
     {
+        "SIXEL_DECODER_INPUT_COLORSPACE",
+        "sixel2png decoded RGB interpretation: srgb (default) or display-p3.\n"
+        "Overridden by -T. Encoder PNG snapshots remain sRGB."
+    },
+    {
         "SIXEL_DEQUANTIZE_LSO_VARIANT",
         "sixel2png default for -d lso_undither:variant. Accepts fs or\n"
         "light. The decoder suboption takes precedence."

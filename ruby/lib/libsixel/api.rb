@@ -113,6 +113,7 @@ module Libsixel
     #   |  -D   | RGBA direct output   | pipe-mode (deprecated)    |
     #   +-------+----------------------+---------------------------+
     SIXEL_OPTFLAG_DEQUANTIZE = 'd' unless const_defined?(:SIXEL_OPTFLAG_DEQUANTIZE)
+    SIXEL_OPTFLAG_INPUT_COLORSPACE = 'T' unless const_defined?(:SIXEL_OPTFLAG_INPUT_COLORSPACE)
     SIXEL_OPTFLAG_DIRECT = 'D' unless const_defined?(:SIXEL_OPTFLAG_DIRECT)
       # The LUT flag mirrors img2sixel's -~ switch.  ASCII flow:
     #

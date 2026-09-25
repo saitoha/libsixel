@@ -150,6 +150,7 @@ final class Constants
     public const SIXEL_OPTFLAG_INPUT = 'i';
     public const SIXEL_OPTFLAG_OUTPUT = 'o';
     public const SIXEL_OPTFLAG_DEQUANTIZE = 'd';
+    public const SIXEL_OPTFLAG_INPUT_COLORSPACE = 'T';
     public const SIXEL_OPTFLAG_DIRECT = 'D';
     public const SIXEL_OPTFLAG_SIMILARITY = 'S';
     public const SIXEL_OPTFLAG_SIZE = 's';

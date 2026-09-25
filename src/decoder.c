@@ -56,6 +56,7 @@
 #endif  /* HAVE_IO_H */
 
 #include "decoder.h"
+#include "writer.h"
 #include "decoder-parallel.h"
 #include "sixel_decode_pixels.h"
 #include "frame-factory.h"
@@ -431,6 +432,7 @@ sixel_decoder_new(
                                                   default allocator */
 {
     SIXELSTATUS status = SIXEL_FALSE;
+    sixel_suboption_value_t color_value;
     char const *gpu_policy_environment;
     sixel_option_argument_schema_t const *gpu_policy_schema;
     sixel_option_argument_resolution_t gpu_policy_resolution;
@@ -472,6 +474,12 @@ sixel_decoder_new(
         (size_t)SIXEL_GPU_DEQUANT_AUTO_THRESHOLD_DEFAULT;
     (*ppdecoder)->thumbnail_size = 0;
     (*ppdecoder)->direct_color = 0;
+    (*ppdecoder)->input_colorspace = SIXEL_OPTION_INPUT_SRGB;
+    if (sixel_option_resolve_scalar_environment(
+            SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE, &color_value, NULL, 0u)
+            == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        (*ppdecoder)->input_colorspace = color_value.int_value;
+    }
     (*ppdecoder)->clipboard_input_active = 0;
     (*ppdecoder)->clipboard_output_active = 0;
     (*ppdecoder)->clipboard_input_format[0] = '\0';
@@ -2686,6 +2694,7 @@ sixel_decoder_setopt(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned int path_flags;
+    sixel_suboption_value_t color_value;
     int path_check;
     char const *payload = NULL;
     sixel_clipboard_spec_t clipboard_spec;
@@ -2705,6 +2714,15 @@ sixel_decoder_setopt(
     libc_path = NULL;
 
     switch(arg) {
+    case SIXEL_OPTFLAG_INPUT_COLORSPACE:  /* T */
+        status = sixel_option_parse_scalar_argument(
+            SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE,
+            SIXEL_OPTION_SCOPE_DECODER, value, &color_value, NULL, 0u);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        decoder->input_colorspace = color_value.int_value;
+        break;
     case SIXEL_OPTFLAG_INPUT:  /* i */
         path_flags = SIXEL_OPTION_PATH_ALLOW_STDIN |
             SIXEL_OPTION_PATH_ALLOW_CLIPBOARD |
@@ -3434,6 +3452,8 @@ sixel_decoder_decode(
     unsigned int gpu_result_flags;
     unsigned int raw_result_flags;
     int dequantize_method;
+    sixel_color_def_t *definition = NULL;
+    sixel_writer_color_t color;
 
     sx = 0;
     sy = 0;
@@ -3461,6 +3481,20 @@ sixel_decoder_decode(
     dequantize_method = decoder->dequantize_method;
     (void)sixel_timeline_logger_prepare_env(decoder->allocator, &logger);
     logger_prepared = logger != NULL;
+
+    color.srgb = decoder->input_colorspace == SIXEL_OPTION_INPUT_SRGB;
+    color.definition = NULL;
+    /* Reconstruction and byte resize operate in the decoded RGB basis.
+     * Keep that basis through the file boundary; selecting a profile must
+     * not reinterpret intermediate values as an sRGB conversion request. */
+    if (!color.srgb) {
+        definition = sixel_cdef_name("display-p3");
+        if (definition == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        color.definition = definition;
+    }
 
     raw_len = 0;
     max = 0;
@@ -3966,7 +4000,7 @@ sixel_decoder_decode(
                           "start",
                           0);
     }
-    status = sixel_helper_write_image_file(
+    status = sixel_write_image_color(
         output_pixels,
         sx,
         sy,
@@ -3976,6 +4010,7 @@ sixel_decoder_decode(
             ? clipboard_output_path
             : decoder->output,
         SIXEL_FORMAT_PNG,
+        &color,
         decoder->allocator);
     if (SIXEL_FAILED(status)) {
         if (logger_prepared) {
@@ -4032,6 +4067,7 @@ end:
         sixel_allocator_free(decoder->allocator, clipboard_output_path);
     }
 
+    sixel_cdef_free(definition);
     sixel_decoder_unref(decoder);
     if (logger_prepared) {
         sixel_timeline_logger_unref(logger);

@@ -183,8 +183,14 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_TERMINAL_POLICY,
     SIXEL_OPTION_SCHEMA_COLORSYNC_NATIVE_GAMMA,
     SIXEL_OPTION_SCHEMA_CLAMP_POLICY,
+    SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE,
     SIXEL_OPTION_SCHEMA_COUNT
 } sixel_option_schema_id_t;
+
+enum {
+    SIXEL_OPTION_INPUT_SRGB = 0,
+    SIXEL_OPTION_INPUT_DISPLAY_P3 = 1
+};
 
 /* Environment-only schemas have no CLI character or public setopt identity.
  * This sentinel does not relax compact suboption naming rules. */

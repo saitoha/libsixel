@@ -438,6 +438,7 @@ SIXEL_OPTFLAG_STATIC           = 'S'  # -S, --static: render animated GIF as a s
 # Python callers use these constants with ``Decoder.setopt``.  The table
 # keeps the intent obvious when the same letter spans historic features.
 SIXEL_OPTFLAG_DEQUANTIZE       = 'd'  # -d, --dequantize: repair palette.
+SIXEL_OPTFLAG_INPUT_COLORSPACE = 'T'  # Decode RGB interpretation.
 SIXEL_OPTFLAG_DIRECT           = 'D'  # -D, --direct: decode to RGBA pixels.
 SIXEL_OPTFLAG_SIMILARITY       = 'S'  # -S SCORE, --similarity-score=SCORE:
                                       #        set contour detector similarity

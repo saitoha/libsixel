@@ -107,7 +107,7 @@ The stateful decoder used by `sixel2png` adds output policy after protocol parsi
 
 The normal stable-palette path can remain `PAL8` through the writer. `-D` requests direct RGBA. The `-d` family enables optional reconstruction such as k-undither or selective blur, producing RGB or RGBA samples intended to reduce visible palette-pattern artifacts. Reconstruction is heuristic: it cannot recover source colors that the SIXEL stream never encoded, and it should not be described as a lossless inverse of dithering.
 
-See [Dequantization](dequantization.md) for reconstruction algorithms, decoder controls, transparency, acceleration conditions, and focused coverage.
+See [Dequantization](dequantization.md) for reconstruction algorithms, decoder controls, transparency, acceleration conditions, and focused coverage. The [PNG input interpretation option](../writers/png.md#decoded-input-interpretation-option) defines `-T`, color metadata, and interpretation of these postprocessing stages.
 
 When the stream redefines a palette register after paint, the stateful path bypasses indexed dequantization and uses direct paint-time colors. That bypass protects correctness because a final palette would reinterpret earlier pixels with the newest register value.
 

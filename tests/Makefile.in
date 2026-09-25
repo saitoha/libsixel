@@ -110,6 +110,25 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	writer/png/0015_p3_resize_coordinates.c \
+	writer/png/0016_p3_k_undither_coordinates.c \
+	writer/png/0021_p3_lso_fs_coordinates.c \
+	writer/png/0022_p3_lso_light_coordinates.c \
+	writer/png/0023_p3_selective_blur_coordinates.c \
+	writer/png/0024_p3_direct_resize_coordinates.c \
+	writer/png/0025_p3_direct_undither_coordinates.c \
+	writer/png/0006_srgb_indexed.c writer/png/0007_p3_indexed.c \
+	writer/png/0008_p3_direct_alpha.c \
+	writer/png/0009_p3_register_redefinition.c \
+	writer/png/0010_p3_environment.c \
+	writer/png/0011_cli_overrides_environment.c \
+	writer/png/0012_last_interpretation_wins.c \
+	writer/png/0013_long_input_colorspace.c \
+	writer/png/0017_legacy_writer_untagged.c \
+	writer/png/0018_shared_rgb_p3.c \
+	writer/png/0019_raw_decode_unchanged.c \
+	writer/png/0020_icc_numeric_contract.c \
+	writer/png/color_test_common.c writer/png/color_test_common.h \
 	$(top_srcdir)/assessment/assessment.c \
 	$(top_srcdir)/assessment/color.c \
 	processing/assessment/0001_ciede2000_reference.c \
@@ -1843,6 +1862,26 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0015_p3_resize_coordinates.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0016_p3_k_undither_coordinates.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0021_p3_lso_fs_coordinates.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0022_p3_lso_light_coordinates.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0023_p3_selective_blur_coordinates.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0024_p3_direct_resize_coordinates.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0025_p3_direct_undither_coordinates.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0006_srgb_indexed.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0007_p3_indexed.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0008_p3_direct_alpha.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0009_p3_register_redefinition.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0010_p3_environment.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0011_cli_overrides_environment.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0012_last_interpretation_wins.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0013_long_input_colorspace.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0017_legacy_writer_untagged.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0018_shared_rgb_p3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0019_raw_decode_unchanged.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0020_icc_numeric_contract.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-color_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-assessment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-color.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0001_ciede2000_reference.$(OBJEXT) \
@@ -5251,7 +5290,27 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po \
-	quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po
+	quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po \
+	writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po \
+	writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Po \
+	writer/png/$(DEPDIR)/test_runner-0008_p3_direct_alpha.Po \
+	writer/png/$(DEPDIR)/test_runner-0009_p3_register_redefinition.Po \
+	writer/png/$(DEPDIR)/test_runner-0010_p3_environment.Po \
+	writer/png/$(DEPDIR)/test_runner-0011_cli_overrides_environment.Po \
+	writer/png/$(DEPDIR)/test_runner-0012_last_interpretation_wins.Po \
+	writer/png/$(DEPDIR)/test_runner-0013_long_input_colorspace.Po \
+	writer/png/$(DEPDIR)/test_runner-0015_p3_resize_coordinates.Po \
+	writer/png/$(DEPDIR)/test_runner-0016_p3_k_undither_coordinates.Po \
+	writer/png/$(DEPDIR)/test_runner-0017_legacy_writer_untagged.Po \
+	writer/png/$(DEPDIR)/test_runner-0018_shared_rgb_p3.Po \
+	writer/png/$(DEPDIR)/test_runner-0019_raw_decode_unchanged.Po \
+	writer/png/$(DEPDIR)/test_runner-0020_icc_numeric_contract.Po \
+	writer/png/$(DEPDIR)/test_runner-0021_p3_lso_fs_coordinates.Po \
+	writer/png/$(DEPDIR)/test_runner-0022_p3_lso_light_coordinates.Po \
+	writer/png/$(DEPDIR)/test_runner-0023_p3_selective_blur_coordinates.Po \
+	writer/png/$(DEPDIR)/test_runner-0024_p3_direct_resize_coordinates.Po \
+	writer/png/$(DEPDIR)/test_runner-0025_p3_direct_undither_coordinates.Po \
+	writer/png/$(DEPDIR)/test_runner-color_test_common.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -5957,6 +6016,26 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0181_GAMMA_OPTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0195_NATIVE_GAMMA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_NAMED_XYZ \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_SRGB_INDEXED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_P3_INDEXED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_P3_DIRECT_ALPHA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_P3_REGISTER_REDEFINITION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_P3_ENVIRONMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_CLI_OVERRIDES_ENVIRONMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_LAST_INTERPRETATION_WINS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_LONG_INPUT_COLORSPACE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_LEGACY_WRITER_UNTAGGED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_SHARED_RGB_P3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_RAW_DECODE_UNCHANGED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_ICC_NUMERIC_CONTRACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_COLOR_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_P3_RESIZE_COORDINATES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_P3_K_UNDITHER_COORDINATES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_P3_LSO_FS_COORDINATES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_P3_LSO_LIGHT_COORDINATES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_P3_SELECTIVE_BLUR_COORDINATES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_P3_DIRECT_RESIZE_COORDINATES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_P3_DIRECT_UNDITHER_COORDINATES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_SIMPLE_POWER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_ICC_SOURCE_LIFETIME \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_TRANSFORM_OWNS_ENDPOINTS \
@@ -7635,6 +7714,27 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Avoid duplicate symbol definitions when test_runner links sixel.lib.
 @WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = 
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0015_p3_resize_coordinates.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0016_p3_k_undither_coordinates.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0021_p3_lso_fs_coordinates.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0022_p3_lso_light_coordinates.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0023_p3_selective_blur_coordinates.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0024_p3_direct_resize_coordinates.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0025_p3_direct_undither_coordinates.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0006_srgb_indexed.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0007_p3_indexed.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0008_p3_direct_alpha.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0009_p3_register_redefinition.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0010_p3_environment.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0011_cli_overrides_environment.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0012_last_interpretation_wins.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0013_long_input_colorspace.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0017_legacy_writer_untagged.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0018_shared_rgb_p3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0019_raw_decode_unchanged.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0020_icc_numeric_contract.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/color_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/color_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/assessment/assessment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/assessment/color.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0001_ciede2000_reference.c \
@@ -9397,7 +9497,8 @@ AM_LOG_FLAGS =
 # Distribute fixture trees as directories so DISTFILES remains short and
 # distdir does not hit shell ARG_MAX limits on some platforms.
 TEST_DATA_DIRS = data
-EXTRA_DIST = loader/libpng/chrm_trace_control.sh \
+EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.six \
+    loader/libpng/chrm_trace_control.sh \
     meson.build \
     docs/consistency/0004_envvars_vs_help.t \
     loader/builtin/1464_loader_builtin_psd_psdtools_blend_and_clipping_clip_weighted_deferred_solid_overlay_trace.t \
@@ -9560,6 +9661,72 @@ $(am__aclocal_m4_deps):
 clean-checkPROGRAMS:
 	$(am__rm_f) $(check_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
+writer/png/$(am__dirstamp):
+	@$(MKDIR_P) writer/png
+	@: >>writer/png/$(am__dirstamp)
+writer/png/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) writer/png/$(DEPDIR)
+	@: >>writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0015_p3_resize_coordinates.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0016_p3_k_undither_coordinates.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0021_p3_lso_fs_coordinates.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0022_p3_lso_light_coordinates.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0023_p3_selective_blur_coordinates.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0024_p3_direct_resize_coordinates.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0025_p3_direct_undither_coordinates.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0006_srgb_indexed.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0007_p3_indexed.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0008_p3_direct_alpha.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0009_p3_register_redefinition.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0010_p3_environment.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0011_cli_overrides_environment.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0012_last_interpretation_wins.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0013_long_input_colorspace.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0017_legacy_writer_untagged.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0018_shared_rgb_p3.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0019_raw_decode_unchanged.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0020_icc_numeric_contract.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-color_test_common.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/assessment/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/assessment
 	@: >>$(top_builddir)/assessment/$(am__dirstamp)
@@ -14923,6 +15090,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/*.$(OBJEXT)
 	-rm -f quant/palette/fallback/*.$(OBJEXT)
 	-rm -f quant/palette/usage/*.$(OBJEXT)
+	-rm -f writer/png/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -16600,6 +16768,26 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0008_p3_direct_alpha.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0009_p3_register_redefinition.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0010_p3_environment.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0011_cli_overrides_environment.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0012_last_interpretation_wins.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0013_long_input_colorspace.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0015_p3_resize_coordinates.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0016_p3_k_undither_coordinates.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0017_legacy_writer_untagged.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0018_shared_rgb_p3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0019_raw_decode_unchanged.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0020_icc_numeric_contract.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0021_p3_lso_fs_coordinates.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0022_p3_lso_light_coordinates.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0023_p3_selective_blur_coordinates.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0024_p3_direct_resize_coordinates.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0025_p3_direct_undither_coordinates.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-color_test_common.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -16644,6 +16832,286 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+writer/png/test_runner-0015_p3_resize_coordinates.o: writer/png/0015_p3_resize_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0015_p3_resize_coordinates.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0015_p3_resize_coordinates.Tpo -c -o writer/png/test_runner-0015_p3_resize_coordinates.o `test -f 'writer/png/0015_p3_resize_coordinates.c' || echo '$(srcdir)/'`writer/png/0015_p3_resize_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0015_p3_resize_coordinates.Tpo writer/png/$(DEPDIR)/test_runner-0015_p3_resize_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0015_p3_resize_coordinates.c' object='writer/png/test_runner-0015_p3_resize_coordinates.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0015_p3_resize_coordinates.o `test -f 'writer/png/0015_p3_resize_coordinates.c' || echo '$(srcdir)/'`writer/png/0015_p3_resize_coordinates.c
+
+writer/png/test_runner-0015_p3_resize_coordinates.obj: writer/png/0015_p3_resize_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0015_p3_resize_coordinates.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0015_p3_resize_coordinates.Tpo -c -o writer/png/test_runner-0015_p3_resize_coordinates.obj `if test -f 'writer/png/0015_p3_resize_coordinates.c'; then $(CYGPATH_W) 'writer/png/0015_p3_resize_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0015_p3_resize_coordinates.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0015_p3_resize_coordinates.Tpo writer/png/$(DEPDIR)/test_runner-0015_p3_resize_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0015_p3_resize_coordinates.c' object='writer/png/test_runner-0015_p3_resize_coordinates.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0015_p3_resize_coordinates.obj `if test -f 'writer/png/0015_p3_resize_coordinates.c'; then $(CYGPATH_W) 'writer/png/0015_p3_resize_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0015_p3_resize_coordinates.c'; fi`
+
+writer/png/test_runner-0016_p3_k_undither_coordinates.o: writer/png/0016_p3_k_undither_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0016_p3_k_undither_coordinates.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0016_p3_k_undither_coordinates.Tpo -c -o writer/png/test_runner-0016_p3_k_undither_coordinates.o `test -f 'writer/png/0016_p3_k_undither_coordinates.c' || echo '$(srcdir)/'`writer/png/0016_p3_k_undither_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0016_p3_k_undither_coordinates.Tpo writer/png/$(DEPDIR)/test_runner-0016_p3_k_undither_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0016_p3_k_undither_coordinates.c' object='writer/png/test_runner-0016_p3_k_undither_coordinates.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0016_p3_k_undither_coordinates.o `test -f 'writer/png/0016_p3_k_undither_coordinates.c' || echo '$(srcdir)/'`writer/png/0016_p3_k_undither_coordinates.c
+
+writer/png/test_runner-0016_p3_k_undither_coordinates.obj: writer/png/0016_p3_k_undither_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0016_p3_k_undither_coordinates.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0016_p3_k_undither_coordinates.Tpo -c -o writer/png/test_runner-0016_p3_k_undither_coordinates.obj `if test -f 'writer/png/0016_p3_k_undither_coordinates.c'; then $(CYGPATH_W) 'writer/png/0016_p3_k_undither_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0016_p3_k_undither_coordinates.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0016_p3_k_undither_coordinates.Tpo writer/png/$(DEPDIR)/test_runner-0016_p3_k_undither_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0016_p3_k_undither_coordinates.c' object='writer/png/test_runner-0016_p3_k_undither_coordinates.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0016_p3_k_undither_coordinates.obj `if test -f 'writer/png/0016_p3_k_undither_coordinates.c'; then $(CYGPATH_W) 'writer/png/0016_p3_k_undither_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0016_p3_k_undither_coordinates.c'; fi`
+
+writer/png/test_runner-0021_p3_lso_fs_coordinates.o: writer/png/0021_p3_lso_fs_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0021_p3_lso_fs_coordinates.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0021_p3_lso_fs_coordinates.Tpo -c -o writer/png/test_runner-0021_p3_lso_fs_coordinates.o `test -f 'writer/png/0021_p3_lso_fs_coordinates.c' || echo '$(srcdir)/'`writer/png/0021_p3_lso_fs_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0021_p3_lso_fs_coordinates.Tpo writer/png/$(DEPDIR)/test_runner-0021_p3_lso_fs_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0021_p3_lso_fs_coordinates.c' object='writer/png/test_runner-0021_p3_lso_fs_coordinates.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0021_p3_lso_fs_coordinates.o `test -f 'writer/png/0021_p3_lso_fs_coordinates.c' || echo '$(srcdir)/'`writer/png/0021_p3_lso_fs_coordinates.c
+
+writer/png/test_runner-0021_p3_lso_fs_coordinates.obj: writer/png/0021_p3_lso_fs_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0021_p3_lso_fs_coordinates.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0021_p3_lso_fs_coordinates.Tpo -c -o writer/png/test_runner-0021_p3_lso_fs_coordinates.obj `if test -f 'writer/png/0021_p3_lso_fs_coordinates.c'; then $(CYGPATH_W) 'writer/png/0021_p3_lso_fs_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0021_p3_lso_fs_coordinates.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0021_p3_lso_fs_coordinates.Tpo writer/png/$(DEPDIR)/test_runner-0021_p3_lso_fs_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0021_p3_lso_fs_coordinates.c' object='writer/png/test_runner-0021_p3_lso_fs_coordinates.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0021_p3_lso_fs_coordinates.obj `if test -f 'writer/png/0021_p3_lso_fs_coordinates.c'; then $(CYGPATH_W) 'writer/png/0021_p3_lso_fs_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0021_p3_lso_fs_coordinates.c'; fi`
+
+writer/png/test_runner-0022_p3_lso_light_coordinates.o: writer/png/0022_p3_lso_light_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0022_p3_lso_light_coordinates.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0022_p3_lso_light_coordinates.Tpo -c -o writer/png/test_runner-0022_p3_lso_light_coordinates.o `test -f 'writer/png/0022_p3_lso_light_coordinates.c' || echo '$(srcdir)/'`writer/png/0022_p3_lso_light_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0022_p3_lso_light_coordinates.Tpo writer/png/$(DEPDIR)/test_runner-0022_p3_lso_light_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0022_p3_lso_light_coordinates.c' object='writer/png/test_runner-0022_p3_lso_light_coordinates.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0022_p3_lso_light_coordinates.o `test -f 'writer/png/0022_p3_lso_light_coordinates.c' || echo '$(srcdir)/'`writer/png/0022_p3_lso_light_coordinates.c
+
+writer/png/test_runner-0022_p3_lso_light_coordinates.obj: writer/png/0022_p3_lso_light_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0022_p3_lso_light_coordinates.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0022_p3_lso_light_coordinates.Tpo -c -o writer/png/test_runner-0022_p3_lso_light_coordinates.obj `if test -f 'writer/png/0022_p3_lso_light_coordinates.c'; then $(CYGPATH_W) 'writer/png/0022_p3_lso_light_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0022_p3_lso_light_coordinates.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0022_p3_lso_light_coordinates.Tpo writer/png/$(DEPDIR)/test_runner-0022_p3_lso_light_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0022_p3_lso_light_coordinates.c' object='writer/png/test_runner-0022_p3_lso_light_coordinates.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0022_p3_lso_light_coordinates.obj `if test -f 'writer/png/0022_p3_lso_light_coordinates.c'; then $(CYGPATH_W) 'writer/png/0022_p3_lso_light_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0022_p3_lso_light_coordinates.c'; fi`
+
+writer/png/test_runner-0023_p3_selective_blur_coordinates.o: writer/png/0023_p3_selective_blur_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0023_p3_selective_blur_coordinates.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0023_p3_selective_blur_coordinates.Tpo -c -o writer/png/test_runner-0023_p3_selective_blur_coordinates.o `test -f 'writer/png/0023_p3_selective_blur_coordinates.c' || echo '$(srcdir)/'`writer/png/0023_p3_selective_blur_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0023_p3_selective_blur_coordinates.Tpo writer/png/$(DEPDIR)/test_runner-0023_p3_selective_blur_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0023_p3_selective_blur_coordinates.c' object='writer/png/test_runner-0023_p3_selective_blur_coordinates.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0023_p3_selective_blur_coordinates.o `test -f 'writer/png/0023_p3_selective_blur_coordinates.c' || echo '$(srcdir)/'`writer/png/0023_p3_selective_blur_coordinates.c
+
+writer/png/test_runner-0023_p3_selective_blur_coordinates.obj: writer/png/0023_p3_selective_blur_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0023_p3_selective_blur_coordinates.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0023_p3_selective_blur_coordinates.Tpo -c -o writer/png/test_runner-0023_p3_selective_blur_coordinates.obj `if test -f 'writer/png/0023_p3_selective_blur_coordinates.c'; then $(CYGPATH_W) 'writer/png/0023_p3_selective_blur_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0023_p3_selective_blur_coordinates.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0023_p3_selective_blur_coordinates.Tpo writer/png/$(DEPDIR)/test_runner-0023_p3_selective_blur_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0023_p3_selective_blur_coordinates.c' object='writer/png/test_runner-0023_p3_selective_blur_coordinates.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0023_p3_selective_blur_coordinates.obj `if test -f 'writer/png/0023_p3_selective_blur_coordinates.c'; then $(CYGPATH_W) 'writer/png/0023_p3_selective_blur_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0023_p3_selective_blur_coordinates.c'; fi`
+
+writer/png/test_runner-0024_p3_direct_resize_coordinates.o: writer/png/0024_p3_direct_resize_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0024_p3_direct_resize_coordinates.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0024_p3_direct_resize_coordinates.Tpo -c -o writer/png/test_runner-0024_p3_direct_resize_coordinates.o `test -f 'writer/png/0024_p3_direct_resize_coordinates.c' || echo '$(srcdir)/'`writer/png/0024_p3_direct_resize_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0024_p3_direct_resize_coordinates.Tpo writer/png/$(DEPDIR)/test_runner-0024_p3_direct_resize_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0024_p3_direct_resize_coordinates.c' object='writer/png/test_runner-0024_p3_direct_resize_coordinates.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0024_p3_direct_resize_coordinates.o `test -f 'writer/png/0024_p3_direct_resize_coordinates.c' || echo '$(srcdir)/'`writer/png/0024_p3_direct_resize_coordinates.c
+
+writer/png/test_runner-0024_p3_direct_resize_coordinates.obj: writer/png/0024_p3_direct_resize_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0024_p3_direct_resize_coordinates.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0024_p3_direct_resize_coordinates.Tpo -c -o writer/png/test_runner-0024_p3_direct_resize_coordinates.obj `if test -f 'writer/png/0024_p3_direct_resize_coordinates.c'; then $(CYGPATH_W) 'writer/png/0024_p3_direct_resize_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0024_p3_direct_resize_coordinates.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0024_p3_direct_resize_coordinates.Tpo writer/png/$(DEPDIR)/test_runner-0024_p3_direct_resize_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0024_p3_direct_resize_coordinates.c' object='writer/png/test_runner-0024_p3_direct_resize_coordinates.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0024_p3_direct_resize_coordinates.obj `if test -f 'writer/png/0024_p3_direct_resize_coordinates.c'; then $(CYGPATH_W) 'writer/png/0024_p3_direct_resize_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0024_p3_direct_resize_coordinates.c'; fi`
+
+writer/png/test_runner-0025_p3_direct_undither_coordinates.o: writer/png/0025_p3_direct_undither_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0025_p3_direct_undither_coordinates.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0025_p3_direct_undither_coordinates.Tpo -c -o writer/png/test_runner-0025_p3_direct_undither_coordinates.o `test -f 'writer/png/0025_p3_direct_undither_coordinates.c' || echo '$(srcdir)/'`writer/png/0025_p3_direct_undither_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0025_p3_direct_undither_coordinates.Tpo writer/png/$(DEPDIR)/test_runner-0025_p3_direct_undither_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0025_p3_direct_undither_coordinates.c' object='writer/png/test_runner-0025_p3_direct_undither_coordinates.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0025_p3_direct_undither_coordinates.o `test -f 'writer/png/0025_p3_direct_undither_coordinates.c' || echo '$(srcdir)/'`writer/png/0025_p3_direct_undither_coordinates.c
+
+writer/png/test_runner-0025_p3_direct_undither_coordinates.obj: writer/png/0025_p3_direct_undither_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0025_p3_direct_undither_coordinates.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0025_p3_direct_undither_coordinates.Tpo -c -o writer/png/test_runner-0025_p3_direct_undither_coordinates.obj `if test -f 'writer/png/0025_p3_direct_undither_coordinates.c'; then $(CYGPATH_W) 'writer/png/0025_p3_direct_undither_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0025_p3_direct_undither_coordinates.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0025_p3_direct_undither_coordinates.Tpo writer/png/$(DEPDIR)/test_runner-0025_p3_direct_undither_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0025_p3_direct_undither_coordinates.c' object='writer/png/test_runner-0025_p3_direct_undither_coordinates.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0025_p3_direct_undither_coordinates.obj `if test -f 'writer/png/0025_p3_direct_undither_coordinates.c'; then $(CYGPATH_W) 'writer/png/0025_p3_direct_undither_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0025_p3_direct_undither_coordinates.c'; fi`
+
+writer/png/test_runner-0006_srgb_indexed.o: writer/png/0006_srgb_indexed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0006_srgb_indexed.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Tpo -c -o writer/png/test_runner-0006_srgb_indexed.o `test -f 'writer/png/0006_srgb_indexed.c' || echo '$(srcdir)/'`writer/png/0006_srgb_indexed.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Tpo writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0006_srgb_indexed.c' object='writer/png/test_runner-0006_srgb_indexed.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0006_srgb_indexed.o `test -f 'writer/png/0006_srgb_indexed.c' || echo '$(srcdir)/'`writer/png/0006_srgb_indexed.c
+
+writer/png/test_runner-0006_srgb_indexed.obj: writer/png/0006_srgb_indexed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0006_srgb_indexed.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Tpo -c -o writer/png/test_runner-0006_srgb_indexed.obj `if test -f 'writer/png/0006_srgb_indexed.c'; then $(CYGPATH_W) 'writer/png/0006_srgb_indexed.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0006_srgb_indexed.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Tpo writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0006_srgb_indexed.c' object='writer/png/test_runner-0006_srgb_indexed.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0006_srgb_indexed.obj `if test -f 'writer/png/0006_srgb_indexed.c'; then $(CYGPATH_W) 'writer/png/0006_srgb_indexed.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0006_srgb_indexed.c'; fi`
+
+writer/png/test_runner-0007_p3_indexed.o: writer/png/0007_p3_indexed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0007_p3_indexed.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Tpo -c -o writer/png/test_runner-0007_p3_indexed.o `test -f 'writer/png/0007_p3_indexed.c' || echo '$(srcdir)/'`writer/png/0007_p3_indexed.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Tpo writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0007_p3_indexed.c' object='writer/png/test_runner-0007_p3_indexed.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0007_p3_indexed.o `test -f 'writer/png/0007_p3_indexed.c' || echo '$(srcdir)/'`writer/png/0007_p3_indexed.c
+
+writer/png/test_runner-0007_p3_indexed.obj: writer/png/0007_p3_indexed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0007_p3_indexed.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Tpo -c -o writer/png/test_runner-0007_p3_indexed.obj `if test -f 'writer/png/0007_p3_indexed.c'; then $(CYGPATH_W) 'writer/png/0007_p3_indexed.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0007_p3_indexed.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Tpo writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0007_p3_indexed.c' object='writer/png/test_runner-0007_p3_indexed.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0007_p3_indexed.obj `if test -f 'writer/png/0007_p3_indexed.c'; then $(CYGPATH_W) 'writer/png/0007_p3_indexed.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0007_p3_indexed.c'; fi`
+
+writer/png/test_runner-0008_p3_direct_alpha.o: writer/png/0008_p3_direct_alpha.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0008_p3_direct_alpha.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0008_p3_direct_alpha.Tpo -c -o writer/png/test_runner-0008_p3_direct_alpha.o `test -f 'writer/png/0008_p3_direct_alpha.c' || echo '$(srcdir)/'`writer/png/0008_p3_direct_alpha.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0008_p3_direct_alpha.Tpo writer/png/$(DEPDIR)/test_runner-0008_p3_direct_alpha.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0008_p3_direct_alpha.c' object='writer/png/test_runner-0008_p3_direct_alpha.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0008_p3_direct_alpha.o `test -f 'writer/png/0008_p3_direct_alpha.c' || echo '$(srcdir)/'`writer/png/0008_p3_direct_alpha.c
+
+writer/png/test_runner-0008_p3_direct_alpha.obj: writer/png/0008_p3_direct_alpha.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0008_p3_direct_alpha.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0008_p3_direct_alpha.Tpo -c -o writer/png/test_runner-0008_p3_direct_alpha.obj `if test -f 'writer/png/0008_p3_direct_alpha.c'; then $(CYGPATH_W) 'writer/png/0008_p3_direct_alpha.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0008_p3_direct_alpha.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0008_p3_direct_alpha.Tpo writer/png/$(DEPDIR)/test_runner-0008_p3_direct_alpha.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0008_p3_direct_alpha.c' object='writer/png/test_runner-0008_p3_direct_alpha.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0008_p3_direct_alpha.obj `if test -f 'writer/png/0008_p3_direct_alpha.c'; then $(CYGPATH_W) 'writer/png/0008_p3_direct_alpha.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0008_p3_direct_alpha.c'; fi`
+
+writer/png/test_runner-0009_p3_register_redefinition.o: writer/png/0009_p3_register_redefinition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0009_p3_register_redefinition.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0009_p3_register_redefinition.Tpo -c -o writer/png/test_runner-0009_p3_register_redefinition.o `test -f 'writer/png/0009_p3_register_redefinition.c' || echo '$(srcdir)/'`writer/png/0009_p3_register_redefinition.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0009_p3_register_redefinition.Tpo writer/png/$(DEPDIR)/test_runner-0009_p3_register_redefinition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0009_p3_register_redefinition.c' object='writer/png/test_runner-0009_p3_register_redefinition.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0009_p3_register_redefinition.o `test -f 'writer/png/0009_p3_register_redefinition.c' || echo '$(srcdir)/'`writer/png/0009_p3_register_redefinition.c
+
+writer/png/test_runner-0009_p3_register_redefinition.obj: writer/png/0009_p3_register_redefinition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0009_p3_register_redefinition.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0009_p3_register_redefinition.Tpo -c -o writer/png/test_runner-0009_p3_register_redefinition.obj `if test -f 'writer/png/0009_p3_register_redefinition.c'; then $(CYGPATH_W) 'writer/png/0009_p3_register_redefinition.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0009_p3_register_redefinition.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0009_p3_register_redefinition.Tpo writer/png/$(DEPDIR)/test_runner-0009_p3_register_redefinition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0009_p3_register_redefinition.c' object='writer/png/test_runner-0009_p3_register_redefinition.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0009_p3_register_redefinition.obj `if test -f 'writer/png/0009_p3_register_redefinition.c'; then $(CYGPATH_W) 'writer/png/0009_p3_register_redefinition.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0009_p3_register_redefinition.c'; fi`
+
+writer/png/test_runner-0010_p3_environment.o: writer/png/0010_p3_environment.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0010_p3_environment.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0010_p3_environment.Tpo -c -o writer/png/test_runner-0010_p3_environment.o `test -f 'writer/png/0010_p3_environment.c' || echo '$(srcdir)/'`writer/png/0010_p3_environment.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0010_p3_environment.Tpo writer/png/$(DEPDIR)/test_runner-0010_p3_environment.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0010_p3_environment.c' object='writer/png/test_runner-0010_p3_environment.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0010_p3_environment.o `test -f 'writer/png/0010_p3_environment.c' || echo '$(srcdir)/'`writer/png/0010_p3_environment.c
+
+writer/png/test_runner-0010_p3_environment.obj: writer/png/0010_p3_environment.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0010_p3_environment.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0010_p3_environment.Tpo -c -o writer/png/test_runner-0010_p3_environment.obj `if test -f 'writer/png/0010_p3_environment.c'; then $(CYGPATH_W) 'writer/png/0010_p3_environment.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0010_p3_environment.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0010_p3_environment.Tpo writer/png/$(DEPDIR)/test_runner-0010_p3_environment.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0010_p3_environment.c' object='writer/png/test_runner-0010_p3_environment.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0010_p3_environment.obj `if test -f 'writer/png/0010_p3_environment.c'; then $(CYGPATH_W) 'writer/png/0010_p3_environment.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0010_p3_environment.c'; fi`
+
+writer/png/test_runner-0011_cli_overrides_environment.o: writer/png/0011_cli_overrides_environment.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0011_cli_overrides_environment.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0011_cli_overrides_environment.Tpo -c -o writer/png/test_runner-0011_cli_overrides_environment.o `test -f 'writer/png/0011_cli_overrides_environment.c' || echo '$(srcdir)/'`writer/png/0011_cli_overrides_environment.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0011_cli_overrides_environment.Tpo writer/png/$(DEPDIR)/test_runner-0011_cli_overrides_environment.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0011_cli_overrides_environment.c' object='writer/png/test_runner-0011_cli_overrides_environment.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0011_cli_overrides_environment.o `test -f 'writer/png/0011_cli_overrides_environment.c' || echo '$(srcdir)/'`writer/png/0011_cli_overrides_environment.c
+
+writer/png/test_runner-0011_cli_overrides_environment.obj: writer/png/0011_cli_overrides_environment.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0011_cli_overrides_environment.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0011_cli_overrides_environment.Tpo -c -o writer/png/test_runner-0011_cli_overrides_environment.obj `if test -f 'writer/png/0011_cli_overrides_environment.c'; then $(CYGPATH_W) 'writer/png/0011_cli_overrides_environment.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0011_cli_overrides_environment.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0011_cli_overrides_environment.Tpo writer/png/$(DEPDIR)/test_runner-0011_cli_overrides_environment.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0011_cli_overrides_environment.c' object='writer/png/test_runner-0011_cli_overrides_environment.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0011_cli_overrides_environment.obj `if test -f 'writer/png/0011_cli_overrides_environment.c'; then $(CYGPATH_W) 'writer/png/0011_cli_overrides_environment.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0011_cli_overrides_environment.c'; fi`
+
+writer/png/test_runner-0012_last_interpretation_wins.o: writer/png/0012_last_interpretation_wins.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0012_last_interpretation_wins.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0012_last_interpretation_wins.Tpo -c -o writer/png/test_runner-0012_last_interpretation_wins.o `test -f 'writer/png/0012_last_interpretation_wins.c' || echo '$(srcdir)/'`writer/png/0012_last_interpretation_wins.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0012_last_interpretation_wins.Tpo writer/png/$(DEPDIR)/test_runner-0012_last_interpretation_wins.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0012_last_interpretation_wins.c' object='writer/png/test_runner-0012_last_interpretation_wins.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0012_last_interpretation_wins.o `test -f 'writer/png/0012_last_interpretation_wins.c' || echo '$(srcdir)/'`writer/png/0012_last_interpretation_wins.c
+
+writer/png/test_runner-0012_last_interpretation_wins.obj: writer/png/0012_last_interpretation_wins.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0012_last_interpretation_wins.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0012_last_interpretation_wins.Tpo -c -o writer/png/test_runner-0012_last_interpretation_wins.obj `if test -f 'writer/png/0012_last_interpretation_wins.c'; then $(CYGPATH_W) 'writer/png/0012_last_interpretation_wins.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0012_last_interpretation_wins.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0012_last_interpretation_wins.Tpo writer/png/$(DEPDIR)/test_runner-0012_last_interpretation_wins.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0012_last_interpretation_wins.c' object='writer/png/test_runner-0012_last_interpretation_wins.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0012_last_interpretation_wins.obj `if test -f 'writer/png/0012_last_interpretation_wins.c'; then $(CYGPATH_W) 'writer/png/0012_last_interpretation_wins.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0012_last_interpretation_wins.c'; fi`
+
+writer/png/test_runner-0013_long_input_colorspace.o: writer/png/0013_long_input_colorspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0013_long_input_colorspace.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0013_long_input_colorspace.Tpo -c -o writer/png/test_runner-0013_long_input_colorspace.o `test -f 'writer/png/0013_long_input_colorspace.c' || echo '$(srcdir)/'`writer/png/0013_long_input_colorspace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0013_long_input_colorspace.Tpo writer/png/$(DEPDIR)/test_runner-0013_long_input_colorspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0013_long_input_colorspace.c' object='writer/png/test_runner-0013_long_input_colorspace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0013_long_input_colorspace.o `test -f 'writer/png/0013_long_input_colorspace.c' || echo '$(srcdir)/'`writer/png/0013_long_input_colorspace.c
+
+writer/png/test_runner-0013_long_input_colorspace.obj: writer/png/0013_long_input_colorspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0013_long_input_colorspace.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0013_long_input_colorspace.Tpo -c -o writer/png/test_runner-0013_long_input_colorspace.obj `if test -f 'writer/png/0013_long_input_colorspace.c'; then $(CYGPATH_W) 'writer/png/0013_long_input_colorspace.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0013_long_input_colorspace.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0013_long_input_colorspace.Tpo writer/png/$(DEPDIR)/test_runner-0013_long_input_colorspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0013_long_input_colorspace.c' object='writer/png/test_runner-0013_long_input_colorspace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0013_long_input_colorspace.obj `if test -f 'writer/png/0013_long_input_colorspace.c'; then $(CYGPATH_W) 'writer/png/0013_long_input_colorspace.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0013_long_input_colorspace.c'; fi`
+
+writer/png/test_runner-0017_legacy_writer_untagged.o: writer/png/0017_legacy_writer_untagged.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0017_legacy_writer_untagged.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0017_legacy_writer_untagged.Tpo -c -o writer/png/test_runner-0017_legacy_writer_untagged.o `test -f 'writer/png/0017_legacy_writer_untagged.c' || echo '$(srcdir)/'`writer/png/0017_legacy_writer_untagged.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0017_legacy_writer_untagged.Tpo writer/png/$(DEPDIR)/test_runner-0017_legacy_writer_untagged.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0017_legacy_writer_untagged.c' object='writer/png/test_runner-0017_legacy_writer_untagged.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0017_legacy_writer_untagged.o `test -f 'writer/png/0017_legacy_writer_untagged.c' || echo '$(srcdir)/'`writer/png/0017_legacy_writer_untagged.c
+
+writer/png/test_runner-0017_legacy_writer_untagged.obj: writer/png/0017_legacy_writer_untagged.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0017_legacy_writer_untagged.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0017_legacy_writer_untagged.Tpo -c -o writer/png/test_runner-0017_legacy_writer_untagged.obj `if test -f 'writer/png/0017_legacy_writer_untagged.c'; then $(CYGPATH_W) 'writer/png/0017_legacy_writer_untagged.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0017_legacy_writer_untagged.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0017_legacy_writer_untagged.Tpo writer/png/$(DEPDIR)/test_runner-0017_legacy_writer_untagged.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0017_legacy_writer_untagged.c' object='writer/png/test_runner-0017_legacy_writer_untagged.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0017_legacy_writer_untagged.obj `if test -f 'writer/png/0017_legacy_writer_untagged.c'; then $(CYGPATH_W) 'writer/png/0017_legacy_writer_untagged.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0017_legacy_writer_untagged.c'; fi`
+
+writer/png/test_runner-0018_shared_rgb_p3.o: writer/png/0018_shared_rgb_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0018_shared_rgb_p3.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0018_shared_rgb_p3.Tpo -c -o writer/png/test_runner-0018_shared_rgb_p3.o `test -f 'writer/png/0018_shared_rgb_p3.c' || echo '$(srcdir)/'`writer/png/0018_shared_rgb_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0018_shared_rgb_p3.Tpo writer/png/$(DEPDIR)/test_runner-0018_shared_rgb_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0018_shared_rgb_p3.c' object='writer/png/test_runner-0018_shared_rgb_p3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0018_shared_rgb_p3.o `test -f 'writer/png/0018_shared_rgb_p3.c' || echo '$(srcdir)/'`writer/png/0018_shared_rgb_p3.c
+
+writer/png/test_runner-0018_shared_rgb_p3.obj: writer/png/0018_shared_rgb_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0018_shared_rgb_p3.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0018_shared_rgb_p3.Tpo -c -o writer/png/test_runner-0018_shared_rgb_p3.obj `if test -f 'writer/png/0018_shared_rgb_p3.c'; then $(CYGPATH_W) 'writer/png/0018_shared_rgb_p3.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0018_shared_rgb_p3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0018_shared_rgb_p3.Tpo writer/png/$(DEPDIR)/test_runner-0018_shared_rgb_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0018_shared_rgb_p3.c' object='writer/png/test_runner-0018_shared_rgb_p3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0018_shared_rgb_p3.obj `if test -f 'writer/png/0018_shared_rgb_p3.c'; then $(CYGPATH_W) 'writer/png/0018_shared_rgb_p3.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0018_shared_rgb_p3.c'; fi`
+
+writer/png/test_runner-0019_raw_decode_unchanged.o: writer/png/0019_raw_decode_unchanged.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0019_raw_decode_unchanged.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0019_raw_decode_unchanged.Tpo -c -o writer/png/test_runner-0019_raw_decode_unchanged.o `test -f 'writer/png/0019_raw_decode_unchanged.c' || echo '$(srcdir)/'`writer/png/0019_raw_decode_unchanged.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0019_raw_decode_unchanged.Tpo writer/png/$(DEPDIR)/test_runner-0019_raw_decode_unchanged.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0019_raw_decode_unchanged.c' object='writer/png/test_runner-0019_raw_decode_unchanged.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0019_raw_decode_unchanged.o `test -f 'writer/png/0019_raw_decode_unchanged.c' || echo '$(srcdir)/'`writer/png/0019_raw_decode_unchanged.c
+
+writer/png/test_runner-0019_raw_decode_unchanged.obj: writer/png/0019_raw_decode_unchanged.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0019_raw_decode_unchanged.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0019_raw_decode_unchanged.Tpo -c -o writer/png/test_runner-0019_raw_decode_unchanged.obj `if test -f 'writer/png/0019_raw_decode_unchanged.c'; then $(CYGPATH_W) 'writer/png/0019_raw_decode_unchanged.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0019_raw_decode_unchanged.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0019_raw_decode_unchanged.Tpo writer/png/$(DEPDIR)/test_runner-0019_raw_decode_unchanged.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0019_raw_decode_unchanged.c' object='writer/png/test_runner-0019_raw_decode_unchanged.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0019_raw_decode_unchanged.obj `if test -f 'writer/png/0019_raw_decode_unchanged.c'; then $(CYGPATH_W) 'writer/png/0019_raw_decode_unchanged.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0019_raw_decode_unchanged.c'; fi`
+
+writer/png/test_runner-0020_icc_numeric_contract.o: writer/png/0020_icc_numeric_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0020_icc_numeric_contract.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0020_icc_numeric_contract.Tpo -c -o writer/png/test_runner-0020_icc_numeric_contract.o `test -f 'writer/png/0020_icc_numeric_contract.c' || echo '$(srcdir)/'`writer/png/0020_icc_numeric_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0020_icc_numeric_contract.Tpo writer/png/$(DEPDIR)/test_runner-0020_icc_numeric_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0020_icc_numeric_contract.c' object='writer/png/test_runner-0020_icc_numeric_contract.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0020_icc_numeric_contract.o `test -f 'writer/png/0020_icc_numeric_contract.c' || echo '$(srcdir)/'`writer/png/0020_icc_numeric_contract.c
+
+writer/png/test_runner-0020_icc_numeric_contract.obj: writer/png/0020_icc_numeric_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0020_icc_numeric_contract.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0020_icc_numeric_contract.Tpo -c -o writer/png/test_runner-0020_icc_numeric_contract.obj `if test -f 'writer/png/0020_icc_numeric_contract.c'; then $(CYGPATH_W) 'writer/png/0020_icc_numeric_contract.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0020_icc_numeric_contract.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0020_icc_numeric_contract.Tpo writer/png/$(DEPDIR)/test_runner-0020_icc_numeric_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0020_icc_numeric_contract.c' object='writer/png/test_runner-0020_icc_numeric_contract.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0020_icc_numeric_contract.obj `if test -f 'writer/png/0020_icc_numeric_contract.c'; then $(CYGPATH_W) 'writer/png/0020_icc_numeric_contract.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0020_icc_numeric_contract.c'; fi`
+
+writer/png/test_runner-color_test_common.o: writer/png/color_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-color_test_common.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-color_test_common.Tpo -c -o writer/png/test_runner-color_test_common.o `test -f 'writer/png/color_test_common.c' || echo '$(srcdir)/'`writer/png/color_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-color_test_common.Tpo writer/png/$(DEPDIR)/test_runner-color_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/color_test_common.c' object='writer/png/test_runner-color_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-color_test_common.o `test -f 'writer/png/color_test_common.c' || echo '$(srcdir)/'`writer/png/color_test_common.c
+
+writer/png/test_runner-color_test_common.obj: writer/png/color_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-color_test_common.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-color_test_common.Tpo -c -o writer/png/test_runner-color_test_common.obj `if test -f 'writer/png/color_test_common.c'; then $(CYGPATH_W) 'writer/png/color_test_common.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/color_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-color_test_common.Tpo writer/png/$(DEPDIR)/test_runner-color_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/color_test_common.c' object='writer/png/test_runner-color_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-color_test_common.obj `if test -f 'writer/png/color_test_common.c'; then $(CYGPATH_W) 'writer/png/color_test_common.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/color_test_common.c'; fi`
 
 $(top_builddir)/assessment/test_runner-assessment.o: $(top_builddir)/assessment/assessment.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/assessment/test_runner-assessment.o -MD -MP -MF $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Tpo -c -o $(top_builddir)/assessment/test_runner-assessment.o `test -f '$(top_builddir)/assessment/assessment.c' || echo '$(srcdir)/'`$(top_builddir)/assessment/assessment.c
@@ -40496,6 +40964,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/fallback/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/usage/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/usage/$(am__dirstamp)
+	-$(am__rm_f) writer/png/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) writer/png/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -42180,6 +42650,26 @@ distclean: distclean-am
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0008_p3_direct_alpha.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0009_p3_register_redefinition.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0010_p3_environment.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0011_cli_overrides_environment.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0012_last_interpretation_wins.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0013_long_input_colorspace.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0015_p3_resize_coordinates.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0016_p3_k_undither_coordinates.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0017_legacy_writer_untagged.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0018_shared_rgb_p3.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0019_raw_decode_unchanged.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0020_icc_numeric_contract.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0021_p3_lso_fs_coordinates.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0022_p3_lso_light_coordinates.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0023_p3_selective_blur_coordinates.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0024_p3_direct_resize_coordinates.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0025_p3_direct_undither_coordinates.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-color_test_common.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -43898,6 +44388,26 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0008_p3_direct_alpha.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0009_p3_register_redefinition.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0010_p3_environment.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0011_cli_overrides_environment.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0012_last_interpretation_wins.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0013_long_input_colorspace.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0015_p3_resize_coordinates.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0016_p3_k_undither_coordinates.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0017_legacy_writer_untagged.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0018_shared_rgb_p3.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0019_raw_decode_unchanged.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0020_icc_numeric_contract.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0021_p3_lso_fs_coordinates.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0022_p3_lso_light_coordinates.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0023_p3_selective_blur_coordinates.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0024_p3_direct_resize_coordinates.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-0025_p3_direct_undither_coordinates.Po
+	-rm -f writer/png/$(DEPDIR)/test_runner-color_test_common.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

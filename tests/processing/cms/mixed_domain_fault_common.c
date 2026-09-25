@@ -131,6 +131,7 @@ cmf_apply(ColorSyncTransformRef tr, size_t w, size_t h,
 #define g_sixel_cms_engine_mutex_ready cmf_local_7
 #define g_sixel_cms_engine_once cmf_local_8
 #define sixel_cdef_clone cmf_local_13
+#define sixel_cdef_export_icc cmf_local_13_export
 #define sixel_cdef_finite cmf_local_14
 #define sixel_cdef_free cmf_local_15
 #define sixel_cdef_from_xyz cmf_local_16
@@ -433,6 +434,7 @@ sixel_cxform_free(sixel_color_xform_t *transform);
 #undef g_sixel_cms_engine_mutex_ready
 #undef g_sixel_cms_engine_once
 #undef sixel_cdef_clone
+#undef sixel_cdef_export_icc
 #undef sixel_cdef_finite
 #undef sixel_cdef_free
 #undef sixel_cdef_from_xyz

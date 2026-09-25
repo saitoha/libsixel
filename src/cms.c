@@ -5380,6 +5380,7 @@ sixel_cms_convert_to_cielab_with_profile_bytes(
  * never depend on the loader's temporary metadata buffers.
  */
 struct sixel_color_def {
+    double adaptation[9];
     double to_xyz[9];
     double from_xyz[9];
     double gamma[3];
@@ -5508,6 +5509,18 @@ sixel_cdef_rgb(double const xy[8], sixel_color_trc_t trc,
             definition->to_xyz[j * 3 + i] = column[j];
         }
     }
+    /* Preserve the adopted-white adaptation for ICC serialization. This
+     * does not change the arithmetic used to build the working matrix. */
+    for (i = 0; i < 3; ++i) {
+        for (j = 0; j < 3; ++j) {
+            cone[j] = bradford[j * 3 + i] *
+                target_cone[j] / source_cone[j];
+        }
+        sixel_cdef_matrix(inverse, cone, column);
+        for (j = 0; j < 3; ++j) {
+            definition->adaptation[j * 3 + i] = column[j];
+        }
+    }
     if (!sixel_cms_matrix3_invert_internal(definition->to_xyz,
                                            definition->from_xyz)) {
         sixel_cdef_free(definition);
@@ -5521,6 +5534,157 @@ sixel_cdef_rgb(double const xy[8], sixel_color_trc_t trc,
         }
     }
     return definition;
+}
+
+/* ICC matrix/TRC serialization lives beside the shared color definition.
+ * The caller owns the returned bytes through its allocator. No pixel values
+ * are converted here. ICC's signed 15.16 storage is the only rounding step. */
+static void
+sixel_cdef_put32(unsigned char *p, unsigned int value)
+{
+    p[0] = (unsigned char)(value >> 24);
+    p[1] = (unsigned char)(value >> 16);
+    p[2] = (unsigned char)(value >> 8);
+    p[3] = (unsigned char)value;
+}
+
+static int
+sixel_cdef_fixed(unsigned char *p, double value)
+{
+    double rounded;
+
+    rounded = floor(value * 65536.0 + 0.5);
+    if (!isfinite(rounded) || rounded < -2147483648.0 ||
+        rounded > 2147483647.0) {
+        return 0;
+    }
+    sixel_cdef_put32(p, (unsigned int)(int32_t)rounded);
+    return 1;
+}
+
+SIXELSTATUS
+sixel_cdef_export_icc(sixel_color_def_t const *definition,
+                      unsigned char **bytes, size_t *length,
+                      sixel_allocator_t *allocator)
+{
+    static char const tags[10][5] = {
+        "rXYZ", "gXYZ", "bXYZ", "rTRC", "gTRC", "bTRC",
+        "wtpt", "chad", "desc", "cprt"
+    };
+    static double const d50[3] = {0.9642, 1.0, 0.8249};
+    static double const srgb[7] = {
+        2.4, 1.0 / 1.055, 0.055 / 1.055, 1.0 / 12.92,
+        0.04045, 0.0, 0.0
+    };
+    /* These two fixed ASCII strings bound the only variable-length tags. */
+    static char const *const texts[2] = {
+        "libsixel RGB color space", "Copyright libsixel contributors; MIT"
+    };
+    unsigned char profile[1024];
+    unsigned char *p;
+    size_t offset;
+    size_t size;
+    size_t count;
+    size_t i;
+    size_t j;
+    int ok;
+
+    if (bytes == NULL || length == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *bytes = NULL;
+    *length = 0u;
+    if (definition == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (definition->bytes != NULL) {
+        /* Preserve validated RGB ICC definitions rather than approximating
+         * LUT profiles by a matrix or synthesizing an unrelated transfer. */
+        if (memcmp(definition->bytes + 16, "RGB ", 4u) != 0) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        *bytes = sixel_allocator_malloc(allocator, definition->length);
+        if (*bytes == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        memcpy(*bytes, definition->bytes, definition->length);
+        *length = definition->length;
+        return SIXEL_OK;
+    }
+
+    memset(profile, 0, sizeof(profile));
+    sixel_cdef_put32(profile + 8, 0x04300000u);
+    memcpy(profile + 12, "mntrRGB XYZ ", 12u);
+    /* A deterministic valid creation date keeps identical definitions
+     * byte-identical across jobs and across both PNG writer backends. */
+    profile[24] = 7u;
+    profile[25] = 208u; /* 2000-01-01 00:00:00 */
+    profile[27] = 1u;
+    profile[29] = 1u;
+    memcpy(profile + 36, "acsp", 4u);
+    sixel_cdef_put32(profile + 64, 1u); /* Relative colorimetric. */
+    ok = 1;
+    for (j = 0u; j < 3u; ++j) {
+        ok &= sixel_cdef_fixed(profile + 68u + j * 4u, d50[j]);
+    }
+    sixel_cdef_put32(profile + 128, 10u);
+    offset = 132u + 10u * 12u;
+    for (i = 0u; i < 10u; ++i) {
+        p = profile + offset;
+        if (i < 3u || i == 6u) {
+            size = 20u;
+            memcpy(p, "XYZ ", 4u);
+            for (j = 0u; j < 3u; ++j) {
+                ok &= sixel_cdef_fixed(p + 8u + j * 4u,
+                    i == 6u ? d50[j] : definition->to_xyz[j * 3u + i]);
+            }
+        } else if (i < 6u) {
+            memcpy(p, "para", 4u);
+            count = definition->trc == SIXEL_COLOR_TRC_SRGB ? 7u : 1u;
+            p[9] = count == 7u ? 4u : 0u;
+            size = 12u + count * 4u;
+            for (j = 0u; j < count; ++j) {
+                ok &= sixel_cdef_fixed(p + 12u + j * 4u,
+                    count == 7u ? srgb[j] : definition->gamma[i - 3u]);
+            }
+        } else if (i == 7u) {
+            size = 44u;
+            memcpy(p, "sf32", 4u);
+            for (j = 0u; j < 9u; ++j) {
+                ok &= sixel_cdef_fixed(p + 8u + j * 4u,
+                                       definition->adaptation[j]);
+            }
+        } else {
+            count = strlen(texts[i - 8u]);
+            size = 28u + count * 2u;
+            memcpy(p, "mluc", 4u);
+            sixel_cdef_put32(p + 8, 1u);
+            sixel_cdef_put32(p + 12, 12u);
+            memcpy(p + 16, "enUS", 4u);
+            sixel_cdef_put32(p + 20, (unsigned int)(count * 2u));
+            sixel_cdef_put32(p + 24, 28u);
+            for (j = 0u; j < count; ++j) {
+                p[29u + j * 2u] = (unsigned char)texts[i - 8u][j];
+            }
+        }
+        memcpy(profile + 132u + i * 12u, tags[i], 4u);
+        sixel_cdef_put32(profile + 136u + i * 12u, (unsigned int)offset);
+        sixel_cdef_put32(profile + 140u + i * 12u, (unsigned int)size);
+        offset += (size + 3u) & ~(size_t)3u;
+    }
+    if (!ok) {
+        sixel_helper_set_additional_message(
+            "RGB definition exceeds ICC signed 15.16 representation.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    sixel_cdef_put32(profile, (unsigned int)offset);
+    *bytes = sixel_allocator_malloc(allocator, offset);
+    if (*bytes == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memcpy(*bytes, profile, offset);
+    *length = offset;
+    return SIXEL_OK;
 }
 
 sixel_color_def_t *

@@ -29,7 +29,7 @@
 
 #include "sixel_atomic.h"
 
-/* encode settings object */
+/* Decode settings object. */
 struct sixel_decoder {
     sixel_atomic_u32_t ref;
     char *input;
@@ -43,6 +43,7 @@ struct sixel_decoder {
     size_t gpu_dequant_threshold;
     int thumbnail_size;
     int direct_color;
+    int input_colorspace;
     sixel_allocator_t *allocator;
     int clipboard_input_active;
     int clipboard_output_active;

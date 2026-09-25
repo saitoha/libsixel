@@ -205,6 +205,7 @@ mf_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define load_with_libtiff mf_local_11
 #define loader_can_try_libtiff mf_local_12
 #define sixel_cdef_clone mf_local_13
+#define sixel_cdef_export_icc mf_local_13_export
 #define sixel_cdef_finite mf_local_14
 #define sixel_cdef_free mf_local_15
 #define sixel_cdef_from_xyz mf_local_16
@@ -589,6 +590,7 @@ mf_profile_linear(unsigned char *pixels, int width, int height, int format,
 #undef load_with_libtiff
 #undef loader_can_try_libtiff
 #undef sixel_cdef_clone
+#undef sixel_cdef_export_icc
 #undef sixel_cdef_finite
 #undef sixel_cdef_free
 #undef sixel_cdef_from_xyz

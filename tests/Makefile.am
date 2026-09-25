@@ -224,6 +224,26 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0181_GAMMA_OPTION \
     -DBUILD_TEST_0195_NATIVE_GAMMA \
     -DBUILD_TEST_0001_NAMED_XYZ \
+    -DBUILD_TEST_0006_SRGB_INDEXED \
+    -DBUILD_TEST_0007_P3_INDEXED \
+    -DBUILD_TEST_0008_P3_DIRECT_ALPHA \
+    -DBUILD_TEST_0009_P3_REGISTER_REDEFINITION \
+    -DBUILD_TEST_0010_P3_ENVIRONMENT \
+    -DBUILD_TEST_0011_CLI_OVERRIDES_ENVIRONMENT \
+    -DBUILD_TEST_0012_LAST_INTERPRETATION_WINS \
+    -DBUILD_TEST_0013_LONG_INPUT_COLORSPACE \
+    -DBUILD_TEST_0017_LEGACY_WRITER_UNTAGGED \
+    -DBUILD_TEST_0018_SHARED_RGB_P3 \
+    -DBUILD_TEST_0019_RAW_DECODE_UNCHANGED \
+    -DBUILD_TEST_0020_ICC_NUMERIC_CONTRACT \
+    -DBUILD_COLOR_TEST_COMMON \
+    -DBUILD_TEST_0015_P3_RESIZE_COORDINATES \
+    -DBUILD_TEST_0016_P3_K_UNDITHER_COORDINATES \
+    -DBUILD_TEST_0021_P3_LSO_FS_COORDINATES \
+    -DBUILD_TEST_0022_P3_LSO_LIGHT_COORDINATES \
+    -DBUILD_TEST_0023_P3_SELECTIVE_BLUR_COORDINATES \
+    -DBUILD_TEST_0024_P3_DIRECT_RESIZE_COORDINATES \
+    -DBUILD_TEST_0025_P3_DIRECT_UNDITHER_COORDINATES \
     -DBUILD_TEST_0002_SIMPLE_POWER \
     -DBUILD_TEST_0003_ICC_SOURCE_LIFETIME \
     -DBUILD_TEST_0004_TRANSFORM_OWNS_ENDPOINTS \
@@ -1871,6 +1891,27 @@ TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 endif
 
 test_runner_SOURCES = test_runner.c \
+    writer/png/0015_p3_resize_coordinates.c \
+    writer/png/0016_p3_k_undither_coordinates.c \
+    writer/png/0021_p3_lso_fs_coordinates.c \
+    writer/png/0022_p3_lso_light_coordinates.c \
+    writer/png/0023_p3_selective_blur_coordinates.c \
+    writer/png/0024_p3_direct_resize_coordinates.c \
+    writer/png/0025_p3_direct_undither_coordinates.c \
+    writer/png/0006_srgb_indexed.c \
+    writer/png/0007_p3_indexed.c \
+    writer/png/0008_p3_direct_alpha.c \
+    writer/png/0009_p3_register_redefinition.c \
+    writer/png/0010_p3_environment.c \
+    writer/png/0011_cli_overrides_environment.c \
+    writer/png/0012_last_interpretation_wins.c \
+    writer/png/0013_long_input_colorspace.c \
+    writer/png/0017_legacy_writer_untagged.c \
+    writer/png/0018_shared_rgb_p3.c \
+    writer/png/0019_raw_decode_unchanged.c \
+    writer/png/0020_icc_numeric_contract.c \
+    writer/png/color_test_common.c \
+    writer/png/color_test_common.h \
     $(top_srcdir)/assessment/assessment.c \
     $(top_srcdir)/assessment/color.c \
     processing/assessment/0001_ciede2000_reference.c \
@@ -5442,7 +5483,8 @@ check-php: prepare-binding-artifacts
 # distdir does not hit shell ARG_MAX limits on some platforms.
 TEST_DATA_DIRS = data
 
-EXTRA_DIST = loader/libpng/chrm_trace_control.sh \
+EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.six \
+    loader/libpng/chrm_trace_control.sh \
     meson.build \
     docs/consistency/0004_envvars_vs_help.t \
     loader/builtin/1464_loader_builtin_psd_psdtools_blend_and_clipping_clip_weighted_deferred_solid_overlay_trace.t \

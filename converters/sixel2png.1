@@ -47,6 +47,17 @@ argument with "png:" keeps the CLI consistent with img2sixel so
 "png:-" maps to STDOUT and "png:\fIpath\fP" strips the prefix before
 saving to disk.
 .TP 5
+.B \-T \fISPACE\fP, \-\-input-colorspace=\fISPACE\fP
+Interpret decoded RGB numbers as srgb (default) or display-p3.
+Preserve RGB samples and palette values; write an sRGB chunk or an RGB ICC
+profile respectively. This is an input interpretation, not a conversion.
+Alpha is unchanged. Direct decoding with \-D retains the same interpretation.
+Resizing and dequantization operate in the decoded RGB coordinate basis.
+They retain the selected interpretation; they are not implicit CMS conversions.
+SIXEL has no embedded color definition, so auto detection is not available.
+The environment default is \fBSIXEL_DECODER_INPUT_COLORSPACE\fP.
+Explicit options override it, and the last repeated option wins.
+.TP 5
 .B \-d \fIMETHOD\fP, \-\-dequantize=\fIMETHOD\fP
 Apply palette dequantization to the decoded image.
 The argument specifies the method to use.

@@ -975,6 +975,12 @@ enum {
     SIXEL_DEQUANTIZE_BASE_SELECTIVE_BLUR
 };
 
+static sixel_option_value_schema_t const g_input_color_values[] = {
+    { "srgb", SIXEL_OPTION_INPUT_SRGB, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "display-p3", SIXEL_OPTION_INPUT_DISPLAY_P3, 0u,
+      SIXEL_OPTION_BASE_POLICY_NONE }
+};
+
 static sixel_option_value_schema_t const g_dequantize_values[] = {
     { "none", SIXEL_DEQUANTIZE_NONE, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
     {
@@ -3237,6 +3243,17 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_DITHER_CLAMP_AUTO,
         g_clamp_policy_values,
         "SIXEL_DITHER_CLAMP_POLICY"),
+    SIXEL_REGISTRY_SCALAR_CHOICE(
+        SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE,
+        SIXEL_OPTION_SCOPE_DECODER,
+        SIXEL_OPTFLAG_INPUT_COLORSPACE,
+        "input-colorspace",
+        SIXEL_OPTION_MATCH_EXACT,
+        SIXEL_OPTION_MATCH_EXACT,
+        "SIXEL_DECODER_INPUT_COLORSPACE",
+        "input-colorspace accepts srgb or display-p3.",
+        SIXEL_OPTION_INPUT_SRGB,
+        g_input_color_values),
 };
 
 typedef char sixel_option_count_check[

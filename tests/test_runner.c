@@ -2009,6 +2009,27 @@ int test_gdk_pixbuf_loader_0007_loader_plugin_integration(int argc,
                                                           char **argv);
 #endif
 
+int test_png_color_0006(int argc, char **argv);
+int test_png_color_0007(int argc, char **argv);
+int test_png_color_0008(int argc, char **argv);
+int test_png_color_0009(int argc, char **argv);
+int test_png_color_0010(int argc, char **argv);
+int test_png_color_0011(int argc, char **argv);
+int test_png_color_0012(int argc, char **argv);
+int test_png_color_0013(int argc, char **argv);
+int test_png_color_0017(int argc, char **argv);
+int test_png_color_0018(int argc, char **argv);
+int test_png_color_0019(int argc, char **argv);
+int test_png_color_0020(int argc, char **argv);
+
+int test_png_color_0015(int argc, char **argv);
+int test_png_color_0016(int argc, char **argv);
+int test_png_color_0021(int argc, char **argv);
+int test_png_color_0022(int argc, char **argv);
+int test_png_color_0023(int argc, char **argv);
+int test_png_color_0024(int argc, char **argv);
+int test_png_color_0025(int argc, char **argv);
+
 typedef int (*test_runner_fn)(int argc, char **argv);
 
 typedef struct test_entry {
@@ -2017,6 +2038,25 @@ typedef struct test_entry {
 } test_entry_t;
 
 static test_entry_t const test_entries[] = {
+    { "writer/png/0015_p3_resize_coordinates", test_png_color_0015 },
+    { "writer/png/0016_p3_k_undither_coordinates", test_png_color_0016 },
+    { "writer/png/0021_p3_lso_fs_coordinates", test_png_color_0021 },
+    { "writer/png/0022_p3_lso_light_coordinates", test_png_color_0022 },
+    { "writer/png/0023_p3_selective_blur_coordinates", test_png_color_0023 },
+    { "writer/png/0024_p3_direct_resize_coordinates", test_png_color_0024 },
+    { "writer/png/0025_p3_direct_undither_coordinates", test_png_color_0025 },
+    { "writer/png/0006_srgb_indexed", test_png_color_0006 },
+    { "writer/png/0007_p3_indexed", test_png_color_0007 },
+    { "writer/png/0008_p3_direct_alpha", test_png_color_0008 },
+    { "writer/png/0009_p3_register_redefinition", test_png_color_0009 },
+    { "writer/png/0010_p3_environment", test_png_color_0010 },
+    { "writer/png/0011_cli_overrides_environment", test_png_color_0011 },
+    { "writer/png/0012_last_interpretation_wins", test_png_color_0012 },
+    { "writer/png/0013_long_input_colorspace", test_png_color_0013 },
+    { "writer/png/0017_legacy_writer_untagged", test_png_color_0017 },
+    { "writer/png/0018_shared_rgb_p3", test_png_color_0018 },
+    { "writer/png/0019_raw_decode_unchanged", test_png_color_0019 },
+    { "writer/png/0020_icc_numeric_contract", test_png_color_0020 },
     { "filter/0001_filter_clip", test_filter_0001_filter_clip },
     { "filter/0002_filter_sample", test_filter_0002_filter_sample },
     { "filter/0003_filter_resize", test_filter_0003_filter_resize },

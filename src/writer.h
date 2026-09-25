@@ -25,10 +25,27 @@
 #ifndef LIBSIXEL_WRITER_H
 #define LIBSIXEL_WRITER_H
 
+#include <sixel.h>
+#include "cms.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* NULL means legacy untagged output. A request selects either the PNG sRGB
+ * chunk or an RGB definition to serialize as ICC, never both. It labels
+ * encoded PAL8/RGB888/RGBA8888 samples; it does not convert working pixels. */
+typedef struct sixel_writer_color {
+    int srgb;
+    sixel_color_def_t const *definition;
+} sixel_writer_color_t;
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_write_image_color(unsigned char *data, int width, int height,
+                         unsigned char *palette, int pixelformat,
+                         char const *filename, int imageformat,
+                         sixel_writer_color_t const *color,
+                         sixel_allocator_t *allocator);
 
 #ifdef __cplusplus
 }

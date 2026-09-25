@@ -277,6 +277,7 @@ af_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define load_with_libtiff af_local_11
 #define loader_can_try_libtiff af_local_12
 #define sixel_cdef_clone af_local_13
+#define sixel_cdef_export_icc af_local_13_export
 #define sixel_cdef_finite af_local_14
 #define sixel_cdef_free af_local_15
 #define sixel_cdef_from_xyz af_local_16
@@ -675,6 +676,7 @@ af_linear(unsigned char *pixels, int width, int height, int format,
 #undef load_with_libtiff
 #undef loader_can_try_libtiff
 #undef sixel_cdef_clone
+#undef sixel_cdef_export_icc
 #undef sixel_cdef_finite
 #undef sixel_cdef_free
 #undef sixel_cdef_from_xyz

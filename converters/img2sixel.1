@@ -1657,6 +1657,12 @@ For SVG decoded via \fBlibrsvg\fP, the source raster remains cairo ARGB32
 (8-bit per channel); float32 improves downstream processing precision but does
 not recover higher source bit depth from the loader.
 .TP 5
+.B SIXEL_DECODER_INPUT_COLORSPACE
+.br
+set the sixel2png decoded RGB interpretation: srgb (default) or display-p3.
+The sixel2png \fB\-T\fP option takes precedence.
+Encoder-generated PNG snapshots remain sRGB independently of this default.
+.TP 5
 .B SIXEL_DEQUANTIZE_LSO_VARIANT
 .br
 set the sixel2png default for the lso_undither variant to fs or light.

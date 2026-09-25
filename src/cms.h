@@ -271,6 +271,13 @@ SIXEL_INTERNAL_API int
 sixel_cdef_parse(char const *text, sixel_color_def_t **definition,
                   char const **icc_path, int *intent);
 
+/* Serialize a shared RGB definition without applying it to pixels.
+ * allocator must be nonnull; it owns the returned byte buffer. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_cdef_export_icc(sixel_color_def_t const *definition,
+                      unsigned char **bytes, size_t *length,
+                      sixel_allocator_t *allocator);
+
 SIXEL_INTERNAL_API sixel_color_def_t *
 sixel_cdef_clone(sixel_color_def_t const *definition);
 

@@ -75,6 +75,7 @@
 #include <sixel.h>
 #include "stdio_stub.h"
 #include "timeline-logger.h"
+#include "writer.h"
 
 #if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
@@ -352,6 +353,19 @@ png_write_chunk(FILE *output_fp, char const *tag,
 
     return 1;
 }
+
+/* Both builtin pixel paths insert color information immediately after
+ * IHDR. Keep sRGB and iCCP interpretations mutually exclusive. */
+static int
+png_write_color(FILE *fp, int srgb, unsigned char const *icc, size_t length)
+{
+    static unsigned char const intent = 1u;
+
+    if (srgb) {
+        return png_write_chunk(fp, "sRGB", &intent, 1u);
+    }
+    return icc == NULL || png_write_chunk(fp, "iCCP", icc, length);
+}
 #endif  /* !HAVE_LIBPNG */
 
 static SIXELSTATUS
@@ -445,6 +459,7 @@ write_png_to_file(
     unsigned char       /* in */ *palette,      /* palette of source data */
     int                 /* in */ pixelformat,   /* source pixelFormat */
     char const          /* in */ *filename,     /* destination filename */
+    int srgb, unsigned char const *icc, size_t icc_length,
     sixel_allocator_t   /* in */ *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -477,7 +492,10 @@ write_png_to_file(
     unsigned char *plte = NULL;
     int stride = 0;
     int png_len = 0;
-    int write_len = 0;
+    unsigned char *icc_compressed = NULL;
+    unsigned char *icc_chunk = NULL;
+    int icc_compressed_length = 0;
+    size_t icc_chunk_length = 0u;
     size_t payload_size = 0;
 #endif  /* HAVE_LIBPNG */
 
@@ -503,6 +521,26 @@ write_png_to_file(
     png_io_ctx.write_calls = 0u;
     png_io_ctx.write_bytes = 0u;
 #endif  /* HAVE_LIBPNG */
+
+#if !HAVE_LIBPNG
+    if (icc != NULL) {
+        icc_compressed = stbi_zlib_compress((unsigned char *)icc,
+            (int)icc_length, &icc_compressed_length, 8);
+        if (icc_compressed == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        icc_chunk_length = (size_t)icc_compressed_length + 5u;
+        icc_chunk = sixel_allocator_malloc(allocator, icc_chunk_length);
+        if (icc_chunk == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        memcpy(icc_chunk, "RGB\0\0", 5u);
+        memcpy(icc_chunk + 5u, icc_compressed,
+               (size_t)icc_compressed_length);
+    }
+#endif
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
@@ -871,6 +909,13 @@ write_png_to_file(
                           "libpng_write_info_begin",
                           0);
     }
+    /* Metadata describes the supplied encoded values, including PLTE. */
+    if (srgb) {
+        png_set_sRGB(png_ptr, info_ptr, PNG_sRGB_INTENT_RELATIVE);
+    } else if (icc != NULL) {
+        png_set_iCCP(png_ptr, info_ptr, "RGB", PNG_COMPRESSION_TYPE_BASE,
+                     icc, (png_uint_32)icc_length);
+    }
     png_write_info(png_ptr, info_ptr);
     if (logger_prepared) {
         sixel_timeline_logger_logf(logger,
@@ -940,8 +985,8 @@ write_png_to_file(
         signature[5] = 0x0a;
         signature[6] = 0x1a;
         signature[7] = 0x0a;
-        write_len = (int)fwrite(signature, 1, sizeof(signature), output_fp);
-        if (write_len != (int)sizeof(signature)) {
+        if (fwrite(signature, 1u, sizeof(signature), output_fp) !=
+            sizeof(signature)) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message("fwrite() failed.");
             goto end;
@@ -961,6 +1006,12 @@ write_png_to_file(
         ihdr[11] = 0;
         ihdr[12] = 0;
         if (!png_write_chunk(output_fp, "IHDR", ihdr, sizeof(ihdr))) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message("fwrite() failed.");
+            goto end;
+        }
+        if (!png_write_color(output_fp, srgb, icc_chunk,
+                             icc_chunk_length)) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message("fwrite() failed.");
             goto end;
@@ -1012,11 +1063,14 @@ write_png_to_file(
                 "stbi_write_png_to_mem() failed.");
             goto end;
         }
-        write_len = (int)fwrite(png_data,
-                                 1,
-                                 (size_t)png_len,
-                                 output_fp);
-        if (write_len <= 0) {
+        /* stb owns image compression; insert metadata after its IHDR
+         * without decoding, recoloring, or recompressing any pixels. */
+        if (png_len < 33 ||
+            fwrite(png_data, 1u, 33u, output_fp) != 33u ||
+            !png_write_color(output_fp, srgb, icc_chunk,
+                             icc_chunk_length) ||
+            fwrite(png_data + 33u, 1u, (size_t)png_len - 33u,
+                   output_fp) != (size_t)png_len - 33u) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message("fwrite() failed.");
             goto end;
@@ -1066,6 +1120,9 @@ end:
     }
     sixel_allocator_free(allocator, png_palette);
 #else
+    /* The bundled compressor allocates with the C runtime. */
+    free(icc_compressed);
+    sixel_allocator_free(allocator, icc_chunk);
     sixel_allocator_free(allocator, compressed);
     sixel_allocator_free(allocator, filtered);
     sixel_allocator_free(allocator, plte);
@@ -1089,8 +1146,8 @@ end:
 }
 
 
-SIXELAPI SIXELSTATUS
-sixel_helper_write_image_file(
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_write_image_color(
     unsigned char       /* in */ *data,        /* source pixel data */
     int                 /* in */ width,        /* source data width */
     int                 /* in */ height,       /* source data height */
@@ -1098,9 +1155,12 @@ sixel_helper_write_image_file(
     int                 /* in */ pixelformat,  /* source pixelFormat */
     char const          /* in */ *filename,    /* destination filename */
     int                 /* in */ imageformat,  /* destination imageformat */
+    sixel_writer_color_t const *color,
     sixel_allocator_t   /* in */ *allocator)   /* allocator object */
 {
     SIXELSTATUS status = SIXEL_FALSE;
+    unsigned char *icc = NULL;
+    size_t icc_length = 0u;
 
     if (allocator == NULL) {
         status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
@@ -1151,10 +1211,32 @@ sixel_helper_write_image_file(
         goto end;
     }
 
+    if (color != NULL) {
+        if ((color->srgb && color->definition != NULL) ||
+            (!color->srgb && color->definition == NULL) ||
+            (pixelformat != SIXEL_PIXELFORMAT_PAL8 &&
+             pixelformat != SIXEL_PIXELFORMAT_RGB888 &&
+             pixelformat != SIXEL_PIXELFORMAT_RGBA8888)) {
+            sixel_helper_set_additional_message(
+                "color-aware PNG output requires encoded 8-bit RGB values.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (color->definition != NULL) {
+            status = sixel_cdef_export_icc(color->definition, &icc,
+                                          &icc_length, allocator);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+    }
+
     switch (imageformat) {
     case SIXEL_FORMAT_PNG:
         status = write_png_to_file(data, width, height, palette,
-                                   pixelformat, filename, allocator);
+                                   pixelformat, filename,
+                                   color != NULL && color->srgb,
+                                   icc, icc_length, allocator);
         break;
     case SIXEL_FORMAT_GIF:
     case SIXEL_FORMAT_BMP:
@@ -1174,6 +1256,9 @@ sixel_helper_write_image_file(
     }
 
 end:
+    if (icc != NULL) {
+        sixel_allocator_free(allocator, icc);
+    }
     sixel_allocator_unref(allocator);
     return status;
 }
@@ -1188,3 +1273,16 @@ end:
 /* emacs End:                  */
 /* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */
+
+/* Legacy callers have not specified an interpretation. Preserve their
+ * untagged file contract rather than guessing from the pixel layout. */
+SIXELAPI SIXELSTATUS
+sixel_helper_write_image_file(unsigned char *data, int width, int height,
+                               unsigned char *palette, int pixelformat,
+                               char const *filename, int imageformat,
+                               sixel_allocator_t *allocator)
+{
+    return sixel_write_image_color(data, width, height, palette,
+                                    pixelformat, filename, imageformat,
+                                    NULL, allocator);
+}
