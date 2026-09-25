@@ -56,12 +56,13 @@ flowchart TD
     W --> L["Lookup and palette application (-d)"]
     L --> U["Convert output palette (-U)"]
     U --> G["At rate=1: finalize output RGB percentage grid"]
-    G --> O["SIXEL and exported palette"]
+    G --> O["SIXEL"]
+    W --> P["sRGB8 interchange palette (-M)"]
 ```
 
 For a generated palette, the final snap runs whenever the policy is not `none`, independently of `timing`. The timing policy only adds earlier solver hooks. The fixed-palette selectors `-m`, `-b`, and `-e` currently accept snap options but bypass every snap consumer, preserving the supplied palette unchanged. This accepted no-op is retained for compatibility.
 
-The generated palette keeps its snapped float32 coordinates through clustering-to-working conversion. At `rate=1`, output finalization resolves any conversion rounding onto the output RGB percentage grid and keeps the SIXEL definition and exported byte palette consistent. This final grid check also follows cover repair; partial rates do not perform it, so their approach rate is not applied a second time. Fixed palettes bypass this generated-palette state.
+The generated palette keeps its snapped float32 coordinates through clustering-to-working conversion. At `rate=1`, output finalization resolves any conversion rounding onto the output RGB percentage grid for the SIXEL definition. Palette export follows the independent [sRGB interchange boundary](external-palettes.md#exporting-a-palette-with-m), before this wire-only finalization. This final grid check also follows cover repair; partial rates do not perform it, so their approach rate is not applied a second time. Fixed palettes bypass this generated-palette state.
 
 ## Policy values
 
@@ -158,7 +159,7 @@ The raw tables contain the complete command template for every point. [`snap-pol
 
 ![Unsafe exported palette channels by policy, color space, and palette size](snap-policies/measurements/snap-policy-fixed-point.png)
 
-Figure: Percentage of ACT-exported palette channels that change after conversion to a SIXEL integer percentage and back. Lower is better; zero means every exported channel is a fixed point. Cover is disabled so a later cover mutation cannot invalidate the result.
+Historical measurement (before the independent sRGB export boundary): percentage of ACT-exported palette channels that change after conversion to a SIXEL integer percentage and back. Lower is better; zero meant every exported channel was a fixed point. Current `-M` exports before wire finalization; use the SIXEL definitions to measure the wire grid. Cover is disabled so a later cover mutation cannot invalidate the result.
 
 With snap disabled, 50.0% to 70.8% of exported channels were outside the safe set. Every measured `rate=1` configuration reached zero failures for every palette size and color space. `rate=0.25` did not: its median unsafe-channel rate was 33.5%, and the observed range was 8.3% to 54.2%. An intermediate approach can accidentally converge to safe tones in a particular run, but only `rate=1` is the configuration-level guarantee.
 
@@ -247,7 +248,7 @@ SNAP_POLICY_EXPLORATORY=1 SNAP_POLICY_WARMUPS=0 SNAP_POLICY_RUNS=1 \
 
 The checked-in raw data are [`snap-policy-quality.csv`](snap-policies/measurements/snap-policy-quality.csv), [`snap-policy-speed.csv`](snap-policies/measurements/snap-policy-speed.csv), [`snap-policy-controls.csv`](snap-policies/measurements/snap-policy-controls.csv), [`snap-policy-high-k.csv`](snap-policies/measurements/snap-policy-high-k.csv), and [`snap-policy-high-k-speed.csv`](snap-policies/measurements/snap-policy-high-k-speed.csv). Run `tools/check_snap_policy_measurements.py docs/functionality/snap-policies/measurements` to audit an existing durable snapshot without remeasuring it.
 
-This snapshot measures one machine, one thread count, one quantizer family, and one dithering policy. It measures palette fixed-point membership directly but does not yet measure repeated full-image encode/decode cycles, animation flicker, cover-after-snap interaction, or statistical significance across hosts. Re-run the suite after changing snap, quantizer, colorspace, palette export, or percentage-conversion code; do not carry these numerical conclusions across such changes without refreshing the artifacts.
+This historical schema-2 snapshot measures one machine, one thread count, one quantizer family, and one dithering policy. Schema-3 runs measure ACT values at the independent pre-wire sRGB8 export boundary; exact-rate exports may now have nonzero drift even though the final wire palette uses the RGB101 grid. The checker keeps the original fixed-point assertions for schema 2 and does not apply them to schema 3. These two measurements must not be merged as the same metric. It measures palette fixed-point membership directly but does not yet measure repeated full-image encode/decode cycles, animation flicker, cover-after-snap interaction, or statistical significance across hosts. Re-run the suite after changing snap, quantizer, colorspace, palette export, or percentage-conversion code; do not carry these numerical conclusions across such changes without refreshing the artifacts.
 
 ## Implementation references
 
@@ -272,7 +273,7 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 | SP-07 | A built-in palette accepts an explicit snap policy but bypasses the snap consumer. | [tests/quant/palette/usage/0195_builtin_snap_policy_bypassed.t](../../tests/quant/palette/usage/0195_builtin_snap_policy_bypassed.t) |
 | SP-08 | Monochrome accepts an explicit snap policy but bypasses the snap consumer. | [tests/quant/palette/usage/0196_monochrome_snap_policy_bypassed.t](../../tests/quant/palette/usage/0196_monochrome_snap_policy_bypassed.t) |
 | SP-09 | DIN99d exact snap exports fixed-point ACT values equal to emitted SIXEL RGB entries. | [tests/quant/palette/0045_snap_output_grid.t](../../tests/quant/palette/0045_snap_output_grid.t) |
-| SP-10 | Oklab-to-gamma palette conversion retains the exact output grid and export/wire agreement. | [tests/quant/palette/0046_snap_cross_space_grid.t](../../tests/quant/palette/0046_snap_cross_space_grid.t) |
+| SP-10 | A snapped working palette exports independently of the selected wire output space. | [tests/quant/palette/0046_snap_export_output_independent.t](../../tests/quant/palette/0046_snap_export_output_independent.t) |
 | SP-11 | Exact snap resolves the output grid after conversion to SMPTE-C. | [tests/quant/palette/0047_snap_smptec_grid.t](../../tests/quant/palette/0047_snap_smptec_grid.t) |
 | SP-12 | A partial final snap blends once in float precision without enabling exact output-grid enforcement. | [tests/quant/palette/0048_snap_partial_once.t](../../tests/quant/palette/0048_snap_partial_once.t) |
 | SP-13 | Zero approach rate preserves byte-identical output with snapping disabled, including mixed perceptual spaces. | [tests/quant/palette/0049_snap_zero_identity.t](../../tests/quant/palette/0049_snap_zero_identity.t) |

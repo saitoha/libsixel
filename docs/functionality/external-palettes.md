@@ -85,7 +85,11 @@ The basic form is:
 img2sixel -p 64 --quantize-model=kmeans:seed=1 -M palette.gpl -o output.six input.png
 ```
 
-`-M` writes the palette actually prepared for encoding. The export happens after the [`-U` output-color-space conversion](working-colorspace.md), so internal CIELAB, DIN99d, Oklab, or linear working values are not written directly as if they were ordinary RGB bytes. The default `-Ugamma` is the safest interchange choice for these legacy RGB palette formats.
+ACT, JASC PAL, RIFF PAL and GPL entries are always interpreted as sRGB8. Import converts those entries into `-W` before palette application; it preserves a float view for non-gamma working coordinates. Gamma byte jobs need no such conversion. These formats do not inherit an interpretation from `-W`, `-U`, a terminal or the source image.
+
+`-M` converts the prepared working palette to sRGB8, independently of the [`-U` wire output definition](output-colorspace.md). In the selected RGB101 paths it saves that palette before destination projection and rounding; other paths export the retained working palette after palette application. The final wire snap is not applied to the export. Export therefore need not equal the colors sent to SIXEL, and does not promise reversible RGB101 entries. Palette-construction policies still affect which colors are prepared.
+
+The selected Display P3 path supports `-M` with these legacy formats, but sRGB8 export necessarily clips colors outside sRGB and rounds to eight bits. It cannot preserve a wide-gamut palette. `-m` remains unsupported in that P3 path pending connection of fixed-palette lookup. A self-contained color-bearing palette representation is still required for lossless interpretation of wider gamuts; an external override does not change the meaning of these legacy formats.
 
 The output format is selected by a prefix or by `.act`, `.pal`, or `.gpl`. A plain `.pal` output name means JASC text; use `pal-riff:PATH` for RIFF PAL. Prefix matching is case-insensitive, and an explicit prefix takes precedence over a mismatched filename extension. An empty value, a prefix without a path, an unknown extension without a prefix, and a file that cannot be opened are errors. Standard output requires a type prefix, and the SIXEL stream must be directed elsewhere if both would otherwise use standard output:
 
@@ -102,9 +106,9 @@ img2sixel -m pal-riff:legacy.riff -M gpl:editable.gpl \
     -o /dev/null input.png
 ```
 
-This is not a metadata-preserving file converter. The command still performs an encode, applies the selected working and output color spaces, and recreates format-specific metadata; entry names, RIFF flags, and ACT transparency information are not carried through.
+This is not a metadata-preserving file converter. The command still performs an encode, converts palette colors through the working representation and back to sRGB8 for export, and recreates format-specific metadata; entry names, RIFF flags, and ACT transparency information are not carried through.
 
-All four palette formats carry at most 256 8-bit RGB entries and no embedded ICC profile. They cannot preserve arbitrary float working-space coordinates, alpha semantics, rendering intent, or a source profile. Choose `-U` deliberately when the receiving program expects something other than the default gamma-encoded RGB convention. The exported entry count is the finalized palette count and can be smaller than the requested `-p` limit after palette optimization.
+All four palette formats carry at most 256 8-bit RGB entries and no embedded ICC profile. They cannot preserve arbitrary float working-space coordinates, alpha semantics, rendering intent, or a source profile. There is no option to reinterpret their entries as device RGB; use a color-bearing format for that purpose once supported. The exported entry count is the finalized palette count and can be smaller than the requested `-p` limit after palette optimization.
 
 ### A quality-tuning and reuse workflow
 
@@ -234,7 +238,7 @@ Supplying a palette removes the construction stage but leaves the application st
 | `-W`, `--working-colorspace` | Applies to palette application; both image and palette are represented in the selected lookup and diffusion space. |
 | `-~`, `--lookup-policy` | An explicit policy applies to the supplied palette. Without an explicit policy, text palette files retain the historical direct-scan behavior. |
 | `-d`, `--diffusion` | Applies while input pixels are mapped to the supplied entries. |
-| `-U`, `--output-colorspace` | Converts the prepared palette for SIXEL serialization and for `-M` export. |
+| `-U`, `--output-colorspace` | Selects SIXEL serialization; legacy `-M` output remains sRGB8. |
 
 The same lookup, cover, and snap rules apply to the other fixed palettes selected by `-b` and `-e`: explicit lookup applies, explicit cover conflicts, and snap is accepted but bypassed. The owning policy documents define the normative details: [Lookup Policy](lookup-policy.md), [Palette Cover Policy](cover-policy.md), [Palette Snap Policy](snap-policy.md), and [Palette Working Color Space](working-colorspace.md).
 
@@ -259,7 +263,7 @@ The table contains tests that directly own user-visible contracts stated by this
 | EP-01 | A direct-color PNG can supply colors through `-m`. | [tests/quant/palette/usage/0050_palette_map_png_rgb.t](../../tests/quant/palette/usage/0050_palette_map_png_rgb.t) |
 | EP-02 | Indexed PNG map images with 1-, 2-, 4-, and 8-bit indices are accepted. | [tests/quant/palette/usage/0051_palette_map_png_pal1.t](../../tests/quant/palette/usage/0051_palette_map_png_pal1.t), [tests/quant/palette/usage/0052_palette_map_png_pal2.t](../../tests/quant/palette/usage/0052_palette_map_png_pal2.t), [tests/quant/palette/usage/0053_palette_map_png_pal4.t](../../tests/quant/palette/usage/0053_palette_map_png_pal4.t), [tests/quant/palette/usage/0054_palette_map_png_pal8.t](../../tests/quant/palette/usage/0054_palette_map_png_pal8.t) |
 | EP-03 | Palette-construction color-space and precision controls do not reinterpret a completed PNG mapfile palette. | [tests/quant/palette/usage/0122_mapfile_png_clustering_colorspace_stable.t](../../tests/quant/palette/usage/0122_mapfile_png_clustering_colorspace_stable.t), [tests/quant/palette/usage/0123_mapfile_png_precision_stable.t](../../tests/quant/palette/usage/0123_mapfile_png_precision_stable.t) |
-| EP-04 | Working/output color-space conversion of PNG mapfiles is deterministic, including an embedded ICC profile. | [tests/quant/palette/usage/0145_mapfile_png_working_output_colorspace_deterministic.t](../../tests/quant/palette/usage/0145_mapfile_png_working_output_colorspace_deterministic.t), [tests/quant/palette/usage/0156_mapfile_png_icc_working_output_colorspace_deterministic.t](../../tests/quant/palette/usage/0156_mapfile_png_icc_working_output_colorspace_deterministic.t) |
+| EP-04 | Working/output color-space conversion of PNG mapfiles is deterministic, with CMS explicitly disabled, including an embedded ICC profile. | [tests/quant/palette/usage/0145_mapfile_png_working_output_colorspace_deterministic.t](../../tests/quant/palette/usage/0145_mapfile_png_working_output_colorspace_deterministic.t), [tests/quant/palette/usage/0156_mapfile_png_icc_working_output_colorspace_deterministic.t](../../tests/quant/palette/usage/0156_mapfile_png_icc_working_output_colorspace_deterministic.t) |
 | EP-05 | `-m` and `-M` can translate a prepared JASC PAL palette to GPL. | [tests/quant/palette/usage/0147_mapfile_pal_mapfile_output_gpl.t](../../tests/quant/palette/usage/0147_mapfile_pal_mapfile_output_gpl.t) |
 | EP-06 | An explicit lookup policy reaches both byte and float32 palette application with a palette mapfile. | [tests/quant/palette/usage/0191_mapfile_pal_explicit_lookup_policy_applied.t](../../tests/quant/palette/usage/0191_mapfile_pal_explicit_lookup_policy_applied.t) |
 | EP-07 | ACT transparency metadata neither shifts entries nor causes a valid palette to be rejected. | [tests/quant/mapfile/0025_mapfile_import_act_accepts_transparency_255_count_2.t](../../tests/quant/mapfile/0025_mapfile_import_act_accepts_transparency_255_count_2.t), [tests/quant/mapfile/0045_mapfile_import_act_transparency_does_not_offset_palette.t](../../tests/quant/mapfile/0045_mapfile_import_act_transparency_does_not_offset_palette.t) |
@@ -291,6 +295,10 @@ The table contains tests that directly own user-visible contracts stated by this
 | EP-33 | A generated two-entry CIELAB byte palette exports independently derived gamma RGB8 values through `-M gpl:-`; solver entry order is not fixed. | [tests/quant/palette/usage/0197_mapfile_output_converts_cielab_to_gamma.t](../../tests/quant/palette/usage/0197_mapfile_output_converts_cielab_to_gamma.t) |
 | EP-34 | A non-PNG PNM image can construct a deterministic image-mapfile palette. | [tests/quant/mapfile/0121_mapfile_image_pnm_source_exact.t](../../tests/quant/mapfile/0121_mapfile_image_pnm_source_exact.t) |
 | EP-35 | An animated image mapfile uses only its first frame as one static palette source. | [tests/quant/mapfile/0122_mapfile_image_animated_gif_uses_first_frame.t](../../tests/quant/mapfile/0122_mapfile_image_animated_gif_uses_first_frame.t) |
+| EP-36 | Structured sRGB entries select and emit the expected pixel in a linear workspace. | [tests/quant/mapfile/0123_mapfile_linear_working_pixels.t](../../tests/quant/mapfile/0123_mapfile_linear_working_pixels.t) |
+| EP-37 | Linear wire output leaves the prepared sRGB8 export unchanged. | [tests/quant/mapfile/0124_mapfile_export_linear_output_srgb.t](../../tests/quant/mapfile/0124_mapfile_export_linear_output_srgb.t) |
+| EP-38 | sRGB and Display P3 RGB101 paths export source colors before destination rounding. | [tests/quant/mapfile/0125_mapfile_export_before_srgb_rgb101.t](../../tests/quant/mapfile/0125_mapfile_export_before_srgb_rgb101.t), [tests/quant/palette/0056_p3_palette_export_srgb.t](../../tests/quant/palette/0056_p3_palette_export_srgb.t) |
+| EP-39 | A snapped working palette has the same export with gamma and linear wire output. | [tests/quant/palette/0046_snap_export_output_independent.t](../../tests/quant/palette/0046_snap_export_output_independent.t) |
 
 Every test listed above links back to this document through its `Policy` comment. This keeps the behavioral contract discoverable in both directions when either the documentation or a regression test changes.
 

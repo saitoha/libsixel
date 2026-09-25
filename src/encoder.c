@@ -4102,8 +4102,7 @@ sixel_encoder_capture_quantized_palette_only(
     sixel_dither_t *dither,
     int width,
     int height,
-    int source_colorspace,
-    int output_colorspace)
+    int source_colorspace)
 {
     SIXELSTATUS status;
     size_t quantized_pixels;
@@ -4118,7 +4117,6 @@ sixel_encoder_capture_quantized_palette_only(
     size_t index;
     int channel;
     int source_format;
-    int output_format;
     int use_float;
     float triplet[3];
 
@@ -4202,13 +4200,12 @@ sixel_encoder_capture_quantized_palette_only(
     }
     memcpy(encoder->capture_palette, palette_view.entries, palette_bytes);
     /*
-     * sixel_encode() converts its private palette copy for the wire and
-     * deliberately leaves the reusable dither palette in working-space
-     * coordinates.  Mirror that boundary on this separate capture copy so
-     * palette files never receive the internal working representation.
+     * Legacy palette formats have no color metadata: their bytes are sRGB.
+     * Export is independent of the wire output space and of its final snap.
+     * The RGB101 path calls this before projecting the palette onto the
+     * destination grid; other paths retain their unconverted working copy.
      */
-    if (source_colorspace != output_colorspace
-            || dither->palette_snap_exact != 0) {
+    if (source_colorspace != SIXEL_COLORSPACE_GAMMA) {
         memset(&float_view, 0, sizeof(float_view));
         status = palette_obj->vtbl->get_entries_float32(palette_obj,
                                                         &float_view);
@@ -4217,8 +4214,6 @@ sixel_encoder_capture_quantized_palette_only(
         }
         source_format = sixel_encoder_pixelformat_for_colorspace(
             source_colorspace, 1);
-        output_format = sixel_encoder_pixelformat_for_colorspace(
-            output_colorspace, 1);
         use_float = float_view.entries != NULL
             && float_view.entry_count == palette_count
             && float_view.depth == (int)(3U * sizeof(float));
@@ -4232,24 +4227,20 @@ sixel_encoder_capture_quantized_palette_only(
             }
         }
         if (use_float) {
-            /* Convert before packing, preserving snapped non-RGB targets. */
+            /* Keep extended coordinates until the sRGB8 file boundary. */
             for (index = 0U; index < palette_count; ++index) {
                 memcpy(triplet, float_view.entries + index * 3U,
                        sizeof(triplet));
-                status = sixel_helper_convert_colorspace(
-                    (unsigned char *)triplet, sizeof(triplet),
-                    source_format, source_colorspace, output_colorspace);
+                status = sixel_color_convert_rgbf32(triplet, 1U,
+                    source_colorspace, SIXEL_COLORSPACE_GAMMA);
                 if (SIXEL_FAILED(status)) {
                     return status;
                 }
                 for (channel = 0; channel < 3; ++channel) {
                     encoder->capture_palette[index * 3U + (size_t)channel]
                         = sixel_pixelformat_float_channel_to_byte(
-                            output_format, channel, triplet[channel]);
-                }
-                if (dither->palette_snap_exact != 0) {
-                    sixel_palette_snap_output(
-                        encoder->capture_palette + index * 3U, triplet, 1U);
+                            SIXEL_PIXELFORMAT_RGBFLOAT32,
+                            channel, triplet[channel]);
                 }
             }
         } else {
@@ -4258,7 +4249,7 @@ sixel_encoder_capture_quantized_palette_only(
                 palette_bytes,
                 SIXEL_PIXELFORMAT_RGB888,
                 source_colorspace,
-                output_colorspace);
+                SIXEL_COLORSPACE_GAMMA);
         }
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
@@ -4268,15 +4259,10 @@ sixel_encoder_capture_quantized_palette_only(
         }
     }
 
-    if (dither->palette_snap_exact != 0) {
-        sixel_palette_snap_output(encoder->capture_palette, NULL,
-                                   (unsigned int)palette_count);
-    }
-
     encoder->capture_width = width;
     encoder->capture_height = height;
     encoder->capture_pixelformat = SIXEL_PIXELFORMAT_PAL8;
-    encoder->capture_colorspace = output_colorspace;
+    encoder->capture_colorspace = SIXEL_COLORSPACE_GAMMA;
     encoder->capture_ncolors = ncolors;
     encoder->capture_valid = 1;
 
@@ -6077,7 +6063,47 @@ sixel_encoder_palette_job_wait(sixel_palette_async_job_t *job,
 }
 
 
-/* create palette from specified map file */
+/* Structured palette files and built-in tables contain sRGB8 entries,
+ * independent of -W.
+ * Convert once at the parser boundary and keep float coordinates alongside
+ * the byte compatibility view. A gamma job needs no extra allocation. */
+static SIXELSTATUS
+sixel_encoder_import_srgb_palette(sixel_encoder_t *encoder,
+                                  sixel_dither_t *dither)
+{
+    SIXELSTATUS status;
+    sixel_palette_entries_view_t view;
+    sixel_palette_float32_entries_request_t request;
+    float entries[256 * 3];
+    size_t index;
+
+    if (encoder->working_colorspace == SIXEL_COLORSPACE_GAMMA) {
+        return SIXEL_OK;
+    }
+    status = dither->palette->vtbl->get_entries(dither->palette, &view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (view.entries == NULL || view.entry_count > 256U || view.depth != 3) {
+        return SIXEL_BAD_INPUT;
+    }
+    for (index = 0U; index < view.entry_count * 3U; ++index) {
+        entries[index] = (float)view.entries[index] / 255.0f;
+    }
+    memset(&request, 0, sizeof(request));
+    request.entries = entries;
+    request.colors = view.entry_count;
+    request.depth = (int)(3U * sizeof(float));
+    status = dither->palette->vtbl->init_entries_float32(dither->palette,
+                                                         &request);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    return sixel_encoder_convert_palette_colorspace(dither->palette,
+        SIXEL_COLORSPACE_GAMMA, encoder->working_colorspace, 1);
+}
+
+/* Create a palette from a structured file or an image mapfile. */
 static SIXELSTATUS
 sixel_prepare_specified_palette(
     sixel_dither_t  /* out */   **dither,
@@ -6291,6 +6317,11 @@ palette_cleanup:
             stream = NULL;
         }
         if (SIXEL_SUCCEEDED(status)) {
+            status = sixel_encoder_import_srgb_palette(encoder, *dither);
+            if (SIXEL_FAILED(status)) {
+                sixel_dither_unref(*dither);
+                *dither = NULL;
+            }
             return status;
         }
         if (!treat_as_image) {
@@ -6874,7 +6905,7 @@ sixel_encoder_resolve_direct_binning(
 static int
 sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
 {
-    return encoder->mapfile == NULL && encoder->palette_output == NULL &&
+    return encoder->mapfile == NULL &&
         !((encoder->working_colorspace != SIXEL_COLORSPACE_LINEAR &&
              encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA) ||
             encoder->clustering_colorspace != SIXEL_COLORSPACE_LINEAR ||
@@ -6896,7 +6927,8 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
             encoder->ormode != 0 || encoder->fdrcs != 0 ||
             encoder->fuse_macro != 0 || encoder->macro_number >= 0 ||
             encoder->sixdelta_enabled != 0 || encoder->output_is_png != 0 ||
-            encoder->capture_quantized != 0);
+            (encoder->capture_quantized != 0 &&
+             encoder->palette_output == NULL));
 }
 
 static int
@@ -6930,9 +6962,9 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
     if (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
         return SIXEL_OK;
     }
-    if (encoder->mapfile != NULL || encoder->palette_output != NULL) {
+    if (encoder->mapfile != NULL) {
         sixel_helper_set_additional_message(
-            "display-p3 does not support -m/-M palette interchange.");
+            "display-p3 does not yet support -m palette input.");
         return SIXEL_BAD_ARGUMENT;
     }
     if (!sixel_encoder_rgb101_options(encoder)) {
@@ -7113,7 +7145,11 @@ sixel_encoder_prepare_palette(
             dither_cache_hit = 1;
             status = SIXEL_OK;
         } else {
-            status = sixel_prepare_builtin_palette(dither, encoder->builtin_palette);
+            status = sixel_prepare_builtin_palette(dither,
+                                                     encoder->builtin_palette);
+            if (SIXEL_SUCCEEDED(status)) {
+                status = sixel_encoder_import_srgb_palette(encoder, *dither);
+            }
         }
         goto end;
     case SIXEL_COLOR_OPTION_DEFAULT:
@@ -7711,6 +7747,16 @@ sixel_encoder_prepare_palette(
         }
     }
     if ((*dither)->use_rgb101_palette) {
+        if (encoder->palette_output != NULL) {
+            /* Save the constructed palette before destination quantization.
+             * Inverse-projecting the wire palette cannot undo its rounding. */
+            status = sixel_encoder_capture_quantized_palette_only(encoder,
+                *dither, sixel_frame_get_width(frame),
+                sixel_frame_get_height(frame), working_colorspace);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
         status = sixel_palette_prepare_rgb101((*dither)->palette,
                                                working_colorspace,
             encoder->output_color_definition);
@@ -8312,14 +8358,13 @@ sixel_encoder_output_without_macro(
     if (status != SIXEL_OK) {
         goto end;
     }
-    if (capture_palette_only) {
+    if (capture_palette_only && !dither->use_rgb101_palette) {
         status = sixel_encoder_capture_quantized_palette_only(
             encoder,
             dither,
             width,
             height,
-            frame_colorspace,
-            output_colorspace);
+            frame_colorspace);
         if (SIXEL_FAILED(status)) {
             goto end;
         }

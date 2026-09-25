@@ -36,7 +36,7 @@ The three encoder color-space controls own different boundaries:
 
 Fixed palettes bypass `-X`, but they do not bypass `-W`: the supplied palette and the main image must still meet in one working representation before lookup. `-U` remains a later output conversion in either case. [Output color space](output-colorspace.md) details its values, receiver interpretation, and the current preparation difference between structured byte palettes and image mapfiles.
 
-`-M` exports the captured palette after this same `-W` to `-U` boundary. It must not write internal Oklab, CIELAB, or DIN99d working coordinates into ACT, PAL, RIFF PAL, or GPL files. With the interoperable default `-Ugamma`, the exported channels are gamma-encoded RGB values that can be consumed by ordinary palette readers, including a later `-m` invocation. The complete format, detection, compatibility, and reuse workflow is documented in [External Palette Input and Output](external-palettes.md).
+`-M` converts the prepared working palette to sRGB8 independently of `-U`; it does not serialize internal Oklab, CIELAB, DIN99d or linear coordinates. See [External palette input and output](external-palettes.md) for the owning interchange contract and its precision/gamut boundary.
 
 ## Default and option coupling
 

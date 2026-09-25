@@ -458,6 +458,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    files in ACT, PAL, and GPL formats. Use TYPE:PATH (act:, pal:, pal-jasc:, pal-riff:,\n"
         "    gpl:) to force a format. Without TYPE the extension or file contents decide. TYPE:-\n"
         "    reads palette bytes from stdin (for example, gpl:-).\n"
+        "    ACT/PAL/GPL entries are sRGB8, independent of -W and -U.\n"
         "    This option is mutually exclusive with -b, -e, and -I. Repeating\n"
         "    -m is allowed; the last mapfile wins.\n"
     },
@@ -465,8 +466,8 @@ static cli_option_help_t const g_option_help_table[] = {
         'M',
         "mapfile-output",
         "-M FILE, --mapfile-output=FILE\n"
-        "    export the computed palette after the -U output-colorspace\n"
-        "    conversion.\n"
+        "    export the prepared palette as sRGB8, independently of -U.\n"
+        "    Colors outside sRGB are clipped at this file boundary.\n"
         "    TYPE:PATH prefixes or file extensions (.act, .pal, .gpl)\n"
         "    choose the format. .pal defaults to JASC text; use pal-riff: for RIFF output. Writing\n"
         "    to '-' needs TYPE:PATH; TYPE:- sends the palette to stdout.\n"
@@ -1185,7 +1186,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS environment value\n"
         "    P3: effective float precision, linear clustering, gamma/linear\n"
         "    working space, exact lookup, none/fs dither; no binning, merge,\n"
-        "    cover or snap; -m/-M unsupported\n"
+        "    cover or snap; -m unsupported; -M exports sRGB8\n"
     },
     {
         '1',

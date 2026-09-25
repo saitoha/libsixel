@@ -1,6 +1,6 @@
 # Output Color Space
 
-`img2sixel -U` selects the RGB representation of the palette written to a SIXEL stream. The legacy output choices also apply to palette export with `-M`; the limited Display P3 path rejects palette interchange. For normal terminal display and reusable palette files, leave it at its default, `gamma`. Use another output space only when the consumer's interpretation of those numbers is known.
+`img2sixel -U` selects the RGB representation of the palette written to a SIXEL stream. Palette export with `-M` has its own sRGB interchange boundary. For normal terminal display, leave `-U` at its default, `gamma`. Use another output space only when the consumer's interpretation of those numbers is known.
 
 ```text
 -U COLORSPACE
@@ -36,7 +36,7 @@ Loaded image with a known color interpretation
                                             |
                                Optional exact-snap finalization
                                             |
-                         SIXEL color definitions / -M palette file
+                         SIXEL color definitions
 ```
 
 `-X` controls the geometry used to construct a palette. `-W` controls the geometry used to choose a palette index and propagate dither error. In these legacy paths, `-U` converts the resulting palette for output; it does not rerun either operation. Changing only `-U` can therefore change the displayed colors while retaining the index assignments for a static image. The selected P3 and ordinary sRGB float paths instead finalize the sent palette before lookup, as described below.
@@ -83,7 +83,7 @@ Consequently, `-Usmpte-c` can change channel balance as well as tone response. I
 
 ## `display-p3`: selected CPU float path
 
-The selected P3 path supports opaque static RGB input, automatic or explicit float precision, linear clustering, linear or gamma working coordinates, CPU K-means with full-frame sampling and no binning, exact `none` lookup, and either no dithering or CPU Floyd–Steinberg (`-d fs`). Merge, cover and snap are disabled. It emits normal RGB SIXEL. K-means feedback is disabled. Other combinations fail before SIXEL output starts; in particular, `-m` and `-M` cannot read or export unmarked P3 palette values. Other quantizers and dither methods, GPU, high-color, HLS, DRCS, macros, delta encoding, animation and alpha-bearing frames are outside this selected path.
+The selected P3 path supports opaque static RGB input, automatic or explicit float precision, linear clustering, linear or gamma working coordinates, CPU K-means with full-frame sampling and no binning, exact `none` lookup, and either no dithering or CPU Floyd–Steinberg (`-d fs`). Merge, cover and snap are disabled. It emits normal RGB SIXEL. K-means feedback is disabled. Other combinations fail before SIXEL output starts; in particular, `-m` is not yet connected. `-M` exports sRGB8 rather than unmarked P3 values, clipping colors outside sRGB. Other quantizers and dither methods, GPU, high-color, HLS, DRCS, macros, delta encoding, animation and alpha-bearing frames are outside this selected path.
 
 The selected loader integration tests use libpng P3 ICC RGB8/RGB16, an untagged sRGB RGB8 PNG, and a static RGB16 TIFF with orientation 6. They explicitly select builtin CMS, canonical linear output and `prefer_8bit=0`. These tests do not establish wide-gamut support for every loader, source domain, resizing filter or optional backend. The accepted opaque RGB frame storage forms are RGB888, RGBFLOAT32 and LINEARRGBFLOAT32; the selected encoder path converts them to linear float coordinates before palette construction.
 
@@ -175,9 +175,7 @@ For `K` palette entries, this conversion is `O(K)` work and uses `O(K)` palette 
 
 ## Fixed palettes and palette export
 
-For the legacy output choices, `-M` writes the selected output RGB representation into ACT, PAL, RIFF PAL, or GPL entries. In particular, `-Wcielab -Ugamma -M gpl:palette.gpl` converts the working palette back to gamma RGB instead of exporting internal Lab coordinates. `display-p3` rejects both `-m` and `-M` before output because these formats do not preserve its color definition. File format selection and palette reuse are covered by [External palette input and output](external-palettes.md).
-
-These exports do not record a `-U` selection for later automatic recovery. Keep `-Ugamma` for normal interchange. Exporting linear or SMPTE-C values and importing the file later with default settings does not automatically invert the earlier transform.
+`-M` always exports sRGB8 in ACT, JASC PAL, RIFF PAL and GPL. This applies to every `-U` choice, including the selected Display P3 path. It converts the prepared working palette before wire-specific conversion and final rounding. See [External palette input and output](external-palettes.md#exporting-a-palette-with-m) for the interchange contract and its wide-gamut limitation.
 
 The preparation of fixed palettes also matters:
 
@@ -185,10 +183,10 @@ The preparation of fixed palettes also matters:
 | --- | --- |
 | Generated palette | Constructed in `-X` and prepared for `-W`. The selected P3 and ordinary sRGB float paths finalize RGB101 before application; other paths convert to `-U` afterward. |
 | Image mapfile, such as `-m swatches.png` | Loaded as an image and prepared in the selected working representation before output conversion. Loader/CMS settings can affect its colors. |
-| Structured ACT/PAL/GPL input or built-in `-b` palette | Supplied byte entries are installed directly; this path does not perform the same image-loader conversion into `-W`. Output conversion uses the prepared palette and the frame's working-space setting. |
+| Structured ACT/PAL/GPL input or built-in `-b` palette | sRGB8 entries are converted to `-W` once, with float coordinates retained for non-gamma workspaces. They are never interpreted as native working-space bytes. |
 | Monochrome `-e` | Uses a fixed black/white palette and bypasses palette construction. Black and white alone are poor probes of a nonlinear output transfer. |
 
-In particular, the existing `-Wlinear -Ulinear` built-in and PAL-file tests preserve the supplied byte entries, while the PNG-mapfile tests export converted entries. Matching the two option names does not prove that those input routes normalized their palettes in the same way. For an ordinary external RGB palette, `-Wgamma -Ugamma` avoids that ambiguity. Fixed palettes also bypass generated-palette snap processing. These are current preparation boundaries, not a claim that every fixed-palette/non-gamma combination is colorimetrically equivalent to a generated palette.
+Fixed palettes bypass generated-palette snap processing. Structured-file and built-in entries retain their sRGB interpretation under `-Wlinear`; image mapfiles still pass through their separate image-loader and palette-construction route.
 
 ## Reproducible numeric example
 
@@ -206,13 +204,13 @@ JASC-PAL
 PAL
 ```
 
-The exported first entry is `55 13 4`; the black entry stays `0 0 0`. Replacing only `-Ulinear` gives:
+The exported first entry is `128 64 32`; the black entry stays `0 0 0`. Replacing only `-Ulinear` gives:
 
 | Output option | First entry in the exported PAL | First SIXEL RGB definition |
 | --- | --- | --- |
 | `-Ugamma` | `128 64 32` | `#0;2;50;25;13` |
-| `-Ulinear` | `55 13 4` | `#0;2;22;5;2` |
-| `-Usmpte-c` | `130 64 39` | `#0;2;51;25;15` |
+| `-Ulinear` | `128 64 32` | `#0;2;22;5;2` |
+| `-Usmpte-c` | `128 64 32` | `#0;2;51;25;15` |
 
 To inspect the wire definitions, replace `-M pal:- -o /dev/null` with `-o output.six` and inspect that file. The table describes the byte-palette path with snap bypassed; it is not an expected-value table for arbitrary generated or float32 palettes. Its purpose is to show separately the RGB conversion, 8-bit export, and percentage serialization boundaries.
 
@@ -233,11 +231,11 @@ Likewise, `-U` does not configure decoder interpretation, embed an output ICC pr
 | ID | Covered observation | Owning test |
 | --- | --- | --- |
 | OC-01 | A generated two-entry CIELAB byte palette exports independently derived gamma RGB8 values through `-M gpl:-`; solver entry order is not fixed. | [tests/quant/palette/usage/0197_mapfile_output_converts_cielab_to_gamma.t](../../tests/quant/palette/usage/0197_mapfile_output_converts_cielab_to_gamma.t) |
-| OC-02 | A built-in palette preserves its supplied bytes under the current `-Wlinear -Ulinear` preparation/export path. | [tests/quant/palette/usage/0143_builtin_palette_working_output_colorspace_stable.t](../../tests/quant/palette/usage/0143_builtin_palette_working_output_colorspace_stable.t) |
-| OC-03 | A structured PAL palette preserves its supplied bytes under the current `-Wlinear -Ulinear` preparation/export path. | [tests/quant/palette/usage/0144_mapfile_pal_working_output_colorspace_stable.t](../../tests/quant/palette/usage/0144_mapfile_pal_working_output_colorspace_stable.t) |
+| OC-02 | A built-in palette preserves its supplied bytes after sRGB-to-linear working conversion and sRGB export, even with `-Ulinear`. | [tests/quant/palette/usage/0143_builtin_palette_working_output_colorspace_stable.t](../../tests/quant/palette/usage/0143_builtin_palette_working_output_colorspace_stable.t) |
+| OC-03 | A structured PAL palette preserves its supplied bytes after sRGB-to-linear working conversion and sRGB export, even with `-Ulinear`. | [tests/quant/palette/usage/0144_mapfile_pal_working_output_colorspace_stable.t](../../tests/quant/palette/usage/0144_mapfile_pal_working_output_colorspace_stable.t) |
 | OC-04 | A PNG image mapfile exports the exact expected converted palette under `-Wlinear -Ulinear` with CMS disabled. | [tests/quant/palette/usage/0145_mapfile_png_working_output_colorspace_deterministic.t](../../tests/quant/palette/usage/0145_mapfile_png_working_output_colorspace_deterministic.t) |
 | OC-05 | The corresponding PNG image-mapfile path remains deterministic when ICC metadata is present but CMS is explicitly disabled. | [tests/quant/palette/usage/0156_mapfile_png_icc_working_output_colorspace_deterministic.t](../../tests/quant/palette/usage/0156_mapfile_png_icc_working_output_colorspace_deterministic.t) |
-| OC-06 | Exact snap after SMPTE-C output conversion gives matching reversible ACT channels and SIXEL RGB definitions. | [tests/quant/palette/0047_snap_smptec_grid.t](../../tests/quant/palette/0047_snap_smptec_grid.t) |
+| OC-06 | Exact snap and SMPTE-C output conversion produce independently expected wire values. | [tests/quant/palette/0047_snap_smptec_grid.t](../../tests/quant/palette/0047_snap_smptec_grid.t) |
 | OC-07 | P3 ICC RGB8 PNG produces independently derived P3 RGB101 values through the actual libpng/builtin CMS path. | [tests/cli/color/0005_libpng_p3_8_wire.t](../../tests/cli/color/0005_libpng_p3_8_wire.t) |
 | OC-08 | The corresponding RGB16 PNG retains its original sample precision through P3 RGB101 output. | [tests/cli/color/0006_libpng_p3_16_wire.t](../../tests/cli/color/0006_libpng_p3_16_wire.t) |
 | OC-09 | Untagged sRGB PNG colors are converted to P3 rather than reinterpreted as P3 values. | [tests/cli/color/0007_libpng_srgb_to_p3_wire.t](../../tests/cli/color/0007_libpng_srgb_to_p3_wire.t) |
@@ -247,7 +245,7 @@ Likewise, `-U` does not configure decoder interpretation, embed an output ICC pr
 | OC-13 | A float solver allocation failure cannot succeed through a byte retry; ordinary generation and later P3 generation recover without a leaked opt-in or stale wire palette. | [tests/quant/palette/0053_p3_palette_failure_reset.t](../../tests/quant/palette/0053_p3_palette_failure_reset.t) |
 | OC-14 | One encoder and output object can encode P3, gamma and P3 again with the correct restored interpretation. | [tests/quant/palette/0054_p3_encoder_reuse.t](../../tests/quant/palette/0054_p3_encoder_reuse.t) |
 | OC-15 | P3 mapfile input is rejected before the writer starts. | [tests/quant/palette/0055_p3_mapfile_rejected.t](../../tests/quant/palette/0055_p3_mapfile_rejected.t) |
-| OC-16 | P3 palette export is rejected before the writer starts. | [tests/quant/palette/0056_p3_palette_export_rejected.t](../../tests/quant/palette/0056_p3_palette_export_rejected.t) |
+| OC-16 | P3 palette export retains the prepared sRGB values before destination rounding. | [tests/quant/palette/0056_p3_palette_export_srgb.t](../../tests/quant/palette/0056_p3_palette_export_srgb.t) |
 | OC-17 | Unsupported Atkinson dithering is rejected before the P3 writer starts. | [tests/quant/palette/0057_p3_unsupported_diffusion_rejected.t](../../tests/quant/palette/0057_p3_unsupported_diffusion_rejected.t) |
 | OC-18 | Gamma working coordinates retain the extended canonical P3 red through its final (100,0,0) wire value. | [tests/quant/palette/0058_p3_gamma_working.t](../../tests/quant/palette/0058_p3_gamma_working.t) |
 | OC-19 | Automatic P3 precision promotes gamma working coordinates to float without changing the base request. | [tests/quant/palette/0059_p3_precision_auto.t](../../tests/quant/palette/0059_p3_precision_auto.t) |
@@ -293,6 +291,8 @@ Likewise, `-U` does not configure decoder interpretation, embed an output ICC pr
 | OC-59 | Extended source values survive clustering and gamma working conversion before sRGB output. | [tests/quant/palette/0067_srgb_gamma_extended_source.t](../../tests/quant/palette/0067_srgb_gamma_extended_source.t) |
 | OC-60 | Extended source values survive clustering and linear working conversion before sRGB output. | [tests/quant/palette/0068_srgb_linear_extended_source.t](../../tests/quant/palette/0068_srgb_linear_extended_source.t) |
 | OC-61 | Byte-eligible sRGB input retains legacy palette construction under matching algorithm options. | [tests/cli/color/0013_srgb_byte_eligibility.t](../../tests/cli/color/0013_srgb_byte_eligibility.t) |
+| OC-62 | Selecting linear output leaves sRGB8 palette export unchanged. | [tests/quant/mapfile/0124_mapfile_export_linear_output_srgb.t](../../tests/quant/mapfile/0124_mapfile_export_linear_output_srgb.t) |
+| OC-63 | Gamma output exports the prepared palette before RGB101 rounding. | [tests/quant/mapfile/0125_mapfile_export_before_srgb_rgb101.t](../../tests/quant/mapfile/0125_mapfile_export_before_srgb_rgb101.t) |
 
 ### Defensive and malformed-input tests
 

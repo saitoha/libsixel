@@ -39,6 +39,18 @@ The decoder selects the writer representation as follows:
 
 High-color SIXEL is a boundary of the indexed snapshot contract. High-color output can redefine a color register after earlier pixels have used it, so no single indexed plane plus final palette can preserve every painted color. The current `img2sixel` PNG snapshot invokes the decoder's default indexed path and must not be treated as an exact high-color reference. Use direct decoder output when validating a register-redefining SIXEL stream. Animation also passes through the decoder's existing output behavior; this document does not define the PNG target as an APNG writer.
 
+## Proposed decoded-input interpretation option
+
+This section specifies a proposed interface; `sixel2png` does not implement it yet. Existing writer entry points and the current untagged PNG behavior below remain unchanged until the color-aware writer is connected.
+
+The proposed spelling is `-T SPACE`, `--input-colorspace=SPACE`, with environment default `SIXEL_DECODER_INPUT_COLORSPACE`. The initial named values are `srgb` (default) and `display-p3`. CLI values override environment defaults and the last repeated option wins. The name denotes the interpretation of decoded SIXEL RGB numbers, not a target conversion. There is no `auto`: a saved SIXEL stream carries no authoritative color definition, and querying the receiving terminal cannot recover the source interpretation.
+
+The proposed save policy retains decoded RGB values and records that interpretation in the PNG. An sRGB selection writes sRGB metadata; a Display P3 selection writes the corresponding RGB ICC profile. The same definition applies to indexed `PLTE` entries and direct RGB/RGBA samples. Alpha and the decoder's paint mask remain coverage information. `-D` changes how register redefinitions are rendered, not the selected color interpretation. Saving to sRGB after conversion would be a separate output request, not a hidden effect of `-T`.
+
+Raw decoding APIs continue to return numeric pixel values without implicit color conversion or profile assignment. The file-output frontend supplies a color definition to a common color-aware writer interface; the existing writer API remains compatible. ICC parsing, profile generation and validation belong to shared library facilities, not a converter-private CMS. Future ICC and simple RGB specifications must reuse that same definition model.
+
+The first P3 implementation should support unchanged decoding, including `-D`, before enabling resizing or dequantization. Each color-dependent postprocessing path must consume the selected definition or reject the unsupported combination before output. Relabeling an sRGB-assuming reconstruction as P3 is not a valid implementation. Verification must independently cover numeric pixels/PLTE, profile primaries and transfer behavior, alpha, option precedence, both PNG backends and unchanged raw decode behavior.
+
 ## Pixel input normalization
 
 The writer normalizes its public input before selecting a PNG color type.

@@ -351,21 +351,16 @@ def measure_quality_point(
             f"Command failed ({proc.returncode}): "
             f"{shlex.join(command)}\n{diagnostic}"
         )
-    snap = next(token.split("=", 1)[1] for token in command
-                if token.startswith("--snap-policy="))
-    tuning = dict(part.split("=", 1) for part in snap.split(":")[1:])
-    if snap.split(":")[0] != "none" and float(tuning.get("rate", "1")) == 1:
-        # Check the output boundary, including the typed palette used on wire.
-        data = palette_path.read_bytes()
-        count = int.from_bytes(data[768:770], "big") or 256
-        definitions = re.findall(rb"#(\d+);2;(\d+);(\d+);(\d+)", proc.stdout)
-        if len(definitions) != count:
-            raise ValueError("Exact snap lacks a complete output palette")
-        for definition in definitions:
-            index, *channels = map(int, definition)
-            decoded = bytes((255 * value + 50) // 100 for value in channels)
-            if index >= count or decoded != data[index * 3:index * 3 + 3]:
-                raise ValueError("Exact snap ACT and SIXEL palettes disagree")
+    # ACT now records the prepared sRGB palette before wire finalization.
+    # It is deliberately not a copy of the RGB101 palette. Keep the metric
+    # on that interchange boundary and validate wire syntax independently.
+    definitions = re.findall(rb"#(\d+);2;(\d+);(\d+);(\d+)", proc.stdout)
+    if not definitions:
+        raise ValueError("Encoded stream lacks an RGB palette")
+    for definition in definitions:
+        index, *channels = map(int, definition)
+        if index >= 256 or any(value > 100 for value in channels):
+            raise ValueError("Invalid SIXEL RGB palette definition")
     metrics, assessment = assess_stream(
         proc.stdout,
         lsqa,
@@ -1524,7 +1519,7 @@ def write_metadata(
             }
         )
     payload = {
-        "schema_version": 2,
+        "schema_version": 3,
         "generated_at_utc": datetime.datetime.now(
             datetime.timezone.utc
         ).isoformat(),
@@ -1584,7 +1579,7 @@ def write_metadata(
             "sixel_environment_removed": True,
             "size_measurement": "quality-pass SIXEL stdout byte length",
             "fixed_point_measurement": (
-                "ACT palette channels changed by one SIXEL percentage "
+                "Pre-wire sRGB8 ACT palette channels changed by one SIXEL percentage "
                 "encode/decode round trip"
             ),
             "timing_measurement": (
@@ -1738,7 +1733,7 @@ def main() -> int:
         "unsafe_channel_fraction",
         "Snap policy palette fixed-point failures",
         "Unsafe exported palette channels (%)",
-        "ACT export inspected before SIXEL percentage conversion; zero is reversible",
+        "Pre-wire sRGB8 export; final wire snap is excluded",
     )
     plot_small_multiples(
         output_dir / "snap-policy-size.png",

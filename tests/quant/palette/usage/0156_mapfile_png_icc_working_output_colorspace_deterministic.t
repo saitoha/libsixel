@@ -12,21 +12,23 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-# Preserve the unmanaged fixture values; CMS defaults are tested separately.
+# CMS is disabled. The existing quantizer produces byte-linear entries
+# (90,2,2), (2,110,2), etc. Apply the sRGB transfer curve and round to
+# RGB8 for export, independently of -Ulinear; e.g. 90/255 -> 160/255.
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 mapfile_png="${TOP_SRCDIR}/tests/data/inputs/formats/map8_embedded_icc.png"
 expected_palette='JASC-PAL
 0100
 8
-90 2 2
-2 110 2
-78 90 2
-54 38 242
-134 2 118
-2 106 126
-134 134 134
-2 2 2'
+160 22 22
+22 175 22
+150 160 22
+127 108 249
+192 22 181
+22 173 187
+192 192 192
+22 22 22'
 
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none \

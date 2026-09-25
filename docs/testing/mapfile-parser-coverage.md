@@ -135,6 +135,10 @@ The observation text below mirrors each test's opening comment. The test itself 
 | [tests/quant/mapfile/0121_mapfile_image_pnm_source_exact.t](../../tests/quant/mapfile/0121_mapfile_image_pnm_source_exact.t) | Verify a PNM image can construct a deterministic mapfile palette. | Behavioral contract |
 | [tests/quant/mapfile/0122_mapfile_image_animated_gif_uses_first_frame.t](../../tests/quant/mapfile/0122_mapfile_image_animated_gif_uses_first_frame.t) | Verify an animated GIF mapfile uses one static first-frame palette source. | Behavioral contract |
 
+| [tests/quant/mapfile/0123_mapfile_linear_working_pixels.t](../../tests/quant/mapfile/0123_mapfile_linear_working_pixels.t) | Verify sRGB entries select and emit the expected pixel in a linear workspace. | Behavioral contract |
+| [tests/quant/mapfile/0124_mapfile_export_linear_output_srgb.t](../../tests/quant/mapfile/0124_mapfile_export_linear_output_srgb.t) | Verify linear wire output does not change sRGB export values. | Behavioral contract |
+| [tests/quant/mapfile/0125_mapfile_export_before_srgb_rgb101.t](../../tests/quant/mapfile/0125_mapfile_export_before_srgb_rgb101.t) | Verify sRGB export precedes RGB101 destination rounding. | Behavioral contract |
+
 <!-- test-plan-end -->
 
 ## Maintenance

@@ -84,9 +84,6 @@ test_palette_0054_p3_encoder(int argc, char **argv)
         if (strcmp(argv[1], "mapfile") == 0) {
             flag = 'm';
             value = "pal:-";
-        } else if (strcmp(argv[1], "export") == 0) {
-            flag = 'M';
-            value = "pal:-";
         } else if (strcmp(argv[1], "diffusion") == 0) {
             flag = 'd';
             value = "atkinson";

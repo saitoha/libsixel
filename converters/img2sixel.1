@@ -411,12 +411,13 @@ and GIMP Palette (*.gpl) formats. Use TYPE:PATH prefixes (act:, pal:,
 pal\-jasc:, pal\-riff:, gpl:) to force a format. Without TYPE the
 extension or file contents decide the palette type. Using TYPE:- reads
 palette bytes from standard input (for example, gpl:-).
+ACT/PAL/GPL entries are sRGB8 regardless of \fB-W\fP and \fB-U\fP.
 This option is mutually exclusive with \fB-b\fP, \fB-e\fP, and
 \fB-I\fP. Repeating \fB-m\fP is allowed; the last mapfile wins.
 .TP 5
 .B \-M \fIFILE\fP, \-\-mapfile\-output=\fIFILE\fP
-export the computed palette after the \fB-U\fP output-colorspace
-conversion. TYPE:PATH prefixes or file extensions (.act, .pal, .gpl)
+export the prepared palette as sRGB8, independently of \fB-U\fP.
+Colors outside sRGB are clipped at this file boundary. TYPE:PATH prefixes or file extensions (.act, .pal, .gpl)
 select the output format. The .pal extension defaults to JASC text output;
 use pal\-riff: for the RIFF layout. Writing to '-' requires TYPE:PATH;
 TYPE:- directs the palette to standard output.
@@ -1351,8 +1352,8 @@ Display P3 requires effective float precision, gamma or linear working
 coordinates, linear clustering, K-means, exact lookup, full-frame sampling,
 none or FS dithering, no binning, merge, cover or snap, and RGB SIXEL output.
 The P3 float requirement overrides an explicit byte preference.
-Palette input or export with
-\fB-m\fP or \fB-M\fP are unsupported with Display P3.
+Palette input with \fB-m\fP is not yet supported with Display P3.
+Palette export with \fB-M\fP remains sRGB8, with out-of-gamut clipping.
 .TP 5
 .B \-K \fIauto[:KEY=PATH]\fP, \-\-completion\-policy=\fIauto[:KEY=PATH]\fP
 select completion source and install paths.

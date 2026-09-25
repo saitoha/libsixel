@@ -1,7 +1,7 @@
 #!/bin/sh
 # Policy: docs/functionality/snap-policy.md
 # Policy: docs/functionality/output-colorspace.md
-# Verify generated exact snap agrees at ACT and SIXEL output boundaries.
+# Verify exact snap and output conversion produce SMPTE-C wire values.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -11,23 +11,27 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
-
+# sRGB (128,64,32) -> linear -> SMPTE-C primaries -> gamma 2.2.
+# The independently rounded RGB101 result is (51,25,15).
 stream=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
     --precision=float32 --quality=full --sampling-policy=full-frame \
     --binning-policy=hard --quantize-model=kmeans:seed=1:binbits=6 \
     --merge-policy=none --cover-policy=off --lookup-policy=none \
-    --gpu-policy=off --diffusion=none --palette-type=rgb -p8 \
+    --gpu-policy=off --diffusion=none --palette-type=rgb -p2 \
     -Xlinear -Woklab -Usmpte-c --snap-policy=nearest:rate=1 \
-    -M "act:${ARTIFACT_LOCAL_DIR}/palette.act" \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_16.png") || {
+    -Lbuiltin! --cms-engine=none - <<'PPM'
+P3
+1 1
+255
+128 64 32
+PPM
+) || {
     echo "not ok 1 - snap encoding failed"
     exit 0
 }
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" palette/0045_snap_output_grid \
-    "${ARTIFACT_LOCAL_DIR}/palette.act" "${stream}" || {
-    echo "not ok 1 - ACT fixed points differ from SIXEL output"
-    exit 0
-}
-echo "ok 1 - exact snap preserves output fixed points"
+case "${stream}" in
+    *'#0;2;51;25;15#0@'*) ;;
+    *) echo "not ok 1 - SMPTE-C wire values differ"; exit 0 ;;
+esac
+echo "ok 1 - exact snap uses the SMPTE-C wire grid"
 exit 0

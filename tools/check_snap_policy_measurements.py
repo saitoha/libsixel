@@ -69,7 +69,7 @@ def read_metadata(path: Path, mode: str) -> Dict[str, object]:
         fail(f"missing measurement metadata: {path}")
     with path.open("r", encoding="utf-8") as handle:
         metadata = json.load(handle)
-    if not isinstance(metadata, dict) or metadata.get("schema_version") != 2:
+    if not isinstance(metadata, dict) or metadata.get("schema_version") not in (2, 3):
         fail("unsupported snap measurement metadata schema")
     if metadata.get("measurement_mode") != mode:
         fail("snap measurement mode differs from checker mode")
@@ -276,8 +276,9 @@ def require_snap_state(
         row: Dict[str, str],
         context: str,
         enabled: bool,
+        wire_export: bool = True,
 ) -> None:
-    """Validate enabled syntax and exact-rate fixed-point behavior."""
+    """Validate policy syntax and historical wire-export fixed points."""
     tokens = shlex.split(row["command"])
     snap_tokens = [token for token in tokens if token.startswith("--snap-policy=")]
     if len(snap_tokens) != 1:
@@ -290,7 +291,7 @@ def require_snap_state(
         fail(f"enabled row records none in {context}")
     if not enabled and row["policy"] != "none":
         fail(f"disabled row does not record none in {context}")
-    if (enabled
+    if (enabled and wire_export
             and "unsafe_channels" in row
             and math.isclose(float(row["rate"]), 1.0)):
         if int(row["unsafe_channels"]) != 0:
@@ -335,7 +336,8 @@ def validate_main(
             fail(f"main provenance differs in {context}")
         require_common_values(row, context)
         require_command(row, context, False)
-        require_snap_state(row, context, row["enabled"] == "True")
+        require_snap_state(row, context, row["enabled"] == "True",
+                           metadata["schema_version"] == 2)
     if len(seen) != expected_count:
         fail(f"{table_name} snap table is incomplete")
     return rows
@@ -397,7 +399,8 @@ def validate_speed(
                 rel_tol=1e-12, abs_tol=1e-12):
             fail(f"snap-off timing ratio is not one in {context}")
         require_command(row, context, True)
-        require_snap_state(row, context, row["enabled"] == "True")
+        require_snap_state(row, context, row["enabled"] == "True",
+                           metadata["schema_version"] == 2)
     if len(seen) != expected_count:
         fail(f"snap {table_name} table is incomplete")
     return rows
@@ -465,7 +468,8 @@ def validate_controls(
             fail(f"unexpected snap control sweep in {context}")
         require_common_values(row, context)
         require_command(row, context, False)
-        require_snap_state(row, context, enabled)
+        require_snap_state(row, context, enabled,
+                           metadata["schema_version"] == 2)
     return rows
 
 
