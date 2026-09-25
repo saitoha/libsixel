@@ -83,7 +83,7 @@ Consequently, `-Usmpte-c` can change channel balance as well as tone response. I
 
 ## `display-p3`: selected CPU float path
 
-The selected P3 path supports opaque static RGB input, automatic or explicit float precision, linear clustering, linear or gamma working coordinates, CPU K-means with full-frame sampling and no binning, exact `none` lookup, and either no dithering or CPU Floyd–Steinberg (`-d fs`). Merge, cover and snap are disabled. It emits normal RGB SIXEL. K-means feedback is disabled. Other combinations fail before SIXEL output starts; in particular, `-m` is not yet connected. `-M` exports sRGB8 rather than unmarked P3 values, clipping colors outside sRGB. Other quantizers and dither methods, GPU, high-color, HLS, DRCS, macros, delta encoding, animation and alpha-bearing frames are outside this selected path.
+The selected P3 path supports opaque static RGB input, automatic or explicit float precision, linear clustering, linear or gamma working coordinates, CPU K-means with full-frame sampling and no binning, exact `none` lookup, and either no dithering or CPU Floyd–Steinberg (`-d fs`). Merge, cover and snap are disabled. It emits normal RGB SIXEL. K-means feedback is disabled. The same selected path accepts fixed palettes through `-m`; their interpretation and image-map construction are specified in [External palette input and output](external-palettes.md#display-p3-output). Other combinations fail before SIXEL output starts. `-M` exports sRGB8 rather than unmarked P3 values, clipping colors outside sRGB. Other quantizers and dither methods, GPU, high-color, HLS, DRCS, macros, delta encoding, animation and alpha-bearing frames are outside this selected path.
 
 The selected loader integration tests use libpng P3 ICC RGB8/RGB16, an untagged sRGB RGB8 PNG, and a static RGB16 TIFF with orientation 6. They explicitly select builtin CMS, canonical linear output and `prefer_8bit=0`. These tests do not establish wide-gamut support for every loader, source domain, resizing filter or optional backend. The accepted opaque RGB frame storage forms are RGB888, RGBFLOAT32 and LINEARRGBFLOAT32; the selected encoder path converts them to linear float coordinates before palette construction.
 
@@ -244,7 +244,7 @@ Likewise, `-U` does not configure decoder interpretation, embed an output ICC pr
 | OC-12 | Exact lookup selects the inverse of the sent RGB101 palette, including a decision that changes after output quantization. | [tests/quant/palette/0052_p3_sent_palette_lookup.t](../../tests/quant/palette/0052_p3_sent_palette_lookup.t) |
 | OC-13 | A float solver allocation failure cannot succeed through a byte retry; ordinary generation and later P3 generation recover without a leaked opt-in or stale wire palette. | [tests/quant/palette/0053_p3_palette_failure_reset.t](../../tests/quant/palette/0053_p3_palette_failure_reset.t) |
 | OC-14 | One encoder and output object can encode P3, gamma and P3 again with the correct restored interpretation. | [tests/quant/palette/0054_p3_encoder_reuse.t](../../tests/quant/palette/0054_p3_encoder_reuse.t) |
-| OC-15 | P3 mapfile input is rejected before the writer starts. | [tests/quant/palette/0055_p3_mapfile_rejected.t](../../tests/quant/palette/0055_p3_mapfile_rejected.t) |
+| OC-15 | A structured sRGB palette retains all entries and uses inverse-projected P3 RGB101 colors for linear nearest-color lookup. | [tests/quant/palette/0055_p3_mapfile_linear.t](../../tests/quant/palette/0055_p3_mapfile_linear.t) |
 | OC-16 | P3 palette export retains the prepared sRGB values before destination rounding. | [tests/quant/palette/0056_p3_palette_export_srgb.t](../../tests/quant/palette/0056_p3_palette_export_srgb.t) |
 | OC-17 | Unsupported Atkinson dithering is rejected before the P3 writer starts. | [tests/quant/palette/0057_p3_unsupported_diffusion_rejected.t](../../tests/quant/palette/0057_p3_unsupported_diffusion_rejected.t) |
 | OC-18 | Gamma working coordinates retain the extended canonical P3 red through its final (100,0,0) wire value. | [tests/quant/palette/0058_p3_gamma_working.t](../../tests/quant/palette/0058_p3_gamma_working.t) |
@@ -293,6 +293,16 @@ Likewise, `-U` does not configure decoder interpretation, embed an output ICC pr
 | OC-61 | Byte-eligible sRGB input retains legacy palette construction under matching algorithm options. | [tests/cli/color/0013_srgb_byte_eligibility.t](../../tests/cli/color/0013_srgb_byte_eligibility.t) |
 | OC-62 | Selecting linear output leaves sRGB8 palette export unchanged. | [tests/quant/mapfile/0124_mapfile_export_linear_output_srgb.t](../../tests/quant/mapfile/0124_mapfile_export_linear_output_srgb.t) |
 | OC-63 | Gamma output exports the prepared palette before RGB101 rounding. | [tests/quant/mapfile/0125_mapfile_export_before_srgb_rgb101.t](../../tests/quant/mapfile/0125_mapfile_export_before_srgb_rgb101.t) |
+| OC-64 | Gamma fixed-palette lookup uses transmitted P3 colors. | [tests/quant/palette/0069_p3_mapfile_gamma.t](../../tests/quant/palette/0069_p3_mapfile_gamma.t) |
+| OC-65 | Linear FS uses the transmitted fixed palette for nonzero error feedback. | [tests/quant/palette/0070_p3_mapfile_fs_linear.t](../../tests/quant/palette/0070_p3_mapfile_fs_linear.t) |
+| OC-66 | Gamma FS uses the transmitted fixed palette for nonzero error feedback. | [tests/quant/palette/0071_p3_mapfile_fs_gamma.t](../../tests/quant/palette/0071_p3_mapfile_fs_gamma.t) |
+| OC-67 | ACT entries retain their sRGB meaning through P3 output. | [tests/quant/palette/0072_p3_mapfile_act.t](../../tests/quant/palette/0072_p3_mapfile_act.t) |
+| OC-68 | RIFF PAL entries retain their sRGB meaning through P3 output. | [tests/quant/palette/0073_p3_mapfile_riff.t](../../tests/quant/palette/0073_p3_mapfile_riff.t) |
+| OC-69 | GPL entries retain their sRGB meaning through P3 output. | [tests/quant/palette/0074_p3_mapfile_gpl.t](../../tests/quant/palette/0074_p3_mapfile_gpl.t) |
+| OC-70 | Reusing an encoder across P3/sRGB/P3 does not reuse a projected fixed palette. | [tests/quant/palette/0075_p3_mapfile_reuse.t](../../tests/quant/palette/0075_p3_mapfile_reuse.t) |
+| OC-71 | An ICC-tagged P3 image map preserves out-of-sRGB colors in a linear workspace. | [tests/quant/palette/0076_p3_mapfile_image_linear.t](../../tests/quant/palette/0076_p3_mapfile_image_linear.t) |
+| OC-72 | An ICC-tagged P3 image map preserves out-of-sRGB colors in a gamma workspace. | [tests/quant/palette/0077_p3_mapfile_image_gamma.t](../../tests/quant/palette/0077_p3_mapfile_image_gamma.t) |
+| OC-73 | P3 fixed-palette export preserves original sRGB values, order, duplicates and unused entries before wire rounding. | [tests/quant/palette/0078_p3_mapfile_export_srgb.t](../../tests/quant/palette/0078_p3_mapfile_export_srgb.t) |
 
 ### Defensive and malformed-input tests
 

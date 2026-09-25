@@ -461,6 +461,7 @@ int test_srgb_0067(int argc, char **argv);
 int test_srgb_0068(int argc, char **argv);
 int test_palette_0051_p3_contract(int argc, char **argv);
 int test_palette_0054_p3_encoder(int argc, char **argv);
+int test_palette_0055_p3_mapfile(int argc, char **argv);
 int test_palette_0059_p3_precision(int argc, char **argv);
 int test_palette_0062_p3_fs_error(int argc, char **argv);
 int test_security_0001_issue222_encoder_encode_bytes_packed_g1(int argc,
@@ -2596,6 +2597,7 @@ static test_entry_t const test_entries[] = {
     { "palette/0068_srgb_linear_extended_source", test_srgb_0068 },
     { "palette/0051_p3_palette_contract", test_palette_0051_p3_contract },
     { "palette/0054_p3_encoder_contract", test_palette_0054_p3_encoder },
+    { "palette/0055_p3_mapfile", test_palette_0055_p3_mapfile },
     { "palette/0059_p3_precision_contract", test_palette_0059_p3_precision },
     { "palette/0062_p3_fs_error_contract", test_palette_0062_p3_fs_error },
     { "loader/0008_loader_coregraphics_pixelformat",

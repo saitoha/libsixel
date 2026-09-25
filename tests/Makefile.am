@@ -580,6 +580,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0040_CLI_COLOR_JOB \
     -DBUILD_TEST_0051_P3_PALETTE_CONTRACT \
     -DBUILD_TEST_0054_P3_ENCODER_CONTRACT \
+    -DBUILD_TEST_0055_P3_MAPFILE_CONTRACT \
     -DBUILD_TEST_0059_P3_PRECISION_CONTRACT \
     -DBUILD_TEST_0062_P3_FS_ERROR_CONTRACT \
     -DBUILD_TEST_0050_LOADER_OSC11_COLORSPEC_PARSER \
@@ -3616,6 +3617,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0048_snap_partial_once.c \
     quant/palette/0051_p3_palette_contract.c \
     quant/palette/0054_p3_encoder_contract.c \
+    quant/palette/0055_p3_mapfile_contract.c \
     quant/palette/0059_p3_precision_contract.c \
     quant/palette/0062_p3_fs_error_contract.c \
     quant/palette/0065_srgb_gamma_wire_lookup.c \

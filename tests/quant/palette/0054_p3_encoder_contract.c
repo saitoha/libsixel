@@ -68,11 +68,6 @@ test_palette_0054_p3_encoder(int argc, char **argv)
         goto end;
     }
     for (index = 0; index < sizeof(options) / sizeof(options[0]); ++index) {
-        /* The ordinary mapfile parser already rejects explicit cover flags.
-         * Isolate the P3 interchange guard from that unrelated early check. */
-        if (strcmp(argv[1], "mapfile") == 0 && options[index].flag == 'a') {
-            continue;
-        }
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, options[index].flag,
                 options[index].value))) {
             goto end;
@@ -81,10 +76,7 @@ test_palette_0054_p3_encoder(int argc, char **argv)
     if (strcmp(argv[1], "reuse") != 0) {
         flag = 0;
         value = NULL;
-        if (strcmp(argv[1], "mapfile") == 0) {
-            flag = 'm';
-            value = "pal:-";
-        } else if (strcmp(argv[1], "diffusion") == 0) {
+        if (strcmp(argv[1], "diffusion") == 0) {
             flag = 'd';
             value = "atkinson";
         } else if (strcmp(argv[1], "working") == 0) {

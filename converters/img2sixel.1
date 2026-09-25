@@ -1352,7 +1352,11 @@ Display P3 requires effective float precision, gamma or linear working
 coordinates, linear clustering, K-means, exact lookup, full-frame sampling,
 none or FS dithering, no binning, merge, cover or snap, and RGB SIXEL output.
 The P3 float requirement overrides an explicit byte preference.
-Palette input with \fB-m\fP is not yet supported with Display P3.
+Palette input with \fB-m\fP is supported on this same selected path.
+Structured palette files remain sRGB; their converted P3 RGB101 values
+also determine lookup and diffusion. Image mapfiles retain loader/CMS
+color information through float palette construction. Omit explicit
+\fB-a\fP with fixed palettes; they bypass cover.
 Palette export with \fB-M\fP remains sRGB8, with out-of-gamut clipping.
 .TP 5
 .B \-K \fIauto[:KEY=PATH]\fP, \-\-completion\-policy=\fIauto[:KEY=PATH]\fP

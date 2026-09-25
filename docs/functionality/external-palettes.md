@@ -77,6 +77,21 @@ generate-palette | img2sixel -m gpl:- -o output.six input.png
 
 Repeating `-m` is allowed and the last mapfile wins. `-m` is mutually exclusive with `-b`, `-e`, and `-I` because each selects a different palette or output mode.
 
+## Display P3 output
+
+The [selected CPU float Display P3 path](output-colorspace.md) accepts `-m`. ACT, JASC PAL, RIFF PAL and GPL retain their sRGB interpretation. The encoder converts their colors to P3, rounds to the actual SIXEL RGB101 values, and projects those values back to the working coordinates used by lookup and error diffusion. Palette order, duplicates and unused entries are retained. The gamma workspace also keeps a float palette for this projection; ordinary byte-eligible sRGB jobs keep their existing fast path.
+
+Existing image mapfiles keep their image-to-palette meaning. In the P3 path, a map image goes through its selected loader/CMS and the same extended float K-means builder used for generated palettes. Its colors remain unrounded until the fixed-palette output boundary, so CMS-retained values outside sRGB survive both gamma and linear working coordinates. This does not introduce an ordered PNG palette format or a PNG `-M` writer.
+
+The other selected-path restrictions still apply, including exact lookup, none/FS diffusion and opaque static RGB source images. Explicit cover-policy options conflict with fixed palettes, so omit `-a` (including `-aoff`); fixed palettes bypass cover. For example:
+
+```sh
+img2sixel --threads=1 --gpu-policy=off --precision=auto \
+  -Qkmeans:seed=1 -Xlinear -Wlinear -Fnone -_none '-~none' \
+  --sampling-policy=full-frame --binning-policy=none \
+  -d fs -t rgb -U display-p3 -m colors.pal input.png
+```
+
 ## Exporting a palette with `-M`
 
 The basic form is:
@@ -89,7 +104,7 @@ ACT, JASC PAL, RIFF PAL and GPL entries are always interpreted as sRGB8. Import 
 
 `-M` converts the prepared working palette to sRGB8, independently of the [`-U` wire output definition](output-colorspace.md). In the selected RGB101 paths it saves that palette before destination projection and rounding; other paths export the retained working palette after palette application. The final wire snap is not applied to the export. Export therefore need not equal the colors sent to SIXEL, and does not promise reversible RGB101 entries. Palette-construction policies still affect which colors are prepared.
 
-The selected Display P3 path supports `-M` with these legacy formats, but sRGB8 export necessarily clips colors outside sRGB and rounds to eight bits. It cannot preserve a wide-gamut palette. `-m` remains unsupported in that P3 path pending connection of fixed-palette lookup. A self-contained color-bearing palette representation is still required for lossless interpretation of wider gamuts; an external override does not change the meaning of these legacy formats.
+The selected Display P3 path supports `-M` with these legacy formats, but sRGB8 export necessarily clips colors outside sRGB and rounds to eight bits. It cannot preserve a wide-gamut palette. A self-contained color-bearing palette representation is still required for lossless interpretation of wider gamuts; an external override does not change the meaning of these legacy formats.
 
 The output format is selected by a prefix or by `.act`, `.pal`, or `.gpl`. A plain `.pal` output name means JASC text; use `pal-riff:PATH` for RIFF PAL. Prefix matching is case-insensitive, and an explicit prefix takes precedence over a mismatched filename extension. An empty value, a prefix without a path, an unknown extension without a prefix, and a file that cannot be opened are errors. Standard output requires a type prefix, and the SIXEL stream must be directed elsewhere if both would otherwise use standard output:
 
@@ -299,6 +314,17 @@ The table contains tests that directly own user-visible contracts stated by this
 | EP-37 | Linear wire output leaves the prepared sRGB8 export unchanged. | [tests/quant/mapfile/0124_mapfile_export_linear_output_srgb.t](../../tests/quant/mapfile/0124_mapfile_export_linear_output_srgb.t) |
 | EP-38 | sRGB and Display P3 RGB101 paths export source colors before destination rounding. | [tests/quant/mapfile/0125_mapfile_export_before_srgb_rgb101.t](../../tests/quant/mapfile/0125_mapfile_export_before_srgb_rgb101.t), [tests/quant/palette/0056_p3_palette_export_srgb.t](../../tests/quant/palette/0056_p3_palette_export_srgb.t) |
 | EP-39 | A snapped working palette has the same export with gamma and linear wire output. | [tests/quant/palette/0046_snap_export_output_independent.t](../../tests/quant/palette/0046_snap_export_output_independent.t) |
+| EP-40 | Linear fixed-palette lookup uses P3 RGB101 values while preserving entry identity. | [tests/quant/palette/0055_p3_mapfile_linear.t](../../tests/quant/palette/0055_p3_mapfile_linear.t) |
+| EP-41 | Gamma fixed-palette lookup uses transmitted P3 colors. | [tests/quant/palette/0069_p3_mapfile_gamma.t](../../tests/quant/palette/0069_p3_mapfile_gamma.t) |
+| EP-42 | Linear FS uses the transmitted fixed palette for nonzero error feedback. | [tests/quant/palette/0070_p3_mapfile_fs_linear.t](../../tests/quant/palette/0070_p3_mapfile_fs_linear.t) |
+| EP-43 | Gamma FS uses the transmitted fixed palette for nonzero error feedback. | [tests/quant/palette/0071_p3_mapfile_fs_gamma.t](../../tests/quant/palette/0071_p3_mapfile_fs_gamma.t) |
+| EP-44 | ACT entries retain their sRGB meaning through P3 output. | [tests/quant/palette/0072_p3_mapfile_act.t](../../tests/quant/palette/0072_p3_mapfile_act.t) |
+| EP-45 | RIFF PAL entries retain their sRGB meaning through P3 output. | [tests/quant/palette/0073_p3_mapfile_riff.t](../../tests/quant/palette/0073_p3_mapfile_riff.t) |
+| EP-46 | GPL entries retain their sRGB meaning through P3 output. | [tests/quant/palette/0074_p3_mapfile_gpl.t](../../tests/quant/palette/0074_p3_mapfile_gpl.t) |
+| EP-47 | Reusing an encoder across P3/sRGB/P3 does not reuse a projected fixed palette. | [tests/quant/palette/0075_p3_mapfile_reuse.t](../../tests/quant/palette/0075_p3_mapfile_reuse.t) |
+| EP-48 | An ICC-tagged P3 image map preserves out-of-sRGB colors in a linear workspace. | [tests/quant/palette/0076_p3_mapfile_image_linear.t](../../tests/quant/palette/0076_p3_mapfile_image_linear.t) |
+| EP-49 | An ICC-tagged P3 image map preserves out-of-sRGB colors in a gamma workspace. | [tests/quant/palette/0077_p3_mapfile_image_gamma.t](../../tests/quant/palette/0077_p3_mapfile_image_gamma.t) |
+| EP-50 | P3 fixed-palette export preserves original sRGB values, order, duplicates and unused entries before wire rounding. | [tests/quant/palette/0078_p3_mapfile_export_srgb.t](../../tests/quant/palette/0078_p3_mapfile_export_srgb.t) |
 
 Every test listed above links back to this document through its `Policy` comment. This keeps the behavioral contract discoverable in both directions when either the documentation or a regression test changes.
 
