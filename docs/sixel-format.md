@@ -15,38 +15,7 @@ palette lifetime, aspect-ratio handling, scrolling, and error recovery.
 
 ## An old syntax with a modern image pipeline
 
-Ordinary SIXEL combines **color quantization**, **parallelizable six-row mask and run-length encoding/decoding**, and **a protocol that travels directly over a 7-bit terminal connection**. The wire syntax does not prescribe how an encoder finds its palette. Improvements to clustering, perceptual color spaces, pixel assignment and dithering can therefore improve SIXEL output without changing the receiving terminal. Color quantization has continued to advance in the twenty-first century; the [codec comparison](sixel-format/comparison.md#three-independently-useful-ideas) gives research and production-library examples.
-
-Run-length coding offers comparatively simple expansion and natural band work units. With independently reconstructed palette/cursor state, implementations can process multiple bands concurrently. That can outperform a more compact codec whose implementation exposes less independent work, but it is not a guarantee: palette construction, parser scans, byte volume and memory traffic still cost time. Huffman coding is not inherently incompatible with parallelism, and GIF uses LZW rather than Huffman. WebP also provides multithreaded implementations. The [format and concurrency comparison](sixel-format/comparison.md#compression-and-concurrency-are-different-properties) separates these properties.
-
-### Quality, latency and terminal transport size
-
-The reproducible comparison covers SIXEL, JPEG, GIF, PNG, lossy WebP and lossless WebP using a photograph, a gradient and a text/diagram image. It measures encoding from memory and decoding to memory independently, with no PNG writer hidden inside the SIXEL decoder timing. Multiple JPEG/WebP quality settings expose different operating points rather than pretending that their quality numbers are interchangeable.
-
-<picture>
-  <source media="(max-width: 640px)" srcset="sixel-format-figures/comparison/photo-profile-mobile.svg">
-  <img alt="Photo comparison of native-memory encoding and decoding latency, MS-SSIM versus transport size, and native versus Base64-adjusted sizes for SIXEL, JPEG, GIF, PNG and WebP." src="sixel-format-figures/comparison/photo-profile-wide.svg">
-</picture>
-
-For binary formats, the size comparison includes the 3-in-4 transport cost: padded Base64 occupies `4 * ceil(n / 3)` bytes. SIXEL already uses 7-bit bytes and includes its terminal DCS/ST envelope. Binary-format bars exclude the receiving graphics protocol's extra framing, so they are payload comparisons. SIXEL does not automatically become smallest after this adjustment; nor does a 7-bit connection alone guarantee terminal support. See the [full conditions and image-class comparisons](sixel-format/comparison.md).
-
-### Available threads and repeated generations
-
-The study measures configured budgets of 1, 2, 4 and 8. SIXEL receives an explicit worker budget; libwebp receives its Boolean multithreading switch; the measured Pillow JPEG/GIF/PNG single-image paths remain serial. These are available-budget comparisons, not a claim that every codec uses exactly that many cores. Decoder points use fixed input bytes. Encoder quality and size are plotted alongside speed because changing the parallel execution plan can change the output.
-
-<picture>
-  <source media="(max-width: 640px)" srcset="sixel-format-figures/comparison/photo-scaling-mobile.svg">
-  <img alt="Configured one, two, four and eight thread budgets: encoding time, fixed-stream RGB decoding time, encoder quality and output size, with serial codec and Boolean WebP controls identified." src="sixel-format-figures/comparison/photo-scaling-wide.svg">
-</picture>
-
-Palette formats have another useful property: a decoder can preserve the palette and indices so that a subsequent encoder bypasses color quantization and assignment. The eight-generation experiment uses this native indexed path for SIXEL and GIF. Ordinary `img2sixel` SIXEL-to-SIXEL conversion also retains the palette and indices when no resizing or color override is requested. Palette reuse reduces second-generation encoding time and preserves first-generation pixels in the measured cases; it does not remove the initial quantization error. PNG and lossless WebP preserve original RGB pixels from generation one, while lossy JPEG/WebP may accumulate changes or approach a stable point.
-
-<picture>
-  <source media="(max-width: 640px)" srcset="sixel-format-figures/comparison/photo-generations-mobile.svg">
-  <img alt="Eight encode/decode generations comparing quality relative to the original and separate encode/decode latency, using retained palettes and indices for SIXEL/GIF." src="sixel-format-figures/comparison/photo-generations-wide.svg">
-</picture>
-
-See [repeated encoding as a state contract](sixel-format/comparison.md#repeated-encoding-is-a-state-contract) for equality checks, the SIXEL-to-SIXEL CLI path, timing boundaries, the other image classes, raw samples and reproduction commands.
+Ordinary SIXEL output combines three separable choices: color quantization, six-row color masks with run-length coding, and a terminal protocol that uses only 7-bit bytes. The wire syntax defines how the result is transmitted, not how an encoder chooses its palette, so improvements to clustering, perceptual color spaces, pixel assignment and dithering can improve output without changing the receiving terminal. [SIXEL among contemporary image codecs](sixel-format/comparison.md) develops these points and measures quality, latency, transport size, thread budgets and repeated generations against JPEG, GIF, PNG and WebP.
 
 ## Wire format
 
