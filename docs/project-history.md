@@ -26,22 +26,15 @@ in response to the update gap. Because it supplied later releases while the
 original repository was inactive, many distributions and users came to treat
 `libsixel/libsixel` as the practical successor and upstream.
 
-## Before libsixel: SIXEL in contemporary terminal emulators
+## Before libsixel: SIXEL in software terminal emulators
 
-The modern use of SIXEL in terminal emulators did not begin with libsixel.
-@kmiya-culti added both ReGIS and SIXEL to
-[RLogin 2.9.0](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html#L2002-L2005)
-on 2010-09-17. This was an important early implementation in a contemporary
-terminal emulator and provided a practical starting point for sustained SIXEL
-discussion and experimentation in the Japanese terminal-emulator community.
+SIXEL began as a bitmap language for DEC printers and reached screens in DEC graphics terminals such as the VT240, VT330 and VT340; the [SIXEL format overview](sixel-format/README.md) describes that lineage. Software terminal emulators implemented it long before libsixel, in two waves separated by a quiet period.
 
-Araki Ken's [mlterm](https://github.com/arakiken/mlterm) added
-[partial SIXEL support](https://github.com/arakiken/mlterm/blob/a1678d61f79f49ad018cc453f896a453add8c97f/ChangeLog#L16164-L16174)
-in April 2012. Its implementation soon addressed image cells, scrolling,
-alpha, and parser behavior instead of treating a SIXEL stream as an isolated
-file. By the time libsixel formed in 2014, RLogin and mlterm had already helped
-establish a community in which terminal implementations, encoders,
-multiplexers, and applications were developed together.
+The first wave served users of DEC hosts. DECterm, the DECwindows terminal emulator, combined VT320 emulation with the ReGIS and sixel graphics protocols; the ULTRIX manual page for its command, [`dxterm`](https://www.unix.com/man_page/ultrix/1x/dxterm/), documents both, and `dxterm` remained part of Digital UNIX and [Tru64 UNIX](https://nixdoc.net/man-pages/Tru64/man1/dxterm.1X.html), whose desktop was CDE. On personal computers, [MS-DOS Kermit](https://www.kermitproject.org/mskoverview.html) combined VT320 and VT220 emulation with Tektronix 4014 and Sixel graphics; its final releases were 3.14 in 1995 and 3.15 in 1997. The commercial WRQ Reflection emulators reproduced the VT240, VT241, VT330 and VT340, [including ReGIS and sixels](https://support.microfocus.com/kb/doc.php?id=7021488). In these products SIXEL was part of faithful emulation for applications written for DEC systems, rather than a general way to show images in a terminal.
+
+The second wave treated SIXEL as an image facility for contemporary terminals. @kmiya-culti added both ReGIS and SIXEL to [RLogin 2.9.0](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html#L2002-L2005) on 2010-09-17. This was an important early implementation in a contemporary terminal emulator and provided a practical starting point for sustained SIXEL discussion and experimentation in the Japanese terminal-emulator community.
+
+Araki Ken's [mlterm](https://github.com/arakiken/mlterm) added [partial SIXEL support](https://github.com/arakiken/mlterm/blob/a1678d61f79f49ad018cc453f896a453add8c97f/ChangeLog#L16164-L16174) in April 2012. Its implementation soon addressed image cells, scrolling, alpha, and parser behavior instead of treating a SIXEL stream as an isolated file. xterm followed in July 2013, when [patch #294](https://invisible-island.net/xterm/xterm.log.html#xterm_294) added experimental sixel graphics contributed by Ross Combs. By the time libsixel formed in 2014, RLogin and mlterm had already helped establish a community in which terminal implementations, encoders, multiplexers, and applications were developed together.
 
 ## Experimental directions from the Japanese terminal community
 
@@ -210,7 +203,7 @@ Several influential SIXEL techniques were implemented in quick succession across
 | November 2 | libsixel | [Araki Ken's experimental 15-bit color implementation](https://github.com/saitoha/libsixel/commit/0382aef1afa5333ad2d69f4412900accca866ef2), using palette redefinition; initially exposed as `-F`, it became the current `-I` high-color mode. |
 | November 21 | RLogin | [Version 2.17.3 adds image-index selection and 24-bit color extensions](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html#L1378-L1383). The image-ID extension follows the July macro implementation by about four months. |
 
-This period built on the [earlier SIXEL support in contemporary terminal emulators](#before-libsixel-sixel-in-contemporary-terminal-emulators) and tanasinn's [2012 image-reference work](#image-references-and-application-redraw). The distinctive feature of 2014 was the concentration of new implementations around libsixel's formation, with encoders, receivers, and applications developing related ways to use SIXEL as a stateful graphics facility.
+This period built on the [earlier SIXEL support in software terminal emulators](#before-libsixel-sixel-in-software-terminal-emulators) and tanasinn's [2012 image-reference work](#image-references-and-application-redraw). The distinctive feature of 2014 was the concentration of new implementations around libsixel's formation, with encoders, receivers, and applications developing related ways to use SIXEL as a stateful graphics facility.
 
 Community work was important from the beginning. Araki Ken (`@arakiken`)
 contributed or designed high-compression output, 15-bit high-color operation,
