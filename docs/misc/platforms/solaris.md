@@ -12,6 +12,8 @@ The libjpeg loader stores post-`setjmp` failure state in `volatile int jpeg_fail
 
 Secure-CRT names are not proof of the MSVC type system. In `assessment/lsqa.c`, declarations such as `errno_t` and uses of `fopen_s` remain guarded by `_MSC_VER` in addition to any function probe so a Solaris declaration or configure result does not route compilation into the Microsoft ABI branch.
 
+The private assessment structure uses a fixed `SIXEL_ASSESSMENT_PATH_CAPACITY` for its path buffer and related JSON buffers. Under strict C99, illumos can hide `PATH_MAX`, while a translation unit that requests POSIX declarations sees a value of 1024. Using a local fallback of 4096 in that shared structure would shift every subsequent field between the library and its callers. Buffer layout must therefore remain independent of feature-test macro visibility.
+
 ## awk, shell, and build-tool contract
 
 Solaris awk variants do not provide every extension accepted by GNU awk. Maintained scripts use POSIX operations such as `index`, `substr`, `sub`, `split`, `RSTART`, and `RLENGTH` instead of `match(string, regexp, capture_array)`. JSON metrics and quoted shell values must be parsed structurally without depending on GNU capture arrays or fragile regex escaping.

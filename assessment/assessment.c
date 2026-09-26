@@ -111,10 +111,6 @@
 #endif
 
 
-#if !defined(PATH_MAX)
-#define PATH_MAX 4096
-#endif
-
 #if defined(_WIN32)
 #define SIXEL_PATH_SEP '\\'
 #define SIXEL_PATH_LIST_SEP ';'
@@ -3900,7 +3896,7 @@ assessment_emit_quality_lines(sixel_assessment_t *assessment,
                               void *user_data,
                               char const *indent)
 {
-    enum { line_buffer_size = PATH_MAX * 2 + 128 };
+    enum { line_buffer_size = SIXEL_ASSESSMENT_PATH_CAPACITY * 2 + 128 };
     size_t i;
     char line[line_buffer_size];
     int written;
@@ -3960,8 +3956,8 @@ assessment_emit_color_context(sixel_assessment_t *assessment,
                                 sixel_assessment_json_callback_t callback,
                                 void *user_data)
 {
-    char escaped[PATH_MAX * 6 + 1];
-    char line[PATH_MAX * 6 + 1024];
+    char escaped[SIXEL_ASSESSMENT_PATH_CAPACITY * 6 + 1];
+    char line[SIXEL_ASSESSMENT_PATH_CAPACITY * 6 + 1024];
     char const *cms;
     int i;
     int n;
@@ -4059,8 +4055,8 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
                           sixel_assessment_json_callback_t callback,
                           void *user_data)
 {
-    enum { path_buffer_size = PATH_MAX * 2 + 32 };
-    enum { line_buffer_size = PATH_MAX * 2 + 128 };
+    enum { path_buffer_size = SIXEL_ASSESSMENT_PATH_CAPACITY * 2 + 32 };
+    enum { line_buffer_size = SIXEL_ASSESSMENT_PATH_CAPACITY * 2 + 128 };
     unsigned int requested_sections;
     unsigned int remaining_sections;
     unsigned int stored_sections;

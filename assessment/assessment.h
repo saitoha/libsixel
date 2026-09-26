@@ -33,9 +33,9 @@
 
 #include "sixel_atomic.h"
 
-#if !defined(PATH_MAX)
-#define PATH_MAX 4096
-#endif
+/* PATH_MAX visibility depends on feature-test macros on Solaris/illumos.
+ * Keep this private cross-translation-unit layout independent of them. */
+enum { SIXEL_ASSESSMENT_PATH_CAPACITY = 4096 };
 
 struct sixel_encoder;
 struct sixel_assessment;
@@ -246,7 +246,7 @@ struct sixel_assessment {
     double stage_bytes[SIXEL_ASSESSMENT_STAGE_COUNT];
     double encode_output_time_pending; /* pending write spans during encode */
     double encode_palette_time_pending; /* pending palette spans during encode */
-    char input_path[PATH_MAX];
+    char input_path[SIXEL_ASSESSMENT_PATH_CAPACITY];
     char loader_name[64];
     char format_name[32];
     int input_pixelformat;
