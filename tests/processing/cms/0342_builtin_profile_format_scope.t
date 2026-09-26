@@ -16,28 +16,41 @@ test "$result" -eq 0 || {
     echo "not ok 1 - known-profile rejection trace and excluded source/destination controls"
     exit 0
 }
-# Inspect one call at a time using shell expansion only. The boundaries
-# keep reasons on the owning call and reject duplicates or stray reasons.
-# Avoid repeating the whole remaining transcript in per-iteration xtrace.
-# The original trace is retained and printed if any assertion fails.
+# Read the trace once and retain only the current call. Repeated globbing
+# over the full transcript is quadratic and exceeds the GNV test deadline.
+# Keep the original trace for diagnostics and suppress repeated xtrace.
 set +x
-remaining=$trace
+block=
 known=0
 positive=0
 outside=0
 native_controls=0
 ok=1
-while case "$remaining" in *"PFTRACE|kind="*) true ;; *) false ;; esac; do
-    prefix=${remaining%%PFTRACE|kind=*}
-    case "${prefix}" in *"reason=source-profile-format"*) false ;; *) true ;; esac || ok=0
-    case "${prefix}" in *"reason=native-source-channels"*) false ;; *) true ;; esac || ok=0
-    remaining=${remaining#*PFTRACE|kind=}
-    block=${remaining%%PFTRACE|kind=end*}
-    case "${remaining}" in *PFTRACE\|kind=end*) true ;; *) false ;; esac || {
-        ok=0
-        break
-    }
-    remaining=${remaining#*PFTRACE|kind=end}
+while IFS= read -r line; do
+    case "$line" in
+        PFTRACE\|kind=end)
+            test -n "$block" || {
+                ok=0
+                continue
+            }
+            ;;
+        PFTRACE\|kind=*)
+            test -z "$block" || ok=0
+            block=${line#PFTRACE|kind=}
+            continue
+            ;;
+        *)
+            test -n "$block" || {
+                case "$line" in *"reason=source-profile-format"*|*"reason=native-source-channels"*|*PFTRACE*) ok=0 ;; esac
+                continue
+            }
+            block="$block
+$line"
+            continue
+            ;;
+    esac
+    block="$block
+"
     case "${block}" in *PFTRACE*) false ;; *) true ;; esac || ok=0
     marker=${block%%'
 '*}
@@ -91,10 +104,12 @@ while case "$remaining" in *"PFTRACE|kind="*) true ;; *) false ;; esac; do
     }
     case "${rest}" in *"reason=source-profile-format"*) false ;; *) true ;; esac || ok=0
     case "${rest}" in *"reason=native-source-channels"*) false ;; *) true ;; esac || ok=0
-done
+    block=
+done <<EOF
+$trace
+EOF
 set -x
-case "${remaining}" in *"reason=source-profile-format"*) false ;; *) true ;; esac || ok=0
-case "${remaining}" in *"reason=native-source-channels"*) false ;; *) true ;; esac || ok=0
+test -z "$block" || ok=0
 test "$known" -eq 376 || ok=0
 test "$positive" -eq 18 || ok=0
 test "$outside" -eq 5 || ok=0

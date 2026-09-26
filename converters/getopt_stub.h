@@ -53,9 +53,9 @@
 #    include <sys/unistd.h>
 #   endif
 /*
- * Some systems, including OpenVMS/GNV, expose getopt() from unistd.h but do
- * not provide getopt_long().  Reuse the system getopt globals in that case
- * and keep only the long-option shim local to this header.
+ * Some systems expose getopt() from unistd.h without getopt_long(). Reuse
+ * the system globals unless this platform requires the private parser.
+ * With system getopt(), keep only the long-option shim in this header.
  */
 #   define LIBSIXEL_GETOPT_STUB_USE_SYSTEM_GETOPT 1
 #  endif
@@ -300,6 +300,18 @@ getopt_long(int argc,
     for (i = 0; longopts && longopts[i].name; ++i) {
         o = &longopts[i];
         if (strlen(o->name) == namelen && strncmp(name, o->name, namelen) == 0) {
+            /* A bare flag must reject even an empty attached value. Do this
+             * before publishing the option index or changing its flag. */
+            if (o->has_arg == no_argument && value != NULL) {
+                optarg = NULL;
+                optopt = o->val;
+                if (opterr && *optstring != ':') {
+                    fprintf(stderr,
+                            "option '--%s' does not allow an argument\n",
+                            o->name);
+                }
+                return '?';
+            }
             if (longindex) {
                 *longindex = i;
             }
