@@ -1,5 +1,7 @@
 #!/bin/sh
 # Verify CLI terminal color transport roundtrip.
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-11
 set -eux
 
 result=0

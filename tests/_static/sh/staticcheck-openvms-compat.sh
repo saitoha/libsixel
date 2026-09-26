@@ -107,9 +107,9 @@ require_fixed 'SIXEL2PNG_OPENVMS_INHIBIT_MSG | 2' converters/sixel2png.c
 require_fixed 'SIXEL2PNG_OPENVMS_INHIBIT_MSG | 4' converters/sixel2png.c
 require_fixed 'SIXEL_TEST_MAX_MAPPED_ERROR_STATUS=4' \
     build-aux/lso-tap-driver.sh.in
-require_fixed 'TEST_RUNNER_OPENVMS_INHIBIT_MSG = 0x10000000' \
+require_fixed 'extern void __posix_exit(int);' \
     tests/test_runner.c
-require_fixed 'return TEST_RUNNER_OPENVMS_INHIBIT_MSG | 2;' \
+require_fixed '__posix_exit(status);' \
     tests/test_runner.c
 main_unmapped_return_count=$(awk '
     /^main\(int argc, char \*\*argv\)$/ { in_main = 1 }

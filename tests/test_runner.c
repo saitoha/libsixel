@@ -6143,17 +6143,16 @@ static int
 test_runner_process_exit_status(int status)
 {
 #if defined(LIBSIXEL_OPENVMS)
-    enum { TEST_RUNNER_OPENVMS_INHIBIT_MSG = 0x10000000 };
+    extern void __posix_exit(int);
 
     /*
-     * OpenVMS treats a condition value with its low bit set as success, so a
-     * conventional C test failure such as EXIT_FAILURE (1) must be translated
-     * at the executable boundary.  Keep internal test functions portable and
-     * prevent DCL condition text from entering shell TAP output.
+     * Preserve the POSIX result, including skip (77), at the process boundary.
+     * Mapping every nonzero result to one native failure loses that contract.
+     * Call the RTL entry point explicitly: in an amalgamated build stdlib.h
+     * may already have been included before an _POSIX_EXIT macro could remap
+     * exit(). GNV's default header does not declare this entry point.
      */
-    if (status != EXIT_SUCCESS) {
-        return TEST_RUNNER_OPENVMS_INHIBIT_MSG | 2;
-    }
+    __posix_exit(status);
 #endif
 
     return status;

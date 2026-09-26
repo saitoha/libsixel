@@ -1,5 +1,7 @@
 #!/bin/sh
 # Verify PNM truncated-ASCII policy through short and environment paths.
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-13
 # Registry row: SIXEL_OPTION_SCHEMA_LOADERS|g_loader_values + SIXEL_LOADER_INDEX_BUILTIN|pnm_truncated_ascii
 # Registry binding: builtin_pnm_truncated_ascii
 # Exact image reference: literal-pnm
@@ -61,10 +63,13 @@ cmp -s "${short_output}" "${env_output}" || {
 }
 
 # The absent second pixel is independently specified as black. Encode that
-# complete literal image through the strict path before comparing exact bytes.
+# complete literal image through the strict path before comparing exact
+# bytes. A short GNV pipeline can retain its writer side and withhold EOF.
+reference_input="${artifact_dir}/0106-pnm-complete-reference-$$.ppm"
 reference_output="${artifact_dir}/0106-pnm-truncated-reference-$$.six"
-printf 'P3\n2 1\n255\n255 0 0 0 0 0\n' | \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "-Lbuiltin:Y0!" \
+printf 'P3\n2 1\n255\n255 0 0 0 0 0\n' >"${reference_input}"
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "-Lbuiltin:Y0!" \
+    "${reference_input}" \
     >"${reference_output}" || {
     echo "not ok 1 - complete literal PNM reference conversion failed"
     exit 0
