@@ -11,7 +11,7 @@ These instructions apply to documentation under `docs/`. The repository-level `A
 Start from the [documentation index](README.md). Read the relevant document before changing its subject area:
 
 - [Project history and lineage](project-history.md): origin, development milestones, contribution history, and attribution sources.
-- [SIXEL format](sixel-format.md): wire syntax, control functions, rendering semantics, interoperability, and implementation references.
+- [SIXEL format overview](sixel-format.md): wire syntax, control functions, rendering semantics, interoperability, and implementation references.
 - [Build, runtime, and platform support](platform-support.md): build and runtime requirements, CI-backed support tiers, and platform matrix.
 - [Color spaces and loader color management](concepts/colorspace.md): color interpretation, transfer functions, encoder color-space boundaries, and loader ICC/CMS behavior.
 - [Loader precision, gamut, and fast paths](loader/precision-policy.md): backend representation, preservation boundaries, byte eligibility, and validation.

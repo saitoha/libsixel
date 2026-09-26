@@ -26,7 +26,7 @@ in response to the update gap. Because it supplied later releases while the
 original repository was inactive, many distributions and users came to treat
 `libsixel/libsixel` as the practical successor and upstream.
 
-## Before libsixel: the modern terminal-emulator revival
+## Before libsixel: SIXEL in contemporary terminal emulators
 
 The modern use of SIXEL in terminal emulators did not begin with libsixel.
 @kmiya-culti added both ReGIS and SIXEL to
@@ -210,7 +210,7 @@ Several influential SIXEL techniques were implemented in quick succession across
 | November 2 | libsixel | [Araki Ken's experimental 15-bit color implementation](https://github.com/saitoha/libsixel/commit/0382aef1afa5333ad2d69f4412900accca866ef2), using palette redefinition; initially exposed as `-F`, it became the current `-I` high-color mode. |
 | November 21 | RLogin | [Version 2.17.3 adds image-index selection and 24-bit color extensions](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html#L1378-L1383). The image-ID extension follows the July macro implementation by about four months. |
 
-This period built on the [earlier emulator revival](#before-libsixel-the-modern-terminal-emulator-revival) and tanasinn's [2012 image-reference work](#image-references-and-application-redraw). The distinctive feature of 2014 was the concentration of new implementations around libsixel's formation, with encoders, receivers, and applications developing related ways to use SIXEL as a stateful graphics facility.
+This period built on the [earlier SIXEL support in contemporary terminal emulators](#before-libsixel-sixel-in-contemporary-terminal-emulators) and tanasinn's [2012 image-reference work](#image-references-and-application-redraw). The distinctive feature of 2014 was the concentration of new implementations around libsixel's formation, with encoders, receivers, and applications developing related ways to use SIXEL as a stateful graphics facility.
 
 Community work was important from the beginning. Araki Ken (`@arakiken`)
 contributed or designed high-compression output, 15-bit high-color operation,

@@ -1,4 +1,4 @@
-# SIXEL Format
+# SIXEL Format Overview
 
 ## Scope
 
@@ -380,6 +380,7 @@ failure even when the encoder already reported its original error.
   [*VT330/VT340 Programmer Reference Manual, Volume 2: Graphics Programming*,
   second edition, May 1988](https://bitsavers.trailing-edge.com/pdf/dec/terminal/vt340/EK-VT3XX-GP-002_VT330_VT340_Graphics_Programming_198805.pdf),
   especially Chapter 14.
+- Chris Chiesa, [*All About SIXELs*](https://shuford.invisible-island.net/all_about_sixels.txt), Usenet posting, 1990-09-29, a practitioner's account of SIXEL devices, the DCS envelope, color and repeat introducers, and generation techniques gathered from DEC manuals and experiments.
 - [HTML transcription of Chapter 14, Sixel Graphics](https://manx-docs.org/mirror/vt100.net/docs/vt3xx-gp/chapter14.html).
 - [XTerm Control Sequences](https://invisible-island.net/xterm/ctlseqs/ctlseqs.html),
   for the behavior and extensions of a widely deployed modern implementation.
