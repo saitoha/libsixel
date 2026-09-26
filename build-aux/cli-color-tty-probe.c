@@ -57,6 +57,9 @@ main(void)
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
     result += select(1, &ready, NULL, NULL, &timeout);
+    now.tv_sec = 0;
+    now.tv_nsec = 0;
+    result += pselect(1, &ready, NULL, NULL, &now, &mask);
     result += (int)read(fd, &byte, 1u);
     result += (int)write(fd, &byte, 1u);
     result += close(fd);

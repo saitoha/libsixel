@@ -88,11 +88,11 @@ img2sixel_color_tty_deadline(struct timespec *deadline, int timeout_ms)
 }
 
 static img2sixel_color_io_t
-img2sixel_color_tty_wait(img2sixel_color_tty_t *tty, int writing,
-                         int recovery, struct timespec const *deadline)
+img2sixel_color_tty_wait_masked(img2sixel_color_tty_t *tty, int writing,
+    int recovery, struct timespec const *deadline, sigset_t const *mask)
 {
     struct timespec now;
-    struct timeval timeout;
+    struct timespec timeout;
     fd_set ready;
     time_t seconds;
     long nanoseconds;
@@ -119,11 +119,11 @@ img2sixel_color_tty_wait(img2sixel_color_tty_t *tty, int writing,
             return IMG2SIXEL_COLOR_IO_TIMEOUT;
         }
         timeout.tv_sec = seconds;
-        timeout.tv_usec = nanoseconds / 1000L;
+        timeout.tv_nsec = nanoseconds;
         FD_ZERO(&ready);
         FD_SET(tty->fd, &ready);
-        result = select(tty->fd + 1, writing ? NULL : &ready,
-                        writing ? &ready : NULL, NULL, &timeout);
+        result = pselect(tty->fd + 1, writing ? NULL : &ready,
+                         writing ? &ready : NULL, NULL, &timeout, mask);
         if (result > 0) {
             if (!img2sixel_color_tty_current(tty)) {
                 return IMG2SIXEL_COLOR_IO_CHANGED;
@@ -147,6 +147,35 @@ img2sixel_color_tty_wait(img2sixel_color_tty_t *tty, int writing,
         }
         /* Recompute from the absolute deadline after every EINTR. */
     }
+}
+
+static img2sixel_color_io_t
+img2sixel_color_tty_wait(img2sixel_color_tty_t *tty, int writing,
+                         int recovery, struct timespec const *deadline)
+{
+    sigset_t blocked;
+    sigset_t saved;
+    img2sixel_color_io_t result;
+    int saved_errno;
+
+    /* Keep cancellation pending between checking its flag and waiting.
+     * pselect restores the caller's mask atomically with the wait; passing
+     * that mask also gives Hurd a signal wakeup port during its select RPCs.
+     * Unrelated signals, including watchdog alarms, remain unblocked. */
+    sigemptyset(&blocked);
+    sigaddset(&blocked, SIGINT);
+    sigaddset(&blocked, SIGTERM);
+    if (sigprocmask(SIG_BLOCK, &blocked, &saved) != 0) {
+        return IMG2SIXEL_COLOR_IO_ERROR;
+    }
+    result = img2sixel_color_tty_wait_masked(tty, writing, recovery,
+                                           deadline, &saved);
+    saved_errno = errno;
+    if (sigprocmask(SIG_SETMASK, &saved, NULL) != 0) {
+        return IMG2SIXEL_COLOR_IO_ERROR;
+    }
+    errno = saved_errno;
+    return result;
 }
 
 static img2sixel_color_io_t
@@ -319,7 +348,8 @@ img2sixel_color_tty_query(img2sixel_color_tty_t *tty,
     static char const capability[] = "\033[?1./r";
     static char const policy[] = "\033P$q1./p\033\\";
     struct timespec deadline;
-    struct timeval immediate;
+    struct timespec immediate;
+    sigset_t mask;
     fd_set pending;
     img2sixel_color_io_t result;
     char const *request;
@@ -345,8 +375,9 @@ img2sixel_color_tty_query(img2sixel_color_tty_t *tty,
     FD_ZERO(&pending);
     FD_SET(tty->fd, &pending);
     immediate.tv_sec = 0;
-    immediate.tv_usec = 0;
-    if (select(tty->fd + 1, &pending, NULL, NULL, &immediate) != 0) {
+    immediate.tv_nsec = 0;
+    if (sigprocmask(SIG_BLOCK, NULL, &mask) != 0 ||
+        pselect(tty->fd + 1, &pending, NULL, NULL, &immediate, &mask) != 0) {
         tty->abandoned = 1;
         return IMG2SIXEL_COLOR_IO_ERROR;
     }

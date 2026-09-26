@@ -46,6 +46,7 @@
 #define COLOR_TTY_REPLY_TIMEOUT_MS 500
 
 static volatile sig_atomic_t color_tty_cancelled;
+static volatile sig_atomic_t color_tty_inject_signal;
 
 static void
 color_tty_signal(int number)
@@ -58,7 +59,18 @@ color_tty_signal(int number)
 static int
 color_tty_cancel(void *context)
 {
+    int number;
+
     (void)context;
+    if (color_tty_inject_signal != 0) {
+        number = color_tty_inject_signal;
+        color_tty_inject_signal = 0;
+        /* Force arrival after the caller's final cancellation check. A
+         * masked signal must wake the subsequent atomic wait immediately;
+         * an unmasked signal followed by select loses that notification. */
+        (void)kill(getpid(), number);
+        return 0;
+    }
     return color_tty_cancelled != 0;
 }
 
@@ -289,6 +301,7 @@ color_tty_child(char const *name, int command, int report)
     tty = NULL;
     mode_changed = 0;
     color_tty_cancelled = 0;
+    color_tty_inject_signal = 0;
     memset(&action, 0, sizeof(action));
     action.sa_handler = color_tty_signal;
     sigemptyset(&action.sa_mask);
@@ -383,7 +396,9 @@ color_tty_child(char const *name, int command, int report)
         }
         goto finish;
     }
-    if (strcmp(name, "backpressure") == 0) {
+    if (strcmp(name, "backpressure") == 0 ||
+        strcmp(name, "sigint-race") == 0 ||
+        strcmp(name, "sigterm-race") == 0) {
         large = (char *)malloc(1024u * 1024u);
         if (large == NULL) {
             return 1;
@@ -422,11 +437,32 @@ color_tty_child(char const *name, int command, int report)
         if (fill_ready != 0) {
             return color_tty_error("could not fill output queue");
         }
+        /* The filling write abandoned its phase on timeout. Reopen before
+         * testing a new blocked operation, with cancellation still active. */
         if (img2sixel_color_tty_close(tty) != IMG2SIXEL_COLOR_IO_OK ||
-            img2sixel_color_tty_open(&tty, STDOUT_FILENO, NULL, NULL) !=
+            img2sixel_color_tty_open(&tty, STDOUT_FILENO,
+                                     color_tty_cancel, NULL) !=
                 IMG2SIXEL_COLOR_IO_OK ||
             img2sixel_color_tty_begin(tty) != IMG2SIXEL_COLOR_IO_OK) {
             return 1;
+        }
+        if (strcmp(name, "backpressure") != 0) {
+            color_tty_inject_signal = strcmp(name, "sigint-race") == 0
+                ? SIGINT : SIGTERM;
+            started = color_tty_now();
+            result = img2sixel_color_tty_write(tty, "x", 1u,
+                COLOR_TTY_REPLY_TIMEOUT_MS, 0, &written);
+            if (result != IMG2SIXEL_COLOR_IO_CANCELLED ||
+                !color_tty_cancelled || written != 0u ||
+                color_tty_now() - started > 0.25) {
+                fprintf(stderr,
+                    "signal wait: result=%d cancelled=%d written=%lu "
+                    "elapsed=%.6f\n", (int)result,
+                    (int)color_tty_cancelled, (unsigned long)written,
+                    color_tty_now() - started);
+                return color_tty_error("signal was lost before I/O wait");
+            }
+            goto finish;
         }
         result = img2sixel_color_tty_query(tty, IMG2SIXEL_COLOR_CAPABILITY,
                                           15, &exchange);
@@ -534,8 +570,10 @@ color_tty_child(char const *name, int command, int report)
         exchange.request_written != 0u) {
         return color_tty_error("query retried after correlation loss");
     }
+    /* Recovery also crosses the VM scheduler and Hurd's terminal RPCs. */
     if (img2sixel_color_tty_write(tty, COLOR_TTY_RECOVER,
-        sizeof(COLOR_TTY_RECOVER) - 1u, 20, 1, &written) !=
+        sizeof(COLOR_TTY_RECOVER) - 1u, COLOR_TTY_REPLY_TIMEOUT_MS, 1,
+        &written) !=
             IMG2SIXEL_COLOR_IO_OK ||
         written != sizeof(COLOR_TTY_RECOVER) - 1u) {
         return color_tty_error("bounded write-only recovery");
@@ -560,7 +598,9 @@ color_tty_script(char const *name, int master, int command, int report,
     int result;
     int done;
 
-    if (strcmp(name, "backpressure") == 0) {
+    if (strcmp(name, "backpressure") == 0 ||
+        strcmp(name, "sigint-race") == 0 ||
+        strcmp(name, "sigterm-race") == 0) {
         if (!color_tty_expect(report, "d")) {
             return 0;
         }
@@ -781,7 +821,9 @@ test_cli_0038_color_tty(int argc, char **argv)
      * leaves queued filler, and flood can leave echoed input after cleanup. */
     extra = master < 0 ? -1 : (int)read(master, &byte, 1u);
     if (extra > 0 && strcmp(argv[1], "backpressure") != 0 &&
-        strcmp(argv[1], "flood") != 0) {
+        strcmp(argv[1], "flood") != 0 &&
+        strcmp(argv[1], "sigint-race") != 0 &&
+        strcmp(argv[1], "sigterm-race") != 0) {
         result = 0;
     }
     if (master >= 0) {
