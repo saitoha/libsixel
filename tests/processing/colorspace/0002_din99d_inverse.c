@@ -9,6 +9,7 @@
 #endif
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <sixel.h>
 
@@ -34,10 +35,13 @@ test_color_0002_din99d_inverse(int argc, char **argv)
         sizeof(pixels), SIXEL_PIXELFORMAT_DIN99DFLOAT32,
         SIXEL_COLORSPACE_DIN99D, SIXEL_COLORSPACE_LINEAR);
     if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "DIN99d inverse conversion failed: %d\n", status);
         return EXIT_FAILURE;
     }
     for (i = 0; i < sizeof(pixels) / sizeof(pixels[0]); ++i) {
         if (!isfinite(pixels[i]) || fabs(pixels[i] - expected[i]) > 0.0007) {
+            fprintf(stderr, "DIN99d inverse sample %lu: %.9g != %.9g\n",
+                    (unsigned long)i, pixels[i], expected[i]);
             return EXIT_FAILURE;
         }
     }

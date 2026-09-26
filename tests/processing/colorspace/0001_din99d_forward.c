@@ -11,6 +11,7 @@
 #endif
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <sixel.h>
 
@@ -40,11 +41,14 @@ test_color_0001_din99d_forward(int argc, char **argv)
         sizeof(pixels), SIXEL_PIXELFORMAT_RGBFLOAT32,
         SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_DIN99D);
     if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "DIN99d forward conversion failed: %d\n", status);
         return EXIT_FAILURE;
     }
     /* Allow the converter's cube-root/transfer lookup approximation. */
     for (i = 0; i < sizeof(pixels) / sizeof(pixels[0]); ++i) {
         if (!isfinite(pixels[i]) || fabs(pixels[i] - expected[i]) > 0.0007) {
+            fprintf(stderr, "DIN99d forward sample %lu: %.9g != %.9g\n",
+                    (unsigned long)i, pixels[i], expected[i]);
             return EXIT_FAILURE;
         }
     }
