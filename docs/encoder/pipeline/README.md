@@ -13,7 +13,7 @@ For the reverse wire direction, the [Decoding Pipeline](../../decoder/pipeline/R
 
 *Figure 1. Introductory fixed-palette mental model. Blue carries frame pixels, magenta carries palette construction data, teal marks the indexed artifact, and amber marks SIXEL output. Line shape, labels, and placement duplicate the color encoding.*
 
-Palette construction and palette application are different operations. The former decides which colors are available. The latter decides which available color represents each input pixel. SIXEL encoding then serializes those decisions; it does not choose the colors again.
+Palette construction and palette application are different operations. The former decides which colors are available. The latter decides which available color represents each input pixel. SIXEL encoding then serializes those decisions; it does not choose the colors again. The palette's RGB numbers are written in the [output color space](../output/output-colorspace.md) selected by `-U`, which the receiver must interpret the same way; on the selected Display P3 and ordinary sRGB float paths that definition is fixed before palette application, so lookup already chooses among the colors that will be sent.
 
 This figure is intentionally not an implementation map. It omits loader-candidate fallback and loader-local CMS work, preprocessing order, sampling-source selection, quantizer initialization and iteration, final palette passes, lookup preparation, per-pixel dither and lookup loops, asynchronous overlap, and serial fallback. The component documents linked below define those details without overloading the introductory view.
 
@@ -27,7 +27,7 @@ The implementation-oriented [Encoder Execution Map](../execution-map/README.md) 
 | Normalization | Loader frames | Pixels in the processing size, format, and colorspace | [Crop and resize](../preprocessing/crop-resize/README.md), alpha, and colorspace options |
 | Palette construction | Normalized color samples | A bounded set of palette entries | `-p`, `-Q`, `-X`, precision, sampling, and binning |
 | Palette application | Pixels and a completed palette | One palette index per output pixel | `-W`, `-d`, `-~`, precision, transparency, and inter-frame policy |
-| SIXEL encoding | Indexed pixels, palette, and frame metadata | SIXEL control sequences and image data | Encoding, 7-bit/8-bit, and output policies |
+| SIXEL encoding | Indexed pixels, palette, and frame metadata | SIXEL control sequences and image data | `-U`, encoding, 7-bit/8-bit, and output policies |
 
 The loader contract ends when it has described the source image correctly.
 Palette and dithering policy must therefore remain independent of the backend

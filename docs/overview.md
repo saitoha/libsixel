@@ -43,7 +43,8 @@ The introductory [Encoding Pipeline](encoder/pipeline/README.md) explains the in
   error is distributed and the state required to do so;
 - [Lookup Policy](encoder/palette-application/lookup-policy/README.md), selected by `-~` or `--lookup-policy`,
   determines how each color candidate is mapped to a palette index and whether
-  cost is paid during preparation or per-pixel query.
+  cost is paid during preparation or per-pixel query;
+- [Output Color Space](encoder/output/output-colorspace.md), selected by `-U`, determines how the receiver is to interpret the palette's RGB numbers, including Display P3 output and terminal negotiation.
 
 The broader pipeline also includes:
 

@@ -47,6 +47,8 @@ stateless low-overhead spatial method is worth testing, and `interframe` or
 The checked-in one-image sweep is evidence about those exact commands, not a
 universal ranking.
 
+`-U display-p3` accepts only `none` and `fs`. There, and on the ordinary sRGB float path that uses the same preparation, FS computes its residual against the palette values actually sent rather than the unrounded working palette; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
+
 ## Mathematical model
 
 Let `x[p]` be the source color at pixel `p`, `b[p]` a position- or

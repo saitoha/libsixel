@@ -43,6 +43,7 @@ High color is an alternate encoding path, not a larger value for `-p`.
 
 - It bypasses fixed-palette construction and fixed-palette nearest-color lookup. `-p`, `-b`, `-m`, and `-e` select incompatible color modes and are rejected when combined with `-I`.
 - The current CLI resolves palette-space diffusion to `none` for `-I`. Supplying `-d fs` or another diffusion method does not recreate the historical high-color diffusion path described in the 2014 article.
+- It does not apply the output color conversion. Changing a legacy `-U` value currently leaves the emitted RGB numbers in their unconverted form, and `-U display-p3` rejects `-I`. See [Output color space](../output-colorspace.md#scope-and-current-gaps).
 - Register `#255` is an internal skip value for multi-pass painting. Transparent offset is supported as a separate geometry feature; source alpha semantics still follow the [alpha policy](../../../loader/alpha-policy/README.md).
 - Validation must use a direct decoder. A final indexed plane and final palette cannot represent the earlier colors painted before a register redefinition. Use `sixel2png --direct` (`-D`) rather than an indexed snapshot. See the [PNG writer boundary](../../../writers/png/README.md) for details.
 

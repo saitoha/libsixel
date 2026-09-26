@@ -35,6 +35,8 @@ The policy applies to FS, Atkinson, Jarvis--Judice--Ninke, Stucki, Burkes, the S
 
 Soft and unlimited feedback require signed headroom. Byte source images can retain byte loading and palette construction, while their error-diffusion work buffer is promoted to float32. `--precision=8bit` cannot remove that arithmetic requirement. No-dither and positional byte fast paths remain eligible. Allocation failure is reported instead of silently switching a requested soft/none path to byte saturation. Explicit `hard` retains the legacy byte diffusion path when it is otherwise eligible; byte and float arithmetic are not promised to produce identical indexes.
 
+On the selected Display P3 and ordinary sRGB float paths, sources can hold extended coordinates outside the sRGB cube and the residual is computed against the sent palette; the limiter bounds only the feedback and keeps those original coordinates, while `-0none` propagates the unrestricted residual. See [Output color space](../output/output-colorspace.md#display-p3-selected-cpu-float-path).
+
 The interframe implementation retains its existing quantized history representation. This option controls the corrected sample supplied to lookup; it does not increase temporal-history precision or remove its representation limits.
 
 Each float diffusion request owns an immutable source snapshot. Parallel bands do not share mutable limiter state. Band boundaries can still change incoming errors, so use a fixed worker count, scan order, and palette when comparing policies. RGB byte-input promotion preserves retained-color competition and residual propagation in delta encoding.

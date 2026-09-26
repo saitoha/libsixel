@@ -137,6 +137,10 @@ The same equality holds for the measured Oklab pair. It proves that `--precision
 
 `-X` selects the clustering coordinates rather than the main work coordinates. A non-gamma `-X` can create a float32 palette-construction view while `-Wgamma` remains byte-based. The detailed ownership and cost model are in [Palette clustering color space](../../encoder/palette-construction/clustering-colorspace/README.md).
 
+### Output color definition
+
+`-U display-p3` requires an effective float working format, even with `-Wgamma` and `--precision=8bit`, because its palette is converted and rounded to the sent Display P3 values with extended intermediate coordinates. The requested precision is kept separately, so leaving Display P3 restores the format required by the remaining settings. The legacy `gamma`, `linear` and `smpte-c` outputs convert only the final palette and do not request a float image buffer. See [Output color space](../../encoder/output/output-colorspace.md#display-p3-selected-cpu-float-path).
+
 ### Loader CMS output
 
 When a loader applies an ICC transform, `cms_target` selects the target color space and `prefer_8bit` selects the requested representation after that transform. With `prefer_8bit=0`, gamma produces `RGBFLOAT32` and linear or Lab-family targets produce their typed float32 formats. A float source frame remains float through the planner, including with a `-.8bit` base preference, so the encoder cannot silently down-convert it before palette construction.
