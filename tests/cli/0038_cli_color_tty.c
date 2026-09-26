@@ -40,6 +40,10 @@
 #define COLOR_TTY_POLICY "\033P$q1./p\033\\"
 #define COLOR_TTY_REPLY "\033P1;1;1;1;4./r\033\\"
 #define COLOR_TTY_RECOVER "\030\033\\\033[1;0./p"
+/* The peer is another scheduled process, including inside CPU-limited CI.
+ * Successful replies do not consume this budget. Timeout scripts still
+ * assert an absolute bound below the independent two-second watchdog. */
+#define COLOR_TTY_REPLY_TIMEOUT_MS 500
 
 static volatile sig_atomic_t color_tty_cancelled;
 
@@ -416,8 +420,9 @@ color_tty_child(char const *name, int command, int report)
     result = img2sixel_color_tty_query(tty,
         strcmp(name, "policy-failure") == 0 ? IMG2SIXEL_COLOR_POLICY
                                             : IMG2SIXEL_COLOR_CAPABILITY,
-        20, &exchange);
-    if (color_tty_now() - started > 0.25) {
+        COLOR_TTY_REPLY_TIMEOUT_MS, &exchange);
+    if (color_tty_now() - started >
+        COLOR_TTY_REPLY_TIMEOUT_MS / 1000.0 + 0.25) {
         return color_tty_error("reply exceeded absolute deadline");
     }
     if (strcmp(name, "silent") == 0 || strcmp(name, "late") == 0) {
@@ -473,7 +478,7 @@ color_tty_child(char const *name, int command, int report)
         if (strcmp(name, "roundtrip") == 0) {
             if (img2sixel_color_tty_begin(tty) != IMG2SIXEL_COLOR_IO_OK ||
                 img2sixel_color_tty_query(tty, IMG2SIXEL_COLOR_POLICY,
-                                          20, &exchange) !=
+                    COLOR_TTY_REPLY_TIMEOUT_MS, &exchange) !=
                     IMG2SIXEL_COLOR_IO_OK ||
                 exchange.parser.result != IMG2SIXEL_COLOR_SAVED_POLICY ||
                 exchange.parser.policy != 0ul) {
