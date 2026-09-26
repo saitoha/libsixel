@@ -1,6 +1,6 @@
 /*
  * SPDX-License-Identifier: MIT
- * Policy: docs/concepts/pixelformat-precision.md
+ * Policy: docs/concepts/pixelformat-precision/README.md
  */
 /* Geometry must move or replace pixels and their mask as one frame state. */
 #include <float.h>

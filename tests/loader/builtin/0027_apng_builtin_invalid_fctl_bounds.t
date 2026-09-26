@@ -1,6 +1,6 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# Policy: docs/loader/builtin/png.md
+# Policy: docs/loader/builtin/png/README.md
 # TAP test: an early out-of-bounds APNG frame uses static fallback.
 
 set -eux

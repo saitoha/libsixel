@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/loader/builtin/sixel.md
-# Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/decoder/pipeline/README.md
 # Compare serial and parallel decoder output at a DECGNL split boundary.
 
 set -eux

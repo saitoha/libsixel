@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/cover-policy.md
+# Policy: docs/encoder/palette-construction/cover-policy/README.md
 # Verify monochrome conflicts with cover policy.
 set -eux
 

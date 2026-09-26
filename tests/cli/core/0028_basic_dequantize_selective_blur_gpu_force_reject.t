@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify forced GPU dequantize rejects selective_blur instead of CPU fallback.
-# Policy: docs/functionality/dequantization.md
+# Policy: docs/decoder/dequantization/README.md
 
 set -eux
 

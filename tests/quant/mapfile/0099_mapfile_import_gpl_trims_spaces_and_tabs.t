@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify GPL import trims leading and trailing spaces and tabs.
 # Test-plan: docs/testing/mapfile-parser-coverage.md
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 
 set -eux
 

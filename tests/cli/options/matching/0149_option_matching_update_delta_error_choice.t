@@ -1,6 +1,6 @@
 #!/bin/sh
 # TAP test verifying update delta error accepts only documented choices.
-# Policy: docs/functionality/delta-encoding.md
+# Policy: docs/encoder/output/delta-encoding.md
 
 set -eux
 

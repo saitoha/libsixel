@@ -1,7 +1,7 @@
 #!/bin/sh
 # Run the prebuilt filter unit test via the unified runner.
 # This wrapper emits TAP based on exit status.
-# Policy: docs/functionality/merge-policy.md
+# Policy: docs/encoder/palette-construction/merge-policy/README.md
 
 set -eux
 

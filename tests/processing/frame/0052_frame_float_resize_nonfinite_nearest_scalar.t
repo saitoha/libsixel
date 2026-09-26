@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/concepts/pixelformat-precision.md
+# Policy: docs/concepts/pixelformat-precision/README.md
 # Verify float frame resize nonfinite nearest scalar.
 set -eux
 echo "1..1"

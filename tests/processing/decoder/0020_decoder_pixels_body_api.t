@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/decoder/pipeline/README.md
 # Verify sixel_decode_pixels_body() decodes parser-supplied DCS q bodies.
 
 set -eux

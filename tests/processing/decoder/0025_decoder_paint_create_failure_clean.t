@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/decoder/pipeline/README.md
 # Verify a partial direct paint launch leaves fallback buffers untouched.
 
 set -eux

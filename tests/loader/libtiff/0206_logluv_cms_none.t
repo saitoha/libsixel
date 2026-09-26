@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Verify logluv cms none.
 set -eux
 result=0

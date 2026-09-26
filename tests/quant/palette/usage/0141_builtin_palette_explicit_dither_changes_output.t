@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/fixed-palettes.md
+# Policy: docs/encoder/palette-construction/fixed-palettes.md
 # Verify explicit dither methods apply with built-in palettes.
 set -eux
 

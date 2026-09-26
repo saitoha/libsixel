@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/or-mode.md
+# Policy: docs/encoder/output/or-mode/README.md
 # Check OR size-policy geometry and its distinct band branch.
 set -eux
 

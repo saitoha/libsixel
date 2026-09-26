@@ -88,7 +88,7 @@ RGB, Gray and native inverted CMYK merged samples store a white matte in each pr
 
 Lab8/16 merged transparency uses the source white matte `L = 100, a = 0, b = 0`. Decode the native unsigned coordinates before recovering the source: in the facade's `L/100, a/128, b/128` representation, positive alpha restores lightness about `1` and divides the opponent coordinates by alpha about their neutral `0`. This order preserves the exact neutral codes (128 at 8 bit and 32768 at 16 bit) and avoids applying an all-one RGB matte to opponent components. Recovery precedes analytic D50 interpretation or the requested Lab ICC. Retain finite recovered negative lightness or opponent coordinates beyond the ordinary encoding range; do not clip them at this intermediate boundary. At zero alpha, retain the stored hidden Lab coordinates without division.
 
-Spots have independent coverage and can paint where the process image is transparent. The preview extends the opaque spot equation using [source-over blending](https://www.w3.org/TR/compositing-1/#blending). For process opacity `a`, existing straight color `d`, spot density `t = 1 - v`, spot color `c` and solidity `s`, the next opacity is `a_next = a * (1 - t) + t`. Its premultiplied component is `a * (1 - t) * d + t * c * (1 - a + a * s + a * (1 - s) * d)`. Divide by `a_next` to return straight color. Zero-density spots do not change color or opacity; the opaque case retains the previous equation. Without a background, the frame uses straight linear RGB and a mask for exactly zero final coverage, following the [loader alpha policy](../alpha-policy.md). With a background, its sRGB bytes are linearized and composed with process alpha before spots are applied. These are libsixel preview semantics, not a claim of Photoshop overprint or display parity.
+Spots have independent coverage and can paint where the process image is transparent. The preview extends the opaque spot equation using [source-over blending](https://www.w3.org/TR/compositing-1/#blending). For process opacity `a`, existing straight color `d`, spot density `t = 1 - v`, spot color `c` and solidity `s`, the next opacity is `a_next = a * (1 - t) + t`. Its premultiplied component is `a * (1 - t) * d + t * c * (1 - a + a * s + a * (1 - s) * d)`. Divide by `a_next` to return straight color. Zero-density spots do not change color or opacity; the opaque case retains the previous equation. Without a background, the frame uses straight linear RGB and a mask for exactly zero final coverage, following the [loader alpha policy](../alpha-policy/README.md). With a background, its sRGB bytes are linearized and composed with process alpha before spots are applied. These are libsixel preview semantics, not a claim of Photoshop overprint or display parity.
 
 Lab32-plus-spot, with or without merged transparency, remains rejected rather than guessing physical versus normalized units from each component, as the legacy Lab32 compatibility path does. These limits do not disable ordinary legacy loading. No-spot RGB8 and Gray8 retain their byte fast paths. Missing-composite spot reconstruction is not covered by this route.
 
@@ -126,7 +126,7 @@ Depending on mode and depth, the initial frame can be gamma `RGB888`, `RGBFLOAT3
 
 ### Implementation and test map
 
-![A vertical implementation map of the builtin PSD and PSB loader. It follows document-header and section validation into native-depth planar decompression, color-mode dispatch, the guarded missing-composite layer fallback, embedded ICC conversion, and alpha or mask aware typed-frame finalization. Every node carries a coverage ID used by the tables below.](pipeline-figures/psd.svg)
+![A vertical implementation map of the builtin PSD and PSB loader. It follows document-header and section validation into native-depth planar decompression, color-mode dispatch, the guarded missing-composite layer fallback, embedded ICC conversion, and alpha or mask aware typed-frame finalization. Every node carries a coverage ID used by the tables below.](figures/psd.svg)
 
 The composite and layer-reconstruction routes converge only after they have independently decoded native-depth channels and interpreted the document color mode. The layer fallback box represents a substantial subgraph—records, masks, fills, supported effects, clipping, blend, and deferred effects—not a call to a general Photoshop renderer. The table names the stable top-level anchors from which those format-specific helpers can be followed.
 
@@ -174,7 +174,7 @@ PSD/PSB is the builtin family's broadest attacker-controlled object graph: neste
 - Composite decode, color modes, layer reconstruction, blend/effect handling: [`frompsd.c`](../../../src/frompsd.c)
 - Stable diagnostic buffering and codes: [`frompsd-trace.c`](../../../src/frompsd-trace.c)
 - Builtin routing, CMS handoff, alpha, and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
-- Alpha and typed-frame concepts: [Pixel Formats and Alpha Representation](../../concepts/pixelformat.md) and [Alpha Policy](../alpha-policy.md)
+- Alpha and typed-frame concepts: [Pixel Formats and Alpha Representation](../../concepts/pixelformat.md) and [Alpha Policy](../alpha-policy/README.md)
 - Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
 
 ## Test coverage

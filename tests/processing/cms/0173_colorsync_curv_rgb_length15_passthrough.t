@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # ColorSync curv rgb length15 passthrough preserves its value or native behavior contract.
 set -eux
 result=0

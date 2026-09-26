@@ -11,21 +11,21 @@ These instructions apply to documentation under `docs/`. The repository-level `A
 Start from the [documentation index](README.md). Read the relevant document before changing its subject area:
 
 - [Project history and lineage](project-history.md): origin, development milestones, contribution history, and attribution sources.
-- [SIXEL format overview](sixel-format.md): wire syntax, control functions, rendering semantics, interoperability, and implementation references.
+- [SIXEL format overview](sixel-format/README.md): wire syntax, control functions, rendering semantics, interoperability, and implementation references.
 - [Build, runtime, and platform support](platform-support.md): build and runtime requirements, CI-backed support tiers, and platform matrix.
-- [Color spaces and loader color management](concepts/colorspace.md): color interpretation, transfer functions, encoder color-space boundaries, and loader ICC/CMS behavior.
+- [Color spaces and loader color management](concepts/colorspace/README.md): color interpretation, transfer functions, encoder color-space boundaries, and loader ICC/CMS behavior.
 - [Loader precision, gamut, and fast paths](loader/precision-policy.md): backend representation, preservation boundaries, byte eligibility, and validation.
-- [Pixel-format precision](concepts/pixelformat-precision.md): byte and float32 storage, implicit promotion boundaries, resize precision, and focused quality measurements.
+- [Pixel-format precision](concepts/pixelformat-precision/README.md): byte and float32 storage, implicit promotion boundaries, resize precision, and focused quality measurements.
 - [Pixel formats and alpha representation](concepts/pixelformat.md): input memory layouts, frame storage, transparency metadata, and the SIXEL wire boundary.
-- [Functionality](functionality/overview.md): capabilities, components, data flow, and architectural boundaries.
-- [Palette clustering color space](functionality/clustering-colorspace.md): `-X` geometry, normalization, interactions, and reproducible measurements.
-- [Palette working color space](functionality/working-colorspace.md): `-W` palette-application geometry, lookup and dither interactions, precision, and reproducible quality, speed, and size measurements.
-- [External palette input and output](functionality/external-palettes.md): `-m` and `-M` workflows, format origins, application compatibility, detection rules, and fixed-palette policy interactions.
-- [Final palette merge policy](functionality/merge-policy.md): `-F` Ward reduction, optional Lloyd polishing, objective tradeoffs, and reproducible quality, speed, size, geometry, and flat-patch measurements.
-- [Palette cover policy](functionality/cover-policy.md): post-quantizer gamut reachability repair, soft and hard anchors, historical color-model connections, growth, and layered reachability measurement.
-- [Palette snap policy](functionality/snap-policy.md): enablement, reversible 101-level tone mapping, timing, approach rate, and working-space target selection.
-- [Encoder working precision](functionality/precision.md): requested and effective `--precision` paths and cross-policy measurement controls.
-- [Alpha policy](loader/alpha-policy.md): source-alpha treatment, omitted SIXEL pixels, and `P2` selection.
+- [Functional overview](overview.md): capabilities, components, data flow, and architectural boundaries. Encoder topics live under `encoder/` (preprocessing, palette construction, palette application and output) and decoder topics under `decoder/`.
+- [Palette clustering color space](encoder/palette-construction/clustering-colorspace/README.md): `-X` geometry, normalization, interactions, and reproducible measurements.
+- [Palette working color space](encoder/palette-application/working-colorspace/README.md): `-W` palette-application geometry, lookup and dither interactions, precision, and reproducible quality, speed, and size measurements.
+- [External palette input and output](encoder/palette-construction/external-palettes.md): `-m` and `-M` workflows, format origins, application compatibility, detection rules, and fixed-palette policy interactions.
+- [Final palette merge policy](encoder/palette-construction/merge-policy/README.md): `-F` Ward reduction, optional Lloyd polishing, objective tradeoffs, and reproducible quality, speed, size, geometry, and flat-patch measurements.
+- [Palette cover policy](encoder/palette-construction/cover-policy/README.md): post-quantizer gamut reachability repair, soft and hard anchors, historical color-model connections, growth, and layered reachability measurement.
+- [Palette snap policy](encoder/palette-construction/snap-policy/README.md): enablement, reversible 101-level tone mapping, timing, approach rate, and working-space target selection.
+- [Encoder working precision](encoder/precision/README.md): requested and effective `--precision` paths and cross-policy measurement controls.
+- [Alpha policy](loader/alpha-policy/README.md): source-alpha treatment, omitted SIXEL pixels, and `P2` selection.
 - [Background policy](loader/background-policy.md): background-source priority, colorspace, and OSC 11 interaction.
 - [CLI](cli/design-policy.md): option design, compatibility, parsing, diagnostics, and documentation synchronization.
 - [Quality](quality/measurement-policy.md): perceptual metrics, fixtures, thresholds, baselines, and performance comparisons.
@@ -105,6 +105,8 @@ The [`staticcheck-doc-types-inventory`](../tests/_static/sh/staticcheck-doc-type
 ## Adding a document
 
 Add a document only when the topic is durable and materially distinct from the existing references. Give it a stable subject-oriented name, place it in the owning subject directory, and add it to `README.md` when users or contributors should discover it. Add a repository-level link only when contributors must read it before working in that area.
+
+Keep the directory layout aligned with the index classification. A document without figures or data is a single `topic.md` file in its category directory. A document with figures, measurements or other assets is a directory `topic/` whose `README.md` is the document, with assets in `topic/figures/`, `topic/measurements/` or a similarly named subdirectory, and with its subpages beside `README.md`. Do not place asset directories such as `topic-figures/` next to documents. Assets shared by several documents of one directory belong in that directory's own `figures/` or `measurements/`; a document outside it links to the owner's assets instead of copying them. Category directories such as `encoder/palette-construction/` do not have a `README.md`, because the index already provides their grouping.
 
 ## Test coverage
 

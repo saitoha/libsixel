@@ -1,6 +1,6 @@
 #!/bin/sh
-# Policy: docs/functionality/fixed-palettes.md
-# Policy: docs/functionality/snap-policy.md
+# Policy: docs/encoder/palette-construction/fixed-palettes.md
+# Policy: docs/encoder/palette-construction/snap-policy/README.md
 # Verify a built-in palette accepts but bypasses snap policy.
 set -eux
 

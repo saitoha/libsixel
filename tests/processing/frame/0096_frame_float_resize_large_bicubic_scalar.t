@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/concepts/pixelformat-precision.md
+# Policy: docs/concepts/pixelformat-precision/README.md
 # Verify finite nonconstant large values against independent normalized weights.
 set -eux
 echo "1..1"

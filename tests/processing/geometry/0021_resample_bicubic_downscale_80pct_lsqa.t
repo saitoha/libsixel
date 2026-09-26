@@ -1,6 +1,6 @@
 #!/bin/sh
 # Validate downscale 80pct scaling with bicubic resampling.
-# Policy: docs/functionality/resampling/wide-kernels.md
+# Policy: docs/encoder/preprocessing/resampling/wide-kernels.md
 #
 # Reference image details:
 # - Source: tests/data/inputs/snake_64.png (64x64)

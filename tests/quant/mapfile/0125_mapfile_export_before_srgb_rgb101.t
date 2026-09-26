@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify sRGB output exports pre-wire sRGB8 palette values.
-# Policy: docs/functionality/output-colorspace.md
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/output/output-colorspace.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 # Test-plan: docs/testing/mapfile-parser-coverage.md
 set -eux
 

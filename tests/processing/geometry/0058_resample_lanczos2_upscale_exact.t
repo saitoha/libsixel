@@ -1,6 +1,6 @@
 #!/bin/sh
 # Compare lanczos2 non-integer 3:4 enlargement with the independent PPM oracle.
-# Policy: docs/functionality/resampling/wide-kernels.md
+# Policy: docs/encoder/preprocessing/resampling/wide-kernels.md
 set -eux
 
 echo "1..1"

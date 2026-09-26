@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / 'docs/functionality/dequantization-figures'
+OUT = ROOT / 'docs/decoder/dequantization/figures'
 INK = '#183247'
 MUTED = '#4c6070'
 BLUE = '#17618c'

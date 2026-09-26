@@ -31,4 +31,4 @@ This adapter has no SVG animation timeline and does not expose an independent ba
 
 [`loader-librsvg.c`](../../src/loader-librsvg.c) owns recognition, handle creation, geometry, Cairo rendering, channel normalization, and temporary-file cleanup. The [librsvg suite](../../tests/loader/librsvg/) covers SVG recognition, fallback/viewBox/explicit geometry, alpha/background behavior, compressed input, relative resources, and failure paths. Real fonts and external resources still need a controlled host setup; geometry tests do not prove portable typography or full SVG feature conformance.
 
-The [loader architecture](README.md) explains strict selection and fallback; [crop and resize](../functionality/crop-resize.md) explains what happens after rasterization.
+The [loader architecture](README.md) explains strict selection and fallback; [crop and resize](../encoder/preprocessing/crop-resize/README.md) explains what happens after rasterization.

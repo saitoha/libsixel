@@ -61,7 +61,7 @@ Frame delay remains in centiseconds. `fromgif` records the stream loop count and
 
 ### Implementation and test map
 
-![A vertical implementation map of the builtin GIF loader. It follows GIF signature routing into logical-screen and extension scanning, LZW raster expansion, persistent-canvas composition and disposal, optional ICC palette conversion, then frame selection, loop handling, and float-or-byte emission. Every node carries a coverage ID used by the tables below.](pipeline-figures/gif.svg)
+![A vertical implementation map of the builtin GIF loader. It follows GIF signature routing into logical-screen and extension scanning, LZW raster expansion, persistent-canvas composition and disposal, optional ICC palette conversion, then frame selection, loop handling, and float-or-byte emission. Every node carries a coverage ID used by the tables below.](figures/gif.svg)
 
 The map separates source indices from the emitted frame. Local-table indices are consumed by `gif_process_raster()` and painted into a logical-screen canvas; `gif_export_pal8_frame()` may build a new palette only after composition proves that the complete canvas is representable. This distinction is central to interpreting the palette and disposal tests.
 
@@ -99,7 +99,7 @@ img2sixel -Lbuiltin:background_policy=explicit_first! -B '#202020' animation.gif
 
 `NETSCAPE2.0` counts and `-l` interact at playback time; `-S` wins earlier by stopping after one emitted frame. Cancellation is checked during decode and replay, including forced indefinite looping.
 
-See [Animation playback](../../functionality/animation.md) for cross-loader differences, timing, and output-state interactions. In particular, the builtin parser's finite-count behavior is not available through the generic GdkPixbuf animation API.
+See [Animation playback](../../encoder/animation.md) for cross-loader differences, timing, and output-state interactions. In particular, the builtin parser's finite-count behavior is not available through the generic GdkPixbuf animation API.
 
 ## Unsupported behavior and security boundary
 
@@ -111,7 +111,7 @@ The LZW dictionary, sub-block lengths, image rectangles, frame count, and dispos
 
 - GIF parser, LZW decode, canvas, frame selection, and replay: [`fromgif.c`](../../../src/fromgif.c)
 - Builtin dispatch and common frame finalization: [`loader-builtin.c`](../../../src/loader-builtin.c)
-- Alpha and background semantics: [Alpha Policy](../alpha-policy.md) and [Background Policy](../background-policy.md)
+- Alpha and background semantics: [Alpha Policy](../alpha-policy/README.md) and [Background Policy](../background-policy.md)
 - Broader non-owning format and malformed-stream suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
 
 ## Test coverage

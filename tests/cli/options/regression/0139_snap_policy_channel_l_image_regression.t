@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/snap-policy.md
+# Policy: docs/encoder/palette-construction/snap-policy/README.md
 # Verify snap channel weight through short and environment paths.
 # Registry row: SIXEL_OPTION_SCHEMA_SNAP_POLICY|NULL|channel_l
 # Registry binding: snap_policy_channel_factor_l|snap_policy_channel_factor_l_override

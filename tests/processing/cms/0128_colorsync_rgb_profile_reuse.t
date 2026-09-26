@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Borrowed ColorSync RGB profiles remain reusable after each temporary transform is deleted.
 set -eux
 result=0

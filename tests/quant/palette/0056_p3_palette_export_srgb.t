@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify Display P3 output exports pre-wire sRGB8 palette values.
-# Policy: docs/functionality/output-colorspace.md
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/output/output-colorspace.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

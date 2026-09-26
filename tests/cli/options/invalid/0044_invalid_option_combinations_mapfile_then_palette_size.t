@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify a mapfile followed by a palette size is rejected.
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 
 set -eux
 

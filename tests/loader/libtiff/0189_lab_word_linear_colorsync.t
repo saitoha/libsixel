@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Verify lab word linear colorsync.
 set -eux
 result=0

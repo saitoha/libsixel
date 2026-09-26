@@ -1,6 +1,6 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# Policy: docs/loader/builtin/png.md
+# Policy: docs/loader/builtin/png/README.md
 # Verify APNG SOURCE and OVER composition stays exact.
 
 set -eux

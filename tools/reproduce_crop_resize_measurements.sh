@@ -14,9 +14,9 @@ IMG2SIXEL_PATH=${IMG2SIXEL_PATH-${BUILD_DIR}/converters/img2sixel}
 SIXEL2PNG_PATH=${SIXEL2PNG_PATH-${BUILD_DIR}/converters/sixel2png}
 LSQA_PATH=${LSQA_PATH-${BUILD_DIR}/assessment/lsqa}
 
-measurement_dir=${1-${TOP_SRCDIR}/docs/functionality/crop-resize/measurements}
-policy_figure_dir=${2-${TOP_SRCDIR}/docs/functionality/crop-resize/figures}
-resampling_figure_dir=${3-${TOP_SRCDIR}/docs/functionality/resampling/figures}
+measurement_dir=${1-${TOP_SRCDIR}/docs/encoder/preprocessing/crop-resize/measurements}
+policy_figure_dir=${2-${TOP_SRCDIR}/docs/encoder/preprocessing/crop-resize/figures}
+resampling_figure_dir=${3-${TOP_SRCDIR}/docs/encoder/preprocessing/resampling/figures}
 input_image=${4-${TOP_SRCDIR}/images/snake.png}
 input_image=$(CDPATH='' cd -- "${input_image%/*}" && pwd -P)/${input_image##*/}
 input_label=${input_image}

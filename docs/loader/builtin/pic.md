@@ -66,7 +66,7 @@ No CMS or orientation stage occurs inside PIC. Later sampling, resize, crop, enc
 
 ### Implementation and test map
 
-![A vertical implementation map of the builtin Softimage PIC loader. It follows magic and PICT recognition into fixed-header and channel-packet parsing, raw or pure and mixed RLE scanline decoding, and common RGBA alpha finalization. Every node carries a coverage ID used by the tables below.](pipeline-figures/pic.svg)
+![A vertical implementation map of the builtin Softimage PIC loader. It follows magic and PICT recognition into fixed-header and channel-packet parsing, raw or pure and mixed RLE scanline decoding, and common RGBA alpha finalization. Every node carries a coverage ID used by the tables below.](figures/pic.svg)
 
 PIC remains inside the adapted stb source, so several conceptual stages share `stbi__pic_load_core()`. They are split in the map because their invariants and tests differ: packet-table validation determines channel ownership, while each scanline compression mode determines how many component tuples are produced.
 
@@ -107,7 +107,7 @@ Dimensions, packet masks, chain length, run counts, and source availability are 
 
 - Predicate, fixed header, packet chain, and RLE: [`stb_image.h`](../../../src/stb_image.h)
 - PIC selection, RGBA request, alpha/background finalization, and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
-- Alpha/background contract: [Alpha Policy](../alpha-policy.md) and [Background Policy](../background-policy.md)
+- Alpha/background contract: [Alpha Policy](../alpha-policy/README.md) and [Background Policy](../background-policy.md)
 - Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
 
 ## Test coverage

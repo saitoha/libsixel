@@ -1,6 +1,6 @@
 #!/bin/sh
 # Run the A-dither 6delta regression via the unified runner.
-# Policy: docs/functionality/delta-encoding.md
+# Policy: docs/encoder/output/delta-encoding.md
 
 set -eux
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/or-mode.md
+# Policy: docs/encoder/output/or-mode/README.md
 # Require the internal parallel indexed request to complete.
 set -eux
 

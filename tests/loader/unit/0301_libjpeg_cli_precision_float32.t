@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/precision.md
+# Policy: docs/encoder/precision/README.md
 # Verify the CLI precision request reaches a selectable byte loader.
 set -eux
 echo "1..1"

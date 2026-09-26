@@ -18,7 +18,7 @@ sixel2png -i image.six -o png:clipboard:
 sixel2png -i clipboard: -o image.png
 ```
 
-SIXEL text and a raster clipboard image have different consumers. Pasting SIXEL text into an ordinary image editor does not make the editor decode SIXEL. A clipboard format label also does not itself transcode bytes: conversion remains the converter's responsibility. In particular, do not infer a TIFF encoder from the clipboard backend's ability to carry TIFF data. For the supported PNG writer and `img2sixel` snapshot behavior, see [PNG writing](../writers/png.md).
+SIXEL text and a raster clipboard image have different consumers. Pasting SIXEL text into an ordinary image editor does not make the editor decode SIXEL. A clipboard format label also does not itself transcode bytes: conversion remains the converter's responsibility. In particular, do not infer a TIFF encoder from the clipboard backend's ability to carry TIFF data. For the supported PNG writer and `img2sixel` snapshot behavior, see [PNG writing](../writers/png/README.md).
 
 Use an explicit image prefix for portable image input. An unprefixed input uses the converter's default request; some backends probe image representations anyway, while others select text. On macOS, the current reader probes PNG, TIFF, then a string. Linux only takes its PNG helper path for a PNG request. Consequently, the same unprefixed clipboard contents need not be selected identically on every OS.
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Verify libtiff builtin CMS output for RGB parametric ICC fixture (types 3/4).
 
 set -eux

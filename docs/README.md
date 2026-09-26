@@ -9,9 +9,9 @@ are grouped by domain so each area can grow without overloading one document.
 - [Project history and lineage](project-history.md) explains how libsixel was
   derived from kmiya's `sixel`, how the project developed, and how community
   contributions shaped it.
-- [SIXEL format overview](sixel-format.md) is a practical guide to the DEC SIXEL wire
+- [SIXEL format overview](sixel-format/README.md) is a practical guide to the DEC SIXEL wire
   format, its control functions, rendering model, and interoperability limits.
-- [SIXEL codec comparison](sixel-format/comparison.md) compares quality, encoding and decoding latency, 7-bit transport size, thread budgets, and repeated generations with JPEG, GIF, PNG, and WebP.
+- [SIXEL codec comparison](sixel-format/comparison/README.md) compares quality, encoding and decoding latency, 7-bit transport size, thread budgets, and repeated generations with JPEG, GIF, PNG, and WebP.
 
 ## Terminal protocols and specification proposals
 
@@ -26,59 +26,76 @@ are grouped by domain so each area can grow without overloading one document.
 
 ## Concepts
 
-- [Color spaces and loader color management](concepts/colorspace.md) explains linear RGB/XYZ conversion hubs, ICC PCS and reference whites, linear-light mixing, and when implicit conversions occur, then connects loader output with the `-X`, `-W`, and `-U` encoder boundaries and shows how to inspect the effective path.
-- [DIN99d and color difference](concepts/din99d.md) illustrates perceptual nearest-color selection, the corrected XYZ transform, common coordinate normalization, and measured palette tradeoffs.
-- [Pixel-format precision](concepts/pixelformat-precision.md) explains the `RGB888` and typed float32 storage contracts, implicit promotion by resize, CMS, and color-space conversion, memory cost, and measured resize quality.
+- [Color spaces and loader color management](concepts/colorspace/README.md) explains linear RGB/XYZ conversion hubs, ICC PCS and reference whites, linear-light mixing, and when implicit conversions occur, then connects loader output with the `-X`, `-W`, and `-U` encoder boundaries and shows how to inspect the effective path.
+- [DIN99d and color difference](concepts/din99d/README.md) illustrates perceptual nearest-color selection, the corrected XYZ transform, common coordinate normalization, and measured palette tradeoffs.
+- [Pixel-format precision](concepts/pixelformat-precision/README.md) explains the `RGB888` and typed float32 storage contracts, implicit promotion by resize, CMS, and color-space conversion, memory cost, and measured resize quality.
 - [Pixel formats and alpha representation](concepts/pixelformat.md) separates
   input memory layouts, frame storage, alpha-zero metadata, and what can be
   represented in a SIXEL stream.
 
-## Functionality
+## Overview
 
-- [Built-in palettes and monochrome output](functionality/fixed-palettes.md) explains `-b`, `-e`, `-i`, palette families, foreground-mask output, construction bypass, and downstream controls.
-
-- [Functional overview](functionality/overview.md) describes the product
+- [Functional overview](overview.md) describes the product
   capabilities, major components, data flow, and architectural boundaries.
-- [Encoding pipeline](functionality/encoding-pipeline.md) connects loading,
+
+## Encoder
+
+- [Encoding pipeline](encoder/pipeline/README.md) connects loading,
   palette construction, palette application, SIXEL byte generation, and their
   composed cost model.
-- [Dequantization](functionality/dequantization.md) explains Kornelski's palette and gradient inference, libsixel's mixing ratios, reconstruction controls, alpha and palette-history boundaries, CPU/GPU execution, and test coverage.
-- [Decoding pipeline](functionality/decoding-pipeline.md) follows SIXEL wire bytes through parser and paint state, raster policy, indexed and direct representations, optional reconstruction and resize, parallel fallback, and PNG output, with a reciprocal coverage audit.
-- [Encoder execution map](functionality/encoder-execution-map.md) expands the implementation path through loader fallback, preprocessing, scheduler overlap, quantizer-specific work, lookup and dither application, and palette serialization.
-- [Crop and resize](functionality/crop-resize.md) defines geometry syntax, crop/resize ordering, resize colorspace and precision policy, its SIMD relationship, measured quality, speed, size, transparency, and public frame helpers.
-- [Resampling](functionality/resampling.md) details resize coordinate mapping, discrete response, moiré, edge normalization, separable passes, threading, SIMD dispatch, visual comparisons, and measured quality, speed, and size. Its [theory and history](functionality/resampling/theory-history.md), [compact methods](functionality/resampling/compact-kernels.md), and [wide-support methods](functionality/resampling/wide-kernels.md) chapters derive the kernels and document each selectable method individually.
-- [Encoding policy](functionality/encode-policy.md) explains `-E`, six-row mask serialization, size-policy overpainting, and measured quality, speed, and stream-size behavior.
-- [Delta encoding (6delta)](functionality/delta-encoding.md) explains `--update-policy`, retained display colors, threshold and palette comparisons, partial-update APIs, invalidation, CPU/GPU scope, and test coverage.
-- [OR-mode output](functionality/or-mode.md) explains `-O`, index-bit composition, `P2=5`, palette-zero and transparency semantics, receiver compatibility, and regression coverage. Its [scaling and decoding study](functionality/or-mode/scaling.md) compares palette budgets, encoder/decoder thread budgets, and in-process versus PNG-inclusive decoding.
-- [High-color output](functionality/high-color.md) explains `-I`, paint-time palette-register semantics, 15bit keys versus actual RGB counts, current parallelism limits, and the required band reset design. Its [measurement reference](functionality/high-color/measurement.md) compares 256-color output, artifacts and banding, histograms, quality, API speed, and stream size.
-- [Terminal macros](functionality/terminal-macros.md) explains `-u` and `-n`, DECDMAC definitions and DECINVM playback, preloading, transfer cost, receiver state, and exact static-image and animation regression coverage.
-- [DRCS-SIXEL output](functionality/drcs.md) explains `-@` / `--drcs`, separate glyph-definition and display-character streams, mapping revisions, cell geometry, receiver requirements, reuse, and current implementation defects.
-- [Animation playback](functionality/animation.md) explains `-l`, `-S`, `-T`, and `-g`, loader/format support, GdkPixbuf loop-count limitations, timing and composition, and interactions with macros, alpha, delta output, and temporal dithering.
-- [External palette input and output](functionality/external-palettes.md) explains `-m` and `-M`, palette-generation and reuse workflows, format origins, application compatibility, format detection, and fixed-palette policy interactions.
-- [Palette construction pipeline](functionality/palette-pipeline.md) defines
-  the sampling, palette-space, binning, and quantization boundaries, joint
-  automatic policy resolution, typed artifacts, and migration waves.
-- [Palette quantization](functionality/quantization.md) explains `-Q`, palette
-  solver objectives, asymptotic costs, and the boundary between palette
-  generation and use.
-- [Final palette merge policy](functionality/merge-policy.md) explains `-F`, Ward oversplit-and-reduce processing, optional Lloyd polishing, measured quality, speed, size, palette geometry, and flat-patch reachability.
-- [Palette cover policy](functionality/cover-policy.md) explains `-a` / `--cover-policy`, post-quantizer gamut reachability repair, soft and hard anchor selection, the links among gamut mapping, Neugebauer printing, and error-diffusion stability, and a three-layer measurement model.
-- [Dither clamp policy](functionality/clamp-policy.md) defines `-0` / `--clamp-policy`, extended-source preservation, signed feedback headroom, and quality tradeoffs.
-- [Palette snap policy](functionality/snap-policy.md) explains how `-_` / `--snap-policy` enables and configures the 101 reversible SIXEL tone levels, working-space target selection, timing, and approach rate.
-- [Palette clustering color space](functionality/clustering-colorspace.md)
-  explains `-X`, its coordinate geometry and normalization, option
-  interactions, and measured quality, speed, and size tradeoffs.
-- [Palette working color space](functionality/working-colorspace.md) explains `-W`, its palette-application geometry, lookup and dither interactions, precision requirements, and measured quality, speed, and size tradeoffs.
-- [Output color space](functionality/output-colorspace.md) explains `-U`, gamma/linear/SMPTE-C output, the selected CPU float Display P3 path, receiver interpretation, percentage rounding, fixed-palette and `-M` interactions, the high-color gap, and test coverage.
-- [Encoder working precision](functionality/precision.md) explains the
+- [Encoder execution map](encoder/execution-map/README.md) expands the implementation path through loader fallback, preprocessing, scheduler overlap, quantizer-specific work, lookup and dither application, and palette serialization.
+- [Encoder working precision](encoder/precision/README.md) explains the
   cross-cutting `--precision` axis, effective 8-bit and float32 paths, and the
   shared quality, speed, and size comparison across processing policies.
-- [Dithering](functionality/dithering.md) explains `-d`, error shaping, scan order, temporal behavior, per-pixel cost, and its interaction with lookup. The [FS coefficient perturbation measurements](functionality/dither-policies/perturb.md) document the optional texture adjustment with RAPSD, flat-field and photographic comparisons, strength and seed controls, and reproducible measurement conditions.
-- [Lookup policy](functionality/lookup-policy.md) defines the `-~` /
+- [Animation playback](encoder/animation.md) explains `-l`, `-S`, `-T`, and `-g`, loader/format support, GdkPixbuf loop-count limitations, timing and composition, and interactions with macros, alpha, delta output, and temporal dithering.
+
+## Encoder: preprocessing
+
+- [Crop and resize](encoder/preprocessing/crop-resize/README.md) defines geometry syntax, crop/resize ordering, resize colorspace and precision policy, its SIMD relationship, measured quality, speed, size, transparency, and public frame helpers.
+- [Resampling](encoder/preprocessing/resampling/README.md) details resize coordinate mapping, discrete response, moiré, edge normalization, separable passes, threading, SIMD dispatch, visual comparisons, and measured quality, speed, and size. Its [theory and history](encoder/preprocessing/resampling/theory-history.md), [compact methods](encoder/preprocessing/resampling/compact-kernels.md), and [wide-support methods](encoder/preprocessing/resampling/wide-kernels.md) chapters derive the kernels and document each selectable method individually.
+
+## Encoder: palette construction
+
+- [Palette construction pipeline](encoder/palette-construction/pipeline/README.md) defines
+  the sampling, palette-space, binning, and quantization boundaries, joint
+  automatic policy resolution, typed artifacts, and migration waves.
+- [Palette quantization](encoder/palette-construction/quantization/README.md) explains `-Q`, palette
+  solver objectives, asymptotic costs, and the boundary between palette
+  generation and use.
+- [Palette clustering color space](encoder/palette-construction/clustering-colorspace/README.md)
+  explains `-X`, its coordinate geometry and normalization, option
+  interactions, and measured quality, speed, and size tradeoffs.
+- [Final palette merge policy](encoder/palette-construction/merge-policy/README.md) explains `-F`, Ward oversplit-and-reduce processing, optional Lloyd polishing, measured quality, speed, size, palette geometry, and flat-patch reachability.
+- [Palette cover policy](encoder/palette-construction/cover-policy/README.md) explains `-a` / `--cover-policy`, post-quantizer gamut reachability repair, soft and hard anchor selection, the links among gamut mapping, Neugebauer printing, and error-diffusion stability, and a three-layer measurement model.
+- [Palette snap policy](encoder/palette-construction/snap-policy/README.md) explains how `-_` / `--snap-policy` enables and configures the 101 reversible SIXEL tone levels, working-space target selection, timing, and approach rate.
+- [Built-in palettes and monochrome output](encoder/palette-construction/fixed-palettes.md) explains `-b`, `-e`, `-i`, palette families, foreground-mask output, construction bypass, and downstream controls.
+- [External palette input and output](encoder/palette-construction/external-palettes.md) explains `-m` and `-M`, palette-generation and reuse workflows, format origins, application compatibility, format detection, and fixed-palette policy interactions.
+
+## Encoder: palette application
+
+- [Palette working color space](encoder/palette-application/working-colorspace/README.md) explains `-W`, its palette-application geometry, lookup and dither interactions, precision requirements, and measured quality, speed, and size tradeoffs.
+- [Lookup policy](encoder/palette-application/lookup-policy/README.md) defines the `-~` /
   `--lookup-policy` interface provided by `img2sixel`, its mathematical basis, exactness guarantees, and
   preparation/query costs. It contains one detailed chapter per policy and a
   measured Delta E, chroma, MS-SSIM, and runtime comparison across palette
   sizes.
+- [Dithering](encoder/palette-application/dithering/README.md) explains `-d`, error shaping, scan order, temporal behavior, per-pixel cost, and its interaction with lookup. The [FS coefficient perturbation measurements](encoder/palette-application/dithering/perturb/README.md) document the optional texture adjustment with RAPSD, flat-field and photographic comparisons, strength and seed controls, and reproducible measurement conditions.
+- [Dither clamp policy](encoder/palette-application/clamp-policy.md) defines `-0` / `--clamp-policy`, extended-source preservation, signed feedback headroom, and quality tradeoffs.
+
+## Encoder: output
+
+- [Encoding policy](encoder/output/encode-policy/README.md) explains `-E`, six-row mask serialization, size-policy overpainting, and measured quality, speed, and stream-size behavior.
+- [Output color space](encoder/output/output-colorspace.md) explains `-U`, gamma/linear/SMPTE-C output, the selected CPU float Display P3 path, receiver interpretation, percentage rounding, fixed-palette and `-M` interactions, the high-color gap, and test coverage.
+- [Delta encoding (6delta)](encoder/output/delta-encoding.md) explains `--update-policy`, retained display colors, threshold and palette comparisons, partial-update APIs, invalidation, CPU/GPU scope, and test coverage.
+- [OR-mode output](encoder/output/or-mode/README.md) explains `-O`, index-bit composition, `P2=5`, palette-zero and transparency semantics, receiver compatibility, and regression coverage. Its [scaling and decoding study](encoder/output/or-mode/scaling.md) compares palette budgets, encoder/decoder thread budgets, and in-process versus PNG-inclusive decoding.
+- [High-color output](encoder/output/high-color/README.md) explains `-I`, paint-time palette-register semantics, 15bit keys versus actual RGB counts, current parallelism limits, and the required band reset design. Its [measurement reference](encoder/output/high-color/measurement.md) compares 256-color output, artifacts and banding, histograms, quality, API speed, and stream size.
+- [DRCS-SIXEL output](encoder/output/drcs.md) explains `-@` / `--drcs`, separate glyph-definition and display-character streams, mapping revisions, cell geometry, receiver requirements, reuse, and current implementation defects.
+- [Terminal macros](encoder/output/terminal-macros.md) explains `-u` and `-n`, DECDMAC definitions and DECINVM playback, preloading, transfer cost, receiver state, and exact static-image and animation regression coverage.
+
+## Decoder
+
+- [Decoding pipeline](decoder/pipeline/README.md) follows SIXEL wire bytes through parser and paint state, raster policy, indexed and direct representations, optional reconstruction and resize, parallel fallback, and PNG output, with a reciprocal coverage audit.
+- [Dequantization](decoder/dequantization/README.md) explains Kornelski's palette and gradient inference, libsixel's mixing ratios, reconstruction controls, alpha and palette-history boundaries, CPU/GPU execution, and test coverage.
 
 ## Image loading
 
@@ -92,13 +109,13 @@ are grouped by domain so each area can grow without overloading one document.
 - [CoreGraphics PNG source precision](loader/coregraphics.md#png-source-precision): original samples, native color definitions, alpha, and failure boundaries.
 - [libpng image loader](loader/libpng.md) separates desired PNG/APNG behavior from current implementation gaps, then documents format support, precision, CMS, alpha/background handling, animation, and test coverage.
 - [libtiff format and color-management support](loader/libtiff.md#format-and-color-management-support) tabulates implemented decode and CMS paths, original Lab/CMYK integration, precision limits, and missing or unverified TIFF variants.
-- [Loader Color Management](loader/color-management.md) defines the backend integration policy, lists current CMS and precision boundaries by loader/format, and compares engines, unsupported profiles, fallback, rendering intents, quality, and speed/memory tradeoffs.
+- [Loader Color Management](loader/color-management/README.md) defines the backend integration policy, lists current CMS and precision boundaries by loader/format, and compares engines, unsupported profiles, fallback, rendering intents, quality, and speed/memory tradeoffs.
 - [PNG color metadata and ColorSync compatibility](loader/png-color-metadata.md): shared grayscale/indexed/RGB reference matrix and source-selection policy.
 - [Builtin CMS specification and architecture](loader/builtin-cms.md) explains the implemented ICC subset, profile and transform ownership, numerical behavior, safety boundaries, and coverage limits.
 - [Builtin PNG source precision](loader/builtin/png-source-precision.md) describes original samples, selected CMS execution, atomic image/background fallback, and independent numeric tests.
 - [Builtin image loader](loader/builtin.md) documents the in-tree format families, precision and colorspace goals, security model, and the extraction history from the original stb_image integration.
 - [Builtin format components](loader/builtin/README.md) indexes one implementation reference per builtin format family, with exact variants, metadata and extension handling, output representation, history, and explicit exclusions.
-- [Alpha policy](loader/alpha-policy.md) defines loader-side background
+- [Alpha policy](loader/alpha-policy/README.md) defines loader-side background
   composition, alpha-zero preservation, SIXEL `P2` requests, terminal-specific
   rendering, and the loader/encoder ownership boundary.
 - [Background policy](loader/background-policy.md) defines how builtin PNG,
@@ -107,7 +124,7 @@ are grouped by domain so each area can grow without overloading one document.
 
 ## Image writing
 
-- [PNG writer](writers/png.md) defines the libpng and builtin writer backends, indexed and direct 8-bit output, and the post-SIXEL PNG snapshot path used by `img2sixel`.
+- [PNG writer](writers/png/README.md) defines the libpng and builtin writer backends, indexed and direct 8-bit output, and the post-SIXEL PNG snapshot path used by `img2sixel`.
 
 ## Command-line interface
 
@@ -120,7 +137,7 @@ are grouped by domain so each area can grow without overloading one document.
 - [Converter suboption architecture](cli/suboptions.md) defines structured option grammar, typed registry metadata, consumer scopes, environment-variable parity, precedence, and implementation flow.
 - [Choice prefix-matching policy](cli/prefix-matching.md) defines exact and unique-prefix resolution, ambiguity, CLI/environment vocabulary separation, and compatibility constraints.
 - [CLI correction-suggestion policy](cli/correction-suggestions.md) defines ambiguous-prefix, fuzzy-name, and nearby-path guidance, including defaults, ranking, diagnostics, performance, and privacy boundaries.
-- [CLI abort trace diagnostics](cli/abort-trace.md) defines the CLI-layer ownership, current converter consumers, non-consuming `lsqa` boundary, controls, platform behavior, representative output, reliability, performance, output-quality boundary, and test coverage of the `SIGABRT` stack trace.
+- [CLI abort trace diagnostics](cli/abort-trace/README.md) defines the CLI-layer ownership, current converter consumers, non-consuming `lsqa` boundary, controls, platform behavior, representative output, reliability, performance, output-quality boundary, and test coverage of the `SIGABRT` stack trace.
 
 ## Quality
 

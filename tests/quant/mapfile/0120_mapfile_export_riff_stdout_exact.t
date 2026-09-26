@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify RIFF PAL export writes its exact binary layout to stdout.
 # Test-plan: docs/testing/mapfile-parser-coverage.md
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 
 set -eux
 

@@ -1,6 +1,6 @@
 # Loader precision, gamut, and fast paths
 
-This policy applies to every loader adapter. It separates the backend's decoded representation from the adapter's color interpretation and from the encoder's later working/output spaces. It defines the contract for new and repaired paths; it does **not** assert that every existing backend and format already meets it. Backend documents and the [loader inventory](README.md#compiled-loader-inventory) identify implemented paths and limitations. See [color management](color-management.md) for engine selection and [encoder precision](../functionality/precision.md) for `-.`.
+This policy applies to every loader adapter. It separates the backend's decoded representation from the adapter's color interpretation and from the encoder's later working/output spaces. It defines the contract for new and repaired paths; it does **not** assert that every existing backend and format already meets it. Backend documents and the [loader inventory](README.md#compiled-loader-inventory) identify implemented paths and limitations. See [color management](color-management/README.md) for engine selection and [encoder precision](../encoder/precision/README.md) for `-.`.
 
 ## Representation is not color meaning
 
@@ -21,7 +21,7 @@ The backend and adapter have separate responsibilities. A backend can legitimate
 | Later processing | Keep the extended values through precision-requiring transforms and processing. A float32 storage format may require double intermediates. |
 | Explicit narrowing | Apply clipping/rounding only at an identified destination boundary that requires bounded/integer values, under that boundary's contract. Do not use narrowing as an internal normalization step. |
 
-See [canonical color spaces](../concepts/colorspace.md), [numeric precision](../concepts/pixelformat-precision.md), [alpha](alpha-policy.md) and [background](background-policy.md) for the detailed contracts. For straight source alpha, hidden RGB remains color data even at alpha zero. Premultiplied backend output requires an explicit association contract; dividing cannot recover colors the backend already erased. SIXEL's binary coverage remains separate from the source's fractional alpha and is resolved according to the alpha policy.
+See [canonical color spaces](../concepts/colorspace/README.md), [numeric precision](../concepts/pixelformat-precision/README.md), [alpha](alpha-policy/README.md) and [background](background-policy.md) for the detailed contracts. For straight source alpha, hidden RGB remains color data even at alpha zero. Premultiplied backend output requires an explicit association contract; dividing cannot recover colors the backend already erased. SIXEL's binary coverage remains separate from the source's fractional alpha and is resolved according to the alpha policy.
 
 “Preserve precision” means avoid unnecessary narrowing and honor a documented numerical error budget, not bitwise equality across different CMMs. “Preserve gamut” means retain the canonical coordinates needed to represent the source color; it does not promise that an arbitrary destination display or output format can reproduce that color. Unsupported profile classes or missing CMS connections must be reported as implementation limitations rather than hidden by a float output tag.
 
@@ -64,4 +64,4 @@ The representative tests below protect extended color coordinates, original samp
 | LP-06 | Precision-requiring partial-alpha composition overrides a byte preference even for an sRGB source. | [tests/loader/coregraphics/expanded/0016_srgb_partial_composite.t](../../tests/loader/coregraphics/expanded/0016_srgb_partial_composite.t) |
 | LP-07 | Failure to allocate the required float frame does not publish a narrowed byte replacement. | [tests/loader/coregraphics/expanded/0020_float_allocation_retry.t](../../tests/loader/coregraphics/expanded/0020_float_allocation_retry.t) |
 
-The [CoreGraphics](coregraphics.md#test-coverage), [libpng](libpng.md#test-coverage), [libtiff](libtiff.md#test-coverage), and [encoder precision](../functionality/precision.md#test-coverage) inventories describe additional implemented routes and their coverage boundaries.
+The [CoreGraphics](coregraphics.md#test-coverage), [libpng](libpng.md#test-coverage), [libtiff](libtiff.md#test-coverage), and [encoder precision](../encoder/precision/README.md#test-coverage) inventories describe additional implemented routes and their coverage boundaries.

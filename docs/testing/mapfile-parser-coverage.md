@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This inventory keeps every mapfile input and output test in `tests/quant/mapfile/` discoverable without treating every malformed-input variant or smoke test as a separate public guarantee. The user-visible format and option contracts remain owned by [External Palette Input and Output](../functionality/external-palettes.md). Tests classified as behavioral contracts carry both a `Policy:` backlink to that document and a `Test-plan:` backlink here. Defensive and supplementary tests carry only `Test-plan:`.
+This inventory keeps every mapfile input and output test in `tests/quant/mapfile/` discoverable without treating every malformed-input variant or smoke test as a separate public guarantee. The user-visible format and option contracts remain owned by [External Palette Input and Output](../encoder/palette-construction/external-palettes.md). Tests classified as behavioral contracts carry both a `Policy:` backlink to that document and a `Test-plan:` backlink here. Defensive and supplementary tests carry only `Test-plan:`.
 
 The observation text below mirrors each test's opening comment. The test itself remains authoritative for fixture construction, exact assertions, skips, and failure localization.
 

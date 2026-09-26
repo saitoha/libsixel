@@ -43,7 +43,7 @@ Palette recovery depends on the output image:
 
 Transparent or partially transparent palette entries are excluded. Coincident RGB entries remain in the recorded table, while their geometric cell is assigned to the first eligible entry. An RGB image cannot reveal an unused palette entry; the report explicitly scopes its geometry to observed colors. More than 256 eligible colors is an error, rather than a request to quantize the input again. Use PNG or another lossless format; JPEG artifacts can create extra colors.
 
-The image palette contains the colors stored in the output image. A PNG decoded from SIXEL can therefore contain percentage-rounded RGB values that differ from a pre-serialization `-M` palette. The analysis preserves those actual output colors. It does not silently substitute encoder-internal entries or simulate a working-space transform. See [External palettes](../functionality/external-palettes.md), [Output color space](../functionality/output-colorspace.md) and [Quality measurement policy](measurement-policy.md).
+The image palette contains the colors stored in the output image. A PNG decoded from SIXEL can therefore contain percentage-rounded RGB values that differ from a pre-serialization `-M` palette. The analysis preserves those actual output colors. It does not silently substitute encoder-internal entries or simulate a working-space transform. See [External palettes](../encoder/palette-construction/external-palettes.md), [Output color space](../encoder/output/output-colorspace.md) and [Quality measurement policy](measurement-policy.md).
 
 ## How automatic extraction works
 

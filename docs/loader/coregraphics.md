@@ -14,7 +14,7 @@ The adapter has indexed, byte RGB, and float32 conversion paths. It can preserve
 
 `orientation=0|1` (`O`, enabled by default) controls application of source orientation. Its environment fallback is `SIXEL_LOADER_COREGRAPHICS_ORIENTATION`, then shared orientation policy. A rotation is applied before the shared crop/resize stages, so it can change which source coordinate a crop addresses.
 
-The adapter recognizes framework animation dictionaries for GIF, APNG, WebP, and HEICS where the host exposes them. It reads delays and loop properties, prefers unclamped delays, and uses one pass when auto looping has no loop metadata. Other multi-image containers are treated as still-image sources. Static HEIC support is not evidence of HEICS animation support. The [animation guide](../functionality/animation.md) owns `-S`, `-T`, and looping details.
+The adapter recognizes framework animation dictionaries for GIF, APNG, WebP, and HEICS where the host exposes them. It reads delays and loop properties, prefers unclamped delays, and uses one pass when auto looping has no loop metadata. Other multi-image containers are treated as still-image sources. Static HEIC support is not evidence of HEICS animation support. The [animation guide](../encoder/animation.md) owns `-S`, `-T`, and looping details.
 
 ## Frame-cache budget
 
@@ -30,7 +30,7 @@ For document previews rather than ordinary ImageIO decoding, see [Quick Look](qu
 
 ## PNG source precision
 
-The CoreGraphics loader uses ImageIO to decode images and select their source color space. For supported static RGB/RGBA PNG inputs, including indexed PNGs that ImageIO expands into straight RGB/RGBA, it reads original straight integer samples from the resulting image provider and converts RGB directly to canonical linear sRGB float32. Alpha is independent coverage and never enters the color transform. See [color definitions and canonical coordinates](../concepts/colorspace.md) and [storage precision](../concepts/pixelformat-precision.md).
+The CoreGraphics loader uses ImageIO to decode images and select their source color space. For supported static RGB/RGBA PNG inputs, including indexed PNGs that ImageIO expands into straight RGB/RGBA, it reads original straight integer samples from the resulting image provider and converts RGB directly to canonical linear sRGB float32. Alpha is independent coverage and never enters the color transform. See [color definitions and canonical coordinates](../concepts/colorspace/README.md) and [storage precision](../concepts/pixelformat-precision/README.md).
 
 ## Source and format boundaries
 
@@ -86,7 +86,7 @@ The original provider remains alive until color conversion and alpha composition
 
 Without a resolved external background, RGB stays straight, including hidden RGB at alpha zero. With a background, only RGB is transformed and the original integer alpha ratio is used for linear-light composition. `keep` and `clear` retain hidden RGB and the zero mask even with a background; `composite` fills alpha-zero pixels only when a background exists.
 
-External background bytes use their declared gamma or linear encoding independently of the source profile. The existing request handling forces an OSC 11 reply to gamma interpretation. CoreGraphics does not select PNG file `bKGD` colors on this path: its background pointer comes from the caller, environment, or terminal query. Adding file-background selection and source-profile interpretation is a separate migration step. See [background policy](background-policy.md) and [alpha policy](alpha-policy.md).
+External background bytes use their declared gamma or linear encoding independently of the source profile. The existing request handling forces an OSC 11 reply to gamma interpretation. CoreGraphics does not select PNG file `bKGD` colors on this path: its background pointer comes from the caller, environment, or terminal query. Adding file-background selection and source-profile interpretation is a separate migration step. See [background policy](background-policy.md) and [alpha policy](alpha-policy/README.md).
 
 ## Why a float destination is insufficient
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify kernel lso2 using fixed numeric expectations.
-# Policy: docs/functionality/clamp-policy.md
+# Policy: docs/encoder/palette-application/clamp-policy.md
 set -eux
 
 echo "1..1"

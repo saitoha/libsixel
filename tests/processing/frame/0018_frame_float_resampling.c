@@ -1,6 +1,6 @@
 /*
  * SPDX-License-Identifier: MIT
- * Policy: docs/concepts/pixelformat-precision.md
+ * Policy: docs/concepts/pixelformat-precision/README.md
  */
 /* Independent small-image interpolation, without production color helpers. */
 #if defined(HAVE_CONFIG_H)

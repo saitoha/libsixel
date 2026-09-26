@@ -17,7 +17,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont, PngImagePlugin
 
 ROOT = Path(__file__).resolve().parent.parent
-OUTPUT = ROOT / "docs/loader/cms-examples"
+OUTPUT = ROOT / "docs/loader/color-management/examples"
 SOURCE = ROOT / "images/snake.png"
 # D65 primary chromaticities from CSS Color 4. Matrices are derived below,
 # rather than using rounded inverse matrices which could bias the comparison.

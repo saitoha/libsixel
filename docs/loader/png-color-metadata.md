@@ -1,6 +1,6 @@
 # PNG color metadata and ColorSync compatibility
 
-This document owns PNG source-color interpretation across CMS-aware loaders, including builtin and libpng. [Loader color management](color-management.md) owns CMS engine selection, targets, supported profiles, and the other formats' test entry points. Container metadata selection precedes profile evaluation; changing the CMS engine does not select a different PNG precedence policy.
+This document owns PNG source-color interpretation across CMS-aware loaders, including builtin and libpng. [Loader color management](color-management/README.md) owns CMS engine selection, targets, supported profiles, and the other formats' test entry points. Container metadata selection precedes profile evaluation; changing the CMS engine does not select a different PNG precedence policy.
 
 ## Existing reference matrix
 
@@ -374,7 +374,7 @@ Inputs below use the bit order iCCP/sRGB/cHRM/gAMA. Every test explicitly select
 
 ### Coverage boundary
 
-The 48 input combinations cover three static eight-bit color models, not every depth, alpha representation, interlace mode, malformed profile, rendering intent, or CMS backend. The exact probes supplement this matrix for static and animated paths. They do not establish identical pixels for every ColorSync version or complete ICC dialect support. Structural rejection and animation recovery have separate owners in the [libpng loader contracts](libpng.md#test-coverage) and [builtin PNG guide](builtin/png.md).
+The 48 input combinations cover three static eight-bit color models, not every depth, alpha representation, interlace mode, malformed profile, rendering intent, or CMS backend. The exact probes supplement this matrix for static and animated paths. They do not establish identical pixels for every ColorSync version or complete ICC dialect support. Structural rejection and animation recovery have separate owners in the [libpng loader contracts](libpng.md#test-coverage) and [builtin PNG guide](builtin/png/README.md).
 
 ### libpng integer-grid boundary contracts
 

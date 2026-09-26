@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify sRGB mapfile entries select and emit the matching source pixel in -Wlinear.
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 # Test-plan: docs/testing/mapfile-parser-coverage.md
 set -eux
 

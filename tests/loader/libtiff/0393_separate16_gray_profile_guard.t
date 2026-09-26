@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/loader/libtiff.md
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Contiguous Gray16 rejects an RGB profile before apply through the shared checked helper.
 set -eux
 export SIXEL_LOADER_CMS_COLORSYNC_NATIVE_GAMMA=0

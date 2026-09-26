@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify the registered selective-blur threshold environment value is applied.
-# Policy: docs/functionality/dequantization.md
+# Policy: docs/decoder/dequantization/README.md
 
 set -eux
 

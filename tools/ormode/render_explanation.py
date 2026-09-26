@@ -5,7 +5,7 @@ from html import escape
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / "docs/functionality/or-mode"
+OUT = ROOT / "docs/encoder/output/or-mode"
 COLORS = ["#fff", "#f4ad9f", "#f8d777", "#a9d7a5", "#a9ceef", "#d2b5eb", "#f1bfdb"]
 INK = "#172b40"
 TEAL = "#087f83"

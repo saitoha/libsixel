@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/snap-policy.md
+# Policy: docs/encoder/palette-construction/snap-policy/README.md
 # A zero approach rate must preserve the snap-disabled typed pipeline.
 set -eux
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Compare hamming non-integer 3:4 enlargement with the independent PPM oracle.
-# Policy: docs/functionality/resampling/compact-kernels.md
+# Policy: docs/encoder/preprocessing/resampling/compact-kernels.md
 set -eux
 
 echo "1..1"

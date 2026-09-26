@@ -1268,7 +1268,7 @@ charsets for successive images or restore mapping modes afterward.
 This option requires a controlling \fB/dev/tty\fP reporting both character
 and pixel dimensions via \fBTIOCGWINSZ\fP, even with file output.
 It is incompatible with \fB\-u\fP and \fB\-n\fP.
-See \fBdocs/functionality/drcs.md\fP for mapping modes, cell layout, and current
+See \fBdocs/encoder/output/drcs.md\fP for mapping modes, cell layout, and current
 experimental implementation defects.
 .TP 5
 .B \-O, \-\-ormode
@@ -1468,7 +1468,7 @@ Macro output cannot be combined with DRCS output. Outer DECDMAC and
 DECINVM controls are written outside the SIXEL writer's multiplexer
 wrapping, so ordinary SIXEL passthrough does not establish macro support.
 For the wire syntax, cost model, examples, and coverage boundaries,
-see docs/functionality/terminal-macros.md in the source distribution.
+see docs/encoder/output/terminal-macros.md in the source distribution.
 .SH "ENVIRONMENT VARIABLES"
 \fIimg2sixel\fP honours the following environment variables:
 .TP 5

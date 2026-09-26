@@ -13,7 +13,7 @@ GIT=${GIT-git}
 IMG2SIXEL_PATH=${IMG2SIXEL_PATH-${BUILD_DIR}/converters/img2sixel}
 LSQA_PATH=${LSQA_PATH-${BUILD_DIR}/assessment/lsqa}
 
-output_dir=${1-${TOP_SRCDIR}/docs/functionality/merge-policies/measurements}
+output_dir=${1-${TOP_SRCDIR}/docs/encoder/palette-construction/merge-policy/measurements}
 input_image=${2-images/snake.png}
 warmups=${MERGE_POLICY_WARMUPS-2}
 runs=${MERGE_POLICY_RUNS-7}

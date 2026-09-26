@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify image-mapfile pixel frequencies affect reduction above 256 colors.
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 
 set -eux
 

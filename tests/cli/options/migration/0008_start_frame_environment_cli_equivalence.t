@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/animation.md
+# Policy: docs/encoder/animation.md
 # Preserve start-frame environment equivalence with -T during migration.
 
 set -eux

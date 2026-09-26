@@ -90,7 +90,7 @@ Unmanaged output remains eight-bit gamma RGB/PAL8 plus optional transparency sta
 
 ### Implementation and test map
 
-![A vertical implementation map of the builtin TGA loader. It follows the signature-less structural probe into managed float color normalization or the legacy indexed-palette and byte-alpha paths, using the adapted raw and packet-RLE raster decoder and vertical-origin normalization. Every node carries a coverage ID used by the tables below.](pipeline-figures/tga.svg)
+![A vertical implementation map of the builtin TGA loader. It follows the signature-less structural probe into managed float color normalization or the legacy indexed-palette and byte-alpha paths, using the adapted raw and packet-RLE raster decoder and vertical-origin normalization. Every node carries a coverage ID used by the tables below.](figures/tga.svg)
 
 TGA is the one map here whose first node is necessarily a weak probe. Managed color input bypasses the legacy palette and byte-alpha finalizers. The indexed fast path and general `stbi__tga_load()` path are alternatives; their alpha behavior is not equivalent, so the map names their distinct entry points and conditions.
 
@@ -133,7 +133,7 @@ Weak recognition, dimensions, palette sizes, index values, and RLE commands are 
 
 - TGA predicate, indexed parser, and general decode: [`stb_image.h`](../../../src/stb_image.h)
 - Palette fusion, palette-alpha folding, direct-alpha selection, and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
-- Alpha/background contract: [Alpha Policy](../alpha-policy.md) and [Background Policy](../background-policy.md)
+- Alpha/background contract: [Alpha Policy](../alpha-policy/README.md) and [Background Policy](../background-policy.md)
 - Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
 - Forced raw/RLE and indexed/truecolor/grayscale fuzz entry points: [`fuzz-loader-builtin-libfuzzer.c`](../../../fuzz/fuzz-loader-builtin-libfuzzer.c)
 

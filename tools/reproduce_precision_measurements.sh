@@ -13,7 +13,7 @@ GIT=${GIT-git}
 IMG2SIXEL_PATH=${IMG2SIXEL_PATH-${BUILD_DIR}/converters/img2sixel}
 LSQA_PATH=${LSQA_PATH-${BUILD_DIR}/assessment/lsqa}
 
-output_dir=${1-${TOP_SRCDIR}/docs/functionality/precision/measurements}
+output_dir=${1-${TOP_SRCDIR}/docs/encoder/precision/measurements}
 input_image=${2-images/snake.png}
 warmups=${PRECISION_WARMUPS-2}
 runs=${PRECISION_RUNS-7}

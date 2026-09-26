@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/cli/suboptions.md
-# Policy: docs/functionality/dequantization.md
+# Policy: docs/decoder/dequantization/README.md
 # Verify lsqa accepts selective_blur full and compact forms.
 
 set -eux

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/concepts/pixelformat-precision.md
+# Policy: docs/concepts/pixelformat-precision/README.md
 # Verify float frame clip negative y atomic.
 set -eux
 echo "1..1"

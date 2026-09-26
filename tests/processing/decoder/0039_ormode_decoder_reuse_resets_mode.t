@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/or-mode.md
+# Policy: docs/encoder/output/or-mode/README.md
 # Decode OR then normal with the same decoder without leaking OR state.
 set -eux
 

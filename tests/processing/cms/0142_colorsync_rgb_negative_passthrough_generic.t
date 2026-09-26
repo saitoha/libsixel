@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Verify ColorSync negative passthrough generic against the original native transform.
 # Every pixel has an outside source component; mixed pixels have separate tests.
 set -eux

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/or-mode.md
+# Policy: docs/encoder/output/or-mode/README.md
 # Verify default output does not select the OR-mode DCS header.
 set -eux
 

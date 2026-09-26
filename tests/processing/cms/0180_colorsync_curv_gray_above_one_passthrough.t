@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # ColorSync curv gray above one passthrough preserves its value or native behavior contract.
 # Every pixel has an outside source component; mixed pixels have separate tests.
 set -eux

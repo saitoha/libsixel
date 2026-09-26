@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify automatic output color policy: outfile-file-dash.
-# Policy: docs/functionality/output-colorspace.md
+# Policy: docs/encoder/output/output-colorspace.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 -a "${HAVE_LIBPNG-}" = 1 || {

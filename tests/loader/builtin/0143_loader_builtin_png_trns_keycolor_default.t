@@ -1,6 +1,6 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# Policy: docs/loader/builtin/png.md
+# Policy: docs/loader/builtin/png/README.md
 # Verify the PNG tRNS keycolor default directly, without a pixel difference.
 set -eux
 echo "1..1"

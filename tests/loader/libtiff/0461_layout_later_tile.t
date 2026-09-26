@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/loader/libtiff.md
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Mandatory later tile failure is terminal; the same component recovers.
 set -eux
 export SIXEL_LOADER_CMS_COLORSYNC_NATIVE_GAMMA=0

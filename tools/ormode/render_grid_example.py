@@ -6,7 +6,7 @@ import re
 from html import escape
 from pathlib import Path
 
-OUT = Path(__file__).resolve().parents[2] / "docs/functionality/or-mode/grid-example"
+OUT = Path(__file__).resolve().parents[2] / "docs/encoder/output/or-mode/grid-example"
 DATA = json.loads((OUT / "example.json").read_text())
 ROWS = DATA["rows"]
 COLORS = ["#" + "".join(f"{c:02x}" for c in rgb) for rgb in DATA["palette"]]

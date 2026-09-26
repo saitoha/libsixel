@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify oriented P3 TIFF values with automatic precision.
-# Policy: docs/functionality/output-colorspace.md
+# Policy: docs/encoder/output/output-colorspace.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

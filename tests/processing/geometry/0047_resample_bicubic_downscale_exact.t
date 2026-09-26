@@ -1,6 +1,6 @@
 #!/bin/sh
 # Compare bicubic strong 4:1 reduction with the independent PPM oracle.
-# Policy: docs/functionality/resampling/wide-kernels.md
+# Policy: docs/encoder/preprocessing/resampling/wide-kernels.md
 set -eux
 
 echo "1..1"

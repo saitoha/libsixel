@@ -89,7 +89,7 @@ still use their required float32 intermediate coordinates; this does not turn
 the shared gamma working raster into `rgb-f32`. Precision remains an
 independent experiment across the whole encoder. The current scaling curves
 describe only the true 8-bit profile above; the controlled single-thread
-cross-section in [Encoder Working Precision](../functionality/precision.md)
+cross-section in [Encoder Working Precision](../encoder/precision/README.md)
 shows the corresponding policy-wide float32 cost and output sensitivity.
 
 At 256 colors the current automatic dither work-band overlap is zero. This is

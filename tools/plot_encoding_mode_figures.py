@@ -762,12 +762,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--encode-output-dir",
         type=Path,
-        default=root / "docs/functionality/encode-policy-figures",
+        default=root / "docs/encoder/output/encode-policy/figures",
     )
     parser.add_argument(
         "--high-color-output-dir",
         type=Path,
-        default=root / "docs/functionality/high-color-figures",
+        default=root / "docs/encoder/output/high-color/figures",
     )
     parser.add_argument("--check", action="store_true")
     return parser.parse_args()

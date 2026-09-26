@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/loader/libtiff.md
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Preserve the six IEEEFP32-alpha rejection outcomes without a callback.
 set -eux
 result=0

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/loader/builtin-cms.md
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # TAP runner for builtin ICC RGB/GRAY v4 parser/apply coverage.
 
 set -eux

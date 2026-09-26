@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Separate conversion succeeds; an expanding exact alias is rejected intact.
 set -eux
 result=0

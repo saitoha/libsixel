@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # known-profile rejection trace and excluded source/destination controls
 set -eux
 result=0

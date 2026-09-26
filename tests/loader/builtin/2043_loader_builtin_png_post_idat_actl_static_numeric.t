@@ -1,6 +1,6 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# Policy: docs/loader/builtin/png.md
+# Policy: docs/loader/builtin/png/README.md
 # Verify acTL after the first IDAT does not classify a static PNG as APNG.
 
 set -eux

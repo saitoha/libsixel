@@ -76,7 +76,7 @@ Float output prevents an avoidable byte rounding between JPEG component conversi
 
 ### Implementation and test map
 
-![A vertical implementation map of the builtin JPEG loader. It follows SOI routing and byte-versus-float planning into marker parsing, sequential, progressive, or lossless entropy decode, component and colorspace conversion, ICC application, and orientation-aware typed-frame output. Every node carries a coverage ID used by the tables below.](pipeline-figures/jpeg.svg)
+![A vertical implementation map of the builtin JPEG loader. It follows SOI routing and byte-versus-float planning into marker parsing, sequential, progressive, or lossless entropy decode, component and colorspace conversion, ICC application, and orientation-aware typed-frame output. Every node carries a coverage ID used by the tables below.](figures/jpeg.svg)
 
 The byte and float paths share marker and entropy machinery but diverge before component conversion. In particular, high-depth/lossless samples enter `load_jpeg_image_float_high_precision()`; documenting only the final `RGB` label would hide the precision boundary that resize and CMS tests depend on.
 
@@ -119,7 +119,7 @@ JPEG entropy decode and high-depth prediction operate on attacker-controlled sym
 
 - Entropy, DCT/progressive/lossless decode and component conversion: [`stb_image.h`](../../../src/stb_image.h)
 - Precision selection, ICC assembly, orientation, and frame creation: [`loader-builtin.c`](../../../src/loader-builtin.c)
-- Loader color contract: [Color Spaces and Loader Color Management](../../concepts/colorspace.md)
+- Loader color contract: [Color Spaces and Loader Color Management](../../concepts/colorspace/README.md)
 - Broader non-owning JPEG regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
 
 ## Test coverage

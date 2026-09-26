@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/concepts/pixelformat-precision.md
+# Policy: docs/concepts/pixelformat-precision/README.md
 # Verify frame float domain atomic.
 set -eux
 echo "1..1"

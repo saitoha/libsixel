@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/loader/libpng.md
-# Policy: docs/loader/builtin/png.md
+# Policy: docs/loader/builtin/png/README.md
 # TAP test: PNGSuite case for basic/basn6a16.png with direct LSQA comparison.
 
 # Reference image generation command:

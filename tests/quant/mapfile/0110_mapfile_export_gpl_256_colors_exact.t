@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify GPL export writes all 256 canonical rows exactly.
 # Test-plan: docs/testing/mapfile-parser-coverage.md
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 
 set -eux
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/terminal-macros.md
+# Policy: docs/encoder/output/terminal-macros.md
 # Verify each first-pass animation frame is defined then invoked.
 
 set -eux

@@ -1084,7 +1084,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=source_root / "docs/functionality/cover-policy-figures",
+        default=source_root / "docs/encoder/palette-construction/cover-policy/figures",
         help="directory for generated SVG, APNG, and manifest files",
     )
     parser.add_argument(

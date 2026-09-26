@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify GPL import rejects a UTF-16 big-endian BOM.
 # Test-plan: docs/testing/mapfile-parser-coverage.md
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 
 set -eux
 

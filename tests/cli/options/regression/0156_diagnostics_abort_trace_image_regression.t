@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify abort trace policy through short and environment paths.
-# Policy: docs/cli/abort-trace.md
+# Policy: docs/cli/abort-trace/README.md
 # Registry row: SIXEL_OPTION_SCHEMA_DIAGNOSTICS|NULL|abort_trace
 # Registry binding: abort_trace|abort_trace_override
 # Abort trace contract: enabled=0|installed=0

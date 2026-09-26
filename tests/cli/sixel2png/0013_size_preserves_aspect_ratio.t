@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify sixel2png -s scales the longer edge and preserves aspect ratio.
-# Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/decoder/pipeline/README.md
 # Policy: docs/misc/platforms/solaris.md
 # Coverage: SOL-03
 

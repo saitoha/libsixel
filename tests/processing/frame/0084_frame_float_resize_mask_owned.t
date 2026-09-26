@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/concepts/pixelformat-precision.md
+# Policy: docs/concepts/pixelformat-precision/README.md
 # Verify extended color and bounded transparent-mask interpolation together.
 set -eux
 echo "1..1"

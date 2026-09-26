@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify 6delta rejects composite alpha handling.
-# Policy: docs/functionality/delta-encoding.md
-# Policy: docs/loader/alpha-policy.md
+# Policy: docs/encoder/output/delta-encoding.md
+# Policy: docs/loader/alpha-policy/README.md
 
 set -eux
 

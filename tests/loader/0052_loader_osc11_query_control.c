@@ -1,6 +1,6 @@
 /*
  * Verify loader-side OSC11 query eligibility.
- * Policy: docs/loader/alpha-policy.md
+ * Policy: docs/loader/alpha-policy/README.md
  * Policy: docs/loader/background-policy.md
  */
 

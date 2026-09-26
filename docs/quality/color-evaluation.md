@@ -45,7 +45,7 @@ lsqa -D -Rdisplay-p3 -Tdisplay-p3 -m DELTA_E00 stable.six redefined.six
 producer | lsqa --direct -Tdisplay-p3 reference.png -
 ```
 
-Direct rendering executes the existing decoder's painting semantics. For ordinary SIXEL paint, a later register definition does not recolor already painted pixels; repainting replaces only the covered pixels. The adapter first retains original RGBA samples and unpainted alpha, then applies explicit input definitions into extended float32 linear sRGB. It does not use the RGB8 palette-transform callback for that conversion, which would clip extended colors. The decoder's existing OR-mode semantics remain as described in the [decoding pipeline](../functionality/decoding-pipeline.md).
+Direct rendering executes the existing decoder's painting semantics. For ordinary SIXEL paint, a later register definition does not recolor already painted pixels; repainting replaces only the covered pixels. The adapter first retains original RGBA samples and unpainted alpha, then applies explicit input definitions into extended float32 linear sRGB. It does not use the RGB8 palette-transform callback for that conversion, which would clip extended colors. The decoder's existing OR-mode semantics remain as described in the [decoding pipeline](../decoder/pipeline/README.md).
 
 For direct SIXEL, unpainted regions use `-B`, or black, in encoded sRGB independently of the input definition. Painted RGB endpoints remain exact before explicit color conversion. Other formats keep their normal loader behavior; this includes PNG from a file or either input's stdin. The opt-in format check reuses the loaded chunk, so a pipe is consumed only once and loader source metadata remains available. Explicit PNG overrides remain unsupported.
 
@@ -105,7 +105,7 @@ Tests distinguish same physical colors in different coordinates, identical RGB n
 
 The `png-samples.json` and `png-samples.h` fixtures additionally separate source RGB/RGBA integers at 8 and 16 bits, ideal P3 coordinates, exact encoded ICC matrix/TRC coefficients, and sRGB override expectations. The 16 small PNGs include tagged and untagged samples, orientation 6, and a green file background. Alpha remains independent coverage (`integer / 255` or `integer / 65535`). Their midtones are 128/255 and 32768/65535, neither the analytic 0.5 fixture. These independent fixtures define the loader integration target; their existence does not establish that the current loader retains extended color.
 
-See the [measurement policy](measurement-policy.md) for unchanged sRGB MS-SSIM gates and the [loader CMS guide](../loader/color-management.md) for the legacy normalization boundary.
+See the [measurement policy](measurement-policy.md) for unchanged sRGB MS-SSIM gates and the [loader CMS guide](../loader/color-management/README.md) for the legacy normalization boundary.
 
 ## Test coverage
 

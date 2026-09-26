@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify SIXEL_ALPHA_POLICY is equivalent to -A.
-# Policy: docs/loader/alpha-policy.md
+# Policy: docs/loader/alpha-policy/README.md
 
 set -eux
 

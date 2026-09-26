@@ -1,6 +1,6 @@
 # Resampling regression coverage
 
-This inventory complements the public kernel contracts in the [compact](../functionality/resampling/compact-kernels.md) and [wide-support](../functionality/resampling/wide-kernels.md) method references. Those references own the method-specific exact PPM tests. This document groups cross-policy and measurement-regression probes that are valuable for fault localization but do not define universal byte-identity or benchmark promises.
+This inventory complements the public kernel contracts in the [compact](../encoder/preprocessing/resampling/compact-kernels.md) and [wide-support](../encoder/preprocessing/resampling/wide-kernels.md) method references. Those references own the method-specific exact PPM tests. This document groups cross-policy and measurement-regression probes that are valuable for fault localization but do not define universal byte-identity or benchmark promises.
 
 ## Precision, SIMD, and threading intersections
 

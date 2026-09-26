@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/cover-policy.md
+# Policy: docs/encoder/palette-construction/cover-policy/README.md
 # Verify cover-policy grow preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_COVER_POLICY|NULL|cover_grow
 # Registry binding: cover_policy_grow|cover_policy_grow_override

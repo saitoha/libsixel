@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/precision.md
+# Policy: docs/encoder/precision/README.md
 # Verify libjpeg none CMS float preference.
 set -eux
 echo "1..1"

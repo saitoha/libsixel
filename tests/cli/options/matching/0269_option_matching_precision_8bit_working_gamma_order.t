@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify gamma working space restores the 8-bit precision request.
-# Policy: docs/functionality/working-colorspace.md
+# Policy: docs/encoder/palette-application/working-colorspace/README.md
 
 set -eux
 

@@ -1,6 +1,6 @@
 #!/bin/sh
-# Policy: docs/functionality/snap-policy.md
-# Policy: docs/functionality/output-colorspace.md
+# Policy: docs/encoder/palette-construction/snap-policy/README.md
+# Policy: docs/encoder/output/output-colorspace.md
 # Verify exact snap and output conversion produce SMPTE-C wire values.
 set -eux
 

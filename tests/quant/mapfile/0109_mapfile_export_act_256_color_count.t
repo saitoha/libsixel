@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify ACT export writes the 256-color big-endian count.
 # Test-plan: docs/testing/mapfile-parser-coverage.md
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 
 set -eux
 

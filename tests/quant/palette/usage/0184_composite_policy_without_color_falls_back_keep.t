@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify composite policy falls back to P2=1 without a resolved color.
-# Policy: docs/loader/alpha-policy.md
+# Policy: docs/loader/alpha-policy/README.md
 
 set -eux
 

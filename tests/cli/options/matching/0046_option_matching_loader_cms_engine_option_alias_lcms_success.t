@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify --cms-engine=lcms reaches the canonical loader setting.
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # This owns alias/precedence resolution, not CMS execution or color accuracy.
 # Inspect the last complete record for this loader and key.
 set -eux

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify built-in palette GPL export remains stable.
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

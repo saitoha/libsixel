@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Policy: docs/cli/design-policy.md
 # env-only gamma suffix uses the shared scalar registry contract.
 set -eux

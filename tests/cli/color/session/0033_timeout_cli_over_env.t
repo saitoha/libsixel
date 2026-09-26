@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify automatic output color policy: timeout-cli-over-env.
 # CLI-color: auto:timeout_ms precedence
-# Policy: docs/functionality/output-colorspace.md
+# Policy: docs/encoder/output/output-colorspace.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 -a "${HAVE_LIBPNG-}" = 1 || {

@@ -1,7 +1,7 @@
 #!/bin/sh
-# Policy: docs/functionality/animation.md
+# Policy: docs/encoder/animation.md
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# Policy: docs/loader/builtin/png.md
+# Policy: docs/loader/builtin/png/README.md
 # Verify APNG delay, frame, loop, and multiframe metadata exactly.
 
 set -eux

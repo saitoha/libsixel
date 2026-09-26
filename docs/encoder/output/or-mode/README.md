@@ -1,0 +1,404 @@
+# OR-mode output
+
+`img2sixel -O` (or `--ormode`) encodes palette indices as overlapping bit planes. The receiver combines the selected index bits with bitwise OR, then looks up the resulting index in the palette. This is a SIXEL dialect signaled by `P2=5`, so ordinary SIXEL support alone does not establish compatibility.
+
+The [img2sixel manual](../../../../converters/img2sixel.1) attributes the dialect to the NetBSD/x68k `ite` console and the `sayaka` client. This document describes the current libsixel implementation; it does not certify current versions of those or other receivers.
+
+## The idea, step by step
+
+Think of an image as a sheet of numbered squares, accompanied by a color chart. A square marked **5** means “use color 5 from the chart.” That number is a label, not a brightness or a mixture of colors. The chart is the **palette**, and the labels are **palette indices**. OR mode changes how those labels are sent after the image has been reduced to a palette.
+
+[arakiken's article](https://qiita.com/arakiken/items/26f6c67da5a9f9f907ac) explains the motivation through older computers whose display memory stores each bit of a color number in a separate layer. OR mode applies the same arrangement to SIXEL transmission. The example below uses a smaller, independently constructed image to walk through the current [libsixel encoder](../../../../src/encoder-core-encode.c).
+
+### Ordinary SIXEL: a stencil for each color
+
+Imagine painting through a stencil: its holes say which squares receive the currently selected color. Ordinary SIXEL sends that kind of pattern. It selects a palette color, marks the positions to paint, then selects another color and sends another pattern.
+
+SIXEL groups **six vertically adjacent pixels** into one data character. Within that group, a character can mark any combination of positions, but an ordinary painting operation uses just one selected color. If all six positions have different colors, they cannot all be painted by that one operation. If they share a color, a single character can mark all six.
+
+### OR mode: a stencil for each bit of the color number
+
+Instead of asking “which squares are color 5?”, the OR encoder asks “which squares have the 1-bit set?”, then repeats for the 2-bit, the 4-bit, and so on. Each resulting yes/no stencil is called a **bit plane**. These are layers of numbers, not translucent layers of colored paint.
+
+For an eight-entry palette numbered 0 through 7, three switches with values **1, 2, and 4** can represent every label. For example, 5 uses the 1 and 4 switches; 6 uses the 2 and 4 switches. Consider this single column of six pixels:
+
+<picture>
+  <source media="(max-width: 640px)" srcset="encoding-explained-mobile.svg">
+  <img alt="The same six pixels numbered 1 through 6 need six ordinary color stencils or three OR bit stencils. Pixel E receives bits 1 and 4, reconstructing palette index 5 and its original purple color." src="encoding-explained.svg">
+</picture>
+
+*Read each stencil column from top to bottom: 1 marks a pixel and 0 leaves it unmarked. Each column becomes one SIXEL pattern character, shown underneath. The colors in the input are illustrative palette entries; teal marks index bits, not a new paint color. The lower panel follows pixel E through reconstruction and palette lookup.*
+
+| Pixel, top to bottom | Desired palette index | Plane 1 | Plane 2 | Plane 4 |
+| --- | ---: | :---: | :---: | :---: |
+| A | 1 | On | Off | Off |
+| B | 2 | Off | On | Off |
+| C | 3 | On | On | Off |
+| D | 4 | Off | Off | On |
+| E | 5 | On | Off | On |
+| F | 6 | Off | On | On |
+
+Read each plane column vertically. Plane 1 marks A, C, and E; plane 2 marks B, C, and F; plane 4 marks D, E, and F. Each is a six-position yes/no pattern that fits into one SIXEL data character. This simple example therefore needs **three plane-pattern characters**, compared with **six color-pattern characters** for straightforward ordinary painting. This counts only the pattern characters, not headers, palette definitions, selectors, or cursor movement; it is not a claim that a complete file becomes half as large.
+
+### The receiver puts the number back together
+
+Start each pixel's number at zero. When a plane marks that pixel, turn on the corresponding switch without turning off any switch already set. This is the **OR** operation that names the mode. For pixel E, receiving plane 1 gives 1, plane 2 leaves it unchanged, and plane 4 changes it to 5. The receiver then looks up palette entry 5 and displays that color.
+
+Because each plane represents a different switch, adding its value once gives the same result in this example. OR is more precise than ordinary addition: receiving the 1-bit twice still leaves it at 1, not 2. A zero in a plane means “do not add this bit,” not “erase this pixel.”
+
+The color chart has not changed, and reconstructing the same number selects exactly the same chart entry. This explains why the decomposition itself does not discard color information. It does not undo the color reduction that happened before encoding, and source transparency needs the separate treatment described [below](#palette-transparency-and-other-options).
+
+### Why this can help, and why it is not always smaller or faster
+
+A palette of 16 entries needs four bit planes; 256 entries need eight. In a busy, dithered image, one plane can describe positions belonging to many different colors together. In a flat-color area, ordinary SIXEL may already describe the pixels with very few operations. The arrangement of repeated patterns and the encoder's optimizations determine the actual byte count, so counting planes alone does not predict the saving.
+
+The display-memory arrangement described in arakiken's article also suggests a receiver that consumes these planes directly. A receiver that needs complete pixel colors must instead reconstruct the indices and look them up. Our [measurements](scaling.md#photo-set-decoder-results) show why that distinction matters: smaller OR streams usually decoded more slowly in the measured libsixel CPU decoder. Use OR mode with a compatible receiver and evaluate size, encoding time, and decoding time separately.
+
+## From a grid image to actual output
+
+The following example makes the transmitted characters concrete. It uses an opaque **3-column × 6-row image with eight palette entries**, so the entire image fits in one SIXEL band. Every square is one pixel; the number inside it selects a color from the illustrated palette. The earlier six-pixel diagram explains the principle, while this grid shows an actual encoder result.
+
+<picture>
+  <source media="(max-width: 640px)" srcset="grid-example/grid-mobile.svg">
+  <img alt="A 3 by 6 indexed image split into eight ordinary color masks and three OR bit masks. Each grid column has its actual SIXEL character underneath, followed by the complete drawing body. Normal encoding uses 45 body bytes, OR uses 19, and both reconstruct the same RGB image." src="grid-example/grid.svg">
+</picture>
+
+*The normal masks follow the encoder's actual output order, rather than numerical palette order. A 1 means “paint here” or “set this index bit”; a dot means no operation. Read the three columns of each mask from left to right. Characters missing beneath an all-empty trailing column were omitted by the encoder. An internal empty column uses `?` to advance without painting.*
+
+### The literal drawing commands
+
+The normal drawing body is:
+
+```text
+#6C?O$#3A?G$#1G@_$#0@_C$#7_C$#4OA$#5?OA$#2?G@
+```
+
+For example, `#6C?O` selects color 6. `C` marks the third pixel down in the first column, `?` skips the second column, and `O` marks the fifth pixel down in the third column. `$` then returns to the left edge of the same six-row band before another color is selected. Compare these positions with the two squares numbered 6 in the source grid.
+
+The OR drawing body is:
+
+```text
+#1iTi$#2eKX$#4sUQ$-
+```
+
+Here `#1iTi` sends the three columns of the 1-bit plane. `#2eKX` and `#4sUQ` send the 2-bit and 4-bit planes. `$` returns to the left edge; the final `-` advances to the next six-row band and is included in the recorded byte count. The palette lookup occurs after the index bits have been combined. For the top-right source pixel, planes 1 and 4 are off and plane 2 is on, recovering index 2 and its yellow palette color.
+
+To see how a column becomes a character, follow the first column of plane 1. Its six positions, top to bottom, are **0, 1, 0, 1, 0, 1**. SIXEL assigns these vertical positions weights **1, 2, 4, 8, 16, 32**. The marked positions total `2 + 8 + 32 = 42`. Adding the SIXEL character offset of 63 gives ASCII code 105, the character `i`. These six vertical-position bits are distinct from the three palette-index bits represented by the planes.
+
+### Exact files and reproduction
+
+The [input PNG](grid-example/input.png), [normal SIXEL file](grid-example/normal.six), [OR SIXEL file](grid-example/or.six), and [recorded palette and results](grid-example/example.json) accompany the figure. The drawing bodies occupy **45 normal bytes and 19 OR bytes**. Complete streams occupy **170 and 147 bytes**, respectively, because they also contain the raster attributes, palette definitions, DCS header, and terminator. Normal framing starts with `ESC P q`; OR framing starts with `ESC P 7;5 q`. Both streams declare `"1;1;3;6`, use the same eight palette definitions, and end with `ESC` followed by a backslash. Spaces here separate explanatory tokens and are not transmitted.
+
+These outputs were generated from the fixed indexed raster with the study's pinned libsixel revision `cf4cb3439aedec252b68bbc3674b10aa2bf0145f`, using the low-level encoder, RGB palette syntax, palette optimization disabled, and **fast** encode policy. This preserves the color labels and keeps the ordinary per-color masks easy to follow. It is an encoding walkthrough, not the `-Esize` performance comparison; different policies can produce different valid commands. Both files were decoded to RGB and checked byte-for-byte against the original image.
+
+To regenerate with the [study environment](#reproduce-and-inspect):
+
+```sh
+"$OR_MODE_STUDY_DIR/venv/bin/python" tools/ormode/grid_example.py \
+  --library "$OR_MODE_STUDY_DIR/source/src/.libs/libsixel.1.dylib" \
+  --decoder "$OR_MODE_STUDY_DIR/source/converters/.libs/sixel2png"
+python3 tools/ormode/render_grid_example.py
+```
+
+The first script calls the encoder and verifies decoded pixels; the second checks every illustrated mask against the recorded drawing commands and writes the wide and narrow SVGs. The library filename above is for the measured macOS build; use the corresponding shared-library filename on other platforms.
+
+## Usage and API
+
+OR mode is disabled by default. Enable it explicitly when producing a stream for a receiver that implements this dialect:
+
+```console
+img2sixel -O -p 16 -o image-or.six image.png
+sixel2png -i image-or.six -o image-or.png
+```
+
+The second command checks the decoded image with libsixel; it does not test the terminal. Palette construction, palette application, and dithering still precede OR-mode serialization. `-p 16` is only an example palette budget, not a requirement of the mode.
+
+For the high-level C encoder, use `sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_ORMODE, NULL)`. For the low-level output context, use `sixel_output_set_ormode(output, 1)` before encoding a palette image; passing zero disables the flag. These interfaces are declared in the [public header template](../../../../include/sixel.h.in).
+
+## Index composition
+
+Normal SIXEL painting replaces a pixel's color with the selected register. OR-mode painting accumulates bits in its palette index:
+
+```text
+normal paint: index = selected_register
+OR paint:     index = index | selected_register
+final color:  palette[index]
+```
+
+The operation applies to integer palette indices, not RGB components. For example, painting register 1 and then register 2 onto the same pixel yields index 3. If palette entry 3 is blue, the result is blue even when entries 1 and 2 are red and green.
+
+| Desired index | Binary index | Encoder plane selectors |
+| --- | --- | --- |
+| 0 | 000 | No set bits |
+| 1 | 001 | `#1` |
+| 3 | 011 | `#1`, `#2` |
+| 5 | 101 | `#1`, `#4` |
+| 7 | 111 | `#1`, `#2`, `#4` |
+
+Repeated painting with the same selector is idempotent. Painting another selector can add bits but cannot remove them. Consequently, ordinary size-policy solid underpainting followed by color repair cannot be used: the repair would need to clear already accumulated bits. See [encoding policy](../encode-policy/README.md).
+
+## Wire representation
+
+The encoder header uses `P1=7` and `P2=5`. The decoder recognizes OR mode from `P2=5`; it does not use `P1=7` as the mode discriminator. DCS framing, six vertical bits per data character, repeat runs, `$` carriage returns, and `-` band advances retain their structural roles described in the [SIXEL format guide](../../../sixel-format/README.md).
+
+The following escaped stream defines a one-pixel raster, defines four palette entries, and paints its top pixel twice. `ESC` here denotes byte `0x1b`, not literal letters:
+
+```text
+ESC P 7;5 q
+"1;1;1;1
+#0;2;0;0;0 #1;2;100;0;0 #2;2;0;100;0 #3;2;0;0;100
+#1 @ $ #2 @
+ESC \
+```
+
+Whitespace and line breaks are shown only for readability. `@` has SIXEL mask value 1, and `$` returns to the same column, so the two paints produce index 3. A receiver that simply overwrites would end at index 2 instead.
+
+The encoder emits palette definitions and then visits the palette-index bit planes for each six-row band. It uses power-of-two selectors such as `#1`, `#2`, and `#4`. The number of candidate planes is the ceiling of the base-two logarithm of the palette size, with at least one plane and at most eight in this encoder. Thus a 256-color palette needs eight candidate planes, not 256 per-color masks. Final bands shorter than six rows use only the available rows. `-E size` can omit entirely empty planes while preserving horizontal positions with leading zero runs.
+
+## Palette, transparency, and other options
+
+| Interaction | Current behavior and boundary |
+| --- | --- |
+| Fixed palettes | Builtin palettes and mapfiles still supply the final palette. `-X` does not rebuild a fixed palette merely because `-O` is active. |
+| `-E size` | Optimizes OR-plane serialization, including empty-plane omission; it does not enable ordinary overwrite-based repair. |
+| `--threads` | OR mode has a producer/writer pipeline with ordered band output. The serial body and pipeline have a byte-equivalence regression fixture. Scheduling and fallback details are in the [encoder threading guide](../../../threading/encoder.md). |
+| Transparent offset (`-+`) | The encoder expands the geometry and emits zero-bit padding. This alone does not guarantee that a receiver preserves the existing terminal image in that margin. |
+| Alpha and index zero | libsixel decoding initializes the OR index raster to zero. Every cell in the decoded raster, including an untouched cell, has a palette index and is treated as painted. Direct RGBA decoding resolves entry zero to an opaque color. |
+| High color (`-I`) | High-color dispatch precedes the ordinary indexed encoder. It is a separate repeated-register technique, not an additional OR bit plane or a way to expand this eight-plane encoder. Combining `-I` with `-O` is not covered here as a supported composition. See [high-color output](../high-color/README.md). |
+
+In particular, do not infer normal `P2=1` transparency from a zero SIXEL mask in a `P2=5` stream. The libsixel image decoder's opaque index-zero behavior and a terminal's existing framebuffer behavior are different observation boundaries. The offset regression checks geometry and padding bytes, not visual transparency on hardware. Resolve source transparency to the intended background before encoding when an opaque standalone image is required; see [alpha policy](../../../loader/alpha-policy/README.md) and [background policy](../../../loader/background-policy.md).
+
+## Quality, size, and performance
+
+OR decomposition does not itself choose different colors: for a fixed palette and valid index raster, recombining its bits recovers those indices. Input quantization, dithering, palette serialization, and receiver behavior remain relevant to the final image. This is not a claim that two complete CLI runs with different modes or scheduling necessarily have identical intermediate rasters.
+
+Fewer candidate planes can reduce output size, especially when many palette colors occur in a band. Actual byte size also depends on index assignment, spatial patterns, repeat-run compression, and empty planes. A normal encoder can be smaller on images with simple per-color runs; eight planes are not a promise of an eightfold size or speed improvement.
+
+Compare stream byte counts and decoded images using the same source, loader, palette, dithering, geometry, encode policy, and thread budget. Distinguish complete conversion time from body serialization and terminal rendering. The measured comparison below follows the [quality measurement policy](../../../quality/measurement-policy.md). Terminal rendering and transport latency remain outside its scope.
+
+For color-count and thread-count curves, plus indexed/RGBA decoder timing, see the [scaling and decoding study](scaling.md).
+
+## Measured comparison
+
+### Historical comparison and the baseline
+
+[arakiken's OR-mode article](https://qiita.com/arakiken/items/26f6c67da5a9f9f907ac), published in 2020, explains the connection to planar VRAM and illustrates reductions on `snake.png` at 16 and 256 colors. It also identifies low color diversity within a band and the incompatibility with ordinary solid-underpaint repair as limitations. Its encoding commands and byte counts describe the implementation at that time, not a current performance guarantee.
+
+In [PR #133](https://github.com/saitoha/libsixel/pull/133#issuecomment-3240025194), saitoha compared OR output with ordinary `-E size` and reported that some images, including `egret.jpg`, became larger. Recalculation from the [attached 100-image result](https://github.com/user-attachments/files/22065690/result.txt), preserved as [raw historical data](measurements/pr133-result.txt), gives 25 larger images, a 24.11% reduction in total bytes, a 17.42% mean per-image reduction, and a 22.75% median per-image reduction. These are different aggregation methods. The comment's approximate 30–40% average reduction is not the exact aggregate of that attachment.
+
+The original photos and script are no longer available. The new study repeats the scale and comparison method, not the original photo set or historical binary. It uses the first 100 entries returned by the Picsum catalog, fetched by explicit ID at 800×600, plus six retained repository fixtures. The [photo manifest](measurements/inputs.json) records IDs, source URLs, authors, and SHA-256 hashes; this consecutive catalog sample is not a random sample of all possible images. Retained repository inputs are recorded in the [control manifest](measurements/controls.json).
+
+### Conditions and timing boundaries
+
+The measurements were taken on 2026-09-11 using clean tracked source at `cf4cb3439aedec252b68bbc3674b10aa2bf0145f`, Apple M3 Max, macOS 26.5.1, and an `-O3` C99 build. An isolated checkout and explicit shared-library path kept concurrent repository changes out of the experiment. The [build metadata](measurements/metadata.json) records compiler, configuration, executable/library hashes, and Python packages. The [preflight trace](measurements/preflight.txt) confirms `work=rgb888`.
+
+The primary CLI comparison uses the following controls, with only `-O` added for the OR member of each pair:
+
+```console
+img2sixel --threads=1 --precision=8bit --loaders=builtin! \
+  --gpu-policy=off --palette-type=rgb -Esize -p256 -o output.six input.jpg
+```
+
+Other quantization and diffusion options use that revision's defaults. Explicit `-Esize` also lets the current OR implementation omit empty planes; it does not enable the ordinary overwrite-based optimization described in the article. The control fixtures additionally cover 16 colors and four threads. The full [per-image records](measurements/results.json) include exact commands, output sizes/hashes, pixel comparisons, quality metrics, individual timing samples, medians, and quartiles. The [CSV summary](measurements/summary.csv) is convenient for independent analysis.
+
+| Measurement | Included | Excluded |
+| --- | --- | --- |
+| Whole CLI | Process startup, loading, palette construction, palette application/dithering, encoding, and output to `/dev/null`; 11 measured runs after two warmups per mode | Terminal display and transport |
+| Identical-index serialization | One `sixel_encode` call with `PAL8` pixels and a fixed palette, including header/palette/body emission and internal encode allocations; an in-process byte-counting callback; 21 runs after two warmups per mode | CLI startup, file decoding, quantization, input copying, output/dither context setup, filesystem writes, and terminal display |
+
+For the second measurement, a normal CLI stream is decoded once to obtain a single index raster and palette. Both encoders receive copies of those same indices. Captured untimed streams are decoded and compared with each other and the CLI baseline. Normal and OR order alternates within each measured pair. These are warm, unisolated desktop measurements; small differences near 1.00× should not be treated as a reliable optimization. The two timing boundaries cannot be substituted for one another.
+
+### Output size and encoding speed
+
+| Photo-set statistic | Result |
+| --- | ---: |
+| Smaller / larger / equal streams | 78 / 22 / 0 |
+| Change in total bytes | −20.95% |
+| Mean / median per-image size change | −14.93% / −19.54% |
+| Per-image size-change range | −51.51% to +65.30% |
+| Median whole-CLI speed ratio | 1.29× (about 22.7% less time) |
+| Whole-CLI speed-ratio range | 1.02× to 2.08× |
+| Median identical-index serialization speed ratio | 6.32× |
+| Identical-index serialization speed-ratio range | 1.88× to 24.76× |
+
+A speed ratio is normal elapsed time divided by OR elapsed time; larger is faster. The median ratio is the median across the per-photo ratios of the repeated-run medians, not a ratio of unrelated global medians. OR can produce more bytes while still spending less CPU time constructing the stream.
+
+![OR size changes and speed ratios over 100 photos, with additional image-class controls](measurements/comparison.png)
+
+The box plots summarize per-photo speed ratios: center lines are medians, boxes span the interquartile range, whiskers extend to 1.5 times that range, and individual points beyond them are outliers. They describe differences across images, not confidence intervals for a single timing run.
+
+The following retained repository controls use 256 colors and one thread at their original dimensions. AI-generated controls and their measurements have been removed; surviving measurements retain their original values and build provenance.
+
+| Image | Normal bytes | OR bytes | Size change | Normal / OR CLI ms | CLI speed ratio |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| snake | 299,483 | 312,223 | +4.25% | 54.48 / 49.33 | 1.10× |
+| egret | 187,590 | 232,789 | +24.09% | 31.10 / 29.15 | 1.07× |
+| vimperator3 | 134,748 | 111,121 | -17.53% | 31.80 / 29.01 | 1.10× |
+| map16 | 950 | 1,206 | +26.95% | 7.77 / 8.09 | 0.96× |
+| smooth-gradient-600x450 | 122,620 | 272,455 | +122.19% | 52.38 / 52.01 | 1.01× |
+| rare-colors-600x450 | 106,556 | 191,605 | +79.82% | 25.23 / 24.23 | 1.04× |
+
+At four threads, the 12 retained control pairs range from 0.98× to 1.01× for whole-CLI speed: effectively little difference in this experiment. Faster indexed serialization does not guarantee a similar gain in an overlapping end-to-end pipeline. No terminal-rendering speedup has been measured here.
+
+The article's snake example also illustrates why the baseline must be explicit. On this build with one thread, the [additional policy comparison](measurements/qiita-cases.json) gives:
+
+| Palette budget | Normal `-Efast` bytes | Normal `-Esize` bytes | OR bytes | OR vs fast | OR vs size |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 16 | 136,556 | 104,209 | 123,286 | −9.72% | +18.31% |
+| 256 | 326,104 | 299,483 | 312,223 | −4.26% | +4.25% |
+
+Here `-Eauto` matches `-Efast`, and the three OR policy outputs have the same size. OR reduces size against fast encoding while increasing it against size-optimized encoding, without changing a decoded pixel in either comparison. This does not contradict the article's explanation; the comparison baseline and implementation revision matter.
+
+### Decoder speed
+
+OR decoding was slower for most of the same 100 photos, despite the reduction in total stream bytes. The following results reuse the saved measurements for the pinned build and host described above: 800×600 photos, a 256-color palette budget, and one decoder thread. They are measurements of that revision, not a benchmark of the latest checkout.
+
+| Output boundary | Median normal/OR speed ratio | Median OR/normal time ratio | Normal faster / OR faster (photos) |
+| --- | ---: | ---: | ---: |
+| RGBA pixels (`sixel_decode_direct`) | 0.655× | 1.527× | 94 / 6 |
+| Palette indices (`sixel_decode_raw`) | 0.619× | 1.615× | 99 / 1 |
+| RGBA PNG (`sixel2png --direct`) | 0.954× | 1.048× | 95 / 5 |
+
+Each ratio compares the repeated-run medians for one photo; the table reports the median of those per-photo ratios. A speed ratio below 1 means OR is slower. Expressed as elapsed time, the median increases are about 53% for RGBA pixels, 62% for palette indices, and 5% for PNG-inclusive conversion. The few observed OR wins do not establish that the differences exceed desktop timing noise.
+
+![Decoder speed ratios and their relationship to stream size for the same 100 photos](sweeps/decode-photos.png)
+
+Box centers are medians across photos, boxes span the interquartile range, and whiskers extend to 1.5 times that range; outlying points are shown individually. These distributions describe variation between images, not confidence intervals for one image.
+
+The API measurements use 21 timed calls after two warmup pairs, with streams already in memory. They include parsing, validation, result allocation, and applicable worker setup, but exclude file I/O, correctness comparisons, result freeing, and PNG encoding. The CLI measurements use 11 timed processes after two warmup pairs, running `sixel2png --direct --threads=1 -i stream.six -o /dev/null`; they include process startup, cached file reads, decoding, PNG generation, and output writes. Normal/OR order alternates within each pair. Neither boundary measures terminal rendering or network transport.
+
+For an absolute-time example, the 1920×1080 snake image at 256 colors gives the following medians. Each cell is normal / OR in milliseconds. Both encoded streams remain byte-for-byte fixed while only the decoder thread budget changes.
+
+| Decoder threads | RGBA decoder API | Indexed decoder API | RGBA PNG CLI |
+| --- | ---: | ---: | ---: |
+| 1 | 15.60 / 31.67 | 15.05 / 33.60 | 194.24 / 210.53 |
+| 4 | 10.96 / 25.11 | 10.68 / 23.57 | 189.16 / 203.81 |
+| 12 | 6.83 / 13.88 | 6.97 / 12.19 | 186.68 / 195.98 |
+
+OR painting accumulates palette-index bits with read-modify-write operations; RGBA output also needs an intermediate index buffer and a final palette expansion. These implementation differences help explain why fewer input bytes do not guarantee less decoding work, but the timings do not isolate the cost of each operation. See the [decoder study](scaling.md#decoder-timing-boundaries) for the implementation discussion, the [color-count curves](scaling.md#color-count-axis), and the complete [1–12-thread curves](scaling.md#thread-count-axis), including configurations where adding workers is slower.
+
+The [raw decoder records](sweeps/decode.json) retain samples, medians, quartiles, stream hashes, commands, and exact pixel checks. All 226 retained decoder pairs across the photo and scaling studies passed those checks. The [reproduction instructions](scaling.md#reproduction) describe how to rerun the measurements with the retained inputs and pinned build.
+
+### Is the quality impact exactly zero?
+
+For the tested opaque images, yes at the decoded-RGBA boundary: all 124 retained normal/OR pairs are byte-for-byte identical after decoding, covering 54,157,152 pixel positions. Both repeated streams for every mode also match exactly. MS-SSIM and Delta E therefore match between modes, not merely within a tolerance. All 112 retained identical-index comparisons match each other and the normal CLI decode. The [boundary probe](measurements/index-boundaries.json) additionally checks every valid palette index for 19 palette sizes around bit-plane boundaries and seven heights (1, 5, 6, 7, 11, 12, 13): all 133 cases match independently constructed expected RGBA pixels.
+
+This is zero additional distortion relative to the normal encoder, not lossless conversion of the source photo. For example, snake at 256 colors has MS-SSIM 0.991198 and mean Delta E00 2.728167 under both modes; at 16 colors it has MS-SSIM 0.918470 under both. The deliberately constrained 16-color case does not meet the usual 0.98 quality target, and no threshold has been lowered to accept it.
+
+An unconditional claim is false for transparency. The [alpha probe](measurements/alpha.json) uses a 600×450 image with a 300×200 transparent hole. With `--alpha-policy=keep`, normal decoding retains alpha zero there, whereas OR decoding makes those 60,000 pixels opaque. With `--alpha-policy=composite -B '#ffffff'`, both decoded results are identical and opaque. Thus, promise exact equivalence only for the same opaque index raster and palette on a receiver implementing the required semantics; do not extend it to preserved transparency, arbitrary option combinations, or unsupported terminals.
+
+### Reproduce and inspect
+
+The [study tools](../../../../tools/ormode/) retain the download, measurement, independent index/alpha probes, and plot generation. The following macOS workflow uses a separate study directory and pins the measured source revision. It requires the repository's normal build dependencies and Python compatible with the pinned scientific packages.
+
+```sh
+repo=$PWD
+export OR_MODE_STUDY_DIR=/absolute/path/to/or-mode-study
+mkdir -p "$OR_MODE_STUDY_DIR"
+git worktree add --detach "$OR_MODE_STUDY_DIR/source" cf4cb3439
+export PATH="$repo/.local/bin:$PATH"
+(
+  cd "$OR_MODE_STUDY_DIR/source"
+  ./configure --without-libcurl --without-png --without-jpeg \
+    --without-librsvg --without-tiff --without-webp --without-quicklook \
+    --without-coregraphics --without-lcms2 --disable-quicklook-extension \
+    CFLAGS=-O3 BASH=/bin/sh > ../configure.log 2>&1
+  make -j6 > ../build.log 2>&1
+)
+python3 -m venv "$OR_MODE_STUDY_DIR/venv"
+py="$OR_MODE_STUDY_DIR/venv/bin/python"
+"$py" -m pip install -r tools/ormode/requirements.txt
+cc -O3 -std=c99 -I "$OR_MODE_STUDY_DIR/source/include" \
+  tools/ormode/indexed-bench.c -L "$OR_MODE_STUDY_DIR/source/src/.libs" \
+  -Wl,-rpath,"$OR_MODE_STUDY_DIR/source/src/.libs" -lsixel \
+  -o "$OR_MODE_STUDY_DIR/indexed-bench"
+"$py" tools/ormode/download.py \
+  --manifest docs/encoder/output/or-mode/measurements/inputs.json
+"$py" tools/ormode/measure.py
+"$py" tools/ormode/edge_cases.py
+"$py" tools/ormode/qiita_cases.py
+"$py" tools/ormode/render.py
+```
+
+The downloader checks recorded hashes rather than silently substituting changed remote content. Downloaded photos and large evidence streams stay in the study directory. The measurement runner retains completed cases for resumption and rejects a different build or run count in an existing result directory. Use a fresh directory for a new configuration. Plot generation reads the recorded results without rerunning benchmarks.
+
+## Implementation references
+
+- [Encoder core](../../../../src/encoder-core-encode.c): `sixel_encode_header`, `sixel_encode_body_ormode_nplanes`, `sixel_encode_body_ormode_band`, offset handling, and pipelined serialization.
+- [Decoder parser](../../../../src/fromsixel.c): `parser_context_is_ormode_request`, index OR accumulation, index-zero initialization, direct-color finalization, and paint-mask completion.
+- [Parallel decoder](../../../../src/decoder-parallel.c): OR accumulation in worker spans and direct-color index storage.
+- [Output API](../../../../src/output.c) and [high-level encoder](../../../../src/encoder.c): mode configuration and default state.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| OR-01 | CLI `-O` selects the OR-mode DCS header. | [tests/cli/options/general/0002_ormode_short_header.t](../../../../tests/cli/options/general/0002_ormode_short_header.t) |
+| OR-02 | Full six-row bands serialize the expected plane bytes. | [tests/processing/encoder-core/0002_encoder_core_ormode_body_full_band.t](../../../../tests/processing/encoder-core/0002_encoder_core_ormode_body_full_band.t) |
+| OR-03 | A short final band serializes only its available rows. | [tests/processing/encoder-core/0003_encoder_core_ormode_body_tail_band.t](../../../../tests/processing/encoder-core/0003_encoder_core_ormode_body_tail_band.t) |
+| OR-04 | The OR producer/writer pipeline matches the serial body for its fixture. | [tests/processing/encoder-core/0005_encoder_core_ormode_pipeline_matches_body.t](../../../../tests/processing/encoder-core/0005_encoder_core_ormode_pipeline_matches_body.t) |
+| OR-05 | Size policy omits an empty plane in the regression fixture. | [tests/processing/encoder-core/0006_encoder_core_ormode_body_skips_empty_planes.t](../../../../tests/processing/encoder-core/0006_encoder_core_ormode_body_skips_empty_planes.t) |
+| OR-06 | Raw decoding composes selectors 1 and 2 into index 3. | [tests/processing/decoder/0002_decoder_ormode_raw_overlay.t](../../../../tests/processing/decoder/0002_decoder_ormode_raw_overlay.t) |
+| OR-07 | Wide-index decoding preserves OR composition. | [tests/processing/decoder/0003_decoder_ormode_wide_overlay.t](../../../../tests/processing/decoder/0003_decoder_ormode_wide_overlay.t) |
+| OR-08 | Direct decoding resolves the composed index. | [tests/processing/decoder/0004_decoder_ormode_direct_overlay.t](../../../../tests/processing/decoder/0004_decoder_ormode_direct_overlay.t) |
+| OR-09 | Repeat runs preserve OR composition. | [tests/processing/decoder/0005_decoder_ormode_repeat_overlay.t](../../../../tests/processing/decoder/0005_decoder_ormode_repeat_overlay.t) |
+| OR-10 | The legacy decode API follows OR composition. | [tests/processing/decoder/0006_decoder_ormode_legacy_api.t](../../../../tests/processing/decoder/0006_decoder_ormode_legacy_api.t) |
+| OR-11 | The parallel request path accumulates OR indices. | [tests/processing/decoder/0007_decoder_ormode_parallel_request.t](../../../../tests/processing/decoder/0007_decoder_ormode_parallel_request.t) |
+| OR-12 | Selective-blur dequantization retains opaque OR raster cells. | [tests/processing/decoder/0022_ormode_selective_blur_opaque.t](../../../../tests/processing/decoder/0022_ormode_selective_blur_opaque.t) |
+| OR-13 | Builtin palette OR output ignores clustering-space selection. | [tests/quant/palette/usage/0137_builtin_palette_ormode_clustering_colorspace_ignored_output.t](../../../../tests/quant/palette/usage/0137_builtin_palette_ormode_clustering_colorspace_ignored_output.t) |
+| OR-14 | PAL mapfile OR output ignores clustering-space selection. | [tests/quant/palette/usage/0138_mapfile_pal_ormode_clustering_colorspace_ignored_output.t](../../../../tests/quant/palette/usage/0138_mapfile_pal_ormode_clustering_colorspace_ignored_output.t) |
+| OR-15 | Transparent-offset CLI output preserves every source and opaque margin pixel. | [tests/quant/palette/usage/0174_transparent_offset_ormode_geometry.t](../../../../tests/quant/palette/usage/0174_transparent_offset_ormode_geometry.t) |
+| OR-16 | A one-entry palette still emits the minimum one candidate plane. | [tests/processing/encoder-core/0007_ormode_one_color_plane.t](../../../../tests/processing/encoder-core/0007_ormode_one_color_plane.t) |
+| OR-17 | Two palette entries require one plane and preserve index 1. | [tests/processing/encoder-core/0008_ormode_two_color_plane.t](../../../../tests/processing/encoder-core/0008_ormode_two_color_plane.t) |
+| OR-18 | Three palette entries require two planes and preserve index 2. | [tests/processing/encoder-core/0009_ormode_three_color_planes.t](../../../../tests/processing/encoder-core/0009_ormode_three_color_planes.t) |
+| OR-19 | Four palette entries still use two planes and preserve index 3. | [tests/processing/encoder-core/0010_ormode_four_color_planes.t](../../../../tests/processing/encoder-core/0010_ormode_four_color_planes.t) |
+| OR-20 | Five palette entries introduce plane 4 without losing index 4. | [tests/processing/encoder-core/0011_ormode_five_color_planes.t](../../../../tests/processing/encoder-core/0011_ormode_five_color_planes.t) |
+| OR-21 | 128 palette entries use seven planes through selector 64. | [tests/processing/encoder-core/0012_ormode_128_color_planes.t](../../../../tests/processing/encoder-core/0012_ormode_128_color_planes.t) |
+| OR-22 | 129 palette entries introduce selector 128 without losing its high bit. | [tests/processing/encoder-core/0013_ormode_129_color_high_bit.t](../../../../tests/processing/encoder-core/0013_ormode_129_color_high_bit.t) |
+| OR-23 | Index 255 reconstructs all eight bits in a 256-entry palette. | [tests/processing/encoder-core/0014_ormode_256_color_all_bits.t](../../../../tests/processing/encoder-core/0014_ormode_256_color_all_bits.t) |
+| OR-24 | An all-zero full band omits all planes but preserves the band advance. | [tests/processing/encoder-core/0015_ormode_size_zero_full_band.t](../../../../tests/processing/encoder-core/0015_ormode_size_zero_full_band.t) |
+| OR-25 | An all-zero short band omits all planes without changing raster size. | [tests/processing/encoder-core/0016_ormode_size_zero_tail_band.t](../../../../tests/processing/encoder-core/0016_ormode_size_zero_tail_band.t) |
+| OR-26 | Size policy preserves leading empty columns before a set pixel. | [tests/processing/encoder-core/0017_ormode_size_leading_empty_columns.t](../../../../tests/processing/encoder-core/0017_ormode_size_leading_empty_columns.t) |
+| OR-27 | Size policy omits an empty plane in a short final band. | [tests/processing/encoder-core/0018_ormode_size_tail_empty_plane.t](../../../../tests/processing/encoder-core/0018_ormode_size_tail_empty_plane.t) |
+| OR-28 | An empty full band does not shift the following nonempty short band. | [tests/processing/encoder-core/0019_ormode_size_empty_then_nonempty_band.t](../../../../tests/processing/encoder-core/0019_ormode_size_empty_then_nonempty_band.t) |
+| OR-29 | Size policy preserves pixels when all planes appear within 64 columns. | [tests/processing/encoder-core/0020_ormode_size_sample_last_column.t](../../../../tests/processing/encoder-core/0020_ormode_size_sample_last_column.t) |
+| OR-30 | Size policy preserves a plane first used beyond its 64-column sample. | [tests/processing/encoder-core/0021_ormode_size_sample_beyond_column.t](../../../../tests/processing/encoder-core/0021_ormode_size_sample_beyond_column.t) |
+| OR-31 | A left offset alone preserves every source index and zero-valued margin. | [tests/processing/encoder-core/0022_ormode_offset_top_0.t](../../../../tests/processing/encoder-core/0022_ormode_offset_top_0.t) |
+| OR-32 | A one-row top offset preserves every source index and margin. | [tests/processing/encoder-core/0023_ormode_offset_top_1.t](../../../../tests/processing/encoder-core/0023_ormode_offset_top_1.t) |
+| OR-33 | A five-row top offset preserves pixels across the first band boundary. | [tests/processing/encoder-core/0024_ormode_offset_top_5.t](../../../../tests/processing/encoder-core/0024_ormode_offset_top_5.t) |
+| OR-34 | A six-row top offset preserves the empty band before source pixels. | [tests/processing/encoder-core/0025_ormode_offset_top_6.t](../../../../tests/processing/encoder-core/0025_ormode_offset_top_6.t) |
+| OR-35 | A seven-row top offset preserves the empty band and partial-band offset. | [tests/processing/encoder-core/0026_ormode_offset_top_7.t](../../../../tests/processing/encoder-core/0026_ormode_offset_top_7.t) |
+| OR-36 | K-undither keeps untouched OR index-zero cells opaque. | [tests/processing/decoder/0027_ormode_kundither_opaque.t](../../../../tests/processing/decoder/0027_ormode_kundither_opaque.t) |
+| OR-37 | Painting the same selector twice does not add or toggle its bit. | [tests/processing/decoder/0028_ormode_repeated_bit_idempotent.t](../../../../tests/processing/decoder/0028_ormode_repeated_bit_idempotent.t) |
+| OR-38 | Reversing the order of selectors 1 and 2 still yields index 3. | [tests/processing/decoder/0029_ormode_plane_order_independent.t](../../../../tests/processing/decoder/0029_ormode_plane_order_independent.t) |
+| OR-39 | A zero mask does not erase an already composed index. | [tests/processing/decoder/0030_ormode_zero_mask_retains_bits.t](../../../../tests/processing/decoder/0030_ormode_zero_mask_retains_bits.t) |
+| OR-40 | Selectors 128 and 1 compose index 129. | [tests/processing/decoder/0031_ormode_high_bit_composition.t](../../../../tests/processing/decoder/0031_ormode_high_bit_composition.t) |
+| OR-41 | P2=5 selects OR composition even when P1 is zero. | [tests/processing/decoder/0032_ormode_p2_without_p1.t](../../../../tests/processing/decoder/0032_ormode_p2_without_p1.t) |
+| OR-42 | P1=7 alone does not replace ordinary overwrite semantics with OR. | [tests/processing/decoder/0033_ormode_p1_without_p2.t](../../../../tests/processing/decoder/0033_ormode_p1_without_p2.t) |
+| OR-43 | The public RGBA decoder returns every expected pixel at two workers. | [tests/processing/decoder/0034_ormode_parallel_rgba.t](../../../../tests/processing/decoder/0034_ormode_parallel_rgba.t) |
+| OR-44 | The public indexed decoder returns every expected index at two workers. | [tests/processing/decoder/0035_ormode_parallel_indexed.t](../../../../tests/processing/decoder/0035_ormode_parallel_indexed.t) |
+| OR-45 | RGBA output remains exact after an injected paint-worker launch failure. | [tests/processing/decoder/0036_ormode_fallback_rgba.t](../../../../tests/processing/decoder/0036_ormode_fallback_rgba.t) |
+| OR-46 | Indexed output remains exact after an injected paint-worker launch failure. | [tests/processing/decoder/0037_ormode_fallback_indexed.t](../../../../tests/processing/decoder/0037_ormode_fallback_indexed.t) |
+| OR-47 | The internal parallel indexed request completes and composes every index. | [tests/processing/decoder/0038_ormode_parallel_indexed_request.t](../../../../tests/processing/decoder/0038_ormode_parallel_indexed_request.t) |
+| OR-48 | Reusing a decoder for a normal stream after OR restores overwrite rules. | [tests/processing/decoder/0039_ormode_decoder_reuse_resets_mode.t](../../../../tests/processing/decoder/0039_ormode_decoder_reuse_resets_mode.t) |
+| OR-49 | An untouched OR pixel resolves palette zero with alpha 255. | [tests/processing/decoder/0040_ormode_direct_zero_is_opaque.t](../../../../tests/processing/decoder/0040_ormode_direct_zero_is_opaque.t) |
+| OR-50 | The long --ormode option selects the OR-mode DCS header. | [tests/cli/options/general/0009_ormode_long_header.t](../../../../tests/cli/options/general/0009_ormode_long_header.t) |
+| OR-51 | The CLI leaves OR mode disabled by default. | [tests/cli/options/general/0010_ormode_disabled_by_default.t](../../../../tests/cli/options/general/0010_ormode_disabled_by_default.t) |
+| OR-52 | The public output setter can turn OR mode back off. | [tests/processing/encoder-core/0027_ormode_public_output_disable.t](../../../../tests/processing/encoder-core/0027_ormode_public_output_disable.t) |
+| OR-53 | The size-policy OR pipeline matches the serial body across full and tail bands. | [tests/processing/encoder-core/0028_ormode_pipeline_size.t](../../../../tests/processing/encoder-core/0028_ormode_pipeline_size.t) |
+| OR-54 | OR offsets preserve exact pixels through serial dispatch at two workers. | [tests/processing/encoder-core/0029_ormode_offset_disables_pipeline.t](../../../../tests/processing/encoder-core/0029_ormode_offset_disables_pipeline.t) |
+| OR-55 | The legacy decoder exposes untouched palette zero as a color. | [tests/processing/decoder/0041_ormode_legacy_zero_is_color.t](../../../../tests/processing/decoder/0041_ormode_legacy_zero_is_color.t) |
+
+### Defensive and malformed-input tests
+
+The [encoder-core test category](../../../../tests/processing/encoder-core/) also exercises invalid arguments to the private OR body helper. These checks defend an implementation boundary and do not establish additional terminal behavior. General malformed-stream coverage belongs to the [decoder tests](../../../../tests/processing/decoder/) and [security tests](../../../../tests/security/).
+
+### Coverage limits
+
+The tests cover explicit CLI mode selection, selected palette and band boundaries, exact offset pixels, OR algebra, and final public decoder output at a two-worker budget. They do not establish every alpha-policy combination, `-I`/`-O` composition, equivalence under every thread schedule, or terminal display compatibility. The public parallel comparisons use independently expected pixels, while separate internal request tests require successful worker execution; a configured budget alone is not evidence of worker use. Receiver handling of `P2=5`, existing framebuffer content, and offset margins requires a separate receiver-specific observation.
+
+<!-- Regenerate the explanatory SVGs with: python3 tools/ormode/render_explanation.py -->

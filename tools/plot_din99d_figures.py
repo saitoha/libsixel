@@ -175,7 +175,7 @@ def route(mobile):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
-    parser.add_argument('--output-dir', type=Path, default=ROOT / 'docs/concepts/din99d-figures')
+    parser.add_argument('--output-dir', type=Path, default=ROOT / 'docs/concepts/din99d/figures')
     args = parser.parse_args()
     data = example()
     assets = {f'nearest-color-{layout}.svg': draw(layout == 'mobile', data)

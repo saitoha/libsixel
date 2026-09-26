@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/writers/png.md
+# Policy: docs/writers/png/README.md
 set -eux
 
 echo "1..1"

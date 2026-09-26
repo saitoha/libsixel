@@ -822,7 +822,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=source_root / "docs/sixel-format-figures",
+        default=source_root / "docs/sixel-format/figures",
     )
     parser.add_argument("--check", action="store_true")
     return parser.parse_args()

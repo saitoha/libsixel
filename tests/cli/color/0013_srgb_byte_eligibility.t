@@ -1,6 +1,6 @@
 #!/bin/sh
 # A byte-eligible sRGB image must not select the extended palette migration.
-# Policy: docs/functionality/output-colorspace.md
+# Policy: docs/encoder/output/output-colorspace.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

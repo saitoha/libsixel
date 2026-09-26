@@ -1,8 +1,8 @@
 #!/bin/sh
-# Policy: docs/functionality/decoding-pipeline.md
-# Policy: docs/functionality/dequantization.md
+# Policy: docs/decoder/pipeline/README.md
+# Policy: docs/decoder/dequantization/README.md
 # Verify dequantized decoder output is written as 8-bit RGB PNG.
-# Policy: docs/writers/png.md
+# Policy: docs/writers/png/README.md
 
 set -eux
 

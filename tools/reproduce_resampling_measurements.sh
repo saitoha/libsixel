@@ -15,7 +15,7 @@ SIXEL2PNG_PATH=${SIXEL2PNG_PATH-${BUILD_DIR}/converters/sixel2png}
 LSQA_PATH=${LSQA_PATH-${BUILD_DIR}/assessment/lsqa}
 LIBSIXEL_PATH=${LIBSIXEL_PATH-}
 
-measurement_dir=${1-${TOP_SRCDIR}/docs/functionality/resampling/measurements}
+measurement_dir=${1-${TOP_SRCDIR}/docs/encoder/preprocessing/resampling/measurements}
 input_image=${2-${TOP_SRCDIR}/images/snake.png}
 input_image=$(CDPATH='' cd -- "${input_image%/*}" && pwd -P)/${input_image##*/}
 input_label=${input_image}

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/terminal-macros.md
+# Policy: docs/encoder/output/terminal-macros.md
 # Verify animation frames replace a fixed ID only on the first pass without invocation.
 
 set -eux

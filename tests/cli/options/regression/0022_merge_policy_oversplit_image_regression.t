@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify merge-policy oversplit preserves image output through short and env paths.
-# Policy: docs/functionality/merge-policy.md
+# Policy: docs/encoder/palette-construction/merge-policy/README.md
 # Registry row: SIXEL_OPTION_SCHEMA_MERGE_POLICY|NULL|merge_oversplit
 # Registry binding: merge_policy_oversplit|merge_policy_oversplit_override
 # Environment range: clamp-both

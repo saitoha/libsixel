@@ -23,7 +23,7 @@ The `SIXEL_PIXELFORMAT_*` constants describe how samples are arranged in a memor
 
 The pixel-format tag describes layout. Colorspace metadata describes how the stored color values are interpreted. Neither property by itself states how the terminal will treat an unpainted SIXEL position.
 
-The distinction between three-channel byte storage and typed float32 storage, including implicit promotion by resize, CMS, and color-space conversion, is documented in [Pixel-format precision](pixelformat-precision.md).
+The distinction between three-channel byte storage and typed float32 storage, including implicit promotion by resize, CMS, and color-space conversion, is documented in [Pixel-format precision](pixelformat-precision/README.md).
 
 ## Frame representation
 
@@ -39,7 +39,7 @@ The stable contract is semantic: fractional alpha must be resolved before SIXEL 
 
 ## Alpha resolution
 
-SIXEL cannot encode fractional alpha. When a background is resolved, loader paths composite fractional samples into color values. Depending on the [alpha policy](../loader/alpha-policy.md), exact alpha-zero samples are either also composited or retained as holes. Background source selection and colorspace are governed separately by the [background policy](../loader/background-policy.md).
+SIXEL cannot encode fractional alpha. When a background is resolved, loader paths composite fractional samples into color values. Depending on the [alpha policy](../loader/alpha-policy/README.md), exact alpha-zero samples are either also composited or retained as holes. Background source selection and colorspace are governed separately by the [background policy](../loader/background-policy.md).
 
 When no background can be resolved, an exact alpha-zero sample can still be represented by an omitted SIXEL pixel. A nonzero fractional alpha value cannot remain fractional at the wire boundary.
 
@@ -52,7 +52,7 @@ DCS `P2` supplies the terminal-side operation for omitted positions:
 - `P2=0` requests background clearing;
 - `P2=1` requests preservation of previous contents.
 
-Those operations are not source-alpha blending and their visible result can vary between terminal implementations. The [SIXEL format guide](../sixel-format.md) defines the wire syntax; the [alpha policy](../loader/alpha-policy.md) defines how libsixel maps frame transparency to `P2` and omitted pixels.
+Those operations are not source-alpha blending and their visible result can vary between terminal implementations. The [SIXEL format guide](../sixel-format/README.md) defines the wire syntax; the [alpha policy](../loader/alpha-policy/README.md) defines how libsixel maps frame transparency to `P2` and omitted pixels.
 
 ## Test coverage
 

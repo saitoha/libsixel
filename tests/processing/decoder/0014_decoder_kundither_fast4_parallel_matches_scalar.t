@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify fast4 parallel k_undither output matches scalar output.
-# Policy: docs/functionality/dequantization.md
+# Policy: docs/decoder/dequantization/README.md
 
 set -eux
 

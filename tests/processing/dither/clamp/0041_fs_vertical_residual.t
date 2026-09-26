@@ -1,6 +1,6 @@
 #!/bin/sh
 # FS vertical taps propagate the limited residual in raster order.
-# Policy: docs/functionality/clamp-policy.md
+# Policy: docs/encoder/palette-application/clamp-policy.md
 set -eux
 
 echo "1..1"

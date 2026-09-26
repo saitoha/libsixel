@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Verify raw signed TIFF Lab16 words through the public float frame.
 set -eux
 result=0

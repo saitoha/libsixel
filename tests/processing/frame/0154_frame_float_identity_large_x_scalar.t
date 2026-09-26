@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/concepts/pixelformat-precision.md
+# Policy: docs/concepts/pixelformat-precision/README.md
 # Verify an exact one-sample Gaussian mean without multiply/divide loss.
 set -eux
 echo "1..1"

@@ -9,7 +9,7 @@ docs/build/meson.md	reference	contributor	build graph contracts + architecture e
 docs/build/support-scripts.md	reference	contributor	adapter inventory + design explanation and maintenance how-to
 docs/build/test-harness.md	explanation	contributor	harness architecture + execution reference and diagnosis how-to
 docs/ci/design.md	reference	contributor	CI policy + design rationale and change/triage how-to
-docs/cli/abort-trace.md	reference	both	CLI diagnostic contracts + design explanation and contributor test ledger
+docs/cli/abort-trace/README.md	reference	both	CLI diagnostic contracts + design explanation and contributor test ledger
 docs/cli/clipboard.md	reference	both	clipboard contracts + usage how-to and contributor test ledger
 docs/cli/correction-suggestions.md	reference	both	diagnostic contracts + contributor implementation map and test ledger
 docs/cli/design-policy.md	reference	both	CLI contracts + design rationale and contributor review/test guidance
@@ -17,45 +17,45 @@ docs/cli/diagnostics.md	how-to	both	diagnostic capture workflow + option referen
 docs/cli/prefix-matching.md	reference	both	choice syntax + contributor algorithm map and test ledger
 docs/cli/runtime-policy.md	reference	both	runtime option contracts + contributor implementation map and test ledger
 docs/cli/suboptions.md	reference	both	public grammar + contributor registry architecture and test ledger
-docs/concepts/colorspace.md	explanation	user	explanation + option reference and configuration examples
-docs/concepts/din99d.md	explanation	user	color-distance intuition + measured reference and reproduction how-to
-docs/concepts/pixelformat-precision.md	explanation	both	storage model + numeric contracts and large contributor test ledger
+docs/concepts/colorspace/README.md	explanation	user	explanation + option reference and configuration examples
+docs/concepts/din99d/README.md	explanation	user	color-distance intuition + measured reference and reproduction how-to
+docs/concepts/pixelformat-precision/README.md	explanation	both	storage model + numeric contracts and large contributor test ledger
 docs/concepts/pixelformat.md	reference	both	pixel representations + explanatory model and contributor test ledger
-docs/functionality/animation.md	reference	both	playback matrix + usage/diagnosis how-to and contributor test ledger
-docs/functionality/clustering-colorspace.md	reference	both	color-space choices + mathematical explanation and measurement reproduction
-docs/functionality/cover-policy.md	reference	both	policy contract + reachability/history explanation and contributor test ledger
-docs/functionality/crop-resize.md	reference	both	geometry/precision contracts + measurements and reproduction how-to
-docs/functionality/decoding-pipeline.md	explanation	both	decoder mental model + API/implementation reference and contributor test ledger
-docs/functionality/delta-encoding.md	reference	both	delta contracts + conceptual explanation, integration how-to and test ledger
-docs/functionality/dequantization.md	explanation	both	undither model + option/API reference and contributor test ledger
-docs/functionality/dither-policies/perturb.md	reference	both	measurement record + spectral explanation and reproduction how-to
-docs/functionality/dithering.md	reference	both	dither methods + mathematical explanation and contributor measurement controls
-docs/functionality/drcs.md	reference	both	DRCS contracts + load/display how-to and implementation validation
-docs/functionality/encode-policy.md	reference	both	encoding policies + algorithm/history explanation and reproduction how-to
-docs/functionality/encoder-execution-map.md	explanation	contributor	execution model + implementation ownership reference
-docs/functionality/encoding-pipeline.md	explanation	user	""
-docs/functionality/external-palettes.md	reference	both	palette formats + interchange how-to, history and contributor test ledger
-docs/functionality/fixed-palettes.md	reference	both	palette/mask contracts + contributor test ledger
-docs/functionality/high-color.md	reference	both	high-color support limits + algorithm explanation and implementation roadmap
-docs/functionality/high-color/measurement.md	reference	both	measurement record + interpretation and reproduction how-to
-docs/functionality/lookup-policy.md	reference	both	lookup contracts + mathematical explanation and contributor benchmark design
-docs/functionality/merge-policy.md	reference	both	merge contracts + algorithm explanation and contributor measurements/test ledger
-docs/functionality/or-mode.md	reference	both	OR wire contracts + stepwise explanation, usage how-to and test ledger
-docs/functionality/or-mode/scaling.md	reference	both	scaling measurements + interpretation and reproduction how-to
-docs/functionality/output-colorspace.md	reference	both	output-space contracts + numeric example and contributor test ledger
-docs/functionality/overview.md	explanation	both	capability/architecture overview + contributor repository map
-docs/functionality/palette-pipeline.md	explanation	contributor	target architecture + normative measurement protocol and migration plan
-docs/functionality/precision.md	reference	both	precision contracts + measurements and contributor test ledger
-docs/functionality/quantization.md	reference	both	quantizer methods + mathematical explanation and contributor benchmark design
-docs/functionality/resampling.md	reference	both	resampling behavior + signal-processing explanation and reproduction how-to
-docs/functionality/resampling/compact-kernels.md	reference	both	kernel formulas + mathematical explanation and contributor test ledger
-docs/functionality/resampling/theory-history.md	explanation	user	""
-docs/functionality/resampling/wide-kernels.md	reference	both	kernel formulas + mathematical explanation and contributor test ledger
-docs/functionality/snap-policy.md	reference	both	snap contracts + numeric explanation and contributor measurements/test ledger
-docs/functionality/terminal-macros.md	reference	both	macro contracts + playback how-to, history and contributor test ledger
-docs/functionality/working-colorspace.md	reference	both	working-space contracts + mathematical explanation and contributor measurements/tests
+docs/encoder/animation.md	reference	both	playback matrix + usage/diagnosis how-to and contributor test ledger
+docs/encoder/palette-construction/clustering-colorspace/README.md	reference	both	color-space choices + mathematical explanation and measurement reproduction
+docs/encoder/palette-construction/cover-policy/README.md	reference	both	policy contract + reachability/history explanation and contributor test ledger
+docs/encoder/preprocessing/crop-resize/README.md	reference	both	geometry/precision contracts + measurements and reproduction how-to
+docs/decoder/pipeline/README.md	explanation	both	decoder mental model + API/implementation reference and contributor test ledger
+docs/encoder/output/delta-encoding.md	reference	both	delta contracts + conceptual explanation, integration how-to and test ledger
+docs/decoder/dequantization/README.md	explanation	both	undither model + option/API reference and contributor test ledger
+docs/encoder/palette-application/dithering/perturb/README.md	reference	both	measurement record + spectral explanation and reproduction how-to
+docs/encoder/palette-application/dithering/README.md	reference	both	dither methods + mathematical explanation and contributor measurement controls
+docs/encoder/output/drcs.md	reference	both	DRCS contracts + load/display how-to and implementation validation
+docs/encoder/output/encode-policy/README.md	reference	both	encoding policies + algorithm/history explanation and reproduction how-to
+docs/encoder/execution-map/README.md	explanation	contributor	execution model + implementation ownership reference
+docs/encoder/pipeline/README.md	explanation	user	""
+docs/encoder/palette-construction/external-palettes.md	reference	both	palette formats + interchange how-to, history and contributor test ledger
+docs/encoder/palette-construction/fixed-palettes.md	reference	both	palette/mask contracts + contributor test ledger
+docs/encoder/output/high-color/README.md	reference	both	high-color support limits + algorithm explanation and implementation roadmap
+docs/encoder/output/high-color/measurement.md	reference	both	measurement record + interpretation and reproduction how-to
+docs/encoder/palette-application/lookup-policy/README.md	reference	both	lookup contracts + mathematical explanation and contributor benchmark design
+docs/encoder/palette-construction/merge-policy/README.md	reference	both	merge contracts + algorithm explanation and contributor measurements/test ledger
+docs/encoder/output/or-mode/README.md	reference	both	OR wire contracts + stepwise explanation, usage how-to and test ledger
+docs/encoder/output/or-mode/scaling.md	reference	both	scaling measurements + interpretation and reproduction how-to
+docs/encoder/output/output-colorspace.md	reference	both	output-space contracts + numeric example and contributor test ledger
+docs/overview.md	explanation	both	capability/architecture overview + contributor repository map
+docs/encoder/palette-construction/pipeline/README.md	explanation	contributor	target architecture + normative measurement protocol and migration plan
+docs/encoder/precision/README.md	reference	both	precision contracts + measurements and contributor test ledger
+docs/encoder/palette-construction/quantization/README.md	reference	both	quantizer methods + mathematical explanation and contributor benchmark design
+docs/encoder/preprocessing/resampling/README.md	reference	both	resampling behavior + signal-processing explanation and reproduction how-to
+docs/encoder/preprocessing/resampling/compact-kernels.md	reference	both	kernel formulas + mathematical explanation and contributor test ledger
+docs/encoder/preprocessing/resampling/theory-history.md	explanation	user	""
+docs/encoder/preprocessing/resampling/wide-kernels.md	reference	both	kernel formulas + mathematical explanation and contributor test ledger
+docs/encoder/palette-construction/snap-policy/README.md	reference	both	snap contracts + numeric explanation and contributor measurements/test ledger
+docs/encoder/output/terminal-macros.md	reference	both	macro contracts + playback how-to, history and contributor test ledger
+docs/encoder/palette-application/working-colorspace/README.md	reference	both	working-space contracts + mathematical explanation and contributor measurements/tests
 docs/loader/README.md	reference	both	loader chain contracts + architecture explanation and contributor test ledger
-docs/loader/alpha-policy.md	reference	both	alpha contracts + visual explanation and contributor test ledger
+docs/loader/alpha-policy/README.md	reference	both	alpha contracts + visual explanation and contributor test ledger
 docs/loader/background-policy.md	reference	both	background contracts + contributor test ledger
 docs/loader/builtin-cms.md	explanation	contributor	CMS architecture + support reference, extension guidance and test ledger
 docs/loader/builtin.md	explanation	both	builtin-loader rationale/history + support reference and contributor test ledger
@@ -67,12 +67,12 @@ docs/loader/builtin/jpeg.md	reference	both	JPEG contracts + format history and c
 docs/loader/builtin/netpbm.md	reference	both	Netpbm contracts + format history and contributor pipeline/test ledger
 docs/loader/builtin/pic.md	reference	both	PIC contracts + format history and contributor pipeline/test ledger
 docs/loader/builtin/png-source-precision.md	reference	both	PNG precision contract + dominant contributor numeric test ledger
-docs/loader/builtin/png.md	reference	both	PNG/APNG contracts + history, benchmark reproduction and contributor test ledger
+docs/loader/builtin/png/README.md	reference	both	PNG/APNG contracts + history, benchmark reproduction and contributor test ledger
 docs/loader/builtin/psd.md	reference	both	PSD/PSB contracts + format history and contributor pipeline/test ledger
 docs/loader/builtin/sixel.md	reference	both	SIXEL input contracts + history and contributor pipeline/test ledger
 docs/loader/builtin/tga.md	reference	both	TGA contracts + format history and contributor pipeline/test ledger
 docs/loader/builtin/webp.md	reference	both	WebP contracts + format history and contributor pipeline/test ledger
-docs/loader/color-management.md	reference	both	CMS user guidance + visual explanation, migration record and large contributor test ledger
+docs/loader/color-management/README.md	reference	both	CMS user guidance + visual explanation, migration record and large contributor test ledger
 docs/loader/coregraphics.md	reference	both	ImageIO adapter contracts + contributor numerical validation/test ledger
 docs/loader/gd.md	reference	user	""
 docs/loader/gdk-pixbuf2.md	reference	user	""
@@ -107,8 +107,8 @@ docs/protocols/graphics-color-management.md	reference	both	experimental protocol
 docs/quality/color-evaluation.md	reference	both	quality-tool contracts + color-model explanation and contributor test ledger
 docs/quality/measurement-policy.md	reference	contributor	measurement policy + comparison procedure
 docs/quality/palette-gradient-analysis.md	how-to	both	diagnostic workflow + geometry explanation and contributor validation
-docs/sixel-format.md	reference	both	wire specification + encoding explanation and contributor implementation map
-docs/sixel-format/comparison.md	explanation	both	codec tradeoff explanation + measured reference and reproduction how-to
+docs/sixel-format/README.md	reference	both	wire specification + encoding explanation and contributor implementation map
+docs/sixel-format/comparison/README.md	explanation	both	codec tradeoff explanation + measured reference and reproduction how-to
 docs/testing/builtin-loader-coverage.md	reference	contributor	""
 docs/testing/guide.md	how-to	contributor	test-writing workflow + normative assertion and harness reference
 docs/testing/mapfile-parser-coverage.md	reference	contributor	""
@@ -122,5 +122,5 @@ docs/threading/decoder.md	explanation	both	parallel decode rationale + path refe
 docs/threading/encoder.md	explanation	both	encoder scheduling model + budget reference and measured scaling
 docs/threading/measurement.md	how-to	contributor	measurement reproduction + artifact reference and normative band-seam protocol
 docs/threading/overview.md	explanation	both	threading mental model + budget terminology and implementation ownership
-docs/writers/png.md	reference	both	writer/API contracts + contributor benchmark and test ledger
-docs/functionality/clamp-policy.md	reference	both	feedback bounds and precision contracts
+docs/writers/png/README.md	reference	both	writer/API contracts + contributor benchmark and test ledger
+docs/encoder/palette-application/clamp-policy.md	reference	both	feedback bounds and precision contracts

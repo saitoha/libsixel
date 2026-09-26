@@ -66,7 +66,7 @@ This work occurs before encoder sampling, resize, crop, palette initialization, 
 
 ### Implementation and test map
 
-![A vertical implementation map of the builtin Radiance HDR loader. It follows signature and metadata parsing into resolution and orientation mapping, new-RLE, old-RLE, or legacy scanline decode, RGBE or XYZE expansion to linear RGB float, profile and dynamic-range postprocessing, and typed-frame output. Every node carries a coverage ID used by the tables below.](pipeline-figures/hdr.svg)
+![A vertical implementation map of the builtin Radiance HDR loader. It follows signature and metadata parsing into resolution and orientation mapping, new-RLE, old-RLE, or legacy scanline decode, RGBE or XYZE expansion to linear RGB float, profile and dynamic-range postprocessing, and typed-frame output. Every node carries a coverage ID used by the tables below.](figures/hdr.svg)
 
 The numeric metadata matrix uses [independent RGBE and color reference data](../../../tests/data/color-numeric/hdr.json): the generator reads the original mantissa/exponent bytes and stored header chromaticities, evaluates the source transfer and XYZ D65 matrices with Decimal arithmetic, and records both exposure-only and Reinhard controls. Its expected source-profile values do not call the production CMS. RGBE values use the existing libsixel lower-edge reconstruction, `mantissa * 2^(exponent - 136)`; this is distinct from the `+0.5` mantissa midpoint in the Radiance `colr_color()` reference routine. The legacy fixture named BT.2020 stores red `y=0.2919`; the oracle uses that original value and does not silently replace it with `0.2920`. The HDR header-gamma policy uses the reciprocal of `GAMMA` as its source decoding exponent.
 
@@ -116,8 +116,8 @@ Header lengths, dimensions, scanline markers, and RLE counts are attacker-contro
 
 - Header, orientation, RGBE/XYZE, RLE, profile synthesis, and controls: [`fromhdr.c`](../../../src/fromhdr.c)
 - Builtin recognition and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
-- Shared colorspace model: [Color Spaces and Loader Color Management](../../concepts/colorspace.md)
-- Precision behavior: [Pixel-format Precision](../../concepts/pixelformat-precision.md)
+- Shared colorspace model: [Color Spaces and Loader Color Management](../../concepts/colorspace/README.md)
+- Precision behavior: [Pixel-format Precision](../../concepts/pixelformat-precision/README.md)
 - Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
 
 ## Test coverage

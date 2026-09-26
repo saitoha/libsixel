@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify gamma working space preserves an explicit float32 preference.
-# Policy: docs/functionality/working-colorspace.md
+# Policy: docs/encoder/palette-application/working-colorspace/README.md
 
 set -eux
 

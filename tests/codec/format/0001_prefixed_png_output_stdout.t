@@ -1,6 +1,6 @@
 #!/bin/sh
 # Confirm png:- sends the post-SIXEL PNG snapshot to stdout.
-# Policy: docs/writers/png.md
+# Policy: docs/writers/png/README.md
 
 set -eux
 

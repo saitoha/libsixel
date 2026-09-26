@@ -16,7 +16,7 @@ fi
 
 img2sixel_path="$TOP_BUILDDIR/converters/img2sixel${SIXEL_BIN_EXT-}"
 man_file="$src_root/converters/img2sixel.1"
-policy_doc_file="$src_root/docs/loader/alpha-policy.md"
+policy_doc_file="$src_root/docs/loader/alpha-policy/README.md"
 
 if test ! -x "$img2sixel_path"; then
     echo "ok 1 # SKIP img2sixel binary is not built"

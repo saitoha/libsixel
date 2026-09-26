@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/snap-policy.md
+# Policy: docs/encoder/palette-construction/snap-policy/README.md
 # Verify snap rate through short and environment paths.
 # Registry row: SIXEL_OPTION_SCHEMA_SNAP_POLICY|NULL|rate
 # Registry binding: snap_policy_approach_rate|snap_policy_approach_rate_override

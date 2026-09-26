@@ -1,6 +1,6 @@
 #!/bin/sh
 # Clearing temporal history removes prior correction before the next apply.
-# Policy: docs/functionality/clamp-policy.md
+# Policy: docs/encoder/palette-application/clamp-policy.md
 set -eux
 
 echo "1..1"

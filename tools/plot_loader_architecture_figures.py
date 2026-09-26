@@ -517,7 +517,7 @@ def parse_args() -> argparse.Namespace:
         "--output-dir",
         type=Path,
         default=(source_root / "docs/loader"
-                 / "loader-architecture-figures"),
+                 / "figures"),
         help="directory for generated SVG and manifest files",
     )
     parser.add_argument(

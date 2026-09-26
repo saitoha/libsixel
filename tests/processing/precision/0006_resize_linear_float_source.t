@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/precision.md
+# Policy: docs/encoder/precision/README.md
 # Verify resize linear float source on the actual working frame.
 set -eux
 echo "1..1"

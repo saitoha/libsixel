@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # UNKNOWN native values, channel layout, and rejection reason
 set -eux
 result=0

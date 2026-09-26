@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test: JASC-PAL import rejects version line 0200.
 # Test-plan: docs/testing/mapfile-parser-coverage.md
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 
 set -eux
 

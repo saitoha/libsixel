@@ -1,6 +1,6 @@
 #!/bin/sh
 # FS reverses horizontal taps while propagating limited residuals in serpentine order.
-# Policy: docs/functionality/clamp-policy.md
+# Policy: docs/encoder/palette-application/clamp-policy.md
 set -eux
 
 echo "1..1"

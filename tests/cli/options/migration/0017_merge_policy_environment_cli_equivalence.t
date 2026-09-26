@@ -1,6 +1,6 @@
 #!/bin/sh
 # Preserve SIXEL_PALETTE_FINAL_MERGE equivalence with -F during migration.
-# Policy: docs/functionality/merge-policy.md
+# Policy: docs/encoder/palette-construction/merge-policy/README.md
 
 set -eux
 

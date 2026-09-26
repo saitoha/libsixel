@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify p3 gamma working.
-# Policy: docs/functionality/output-colorspace.md
+# Policy: docs/encoder/output/output-colorspace.md
 set -eux
 
 echo "1..1"

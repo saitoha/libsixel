@@ -9,7 +9,7 @@ PYTHON=${PYTHON-python3}
 CC=${CC-cc}
 REVISION=${REVISION-$(git -C "${TOP_SRCDIR}" rev-parse HEAD)}
 study_dir=${STUDY_DIR-$(mktemp -d "${TMPDIR-/tmp}/sixel-format.XXXXXX")}
-output_dir=${1-${TOP_SRCDIR}/docs/sixel-format-figures/comparison}
+output_dir=${1-${TOP_SRCDIR}/docs/sixel-format/comparison/figures}
 mkdir -p "${study_dir}/source" "${output_dir}"
 study_dir=$(CDPATH='' cd -- "${study_dir}" && pwd -P)
 output_dir=$(CDPATH='' cd -- "${output_dir}" && pwd -P)

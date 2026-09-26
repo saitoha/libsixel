@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Verify original replicated gray samples through colorsync linear output.
 set -eux
 echo "1..1"

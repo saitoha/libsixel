@@ -79,7 +79,7 @@ The source is always eight-bit. `prefer_8bit=0` does not manufacture high source
 
 ### Implementation and test map
 
-![A vertical implementation map of the builtin WebP loader. It follows RIFF graph parsing and decode-plan construction into the native VP8, VP8L, and separate ALPH codec branches, animated ANMF canvas composition, then bounded ICC, XMP, and Exif processing before typed-frame finalization. Every node carries a coverage ID used by the tables below.](pipeline-figures/webp.svg)
+![A vertical implementation map of the builtin WebP loader. It follows RIFF graph parsing and decode-plan construction into the native VP8, VP8L, and separate ALPH codec branches, animated ANMF canvas composition, then bounded ICC, XMP, and Exif processing before typed-frame finalization. Every node carries a coverage ID used by the tables below.](figures/webp.svg)
 
 The VP8, VP8L, and animation paths are mutually selected by `sixel_webp_build_decode_plan()`. An animated `ANMF` frame may itself use VP8 plus ALPH or VP8L, but it decodes into a rectangle/scratch buffer owned by the animation state before the full canvas is emitted. Metadata remains container-global and is applied to completed frames, not to entropy-code blocks.
 
@@ -129,7 +129,7 @@ RIFF sizes, nested `ANMF` fragments, entropy tables, transform graphs, back refe
 - Lossy codec: [`fromwebp-vp8.c`](../../../src/fromwebp-vp8.c) and related `fromwebp-vp8-*` modules
 - Lossless codec: [`fromwebp-vp8l.c`](../../../src/fromwebp-vp8l.c) and related `fromwebp-vp8l-*` modules
 - Alpha codec: [`fromwebp-vp8-alpha.c`](../../../src/fromwebp-vp8-alpha.c)
-- Common alpha/background finalization: [`loader-builtin.c`](../../../src/loader-builtin.c), [Alpha Policy](../alpha-policy.md), and [Background Policy](../background-policy.md)
+- Common alpha/background finalization: [`loader-builtin.c`](../../../src/loader-builtin.c), [Alpha Policy](../alpha-policy/README.md), and [Background Policy](../background-policy.md)
 - Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
 
 ## Test coverage

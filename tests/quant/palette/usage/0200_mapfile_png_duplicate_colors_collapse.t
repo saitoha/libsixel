@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify duplicate decoded indexed-PNG colors collapse into one map entry.
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 
 set -eux
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Verify ColorSync v2 passthrough strict against the original native transform.
 set -eux
 result=0

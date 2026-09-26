@@ -122,7 +122,7 @@ not depend on a lucky palette seed, iteration order, or scheduling outcome.
 Treat encoder precision as a cross-cutting experimental variable rather than a
 property of only one algorithm. It can change loader output, sampling and
 binning, palette construction, dithering, palette lookup, and band encoding.
-See the [working-precision guide](../functionality/precision.md) for the pipeline
+See the [working-precision guide](../encoder/precision/README.md) for the pipeline
 boundaries and the maintained comparison.
 
 Do not infer the effective path from the command line alone. Before collecting

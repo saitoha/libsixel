@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify keep policy omits an alpha-zero pixel even when -B is present.
-# Policy: docs/loader/alpha-policy.md
+# Policy: docs/loader/alpha-policy/README.md
 # Policy: docs/concepts/pixelformat.md
 
 set -eux

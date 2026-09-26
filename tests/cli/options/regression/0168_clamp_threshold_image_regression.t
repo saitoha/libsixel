@@ -3,7 +3,7 @@
 # Registry row: SIXEL_OPTION_SCHEMA_CLAMP_POLICY|NULL|threshold
 # Registry binding: clamp_threshold|clamp_threshold_override
 # Dither contract: clamp_effective=1|clamp_threshold=1.05
-# Policy: docs/functionality/clamp-policy.md
+# Policy: docs/encoder/palette-application/clamp-policy.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

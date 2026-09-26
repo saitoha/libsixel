@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Policy: docs/functionality/cover-policy.md
+ * Policy: docs/encoder/palette-construction/cover-policy/README.md
  *
  * Pin the gamut-corner anchoring contract.
  *

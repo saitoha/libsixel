@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify the builtin writer uses the PNG reflected CRC-32 convention.
-# Policy: docs/writers/png.md
+# Policy: docs/writers/png/README.md
 
 set -eux
 

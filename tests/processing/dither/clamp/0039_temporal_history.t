@@ -1,6 +1,6 @@
 #!/bin/sh
 # Accumulated temporal correction reaches the limiter and stores its bounded residual.
-# Policy: docs/functionality/clamp-policy.md
+# Policy: docs/encoder/palette-application/clamp-policy.md
 set -eux
 
 echo "1..1"

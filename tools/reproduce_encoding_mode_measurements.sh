@@ -14,8 +14,8 @@ IMG2SIXEL_PATH=${IMG2SIXEL_PATH-${BUILD_DIR}/converters/img2sixel}
 SIXEL2PNG_PATH=${SIXEL2PNG_PATH-${BUILD_DIR}/converters/sixel2png}
 LSQA_PATH=${LSQA_PATH-${BUILD_DIR}/assessment/lsqa}
 
-encode_dir=${1-${TOP_SRCDIR}/docs/functionality/encode-policies/measurements}
-high_dir=${2-${TOP_SRCDIR}/docs/functionality/high-color/measurements}
+encode_dir=${1-${TOP_SRCDIR}/docs/encoder/output/encode-policy/measurements}
+high_dir=${2-${TOP_SRCDIR}/docs/encoder/output/high-color/measurements}
 input_image=${3-images/snake.png}
 warmups=${ENCODING_MODE_WARMUPS-2}
 runs=${ENCODING_MODE_RUNS-21}

@@ -1,7 +1,7 @@
 #!/bin/sh
-# Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/decoder/pipeline/README.md
 # Verify the default decoder path writes an indexed 8-bit PNG.
-# Policy: docs/writers/png.md
+# Policy: docs/writers/png/README.md
 
 set -eux
 

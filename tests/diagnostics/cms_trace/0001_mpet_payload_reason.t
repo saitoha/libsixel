@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/loader/builtin-cms.md
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Observe builtin ICC decisions without changing the image load result.
 
 set -eux

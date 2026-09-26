@@ -11,8 +11,8 @@ The cost is substantial. In-tree file-format parsers increase libsixel's own att
 ## From stb_image integration to format families
 
 <picture>
-  <source media="(max-width: 640px)" srcset="loader-architecture-figures/builtin-lineage-mobile.svg">
-  <img alt="The builtin loader started by importing stb_image 1.33 in 2014. Animated GIF moved to fromgif in 2015. During 2026, PNG high-depth and metadata work moved to frompng, the stb-derived JPEG path gained float precision handling, PSD expanded into frompsd, HDR was replaced by a custom fromhdr path, and BMP and WebP gained dedicated implementations. The present dispatcher also has direct SIXEL and PNM families while retaining an adapted stb core for JPEG, PNG helpers, TGA, PIC, and shared zlib machinery." src="loader-architecture-figures/builtin-lineage-wide.svg">
+  <source media="(max-width: 640px)" srcset="figures/builtin-lineage-mobile.svg">
+  <img alt="The builtin loader started by importing stb_image 1.33 in 2014. Animated GIF moved to fromgif in 2015. During 2026, PNG high-depth and metadata work moved to frompng, the stb-derived JPEG path gained float precision handling, PSD expanded into frompsd, HDR was replaced by a custom fromhdr path, and BMP and WebP gained dedicated implementations. The present dispatcher also has direct SIXEL and PNM families while retaining an adapted stb core for JPEG, PNG helpers, TGA, PIC, and shared zlib machinery." src="figures/builtin-lineage-wide.svg">
 </picture>
 
 *Figure 1. Evolution of the builtin component. Purple branches are dedicated format families; blue marks the retained and modified stb-derived core; amber labels quality or feature pressure; red records the security cost that grows with in-tree parsing.*

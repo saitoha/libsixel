@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/decoder/pipeline/README.md
 # Verify direct parallel repeat overflow falls back before painting.
 
 set -eux

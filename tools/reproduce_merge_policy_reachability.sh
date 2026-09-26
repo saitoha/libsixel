@@ -12,7 +12,7 @@ MAKE=${MAKE-make}
 GIT=${GIT-git}
 IMG2SIXEL_PATH=${IMG2SIXEL_PATH-${BUILD_DIR}/converters/img2sixel}
 
-output_dir=${1-${TOP_SRCDIR}/docs/functionality/merge-policies/measurements}
+output_dir=${1-${TOP_SRCDIR}/docs/encoder/palette-construction/merge-policy/measurements}
 input_image=${2-images/snake.png}
 source_state=clean
 

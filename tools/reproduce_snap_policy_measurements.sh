@@ -13,7 +13,7 @@ GIT=${GIT-git}
 IMG2SIXEL_PATH=${IMG2SIXEL_PATH-${BUILD_DIR}/converters/img2sixel}
 LSQA_PATH=${LSQA_PATH-${BUILD_DIR}/assessment/lsqa}
 
-output_dir=${1-${TOP_SRCDIR}/docs/functionality/snap-policies/measurements}
+output_dir=${1-${TOP_SRCDIR}/docs/encoder/palette-construction/snap-policy/measurements}
 manifest=${2-${TOP_SRCDIR}/tools/snap_policy_suite.json}
 warmups=${SNAP_POLICY_WARMUPS-2}
 runs=${SNAP_POLICY_RUNS-9}
@@ -31,7 +31,7 @@ output_dir=$("${PYTHON}" -c \
     "${output_dir}")
 durable_output_dir=$("${PYTHON}" -c \
     'from pathlib import Path; import sys; print(Path(sys.argv[1]).resolve())' \
-    "${TOP_SRCDIR}/docs/functionality/snap-policies/measurements")
+    "${TOP_SRCDIR}/docs/encoder/palette-construction/snap-policy/measurements")
 manifest=$("${PYTHON}" -c \
     'from pathlib import Path; import sys; print(Path(sys.argv[1]).resolve())' \
     "${manifest}")

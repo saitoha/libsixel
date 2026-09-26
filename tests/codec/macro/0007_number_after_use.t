@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/terminal-macros.md
+# Policy: docs/encoder/output/terminal-macros.md
 # Verify a fixed number after use-macro suppresses invocation.
 
 set -eux

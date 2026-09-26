@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify update delta threshold accepts only the documented byte range.
-# Policy: docs/functionality/delta-encoding.md
+# Policy: docs/encoder/output/delta-encoding.md
 
 set -eux
 

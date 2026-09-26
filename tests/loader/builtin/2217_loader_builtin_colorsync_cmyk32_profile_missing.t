@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # independent correct-ICC and original-input CMYK32 fallback
 set -eux

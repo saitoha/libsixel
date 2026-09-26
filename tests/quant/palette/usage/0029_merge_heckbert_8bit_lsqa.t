@@ -1,6 +1,6 @@
 #!/bin/sh
 # Run lsqa quality checks for Heckbert final merge with 8-bit palettes.
-# Policy: docs/functionality/merge-policy.md
+# Policy: docs/encoder/palette-construction/merge-policy/README.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

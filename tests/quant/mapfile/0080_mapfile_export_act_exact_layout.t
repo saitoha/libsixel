@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify ACT export writes the complete canonical 772-byte layout.
 # Test-plan: docs/testing/mapfile-parser-coverage.md
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 
 set -eux
 

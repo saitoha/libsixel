@@ -1,6 +1,6 @@
 #!/bin/sh
 # TAP test verifying that empty SIXEL_ABORT_TRACE enables abort tracing.
-# Policy: docs/cli/abort-trace.md
+# Policy: docs/cli/abort-trace/README.md
 
 set -eux
 

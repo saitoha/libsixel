@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/precision.md
+# Policy: docs/encoder/precision/README.md
 # Verify explicit float preserve on the actual working frame.
 set -eux
 echo "1..1"

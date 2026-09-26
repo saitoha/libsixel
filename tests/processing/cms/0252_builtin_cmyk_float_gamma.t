@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Verify builtin device values and the specified buffer layout.
 set -eux
 echo "1..1"

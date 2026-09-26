@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/concepts/pixelformat-precision.md
+# Policy: docs/concepts/pixelformat-precision/README.md
 # Verify bilinear values only when the compiled/runtime sse2 path is eligible.
 set -eux
 echo "1..1"

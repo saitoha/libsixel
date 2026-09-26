@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/or-mode.md
+# Policy: docs/encoder/output/or-mode/README.md
 # Resolve an untouched OR cell through palette zero with alpha 255.
 set -eux
 

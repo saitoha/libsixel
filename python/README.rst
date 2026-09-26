@@ -100,7 +100,7 @@ preserve float data end-to-end:
    * ``SIXEL_PIXELFORMAT_CIELABFLOAT32`` for CIELAB intermediates.
    * ``SIXEL_PIXELFORMAT_DIN99DFLOAT32`` for DIN99d buffers, with all three native coordinates divided by 100.
 
-   The `DIN99d coordinate guide <../docs/concepts/din99d.md#coordinates-and-normalization>`_ describes the normalization and compatibility with earlier stored values.
+   The `DIN99d coordinate guide <../docs/concepts/din99d/README.md#coordinates-and-normalization>`_ describes the normalization and compatibility with earlier stored values.
 
    Passing any of these constants to ``encode_bytes`` avoids the
    implicit 8-bit conversion that older releases performed.

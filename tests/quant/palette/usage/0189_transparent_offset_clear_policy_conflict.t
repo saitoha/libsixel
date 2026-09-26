@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify transparent-offset rejects clear alpha handling.
-# Policy: docs/loader/alpha-policy.md
+# Policy: docs/loader/alpha-policy/README.md
 
 set -eux
 

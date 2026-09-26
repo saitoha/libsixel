@@ -1,6 +1,6 @@
 #!/bin/sh
-# Policy: docs/functionality/or-mode.md
-# Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/encoder/output/or-mode/README.md
+# Policy: docs/decoder/pipeline/README.md
 # Keep unpainted OR index zero opaque through this dequantizer.
 set -eux
 

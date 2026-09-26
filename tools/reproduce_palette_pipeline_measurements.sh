@@ -13,7 +13,7 @@ GIT=${GIT-git}
 IMG2SIXEL_PATH=${IMG2SIXEL_PATH-${BUILD_DIR}/converters/img2sixel}
 LSQA_PATH=${LSQA_PATH-${BUILD_DIR}/assessment/lsqa}
 
-output_dir=${1-${TOP_SRCDIR}/docs/functionality/palette-pipeline/measurements}
+output_dir=${1-${TOP_SRCDIR}/docs/encoder/palette-construction/pipeline/measurements}
 input_image=${2-images/snake.png}
 warmups=${PALETTE_PIPELINE_WARMUPS-2}
 runs=${PALETTE_PIPELINE_RUNS-10}
@@ -31,7 +31,7 @@ output_dir=$("${PYTHON}" -c \
     "${output_dir}")
 durable_output_dir=$("${PYTHON}" -c \
     'from pathlib import Path; import sys; print(Path(sys.argv[1]).resolve())' \
-    "${TOP_SRCDIR}/docs/functionality/palette-pipeline/measurements")
+    "${TOP_SRCDIR}/docs/encoder/palette-construction/pipeline/measurements")
 
 test "${exploratory}" = 0 || test "${exploratory}" = 1 || {
     echo "PALETTE_PIPELINE_EXPLORATORY must be 0 or 1" >&2

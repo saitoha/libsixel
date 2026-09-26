@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify P3 fixed-palette image gamma values and pixel application.
-# Policy: docs/functionality/output-colorspace.md
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/output/output-colorspace.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 set -eux
 
 echo "1..1"

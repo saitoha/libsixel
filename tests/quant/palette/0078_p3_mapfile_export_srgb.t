@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify fixed-palette export precedes P3 RGB101 rounding.
-# Policy: docs/functionality/output-colorspace.md
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/output/output-colorspace.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 set -eux
 
 echo "1..1"

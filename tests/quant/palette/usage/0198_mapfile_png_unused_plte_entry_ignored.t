@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify an indexed PNG mapfile omits a PLTE entry unused by its pixels.
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 
 set -eux
 

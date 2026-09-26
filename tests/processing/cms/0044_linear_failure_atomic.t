@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Verify failed linear conversion leaves every original source sample intact.
 set -eux
 echo "1..1"

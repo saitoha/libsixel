@@ -13,7 +13,7 @@ GIT=${GIT-git}
 IMG2SIXEL_PATH=${IMG2SIXEL_PATH-${BUILD_DIR}/converters/img2sixel}
 LSQA_PATH=${LSQA_PATH-${BUILD_DIR}/assessment/lsqa}
 
-output_dir=${1-${TOP_SRCDIR}/docs/functionality/clustering-color-spaces/threshold-measurements}
+output_dir=${1-${TOP_SRCDIR}/docs/encoder/palette-construction/clustering-colorspace/threshold-measurements}
 manifest=${2-${TOP_SRCDIR}/tools/palette_pipeline_suite.json}
 colors=${CLUSTERING_BINNING_THRESHOLD_COLORS-64,128,256}
 seeds=${CLUSTERING_BINNING_THRESHOLD_SEEDS-1,2,3,4,5}

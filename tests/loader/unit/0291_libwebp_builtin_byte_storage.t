@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/precision.md
+# Policy: docs/encoder/precision/README.md
 # Verify libwebp builtin CMS byte storage without a float image.
 set -eux
 echo "1..1"

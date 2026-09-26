@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify soft-clamp work bands keep independent overlap state.
-# Policy: docs/functionality/clamp-policy.md
+# Policy: docs/encoder/palette-application/clamp-policy.md
 set -eux
 
 test "${SIXEL_ENABLE_THREADS-0}" = 1 || {

@@ -13,7 +13,7 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / 'docs/concepts/colorspace-figures'
+OUT = ROOT / 'docs/concepts/colorspace/figures'
 INK = '#183247'
 MUTED = '#4c6070'
 BLUE = '#17618c'

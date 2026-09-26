@@ -1,6 +1,6 @@
 #!/bin/sh
 # Exercise exact-plane 6delta wiring through high-level GPU blue-noise dither.
-# Policy: docs/functionality/delta-encoding.md
+# Policy: docs/encoder/output/delta-encoding.md
 
 set -eux
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify transparent-offset emits P2=1 and virtual left/top geometry.
-# Policy: docs/loader/alpha-policy.md
+# Policy: docs/loader/alpha-policy/README.md
 
 set -eux
 

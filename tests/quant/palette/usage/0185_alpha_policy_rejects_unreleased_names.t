@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify only the canonical alpha-policy spellings are accepted.
-# Policy: docs/loader/alpha-policy.md
+# Policy: docs/loader/alpha-policy/README.md
 
 set -eux
 

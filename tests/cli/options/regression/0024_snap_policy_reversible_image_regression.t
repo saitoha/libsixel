@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/snap-policy.md
+# Policy: docs/encoder/palette-construction/snap-policy/README.md
 # Top-level option regression
 # Verify the snap policy through short and environment paths.
 # Palette contract: policy=reversible

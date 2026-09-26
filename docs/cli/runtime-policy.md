@@ -20,7 +20,7 @@ Accepted base values are `auto`, `none`, `scalar`, `sse2`, `avx`, and `neon`; `n
 | --- | --- | --- | --- |
 | `colorspace_min=PIXELS` (`C`) | `img2sixel` | Unsigned pixel-count floor for eligible colorspace parallel work. It does not create workers when the budget or build has none. | `SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS` |
 | `parallel_factor=ROWS` (`F`) | `img2sixel` | Positive row span per resize thread-pool job, clamped to the available rows. This is not a multiplier on the thread count. | `SIXEL_PARALLEL_FACTOR` |
-| `resize_precision=preserve\|linear\|float` (`R`) | `img2sixel` | Selects the resize representation policy described in [crop and resize](../functionality/crop-resize.md). | `SIXEL_PLANNER_RESIZE_PRECISION_MODE` |
+| `resize_precision=preserve\|linear\|float` (`R`) | `img2sixel` | Selects the resize representation policy described in [crop and resize](../encoder/preprocessing/crop-resize/README.md). | `SIXEL_PLANNER_RESIZE_PRECISION_MODE` |
 | `scale_min_bytes=BYTES` (`B`) | `img2sixel` | Unsigned byte threshold for eligible parallel resize work. Zero preserves the eager threshold behavior; other eligibility checks still apply. | `SIXEL_SCALE_PARALLEL_MIN_BYTES` |
 | `parallel_skew=VALUE` (`K`) | `sixel2png` | Decoder parallel partition adjustment, in the range -20..20. It changes scheduling balance rather than decoded image dimensions. | `SIXEL_PARALLEL_SKEW` |
 
@@ -41,7 +41,7 @@ img2sixel -j auto:scale_min_bytes=1048576:parallel_factor=32 \
 
 The SIMD ceiling and resize precision are independent fields in the same option. Scalar execution does not imply byte precision; a scalar linear-light resize still uses floating-point work. Conversely, selecting `auto` does not require float32 palette application. The effective path also depends on `-.`, `-W`, source representation, and loader CMS.
 
-Vector accumulation can round differently from scalar accumulation. Changes in task boundaries can also expose stateful algorithm differences elsewhere in the pipeline. Compare decoded pixels or suitable quality metrics for the particular path; do not assume every policy must produce identical SIXEL bytes. The [resampling guide](../functionality/resampling.md) and [crop/resize measurements](../functionality/crop-resize.md) separate arithmetic, representation, and scheduling effects.
+Vector accumulation can round differently from scalar accumulation. Changes in task boundaries can also expose stateful algorithm differences elsewhere in the pipeline. Compare decoded pixels or suitable quality metrics for the particular path; do not assume every policy must produce identical SIXEL bytes. The [resampling guide](../encoder/preprocessing/resampling/README.md) and [crop/resize measurements](../encoder/preprocessing/crop-resize/README.md) separate arithmetic, representation, and scheduling effects.
 
 Use `-v` together with `-x human:trace_topic=runtime_contract` to inspect requested, native, and effective choices. For timing, first confirm the path with diagnostics, then measure without verbose tracing or timeline logging. Small inputs can be slower with more parallel work because setup and queueing costs dominate. No one threshold is best for all image sizes and machines.
 

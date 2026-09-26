@@ -1,6 +1,6 @@
 #!/bin/sh
 # Run the 6delta retained-plane regression via the unified runner.
-# Policy: docs/functionality/delta-encoding.md
+# Policy: docs/encoder/output/delta-encoding.md
 
 set -eux
 

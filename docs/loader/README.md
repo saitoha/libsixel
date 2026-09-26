@@ -2,7 +2,7 @@
 
 [Loader precision, gamut, and fast paths](precision-policy.md) defines the shared preservation and byte-path policy, including backend-expanded indexed images and the distinction between desired contracts and current backend support.
 
-For the [CMS integration policy](color-management.md#cms-integration-policy), current [loader/format support tables](color-management.md#loader-connections-and-wide-gamut-boundaries), engine selection and its limits, read [Loader Color Management](color-management.md). It distinguishes available backend color APIs, implemented adapter connections and precision preservation, and covers unsupported profiles, best-effort fallback, quality, and performance. For shared PNG metadata precedence and its reference matrix, read [PNG color metadata](png-color-metadata.md). For the subsystem design, read [Builtin CMS specification and architecture](builtin-cms.md).
+For the [CMS integration policy](color-management/README.md#cms-integration-policy), current [loader/format support tables](color-management/README.md#loader-connections-and-wide-gamut-boundaries), engine selection and its limits, read [Loader Color Management](color-management/README.md). It distinguishes available backend color APIs, implemented adapter connections and precision preservation, and covers unsupported profiles, best-effort fallback, quality, and performance. For shared PNG metadata precedence and its reference matrix, read [PNG color metadata](png-color-metadata.md). For the subsystem design, read [Builtin CMS specification and architecture](builtin-cms.md).
 
 For the static PNG source and native conversion boundary, see [CoreGraphics PNG source precision](coregraphics.md#png-source-precision).
 
@@ -17,8 +17,8 @@ This document defines that shared architecture and the `-L` policy surface. Back
 ## Loader-chain mental model
 
 <picture>
-  <source media="(max-width: 640px)" srcset="loader-architecture-figures/loader-chain-mobile.svg">
-  <img alt="The loader order parser puts explicit -L entries first, removes duplicates, and unless a final exclamation mark is present appends compiled default-enabled loaders. At load time each candidate is checked by its format predicate, then decodes and performs its own metadata, color-management, orientation, animation, and alpha work. A successful candidate returns a typed frame; an allowed mismatch or decode status advances to the next candidate; allocation, cancellation, argument, overflow, and other terminal errors stop the chain." src="loader-architecture-figures/loader-chain-wide.svg">
+  <source media="(max-width: 640px)" srcset="figures/loader-chain-mobile.svg">
+  <img alt="The loader order parser puts explicit -L entries first, removes duplicates, and unless a final exclamation mark is present appends compiled default-enabled loaders. At load time each candidate is checked by its format predicate, then decodes and performs its own metadata, color-management, orientation, animation, and alpha work. A successful candidate returns a typed frame; an allowed mismatch or decode status advances to the next candidate; allocation, cancellation, argument, overflow, and other terminal errors stop the chain." src="figures/loader-chain-wide.svg">
 </picture>
 
 *Figure 1. Chain construction and candidate selection. Blue is policy and control flow, purple is backend-owned work, teal is the accepted frame contract, and red is a rejected candidate or terminal error. Labels and line shape duplicate the color encoding.*
@@ -89,9 +89,9 @@ The registry order below is also the automatic priority order for components pre
 
 Framework and plugin loaders inherit part of their effective format support from the host. A build-time name therefore identifies a component, not a permanent promise that every installation recognizes the same extensions.
 
-See [Animation playback](../functionality/animation.md) for the loader/format support matrix, loop and delay metadata, still-frame extraction, and GdkPixbuf's finite-loop and iterator limitations. Successful still-image loading does not establish animation support.
+See [Animation playback](../encoder/animation.md) for the loader/format support matrix, loop and delay metadata, still-frame extraction, and GdkPixbuf's finite-loop and iterator limitations. Successful still-image loading does not establish animation support.
 
-Read format support and color-management support separately. The [CMS support tables](color-management.md#loader-connections-and-wide-gamut-boundaries) distinguish implemented connections, unused backend capabilities and unsupported metadata interpretation; the linked backend pages own exact format/layout limits. For example, the [TIFF table](libtiff.md#format-and-color-management-support) records original Lab/CMYK ICC integration separately from LOGL and unsupported layout limitations. A format converter or gamma normalization alone does not establish an ICC connection.
+Read format support and color-management support separately. The [CMS support tables](color-management/README.md#loader-connections-and-wide-gamut-boundaries) distinguish implemented connections, unused backend capabilities and unsupported metadata interpretation; the linked backend pages own exact format/layout limits. For example, the [TIFF table](libtiff.md#format-and-color-management-support) records original Lab/CMYK ICC integration separately from LOGL and unsupported layout limitations. A format converter or gamma normalization alone does not establish an ICC connection.
 
 ## The output is a typed frame, not universal RGBA
 
@@ -104,7 +104,7 @@ The stable handoff records dimensions, storage kind, `pixelformat`, `colorspace`
 
 Consequently, “loaded frame (RGBA)” and “get pixel (RGBA)” are incorrect general contracts. Consumers must inspect the frame metadata instead of deriving component count, precision, or color interpretation from the loader name.
 
-Loader output is also not controlled solely by the encoder's `--precision` option. A decoder can preserve high-depth source values as float32 before encoder preprocessing begins. Conversely, a requested float-capable CMS target does not manufacture extra source precision when no transform runs. With CMS enabled, `prefer_8bit=0` permits float32 target output; `prefer_8bit=1` requests an 8-bit gamma RGB boundary. See [Pixel-format Precision](../concepts/pixelformat-precision.md) and [Color Spaces and Loader Color Management](../concepts/colorspace.md) for the later resize and encoder conversions.
+Loader output is also not controlled solely by the encoder's `--precision` option. A decoder can preserve high-depth source values as float32 before encoder preprocessing begins. Conversely, a requested float-capable CMS target does not manufacture extra source precision when no transform runs. With CMS enabled, `prefer_8bit=0` permits float32 target output; `prefer_8bit=1` requests an 8-bit gamma RGB boundary. See [Pixel-format Precision](../concepts/pixelformat-precision/README.md) and [Color Spaces and Loader Color Management](../concepts/colorspace/README.md) for the later resize and encoder conversions.
 
 ## Why several loaders exist
 
@@ -125,7 +125,7 @@ The shared manager contract stays here. Each detailed backend document should se
 - [Builtin Image Loader](builtin.md), including its stb_image lineage and format-specific extraction history.
 - [Builtin Format Components](builtin/README.md), indexing the exact accepted variants, metadata semantics, output precision/colorspace, history, and unsupported features of each builtin decoder family.
 
-Cross-backend alpha and background behavior is defined by [Alpha Policy](alpha-policy.md) and [Background Policy](background-policy.md).
+Cross-backend alpha and background behavior is defined by [Alpha Policy](alpha-policy/README.md) and [Background Policy](background-policy.md).
 
 ## Implementation landmarks
 

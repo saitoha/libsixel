@@ -45,7 +45,7 @@ Netpbm has no standardized embedded ICC container in these accepted variants. `f
 
 ### Implementation and test map
 
-![A vertical implementation map of the builtin Netpbm loader. It follows P1 through P7 recognition into header and tuple parsing, checked raster sample decode, the byte-versus-float precision branch, and linear-light PAM alpha composition. Every node carries a coverage ID used by the tables below.](pipeline-figures/netpbm.svg)
+![A vertical implementation map of the builtin Netpbm loader. It follows P1 through P7 recognition into header and tuple parsing, checked raster sample decode, the byte-versus-float precision branch, and linear-light PAM alpha composition. Every node carries a coverage ID used by the tables below.](figures/netpbm.svg)
 
 `load_pnm()` is the format-owned boundary: there is no intermediate universal RGBA frame. Its branches deliberately return different pixel formats, so a coverage audit must check the representation as well as whether decoding succeeded.
 
@@ -94,7 +94,7 @@ Plain formats are not inherently safe merely because their grammar is simple: de
 - Parser, sample decode, compatibility policy, and alpha composition: [`frompnm.c`](../../../src/frompnm.c)
 - Builtin signature routing and frame initialization: [`loader-builtin.c`](../../../src/loader-builtin.c)
 - Broader non-owning compatibility suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
-- Shared frame meanings: [Pixel Formats and Alpha Representation](../../concepts/pixelformat.md) and [Color Spaces and Loader Color Management](../../concepts/colorspace.md)
+- Shared frame meanings: [Pixel Formats and Alpha Representation](../../concepts/pixelformat.md) and [Color Spaces and Loader Color Management](../../concepts/colorspace/README.md)
 
 ## Test coverage
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Verify ColorSync RGB strict with engine builtin against original stored ICC values.
 set -eux
 result=0

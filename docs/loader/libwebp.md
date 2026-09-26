@@ -14,14 +14,14 @@ Use the trailing `!` when backend identity matters. Available compressed formats
 
 Static lossless input and alpha-preserving cases can use byte RGB/RGBA decoding. An eligible static lossy image instead follows a YUV-to-float path: the current selector requires lossy input, no forced RGB decode, either no alpha or an explicit composition background, and a float precision request, an enabled embedded-profile conversion, or alpha/background composition. This preserves intermediate conversion precision; it does not turn the source into a higher-bit-depth WebP file. Without these requirements, ordinary unmanaged static lossy input uses the RGB8 API. Unmanaged lossless RGB8 output is not unconditionally promoted during frame finalization. CMS and `prefer_8bit` can further change the emitted representation.
 
-Animated input uses `WebPAnimDecoder` composed canvases and timestamps. libsixel derives delays from timestamp differences, applies frame selection and repetition, and can cache finalized first-pass frames for reuse. Blend/disposal composition is therefore owned differently from the builtin decoder's WebP container/codec implementation. See [animation playback](../functionality/animation.md) for loop counts, timing units, `-S`, `-T`, and the current one-frame-tail replay boundary.
+Animated input uses `WebPAnimDecoder` composed canvases and timestamps. libsixel derives delays from timestamp differences, applies frame selection and repetition, and can cache finalized first-pass frames for reuse. Blend/disposal composition is therefore owned differently from the builtin decoder's WebP container/codec implementation. See [animation playback](../encoder/animation.md) for loop counts, timing units, `-S`, `-T`, and the current one-frame-tail replay boundary.
 
 | Control | Meaning |
 | --- | --- |
 | `orientation=0|1` (`O`) | Enable Exif orientation; default enabled. Fallback: `SIXEL_LOADER_LIBWEBP_ORIENTATION`, then shared orientation policy. |
 | `cms_engine=...` (`E`) | Select the external WebP adapter's CMS engine. Fallback: `SIXEL_LOADER_LIBWEBP_CMS_ENGINE`, then shared CMS policy. |
 | `max_output_frames=COUNT` (`M`) | Bound animation frame emission (1..262144, default 262144). It is a resource/output guard, not a requested frame rate or a substitute for `-l`. Fallback: `SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES`. |
-| Common CMS and background fields | Govern profile target, rendering-intent preference, byte preference, and composition interpretation. See [color management](color-management.md) and [background policy](background-policy.md). |
+| Common CMS and background fields | Govern profile target, rendering-intent preference, byte preference, and composition interpretation. See [color management](color-management/README.md) and [background policy](background-policy.md). |
 
 ICC extraction, Exif orientation, transparent output, and background composition are distinct steps. A valid ICC chunk does not prove that a transform was applied, and an animation's opaque canvas does not establish how an uncomposited static alpha image is represented. Use diagnostics and a controlled fixture when comparing routes.
 

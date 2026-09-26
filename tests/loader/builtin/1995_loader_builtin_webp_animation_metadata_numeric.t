@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/animation.md
+# Policy: docs/encoder/animation.md
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/webp.md
 # Verify WebP delay, frame, loop, and multiframe metadata exactly.

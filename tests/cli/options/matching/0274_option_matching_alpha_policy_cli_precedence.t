@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify -A takes precedence over SIXEL_ALPHA_POLICY regardless of order.
-# Policy: docs/loader/alpha-policy.md
+# Policy: docs/loader/alpha-policy/README.md
 
 set -eux
 

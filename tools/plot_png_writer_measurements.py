@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / 'docs/writers/png-figures'
+OUT = ROOT / 'docs/writers/png/figures'
 
 
 def command(*args):

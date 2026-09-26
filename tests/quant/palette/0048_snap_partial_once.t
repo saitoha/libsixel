@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/snap-policy.md
+# Policy: docs/encoder/palette-construction/snap-policy/README.md
 # Verify the final partial snap is applied exactly once in float precision.
 set -eux
 

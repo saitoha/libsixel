@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test: ACT palette import by extension converts image data.
 # Test-plan: docs/testing/mapfile-parser-coverage.md
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 
 set -eux
 

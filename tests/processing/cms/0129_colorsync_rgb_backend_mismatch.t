@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # A prepared ColorSync source rejects a builtin destination without changing input or requested engine.
 set -eux
 result=0

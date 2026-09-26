@@ -1,6 +1,6 @@
 #!/bin/sh
 # Gamma sRGB lookup uses the exact transmitted RGB101 palette.
-# Policy: docs/functionality/output-colorspace.md
+# Policy: docs/encoder/output/output-colorspace.md
 set -eux
 
 echo "1..1"

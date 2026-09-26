@@ -1,6 +1,6 @@
 #!/bin/sh
 # TAP test verifying stdin input produces a PNG stream on stdout.
-# Policy: docs/writers/png.md
+# Policy: docs/writers/png/README.md
 
 set -eux
 

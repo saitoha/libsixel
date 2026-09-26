@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/decoder/pipeline/README.md
 # Verify direct parallel sparse paint leaves untouched cells unchanged.
 
 set -eux

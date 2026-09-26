@@ -62,7 +62,7 @@ FAMILIES = (
     Family(
         "png",
         "PNG and APNG",
-        "docs/loader/builtin/png.md",
+        "docs/loader/builtin/png/README.md",
         "PNG/APNG builtin component",
         ("png", "apng"),
     ),

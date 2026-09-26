@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # original-input CMYK16 fallback values and frame format
 set -eux

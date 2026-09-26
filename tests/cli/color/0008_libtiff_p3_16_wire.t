@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify exact Display P3 RGB101 colors from the selected libtiff path.
-# Policy: docs/functionality/output-colorspace.md
+# Policy: docs/encoder/output/output-colorspace.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

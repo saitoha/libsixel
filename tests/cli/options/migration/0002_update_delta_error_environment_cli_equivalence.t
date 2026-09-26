@@ -1,6 +1,6 @@
 #!/bin/sh
 # Preserve SIXEL_UPDATE_DELTA_ERROR equivalence with delta:error.
-# Policy: docs/functionality/delta-encoding.md
+# Policy: docs/encoder/output/delta-encoding.md
 
 set -eux
 

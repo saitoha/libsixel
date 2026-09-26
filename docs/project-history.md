@@ -57,7 +57,7 @@ that materially changed the modern interpretation of SIXEL:
    experimental 15-bit implementation entered libsixel in
    [November 2014](https://github.com/saitoha/libsixel/commit/0382aef1afa5333ad2d69f4412900accca866ef2)
    and became `img2sixel -I`, the high-color mode.
-2. **Image preloading with terminal macros.** Araki Ken proposed combining DECDMAC with SIXEL as a speed improvement during libsixel's formative 2014 period: preload the image, then invoke its macro without retransmitting the body. mlterm's [2014-07-21 history](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/ChangeLog#L11508-L11515) records macro support and caching of the resulting images. libsixel added [`-u` on July 21](https://github.com/saitoha/libsixel/commit/fc93d97631a6c1556b8af0ceceab2a5cf8c9fa35), incorporated [Araki Ken's hexadecimal output optimization on July 22](https://github.com/saitoha/libsixel/commit/45bd1b2c9a6ad20b6681adb48ec3a2052d13a5b4), and added [`-n` on August 2](https://github.com/saitoha/libsixel/commit/7f12bdb00456f43a260c03cba9986227744d46cd). In the current CLI, `img2sixel -n` defines an image without displaying it, while `-u` uses DECDMAC and DECINVM for playback. See [terminal macros](functionality/terminal-macros.md) for the wire format and the RLogin and mlterm implementation references.
+2. **Image preloading with terminal macros.** Araki Ken proposed combining DECDMAC with SIXEL as a speed improvement during libsixel's formative 2014 period: preload the image, then invoke its macro without retransmitting the body. mlterm's [2014-07-21 history](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/ChangeLog#L11508-L11515) records macro support and caching of the resulting images. libsixel added [`-u` on July 21](https://github.com/saitoha/libsixel/commit/fc93d97631a6c1556b8af0ceceab2a5cf8c9fa35), incorporated [Araki Ken's hexadecimal output optimization on July 22](https://github.com/saitoha/libsixel/commit/45bd1b2c9a6ad20b6681adb48ec3a2052d13a5b4), and added [`-n` on August 2](https://github.com/saitoha/libsixel/commit/7f12bdb00456f43a260c03cba9986227744d46cd). In the current CLI, `img2sixel -n` defines an image without displaying it, while `-u` uses DECDMAC and DECINVM for playback. See [terminal macros](encoder/output/terminal-macros.md) for the wire format and the RLogin and mlterm implementation references.
 3. **Scrolling images by using terminal margins.** Araki Ken's
    [GNU Screen SIXEL branch](https://github.com/arakiken/screen/tree/sixel)
    forwards the SIXEL stream rather than storing and reconstructing its
@@ -84,7 +84,7 @@ Hayaki Saito's tanasinn added an [image overlay plugin on 2012-03-11](https://gi
 
 tanasinn's separate [`OSC 99` w3m interface](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/modules/session_components/w3m.js#L154-L209) dispatches drawing commands and reuses loaded images by filename. Its [w3m-side drawing code](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/tools/w3m/image.c#L111-L129) sends an image-cache index together with geometry and the filename; the receiver uses the filename as its cache key and [draws the requested source rectangle at the destination](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/modules/session_components/w3m.js#L274-L297). This is a concrete connection between application image tracking and receiver image reuse.
 
-RLogin introduced a numeric image-index extension in [2.17.3 on 2014-11-21](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html#L1378-L1383). Its [DECSIXEL reference](https://kmiya-culti.github.io/RLogin/ctrlcode.html#DECSIXEL) assigns `Pn4`, the fourth SIXEL DCS parameter, to an index from `0` through `1023` and permits redisplay using only that index. This puts the image reference inside the SIXEL envelope. DECDMAC preloading instead assigns an ID to an outer macro containing the complete SIXEL stream. See [terminal macros and related image references](functionality/terminal-macros.md#related-image-reference-mechanisms) for their relationship to the current libsixel CLI.
+RLogin introduced a numeric image-index extension in [2.17.3 on 2014-11-21](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html#L1378-L1383). Its [DECSIXEL reference](https://kmiya-culti.github.io/RLogin/ctrlcode.html#DECSIXEL) assigns `Pn4`, the fourth SIXEL DCS parameter, to an index from `0` through `1023` and permits redisplay using only that index. This puts the image reference inside the SIXEL envelope. DECDMAC preloading instead assigns an ID to an outer macro containing the complete SIXEL stream. See [terminal macros and related image references](encoder/output/terminal-macros.md#related-image-reference-mechanisms) for their relationship to the current libsixel CLI.
 
 ### DRCS-SIXEL and Unicode Plane 16
 
@@ -101,7 +101,7 @@ Proposal and specification years are distinct from the subsequent release dates.
 
 Araki Ken's [DRCS-SIXEL account](https://qiita.com/arakiken/items/626b02cd857d20c12fbc), published in 2018 and updated for v3 in 2026, explains how the original image-glyph extension, Unicode mapping, and later revisions fit together. This work remains much better known in the Japanese-language terminal community than elsewhere. Current libsixel preserves a practical connection to this work through the experimental `img2sixel -@` (`--drcs`) output mode.
 
-The [DRCS-SIXEL output guide](functionality/drcs.md) describes that option's definition/character streams, mapping choices, cell geometry, and current support boundaries.
+The [DRCS-SIXEL output guide](encoder/output/drcs.md) describes that option's definition/character streams, mapping choices, cell geometry, and current support boundaries.
 
 ## kmiya's `sixel`
 
@@ -175,7 +175,7 @@ libsixel development line started in March 2014:
   [`80d5636cc`](https://github.com/saitoha/libsixel/commit/80d5636ccffcbd6387b524d2626388174cd4122e).
   This transition established an independent image-quantization path rather
   than replacing GD with an unexplained in-project algorithm. See
-  [Palette Quantization](functionality/quantization.md) for the algorithmic
+  [Palette Quantization](encoder/palette-construction/quantization/README.md) for the algorithmic
   lineage.
 - The project introduced public headers, added the `img2sixel` and
   `sixel2png` programs, and adopted Autotools and Automake.
@@ -353,5 +353,5 @@ discussion and update the durable record where appropriate.
 - [Community-fork announcement and rationale](https://github.com/saitoha/libsixel/issues/154)
 - [libsixel release history](../NEWS)
 - [libsixel contributors](../AUTHORS)
-- [SIXEL format](sixel-format.md)
-- [Functional overview](functionality/overview.md)
+- [SIXEL format](sixel-format/README.md)
+- [Functional overview](overview.md)

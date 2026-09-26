@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/precision.md
+# Policy: docs/encoder/precision/README.md
 # Verify preserve resizing retains an eligible byte decoding path.
 set -eux
 echo "1..1"

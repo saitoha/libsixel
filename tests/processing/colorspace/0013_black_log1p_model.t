@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Verify the finite libm model underlying black-lightness error bounds.
 set -eux
 echo "1..1"

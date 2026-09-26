@@ -1,6 +1,6 @@
 #!/bin/sh
 # Extended source values survive clustering and gamma working conversion before sRGB output.
-# Policy: docs/functionality/output-colorspace.md
+# Policy: docs/encoder/output/output-colorspace.md
 set -eux
 
 echo "1..1"

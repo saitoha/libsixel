@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify gamma working coordinates and automatic P3 precision.
-# Policy: docs/functionality/output-colorspace.md
+# Policy: docs/encoder/output/output-colorspace.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify independent RGB101 values and geometry through the actual decoded-YCbCr CLI.
 # Policy: docs/loader/libtiff.md
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

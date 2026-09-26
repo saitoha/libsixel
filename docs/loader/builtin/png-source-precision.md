@@ -4,7 +4,7 @@ The static, nonindexed PNG entrance retains original color samples before applyi
 
 Successful conversion produces extended linear RGB: negative and above-one components remain available for composition and later processing. Untagged opaque eight-bit images retain the ordinary byte path. Sixteen-bit samples and alpha processing use float storage. Selected gAMA/cHRM uses the same CMS profile facade with or without liblcms2; converting the resulting frame to an encoder working view can consume a color-conversion slot in the worker budget. Tests of scheduling without color conversion explicitly disable CMS. The byte-only keycolor optimization excludes sixteen-bit input even with CMS disabled, so a keycolor setting cannot silently reduce color or alpha to eight bits.
 
-These contracts apply to `sixel_frompng_load_nonindexed()` in [frompng.c](../../../src/frompng.c), also used for an embedded PNG raster in BMP. Indexed palette conversion and the builtin APNG byte canvas retain their separate boundaries; this change does not turn the APNG canvas into linear float storage. See the [PNG loader overview](png.md).
+These contracts apply to `sixel_frompng_load_nonindexed()` in [frompng.c](../../../src/frompng.c), also used for an embedded PNG raster in BMP. Indexed palette conversion and the builtin APNG byte canvas retain their separate boundaries; this change does not turn the APNG canvas into linear float storage. See the [PNG loader overview](png/README.md).
 
 ## Source selection and fallback
 

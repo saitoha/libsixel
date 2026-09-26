@@ -1,7 +1,7 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify alpha-policy strict parsing and invalid fallback behavior.
-# Policy: docs/loader/alpha-policy.md
+# Policy: docs/loader/alpha-policy/README.md
 
 set -eux
 

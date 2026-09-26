@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/builtin/png.md
+# Policy: docs/loader/builtin/png/README.md
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PNG bKGD priority policy, strict parsing, and fallback behavior.
 # Policy: docs/loader/background-policy.md

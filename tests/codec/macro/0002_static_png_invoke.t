@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/terminal-macros.md
+# Policy: docs/encoder/output/terminal-macros.md
 # Verify a static PNG defines macro zero before invoking it.
 
 set -eux

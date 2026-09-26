@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/loader/builtin/sixel.md
-# Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/decoder/pipeline/README.md
 # Verify failed parallel decode leaves the serial fallback image clean.
 
 set -eux

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/concepts/pixelformat-precision.md
+# Policy: docs/concepts/pixelformat-precision/README.md
 # Verify float frame byte boundary: oklab infinity owned atomic.
 set -eux
 echo "1..1"

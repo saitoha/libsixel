@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify clear policy omits an alpha-zero pixel and emits P2=0.
-# Policy: docs/loader/alpha-policy.md
+# Policy: docs/loader/alpha-policy/README.md
 # Policy: docs/concepts/pixelformat.md
 
 set -eux

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify MS-SSIM for clustering gamma working din99d colorspace selection.
-# Policy: docs/functionality/working-colorspace.md
+# Policy: docs/encoder/palette-application/working-colorspace/README.md
 #
 # Flow summary:
 # - Convert the input image with -X gamma -W din99d.

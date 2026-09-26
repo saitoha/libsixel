@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify palette map invalid.
-# Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/decoder/pipeline/README.md
 
 set -eux
 

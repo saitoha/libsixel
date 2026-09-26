@@ -13,7 +13,7 @@ from pathlib import Path
 
 from PIL import Image
 
-OUT = Path(__file__).resolve().parents[2] / "docs/functionality/or-mode/grid-example"
+OUT = Path(__file__).resolve().parents[2] / "docs/encoder/output/or-mode/grid-example"
 ROWS = [[0, 1, 2], [3, 4, 5], [6, 7, 0], [1, 2, 3], [4, 5, 6], [7, 0, 1]]
 PALETTE = [
     (255, 255, 255),

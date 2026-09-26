@@ -1,6 +1,6 @@
 #!/bin/sh
-# Policy: docs/functionality/or-mode.md
-# Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/encoder/output/or-mode/README.md
+# Policy: docs/decoder/pipeline/README.md
 # Verify OR mode decoding through the deprecated compatibility API.
 
 set -eux

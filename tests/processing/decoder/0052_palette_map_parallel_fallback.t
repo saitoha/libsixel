@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify mapped palette during parallel fallback.
-# Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/decoder/pipeline/README.md
 
 set -eux
 

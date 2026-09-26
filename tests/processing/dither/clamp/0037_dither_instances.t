@@ -1,6 +1,6 @@
 #!/bin/sh
 # Low-level dither settings survive another instance changing and being destroyed.
-# Policy: docs/functionality/clamp-policy.md
+# Policy: docs/encoder/palette-application/clamp-policy.md
 set -eux
 
 echo "1..1"

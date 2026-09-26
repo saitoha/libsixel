@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # native gamma para0 generic compares original-tag native behavior on this OS.
 set -eux
 result=0

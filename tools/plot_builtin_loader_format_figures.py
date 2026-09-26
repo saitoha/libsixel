@@ -37,7 +37,7 @@ RED = "#B42318"
 RED_LIGHT = "#FEE4E2"
 SLATE_LIGHT = "#EEF2F6"
 
-OUTPUT_DIR = Path("docs/loader/builtin/pipeline-figures")
+OUTPUT_DIR = Path("docs/loader/builtin/figures")
 MANIFEST_NAME = "builtin-loader-pipelines.json"
 
 
@@ -203,7 +203,7 @@ PIPELINES: dict[str, dict[str, object]] = {
     "png": {
         "title": "Builtin PNG and APNG pipeline",
         "subtitle": "Chunk policy, inflate/unfilter, profile transforms, animation canvas",
-        "document": "docs/loader/builtin/png.md",
+        "document": "docs/loader/builtin/png/README.md",
         "stages": [
             stage("PNG-01", "ROUTE", "Classify static PNG or APNG",
                   "src/loader-builtin.c",
@@ -760,7 +760,7 @@ def validate_traceability(source_root: Path) -> list[str]:
             errors.append(f"{name}: missing document {spec['document']}")
             continue
         document_text = document.read_text(encoding="utf-8")
-        asset_ref = f"pipeline-figures/{name}.svg"
+        asset_ref = f"figures/{name}.svg"
         if asset_ref not in document_text:
             errors.append(f"{name}: document does not embed {asset_ref}")
         tests = spec["tests"]

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/loader/builtin-cms.md
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PNG loader reaches parametric ICC path with builtin CMS.
 

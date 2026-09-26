@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Verify the CLI default normalizes a profiled input like explicit auto.
 set -eux
 test "${HAVE_IMG2SIXEL-}" = 1 || {

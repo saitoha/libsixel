@@ -561,7 +561,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=source_root / "docs/functionality/encoding-pipeline-figures",
+        default=source_root / "docs/encoder/pipeline/figures",
         help="directory for generated SVG and manifest files",
     )
     parser.add_argument(

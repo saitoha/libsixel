@@ -12,7 +12,7 @@ MAKE=${MAKE-make}
 GIT=${GIT-git}
 IMG2SIXEL_PATH=${IMG2SIXEL_PATH-${BUILD_DIR}/converters/img2sixel}
 
-output_dir=${1-${TOP_SRCDIR}/docs/functionality/dither-policies/measurements}
+output_dir=${1-${TOP_SRCDIR}/docs/encoder/palette-application/dithering/measurements}
 source_state=clean
 
 "${GIT}" -C "${TOP_SRCDIR}" diff --quiet -- || source_state=dirty

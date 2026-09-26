@@ -35,7 +35,7 @@ The CLI tools distributed with libsixel are not a clean-sheet interface. Six con
 1. `img2sixel` and `sixel2png` already name two stable, opposite conversion directions and are widely usable as single-purpose pipeline stages.
 2. Top-level short-option characters became public [`SIXEL_OPTFLAG_*`](../../include/sixel.h.in) identifiers consumed by library `setopt` functions, so converter syntax and the public C API share compatibility history.
 3. One option contract is repeated across the parser, `-H` output, manual pages, and applicable shell-completion files. Those are synchronized views of one interface rather than independent places to redesign it.
-4. Encoding is a staged transformation—loading, normalization, palette construction, palette application, and SIXEL serialization—rather than an arbitrary sequence of user-defined image operations. The [encoding pipeline](../functionality/encoding-pipeline.md) owns that stage model.
+4. Encoding is a staged transformation—loading, normalization, palette construction, palette application, and SIXEL serialization—rather than an arbitrary sequence of user-defined image operations. The [encoding pipeline](../encoder/pipeline/README.md) owns that stage model.
 5. Each stage now has multiple algorithms and policy axes. A wholly flat option namespace cannot keep growing without collisions, opaque punctuation, or duplicated names.
 6. The tools serve interactive terminal users, shell pipelines, automated quality tests, cross-platform builds, and library embedders. Human convenience cannot make byte streams or scripted failure handling unstable.
 
@@ -164,7 +164,7 @@ Use suboptions for policy specific to a named subsystem. A public suboption has 
 
 A public compatibility setting can use the common scalar option registry without consuming a short-option character. Such a schema uses `SIXEL_OPTION_NO_OPTFLAG`, has a required environment name, and keeps its type, fixed default and validation in the same registry as ordinary options. The sentinel is not a compact suboption key, getopt character or public `setopt` identity. Environment-only scalar schemas are excluded from dedicated CLI dispatch and reject the scalar argument entry point; ordinary assigned options retain the short/long requirements above. They remain discoverable in environment help and the manual, and the existing `--env NAME=VALUE` mechanism can supply their values.
 
-The ColorSync gamma compatibility setting in [Loader CMS](../loader/color-management.md#original-colorsync-gamma-representation) uses this representation. This is an explicit environment-only setting, not an automatically allocated long-only CLI option. Its strict boolean parser is shared by scalar and suboption settings and remains available to small registry consumers that do not link the full option parser.
+The ColorSync gamma compatibility setting in [Loader CMS](../loader/color-management/README.md#original-colorsync-gamma-representation) uses this representation. This is an explicit environment-only setting, not an automatically allocated long-only CLI option. Its strict boolean parser is shared by scalar and suboption settings and remains available to small registry consumers that do not link the full option parser.
 
 ### Internal controls
 
@@ -215,7 +215,7 @@ An ambiguous accepted prefix is rejected with an `ambiguous prefix` diagnostic a
 
 An in-process crash diagnostic has a narrower contract than an ordinary error: it must declare which failures it handles, defer to an existing sanitizer or debugger owner, avoid contaminating standard output, preserve platform termination behavior where possible, and admit that recovery and symbolization from a failing process are best-effort.
 
-The [CLI-program abort-trace policy](abort-trace.md) applies those rules to otherwise unhandled `SIGABRT`. It distinguishes CLI-layer ownership from the current `img2sixel` and `sixel2png` consumer set and from the non-consuming `lsqa` executable, then defines the facility's purpose, build and runtime controls, installation timing, terminal recovery, output boundaries, platform limitations, performance and quality effects, representative output, comparable facilities, and reciprocal tests.
+The [CLI-program abort-trace policy](abort-trace/README.md) applies those rules to otherwise unhandled `SIGABRT`. It distinguishes CLI-layer ownership from the current `img2sixel` and `sixel2png` consumer set and from the non-consuming `lsqa` executable, then defines the facility's purpose, build and runtime controls, installation timing, terminal recovery, output boundaries, platform limitations, performance and quality effects, representative output, comparable facilities, and reciprocal tests.
 
 ## Input and output contracts
 

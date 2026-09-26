@@ -1,6 +1,6 @@
 #!/bin/sh
 # Linear sRGB lookup uses the inverse of exact transmitted RGB101 codes.
-# Policy: docs/functionality/output-colorspace.md
+# Policy: docs/encoder/output/output-colorspace.md
 set -eux
 
 echo "1..1"

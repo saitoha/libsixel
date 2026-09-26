@@ -2,7 +2,7 @@
 """Literal Lab TIFF layouts; physical Lab and independent RGB value oracles.
 
 ICCLAB8: ICC.1:2004-10 Lab encoding. ITULAB8: RFC 3949 section 6.2.3.
-CIELAB16: the signed-word contract in docs/loader/color-management.md.
+CIELAB16: the signed-word contract in docs/loader/color-management/README.md.
 No TIFF decoder, production color function or CMM generates expectations.
 """
 from decimal import Decimal as D, localcontext

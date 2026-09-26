@@ -1,6 +1,6 @@
 #!/bin/sh
-# Policy: docs/functionality/animation.md
-# Policy: docs/functionality/terminal-macros.md
+# Policy: docs/encoder/animation.md
+# Policy: docs/encoder/output/terminal-macros.md
 # Verify static selection preloads only the first animation frame.
 
 set -eux

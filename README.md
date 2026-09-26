@@ -1241,7 +1241,7 @@ SIXEL_FLOAT32_DITHER       opt into the experimental RGBFLOAT32
                            to export it manually.
 ```
 
-See [Terminal macros](docs/functionality/terminal-macros.md) for `-u` animation playback and `-n` preloading with DECDMAC/DECINVM, including invocation examples, receiver requirements, and static-image and animation behavior.
+See [Terminal macros](docs/encoder/output/terminal-macros.md) for `-u` animation playback and `-n` preloading with DECDMAC/DECINVM, including invocation examples, receiver requirements, and static-image and animation behavior.
 
 Use `--loaders` to reorder the loader chain. Provide a comma separated list of
 loader names such as `gd,builtin`. Unique prefixes are accepted, so `core,b`
@@ -1495,7 +1495,7 @@ $ sixel2png < egret.sixel > egret.png
 
 ### CLI abort trace diagnostics
 
-`img2sixel` and `sixel2png` use a CLI-layer helper to emit a compact stack trace to stderr when they terminate via `abort(3)` while no other handler claimed `SIGABRT`. The helper is compiled into those converter executables rather than exposed as a `liblibsixel` API. `lsqa` is another standalone CLI in this repository but is not currently an aborttrace consumer. See the [CLI abort trace diagnostics](docs/cli/abort-trace.md) for its ownership boundary, representative output, controls, and limitations.
+`img2sixel` and `sixel2png` use a CLI-layer helper to emit a compact stack trace to stderr when they terminate via `abort(3)` while no other handler claimed `SIGABRT`. The helper is compiled into those converter executables rather than exposed as a `liblibsixel` API. `lsqa` is another standalone CLI in this repository but is not currently an aborttrace consumer. See the [CLI abort trace diagnostics](docs/cli/abort-trace/README.md) for its ownership boundary, representative output, controls, and limitations.
 
 The logic is enabled by default. `SIXEL_ABORT_TRACE` accepts only `0` or `1`:
 set it to `0` to disable the handler or `1` to enable it. Unset, empty, and

@@ -72,7 +72,7 @@ Possible initial results include gamma `RGB888`, gamma `RGBA8888` before finaliz
 
 ### Implementation and test map
 
-![A vertical implementation map of the builtin BMP loader. It follows BMP and DIB probing into native raster, RLE or OS/2 compressed, and embedded JPEG or PNG branches, then calibrated or embedded-profile color conversion and explicit-alpha finalization. Every node carries a coverage ID used by the tables below.](pipeline-figures/bmp.svg)
+![A vertical implementation map of the builtin BMP loader. It follows BMP and DIB probing into native raster, RLE or OS/2 compressed, and embedded JPEG or PNG branches, then calibrated or embedded-profile color conversion and explicit-alpha finalization. Every node carries a coverage ID used by the tables below.](figures/bmp.svg)
 
 The compressed and nested-payload boxes are alternatives. Native BMP compression stays in `frombmp.c`; `BI_JPEG` and `BI_PNG` slice a child chunk and deliberately re-enter the JPEG/PNG decoders, so their precision, CMS, and alpha rules are inherited from the child format before BMP finalization resumes.
 
@@ -116,7 +116,7 @@ BMP is not intrinsically simple: header-size dialects, signed dimensions, palett
 - Header, masks, color metadata, compression, and native raster decode: [`frombmp.c`](../../../src/frombmp.c)
 - Probe and payload boundary used by loader routing: [`frombmp-parser.c`](../../../src/frombmp-parser.c)
 - Nested JPEG/PNG, CMS, alpha, and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
-- Alpha/background semantics: [Alpha Policy](../alpha-policy.md) and [Background Policy](../background-policy.md)
+- Alpha/background semantics: [Alpha Policy](../alpha-policy/README.md) and [Background Policy](../background-policy.md)
 - Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
 
 ## Test coverage

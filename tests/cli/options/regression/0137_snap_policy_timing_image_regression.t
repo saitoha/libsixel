@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/snap-policy.md
+# Policy: docs/encoder/palette-construction/snap-policy/README.md
 # Verify snap timing through short and environment paths.
 # Registry row: SIXEL_OPTION_SCHEMA_SNAP_POLICY|NULL|timing
 # Registry binding: snap_policy_timing|snap_policy_timing_override

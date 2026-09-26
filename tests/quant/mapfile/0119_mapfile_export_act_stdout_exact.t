@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify ACT palette export writes its exact binary layout to stdout.
 # Test-plan: docs/testing/mapfile-parser-coverage.md
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 # Policy: docs/misc/platforms/openvms.md
 # Coverage: OV-12
 

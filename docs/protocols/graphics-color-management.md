@@ -2,9 +2,9 @@
 
 Status: experimental protocol proposal, revised 2026-09-27. This document proposes control sequences and color semantics for applications and terminals exchanging SIXEL graphics. It does not assert adoption by existing terminals or registration of the proposed selectors. Support must be discovered from the receiving session, not inferred from a terminal name, operating system, or display model.
 
-The proposal separates the interpretation of incoming RGB numbers from the terminal's conversion to an actual display. Applications can send sRGB, convert their source colors into a reported input RGB definition, or request a defined gamut expansion. Ordinary SIXEL RGB percentages contain none of this metadata; see [SIXEL color registers](../sixel-format.md#graphics-color-introducer). The extension supplies the missing agreement outside the image stream.
+The proposal separates the interpretation of incoming RGB numbers from the terminal's conversion to an actual display. Applications can send sRGB, convert their source colors into a reported input RGB definition, or request a defined gamut expansion. Ordinary SIXEL RGB percentages contain none of this metadata; see [SIXEL color registers](../sixel-format/README.md#graphics-color-introducer). The extension supplies the missing agreement outside the image stream.
 
-The [output color-space guide](../functionality/output-colorspace.md) describes the implemented `img2sixel -U` conversions. The selected automatic negotiation path is implemented in the CLI; the library does not perform this negotiation. The protocol below also describes simple RGB and ICC definitions that exceed the current selected Display P3 encoder path.
+The [output color-space guide](../encoder/output/output-colorspace.md) describes the implemented `img2sixel -U` conversions. The selected automatic negotiation path is implemented in the CLI; the library does not perform this negotiation. The protocol below also describes simple RGB and ICC definitions that exceed the current selected Display P3 encoder path.
 
 ## Scope and notation
 
@@ -236,7 +236,7 @@ Automatic selection is a CLI operation requested by `-Uauto`, restricted initial
 
 The initial CLI route is stdout only, with no `-o` option or with every `-o` argument exactly `-`. A file destination, a pipe, or any other `-o` argument excludes automatic device-color queries even if stderr is a TTY. A separate read/write descriptor must identify that same stdout terminal; an unrelated controlling terminal is not a substitute. This keeps saved or forwarded SIXEL in the default gamma sRGB representation instead of silently binding its interpretation to the terminal used while creating it. The CLI does not infer the eventual consumer beyond a pipe. Explicit output-space choices remain available when the user knows the consumer's interpretation.
 
-The CLI owns TTY access, reply parsing, deadlines, fallback decisions, and policy restoration. The library receives a resolved output intent and performs color conversion and encoding; it does not discover a terminal from stdout or introduce terminal reads as a consequence of choosing P3. Initial automatic support accepts the sRGB and Display P3 named definitions. Parsing a simple or ICC response does not imply that the corresponding output transform is implemented. The current implementation and its supported loader/quantizer combinations remain documented in [Output color space](../functionality/output-colorspace.md).
+The CLI owns TTY access, reply parsing, deadlines, fallback decisions, and policy restoration. The library receives a resolved output intent and performs color conversion and encoding; it does not discover a terminal from stdout or introduce terminal reads as a consequence of choosing P3. Initial automatic support accepts the sRGB and Display P3 named definitions. Parsing a simple or ICC response does not imply that the corresponding output transform is implemented. The current implementation and its supported loader/quantizer combinations remain documented in [Output color space](../encoder/output/output-colorspace.md).
 
 ## Color-filter status query
 
@@ -268,7 +268,7 @@ A supporting terminal with no reliable observation returns `CSI ?8822;0;0;0;0;0;
 
 ## Verification and implementation status
 
-This document defines proposed behavior, not a cross-terminal support matrix. The current repository's [output-color contract tests](../functionality/output-colorspace.md#test-coverage) protect selected encoder values and palette behavior. The linked CLI tests exercise selected automatic negotiation with scripted peers, including base-9999 simple-definition syntax and reserved-parameter rejection. They do not establish cross-terminal adoption, simple/ICC output transforms, or physical display accuracy.
+This document defines proposed behavior, not a cross-terminal support matrix. The current repository's [output-color contract tests](../encoder/output/output-colorspace.md#test-coverage) protect selected encoder values and palette behavior. The linked CLI tests exercise selected automatic negotiation with scripted peers, including base-9999 simple-definition syntax and reserved-parameter rejection. They do not establish cross-terminal adoption, simple/ICC output transforms, or physical display accuracy.
 
 A conforming implementation needs exact byte tests for settings and replies, target isolation, defaults and reserved fields, incremental framing, cancellation, invalid definitions, and restoration. Color tests must independently check sRGB preservation, P3 primary retention, policy `2` versus `3`, mixed palette provenance, retained/partial updates, and agreement between output surface values and their color declarations. Test simple definitions and ICC transforms against independent numeric expectations; a perceptual image score cannot substitute for those checks.
 

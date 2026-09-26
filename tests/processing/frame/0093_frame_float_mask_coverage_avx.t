@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/concepts/pixelformat-precision.md
+# Policy: docs/concepts/pixelformat-precision/README.md
 # Policy: docs/misc/platforms/openvms.md
 # Coverage: OV-11
 # Verify bounded float coverage clamps each axis, independently of color.

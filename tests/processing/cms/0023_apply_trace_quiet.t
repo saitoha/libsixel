@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Verify that disabled tracing does not emit CMS apply records.
 set -eux
 echo "1..1"

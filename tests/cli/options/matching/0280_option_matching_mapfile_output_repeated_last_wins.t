@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify repeated palette-output options use the last occurrence.
-# Policy: docs/functionality/external-palettes.md
+# Policy: docs/encoder/palette-construction/external-palettes.md
 
 set -eux
 

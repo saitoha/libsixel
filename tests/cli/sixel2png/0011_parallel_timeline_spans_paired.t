@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify parallel decoder scan and paint spans have both timeline boundaries.
-# Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/decoder/pipeline/README.md
 
 set -eux
 

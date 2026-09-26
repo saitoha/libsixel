@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/decoder/pipeline/README.md
 # Verify sparse parallel row chunks match serial decode.
 
 set -eux

@@ -24,7 +24,7 @@ The base mode is `human` by default or `code`. `SIXEL_DIAG_MODE` is the environm
 | `trace_topic=LIST` (`T`) | Comma-separated topic selection. Each subsystem emits only the observations it implements. | `SIXEL_TRACE_TOPIC` |
 | `handoff_trace=0\|1` (`H`) | Enable the encoder's minimal handoff trace. | `SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL` |
 | `psd_trace`, `psd_header_only` (`D`, `E`) | Select PSD/PSB diagnostic decoding and trace detail; see [PSD](../loader/builtin/psd.md). Diagnostic-only decode can suppress ordinary SIXEL output. | `SIXEL_PSD_TRACE_ONLY`, `SIXEL_PSD_TRACE_HEADER_ONLY` |
-| `abort_trace=0\|1` (`A`) | Configure the converter's [abort stack trace](abort-trace.md). | `SIXEL_ABORT_TRACE` |
+| `abort_trace=0\|1` (`A`) | Configure the converter's [abort stack trace](abort-trace/README.md). | `SIXEL_ABORT_TRACE` |
 | `log_lines=COUNT` (`N`) | Encoder timeline line-event sampling interval; CLI accepts 1..2147483647. It is not a maximum log-file length. | `SIXEL_LOG_LINES` |
 
 Some entries are encoder-only; the shared registry rejects a suboption used with a converter that does not consume it. The environment can retain legacy parsing behavior: the current registry clamps an environment line interval below one to one, whereas the CLI `log_lines` field rejects zero. Leave `SIXEL_LOG_LINES` unset to avoid enabling line events through that environment control. Do not assume every accepted environment spelling has the same CLI grammar.

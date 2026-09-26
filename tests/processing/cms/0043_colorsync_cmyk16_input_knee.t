@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Verify original integer input and actual colorsync cmyk16 input knee conversion.
 set -eux
 echo "1..1"

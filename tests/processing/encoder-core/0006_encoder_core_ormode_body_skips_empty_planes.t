@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/or-mode.md
+# Policy: docs/encoder/output/or-mode/README.md
 # Run the OR-mode empty-plane skip unit test via the unified runner.
 
 set -eux

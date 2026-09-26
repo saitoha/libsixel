@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify img2sixel PNG output snapshots the generated SIXEL stream.
-# Policy: docs/writers/png.md
+# Policy: docs/writers/png/README.md
 
 set -eux
 

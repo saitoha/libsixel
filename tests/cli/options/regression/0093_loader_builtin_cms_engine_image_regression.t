@@ -2,7 +2,7 @@
 # Verify builtin:cms_engine applies the independent RGB ICC through short/env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_LOADERS|g_loader_values + SIXEL_LOADER_INDEX_BUILTIN|cms_engine
 # Registry binding: builtin_cms_engine
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 set -eux
 echo "1..1"
 set -v

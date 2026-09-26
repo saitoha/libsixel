@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Policy: docs/loader/alpha-policy.md
+# Policy: docs/loader/alpha-policy/README.md
 # Policy: docs/loader/background-policy.md
 
 set -eux

@@ -1,6 +1,6 @@
 #!/bin/sh
 # TAP test verifying merge-policy long suboptions work independently of -Q.
-# Policy: docs/functionality/merge-policy.md
+# Policy: docs/encoder/palette-construction/merge-policy/README.md
 
 set -eux
 

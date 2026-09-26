@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/concepts/pixelformat-precision.md
+# Policy: docs/concepts/pixelformat-precision/README.md
 # Verify bicubic values only when the compiled/runtime avx path is eligible.
 set -eux
 echo "1..1"

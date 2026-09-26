@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify default palette direct.
-# Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/decoder/pipeline/README.md
 
 set -eux
 

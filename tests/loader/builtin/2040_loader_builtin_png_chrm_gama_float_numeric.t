@@ -1,6 +1,6 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# Policy: docs/loader/builtin/png.md
+# Policy: docs/loader/builtin/png/README.md
 # Policy: docs/loader/builtin-cms.md
 # Adapt original PNG cHRM and gamma without an intermediate float store
 

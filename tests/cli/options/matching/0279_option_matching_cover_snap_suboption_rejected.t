@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify that snap configuration is not accepted by --cover-policy.
-# Policy: docs/functionality/snap-policy.md
+# Policy: docs/encoder/palette-construction/snap-policy/README.md
 
 set -eux
 

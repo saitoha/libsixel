@@ -13,7 +13,7 @@ GIT=${GIT-git}
 IMG2SIXEL_PATH=${IMG2SIXEL_PATH-${BUILD_DIR}/converters/img2sixel}
 LSQA_PATH=${LSQA_PATH-${BUILD_DIR}/assessment/lsqa}
 
-output_dir=${1-${TOP_SRCDIR}/docs/functionality/lookup-policies/measurements}
+output_dir=${1-${TOP_SRCDIR}/docs/encoder/palette-application/lookup-policy/measurements}
 input_image=${2-images/snake.png}
 shared_threads=${LOOKUP_POLICY_SHARED_THREADS-8}
 warmups=${LOOKUP_POLICY_WARMUPS-2}

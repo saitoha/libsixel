@@ -7,7 +7,7 @@ echo "1..1"
 set -v
 
 baseline="${TOP_SRCDIR}/tests/data/expected/resampling-measurement-baselines.csv"
-measurement="${TOP_SRCDIR}/docs/functionality/resampling/measurements/resampling-isotropy.csv"
+measurement="${TOP_SRCDIR}/docs/encoder/preprocessing/resampling/measurements/resampling-isotropy.csv"
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     geometry/resampling_measurement_baseline \

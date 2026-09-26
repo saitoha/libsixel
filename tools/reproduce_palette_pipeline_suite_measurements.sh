@@ -13,7 +13,7 @@ GIT=${GIT-git}
 IMG2SIXEL_PATH=${IMG2SIXEL_PATH-${BUILD_DIR}/converters/img2sixel}
 LSQA_PATH=${LSQA_PATH-${BUILD_DIR}/assessment/lsqa}
 
-output_dir=${1-${TOP_SRCDIR}/docs/functionality/palette-pipeline/suite-measurements}
+output_dir=${1-${TOP_SRCDIR}/docs/encoder/palette-construction/pipeline/suite-measurements}
 manifest=${2-${TOP_SRCDIR}/tools/palette_pipeline_suite.json}
 warmups=${PALETTE_PIPELINE_SUITE_WARMUPS-2}
 runs=${PALETTE_PIPELINE_SUITE_RUNS-10}
@@ -31,7 +31,7 @@ output_dir=$("${PYTHON}" -c \
     "${output_dir}")
 durable_output_dir=$("${PYTHON}" -c \
     'from pathlib import Path; import sys; print(Path(sys.argv[1]).resolve())' \
-    "${TOP_SRCDIR}/docs/functionality/palette-pipeline/suite-measurements")
+    "${TOP_SRCDIR}/docs/encoder/palette-construction/pipeline/suite-measurements")
 manifest=$("${PYTHON}" -c \
     'from pathlib import Path; import sys; print(Path(sys.argv[1]).resolve())' \
     "${manifest}")

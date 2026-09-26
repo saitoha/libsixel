@@ -2,7 +2,7 @@
 
 ## Format lineage
 
-Digital Equipment Corporation introduced SIXEL as a six-pixel-high bitmap language for printers and later used it in graphics terminals including the VT240, VT330, and VT340. It is a terminal Device Control String (DCS), not a conventional file container: paint commands select mutable color registers and place vertical six-bit masks onto terminal state. The DEC [VT330/VT340 Sixel Graphics chapter](https://manx-docs.org/mirror/vt100.net/docs/vt3xx-gp/chapter14.html) describes the historical model, and libsixel's broader [SIXEL Format](../../sixel-format.md) guide covers wire semantics and encoder examples.
+Digital Equipment Corporation introduced SIXEL as a six-pixel-high bitmap language for printers and later used it in graphics terminals including the VT240, VT330, and VT340. It is a terminal Device Control String (DCS), not a conventional file container: paint commands select mutable color registers and place vertical six-bit masks onto terminal state. The DEC [VT330/VT340 Sixel Graphics chapter](https://manx-docs.org/mirror/vt100.net/docs/vt3xx-gp/chapter14.html) describes the historical model, and libsixel's broader [SIXEL Format](../../sixel-format/README.md) guide covers wire semantics and encoder examples.
 
 The generic image helper gained SIXEL input in commit [`98b7aee47`](https://github.com/saitoha/libsixel/commit/98b7aee47) in 2014. The current builtin route calls `sixel_decode_raw()` in [`fromsixel.c`](../../../src/fromsixel.c). Parallel decoding was introduced and replaced with the current anchored design in commits [`55ec28ad7`](https://github.com/saitoha/libsixel/commit/55ec28ad7) and [`71722f608`](https://github.com/saitoha/libsixel/commit/71722f608) in 2026; OR-mode paint support followed in [`68214059e`](https://github.com/saitoha/libsixel/commit/68214059e) and [`dd8a8366e`](https://github.com/saitoha/libsixel/commit/dd8a8366e).
 
@@ -62,7 +62,7 @@ SIXEL has no RGBA sample. In transparent-background semantics, the information i
 
 The builtin loader does not request the optional paint mask. When it keeps `PAL8`, out-of-range sentinel bytes remain in the index plane and consumers must not index the palette with them as ordinary colors. When palette fusion is disabled or the color count exceeds `-p`, the wrapper expands every byte through the returned palette table; that RGB expansion cannot preserve the unpainted distinction. `-A` cannot recreate a mask that this route did not request.
 
-This limitation is specific to the builtin image-loader adapter. `sixel_decode_raw_with_options_mask()`, `sixel_decode_direct()`, and `sixel_decode_pixels()` have richer transparency/result contracts and are documented in [SIXEL Decoding Pipeline](../../functionality/decoding-pipeline.md).
+This limitation is specific to the builtin image-loader adapter. `sixel_decode_raw_with_options_mask()`, `sixel_decode_direct()`, and `sixel_decode_pixels()` have richer transparency/result contracts and are documented in [SIXEL Decoding Pipeline](../../decoder/pipeline/README.md).
 
 ## Serial and parallel decode pipeline
 
@@ -77,7 +77,7 @@ The raw loader does not perform CMS, Exif orientation, resize, crop, sampling, q
 
 ### Implementation and test map
 
-![A vertical implementation map of the builtin SIXEL input path. It follows leading-DCS recognition into the raw decoder state machine, register and paint processing, the conditional parallel span validation and serial fallback, and the final PAL8-or-RGB frame decision. Every node carries a coverage ID used by the tables below.](pipeline-figures/sixel.svg)
+![A vertical implementation map of the builtin SIXEL input path. It follows leading-DCS recognition into the raw decoder state machine, register and paint processing, the conditional parallel span validation and serial fallback, and the final PAL8-or-RGB frame decision. Every node carries a coverage ID used by the tables below.](figures/sixel.svg)
 
 The arrows are control and data dependencies, not asynchronous task boundaries. `sixel_decode_raw()` may use worker threads internally, but it joins them before returning to `sixel_builtin_load_with_builtin_impl()`. The function names are search anchors in the current implementation; the coverage IDs are the stable documentation anchors.
 
@@ -120,8 +120,8 @@ Numeric parameters, repeats, raster declarations, register numbers, cursor motio
 - Loader recognition, raw adapter, palette-fusion decision, and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
 - DCS state machine, palette, paint, OR mode, and raw/direct APIs: [`fromsixel.c`](../../../src/fromsixel.c)
 - Parallel span validation and paint: [`decoder-parallel.c`](../../../src/decoder-parallel.c)
-- Full wire-language reference: [SIXEL Format](../../sixel-format.md)
-- Richer decode/output policies: [SIXEL Decoding Pipeline](../../functionality/decoding-pipeline.md)
+- Full wire-language reference: [SIXEL Format](../../sixel-format/README.md)
+- Richer decode/output policies: [SIXEL Decoding Pipeline](../../decoder/pipeline/README.md)
 - Parallel execution model: [Decoder Threading](../../threading/decoder.md)
 - Broader non-owning decoder suite: [`tests/processing/decoder`](../../../tests/processing/decoder)
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 # TAP test verifying merge-policy short suboptions are accepted.
-# Policy: docs/functionality/merge-policy.md
+# Policy: docs/encoder/palette-construction/merge-policy/README.md
 
 set -eux
 

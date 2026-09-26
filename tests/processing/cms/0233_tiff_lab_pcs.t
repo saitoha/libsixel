@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
+# Policy: docs/loader/color-management/README.md
 # Compare original TIFF ICC samples with independent numeric expectations.
 set -eux
 result=0

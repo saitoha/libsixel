@@ -1,6 +1,6 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# Policy: docs/loader/builtin/png.md
+# Policy: docs/loader/builtin/png/README.md
 # PNG none zero-alpha SIXEL paint coverage, keycolor 1
 set -eux
 test "${HAVE_IMG2SIXEL-}" = 1 || {

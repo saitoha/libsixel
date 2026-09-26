@@ -1,6 +1,6 @@
 /*
  * SPDX-License-Identifier: MIT
- * Policy: docs/concepts/pixelformat-precision.md
+ * Policy: docs/concepts/pixelformat-precision/README.md
  */
 /* A noncontributing extreme and cancellation must not erase a small sample. */
 #include <float.h>

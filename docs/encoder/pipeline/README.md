@@ -1,0 +1,174 @@
+# Encoding Pipeline
+
+## Mental model
+
+The normal fixed-palette `img2sixel` path is easiest to understand first as a flow of ownership:
+
+For the reverse wire direction, the [Decoding Pipeline](../../decoder/pipeline/README.md) explains why executing a stateful SIXEL paint program is not simply this encoder flow in reverse.
+
+<picture>
+  <source media="(max-width: 640px)" srcset="figures/encoding-pipeline-mobile.svg">
+  <img alt="Source image bytes pass through loading and normalization. The normalized pixels continue to palette application while color samples branch through palette construction. Palette application produces indexed pixels and a palette, which SIXEL encoding serializes for terminal rendering." src="figures/encoding-pipeline-wide.svg">
+</picture>
+
+*Figure 1. Introductory fixed-palette mental model. Blue carries frame pixels, magenta carries palette construction data, teal marks the indexed artifact, and amber marks SIXEL output. Line shape, labels, and placement duplicate the color encoding.*
+
+Palette construction and palette application are different operations. The former decides which colors are available. The latter decides which available color represents each input pixel. SIXEL encoding then serializes those decisions; it does not choose the colors again.
+
+This figure is intentionally not an implementation map. It omits loader-candidate fallback and loader-local CMS work, preprocessing order, sampling-source selection, quantizer initialization and iteration, final palette passes, lookup preparation, per-pixel dither and lookup loops, asynchronous overlap, and serial fallback. The component documents linked below define those details without overloading the introductory view.
+
+The implementation-oriented [Encoder Execution Map](../execution-map/README.md) expands those omitted boundaries, distinguishes the six-node scheduler from the planner's descriptive graph, and identifies the actual asynchronous regions.
+
+## Stage contracts
+
+| Stage | Input | Output | Principal controls |
+| --- | --- | --- | --- |
+| Loading | Encoded image or caller pixels | Frames, pixels, dimensions, format, alpha, timing, and metadata | Loader choice and loader suboptions |
+| Normalization | Loader frames | Pixels in the processing size, format, and colorspace | [Crop and resize](../preprocessing/crop-resize/README.md), alpha, and colorspace options |
+| Palette construction | Normalized color samples | A bounded set of palette entries | `-p`, `-Q`, `-X`, precision, sampling, and binning |
+| Palette application | Pixels and a completed palette | One palette index per output pixel | `-W`, `-d`, `-~`, precision, transparency, and inter-frame policy |
+| SIXEL encoding | Indexed pixels, palette, and frame metadata | SIXEL control sequences and image data | Encoding, 7-bit/8-bit, and output policies |
+
+The loader contract ends when it has described the source image correctly.
+Palette and dithering policy must therefore remain independent of the backend
+that decoded PNG, JPEG, WebP, or another input format.
+
+## Composing the cost of an encode
+
+The stages also provide a useful performance model. Let `N` be loaded or
+sampled source pixels, `P` the output pixels that require palette mapping, and
+`K` the palette size. A normal fixed-palette encode can be accounted for as:
+
+```text
+load_and_normalize(N)
+  + build_palette(N, K)
+  + prepare_lookup(K)
+  + P * (dither_step + lookup_query(K))
+  + encode_indexed_pixels(P, K)
+```
+
+This is phase accounting rather than a claim that the implementation never
+fuses or overlaps work. It prevents three common mistakes:
+
+- a squared-error objective in `-Q` does not by itself mean quadratic runtime;
+- linear work in pixel count `P` is quadratic in side length for a square
+  image, because `P = W H`;
+- a lookup with expensive fixed preparation can still have constant query
+  cost and linear whole-image application.
+
+The controlling variables and bounds for palette construction, dither work,
+and lookup preparation/query are defined in
+[Palette Quantization](../palette-construction/quantization/README.md), [Dithering](../palette-application/dithering/README.md), and
+[Lookup Policy](../palette-application/lookup-policy/README.md). Benchmarks should report those phases
+separately before presenting an end-to-end total.
+
+## Palette construction
+
+Palette construction reduces the input color population to the number of
+entries available to the encoder. `-Q MODEL` selects the solver and `-p COLORS`
+sets the requested palette size. The result is a palette, not indexed image
+data.
+
+Sampling, conversion to the palette coordinate space, binning, and solving are
+separate logical stages within palette construction. Their target filter and
+policy boundaries are defined in the
+[Palette Construction Pipeline Architecture](../palette-construction/pipeline/README.md).
+
+The model affects which errors the palette can represent well. For example, a
+solver that minimizes aggregate error and one that limits the worst assignment
+distance may choose different entries from the same input. See
+[Palette Quantization](../palette-construction/quantization/README.md).
+
+## Palette application
+
+After a palette exists, the encoder must map every non-transparent input pixel
+to a palette index. Two independent policies cooperate in this stage:
+
+- `-~ POLICY` or `--lookup-policy=POLICY` selects how a color is mapped to a
+  palette entry;
+- `-d METHOD` or `--diffusion=METHOD` selects how quantization error is shaped
+  across space or time.
+
+A useful conceptual loop is:
+
+```text
+for each pixel in the method's scan order:
+    candidate = dither_adjust(source_pixel, position, carried_error)
+    index = lookup(candidate, palette)
+    error = candidate - palette[index]
+    dither_update(error)
+```
+
+This is a model, not literal source code for every method. Ordered methods add
+a position-dependent perturbation and may carry no error. `none` performs no
+perturbation or propagation. Error-diffusion methods feed part of the error to
+later pixels. In every case, lookup is the operation that returns the palette
+index.
+
+Consequently:
+
+- `-d none` disables diffusion but still performs a palette lookup for every
+  pixel;
+- `--lookup-policy=none` disables lookup acceleration and scans the palette
+  directly, but it does not disable dithering or palette application;
+- changing `-Q` can change the palette itself, while changing `-d` or `-~`
+  changes how that completed palette is applied.
+
+The candidate and palette are expressed in the coordinates selected by `-W`; see [Working Color Space](../palette-application/working-colorspace/README.md) for its geometry, precision requirements, and measured cost.
+
+See [Dithering](../palette-application/dithering/README.md) and [Lookup Policy](../palette-application/lookup-policy/README.md) for the two
+parts of this stage.
+
+## SIXEL encoding
+
+Palette application produces indexed pixels and a palette. The core encoder
+turns them into palette definitions, color selections, six-pixel-high bands,
+runs, carriage movement, and the surrounding DCS sequence. Encoding policy may
+change the ordering and size of the byte stream without changing the preceding
+conceptual ownership of palette construction and application.
+
+The implementation may pipeline, parallelize, or fuse work across these
+boundaries. Those execution details must preserve the stage contracts above.
+
+## Alternate paths
+
+Not every invocation constructs a new palette:
+
+- monochrome, built-in, and map-file modes provide a palette;
+- caller-facing APIs may provide a prebuilt dither/palette object;
+- high-color mode redefines palette registers while encoding instead of using
+  one fixed palette for the entire image;
+- animations may retain inter-frame state or reconstruct policy state for each
+  frame.
+
+The supplied-palette paths skip or replace palette construction, but they still
+need palette application before ordinary indexed SIXEL encoding. High-color is
+a specialized path and should not be used as the model for fixed-palette
+encoding.
+
+## Diagnosing changes
+
+Measure the stage that a change actually affects:
+
+- compare palette entries or palette-build telemetry for `-Q` changes;
+- compare indexed assignments, lookup preparation, and per-pixel mapping for
+  `-~` changes;
+- compare spatial or temporal artifacts and perceptual image metrics for `-d`
+  changes;
+- compare output size and encoding time for core encoding changes.
+
+End-to-end quality remains important, but it cannot by itself identify which
+stage caused a regression. Follow the project-wide
+[Quality Measurement Policy](../../quality/measurement-policy.md) when comparing
+visual output.
+
+## Implementation and tests
+
+The main implementation boundaries are represented by
+[`loader.c`](../../../src/loader.c), [`palette.c`](../../../src/palette.c),
+[`dither.c`](../../../src/dither.c),
+[`lookup-policy.c`](../../../src/lookup-policy.c), and
+[`encoder-core-encode.c`](../../../src/encoder-core-encode.c). Palette and lookup
+coverage lives primarily under [`tests/quant/palette/`](../../../tests/quant/palette/),
+with CLI option regressions under
+[`tests/cli/options/`](../../../tests/cli/options/).
