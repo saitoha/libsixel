@@ -17,11 +17,14 @@ echo "1..1"
 set -v
 
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
+# GNV file utilities can treat the leading Unix directory as a logical
+# device. Keep artifact names relative to the directory opened by the shell.
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
+cd "${artifact_dir}"
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/pnm-truncated-ascii-2x1.ppm"
-artifact_dir="${ARTIFACT_LOCAL_DIR}"
-short_output="${artifact_dir}/0106-pnm_truncated_ascii-short-$$.six"
-env_output="${artifact_dir}/0106-pnm_truncated_ascii-env-$$.six"
+short_output="0106-pnm_truncated_ascii-short-$$.six"
+env_output="0106-pnm_truncated_ascii-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -65,8 +68,8 @@ cmp -s "${short_output}" "${env_output}" || {
 # The absent second pixel is independently specified as black. Encode that
 # complete literal image through the strict path before comparing exact
 # bytes. A short GNV pipeline can retain its writer side and withhold EOF.
-reference_input="${artifact_dir}/0106-pnm-complete-reference-$$.ppm"
-reference_output="${artifact_dir}/0106-pnm-truncated-reference-$$.six"
+reference_input="0106-pnm-complete-reference-$$.ppm"
+reference_output="0106-pnm-truncated-reference-$$.six"
 printf 'P3\n2 1\n255\n255 0 0 0 0 0\n' >"${reference_input}"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "-Lbuiltin:Y0!" \
     "${reference_input}" \
