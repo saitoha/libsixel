@@ -272,7 +272,10 @@ color_tty_child(char const *name, int command, int report)
     struct termios active;
     sigset_t original_mask;
     struct sigaction action;
+    struct timeval immediate;
+    fd_set writable;
     size_t written;
+    int fill_ready;
     int flags;
     int pipes[2];
     int output_copy;
@@ -394,6 +397,30 @@ color_tty_child(char const *name, int command, int report)
             written >= 1024u * 1024u ||
             color_tty_now() - started > 0.25) {
             return color_tty_error("write was not bounded and partial");
+        }
+        /* A slow PTY can reach the deadline before filling its queue.
+         * Finish filling it before checking a blocked request/recovery.
+         * The parent never drains until the child reports completion. */
+        output_copy = open(ttyname(STDOUT_FILENO),
+                           O_WRONLY | O_NOCTTY | O_NONBLOCK);
+        if (output_copy < 0 || output_copy >= FD_SETSIZE) {
+            return color_tty_error("cannot open output filler");
+        }
+        fill_ready = 1;
+        for (written = 0u; written < 1024u * 1024u; ++written) {
+            immediate.tv_sec = 0;
+            immediate.tv_usec = 0;
+            FD_ZERO(&writable);
+            FD_SET(output_copy, &writable);
+            fill_ready = select(output_copy + 1, NULL, &writable,
+                                NULL, &immediate);
+            if (fill_ready <= 0 || write(output_copy, "x", 1u) != 1) {
+                break;
+            }
+        }
+        close(output_copy);
+        if (fill_ready != 0) {
+            return color_tty_error("could not fill output queue");
         }
         if (img2sixel_color_tty_close(tty) != IMG2SIXEL_COLOR_IO_OK ||
             img2sixel_color_tty_open(&tty, STDOUT_FILENO, NULL, NULL) !=
@@ -597,7 +624,9 @@ color_tty_script(char const *name, int master, int command, int report,
                     return 0;
                 }
             } else if (result > 0 && FD_ISSET(master, &writes)) {
-                count = write(master, bytes, sizeof(bytes));
+                /* Keep the peer's write within PTY readiness too: a large
+                 * partial-fit write can block or overflow the Hurd queue. */
+                count = write(master, bytes, 1u);
                 if (count < 0 && errno != EAGAIN && errno != EINTR) {
                     return 0;
                 }
@@ -692,10 +721,12 @@ test_cli_0038_color_tty(int argc, char **argv)
     }
     mode.c_lflag |= ICANON | ECHO;
     mode.c_oflag |= OPOST | ONLCR;
-    if (strcmp(argv[1], "pending-input") == 0) {
-        /* Darwin retypes raw input after ICANON returns; Linux preserves
-         * those bytes without re-echoing them. Observe exact unread bytes
-         * on both systems without depending on that line-discipline detail.
+    if (strcmp(argv[1], "pending-input") == 0 ||
+        strcmp(argv[1], "stale") == 0 || strcmp(argv[1], "late") == 0 ||
+        strcmp(argv[1], "flood") == 0) {
+        /* Hurd immediately re-echoes queued raw input when ICANON returns;
+         * Darwin waits for another read and Linux does not re-echo it.
+         * Observe unread input without that line-discipline side effect.
          * The other scripts still check restoration with ECHO enabled. */
         mode.c_lflag &= ~ECHO;
     }

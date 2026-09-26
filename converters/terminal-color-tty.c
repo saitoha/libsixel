@@ -156,7 +156,6 @@ img2sixel_color_tty_send(img2sixel_color_tty_t *tty,
 {
     img2sixel_color_io_t result;
     ssize_t count;
-    size_t chunk;
 
     *written = 0u;
     while (*written < size) {
@@ -164,13 +163,11 @@ img2sixel_color_tty_send(img2sixel_color_tty_t *tty,
         if (result != IMG2SIXEL_COLOR_IO_OK) {
             return result;
         }
-        /* The private fd is nonblocking even after readiness becomes stale.
-         * A bounded chunk also avoids a size_t-to-ssize_t overflow. */
-        chunk = size - *written;
-        if (chunk > 4096u) {
-            chunk = 4096u;
-        }
-        count = write(tty->fd, bytes + *written, chunk);
+        /* Readiness promises space for at least one byte. Hurd PTYs can
+         * block a larger write that only partly fits despite O_NONBLOCK.
+         * These are short control sequences, so keep each write within
+         * that promise and check the absolute deadline between bytes. */
+        count = write(tty->fd, bytes + *written, 1u);
         if (count > 0) {
             *written += (size_t)count;
         } else if (count == 0 ||

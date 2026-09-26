@@ -3,6 +3,7 @@
  * a qualified shared-CMM apply has overwritten its destination prefix. */
 #include "config.h"
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -14,6 +14,10 @@ This small `__GNU__` branch is not evidence that GNU/Hurd is covered by Linux CI
 
 Both Autotools and Meson builds are maintained. A change that passes on GNU/Linux can still fail on GNU/Hurd because the kernel, device model, process behavior, and available interfaces differ even when compiler and libc surfaces look similar.
 
+The private [CLI terminal color transport](../../../converters/terminal-color-tty.c) writes short control sequences one byte at a time, checking readiness and the absolute deadline between bytes. On the maintained Hurd PTY, a larger write that only partly fits the output queue can block despite `O_NONBLOCK`; readiness alone does not make that larger write bounded. The [backpressure test](../../../tests/cli/color/tty/0007_backpressure.t) verifies a partial timed write, a blocked request, and bounded restoration. Its fixture fills any remaining queue space explicitly because a slow PTY may reach the first deadline before filling the queue.
+
+Hurd also immediately echoes queued raw input when canonical mode and echo are restored. Darwin defers retyping until another read, while Linux keeps the queued bytes without re-echoing them. The [TTY scripts](../../../tests/cli/0038_cli_color_tty.c) disable echo in cases that intentionally leave unread input, while other cases continue to check restoration of an echo-enabled terminal. Production cleanup still restores the original complete terminal mode and never flushes unread input.
+
 ## CI guest contract
 
 The current Debian GNU/Hurd image is run as a single-vCPU amd64 guest with the Q35 machine model, an AHCI-backed disk exposed through the runner's IDE-compatible setting, and an e1000 network device. On the current CI host, the default `pc`/i440fx machine reached the root filesystem with repeated ext2 I/O errors, while Q35 booted the same image. A two-vCPU guest also lost the runner connection during a large source transfer; keep the job at one vCPU until the exact image and hypervisor combination has passed an explicit SMP stress run.
