@@ -33,10 +33,11 @@ The [pixel-format guide](../pixelformat.md) describes memory layout. A pixel-for
 | `cielab` | libsixel's normalized CIE 1976 L*a*b* coordinates, derived through D65 XYZ | loader CMS target, `-X`, and `-W` |
 | `din99d` | DIN99d with its XYZ correction, using a common `/100` coordinate scale | loader CMS target, `-X`, and `-W` |
 | `smpte-c` | SMPTE-C primaries with the output transfer used by libsixel | `-U` only |
+| `display-p3` | Display P3 primaries and D65 white with the sRGB transfer function | `-U`, on the selected CPU float path described in [Output color space](../../encoder/output/output-colorspace.md#display-p3-selected-cpu-float-path) |
 
 Within this project, `gamma` is not shorthand for an arbitrary power-law curve. It specifically means the sRGB encoded representation. SMPTE-C output uses a different primary conversion and a nominal 2.2 power transfer.
 
-Gamma, linear RGB, and SMPTE-C are device-oriented RGB spaces: their coordinates ultimately describe amounts or encodings of red, green, and blue primaries. Oklab, CIELAB, and DIN99d are opponent or perceptual working spaces designed so that geometric distance is more useful for color decisions. They are internal calculation spaces, not SIXEL palette syntaxes. The [DIN99d guide](../din99d/README.md) shows why a color-difference-oriented space can change a nearest-palette-color decision, explains the corrected XYZ transform and common coordinate scale, and connects that example to measured image results.
+Gamma, linear RGB, SMPTE-C, and Display P3 are device-oriented RGB spaces: their coordinates ultimately describe amounts or encodings of red, green, and blue primaries. Oklab, CIELAB, and DIN99d are opponent or perceptual working spaces designed so that geometric distance is more useful for color decisions. They are internal calculation spaces, not SIXEL palette syntaxes. The [DIN99d guide](../din99d/README.md) shows why a color-difference-oriented space can change a nearest-palette-color decision, explains the corrected XYZ transform and common coordinate scale, and connects that example to measured image results.
 
 The CMS chapter introduces [primaries, white point, and transfer function](#primaries-white-point-and-transfer-function), including what D50 and D65 mean. Those properties explain why two RGB spaces can assign different colors to the same numbers.
 
@@ -64,11 +65,11 @@ The sRGB transfer and `srgb-linear` definitions are described by [CSS Color Modu
 
 Color spaces form a connected conversion network. Linear sRGB is libsixel's common internal RGB basis: the general converter first obtains linear sRGB from the source coordinates, then constructs the destination coordinates. XYZ supplies a device-independent connection between RGB primaries and other color descriptions. Its three tristimulus components describe color without choosing a monitor's RGB primaries; `Y` represents luminance on the chosen scale. The white point still matters, so XYZ D50 and XYZ D65 must be distinguished.
 
-The four routes below show when these common bases are needed. Route C follows sRGB into Oklab; route D shows the distinct PCS boundary in CMS.
+The five routes below show when these common bases are needed. Route C follows sRGB into Oklab; route D shows the distinct PCS boundary in CMS. Route E is the output side: only the final palette entries leave the working coordinates, pass through linear RGB and, for a destination with other primaries such as Display P3, through XYZ D65, and are encoded as the integer percentages that SIXEL carries.
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/conversion-routes-mobile.svg">
-  <img alt="Four schematic routes: gamma input can stay unchanged; mixing or resize uses linear RGB; OKLab uses linear RGB and LMS; ICC input connects through a D50 PCS before adaptation toward D65 linear sRGB. Nodes do not imply separate image buffers." src="figures/conversion-routes-wide.svg">
+  <img alt="Five schematic routes: gamma input can stay unchanged; mixing or resize uses linear RGB; OKLab uses linear RGB and LMS; ICC input connects through a D50 PCS before adaptation toward D65 linear sRGB; final palette entries convert from the working space through linear RGB and XYZ D65 to Display P3 and 0-100 codes. Nodes do not imply separate image buffers." src="figures/conversion-routes-wide.svg">
 </picture>
 
 Conceptually, the Oklab route includes linear sRGB → XYZ D65 → LMS. In `sixel_linear_to_oklab()`, libsixel combines those two matrices into a direct linear-sRGB-to-LMS transform, followed by cube-root lookup and the opponent transform. It does not allocate an XYZ image or run a separate XYZ pass for every Oklab conversion. Adjacent linear matrices can be combined; the nonlinear sRGB transfer and cube-root stages must retain their order. This is the distinction between a mathematical intermediate and a stored image representation. The [Oklab author's implementation](https://bottosson.github.io/posts/oklab/#converting-from-linear-srgb-to-oklab) provides the direct matrix form.
@@ -103,7 +104,7 @@ An ICC definition owns both its profile bytes and parsed tables. Cloning and tra
 
 ICC device curves and LUT domains remain bounded as specified by ICC. This differs from the signed analytic TRCs of standard RGB definitions and does not justify clipping intermediate sRGB. On the new descriptor path, XYZ LUT8 and LUT16/mAB PCS encodings are decoded with their respective u1.7 and u1.15 scales; matrix tags already contain XYZ values. The [builtin CMS architecture](../../loader/builtin-cms.md) describes the inherited parser/evaluator support envelope, including unsupported processing elements and legacy LUT limitations.
 
-Output capability requires successful device-to-PCS evaluation and PCS-to-device encoding. `sixel_cdef_output_ready()` executes both directions on six representative device colors with separate encoding and evaluation intents. A one-way input profile is not thereby an output profile, while two usable LUTs need not be mathematical inverses. This setup probe does not replace checking every finalized wire palette entry when an encoder caller adopts the interface. No terminal negotiation or Display P3 CLI output is enabled by these foundations.
+Output capability requires successful device-to-PCS evaluation and PCS-to-device encoding. `sixel_cdef_output_ready()` executes both directions on six representative device colors with separate encoding and evaluation intents. A one-way input profile is not thereby an output profile, while two usable LUTs need not be mathematical inverses. This setup probe does not replace checking every finalized wire palette entry when an encoder caller adopts the interface. The selected Display P3 output path and `-Uauto` negotiation build on these definitions; their scope is specified in [Output color space](../../encoder/output/output-colorspace.md), and other encoder paths do not gain wide-gamut output merely because the foundations exist.
 
 Independent fixtures in [`tests/data/color-numeric`](../../../tests/data/color-numeric/) record primaries, white points, transfer values, XYZ D65/D50, extended linear sRGB, opponent coordinates, wire percentages, and reconstructed RGB8 separately. [`generate_color_fixtures.py`](../../../tools/generate_color_fixtures.py) derives them without production CMS/conversion calls. The [numeric tests](../../../tests/processing/colorspace/) and [definition tests](../../../tests/processing/cms/) cover transfer knees, signed range, endpoint ownership, asymmetric LUT capability, and a 17×17×17 SDR P3 grid through float32 work coordinates. Tolerances distinguish analytic TRC/XYZ arithmetic, rounded opponent matrices, sampled ICC curves, and wire quantization; passing these tests is not an end-to-end loader or terminal gamut claim.
 
@@ -139,7 +140,7 @@ The useful mental model is a sequence of explicit interpretation and conversion 
   <img src="figures/encoding-pipeline-wide.svg" alt="Encoding pipeline: loader and optional resize feed palette-building and main-image branches; both meet in working space, and only final palette entries convert to output space." loading="lazy">
 </picture>
 
-This figure shows the generated-palette route; fixed-palette shortcuts can bypass its palette-building branch. The final `-W` to `-U` conversion changes palette entries, while pixel indices keep their assignments. A stage box represents a contract, not a promise of a separate buffer or worker.
+This figure shows the generated-palette route; fixed-palette shortcuts can bypass its palette-building branch. On the legacy palette paths, the final `-W` to `-U` conversion changes palette entries while pixel indices keep their assignments. The selected Display P3 and ordinary sRGB float paths instead fix the palette that will be sent before lookup, so index selection compares pixels with the colors the stream actually carries; see [where the conversion happens](../../encoder/output/output-colorspace.md#where-the-conversion-happens). A stage box represents a contract, not a promise of a separate buffer or worker.
 
 The implementation may reuse storage, clone only the palette-building view, or skip a conversion when source and destination already match. Those optimizations do not change the conceptual contracts. The frame carries its effective pixel format and color space so later stages can choose the correct conversion instead of inferring it from whether resize or another option was requested.
 
@@ -192,7 +193,7 @@ The explicit `-j auto:resize_precision=preserve` policy can keep a byte resize i
 | --- | --- | --- | --- |
 | `-X`, `--clustering-colorspace` | coordinates used by binning and the palette solver after sample selection | `gamma`, unless an explicit `-W` supplies the implicit `-X` value | `gamma`, `linear`, `oklab`, `cielab`, `din99d` |
 | `-W`, `--working-colorspace` | coordinates used when applying the palette, including lookup and dithering | `gamma` | `gamma`, `linear`, `oklab`, `cielab`, `din99d` |
-| `-U`, `--output-colorspace` | RGB coordinate conversion applied to palette entries before serialization | `gamma` | `gamma`, `linear`, `smpte-c` |
+| `-U`, `--output-colorspace` | RGB definition of the palette entries written to the SIXEL stream | `gamma` | `gamma`, `linear`, `smpte-c`, `display-p3`, `auto` (CLI negotiation) |
 
 ### `-X`: palette-construction geometry
 
@@ -210,11 +211,11 @@ The mathematical role of each accepted space and the controlled quality, runtime
 
 ### `-U`: serialized palette coordinates
 
-In the ordinary palette encoder, `-U` does not rerun palette generation or palette lookup. It converts the final palette entries from the frame's working color space to the requested output RGB space before the encoder writes SIXEL color definitions. [Output color space](../../encoder/output/output-colorspace.md) explains the three representations, rounding, fixed-palette preparation differences, and the current high-color path's missing output conversion.
+`-U` selects how the numbers in SIXEL color definitions are to be interpreted: gamma sRGB by default, linear-light sRGB, SMPTE-C, or Display P3. It is a destination definition, not another processing geometry. On the legacy palette paths it converts the final palette entries from the working coordinates without rerunning palette generation or lookup. The selected Display P3 and ordinary sRGB float paths convert, clamp, and round the palette to its sent RGB percentages before lookup and dithering, so those stages already account for the output definition. Display P3 is available only on that selected CPU float path, and the high-color path does not yet apply the legacy output conversion. [Output color space](../../encoder/output/output-colorspace.md) owns these rules, their rounding, and the supported option combinations.
 
-The same boundary applies when `-M` writes ACT, PAL, RIFF PAL, or GPL output. These formats receive the `-U` representation, not the internal `-W` coordinates. In particular, the default `-Ugamma` converts a perceptual working palette back to gamma-encoded RGB before it is stored in a reusable palette file.
+Palette export is a separate boundary. `-M` always writes sRGB8 ACT, PAL, RIFF PAL, or GPL files, whatever `-U` selects, so a wide-gamut palette is clipped to sRGB in the file; see [External palette input and output](../../encoder/palette-construction/external-palettes.md#exporting-a-palette-with-m).
 
-SIXEL carries numeric palette components but does not embed an ICC profile or an explicit color-space tag. A receiving terminal therefore cannot discover from the stream whether values were prepared as sRGB, linear RGB, or SMPTE-C. `-Ugamma` is the interoperable default; alternate output spaces are meaningful only when the receiving environment is known to interpret the numeric values accordingly.
+SIXEL carries numeric palette components but does not embed an ICC profile or an explicit color-space tag. A receiving terminal therefore cannot discover from the stream alone whether values were prepared as sRGB, linear RGB, SMPTE-C, or Display P3. `-Ugamma` is the interoperable default; an explicit alternate output space is meaningful only when the receiving environment is known to interpret the numeric values accordingly. The CLI-only `-Uauto` choice negotiates the definition with the terminal through the [terminal graphics color management proposal](../../protocols/graphics-color-management.md) for images sent directly to a terminal on stdout. Files and pipes keep gamma sRGB; a terminal that does not answer at all also receives unconfirmed gamma output, while a partial or malformed reply stops before image output.
 
 ## Loader color management
 
@@ -368,6 +369,7 @@ This distinction is especially important when evaluating `-X` or `-W`: a percept
 - Treating `-X` as a global conversion. It changes generated-palette geometry and leaves the main image path alone until another stage requires conversion.
 - Treating `-W` as the wire color space. The final palette conversion is controlled by `-U`.
 - Assuming `-U` embeds color management metadata. SIXEL has no ICC-profile field, so the terminal receives only numeric palette components.
+- Treating a `-M` palette file as the `-U` output. Exported palette files are always sRGB8.
 - Comparing spaces without controlling precision and loader behavior. A float32 promotion or a profile conversion can otherwise be mistaken for an effect of the named palette space.
 
 ## Reproducing the figures

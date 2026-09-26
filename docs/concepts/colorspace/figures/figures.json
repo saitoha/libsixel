@@ -147,6 +147,24 @@
         "linear-light math"
       ],
       "note": "PCS uses XYZ or Lab; it connects profiles, not processing stages."
+    },
+    {
+      "title": "E · Encode the palette for the receiver",
+      "condition": "Output definition from -U; here -U display-p3",
+      "nodes": [
+        "Palette in -W",
+        "linear RGB",
+        "XYZ · D65",
+        "P3 linear",
+        "0–100 codes"
+      ],
+      "edges": [
+        "decode -W",
+        "sRGB primaries",
+        "P3 primaries",
+        "sRGB curve + round"
+      ],
+      "note": "Only palette entries convert; SIXEL carries the numbers without a color-space tag."
     }
   ],
   "pipeline": {

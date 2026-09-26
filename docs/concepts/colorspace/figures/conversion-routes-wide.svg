@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="900" viewBox="0 0 960 900" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1085" viewBox="0 0 960 1085" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
 <title id="title">Operation-dependent color conversion</title>
-<desc id="desc">Four schematic routes show no-op gamma processing, linear-light mixing or resize, OKLab conversion via the combined XYZ-to-LMS matrices, and an ICC PCS D50 connection adapted toward D65 linear sRGB. Nodes do not imply separate image buffers. Loader composition is path-dependent; these are not all loader implementations.</desc>
-<rect x="0" y="0" width="960" height="900" rx="0" fill="#ffffff" stroke="none"/>
+<desc id="desc">Five schematic routes show no-op gamma processing, linear-light mixing or resize, OKLab conversion via the combined XYZ-to-LMS matrices, an ICC PCS D50 connection adapted toward D65 linear sRGB, and the final conversion of palette entries to the -U output definition, shown for Display P3. Nodes do not imply separate image buffers. Loader composition is path-dependent; these are not all loader implementations.</desc>
+<rect x="0" y="0" width="960" height="1085" rx="0" fill="#ffffff" stroke="none"/>
 <text x="20" y="35" font-size="28" fill="#183247" font-weight="700" text-anchor="start">Convert when the operation needs it</text>
-<text x="20" y="65" font-size="18" fill="#4c6070" font-weight="400" text-anchor="start">Four routes through the same color system</text>
+<text x="20" y="65" font-size="18" fill="#4c6070" font-weight="400" text-anchor="start">Five routes through the same color system</text>
 <defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M 1 1 L 7 4 L 1 7" fill="none" stroke="#4c6070" stroke-width="1.3"/></marker></defs>
 <g data-role="conversion-route" data-case="0">
 <text x="20" y="106" font-size="21" fill="#183247" font-weight="700" text-anchor="start">A · No conversion needed</text>
@@ -92,6 +92,34 @@
 <text x="870" y="720" font-size="18" fill="#183247" font-weight="700" text-anchor="middle">Mix light</text>
 <text x="20" y="809" font-size="17" fill="#4c6070" font-weight="400" text-anchor="start">PCS uses XYZ or Lab; it connects profiles, not processing stages.</text>
 </g>
-<text x="20" y="858" font-size="17" fill="#4c6070" font-weight="400" text-anchor="start">Schematic routes, not buffer allocations or timing measurements.</text>
-<text x="20" y="881" font-size="17" fill="#4c6070" font-weight="400" text-anchor="start">PCS: XYZ or Lab at D50. Linear RGB: the internal sRGB basis.</text>
+<g data-role="conversion-route" data-case="4">
+<text x="20" y="846" font-size="21" fill="#183247" font-weight="700" text-anchor="start">E · Encode the palette for the receiver</text>
+<text x="20" y="872" font-size="18" fill="#4c6070" font-weight="400" text-anchor="start">Output definition from -U; here -U display-p3</text>
+<circle cx="90" cy="931" r="16" fill="#edf0f3"/>
+<circle cx="90" cy="931" r="5" fill="#4c6070"/>
+<text x="90" y="905" font-size="18" fill="#183247" font-weight="700" text-anchor="middle">Palette in -W</text>
+<path d="M 110 931 L 263 931" stroke="#4c6070" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="187.5" y="963" font-size="17" fill="#4c6070" font-weight="400" text-anchor="middle">decode -W</text>
+<circle cx="285" cy="931" r="16" fill="#dfedf4"/>
+<circle cx="285" cy="931" r="5" fill="#17618c"/>
+<text x="285" y="905" font-size="18" fill="#17618c" font-weight="700" text-anchor="middle">linear RGB</text>
+<path d="M 305 931 L 458 931" stroke="#4c6070" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="382.5" y="963" font-size="17" fill="#4c6070" font-weight="400" text-anchor="middle">sRGB primaries</text>
+<circle cx="480" cy="931" r="16" fill="#edf0f3"/>
+<circle cx="480" cy="931" r="5" fill="#4c6070"/>
+<text x="480" y="905" font-size="18" fill="#183247" font-weight="700" text-anchor="middle">XYZ · D65</text>
+<path d="M 500 931 L 653 931" stroke="#4c6070" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="577.5" y="963" font-size="17" fill="#4c6070" font-weight="400" text-anchor="middle">P3 primaries</text>
+<circle cx="675" cy="931" r="16" fill="#edf0f3"/>
+<circle cx="675" cy="931" r="5" fill="#4c6070"/>
+<text x="675" y="905" font-size="18" fill="#183247" font-weight="700" text-anchor="middle">P3 linear</text>
+<path d="M 695 931 L 848 931" stroke="#4c6070" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="772.5" y="963" font-size="17" fill="#4c6070" font-weight="400" text-anchor="middle">sRGB curve + round</text>
+<circle cx="870" cy="931" r="16" fill="#edf0f3"/>
+<circle cx="870" cy="931" r="5" fill="#4c6070"/>
+<text x="870" y="905" font-size="18" fill="#183247" font-weight="700" text-anchor="middle">0–100 codes</text>
+<text x="20" y="994" font-size="17" fill="#4c6070" font-weight="400" text-anchor="start">Only palette entries convert; SIXEL carries the numbers without a color-space tag.</text>
+</g>
+<text x="20" y="1043" font-size="17" fill="#4c6070" font-weight="400" text-anchor="start">Schematic routes, not buffer allocations or timing measurements.</text>
+<text x="20" y="1066" font-size="17" fill="#4c6070" font-weight="400" text-anchor="start">PCS: XYZ or Lab at D50. Linear RGB: the internal sRGB basis.</text>
 </svg>

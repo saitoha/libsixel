@@ -46,6 +46,11 @@ ROUTES = [
      'nodes': ['Input values', 'PCS · D50', 'XYZ · D65', 'linear RGB', 'Mix light'],
      'edges': ['source profile', 'XYZ + adaptation', 'RGB matrix', 'linear-light math'],
      'note': 'PCS uses XYZ or Lab; it connects profiles, not processing stages.'},
+    {'title': 'E · Encode the palette for the receiver',
+     'condition': 'Output definition from -U; here -U display-p3',
+     'nodes': ['Palette in -W', 'linear RGB', 'XYZ · D65', 'P3 linear', '0–100 codes'],
+     'edges': ['decode -W', 'sRGB primaries', 'P3 primaries', 'sRGB curve + round'],
+     'note': 'Only palette entries convert; SIXEL carries the numbers without a color-space tag.'},
 ]
 # Keep the pipeline's contracts separate from its wide/mobile geometry. Each
 # edge joins stable stage IDs; layout changes must preserve this topology.
@@ -412,10 +417,10 @@ def mixing(mobile):
 
 
 def routes(mobile):
-    width, height = (380, 1400) if mobile else (960, 900)
+    width, height = (380, 1771) if mobile else (960, 1085)
     body = [text(20, 35, 'Convert when the operation needs it',
                  20 if mobile else 28, weight=700),
-            text(20, 65, 'Four routes through the same color system',
+            text(20, 65, 'Five routes through the same color system',
                  15 if mobile else 18, MUTED),
             f'<defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M 1 1 L 7 4 L 1 7" fill="none" stroke="{MUTED}" stroke-width="1.3"/></marker></defs>']
     top = 98
@@ -430,6 +435,7 @@ def routes(mobile):
                 ['Linear composition / default resize', 'Gamma work after the operation'],
                 ['OKLab palette processing', 'Even without mixing'],
                 ['ICC source → linear sRGB', 'Conceptual profile-normalization route'],
+                ['Final palette → -U definition', 'Receiver must share the interpretation'],
             ][index]
             body.extend(text(20, y + 24 + i * 20, v, 14, MUTED) for i, v in enumerate(conditions))
         else:
@@ -467,11 +473,13 @@ def routes(mobile):
     body.extend(text(20, height - (len(footer) - i) * 23 + 4, v,
                      14 if mobile else 17, MUTED) for i, v in enumerate(footer))
     return document(width, height, 'Operation-dependent color conversion',
-                    'Four schematic routes show no-op gamma processing, linear-light '
+                    'Five schematic routes show no-op gamma processing, linear-light '
                     'mixing or resize, OKLab conversion via the combined XYZ-to-LMS '
-                    'matrices, and an ICC PCS D50 connection adapted toward D65 linear '
-                    'sRGB. Nodes do not imply separate image buffers. Loader composition '
-                    'is path-dependent; these are not all loader implementations.', body)
+                    'matrices, an ICC PCS D50 connection adapted toward D65 linear '
+                    'sRGB, and the final conversion of palette entries to the -U output '
+                    'definition, shown for Display P3. Nodes do not imply separate image '
+                    'buffers. Loader composition is path-dependent; these are not all '
+                    'loader implementations.', body)
 
 
 def chromaticity_plot(size):
