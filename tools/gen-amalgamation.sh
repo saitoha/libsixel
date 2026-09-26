@@ -167,12 +167,13 @@ header_filter_units_temp=$(mktemp \
 existing_headers_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-existing-headers.XXXXXX")
 missing_headers_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-missing-headers.XXXXXX")
 user_units_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-user-units.XXXXXX")
+unit_guards_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-unit-guards.XXXXXX")
 license_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-licenses.XXXXXX")
 license_hash_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-license-hash.XXXXXX")
 inline_state_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-inline-once.XXXXXX")
 trap 'rm -f "${header_temp}" "${header_units_temp}" \
     "${header_filter_units_temp}" "${existing_headers_temp}" \
-    "${missing_headers_temp}" "${user_units_temp}" \
+    "${missing_headers_temp}" "${user_units_temp}" "${unit_guards_temp}" \
     "${license_temp}" "${license_hash_temp}" "${inline_state_temp}"' EXIT
 
 # Header discovery follows the same default scope as source discovery.  Keep
@@ -226,6 +227,24 @@ else
     collect_units_from_dirs "${default_source_dirs}" \
         \( -name '*.c' -o -name '*.m' \) >"${user_units_temp}"
 fi
+
+# Generate guards in one process instead of running command substitutions
+# and sed/tr pipelines for every test source. GNV can lose command lookup
+# state during that long subprocess loop. Keep the parallel list in a file,
+# since the source list itself can exceed GNV shell variable limits.
+LC_ALL=C awk '
+{
+    guard = $0;
+    sub(/^.*\//, "", guard);
+    sub(/\.[cm]$/, "", guard);
+    guard = toupper(guard);
+    gsub(/[^A-Z0-9_]/, "_", guard);
+    if (guard ~ /^[0-9]/) {
+        guard = "TEST_" guard;
+    }
+    print guard;
+}
+' "${user_units_temp}" >"${unit_guards_temp}"
 
 config_path="${build_root}/config.h"
 keep_local_includes=${SIXEL_AMALGAMATION_KEEP_LOCAL_INCLUDES:-0}
@@ -543,8 +562,8 @@ emit_all_headers() {
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA)"
                 ;;
             assessment/assessment.h)
-                guard=$(echo "${unit}" | sed 's/.*\///;s/.h$//' | tr a-z\- A-Z_)
-                emit_unit "${unit}" "defined(BUILD_LSQA) || defined(BUILD_${guard})"
+                emit_unit "${unit}" \
+                    "defined(BUILD_LSQA) || defined(BUILD_ASSESSMENT)"
                 ;;
             include/sixel.h)
                 public_header="${build_root}/include/sixel.h"
@@ -562,7 +581,7 @@ emit_all_headers() {
 }
 
 emit_all_units() {
-    while IFS= read -r unit; do
+    while IFS= read -r unit && IFS= read -r guard <&3; do
         [ -z "${unit}" ] && continue
 
         case "${unit}" in
@@ -571,15 +590,6 @@ emit_all_units() {
                     *.inc.c)
                         # Include fragments are pulled by their parent C files.
                         continue
-                        ;;
-                esac
-                guard=$(echo "${unit}" | \
-                    sed 's/.*\///;s/\.[cm]$//' | \
-                    tr '[:lower:]-.' '[:upper:]__')
-                guard=$(echo "${guard}" | sed 's/[^A-Z0-9_]/_/g')
-                case "${guard}" in
-                    [0-9]*)
-                        guard="TEST_${guard}"
                         ;;
                 esac
                 emit_unit "${unit}" "defined(BUILD_${guard})"
@@ -599,7 +609,6 @@ emit_all_units() {
                 emit_unit "${unit}" "SIXEL_ENABLE_THREADS"
                 ;;
             converters/cli.c|converters/completion_utils.c|converters/path.c|converters/malloc_stub.c|converters/aborttrace.c|converters/compat.c)
-                guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA) || defined(BUILD_${guard})"
                 ;;
@@ -608,11 +617,9 @@ emit_all_units() {
                     "defined(BUILD_LSQA) || defined(BUILD_ASSESSMENT) || defined(BUILD_COLOR)"
                 ;;
             assessment/assessment.c)
-                guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" "defined(BUILD_LSQA) || defined(BUILD_${guard})"
                 ;;
             converters/img2sixel.c|converters/sixel2png.c|tools/jpegref.c|assessment/lsqa.c)
-                guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" "defined(BUILD_${guard})"
                 ;;
             src/dither.c)
@@ -625,7 +632,7 @@ emit_all_units() {
                 emit_unit "${unit}" ""
                 ;;
         esac
-    done <"${user_units_temp}"
+    done <"${user_units_temp}" 3<"${unit_guards_temp}"
 }
 
 collect_license_blocks
@@ -691,5 +698,5 @@ emit_all_headers
 emit_all_units
 rm -f "${header_temp}" "${header_units_temp}" \
     "${header_filter_units_temp}" "${existing_headers_temp}" \
-    "${missing_headers_temp}" "${user_units_temp}" \
+    "${missing_headers_temp}" "${user_units_temp}" "${unit_guards_temp}" \
     "${license_temp}" "${license_hash_temp}" "${inline_state_temp}"

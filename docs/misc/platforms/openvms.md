@@ -85,6 +85,8 @@ The durable workarounds are split across [`Makefile.am`](../../../Makefile.am), 
 
 The Makefile sanitizer itself contained a delayed-expansion trap. A bare AWK `$0` inside an M4 macro argument was read as the enclosing M4 macro name and repeatedly rescanned when Autoconf generated `config.status`; autoreconf time grew from seconds to more than twenty minutes. The source now spells the AWK record variable as `$[0]`, which M4 reduces to the intended `$0` at the correct expansion stage.
 
+The [amalgamation generator](../../../tools/gen-amalgamation.sh) keeps source paths and their preprocessor guards in parallel temporary files. It computes all guards in one AWK pass, avoiding per-test command substitutions and `sed`/`tr` pipelines. This also keeps the growing source inventory out of large GNV shell variables. Changes to guard generation must preserve the generated translation unit byte for byte for the same source and configuration inputs.
+
 ### Final program linking
 
 The decisive GNV limitation was reproducible outside libsixel:

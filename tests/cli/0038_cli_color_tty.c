@@ -642,10 +642,6 @@ color_tty_script(char const *name, int master, int command, int report,
             !color_tty_send(master, "z", 1u)) {
             return 0;
         }
-        if (strcmp(name, "pending-input") == 0 &&
-            !color_tty_expect(master, "pending-after-reply\r\n")) {
-            return 0;
-        }
         if (strcmp(name, "roundtrip") == 0) {
             if (!color_tty_expect(master, COLOR_TTY_POLICY) ||
                 !color_tty_send(master, "\2201$r1;0./p\234", 11u)) {
@@ -691,6 +687,13 @@ test_cli_0038_color_tty(int argc, char **argv)
     }
     mode.c_lflag |= ICANON | ECHO;
     mode.c_oflag |= OPOST | ONLCR;
+    if (strcmp(argv[1], "pending-input") == 0) {
+        /* Darwin retypes raw input after ICANON returns; Linux preserves
+         * those bytes without re-echoing them. Observe exact unread bytes
+         * on both systems without depending on that line-discipline detail.
+         * The other scripts still check restoration with ECHO enabled. */
+        mode.c_lflag &= ~ECHO;
+    }
     if (strcmp(argv[1], "noncanonical") == 0) {
         mode.c_lflag &= ~ICANON;
         mode.c_cc[VMIN] = 3;

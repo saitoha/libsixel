@@ -420,7 +420,10 @@ encode:
         }
         encoding_failed = 1;
         detail = sixel_helper_get_additional_message();
-        (void)snprintf(encode_detail, sizeof(encode_detail), "%s",
+        /* Bound this snapshot explicitly; cleanup adds its own diagnostic
+         * in combined, so the original message may need truncation. */
+        (void)snprintf(encode_detail, sizeof(encode_detail), "%.*s",
+                       (int)sizeof(encode_detail) - 1,
                        detail == NULL ? "" : detail);
         unfinished = 1;
         if (status == SIXEL_INTERRUPTED ||

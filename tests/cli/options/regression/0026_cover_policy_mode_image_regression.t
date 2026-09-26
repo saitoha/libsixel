@@ -23,9 +23,11 @@ artifact_dir="${ARTIFACT_LOCAL_DIR}"
 short_output="${artifact_dir}/0026-quantize-heckbert-cover_mode-short-$$.six"
 env_output="${artifact_dir}/0026-quantize-heckbert-cover_mode-env-$$.six"
 
+# Keep the default 256 colors: this observes option equivalence, not the
+# quality of a 16-color palette with eight slots reserved for hard anchors.
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 -Qheckbert "-acorners:Whard" "${input_image}" 2>&1 >"${short_output}") || {
+    -Qheckbert "-acorners:Whard" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "cover_mode short conversion failed"
     exit 0
 }
@@ -42,7 +44,7 @@ case "${short_trace}" in *LSXCOV1\|*mode=hard**) true ;; *) false ;; esac || {
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_COVER_MODE=hard" -p 16 -Qheckbert -acorners \
+    --env "SIXEL_PALETTE_COVER_MODE=hard" -Qheckbert -acorners \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "cover_mode env conversion failed"
     exit 0

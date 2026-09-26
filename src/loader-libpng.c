@@ -782,7 +782,8 @@ load_png(unsigned char      /* out */ **result,
          sixel_png_alpha_t          *alpha_state,
          sixel_allocator_t  /* in */  *allocator)
 {
-    SIXELSTATUS status;
+    /* Cleanup reads this result from both normal and longjmp paths. */
+    SIXELSTATUS volatile status;
     sixel_png_read_chunk_t read_chunk;
     png_structp png_ptr;
     png_infop volatile info_ptr;
