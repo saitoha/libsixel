@@ -552,7 +552,7 @@ static int
 color_tty_script(char const *name, int master, int command, int report,
                   pid_t child)
 {
-    char bytes[1024];
+    char bytes[sizeof(((img2sixel_color_parser_t *)0)->header) + 1u];
     fd_set reads;
     struct timeval timeout;
     double deadline;
@@ -604,6 +604,11 @@ color_tty_script(char const *name, int master, int command, int report,
             return 0;
         }
         memset(bytes, 'x', sizeof(bytes));
+        /* Enter payload draining before paced input, even when the OS
+         * rounds a one-millisecond select timeout to a longer tick. */
+        if (!color_tty_send(master, bytes, sizeof(bytes))) {
+            return 0;
+        }
         deadline = color_tty_now() + 2.0;
         done = 0;
         while (!done && color_tty_now() < deadline) {
