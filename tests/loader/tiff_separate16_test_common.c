@@ -1159,9 +1159,9 @@ ts_legacy_capture(sixel_frame_t *frame, void *context)
     (void)context;
     ++ts.calls;
     bytes = (size_t)frame->width * (size_t)frame->height *
-        (size_t)(SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat) ?
-                 3 * sizeof(float) :
-                 sixel_helper_compute_depth(frame->pixelformat));
+        (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat) ?
+         3u * sizeof(float) :
+         (size_t)sixel_helper_compute_depth(frame->pixelformat));
     if (ts.baseline) {
         ts_legacy.width = frame->width;
         ts_legacy.height = frame->height;

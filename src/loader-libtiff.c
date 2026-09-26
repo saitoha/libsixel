@@ -1778,6 +1778,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     lab_unit[2] = 0.0;
     cms_converted = 0;
     separate_uint16 = 0;
+    lab_decode = 0;
     native_float = 0;
     float_colorspace = SIXEL_COLORSPACE_GAMMA;
     float_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;

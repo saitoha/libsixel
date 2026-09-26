@@ -3759,6 +3759,8 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
     if (signal != SIXEL_COLORSPACE_GAMMA) {
         signal = SIXEL_COLORSPACE_LINEAR;
     }
+    /* Use the stored choice below the bailout checkpoint so the temporary
+     * normalization variable does not remain live across setjmp. */
     assessment->signal_space = signal;
     assessment->current_space[0] = sixel_frame_get_colorspace(reference);
     assessment->current_space[1] = sixel_frame_get_colorspace(output);
@@ -3832,12 +3834,14 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
         }
     }
     if (!assessment_color_pixels(buffers->ref_pixels, buffers->ref_xyz, pixels,
-            assessment->current_space[0], signal, assessment->signal_bytes,
+            assessment->current_space[0], assessment->signal_space,
+            assessment->signal_bytes,
             !SIXEL_PIXELFORMAT_IS_FLOAT32(assessment->current_format[0]),
             assessment->grayscale)
             || !assessment_color_pixels(buffers->out_pixels,
             buffers->out_xyz, pixels,
-            assessment->current_space[1], signal, assessment->signal_bytes,
+            assessment->current_space[1], assessment->signal_space,
+            assessment->signal_bytes,
             !SIXEL_PIXELFORMAT_IS_FLOAT32(assessment->current_format[1]),
             assessment->grayscale)) {
         status = SIXEL_BAD_INPUT;

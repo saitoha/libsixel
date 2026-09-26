@@ -1,5 +1,9 @@
 /* SPDX-License-Identifier: MIT */
 /* ICC.1:2022 Table 68 orders the type-4 parameters as g,a,b,c,d,e,f. */
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>

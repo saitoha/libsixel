@@ -846,9 +846,6 @@ load_png(unsigned char      /* out */ **result,
     raw16_pixels = NULL;
     cms_pixels = NULL;
     png_palette = NULL;
-    promote_to_float32 = 0;
-    palette_remap_zero_alpha_indexes = 0;
-    palette_keycolor_index = -1;
     png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, NULL, &png_error_callback, NULL);
     if (!png_ptr) {
@@ -876,6 +873,12 @@ load_png(unsigned char      /* out */ **result,
         goto cleanup;
     }
 #endif  /* HAVE_SETJMP */
+
+    /* These decode-only flags are never read by longjmp cleanup. Initialize
+     * them after setjmp so they do not carry state across the checkpoint. */
+    promote_to_float32 = 0;
+    palette_remap_zero_alpha_indexes = 0;
+    palette_keycolor_index = -1;
 
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
