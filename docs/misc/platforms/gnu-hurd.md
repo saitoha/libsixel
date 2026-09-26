@@ -24,6 +24,8 @@ The current Debian GNU/Hurd image is run as a single-vCPU amd64 guest with the Q
 
 The image is prepared with a dedicated unprivileged runner account, offline SSH-key installation, and noninteractive sudo configuration. Console login behavior is not a substitute for SSH validation: an image that accepts an empty root password on its console can still reject that account through `sshd`. Image setup must therefore prove key-based login as the runner, required build tools, sudo, network access, clean shutdown, and a backing-file-free final image before the guest is scheduled.
 
+With Python 3.13 and glibc 2.43, Meson's default asyncio child watcher has exposed a Hurd lock inversion between thread creation and signal delivery, leaving the test runner blocked even with no active test child. The Hurd job selects `asyncio.SafeChildWatcher` before executing the installed Meson entry point and retains serial test execution. This watcher handles child completion through the main event loop instead of creating a waiting thread for each child, while preserving subprocess output and exit status. The [Python 3.13 child-watcher documentation](https://docs.python.org/3.13/library/asyncio-policy.html#process-watchers) describes the distinction and the API's deprecation. Revalidate this startup policy when upgrading Python; an unavailable signal-watcher API must fail explicitly rather than silently restore the affected threaded path.
+
 These machine and provisioning rules are runner requirements, not reasons to add source workarounds. When a job fails before checkout or configuration, diagnose the guest boot, storage, network, and SSH layers before changing libsixel.
 
 ## Maintenance checklist
@@ -46,4 +48,4 @@ These machine and provisioning rules are runner requirements, not reasons to add
 
 ### Coverage boundary
 
-The static check preserves the public support row, policy link, host-triplet identity, reserved-macro audit, and pthread once compatibility seam. It cannot inspect the privately operated VM configuration or reproduce Hurd boot, storage, SMP, SSH, and package behavior; both live GNU/Hurd CI jobs remain required.
+The static check preserves the public support row, policy link, host-triplet identity, reserved-macro audit, and pthread once compatibility seam. It cannot inspect the privately operated VM configuration or reproduce Hurd boot, storage, SMP, SSH, package, and Python child-watcher behavior; both live GNU/Hurd CI jobs remain required.
