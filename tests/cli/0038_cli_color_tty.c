@@ -554,7 +554,6 @@ color_tty_script(char const *name, int master, int command, int report,
 {
     char bytes[1024];
     fd_set reads;
-    fd_set writes;
     struct timeval timeout;
     double deadline;
     ssize_t count;
@@ -609,12 +608,13 @@ color_tty_script(char const *name, int master, int command, int report,
         done = 0;
         while (!done && color_tty_now() < deadline) {
             FD_ZERO(&reads);
-            FD_ZERO(&writes);
             FD_SET(master, &reads);
-            FD_SET(master, &writes);
+            /* Keep input arriving across the query deadline, without
+             * overrunning the PTY queue and injecting kernel BEL bytes.
+             * An inactivity-based timeout would still keep restarting. */
             timeout.tv_sec = 0;
-            timeout.tv_usec = 50000;
-            result = select(master + 1, &reads, &writes, NULL, &timeout);
+            timeout.tv_usec = 1000;
+            result = select(master + 1, &reads, NULL, NULL, &timeout);
             if (result < 0 && errno != EINTR) {
                 return 0;
             }
@@ -623,9 +623,7 @@ color_tty_script(char const *name, int master, int command, int report,
                 if (!done) {
                     return 0;
                 }
-            } else if (result > 0 && FD_ISSET(master, &writes)) {
-                /* Keep the peer's write within PTY readiness too: a large
-                 * partial-fit write can block or overflow the Hurd queue. */
+            } else if (result == 0) {
                 count = write(master, bytes, 1u);
                 if (count < 0 && errno != EAGAIN && errno != EINTR) {
                     return 0;
