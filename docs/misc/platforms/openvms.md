@@ -89,6 +89,8 @@ The [amalgamation generator](../../../tools/gen-amalgamation.sh) keeps source pa
 
 ### Final program linking
 
+The native-link wrapper converts paths in the current shell and reuses the resolved directory for consecutive inputs from that directory. Directory-component escaping also uses shell parameter expansion. Per-object nested command substitutions and `sed` pipelines can exhaust GNV bash memory when the unified test runner links thousands of objects, before native `LINK` is even invoked.
+
 The decisive GNV limitation was reproducible outside libsixel:
 
 ```sh
