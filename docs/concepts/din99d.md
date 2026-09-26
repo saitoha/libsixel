@@ -38,6 +38,8 @@ Set both options when isolating a stage: a lone `-W` can also resolve the cluste
 
 For sRGB input, the conversion first decodes the sRGB transfer function and maps linear RGB to D65 XYZ. DIN99d then uses the corrected coordinate $X' = 1.12X - 0.12Z$. The reference white must undergo the same correction, $X'_n = 1.12X_n - 0.12Z_n$, before the Lab-like formulas. Applying only the later lightness/chroma transform to ordinary CIELAB omits this part of DIN99d. The inverse restores ordinary X before the XYZ-to-linear-RGB matrix. [White points and primaries](colorspace.md#primaries-white-point-and-transfer-function) explain what defines that RGB/XYZ boundary.
 
+At zero chroma, the forward and inverse transforms preserve zero opponent components without calculating a hue angle. Calling `atan2(0, 0)` would introduce a runtime-dependent domain result; OpenVMS returns NaN, which remains NaN even when multiplied by zero. The neutral axis must instead remain finite while its lightness follows the usual transform.
+
 For its float32 working format, libsixel stores all three native DIN99d coordinates with one common divisor:
 
 $$

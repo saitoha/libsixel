@@ -59,6 +59,8 @@ The evaluator reads a frame's **current coordinate**, not an original profile ta
 
 Color difference uses XYZ with `Y=1` for white and ICC D50 `(Xn, Yn, Zn) = (0.9642, 1, 0.8249)`. CIELAB then uses conventional `L*`, `a*`, `b*` units; it is not the library's normalized Lab storage. CIEDE2000 uses unit parametric factors. This replaces the old sRGB-only, D65 color-difference interpretation, which incorrectly decoded linear and opponent components as encoded RGB.
 
+Either input with zero chroma has hue zero by the CIEDE2000 convention. The evaluator applies that rule before calling `atan2`, so runtimes that return NaN for `atan2(0, 0)` cannot contaminate black, white, or neutral comparisons. The reference tests include zero chroma in both input positions, black versus white, and identical black samples.
+
 `-W / --compare-colorspace` selects the signal for MS-SSIM, PSNR-Y, GMSD and the other spatial/luma diagnostics:
 
 | Selection | Signal |

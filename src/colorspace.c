@@ -1126,13 +1126,20 @@ sixel_cielab_to_din99d(double L,
     e = cos(radians_c3) * a + sin(radians_c3) * b;
     f = c4 * (-sin(radians_c3) * a + cos(radians_c3) * b);
     G = sqrt(e * e + f * f);
+    *L99d = c1 * log1p(c2 * L);
+    /* Hue is undefined for a neutral. Some C runtimes return NaN for
+     * atan2(0, 0), and multiplying that angle by zero cannot recover it. */
+    if (G == 0.0) {
+        *A99d = 0.0;
+        *B99d = 0.0;
+        return;
+    }
     h_ef = atan2(f, e) + radians_c7;
 
     C99 = c5 * (log1p(c6 * G)) / (c8);
 
     *A99d = C99 * cos(h_ef);
     *B99d = C99 * sin(h_ef);
-    *L99d = c1 * log1p(c2 * L);
 }
 
 static void
@@ -1164,8 +1171,15 @@ sixel_din99d_to_cielab(double L99d,
     radians_c3 = c3 * rad_per_degree;
     radians_c7 = c7 * rad_per_degree;
 
-    h99 = atan2(B99d, A99d) - radians_c7;
     C99 = hypot(A99d, B99d);
+    *L = expm1(L99d / c1) / c2;
+    /* Preserve the achromatic axis without asking for its undefined hue. */
+    if (C99 == 0.0) {
+        *a = 0.0;
+        *b = 0.0;
+        return;
+    }
+    h99 = atan2(B99d, A99d) - radians_c7;
     G = expm1((c8 / c5) * C99) / c6;
 
     e = G * cos(h99);
@@ -1173,7 +1187,6 @@ sixel_din99d_to_cielab(double L99d,
 
     *a = e * cos(radians_c3) - (f / c4) * sin(radians_c3);
     *b = e * sin(radians_c3) + (f / c4) * cos(radians_c3);
-    *L = expm1(L99d / c1) / c2;
 }
 
 static void

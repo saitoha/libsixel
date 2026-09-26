@@ -99,11 +99,13 @@ sixel_qa_de00(double const lab1[3], double const lab2[3])
     a2p = (1.0 + G) * a2;
     C1p = sqrt(a1p * a1p + b1 * b1);
     C2p = sqrt(a2p * a2p + b2 * b2);
-    h1p = atan2(b1, a1p);
+    /* CIEDE2000 defines zero hue for zero chroma. Avoid atan2(0, 0):
+     * runtimes such as OpenVMS return NaN for that undefined angle. */
+    h1p = C1p == 0.0 ? 0.0 : atan2(b1, a1p);
     if (h1p < 0.0) {
         h1p += 2.0 * M_PI;
     }
-    h2p = atan2(b2, a2p);
+    h2p = C2p == 0.0 ? 0.0 : atan2(b2, a2p);
     if (h2p < 0.0) {
         h2p += 2.0 * M_PI;
     }
