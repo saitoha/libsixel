@@ -91,6 +91,8 @@ The [amalgamation generator](../../../tools/gen-amalgamation.sh) keeps source pa
 
 The native-link wrapper converts paths in the current shell and reuses the resolved directory for consecutive inputs from that directory. Directory-component escaping also uses shell parameter expansion. Per-object nested command substitutions and `sed` pipelines can exhaust GNV bash memory when the unified test runner links thousands of objects, before native `LINK` is even invoked.
 
+The wrapper runs `LINK` through a short DCL procedure that redirects native `SYS$OUTPUT` and `SYS$ERROR` to separate logs. GNV shell redirection alone can leave an empty log while native diagnostics go to the terminal, defeating unresolved-symbol detection. Both native logs are normalized and inspected before the wrapper accepts an image. Test headers containing function bodies must also be guarded by their owning `BUILD_TEST_*` selections in the amalgamation; an unoptimized library build must not acquire references to test-only helpers.
+
 The decisive GNV limitation was reproducible outside libsixel:
 
 ```sh

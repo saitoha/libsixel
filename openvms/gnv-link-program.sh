@@ -16,11 +16,13 @@ cached_path_dir=
 cached_resolved_dir=
 opt_file=${TMPDIR:-.}/libsixel-gnv-link-$$.opt
 link_log=${TMPDIR:-.}/libsixel-gnv-link-$$.log
+link_error_log=${TMPDIR:-.}/libsixel-gnv-link-$$.err
 link_scan_log=${TMPDIR:-.}/libsixel-gnv-link-$$.scan
+link_command_file=${TMPDIR:-.}/libsixel-gnv-link-$$.com
 archive_members_file=${TMPDIR:-.}/libsixel-gnv-link-$$.members
 archive_objects_file=${TMPDIR:-.}/libsixel-gnv-link-$$.objects
 
-trap 'rm -f "$opt_file" "$link_log" "$link_scan_log" "$archive_members_file" "$archive_objects_file"' 0 1 2 3 15
+trap 'rm -f "$opt_file" "$link_log" "$link_error_log" "$link_scan_log" "$link_command_file" "$archive_members_file" "$archive_objects_file"' 0 1 2 3 15
 : > "$opt_file"
 
 die()
@@ -401,16 +403,36 @@ posix_to_vms "$out" "$realpath_cmd"
 vms_out=$vms_path
 posix_to_vms "$opt_file" "$realpath_cmd"
 vms_opt=$vms_path
+posix_to_vms "$link_log" "$realpath_cmd"
+vms_log=$vms_path
+posix_to_vms "$link_error_log" "$realpath_cmd"
+vms_error_log=$vms_path
+posix_to_vms "$link_command_file" "$realpath_cmd"
+vms_command=$vms_path
+
+# Native LINK writes through SYS$OUTPUT/SYS$ERROR, bypassing GNV's shell
+# redirections. Capture both channels in the native process so unresolved
+# symbols cannot be accepted merely because the POSIX log stayed empty.
+# shellcheck disable=SC2016
+printf '%s\n' \
+    '$ SET NOON' \
+    "\$ DEFINE/USER_MODE SYS\$OUTPUT $vms_log" \
+    "\$ DEFINE/USER_MODE SYS\$ERROR $vms_error_log" \
+    "\$ LINK/EXECUTABLE=$vms_out $vms_opt/OPTIONS" \
+    '$ EXIT $STATUS' > "$link_command_file"
 
 set +e
-/bin/dcl.exe "link/executable=$vms_out $vms_opt/options" > "$link_log" 2>&1
+/bin/dcl.exe "@$vms_command"
 link_status=$?
 set -e
 
-cat "$link_log"
-
-"$tr_cmd" -d '\000\015' < "$link_log" > "$link_scan_log" 2>/dev/null ||
-    die "cannot normalize OpenVMS LINK log for $out"
+: > "$link_scan_log"
+for native_log in "$link_log" "$link_error_log"; do
+    test -f "$native_log" || continue
+    cat "$native_log"
+    "$tr_cmd" -d '\000\015' < "$native_log" >> "$link_scan_log" ||
+        die "cannot normalize OpenVMS LINK log for $out"
+done
 
 if "$grep_cmd" '%ILINK-W-NUDFSYMS' "$link_scan_log" >/dev/null 2>&1 ||
    "$grep_cmd" '%ILINK-W-USEUNDEF' "$link_scan_log" >/dev/null 2>&1; then

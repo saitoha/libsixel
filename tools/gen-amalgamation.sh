@@ -565,6 +565,13 @@ emit_all_headers() {
                 emit_unit "${unit}" \
                     "defined(BUILD_LSQA) || defined(BUILD_ASSESSMENT)"
                 ;;
+            tests/loader/builtin/loader_builtin_png_metadata_test_common.h)
+                # This header defines code that calls test-only helpers.
+                # Unoptimized native links must not materialize it in the
+                # production library without its owning tests.
+                emit_header_unit "${unit}" \
+                    "defined(BUILD_TEST_0174_LOADER_BUILTIN_PNG_CHRM_GAMA_FLOAT_NUMERIC) || defined(BUILD_TEST_0175_LOADER_BUILTIN_PNG_SINGULAR_CHRM_FALLBACK_NUMERIC) || defined(BUILD_TEST_0176_LOADER_BUILTIN_PNG_FILE_BACKGROUND_CHRM_NUMERIC) || defined(BUILD_TEST_0192_PNG_METADATA_SAMPLES)"
+                ;;
             include/sixel.h)
                 public_header="${build_root}/include/sixel.h"
                 if [ -f "${public_header}" ]; then
