@@ -558,6 +558,19 @@ sixel_icc_eval_parametric(uint16_t function_type,
         return 0.0;
     }
 
+    /*
+     * Finite ICC coefficients can still yield NaN (a fractional power of a
+     * negative base) or infinity (power overflow). Reject before clamping:
+     * NaN survives comparisons and cannot be cast to a table integer, while
+     * clamping infinity would silently turn an invalid curve into an endpoint.
+     * Both para and segm table builders use ok to release partial allocations.
+     */
+    if (!isfinite(y)) {
+        if (ok != NULL) {
+            *ok = 0;
+        }
+        return 0.0;
+    }
     return sixel_icc_parse_clamp_unit(y);
 }
 

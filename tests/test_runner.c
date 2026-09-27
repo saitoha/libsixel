@@ -119,6 +119,14 @@ int test_cdef_0005(int argc, char **argv);
 int test_cdef_0006(int argc, char **argv);
 int test_cdef_0007(int argc, char **argv);
 int test_icc_0009(int argc, char **argv);
+int test_icc_0010(int argc, char **argv);
+int test_icc_0011(int argc, char **argv);
+int test_icc_0012(int argc, char **argv);
+int test_icc_0013(int argc, char **argv);
+int test_icc_0014(int argc, char **argv);
+int test_icc_0015(int argc, char **argv);
+int test_icc_0016(int argc, char **argv);
+int test_icc_0017(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_png_key_0001(int argc, char **argv);
@@ -2625,6 +2633,14 @@ static test_entry_t const test_entries[] = {
     { "cms/0006_forward_lut_rejected_output", test_cdef_0006 },
     { "cms/0007_paired_lut_applies", test_cdef_0007 },
     { "icc/0009_parametric_type4", test_icc_0009 },
+    { "icc/0010_para_nan", test_icc_0010 },
+    { "icc/0011_para_overflow", test_icc_0011 },
+    { "icc/0012_segm_nan", test_icc_0012 },
+    { "icc/0013_segm_overflow", test_icc_0013 },
+    { "icc/0014_para_finite_table", test_icc_0014 },
+    { "icc/0015_segm_finite_table", test_icc_0015 },
+    { "icc/0016_para_loader_recovery", test_icc_0016 },
+    { "icc/0017_segm_loader_recovery", test_icc_0017 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },

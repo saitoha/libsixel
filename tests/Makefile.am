@@ -402,6 +402,15 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0006_FORWARD_LUT_REJECTED_OUTPUT \
     -DBUILD_TEST_0007_PAIRED_LUT_APPLIES \
     -DBUILD_TEST_0009_PARAMETRIC_TYPE4 \
+    -DBUILD_TEST_0010_PARA_NAN \
+    -DBUILD_TEST_0011_PARA_OVERFLOW \
+    -DBUILD_TEST_0012_SEGM_NAN \
+    -DBUILD_TEST_0013_SEGM_OVERFLOW \
+    -DBUILD_TEST_0014_PARA_FINITE_TABLE \
+    -DBUILD_TEST_0015_SEGM_FINITE_TABLE \
+    -DBUILD_TEST_0016_PARA_LOADER_RECOVERY \
+    -DBUILD_TEST_0017_SEGM_LOADER_RECOVERY \
+    -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
     -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
     -DBUILD_TEST_0006_EXTENDED_OKLAB_FORWARD \
@@ -2720,6 +2729,16 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0006_forward_lut_rejected_output.c \
     processing/cms/0007_paired_lut_applies.c \
     diagnostics/icc/0009_parametric_type4.c \
+    diagnostics/icc/0010_para_nan.c \
+    diagnostics/icc/0011_para_overflow.c \
+    diagnostics/icc/0012_segm_nan.c \
+    diagnostics/icc/0013_segm_overflow.c \
+    diagnostics/icc/0014_para_finite_table.c \
+    diagnostics/icc/0015_segm_finite_table.c \
+    diagnostics/icc/0016_para_loader_recovery.c \
+    diagnostics/icc/0017_segm_loader_recovery.c \
+    diagnostics/icc_numeric_common.c \
+    diagnostics/icc_numeric_common.h \
     processing/colorspace/0004_extended_srgb_decode.c \
     processing/colorspace/0005_extended_srgb_encode.c \
     processing/colorspace/0006_extended_oklab_forward.c \

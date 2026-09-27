@@ -745,6 +745,16 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/cms/0006_forward_lut_rejected_output.c \
 	processing/cms/0007_paired_lut_applies.c \
 	diagnostics/icc/0009_parametric_type4.c \
+	diagnostics/icc/0010_para_nan.c \
+	diagnostics/icc/0011_para_overflow.c \
+	diagnostics/icc/0012_segm_nan.c \
+	diagnostics/icc/0013_segm_overflow.c \
+	diagnostics/icc/0014_para_finite_table.c \
+	diagnostics/icc/0015_segm_finite_table.c \
+	diagnostics/icc/0016_para_loader_recovery.c \
+	diagnostics/icc/0017_segm_loader_recovery.c \
+	diagnostics/icc_numeric_common.c \
+	diagnostics/icc_numeric_common.h \
 	processing/colorspace/0004_extended_srgb_decode.c \
 	processing/colorspace/0005_extended_srgb_encode.c \
 	processing/colorspace/0006_extended_oklab_forward.c \
@@ -2665,6 +2675,15 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0006_forward_lut_rejected_output.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0007_paired_lut_applies.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0009_parametric_type4.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0010_para_nan.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0011_para_overflow.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0012_segm_nan.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0013_segm_overflow.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0014_para_finite_table.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0015_segm_finite_table.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0016_para_loader_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0017_segm_loader_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/test_runner-icc_numeric_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0004_extended_srgb_decode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0005_extended_srgb_encode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0006_extended_oklab_forward.$(OBJEXT) \
@@ -4025,6 +4044,7 @@ am__depfiles_remade =  \
 	cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po \
 	cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po \
 	cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po \
+	diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po \
@@ -4034,6 +4054,14 @@ am__depfiles_remade =  \
 	diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0008_icc_builtin_d2b_b2d_legacy_lut.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0009_parametric_type4.Po \
+	diagnostics/icc/$(DEPDIR)/test_runner-0010_para_nan.Po \
+	diagnostics/icc/$(DEPDIR)/test_runner-0011_para_overflow.Po \
+	diagnostics/icc/$(DEPDIR)/test_runner-0012_segm_nan.Po \
+	diagnostics/icc/$(DEPDIR)/test_runner-0013_segm_overflow.Po \
+	diagnostics/icc/$(DEPDIR)/test_runner-0014_para_finite_table.Po \
+	diagnostics/icc/$(DEPDIR)/test_runner-0015_segm_finite_table.Po \
+	diagnostics/icc/$(DEPDIR)/test_runner-0016_para_loader_recovery.Po \
+	diagnostics/icc/$(DEPDIR)/test_runner-0017_segm_loader_recovery.Po \
 	diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po \
 	diagnostics/status/$(DEPDIR)/test_runner-0001_status_timeout.Po \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po \
@@ -6768,6 +6796,15 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_FORWARD_LUT_REJECTED_OUTPUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_PAIRED_LUT_APPLIES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_PARAMETRIC_TYPE4 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_PARA_NAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_PARA_OVERFLOW \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_SEGM_NAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_SEGM_OVERFLOW \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_PARA_FINITE_TABLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_SEGM_FINITE_TABLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_PARA_LOADER_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_SEGM_LOADER_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ICC_NUMERIC_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_EXTENDED_OKLAB_FORWARD \
@@ -9117,6 +9154,16 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0006_forward_lut_rejected_output.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0007_paired_lut_applies.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0009_parametric_type4.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0010_para_nan.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0011_para_overflow.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0012_segm_nan.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0013_segm_overflow.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0014_para_finite_table.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0015_segm_finite_table.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0016_para_loader_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0017_segm_loader_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc_numeric_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc_numeric_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0004_extended_srgb_decode.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0005_extended_srgb_encode.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0006_extended_oklab_forward.c \
@@ -12499,6 +12546,39 @@ diagnostics/icc/$(DEPDIR)/$(am__dirstamp):
 diagnostics/icc/test_runner-0009_parametric_type4.$(OBJEXT):  \
 	diagnostics/icc/$(am__dirstamp) \
 	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
+diagnostics/icc/test_runner-0010_para_nan.$(OBJEXT):  \
+	diagnostics/icc/$(am__dirstamp) \
+	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
+diagnostics/icc/test_runner-0011_para_overflow.$(OBJEXT):  \
+	diagnostics/icc/$(am__dirstamp) \
+	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
+diagnostics/icc/test_runner-0012_segm_nan.$(OBJEXT):  \
+	diagnostics/icc/$(am__dirstamp) \
+	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
+diagnostics/icc/test_runner-0013_segm_overflow.$(OBJEXT):  \
+	diagnostics/icc/$(am__dirstamp) \
+	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
+diagnostics/icc/test_runner-0014_para_finite_table.$(OBJEXT):  \
+	diagnostics/icc/$(am__dirstamp) \
+	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
+diagnostics/icc/test_runner-0015_segm_finite_table.$(OBJEXT):  \
+	diagnostics/icc/$(am__dirstamp) \
+	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
+diagnostics/icc/test_runner-0016_para_loader_recovery.$(OBJEXT):  \
+	diagnostics/icc/$(am__dirstamp) \
+	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
+diagnostics/icc/test_runner-0017_segm_loader_recovery.$(OBJEXT):  \
+	diagnostics/icc/$(am__dirstamp) \
+	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
+diagnostics/$(am__dirstamp):
+	@$(MKDIR_P) diagnostics
+	@: >>diagnostics/$(am__dirstamp)
+diagnostics/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) diagnostics/$(DEPDIR)
+	@: >>diagnostics/$(DEPDIR)/$(am__dirstamp)
+diagnostics/test_runner-icc_numeric_common.$(OBJEXT):  \
+	diagnostics/$(am__dirstamp) \
+	diagnostics/$(DEPDIR)/$(am__dirstamp)
 processing/colorspace/test_runner-0004_extended_srgb_decode.$(OBJEXT):  \
 	processing/colorspace/$(am__dirstamp) \
 	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
@@ -16594,6 +16674,7 @@ mostlyclean-compile:
 	-rm -f $(top_builddir)/src/*.$(OBJEXT)
 	-rm -f cli/*.$(OBJEXT)
 	-rm -f cli/aborttrace/*.$(OBJEXT)
+	-rm -f diagnostics/*.$(OBJEXT)
 	-rm -f diagnostics/icc/*.$(OBJEXT)
 	-rm -f diagnostics/probe/*.$(OBJEXT)
 	-rm -f diagnostics/status/*.$(OBJEXT)
@@ -16677,6 +16758,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po@am__quote@ # am--include-marker
@@ -16686,6 +16768,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0008_icc_builtin_d2b_b2d_legacy_lut.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0009_parametric_type4.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0010_para_nan.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0011_para_overflow.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0012_segm_nan.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0013_segm_overflow.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0014_para_finite_table.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0015_segm_finite_table.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0016_para_loader_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0017_segm_loader_recovery.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/status/$(DEPDIR)/test_runner-0001_status_timeout.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po@am__quote@ # am--include-marker
@@ -27135,6 +27225,132 @@ diagnostics/icc/test_runner-0009_parametric_type4.obj: diagnostics/icc/0009_para
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0009_parametric_type4.c' object='diagnostics/icc/test_runner-0009_parametric_type4.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0009_parametric_type4.obj `if test -f 'diagnostics/icc/0009_parametric_type4.c'; then $(CYGPATH_W) 'diagnostics/icc/0009_parametric_type4.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0009_parametric_type4.c'; fi`
+
+diagnostics/icc/test_runner-0010_para_nan.o: diagnostics/icc/0010_para_nan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0010_para_nan.o -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0010_para_nan.Tpo -c -o diagnostics/icc/test_runner-0010_para_nan.o `test -f 'diagnostics/icc/0010_para_nan.c' || echo '$(srcdir)/'`diagnostics/icc/0010_para_nan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0010_para_nan.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0010_para_nan.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0010_para_nan.c' object='diagnostics/icc/test_runner-0010_para_nan.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0010_para_nan.o `test -f 'diagnostics/icc/0010_para_nan.c' || echo '$(srcdir)/'`diagnostics/icc/0010_para_nan.c
+
+diagnostics/icc/test_runner-0010_para_nan.obj: diagnostics/icc/0010_para_nan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0010_para_nan.obj -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0010_para_nan.Tpo -c -o diagnostics/icc/test_runner-0010_para_nan.obj `if test -f 'diagnostics/icc/0010_para_nan.c'; then $(CYGPATH_W) 'diagnostics/icc/0010_para_nan.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0010_para_nan.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0010_para_nan.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0010_para_nan.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0010_para_nan.c' object='diagnostics/icc/test_runner-0010_para_nan.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0010_para_nan.obj `if test -f 'diagnostics/icc/0010_para_nan.c'; then $(CYGPATH_W) 'diagnostics/icc/0010_para_nan.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0010_para_nan.c'; fi`
+
+diagnostics/icc/test_runner-0011_para_overflow.o: diagnostics/icc/0011_para_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0011_para_overflow.o -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0011_para_overflow.Tpo -c -o diagnostics/icc/test_runner-0011_para_overflow.o `test -f 'diagnostics/icc/0011_para_overflow.c' || echo '$(srcdir)/'`diagnostics/icc/0011_para_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0011_para_overflow.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0011_para_overflow.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0011_para_overflow.c' object='diagnostics/icc/test_runner-0011_para_overflow.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0011_para_overflow.o `test -f 'diagnostics/icc/0011_para_overflow.c' || echo '$(srcdir)/'`diagnostics/icc/0011_para_overflow.c
+
+diagnostics/icc/test_runner-0011_para_overflow.obj: diagnostics/icc/0011_para_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0011_para_overflow.obj -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0011_para_overflow.Tpo -c -o diagnostics/icc/test_runner-0011_para_overflow.obj `if test -f 'diagnostics/icc/0011_para_overflow.c'; then $(CYGPATH_W) 'diagnostics/icc/0011_para_overflow.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0011_para_overflow.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0011_para_overflow.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0011_para_overflow.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0011_para_overflow.c' object='diagnostics/icc/test_runner-0011_para_overflow.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0011_para_overflow.obj `if test -f 'diagnostics/icc/0011_para_overflow.c'; then $(CYGPATH_W) 'diagnostics/icc/0011_para_overflow.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0011_para_overflow.c'; fi`
+
+diagnostics/icc/test_runner-0012_segm_nan.o: diagnostics/icc/0012_segm_nan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0012_segm_nan.o -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0012_segm_nan.Tpo -c -o diagnostics/icc/test_runner-0012_segm_nan.o `test -f 'diagnostics/icc/0012_segm_nan.c' || echo '$(srcdir)/'`diagnostics/icc/0012_segm_nan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0012_segm_nan.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0012_segm_nan.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0012_segm_nan.c' object='diagnostics/icc/test_runner-0012_segm_nan.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0012_segm_nan.o `test -f 'diagnostics/icc/0012_segm_nan.c' || echo '$(srcdir)/'`diagnostics/icc/0012_segm_nan.c
+
+diagnostics/icc/test_runner-0012_segm_nan.obj: diagnostics/icc/0012_segm_nan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0012_segm_nan.obj -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0012_segm_nan.Tpo -c -o diagnostics/icc/test_runner-0012_segm_nan.obj `if test -f 'diagnostics/icc/0012_segm_nan.c'; then $(CYGPATH_W) 'diagnostics/icc/0012_segm_nan.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0012_segm_nan.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0012_segm_nan.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0012_segm_nan.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0012_segm_nan.c' object='diagnostics/icc/test_runner-0012_segm_nan.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0012_segm_nan.obj `if test -f 'diagnostics/icc/0012_segm_nan.c'; then $(CYGPATH_W) 'diagnostics/icc/0012_segm_nan.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0012_segm_nan.c'; fi`
+
+diagnostics/icc/test_runner-0013_segm_overflow.o: diagnostics/icc/0013_segm_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0013_segm_overflow.o -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0013_segm_overflow.Tpo -c -o diagnostics/icc/test_runner-0013_segm_overflow.o `test -f 'diagnostics/icc/0013_segm_overflow.c' || echo '$(srcdir)/'`diagnostics/icc/0013_segm_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0013_segm_overflow.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0013_segm_overflow.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0013_segm_overflow.c' object='diagnostics/icc/test_runner-0013_segm_overflow.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0013_segm_overflow.o `test -f 'diagnostics/icc/0013_segm_overflow.c' || echo '$(srcdir)/'`diagnostics/icc/0013_segm_overflow.c
+
+diagnostics/icc/test_runner-0013_segm_overflow.obj: diagnostics/icc/0013_segm_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0013_segm_overflow.obj -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0013_segm_overflow.Tpo -c -o diagnostics/icc/test_runner-0013_segm_overflow.obj `if test -f 'diagnostics/icc/0013_segm_overflow.c'; then $(CYGPATH_W) 'diagnostics/icc/0013_segm_overflow.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0013_segm_overflow.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0013_segm_overflow.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0013_segm_overflow.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0013_segm_overflow.c' object='diagnostics/icc/test_runner-0013_segm_overflow.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0013_segm_overflow.obj `if test -f 'diagnostics/icc/0013_segm_overflow.c'; then $(CYGPATH_W) 'diagnostics/icc/0013_segm_overflow.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0013_segm_overflow.c'; fi`
+
+diagnostics/icc/test_runner-0014_para_finite_table.o: diagnostics/icc/0014_para_finite_table.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0014_para_finite_table.o -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0014_para_finite_table.Tpo -c -o diagnostics/icc/test_runner-0014_para_finite_table.o `test -f 'diagnostics/icc/0014_para_finite_table.c' || echo '$(srcdir)/'`diagnostics/icc/0014_para_finite_table.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0014_para_finite_table.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0014_para_finite_table.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0014_para_finite_table.c' object='diagnostics/icc/test_runner-0014_para_finite_table.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0014_para_finite_table.o `test -f 'diagnostics/icc/0014_para_finite_table.c' || echo '$(srcdir)/'`diagnostics/icc/0014_para_finite_table.c
+
+diagnostics/icc/test_runner-0014_para_finite_table.obj: diagnostics/icc/0014_para_finite_table.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0014_para_finite_table.obj -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0014_para_finite_table.Tpo -c -o diagnostics/icc/test_runner-0014_para_finite_table.obj `if test -f 'diagnostics/icc/0014_para_finite_table.c'; then $(CYGPATH_W) 'diagnostics/icc/0014_para_finite_table.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0014_para_finite_table.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0014_para_finite_table.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0014_para_finite_table.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0014_para_finite_table.c' object='diagnostics/icc/test_runner-0014_para_finite_table.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0014_para_finite_table.obj `if test -f 'diagnostics/icc/0014_para_finite_table.c'; then $(CYGPATH_W) 'diagnostics/icc/0014_para_finite_table.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0014_para_finite_table.c'; fi`
+
+diagnostics/icc/test_runner-0015_segm_finite_table.o: diagnostics/icc/0015_segm_finite_table.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0015_segm_finite_table.o -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0015_segm_finite_table.Tpo -c -o diagnostics/icc/test_runner-0015_segm_finite_table.o `test -f 'diagnostics/icc/0015_segm_finite_table.c' || echo '$(srcdir)/'`diagnostics/icc/0015_segm_finite_table.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0015_segm_finite_table.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0015_segm_finite_table.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0015_segm_finite_table.c' object='diagnostics/icc/test_runner-0015_segm_finite_table.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0015_segm_finite_table.o `test -f 'diagnostics/icc/0015_segm_finite_table.c' || echo '$(srcdir)/'`diagnostics/icc/0015_segm_finite_table.c
+
+diagnostics/icc/test_runner-0015_segm_finite_table.obj: diagnostics/icc/0015_segm_finite_table.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0015_segm_finite_table.obj -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0015_segm_finite_table.Tpo -c -o diagnostics/icc/test_runner-0015_segm_finite_table.obj `if test -f 'diagnostics/icc/0015_segm_finite_table.c'; then $(CYGPATH_W) 'diagnostics/icc/0015_segm_finite_table.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0015_segm_finite_table.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0015_segm_finite_table.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0015_segm_finite_table.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0015_segm_finite_table.c' object='diagnostics/icc/test_runner-0015_segm_finite_table.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0015_segm_finite_table.obj `if test -f 'diagnostics/icc/0015_segm_finite_table.c'; then $(CYGPATH_W) 'diagnostics/icc/0015_segm_finite_table.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0015_segm_finite_table.c'; fi`
+
+diagnostics/icc/test_runner-0016_para_loader_recovery.o: diagnostics/icc/0016_para_loader_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0016_para_loader_recovery.o -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0016_para_loader_recovery.Tpo -c -o diagnostics/icc/test_runner-0016_para_loader_recovery.o `test -f 'diagnostics/icc/0016_para_loader_recovery.c' || echo '$(srcdir)/'`diagnostics/icc/0016_para_loader_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0016_para_loader_recovery.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0016_para_loader_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0016_para_loader_recovery.c' object='diagnostics/icc/test_runner-0016_para_loader_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0016_para_loader_recovery.o `test -f 'diagnostics/icc/0016_para_loader_recovery.c' || echo '$(srcdir)/'`diagnostics/icc/0016_para_loader_recovery.c
+
+diagnostics/icc/test_runner-0016_para_loader_recovery.obj: diagnostics/icc/0016_para_loader_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0016_para_loader_recovery.obj -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0016_para_loader_recovery.Tpo -c -o diagnostics/icc/test_runner-0016_para_loader_recovery.obj `if test -f 'diagnostics/icc/0016_para_loader_recovery.c'; then $(CYGPATH_W) 'diagnostics/icc/0016_para_loader_recovery.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0016_para_loader_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0016_para_loader_recovery.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0016_para_loader_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0016_para_loader_recovery.c' object='diagnostics/icc/test_runner-0016_para_loader_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0016_para_loader_recovery.obj `if test -f 'diagnostics/icc/0016_para_loader_recovery.c'; then $(CYGPATH_W) 'diagnostics/icc/0016_para_loader_recovery.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0016_para_loader_recovery.c'; fi`
+
+diagnostics/icc/test_runner-0017_segm_loader_recovery.o: diagnostics/icc/0017_segm_loader_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0017_segm_loader_recovery.o -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0017_segm_loader_recovery.Tpo -c -o diagnostics/icc/test_runner-0017_segm_loader_recovery.o `test -f 'diagnostics/icc/0017_segm_loader_recovery.c' || echo '$(srcdir)/'`diagnostics/icc/0017_segm_loader_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0017_segm_loader_recovery.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0017_segm_loader_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0017_segm_loader_recovery.c' object='diagnostics/icc/test_runner-0017_segm_loader_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0017_segm_loader_recovery.o `test -f 'diagnostics/icc/0017_segm_loader_recovery.c' || echo '$(srcdir)/'`diagnostics/icc/0017_segm_loader_recovery.c
+
+diagnostics/icc/test_runner-0017_segm_loader_recovery.obj: diagnostics/icc/0017_segm_loader_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0017_segm_loader_recovery.obj -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0017_segm_loader_recovery.Tpo -c -o diagnostics/icc/test_runner-0017_segm_loader_recovery.obj `if test -f 'diagnostics/icc/0017_segm_loader_recovery.c'; then $(CYGPATH_W) 'diagnostics/icc/0017_segm_loader_recovery.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0017_segm_loader_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0017_segm_loader_recovery.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0017_segm_loader_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0017_segm_loader_recovery.c' object='diagnostics/icc/test_runner-0017_segm_loader_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0017_segm_loader_recovery.obj `if test -f 'diagnostics/icc/0017_segm_loader_recovery.c'; then $(CYGPATH_W) 'diagnostics/icc/0017_segm_loader_recovery.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0017_segm_loader_recovery.c'; fi`
+
+diagnostics/test_runner-icc_numeric_common.o: diagnostics/icc_numeric_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/test_runner-icc_numeric_common.o -MD -MP -MF diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Tpo -c -o diagnostics/test_runner-icc_numeric_common.o `test -f 'diagnostics/icc_numeric_common.c' || echo '$(srcdir)/'`diagnostics/icc_numeric_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Tpo diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc_numeric_common.c' object='diagnostics/test_runner-icc_numeric_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/test_runner-icc_numeric_common.o `test -f 'diagnostics/icc_numeric_common.c' || echo '$(srcdir)/'`diagnostics/icc_numeric_common.c
+
+diagnostics/test_runner-icc_numeric_common.obj: diagnostics/icc_numeric_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/test_runner-icc_numeric_common.obj -MD -MP -MF diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Tpo -c -o diagnostics/test_runner-icc_numeric_common.obj `if test -f 'diagnostics/icc_numeric_common.c'; then $(CYGPATH_W) 'diagnostics/icc_numeric_common.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc_numeric_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Tpo diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc_numeric_common.c' object='diagnostics/test_runner-icc_numeric_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/test_runner-icc_numeric_common.obj `if test -f 'diagnostics/icc_numeric_common.c'; then $(CYGPATH_W) 'diagnostics/icc_numeric_common.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc_numeric_common.c'; fi`
 
 processing/colorspace/test_runner-0004_extended_srgb_decode.o: processing/colorspace/0004_extended_srgb_decode.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0004_extended_srgb_decode.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0004_extended_srgb_decode.Tpo -c -o processing/colorspace/test_runner-0004_extended_srgb_decode.o `test -f 'processing/colorspace/0004_extended_srgb_decode.c' || echo '$(srcdir)/'`processing/colorspace/0004_extended_srgb_decode.c
@@ -45287,6 +45503,8 @@ distclean-generic:
 	-$(am__rm_f) cli/$(am__dirstamp)
 	-$(am__rm_f) cli/aborttrace/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) cli/aborttrace/$(am__dirstamp)
+	-$(am__rm_f) diagnostics/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) diagnostics/$(am__dirstamp)
 	-$(am__rm_f) diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) diagnostics/icc/$(am__dirstamp)
 	-$(am__rm_f) diagnostics/probe/$(DEPDIR)/$(am__dirstamp)
@@ -45432,6 +45650,7 @@ distclean: distclean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
+	-rm -f diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po
@@ -45441,6 +45660,14 @@ distclean: distclean-am
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0008_icc_builtin_d2b_b2d_legacy_lut.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0009_parametric_type4.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0010_para_nan.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0011_para_overflow.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0012_segm_nan.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0013_segm_overflow.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0014_para_finite_table.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0015_segm_finite_table.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0016_para_loader_recovery.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0017_segm_loader_recovery.Po
 	-rm -f diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
 	-rm -f diagnostics/status/$(DEPDIR)/test_runner-0001_status_timeout.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po
@@ -47361,6 +47588,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
+	-rm -f diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po
@@ -47370,6 +47598,14 @@ maintainer-clean: maintainer-clean-am
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0008_icc_builtin_d2b_b2d_legacy_lut.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0009_parametric_type4.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0010_para_nan.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0011_para_overflow.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0012_segm_nan.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0013_segm_overflow.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0014_para_finite_table.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0015_segm_finite_table.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0016_para_loader_recovery.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0017_segm_loader_recovery.Po
 	-rm -f diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
 	-rm -f diagnostics/status/$(DEPDIR)/test_runner-0001_status_timeout.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po
