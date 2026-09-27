@@ -1774,6 +1774,45 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0009_P3_ENGINE_NONE \
     -DBUILD_TEST_0010_P3_ENGINE_BUILTIN \
     -DBUILD_TEST_0011_ALLOCATION_RETRY \
+    -DBUILD_TGA_COLOR_TEST_COMMON \
+    -DBUILD_TEST_0001_GAMMA2_NUMERIC \
+    -DBUILD_TEST_0002_GAMMA1_NUMERIC \
+    -DBUILD_TEST_0003_GAMMA_FRACTION_NUMERIC \
+    -DBUILD_TEST_0004_GAMMA_RLE_NUMERIC \
+    -DBUILD_TEST_0005_GAMMA_GRAY_NUMERIC \
+    -DBUILD_TEST_0006_GAMMA_RGB16_NUMERIC \
+    -DBUILD_TEST_0007_GAMMA_INDEX8_NUMERIC \
+    -DBUILD_TEST_0008_GAMMA_INDEX16_NUMERIC \
+    -DBUILD_TEST_0009_GAMMA_HIDDEN_ALPHA_NUMERIC \
+    -DBUILD_TEST_0010_GAMMA_BACKGROUND_NUMERIC \
+    -DBUILD_TEST_0011_TABLE_RGB_NUMERIC \
+    -DBUILD_TEST_0012_TABLE_PRECEDENCE_NUMERIC \
+    -DBUILD_TEST_0013_TABLE_BEFORE_EXTENSION_NUMERIC \
+    -DBUILD_TEST_0014_TABLE_RLE_NUMERIC \
+    -DBUILD_TEST_0015_TABLE_INDEX_ALPHA_NUMERIC \
+    -DBUILD_TEST_0016_TABLE_GRAY_NUMERIC \
+    -DBUILD_TEST_0017_TABLE_ALPHA_BACKGROUND_NUMERIC \
+    -DBUILD_TEST_0018_CMS_NONE_NUMERIC \
+    -DBUILD_TEST_0019_LEGACY_BYTE_NUMERIC \
+    -DBUILD_TEST_0020_GAMMA_UNUSED_NUMERIC \
+    -DBUILD_TEST_0021_FOOTER_ONLY_NUMERIC \
+    -DBUILD_TEST_0022_ZERO_GAMMA_REJECT \
+    -DBUILD_TEST_0023_LARGE_GAMMA_REJECT \
+    -DBUILD_TEST_0024_EXTENSION_OFFSET_REJECT \
+    -DBUILD_TEST_0025_EXTENSION_SIZE_REJECT \
+    -DBUILD_TEST_0026_TABLE_OFFSET_REJECT \
+    -DBUILD_TEST_0027_TABLE_OVERLAP_REJECT \
+    -DBUILD_TEST_0028_SHORT_TABLE_REJECT \
+    -DBUILD_TEST_0029_SHORT_RAW_REJECT \
+    -DBUILD_TEST_0030_SHORT_RLE_REJECT \
+    -DBUILD_TEST_0031_PREMULTIPLIED_REJECT \
+    -DBUILD_TEST_0032_GAMMA_LCMS2_NUMERIC \
+    -DBUILD_TEST_0033_GAMMA_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0034_TABLE_LCMS2_NUMERIC \
+    -DBUILD_TEST_0035_TABLE_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0036_GAMMA_TARGET_NUMERIC \
+    -DBUILD_TEST_0037_GAMMA_GRAY_ALPHA_NUMERIC \
+    -DBUILD_TEST_0038_TABLE_OPAQUE_ALPHA_NUMERIC \
     -DBUILD_BUILTIN_JPEG_ICC_TEST_COMMON \
     -DBUILD_TEST_0001_BJ_GRAY8_BUILTIN_NUMERIC \
     -DBUILD_TEST_0002_BJ_GRAY8_LCMS2_NUMERIC \
@@ -2816,6 +2855,46 @@ test_runner_SOURCES = test_runner.c \
     loader/coregraphics/indexed/0009_p3_engine_none.c \
     loader/coregraphics/indexed/0010_p3_engine_builtin.c \
     loader/coregraphics/indexed/0011_allocation_retry.c \
+    loader/builtin/tga_color/0001_gamma2_numeric.c \
+    loader/builtin/tga_color/0002_gamma1_numeric.c \
+    loader/builtin/tga_color/0003_gamma_fraction_numeric.c \
+    loader/builtin/tga_color/0004_gamma_rle_numeric.c \
+    loader/builtin/tga_color/0005_gamma_gray_numeric.c \
+    loader/builtin/tga_color/0006_gamma_rgb16_numeric.c \
+    loader/builtin/tga_color/0007_gamma_index8_numeric.c \
+    loader/builtin/tga_color/0008_gamma_index16_numeric.c \
+    loader/builtin/tga_color/0009_gamma_hidden_alpha_numeric.c \
+    loader/builtin/tga_color/0010_gamma_background_numeric.c \
+    loader/builtin/tga_color/0011_table_rgb_numeric.c \
+    loader/builtin/tga_color/0012_table_precedence_numeric.c \
+    loader/builtin/tga_color/0013_table_before_extension_numeric.c \
+    loader/builtin/tga_color/0014_table_rle_numeric.c \
+    loader/builtin/tga_color/0015_table_index_alpha_numeric.c \
+    loader/builtin/tga_color/0016_table_gray_numeric.c \
+    loader/builtin/tga_color/0017_table_alpha_background_numeric.c \
+    loader/builtin/tga_color/0018_cms_none_numeric.c \
+    loader/builtin/tga_color/0019_legacy_byte_numeric.c \
+    loader/builtin/tga_color/0020_gamma_unused_numeric.c \
+    loader/builtin/tga_color/0021_footer_only_numeric.c \
+    loader/builtin/tga_color/0022_zero_gamma_reject.c \
+    loader/builtin/tga_color/0023_large_gamma_reject.c \
+    loader/builtin/tga_color/0024_extension_offset_reject.c \
+    loader/builtin/tga_color/0025_extension_size_reject.c \
+    loader/builtin/tga_color/0026_table_offset_reject.c \
+    loader/builtin/tga_color/0027_table_overlap_reject.c \
+    loader/builtin/tga_color/0028_short_table_reject.c \
+    loader/builtin/tga_color/0029_short_raw_reject.c \
+    loader/builtin/tga_color/0030_short_rle_reject.c \
+    loader/builtin/tga_color/0031_premultiplied_reject.c \
+    loader/builtin/tga_color/0032_gamma_lcms2_numeric.c \
+    loader/builtin/tga_color/0033_gamma_colorsync_numeric.c \
+    loader/builtin/tga_color/0034_table_lcms2_numeric.c \
+    loader/builtin/tga_color/0035_table_colorsync_numeric.c \
+    loader/builtin/tga_color/0036_gamma_target_numeric.c \
+    loader/builtin/tga_color/0037_gamma_gray_alpha_numeric.c \
+    loader/builtin/tga_color/0038_table_opaque_alpha_numeric.c \
+    loader/tga_color_test_common.c \
+    loader/tga_color_test_common.h \
     loader/builtin_jpeg_icc_test_common.c \
     loader/builtin_jpeg_icc_test_common.h \
     loader/builtin/jpeg/0001_bj_gray8_builtin_numeric.c \

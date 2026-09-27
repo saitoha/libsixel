@@ -19,7 +19,7 @@ The diagram-linked tests are pipeline landmarks, not the complete regression sui
 | PSD and PSB | [PSD/PSB](psd.md) | [`frompsd.c`](../../../src/frompsd.c) and the `frompsd-*` modules |
 | BMP and DIB variants | [BMP](bmp.md) | [`frombmp.c`](../../../src/frombmp.c) and [`frombmp-parser.c`](../../../src/frombmp-parser.c) |
 | WebP | [WebP](webp.md) | [`fromwebp.c`](../../../src/fromwebp.c) and the `fromwebp-*` modules |
-| TGA | [TGA](tga.md) | Adapted TGA code in [`stb_image.h`](../../../src/stb_image.h), with palette and alpha routing in [`loader-builtin.c`](../../../src/loader-builtin.c) |
+| TGA | [TGA](tga.md) | Adapted TGA code in [`stb_image.h`](../../../src/stb_image.h), with independent color-metadata reading in [`fromtga.c`](../../../src/fromtga.c) and CMS/palette/alpha routing in [`loader-builtin.c`](../../../src/loader-builtin.c) |
 | Softimage PIC | [Softimage PIC](pic.md) | Adapted PIC code in [`stb_image.h`](../../../src/stb_image.h), with alpha routing in [`loader-builtin.c`](../../../src/loader-builtin.c) |
 
 TIFF is intentionally absent. It is handled by the optional `libtiff` loader component when compiled; the current builtin component has no TIFF pixel decoder. Metadata helper code in `loader-builtin.c` must not be read as a builtin TIFF support promise.

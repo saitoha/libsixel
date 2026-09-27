@@ -1014,7 +1014,7 @@
         {
           "coverage_id": "TGA-02",
           "details": [
-            "call stbi__tga_load_palette when fusion is enabled",
+            "use palette fusion only without active color metadata",
             "retain PAL8 and normalize binary palette transparency"
           ],
           "phase": "INDEXED",
@@ -1055,9 +1055,23 @@
           "title": "Normalize the vertical image origin"
         },
         {
+          "coverage_id": "TGA-06",
+          "details": [
+            "managed path: table or scalar gamma defines source RGB",
+            "common CMS, float alpha composition and final target"
+          ],
+          "phase": "COLOR",
+          "role": "branch",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_load_tga_color"
+          ],
+          "title": "Interpret extension color metadata"
+        },
+        {
           "coverage_id": "TGA-05",
           "details": [
-            "keep 32-bit direct alpha through RGBA8888",
+            "unmanaged path only: retain direct or palette alpha",
             "composite or convert supported transparency to a mask"
           ],
           "phase": "OUTPUT",
@@ -1067,7 +1081,7 @@
             "sixel_builtin_apply_tga_truecolor_alpha_policy",
             "sixel_builtin_finalize_loaded_frame"
           ],
-          "title": "Finalize direct or palette alpha"
+          "title": "Finalize unmanaged alpha"
         }
       ],
       "tests": {
@@ -1085,6 +1099,9 @@
         ],
         "TGA-05": [
           "tests/loader/builtin/0710_loader_builtin_tga_rgba_background_numeric.t"
+        ],
+        "TGA-06": [
+          "tests/loader/builtin/tga_color/0011_table_rgb_numeric.t"
         ]
       }
     },

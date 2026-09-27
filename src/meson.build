@@ -191,6 +191,8 @@ srcs = [
   'frompng.h',
   'fromhdr.c',
   'fromhdr.h',
+  'fromtga.c',
+  'fromtga.h',
   'frompsd.c',
   'frompsd.h',
   'frompsd-internal.h',

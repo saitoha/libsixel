@@ -309,6 +309,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/frompng.h \
                 $(srcdir)/fromhdr.c \
                 $(srcdir)/fromhdr.h \
+                $(srcdir)/fromtga.c \
+                $(srcdir)/fromtga.h \
                 $(srcdir)/frompsd.c \
                 $(srcdir)/frompsd.h \
                 $(srcdir)/frompsd-internal.h \

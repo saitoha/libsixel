@@ -66,6 +66,7 @@
 #include "fromgif.h"
 #include "frombmp.h"
 #include "fromhdr.h"
+#include "fromtga.h"
 #include "frompng.h"
 #include "frompsd.h"
 #include "loader-psd-color.h"
@@ -4685,6 +4686,168 @@ sixel_builtin_try_load_indexed_png(
     return SIXEL_OK;
 }
 
+/* Color-managed TGA uses the existing raster reader, but bypasses the
+ * palette/alpha byte finalizers. Metadata parsing is CMS-independent; only
+ * this adapter decides the interpretation and publishes canonical pixels. */
+static SIXELSTATUS
+sixel_builtin_load_tga_color(
+    sixel_chunk_t const *chunk,
+    sixel_frame_t *frame,
+    stbi__context *context,
+    stbi__result_info *ri,
+    unsigned char const *bgcolor,
+    int enable_cms)
+{
+    sixel_tga_color_t color;
+    sixel_cms_profile_t *profile;
+    unsigned char const *data;
+    unsigned char *rgba;
+    unsigned char *mask;
+    float *rgb;
+    float background[3];
+    double alpha;
+    size_t size;
+    size_t count;
+    size_t i;
+    int c;
+    int components;
+    int width;
+    int height;
+    int policy;
+    int keep_zero;
+    int has_zero;
+    int has_alpha;
+    SIXELSTATUS status;
+
+    profile = NULL;
+    rgba = NULL;
+    rgb = NULL;
+    mask = NULL;
+    width = height = components = 0;
+    has_zero = 0;
+    if (!enable_cms || sixel_cms_get_engine() == SIXEL_CMS_ENGINE_NONE) {
+        return SIXEL_FALSE;
+    }
+    data = sixel_chunk_get_buffer(chunk);
+    size = sixel_chunk_get_size(chunk);
+    stbi__start_mem(context, data, (int)size);
+    if (!stbi__tga_test(context)) {
+        return SIXEL_FALSE;
+    }
+    status = sixel_tga_color_read(data, size, &color);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    /* Association requires a different source-coordinate contract. Do not
+     * silently transform premultiplied codes as straight colors. Legacy
+     * no-metadata/CMS-off behavior remains in the original decoder path. */
+    if (color.alpha_type == 4u) {
+        sixel_helper_set_additional_message(
+            "builtin TGA: managed premultiplied alpha is unsupported");
+        return SIXEL_BAD_INPUT;
+    }
+    stbi__start_mem(context, data, (int)color.raster_limit);
+    rgba = stbi__tga_load(context, &width, &height, &components, 4, ri);
+    if (rgba == NULL) {
+        return SIXEL_STBI_ERROR;
+    }
+    count = (size_t)width * (size_t)height;
+    status = SIXEL_BAD_INTEGER_OVERFLOW;
+    if (width <= 0 || height <= 0 || count > SIZE_MAX / (3u * sizeof(float))) {
+        goto end;
+    }
+    status = SIXEL_BAD_ALLOCATION;
+    rgb = sixel_allocator_malloc(frame->allocator, count * 3u * sizeof(float));
+    if (rgb == NULL) {
+        goto end;
+    }
+    for (i = 0u; i < count; ++i) {
+        for (c = 0; c < 3; ++c) {
+            rgb[i * 3u + (size_t)c] = sixel_tga_color_sample(
+                &color, (unsigned int)c + 1u, rgba[i * 4u + (size_t)c]);
+        }
+    }
+    if (color.table != NULL) {
+        profile = sixel_cms_create_srgb_profile();
+    } else {
+        /* TGA stores the decoding exponent; the shared constructor takes
+         * its reciprocal, following the PNG file-gamma convention.
+         * TGA carries no primaries: adopt the existing sRGB/D65 default. */
+        profile = sixel_cms_create_rgb_profile_from_gamma_chrm(
+            (double)color.gamma_den / (double)color.gamma_num,
+            0.3127, 0.3290, 0.6400, 0.3300,
+            0.3000, 0.6000, 0.1500, 0.0600);
+    }
+    status = SIXEL_BAD_INPUT;
+    if (profile == NULL || !sixel_cms_convert_profile_to_linearrgb(
+            (unsigned char *)rgb, width, height, SIXEL_PIXELFORMAT_RGBFLOAT32,
+            profile)) {
+        sixel_helper_set_additional_message(
+            "builtin TGA: source color conversion failed");
+        goto end;
+    }
+    policy = loader_transparent_policy();
+    has_alpha = components == 2 || components == 4;
+    keep_zero = bgcolor == NULL ||
+        SIXEL_LOADER_ALPHA_POLICY_PRESERVES_ZERO(policy);
+    if (has_alpha && keep_zero) {
+        mask = sixel_allocator_malloc(frame->allocator, count);
+        if (mask == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+    }
+    sixel_builtin_fill_linear_bgcolor(background, bgcolor);
+    for (i = 0u; i < count; ++i) {
+        /* The table's A column remaps real source alpha. Never synthesize
+         * transparency for an opaque raster from the decoder's filler A. */
+        alpha = has_alpha ? sixel_tga_color_sample(
+            &color, 0u, rgba[i * 4u + 3u]) : 1.0;
+        has_zero |= alpha == 0.0;
+        if (mask != NULL) {
+            mask[i] = alpha == 0.0 ? 1u : 0u;
+        }
+        if (bgcolor != NULL && alpha < 1.0 &&
+            !(alpha == 0.0 &&
+              SIXEL_LOADER_ALPHA_POLICY_PRESERVES_ZERO(policy))) {
+            for (c = 0; c < 3; ++c) {
+                rgb[i * 3u + (size_t)c] = (float)(
+                    rgb[i * 3u + (size_t)c] * alpha +
+                    background[c] * (1.0 - alpha));
+            }
+        }
+    }
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            (unsigned char *)rgb, NULL, width, height,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, SIXEL_COLORSPACE_LINEAR,
+            -1, SIXEL_FRAME_PIXELS_FLOAT32
+        });
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    rgb = NULL;
+    frame->loop_count = 1;
+    if (has_zero && mask != NULL) {
+        frame->transparent_mask = mask;
+        frame->transparent_mask_size = count;
+        frame->alpha_zero_is_transparent = 1;
+        mask = NULL;
+    }
+    status = sixel_frame_set_pixelformat(frame, loader_cms_target_pixelformat());
+    if (SIXEL_SUCCEEDED(status)) {
+        loader_trace_message("builtin TGA: color=%s -> canonical float",
+                             color.table != NULL ? "table" : "gamma");
+    }
+end:
+    sixel_cms_close_profile(profile);
+    sixel_allocator_free(frame->allocator, rgb);
+    sixel_allocator_free(frame->allocator, mask);
+    stbi_free(rgba);
+    return status;
+}
+
 static SIXELSTATUS
 sixel_builtin_try_load_indexed_tga(
     sixel_chunk_t const *chunk,
@@ -6422,6 +6585,14 @@ sixel_builtin_load_nonpng_single_frame(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    if (!is_jpeg && !is_psd && !is_pic && !is_tiff &&
+        !chunk_is_bmp(chunk)) {
+        status = sixel_builtin_load_tga_color(chunk, frame, stb_context, ri,
+                                              bgcolor, enable_cms);
+        if (status != SIXEL_FALSE) {
+            goto end;
+        }
+    }
     if (fuse_palette) {
         /*
          * Keep the indexed TGA fast path in the non-PNG decode flow so PAL8

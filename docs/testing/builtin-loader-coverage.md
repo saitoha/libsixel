@@ -22,9 +22,9 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
 | [WebP](../loader/builtin/webp.md) | 308 | 13 | 48 | 241 | 0 | 1 | 5 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
-| [TGA](../loader/builtin/tga.md) | 41 | 25 | 8 | 0 | 4 | 0 | 4 |
+| [TGA](../loader/builtin/tga.md) | 79 | 53 | 8 | 0 | 14 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2716** | **765** | **724** | **652** | **185** | **18** | **372** |
+| **Total** | **2754** | **793** | **724** | **652** | **195** | **18** | **372** |
 
 ## Complete inventory
 
@@ -2851,6 +2851,55 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/psd/0272_gray_ink_alternate_numeric.t](../../tests/loader/builtin/psd/0272_gray_ink_alternate_numeric.t) | Verify gray ink alternate numeric at the public loader boundary. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/psd/0273_gray_ink_rgb_process_numeric.t](../../tests/loader/builtin/psd/0273_gray_ink_rgb_process_numeric.t) | Verify gray ink rgb process numeric at the public loader boundary. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/psd/0274_gray_ink_gray_process_numeric.t](../../tests/loader/builtin/psd/0274_gray_ink_gray_process_numeric.t) | Verify gray ink gray process numeric at the public loader boundary. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+
+<!-- test-plan-end -->
+
+<!-- test-plan: tests/loader/builtin/tga_color/*.t -->
+
+### TGA (tga_color/)
+
+Primary implementation context: [TGA builtin component](../loader/builtin/tga.md).
+
+| Test | Observation | Assertion mechanism | Policy context |
+| --- | --- | --- | --- |
+| [tests/loader/builtin/tga_color/0001_gamma2_numeric.t](../../tests/loader/builtin/tga_color/0001_gamma2_numeric.t) | Verify TGA gamma2 using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0002_gamma1_numeric.t](../../tests/loader/builtin/tga_color/0002_gamma1_numeric.t) | Verify TGA gamma1 using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0003_gamma_fraction_numeric.t](../../tests/loader/builtin/tga_color/0003_gamma_fraction_numeric.t) | Verify TGA gamma fraction using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0004_gamma_rle_numeric.t](../../tests/loader/builtin/tga_color/0004_gamma_rle_numeric.t) | Verify TGA gamma rle using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0005_gamma_gray_numeric.t](../../tests/loader/builtin/tga_color/0005_gamma_gray_numeric.t) | Verify TGA gamma gray using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0006_gamma_rgb16_numeric.t](../../tests/loader/builtin/tga_color/0006_gamma_rgb16_numeric.t) | Verify TGA gamma rgb16 using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0007_gamma_index8_numeric.t](../../tests/loader/builtin/tga_color/0007_gamma_index8_numeric.t) | Verify TGA gamma index8 using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0008_gamma_index16_numeric.t](../../tests/loader/builtin/tga_color/0008_gamma_index16_numeric.t) | Verify TGA gamma index16 using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0009_gamma_hidden_alpha_numeric.t](../../tests/loader/builtin/tga_color/0009_gamma_hidden_alpha_numeric.t) | Verify TGA gamma hidden alpha using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0010_gamma_background_numeric.t](../../tests/loader/builtin/tga_color/0010_gamma_background_numeric.t) | Verify TGA gamma background using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0011_table_rgb_numeric.t](../../tests/loader/builtin/tga_color/0011_table_rgb_numeric.t) | Verify TGA table rgb using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0012_table_precedence_numeric.t](../../tests/loader/builtin/tga_color/0012_table_precedence_numeric.t) | Verify TGA table precedence using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0013_table_before_extension_numeric.t](../../tests/loader/builtin/tga_color/0013_table_before_extension_numeric.t) | Verify TGA table before extension using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0014_table_rle_numeric.t](../../tests/loader/builtin/tga_color/0014_table_rle_numeric.t) | Verify TGA table rle using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0015_table_index_alpha_numeric.t](../../tests/loader/builtin/tga_color/0015_table_index_alpha_numeric.t) | Verify TGA table index alpha using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0016_table_gray_numeric.t](../../tests/loader/builtin/tga_color/0016_table_gray_numeric.t) | Verify TGA table gray using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0017_table_alpha_background_numeric.t](../../tests/loader/builtin/tga_color/0017_table_alpha_background_numeric.t) | Verify TGA table alpha background using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0018_cms_none_numeric.t](../../tests/loader/builtin/tga_color/0018_cms_none_numeric.t) | Verify TGA cms none using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0019_legacy_byte_numeric.t](../../tests/loader/builtin/tga_color/0019_legacy_byte_numeric.t) | Verify TGA legacy byte using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0020_gamma_unused_numeric.t](../../tests/loader/builtin/tga_color/0020_gamma_unused_numeric.t) | Verify TGA gamma unused using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0021_footer_only_numeric.t](../../tests/loader/builtin/tga_color/0021_footer_only_numeric.t) | Verify TGA footer only using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0022_zero_gamma_reject.t](../../tests/loader/builtin/tga_color/0022_zero_gamma_reject.t) | Verify TGA zero gamma reject using original codes and analytic values. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/tga_color/0023_large_gamma_reject.t](../../tests/loader/builtin/tga_color/0023_large_gamma_reject.t) | Verify TGA large gamma reject using original codes and analytic values. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/tga_color/0024_extension_offset_reject.t](../../tests/loader/builtin/tga_color/0024_extension_offset_reject.t) | Verify TGA extension offset reject using original codes and analytic values. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/tga_color/0025_extension_size_reject.t](../../tests/loader/builtin/tga_color/0025_extension_size_reject.t) | Verify TGA extension size reject using original codes and analytic values. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/tga_color/0026_table_offset_reject.t](../../tests/loader/builtin/tga_color/0026_table_offset_reject.t) | Verify TGA table offset reject using original codes and analytic values. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/tga_color/0027_table_overlap_reject.t](../../tests/loader/builtin/tga_color/0027_table_overlap_reject.t) | Verify TGA table overlap reject using original codes and analytic values. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/tga_color/0028_short_table_reject.t](../../tests/loader/builtin/tga_color/0028_short_table_reject.t) | Verify TGA short table reject using original codes and analytic values. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/tga_color/0029_short_raw_reject.t](../../tests/loader/builtin/tga_color/0029_short_raw_reject.t) | Verify TGA short raw reject using original codes and analytic values. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/tga_color/0030_short_rle_reject.t](../../tests/loader/builtin/tga_color/0030_short_rle_reject.t) | Verify TGA short rle reject using original codes and analytic values. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/tga_color/0031_premultiplied_reject.t](../../tests/loader/builtin/tga_color/0031_premultiplied_reject.t) | Verify TGA premultiplied reject using original codes and analytic values. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0032_gamma_lcms2_numeric.t](../../tests/loader/builtin/tga_color/0032_gamma_lcms2_numeric.t) | Verify TGA gamma lcms2 using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0033_gamma_colorsync_numeric.t](../../tests/loader/builtin/tga_color/0033_gamma_colorsync_numeric.t) | Verify TGA gamma colorsync using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0034_table_lcms2_numeric.t](../../tests/loader/builtin/tga_color/0034_table_lcms2_numeric.t) | Verify TGA table lcms2 using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0035_table_colorsync_numeric.t](../../tests/loader/builtin/tga_color/0035_table_colorsync_numeric.t) | Verify TGA table colorsync using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0036_gamma_target_numeric.t](../../tests/loader/builtin/tga_color/0036_gamma_target_numeric.t) | Verify TGA gamma target using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0037_gamma_gray_alpha_numeric.t](../../tests/loader/builtin/tga_color/0037_gamma_gray_alpha_numeric.t) | Verify TGA gamma gray alpha using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/tga_color/0038_table_opaque_alpha_numeric.t](../../tests/loader/builtin/tga_color/0038_table_opaque_alpha_numeric.t) | Verify TGA table opaque alpha using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
 
 <!-- test-plan-end -->
 
