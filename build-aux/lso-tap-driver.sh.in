@@ -232,7 +232,12 @@ for arg do
   esac
 done
 
-test "$needs_cd" = yes || exec "$real_cmp" "$@"
+if test "$needs_cd" != yes; then
+  # GNV exec can return after running a native image. End this branch
+  # explicitly so relative operands are not compared again from tests/.
+  "$real_cmp" "$@"
+  exit $?
+fi
 
 first_arg=yes
 for arg do
@@ -254,7 +259,8 @@ for arg do
 done
 
 cd "$top_builddir/tests" || exit 2
-exec "$real_cmp" "$@"
+"$real_cmp" "$@"
+exit $?
 EOF
       } > "$lso_cmp_wrapper" || exit 2
       chmod +x "$lso_cmp_wrapper" || exit 2

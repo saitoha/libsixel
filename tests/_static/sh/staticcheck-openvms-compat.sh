@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify the source-level OpenVMS compatibility boundaries.
 # Policy: docs/misc/platforms/openvms.md
-# Coverage: OV-01 OV-02 OV-03 OV-04 OV-05 OV-07 OV-08 OV-09 OV-10 OV-11 OV-12
+# Coverage: OV-01 OV-02 OV-03 OV-04 OV-05 OV-07 OV-08 OV-09 OV-10 OV-11 OV-12 OV-14
 
 set -eu
 
@@ -107,6 +107,51 @@ require_fixed 'SIXEL2PNG_OPENVMS_INHIBIT_MSG | 2' converters/sixel2png.c
 require_fixed 'SIXEL2PNG_OPENVMS_INHIBIT_MSG | 4' converters/sixel2png.c
 require_fixed 'SIXEL_TEST_MAX_MAPPED_ERROR_STATUS=4' \
     build-aux/lso-tap-driver.sh.in
+
+# Exercise the actual emitted wrapper, including GNV's native-image exec
+# behavior: exec can run the image and return to the remaining shell source.
+# A comparison must run exactly once and preserve all three cmp outcomes.
+cmp_wrapper=$(awk '
+    $0 == "top_builddir=${TOP_BUILDDIR-}" { copying = 1 }
+    copying && $0 == "EOF" { exit }
+    copying {
+        gsub(/exec "\$real_cmp"/, "gnv_exec \"$real_cmp\"")
+        print
+    }
+' "$src_root/build-aux/lso-tap-driver.sh.in")
+test -n "$cmp_wrapper" || fail "OpenVMS cmp wrapper body is missing"
+
+check_cmp_wrapper()
+{
+    cmp_expected=$1
+    cmp_expected_status=$2
+    shift 2
+    cmp_status=0
+    cmp_actual=$(TOP_BUILDDIR="$src_root" \
+        CMP_PROBE_STATUS="$cmp_expected_status" /bin/sh -c '
+        gnv_exec() { "$@"; }
+        probe_cmp() {
+            printf "%s\n" "$PWD" "$@"
+            return "$CMP_PROBE_STATUS"
+        }
+        real_cmp=probe_cmp
+    '"$cmp_wrapper" sh "$@") || cmp_status=$?
+    test "$cmp_status" -eq "$cmp_expected_status" ||
+        fail "OpenVMS cmp wrapper changed status $cmp_expected_status"
+    test "$cmp_actual" = "$cmp_expected" ||
+        fail "OpenVMS cmp wrapper repeated a comparison or changed operands"
+}
+
+for cmp_probe_status in 0 1 2; do
+    cmp_relative=$(printf '%s\n' "$PWD" -s 'first file' 'second file')
+    check_cmp_wrapper "$cmp_relative" "$cmp_probe_status" \
+        -s 'first file' 'second file'
+    cmp_absolute=$(printf '%s\n' "$src_root/tests" \
+        -s 'first file' '../second file')
+    check_cmp_wrapper "$cmp_absolute" "$cmp_probe_status" \
+        -s "$src_root/tests/first file" "$src_root/second file"
+done
+
 require_fixed 'extern void __posix_exit(int);' \
     tests/test_runner.c
 require_fixed '__posix_exit(status);' \
