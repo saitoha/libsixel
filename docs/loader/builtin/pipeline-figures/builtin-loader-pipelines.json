@@ -163,6 +163,21 @@
           "title": "Read logical screen and extensions"
         },
         {
+          "coverage_id": "GIF-21",
+          "details": [
+            "adapter owns shared CMS and RGB ICC validation",
+            "optional hook supplies extended linear float colors"
+          ],
+          "phase": "COLOR",
+          "role": "branch",
+          "source": "src/fromgif.c",
+          "symbols": [
+            "sixel_gif_read_icc",
+            "gif_convert_colortable"
+          ],
+          "title": "Normalize profiled source palettes"
+        },
+        {
           "coverage_id": "GIF-03",
           "details": [
             "expand clear/end codes and interlaced row order",
@@ -197,7 +212,7 @@
           "coverage_id": "GIF-05",
           "details": [
             "honor start-frame and loop policy",
-            "emit PAL8 when stable or RGB/mask when composition requires"
+            "ICC: float RGB/mask; otherwise stable PAL8 or RGB/mask"
           ],
           "phase": "EMIT",
           "role": "output",
@@ -225,6 +240,9 @@
         ],
         "GIF-05": [
           "tests/loader/builtin/0265_loader_builtin_gif_loop_auto_loop2.t"
+        ],
+        "GIF-21": [
+          "tests/loader/builtin/gif_icc/0001_gif_icc_global_numeric.t"
         ]
       }
     },

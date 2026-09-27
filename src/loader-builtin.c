@@ -4454,6 +4454,46 @@ sixel_builtin_chunk_size_to_int(sixel_chunk_t const *chunk, int *chunk_size)
     return SIXEL_OK;
 }
 
+/* Only the adapter owns CMS objects. The GIF decoder calls this palette
+ * hook and keeps all canvas/disposal/cache samples in canonical float RGB. */
+static SIXELSTATUS
+sixel_builtin_gif_palette_linear(void *context, unsigned char const *rgb,
+                                 float *linear, int count)
+{
+    sixel_cms_transform_t *transform;
+    float source[256 * 3];
+    int i;
+
+    transform = context;
+    if (count < 0 || count > 256 || transform == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    for (i = 0; i < count * 3; ++i) {
+        source[i] = (float)rgb[i] / 255.0f;
+    }
+    if (!sixel_cms_do_transform(transform, source, linear, (size_t)count)) {
+        sixel_helper_set_additional_message(
+            "GIF: ICC palette transform failed");
+        return SIXEL_BAD_INPUT;
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_builtin_gif_color_frame(sixel_frame_t *frame, void *data)
+{
+    SIXELSTATUS status;
+
+    /* Canonical cached frames reach this boundary independently on replay.
+     * Target narrowing must never modify the decoder's persistent canvas. */
+    status = sixel_frame_set_pixelformat(frame,
+                                         loader_cms_target_pixelformat());
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    return sixel_builtin_finalize_frame_callback(frame, data);
+}
+
 static SIXELSTATUS
 sixel_builtin_load_gif_frames(
     sixel_builtin_load_request_t const *request,
@@ -4463,6 +4503,13 @@ sixel_builtin_load_gif_frames(
     fn_pointer fnp;
     sixel_builtin_frame_callback_context_t callback_context;
     int chunk_size;
+    unsigned char *icc;
+    size_t icc_size;
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *destination;
+    sixel_cms_transform_t *transform;
+    sixel_gif_color_t color;
+    sixel_gif_color_t const *active_color;
 
     status = SIXEL_OK;
     fnp.fn = NULL;
@@ -4470,6 +4517,12 @@ sixel_builtin_load_gif_frames(
     callback_context.load_context = NULL;
     callback_context.cancel_context = NULL;
     chunk_size = 0;
+    icc = NULL;
+    source = NULL;
+    destination = NULL;
+    transform = NULL;
+    active_color = NULL;
+    memset(&color, 0, sizeof(color));
     if (request == NULL ||
         load_context == NULL ||
         request->chunk == NULL ||
@@ -4500,7 +4553,41 @@ sixel_builtin_load_gif_frames(
         }
     }
 
-    return load_gif((unsigned char *)sixel_chunk_get_buffer(request->chunk),
+    if (request->enable_cms &&
+        sixel_cms_get_engine() != SIXEL_CMS_ENGINE_NONE) {
+        status = sixel_gif_read_icc(sixel_chunk_get_buffer(request->chunk),
+            chunk_size, &icc, &icc_size, request->allocator);
+        if (status != SIXEL_OK && status != SIXEL_FALSE) {
+            goto end;
+        }
+        if (status == SIXEL_OK) {
+            source = sixel_cms_open_profile_from_mem(icc, icc_size);
+            status = SIXEL_BAD_INPUT;
+            if (source == NULL ||
+                sixel_cms_get_color_space(source) != SIXEL_CMS_COLORSPACE_RGB) {
+                sixel_helper_set_additional_message(
+                    "GIF: embedded ICC must be a usable RGB profile");
+                goto end;
+            }
+            destination = sixel_cms_create_linear_srgb_profile();
+            transform = sixel_cms_create_transform(source,
+                SIXEL_CMS_PIXELFORMAT_RGB_F32, destination,
+                SIXEL_CMS_PIXELFORMAT_RGB_F32, SIXEL_CMS_TRANSFORM_DEFAULT);
+            if (transform == NULL) {
+                sixel_helper_set_additional_message(
+                    "GIF: cannot create ICC palette transform");
+                goto end;
+            }
+            color.convert = sixel_builtin_gif_palette_linear;
+            color.context = transform;
+            sixel_builtin_fill_linear_bgcolor(color.background,
+                                               request->bgcolor);
+            active_color = &color;
+            fnp.fn = sixel_builtin_gif_color_frame;
+        }
+    }
+    status = load_gif_with_color(
+                    (unsigned char *)sixel_chunk_get_buffer(request->chunk),
                     chunk_size,
                     request->bgcolor,
                     request->bgcolor_source,
@@ -4512,7 +4599,14 @@ sixel_builtin_load_gif_frames(
                     fnp.p,
                     &callback_context,
                     callback_context.cancel_context,
-                    request->allocator);
+                    request->allocator,
+                    active_color);
+end:
+    sixel_cms_delete_transform(transform);
+    sixel_cms_close_profile(destination);
+    sixel_cms_close_profile(source);
+    sixel_allocator_free(request->allocator, icc);
+    return status;
 }
 
 static SIXELSTATUS

@@ -489,6 +489,43 @@ int test_cicp_0063(int argc, char **argv);
 int test_cicp_0064(int argc, char **argv);
 int test_cicp_0065(int argc, char **argv);
 int test_cicp_0066(int argc, char **argv);
+int test_gifc_0030(int argc, char **argv);
+int test_gifc_0031(int argc, char **argv);
+int test_gifc_0032(int argc, char **argv);
+int test_gifc_0033(int argc, char **argv);
+int test_gifc_0034(int argc, char **argv);
+int test_gifc_0035(int argc, char **argv);
+int test_gifc_0036(int argc, char **argv);
+int test_gifc_0037(int argc, char **argv);
+int test_gifc_0001(int argc, char **argv);
+int test_gifc_0002(int argc, char **argv);
+int test_gifc_0003(int argc, char **argv);
+int test_gifc_0004(int argc, char **argv);
+int test_gifc_0005(int argc, char **argv);
+int test_gifc_0006(int argc, char **argv);
+int test_gifc_0007(int argc, char **argv);
+int test_gifc_0008(int argc, char **argv);
+int test_gifc_0009(int argc, char **argv);
+int test_gifc_0010(int argc, char **argv);
+int test_gifc_0011(int argc, char **argv);
+int test_gifc_0012(int argc, char **argv);
+int test_gifc_0013(int argc, char **argv);
+int test_gifc_0014(int argc, char **argv);
+int test_gifc_0015(int argc, char **argv);
+int test_gifc_0016(int argc, char **argv);
+int test_gifc_0017(int argc, char **argv);
+int test_gifc_0018(int argc, char **argv);
+int test_gifc_0019(int argc, char **argv);
+int test_gifc_0020(int argc, char **argv);
+int test_gifc_0021(int argc, char **argv);
+int test_gifc_0022(int argc, char **argv);
+int test_gifc_0023(int argc, char **argv);
+int test_gifc_0024(int argc, char **argv);
+int test_gifc_0025(int argc, char **argv);
+int test_gifc_0026(int argc, char **argv);
+int test_gifc_0027(int argc, char **argv);
+int test_gifc_0028(int argc, char **argv);
+int test_gifc_0029(int argc, char **argv);
 int test_cicp_0001(int argc, char **argv);
 int test_cicp_0002(int argc, char **argv);
 int test_cicp_0003(int argc, char **argv);
@@ -2730,6 +2767,43 @@ static test_entry_t const test_entries[] = {
     { "cicp/0064_libpng_p3_palette_alpha", test_cicp_0064 },
     { "cicp/0065_builtin_srgb_palette_alpha_byte", test_cicp_0065 },
     { "cicp/0066_libpng_srgb_palette_alpha_byte", test_cicp_0066 },
+    { "gifc/0030_gif_icc_fail_global", test_gifc_0030 },
+    { "gifc/0031_gif_icc_fail_local", test_gifc_0031 },
+    { "gifc/0032_gif_icc_fail_canvas", test_gifc_0032 },
+    { "gifc/0033_gif_icc_over_limit_reject", test_gifc_0033 },
+    { "gifc/0034_gif_icc_limit_exact_numeric", test_gifc_0034 },
+    { "gifc/0035_gif_icc_local_only_numeric", test_gifc_0035 },
+    { "gifc/0036_gif_icc_explicit_no_global_numeric", test_gifc_0036 },
+    { "gifc/0037_gif_icc_gamma_replay_numeric", test_gifc_0037 },
+    { "gifc/0001_gif_icc_global_numeric", test_gifc_0001 },
+    { "gifc/0002_gif_icc_local_numeric", test_gifc_0002 },
+    { "gifc/0003_gif_icc_srgb_numeric", test_gifc_0003 },
+    { "gifc/0004_gif_icc_gamma2_numeric", test_gifc_0004 },
+    { "gifc/0005_gif_icc_split_bytes_numeric", test_gifc_0005 },
+    { "gifc/0006_gif_icc_late_profile_numeric", test_gifc_0006 },
+    { "gifc/0007_gif_icc_untagged_byte_numeric", test_gifc_0007 },
+    { "gifc/0008_gif_icc_cms_none_byte_numeric", test_gifc_0008 },
+    { "gifc/0009_gif_icc_alpha_numeric", test_gifc_0009 },
+    { "gifc/0010_gif_icc_file_background_numeric", test_gifc_0010 },
+    { "gifc/0011_gif_icc_explicit_background_numeric", test_gifc_0011 },
+    { "gifc/0012_gif_icc_file_first_background_numeric", test_gifc_0012 },
+    { "gifc/0013_gif_icc_disposal2_numeric", test_gifc_0013 },
+    { "gifc/0014_gif_icc_disposal3_numeric", test_gifc_0014 },
+    { "gifc/0015_gif_icc_interlace_numeric", test_gifc_0015 },
+    { "gifc/0016_gif_icc_start_positive_numeric", test_gifc_0016 },
+    { "gifc/0017_gif_icc_start_negative_numeric", test_gifc_0017 },
+    { "gifc/0018_gif_icc_replay_numeric", test_gifc_0018 },
+    { "gifc/0019_gif_icc_unknown_app_byte_numeric", test_gifc_0019 },
+    { "gifc/0020_gif_icc_invalid_profile", test_gifc_0020 },
+    { "gifc/0021_gif_icc_wrong_domain_reject", test_gifc_0021 },
+    { "gifc/0022_gif_icc_duplicate_reject", test_gifc_0022 },
+    { "gifc/0023_gif_icc_empty_reject", test_gifc_0023 },
+    { "gifc/0024_gif_icc_truncated_blocks", test_gifc_0024 },
+    { "gifc/0025_gif_icc_missing_trailer_reject", test_gifc_0025 },
+    { "gifc/0026_gif_icc_cms_none_duplicate_numeric", test_gifc_0026 },
+    { "gifc/0027_gif_icc_lcms2_numeric", test_gifc_0027 },
+    { "gifc/0028_gif_icc_colorsync_numeric", test_gifc_0028 },
+    { "gifc/0029_gif_icc_gamma_target_numeric", test_gifc_0029 },
     { "cicp/0001_builtin_p3_rgb8", test_cicp_0001 },
     { "cicp/0002_builtin_p3_rgb16", test_cicp_0002 },
     { "cicp/0003_builtin_p3_rgba8", test_cicp_0003 },

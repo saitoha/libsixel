@@ -102,6 +102,9 @@ typedef struct
 {
    int has_transparency;
    int image_count;
+   unsigned char const *icc_blocks;
+   size_t icc_size;
+   int icc_count;
 } gif_stream_info_t;
 
 typedef struct
@@ -113,7 +116,14 @@ typedef struct
     * GIF frames can switch local color tables per frame, so carrying only
     * indices across frames corrupts colors when the active palette changes.
     */
-   unsigned char *out;       /* composited frame buffer (RGB888) */
+   /* Bytes on the legacy path; canonical RGB float with a color hook.
+    * Overwrite/disposal copies use pixel_stride in either representation. */
+   unsigned char *out;
+   size_t pixel_stride;
+   sixel_gif_color_t const *color;
+   float pal_linear[256][3];
+   float lpal_linear[256][3];
+   float const *linear_table;
    unsigned char *prev_out;  /* canvas backup for disposal method 3 */
    unsigned char *alpha_out; /* alpha mask (optional, 0/255) */
    unsigned char *prev_alpha;/* alpha backup for disposal method 3 */
@@ -309,6 +319,25 @@ gif_parse_colortable_checked(
 
 
 static SIXELSTATUS
+gif_convert_colortable(gif_t *g, unsigned char pal[256][3],
+                       float linear[256][3], int count)
+{
+    unsigned char rgb[256 * 3];
+    int i;
+
+    if (g->color == NULL) {
+        return SIXEL_OK;
+    }
+    for (i = 0; i < count; ++i) {
+        rgb[i * 3] = pal[i][2];
+        rgb[i * 3 + 1] = pal[i][1];
+        rgb[i * 3 + 2] = pal[i][0];
+    }
+    return g->color->convert(g->color->context, rgb, &linear[0][0], count);
+}
+
+
+static SIXELSTATUS
 gif_load_header(
     gif_context_t /* in */ *s,
     gif_t         /* in */ *g)
@@ -354,6 +383,11 @@ gif_load_header(
             goto end;
         }
         g->color_table_entries = g->global_color_table_entries;
+        status = gif_convert_colortable(g, g->pal, g->pal_linear,
+                                        g->global_color_table_entries);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     } else {
         g->global_color_table_entries = 0;
         g->color_table_entries = 0;
@@ -469,6 +503,32 @@ gif_resolve_composition_background_color(
 
     if (bg_a != NULL) {
         *bg_a = preserve_transparency != 0 ? 0u : 0xffu;
+    }
+}
+
+
+static void
+gif_canvas_background(gif_t const *g, unsigned char const *bgcolor,
+                       unsigned char *pixel, unsigned char *alpha)
+{
+    int has_file;
+    float black[3] = {0.0f, 0.0f, 0.0f};
+
+    gif_resolve_composition_background_color(g, bgcolor,
+        pixel, pixel + 1, pixel + 2, alpha);
+    if (g->color == NULL) {
+        return;
+    }
+    has_file = g->bgindex >= 0 &&
+        g->bgindex < g->global_color_table_entries;
+    if (bgcolor != NULL && (!has_file ||
+        g->background_policy ==
+            SIXEL_LOADER_BACKGROUND_POLICY_EXPLICIT_FIRST)) {
+        memcpy(pixel, g->color->background, sizeof(black));
+    } else if (has_file) {
+        memcpy(pixel, g->pal_linear[g->bgindex], sizeof(black));
+    } else {
+        memcpy(pixel, black, sizeof(black));
     }
 }
 
@@ -615,7 +675,8 @@ static SIXELSTATUS
 gif_scan_stream_info(
     unsigned char const *buffer,
     int size,
-    gif_stream_info_t *info)
+    gif_stream_info_t *info,
+    int read_icc)
 {
     SIXELSTATUS status = SIXEL_OK;
     unsigned char const *p;
@@ -626,6 +687,7 @@ gif_scan_stream_info(
     unsigned char packed;
     unsigned char extension_label;
     unsigned char block_size;
+    int is_icc;
 
     p = NULL;
     end = NULL;
@@ -639,8 +701,7 @@ gif_scan_stream_info(
     if (buffer == NULL || info == NULL || size <= 0) {
         return SIXEL_BAD_ARGUMENT;
     }
-    info->has_transparency = 0;
-    info->image_count = 0;
+    memset(info, 0, sizeof(*info));
     if ((size_t)size < 13u) {
         return SIXEL_BAD_INPUT;
     }
@@ -719,6 +780,18 @@ gif_scan_stream_info(
         }
 
         extension_label = *p++;
+        is_icc = 0;
+        if (read_icc && extension_label == 0xffu &&
+            (size_t)(end - p) >= 12u &&
+            p[0] == 11u && memcmp(p + 1, "ICCRGBG1012", 11u) == 0) {
+            is_icc = 1;
+            ++info->icc_count;
+            if (info->icc_count > 1) {
+                return SIXEL_BAD_INPUT;
+            }
+            p += 12u;
+            info->icc_blocks = p;
+        }
         if (extension_label == 0xf9u) {
             if (p >= end) {
                 status = SIXEL_BAD_INPUT;
@@ -757,6 +830,12 @@ gif_scan_stream_info(
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
+            if (is_icc) {
+                if (info->icc_size > SIXEL_GIF_ICC_MAX_BYTES - block_size) {
+                    return SIXEL_BAD_INPUT;
+                }
+                info->icc_size += block_size;
+            }
             p += block_size;
         }
     }
@@ -765,6 +844,54 @@ gif_scan_stream_info(
 
 end:
     return status;
+}
+
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_gif_read_icc(unsigned char const *buffer, int size,
+                    unsigned char **profile, size_t *profile_size,
+                    sixel_allocator_t *allocator)
+{
+    gif_stream_info_t info;
+    SIXELSTATUS status;
+    unsigned char const *block;
+    unsigned char *output;
+    size_t offset;
+    size_t count;
+
+    if (profile == NULL || profile_size == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *profile = NULL;
+    *profile_size = 0u;
+    memset(&info, 0, sizeof(info));
+    status = gif_scan_stream_info(buffer, size, &info, 1);
+    if (info.icc_count == 0) {
+        /* Preserve the decoder's existing structural-error and static-frame
+         * behavior when there is no recognized color declaration. */
+        return SIXEL_FALSE;
+    }
+    if (status != SIXEL_OK || info.icc_count != 1 || info.icc_size == 0u) {
+        sixel_helper_set_additional_message(
+            "GIF: malformed, duplicate or oversized ICC extension");
+        return SIXEL_BAD_INPUT;
+    }
+    output = sixel_allocator_malloc(allocator, info.icc_size);
+    if (output == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    /* The scan validated the complete sub-block chain and aggregate size.
+     * GIF carries raw profile bytes, without JPEG sequence-number fields. */
+    offset = 0u;
+    block = info.icc_blocks;
+    while ((count = *block++) != 0u) {
+        memcpy(output + offset, block, count);
+        offset += count;
+        block += count;
+    }
+    *profile = output;
+    *profile_size = offset;
+    return SIXEL_OK;
 }
 
 
@@ -1152,6 +1279,52 @@ end:
 
 
 static SIXELSTATUS
+gif_export_linear_frame(sixel_frame_t *frame, gif_t *g,
+                         sixel_allocator_t *allocator)
+{
+    float *pixels;
+    unsigned char *mask;
+    size_t count;
+    size_t i;
+    SIXELSTATUS status;
+
+    count = (size_t)g->w * (size_t)g->h;
+    mask = NULL;
+    pixels = sixel_allocator_malloc(allocator, count * g->pixel_stride);
+    if (pixels == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memcpy(pixels, g->out, count * g->pixel_stride);
+    if (g->preserve_transparency && g->alpha_out != NULL) {
+        mask = sixel_allocator_malloc(allocator, count);
+        if (mask == NULL) {
+            sixel_allocator_free(allocator, pixels);
+            return SIXEL_BAD_ALLOCATION;
+        }
+        for (i = 0u; i < count; ++i) {
+            mask[i] = g->alpha_out[i] == 0u ? 1u : 0u;
+        }
+    }
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            (unsigned char *)pixels, NULL, g->w, g->h,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, SIXEL_COLORSPACE_LINEAR,
+            -1, SIXEL_FRAME_PIXELS_FLOAT32
+        });
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, pixels);
+        sixel_allocator_free(allocator, mask);
+        return status;
+    }
+    frame->transparent_mask = mask;
+    frame->transparent_mask_size = mask != NULL ? count : 0u;
+    frame->alpha_zero_is_transparent = mask != NULL;
+    return SIXEL_OK;
+}
+
+
+static SIXELSTATUS
 gif_init_frame(
     sixel_frame_t /* in */ *frame,
     gif_t         /* in */ *pg,
@@ -1181,9 +1354,16 @@ gif_init_frame(
     sixel_frame_set_palette(frame, NULL);
     sixel_frame_set_ncolors(frame, -1);
     frame->alpha_zero_is_transparent = 0;
+    sixel_allocator_free(allocator, frame->transparent_mask);
+    frame->transparent_mask = NULL;
+    frame->transparent_mask_size = 0u;
     sixel_frame_set_transparent(frame, -1);
 
     sixel_frame_set_delay(frame, pg->delay);
+    if (pg->color != NULL) {
+        status = gif_export_linear_frame(frame, pg, allocator);
+        goto finalize;
+    }
     if (fuse_palette != 0) {
         status = gif_export_pal8_frame(frame, pg, allocator, reqcolors);
         if (status == SIXEL_OK) {
@@ -1243,11 +1423,16 @@ gif_write_decoded_suffix(
         gif_dirty_mark(g, g->cur_x, g->cur_y);
     }
     if (!(g->transparent >= 0 && suffix == g->transparent)) {
-        pixel_offset = idx * (size_t)GIF_RGB_STRIDE;
+        pixel_offset = idx * g->pixel_stride;
         palette_offset = (size_t)suffix * 3;
-        g->out[pixel_offset + 0] = g->color_table[palette_offset + 2];
-        g->out[pixel_offset + 1] = g->color_table[palette_offset + 1];
-        g->out[pixel_offset + 2] = g->color_table[palette_offset + 0];
+        if (g->color != NULL) {
+            memcpy(g->out + pixel_offset, g->linear_table + palette_offset,
+                   g->pixel_stride);
+        } else {
+            g->out[pixel_offset] = g->color_table[palette_offset + 2];
+            g->out[pixel_offset + 1] = g->color_table[palette_offset + 1];
+            g->out[pixel_offset + 2] = g->color_table[palette_offset];
+        }
         if (g->alpha_out != NULL) {
             g->alpha_out[idx] = 0xffu;
         }
@@ -1503,9 +1688,7 @@ gif_load_next(
     size_t bcount;
     size_t idx;
     size_t pixel_offset;
-    unsigned char bg_r;
-    unsigned char bg_g;
-    unsigned char bg_b;
+    unsigned char bg_rgb[3 * sizeof(float)];
     unsigned char bg_a;
 
     block_size = 0u;
@@ -1547,20 +1730,15 @@ gif_load_next(
             status = SIXEL_BAD_INPUT;
             goto end;
         }
-        if (pcount > SIZE_MAX / (size_t)GIF_RGB_STRIDE) {
+        if (pcount > SIZE_MAX / g->pixel_stride) {
             sixel_helper_set_additional_message(
                 "corrupt GIF (reason: image data exceeds limit).");
             status = SIXEL_BAD_INPUT;
             goto end;
         }
-        bcount = pcount * (size_t)GIF_RGB_STRIDE;
+        bcount = pcount * g->pixel_stride;
 
-        gif_resolve_composition_background_color(g,
-                                                 bgcolor,
-                                                 &bg_r,
-                                                 &bg_g,
-                                                 &bg_b,
-                                                 &bg_a);
+        gif_canvas_background(g, bgcolor, bg_rgb, &bg_a);
 
         if (g->is_multiframe && g->history != NULL && gif_dirty_has_pixels(g)) {
             dirty_min_x = g->dirty_min_x;
@@ -1588,10 +1766,10 @@ gif_load_next(
                             if (!gif_history_test(g, idx)) {
                                 continue;
                             }
-                            pixel_offset = idx * (size_t)GIF_RGB_STRIDE;
+                            pixel_offset = idx * g->pixel_stride;
                             memcpy(g->out + pixel_offset,
                                    g->prev_out + pixel_offset,
-                                   (size_t)GIF_RGB_STRIDE);
+                                   g->pixel_stride);
                             if (g->alpha_out != NULL && g->prev_alpha != NULL) {
                                 g->alpha_out[idx] = g->prev_alpha[idx];
                             }
@@ -1604,10 +1782,9 @@ gif_load_next(
                             if (!gif_history_test(g, idx)) {
                                 continue;
                             }
-                            pixel_offset = idx * (size_t)GIF_RGB_STRIDE;
-                            g->out[pixel_offset + 0] = bg_r;
-                            g->out[pixel_offset + 1] = bg_g;
-                            g->out[pixel_offset + 2] = bg_b;
+                            pixel_offset = idx * g->pixel_stride;
+                            memcpy(g->out + pixel_offset, bg_rgb,
+                                   g->pixel_stride);
                             if (g->alpha_out != NULL) {
                                 g->alpha_out[idx] = bg_a;
                             }
@@ -1621,10 +1798,9 @@ gif_load_next(
                         if (!gif_history_test(g, idx)) {
                             continue;
                         }
-                        pixel_offset = idx * (size_t)GIF_RGB_STRIDE;
-                        g->out[pixel_offset + 0] = bg_r;
-                        g->out[pixel_offset + 1] = bg_g;
-                        g->out[pixel_offset + 2] = bg_b;
+                        pixel_offset = idx * g->pixel_stride;
+                        memcpy(g->out + pixel_offset, bg_rgb,
+                                   g->pixel_stride);
                         if (g->alpha_out != NULL) {
                             g->alpha_out[idx] = bg_a;
                         }
@@ -1713,14 +1889,21 @@ gif_load_next(
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
+                status = gif_convert_colortable(g, g->lpal, g->lpal_linear,
+                                                table_entries);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                g->linear_table = &g->lpal_linear[0][0];
                 g->color_table_entries = table_entries;
                 g->color_table = (unsigned char *) g->lpal;
                 gif_normalize_transparent_index(g);
             } else if (g->flags & 0x80) {
                 g->color_table_entries = g->global_color_table_entries;
                 g->color_table = (unsigned char *)g->pal;
+                g->linear_table = &g->pal_linear[0][0];
                 gif_normalize_transparent_index(g);
-                if (!g->preserve_transparency &&
+                if (g->color == NULL && !g->preserve_transparency &&
                     g->transparent >= 0 &&
                     (g->eflags & 0x01)) {
                    if (bgcolor) {
@@ -1958,7 +2141,7 @@ gif_validate_canvas_requirements(gif_t *g, size_t *pcount_out)
     }
     pcount = (size_t)g->w * (size_t)g->h;
     if (pcount > SIXEL_ALLOCATE_BYTES_MAX ||
-        pcount > SIZE_MAX / (size_t)GIF_RGB_STRIDE) {
+        pcount > SIZE_MAX / g->pixel_stride) {
         sixel_helper_set_additional_message(
             "corrupt GIF (reason: image data exceeds limit).");
         return SIXEL_BAD_INPUT;
@@ -1996,36 +2179,23 @@ gif_reset_canvas_for_loop(gif_t *g,
 {
     size_t i;
     size_t pixel_offset;
-    unsigned char bg_r;
-    unsigned char bg_g;
-    unsigned char bg_b;
+    unsigned char bg_rgb[3 * sizeof(float)];
     unsigned char bg_a;
 
     i = 0u;
     pixel_offset = 0u;
-    bg_r = 0u;
-    bg_g = 0u;
-    bg_b = 0u;
+    memset(bg_rgb, 0, sizeof(bg_rgb));
     bg_a = 0u;
     if (g == NULL || g->out == NULL) {
         return;
     }
 
-    gif_resolve_composition_background_color(g,
-                                             bgcolor,
-                                             &bg_r,
-                                             &bg_g,
-                                             &bg_b,
-                                             &bg_a);
+    gif_canvas_background(g, bgcolor, bg_rgb, &bg_a);
     for (i = 0u; i < pcount; ++i) {
-        pixel_offset = i * (size_t)GIF_RGB_STRIDE;
-        g->out[pixel_offset + 0] = bg_r;
-        g->out[pixel_offset + 1] = bg_g;
-        g->out[pixel_offset + 2] = bg_b;
+        pixel_offset = i * g->pixel_stride;
+        memcpy(g->out + pixel_offset, bg_rgb, g->pixel_stride);
         if (g->prev_out != NULL) {
-            g->prev_out[pixel_offset + 0] = bg_r;
-            g->prev_out[pixel_offset + 1] = bg_g;
-            g->prev_out[pixel_offset + 2] = bg_b;
+            memcpy(g->prev_out + pixel_offset, bg_rgb, g->pixel_stride);
         }
         if (g->alpha_out != NULL) {
             g->alpha_out[i] = bg_a;
@@ -2376,7 +2546,8 @@ gif_prepare_decoder_state(unsigned char *buffer,
                           gif_context_t *s,
                           gif_t **pg,
                           sixel_frame_t **pframe,
-                          int *stream_scan_failed)
+                          int *stream_scan_failed,
+                          sixel_gif_color_t const *color)
 {
     SIXELSTATUS status;
     gif_t *g;
@@ -2426,12 +2597,14 @@ gif_prepare_decoder_state(unsigned char *buffer,
     s->img_buffer = s->img_buffer_original = (unsigned char *)buffer;
     s->img_buffer_end = (unsigned char *)buffer + size;
     memset(g, 0, sizeof(*g));
+    g->color = color;
+    g->pixel_stride = color != NULL ? 3u * sizeof(float) : GIF_RGB_STRIDE;
     stream_info.has_transparency = 0;
     stream_info.image_count = 0;
 
     status = gif_scan_stream_info((unsigned char const *)buffer,
                                   size,
-                                  &stream_info);
+                                  &stream_info, 0);
     if (SIXEL_FAILED(status)) {
         /*
          * Transparency pre-scan is advisory. Decode continues on the legacy
@@ -2477,7 +2650,7 @@ gif_prepare_decoder_state(unsigned char *buffer,
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    bcount = pcount * (size_t)GIF_RGB_STRIDE;
+    bcount = pcount * g->pixel_stride;
     history_bytes = gif_history_required_bytes(pcount);
     sixel_trace_topic_message(
         GIF_TRACE_TOPIC,
@@ -2855,7 +3028,7 @@ gif_decode_animation_loops(gif_context_t *s,
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
-load_gif(
+load_gif_with_color(
     unsigned char       /* in */ *buffer,
     int                 /* in */ size,
     unsigned char       /* in */ *bgcolor,
@@ -2868,7 +3041,8 @@ load_gif(
     void                /* in */ *fn_load,     /* callback */
     void                /* in */ *context,     /* private data for callback */
     void                /* in */ *cancel_context,
-    sixel_allocator_t   /* in */ *allocator)   /* allocator object */
+    sixel_allocator_t   /* in */ *allocator,
+    sixel_gif_color_t const *color)
 {
     gif_context_t s;
     gif_t *g;
@@ -2885,7 +3059,8 @@ load_gif(
     memset(&replay_cache, 0, sizeof(replay_cache));
     memset(&decode_request, 0, sizeof(decode_request));
 
-    if (buffer == NULL || size <= 0 || fn_load == NULL || allocator == NULL) {
+    if (buffer == NULL || size <= 0 || fn_load == NULL || allocator == NULL ||
+        (color != NULL && color->convert == NULL)) {
         sixel_trace_topic_message(
             GIF_TRACE_TOPIC,
             "load_gif: bad argument buffer=%p size=%d fn_load=%p allocator=%p",
@@ -2927,7 +3102,8 @@ load_gif(
                                        &s,
                                        &g,
                                        &frame,
-                                       &decode_request.stream_scan_failed);
+                                       &decode_request.stream_scan_failed,
+                                       color);
     if (status != SIXEL_OK) {
         sixel_trace_topic_message(
             GIF_TRACE_TOPIC,
@@ -2973,6 +3149,18 @@ end:
     gif_destroy_decoder_state(allocator, g, frame);
 
     return status;
+}
+
+
+SIXEL_INTERNAL_API SIXELSTATUS
+load_gif(unsigned char *buffer, int size, unsigned char *bgcolor,
+          int bgcolor_source, int reqcolors, int fuse_palette, int fstatic,
+          int loop_control, int start_frame_no, void *fn_load, void *context,
+          void *cancel_context, sixel_allocator_t *allocator)
+{
+    return load_gif_with_color(buffer, size, bgcolor, bgcolor_source,
+        reqcolors, fuse_palette, fstatic, loop_control, start_frame_no,
+        fn_load, context, cancel_context, allocator, NULL);
 }
 
 

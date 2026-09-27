@@ -31,6 +31,35 @@
 extern "C" {
 #endif
 
+/* Optional source-palette conversion. The decoder owns no CMS objects:
+ * the adapter supplies canonical linear RGB and an already-linear explicit
+ * background. The borrowed hook and context live through synchronous decode.
+ */
+typedef struct sixel_gif_color {
+    SIXELSTATUS (*convert)(void *context, unsigned char const *rgb,
+                           float *linear, int count);
+    void *context;
+    float background[3];
+} sixel_gif_color_t;
+
+/* Extract one stream-wide ICCRGBG1/012 application payload. FALSE means
+ * absent. A recognized malformed, duplicate or oversized declaration fails.
+ * The caller releases the returned bytes through the supplied allocator. */
+#define SIXEL_GIF_ICC_MAX_BYTES ((size_t)(16u * 1024u * 1024u))
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_gif_read_icc(unsigned char const *buffer, int size,
+                    unsigned char **profile, size_t *profile_size,
+                    sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+load_gif_with_color(unsigned char *buffer, int size,
+                     unsigned char *bgcolor, int bgcolor_source,
+                     int reqcolors, int fuse_palette, int fstatic,
+                     int loop_control, int start_frame_no, void *fn_load,
+                     void *context, void *cancel_context,
+                     sixel_allocator_t *allocator,
+                     sixel_gif_color_t const *color);
+
 /*
  * Internal GIF decoder entrypoint.
  * Keep this exported on Windows for test_runner and internal loaders.

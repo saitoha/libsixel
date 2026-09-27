@@ -14,7 +14,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | [Shared loader integration and policy](../loader/builtin.md) | 57 | 1 | 3 | 1 | 4 | 0 | 48 |
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 36 | 0 | 0 | 0 | 0 | 0 |
-| [GIF](../loader/builtin/gif.md) | 36 | 8 | 3 | 2 | 2 | 2 | 19 |
+| [GIF](../loader/builtin/gif.md) | 73 | 35 | 3 | 2 | 12 | 2 | 19 |
 | [PNG and APNG](../loader/builtin/png.md) | 288 | 22 | 59 | 0 | 13 | 7 | 187 |
 | [JPEG](../loader/builtin/jpeg.md) | 249 | 102 | 14 | 1 | 57 | 5 | 70 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 273 | 219 | 37 | 1 | 5 | 0 | 11 |
@@ -24,7 +24,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 79 | 53 | 8 | 0 | 14 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2754** | **793** | **724** | **652** | **195** | **18** | **372** |
+| **Total** | **2791** | **820** | **724** | **652** | **205** | **18** | **372** |
 
 ## Complete inventory
 
@@ -2364,6 +2364,54 @@ Primary implementation context: [Softimage PIC builtin component](../loader/buil
 | [tests/loader/builtin/1970_loader_builtin_pic_chained_packets_numeric.t](../../tests/loader/builtin/1970_loader_builtin_pic_chained_packets_numeric.t) | Verify chained PIC packets combine exact component lanes. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
 | [tests/loader/builtin/1988_loader_builtin_pic_zero_dimension_reject.t](../../tests/loader/builtin/1988_loader_builtin_pic_zero_dimension_reject.t) | Verify zero-width and zero-height PIC canvases are rejected. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
 | [tests/loader/builtin/1989_loader_builtin_pic_eleventh_packet_reject.t](../../tests/loader/builtin/1989_loader_builtin_pic_eleventh_packet_reject.t) | Verify the descriptor-table upper bound rejects packet eleven. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
+
+<!-- test-plan-end -->
+
+<!-- test-plan: tests/loader/builtin/gif_icc/*.t -->
+
+### GIF (gif_icc/)
+
+Primary implementation context: [GIF builtin component](../loader/builtin/gif.md).
+
+| Test | Observation | Assertion mechanism | Policy context |
+| --- | --- | --- | --- |
+| [tests/loader/builtin/gif_icc/0001_gif_icc_global_numeric.t](../../tests/loader/builtin/gif_icc/0001_gif_icc_global_numeric.t) | Verify GIF ICC global samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0002_gif_icc_local_numeric.t](../../tests/loader/builtin/gif_icc/0002_gif_icc_local_numeric.t) | Verify GIF ICC local samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0003_gif_icc_srgb_numeric.t](../../tests/loader/builtin/gif_icc/0003_gif_icc_srgb_numeric.t) | Verify GIF ICC srgb samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0004_gif_icc_gamma2_numeric.t](../../tests/loader/builtin/gif_icc/0004_gif_icc_gamma2_numeric.t) | Verify GIF ICC gamma2 samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0005_gif_icc_split_bytes_numeric.t](../../tests/loader/builtin/gif_icc/0005_gif_icc_split_bytes_numeric.t) | Verify GIF ICC split bytes samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0006_gif_icc_late_profile_numeric.t](../../tests/loader/builtin/gif_icc/0006_gif_icc_late_profile_numeric.t) | Verify GIF ICC late profile samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0007_gif_icc_untagged_byte_numeric.t](../../tests/loader/builtin/gif_icc/0007_gif_icc_untagged_byte_numeric.t) | Verify GIF ICC untagged byte samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0008_gif_icc_cms_none_byte_numeric.t](../../tests/loader/builtin/gif_icc/0008_gif_icc_cms_none_byte_numeric.t) | Verify GIF ICC cms none byte samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0009_gif_icc_alpha_numeric.t](../../tests/loader/builtin/gif_icc/0009_gif_icc_alpha_numeric.t) | Verify GIF ICC alpha samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0010_gif_icc_file_background_numeric.t](../../tests/loader/builtin/gif_icc/0010_gif_icc_file_background_numeric.t) | Verify GIF ICC file background samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0011_gif_icc_explicit_background_numeric.t](../../tests/loader/builtin/gif_icc/0011_gif_icc_explicit_background_numeric.t) | Verify GIF ICC explicit background samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0012_gif_icc_file_first_background_numeric.t](../../tests/loader/builtin/gif_icc/0012_gif_icc_file_first_background_numeric.t) | Verify GIF ICC file first background samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0013_gif_icc_disposal2_numeric.t](../../tests/loader/builtin/gif_icc/0013_gif_icc_disposal2_numeric.t) | Verify GIF ICC disposal2 samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0014_gif_icc_disposal3_numeric.t](../../tests/loader/builtin/gif_icc/0014_gif_icc_disposal3_numeric.t) | Verify GIF ICC disposal3 samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0015_gif_icc_interlace_numeric.t](../../tests/loader/builtin/gif_icc/0015_gif_icc_interlace_numeric.t) | Verify GIF ICC interlace samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0016_gif_icc_start_positive_numeric.t](../../tests/loader/builtin/gif_icc/0016_gif_icc_start_positive_numeric.t) | Verify GIF ICC start positive samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0017_gif_icc_start_negative_numeric.t](../../tests/loader/builtin/gif_icc/0017_gif_icc_start_negative_numeric.t) | Verify GIF ICC start negative samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0018_gif_icc_replay_numeric.t](../../tests/loader/builtin/gif_icc/0018_gif_icc_replay_numeric.t) | Verify GIF ICC replay samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0019_gif_icc_unknown_app_byte_numeric.t](../../tests/loader/builtin/gif_icc/0019_gif_icc_unknown_app_byte_numeric.t) | Verify GIF ICC unknown app byte samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0020_gif_icc_invalid_profile.t](../../tests/loader/builtin/gif_icc/0020_gif_icc_invalid_profile.t) | Verify GIF ICC invalid profile samples and loader behavior. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0021_gif_icc_wrong_domain_reject.t](../../tests/loader/builtin/gif_icc/0021_gif_icc_wrong_domain_reject.t) | Verify GIF ICC wrong domain samples and loader behavior. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0022_gif_icc_duplicate_reject.t](../../tests/loader/builtin/gif_icc/0022_gif_icc_duplicate_reject.t) | Verify GIF ICC duplicate samples and loader behavior. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0023_gif_icc_empty_reject.t](../../tests/loader/builtin/gif_icc/0023_gif_icc_empty_reject.t) | Verify GIF ICC empty samples and loader behavior. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0024_gif_icc_truncated_blocks.t](../../tests/loader/builtin/gif_icc/0024_gif_icc_truncated_blocks.t) | Verify GIF ICC truncated blocks samples and loader behavior. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0025_gif_icc_missing_trailer_reject.t](../../tests/loader/builtin/gif_icc/0025_gif_icc_missing_trailer_reject.t) | Verify GIF ICC missing trailer samples and loader behavior. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0026_gif_icc_cms_none_duplicate_numeric.t](../../tests/loader/builtin/gif_icc/0026_gif_icc_cms_none_duplicate_numeric.t) | Verify GIF ICC cms none duplicate samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0027_gif_icc_lcms2_numeric.t](../../tests/loader/builtin/gif_icc/0027_gif_icc_lcms2_numeric.t) | Verify GIF ICC lcms2 samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0028_gif_icc_colorsync_numeric.t](../../tests/loader/builtin/gif_icc/0028_gif_icc_colorsync_numeric.t) | Verify GIF ICC colorsync samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0029_gif_icc_gamma_target_numeric.t](../../tests/loader/builtin/gif_icc/0029_gif_icc_gamma_target_numeric.t) | Verify GIF ICC gamma target samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0030_gif_icc_fail_global.t](../../tests/loader/builtin/gif_icc/0030_gif_icc_fail_global.t) | Verify GIF ICC fail global samples and loader behavior. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0031_gif_icc_fail_local.t](../../tests/loader/builtin/gif_icc/0031_gif_icc_fail_local.t) | Verify GIF ICC fail local samples and loader behavior. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0032_gif_icc_fail_canvas.t](../../tests/loader/builtin/gif_icc/0032_gif_icc_fail_canvas.t) | Verify GIF ICC fail canvas samples and loader behavior. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0033_gif_icc_over_limit_reject.t](../../tests/loader/builtin/gif_icc/0033_gif_icc_over_limit_reject.t) | Verify GIF ICC icc over limit samples and loader behavior. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0034_gif_icc_limit_exact_numeric.t](../../tests/loader/builtin/gif_icc/0034_gif_icc_limit_exact_numeric.t) | Verify GIF ICC icc limit exact samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0035_gif_icc_local_only_numeric.t](../../tests/loader/builtin/gif_icc/0035_gif_icc_local_only_numeric.t) | Verify GIF ICC local only samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0036_gif_icc_explicit_no_global_numeric.t](../../tests/loader/builtin/gif_icc/0036_gif_icc_explicit_no_global_numeric.t) | Verify GIF ICC explicit no global samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/gif_icc/0037_gif_icc_gamma_replay_numeric.t](../../tests/loader/builtin/gif_icc/0037_gif_icc_gamma_replay_numeric.t) | Verify GIF ICC gamma replay samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
 
 <!-- test-plan-end -->
 

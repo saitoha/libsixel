@@ -247,6 +247,44 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0064_LIBPNG_P3_PALETTE_ALPHA \
     -DBUILD_TEST_0065_BUILTIN_SRGB_PALETTE_ALPHA_BYTE \
     -DBUILD_TEST_0066_LIBPNG_SRGB_PALETTE_ALPHA_BYTE \
+    -DBUILD_TEST_0030_GIF_ICC_FAIL_GLOBAL \
+    -DBUILD_TEST_0031_GIF_ICC_FAIL_LOCAL \
+    -DBUILD_TEST_0032_GIF_ICC_FAIL_CANVAS \
+    -DBUILD_TEST_0033_GIF_ICC_OVER_LIMIT_REJECT \
+    -DBUILD_TEST_0034_GIF_ICC_LIMIT_EXACT_NUMERIC \
+    -DBUILD_TEST_0035_GIF_ICC_LOCAL_ONLY_NUMERIC \
+    -DBUILD_TEST_0036_GIF_ICC_EXPLICIT_NO_GLOBAL_NUMERIC \
+    -DBUILD_TEST_0037_GIF_ICC_GAMMA_REPLAY_NUMERIC \
+    -DBUILD_GIF_ICC_TEST_COMMON \
+    -DBUILD_TEST_0001_GIF_ICC_GLOBAL_NUMERIC \
+    -DBUILD_TEST_0002_GIF_ICC_LOCAL_NUMERIC \
+    -DBUILD_TEST_0003_GIF_ICC_SRGB_NUMERIC \
+    -DBUILD_TEST_0004_GIF_ICC_GAMMA2_NUMERIC \
+    -DBUILD_TEST_0005_GIF_ICC_SPLIT_BYTES_NUMERIC \
+    -DBUILD_TEST_0006_GIF_ICC_LATE_PROFILE_NUMERIC \
+    -DBUILD_TEST_0007_GIF_ICC_UNTAGGED_BYTE_NUMERIC \
+    -DBUILD_TEST_0008_GIF_ICC_CMS_NONE_BYTE_NUMERIC \
+    -DBUILD_TEST_0009_GIF_ICC_ALPHA_NUMERIC \
+    -DBUILD_TEST_0010_GIF_ICC_FILE_BACKGROUND_NUMERIC \
+    -DBUILD_TEST_0011_GIF_ICC_EXPLICIT_BACKGROUND_NUMERIC \
+    -DBUILD_TEST_0012_GIF_ICC_FILE_FIRST_BACKGROUND_NUMERIC \
+    -DBUILD_TEST_0013_GIF_ICC_DISPOSAL2_NUMERIC \
+    -DBUILD_TEST_0014_GIF_ICC_DISPOSAL3_NUMERIC \
+    -DBUILD_TEST_0015_GIF_ICC_INTERLACE_NUMERIC \
+    -DBUILD_TEST_0016_GIF_ICC_START_POSITIVE_NUMERIC \
+    -DBUILD_TEST_0017_GIF_ICC_START_NEGATIVE_NUMERIC \
+    -DBUILD_TEST_0018_GIF_ICC_REPLAY_NUMERIC \
+    -DBUILD_TEST_0019_GIF_ICC_UNKNOWN_APP_BYTE_NUMERIC \
+    -DBUILD_TEST_0020_GIF_ICC_INVALID_PROFILE \
+    -DBUILD_TEST_0021_GIF_ICC_WRONG_DOMAIN_REJECT \
+    -DBUILD_TEST_0022_GIF_ICC_DUPLICATE_REJECT \
+    -DBUILD_TEST_0023_GIF_ICC_EMPTY_REJECT \
+    -DBUILD_TEST_0024_GIF_ICC_TRUNCATED_BLOCKS \
+    -DBUILD_TEST_0025_GIF_ICC_MISSING_TRAILER_REJECT \
+    -DBUILD_TEST_0026_GIF_ICC_CMS_NONE_DUPLICATE_NUMERIC \
+    -DBUILD_TEST_0027_GIF_ICC_LCMS2_NUMERIC \
+    -DBUILD_TEST_0028_GIF_ICC_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0029_GIF_ICC_GAMMA_TARGET_NUMERIC \
     -DBUILD_PNG_CICP_TEST_COMMON \
     -DBUILD_ASSESSMENT -DBUILD_COLOR \
     -DBUILD_TEST_0001_CIEDE2000_REFERENCE \
@@ -3026,6 +3064,45 @@ test_runner_SOURCES = test_runner.c \
     loader/png_cicp/0064_libpng_p3_palette_alpha.c \
     loader/png_cicp/0065_builtin_srgb_palette_alpha_byte.c \
     loader/png_cicp/0066_libpng_srgb_palette_alpha_byte.c \
+    loader/builtin/gif_icc/0001_gif_icc_global_numeric.c \
+    loader/builtin/gif_icc/0002_gif_icc_local_numeric.c \
+    loader/builtin/gif_icc/0003_gif_icc_srgb_numeric.c \
+    loader/builtin/gif_icc/0004_gif_icc_gamma2_numeric.c \
+    loader/builtin/gif_icc/0005_gif_icc_split_bytes_numeric.c \
+    loader/builtin/gif_icc/0006_gif_icc_late_profile_numeric.c \
+    loader/builtin/gif_icc/0007_gif_icc_untagged_byte_numeric.c \
+    loader/builtin/gif_icc/0008_gif_icc_cms_none_byte_numeric.c \
+    loader/builtin/gif_icc/0009_gif_icc_alpha_numeric.c \
+    loader/builtin/gif_icc/0010_gif_icc_file_background_numeric.c \
+    loader/builtin/gif_icc/0011_gif_icc_explicit_background_numeric.c \
+    loader/builtin/gif_icc/0012_gif_icc_file_first_background_numeric.c \
+    loader/builtin/gif_icc/0013_gif_icc_disposal2_numeric.c \
+    loader/builtin/gif_icc/0014_gif_icc_disposal3_numeric.c \
+    loader/builtin/gif_icc/0015_gif_icc_interlace_numeric.c \
+    loader/builtin/gif_icc/0016_gif_icc_start_positive_numeric.c \
+    loader/builtin/gif_icc/0017_gif_icc_start_negative_numeric.c \
+    loader/builtin/gif_icc/0018_gif_icc_replay_numeric.c \
+    loader/builtin/gif_icc/0019_gif_icc_unknown_app_byte_numeric.c \
+    loader/builtin/gif_icc/0020_gif_icc_invalid_profile.c \
+    loader/builtin/gif_icc/0021_gif_icc_wrong_domain_reject.c \
+    loader/builtin/gif_icc/0022_gif_icc_duplicate_reject.c \
+    loader/builtin/gif_icc/0023_gif_icc_empty_reject.c \
+    loader/builtin/gif_icc/0024_gif_icc_truncated_blocks.c \
+    loader/builtin/gif_icc/0025_gif_icc_missing_trailer_reject.c \
+    loader/builtin/gif_icc/0026_gif_icc_cms_none_duplicate_numeric.c \
+    loader/builtin/gif_icc/0027_gif_icc_lcms2_numeric.c \
+    loader/builtin/gif_icc/0028_gif_icc_colorsync_numeric.c \
+    loader/builtin/gif_icc/0029_gif_icc_gamma_target_numeric.c \
+    loader/builtin/gif_icc/0030_gif_icc_fail_global.c \
+    loader/builtin/gif_icc/0031_gif_icc_fail_local.c \
+    loader/builtin/gif_icc/0032_gif_icc_fail_canvas.c \
+    loader/builtin/gif_icc/0033_gif_icc_over_limit_reject.c \
+    loader/builtin/gif_icc/0034_gif_icc_limit_exact_numeric.c \
+    loader/builtin/gif_icc/0035_gif_icc_local_only_numeric.c \
+    loader/builtin/gif_icc/0036_gif_icc_explicit_no_global_numeric.c \
+    loader/builtin/gif_icc/0037_gif_icc_gamma_replay_numeric.c \
+    loader/gif_icc_test_common.c \
+    loader/gif_icc_test_common.h \
     loader/png_cicp_test_common.c \
     loader/png_cicp_test_common.h \
     loader/tga_color_test_common.c \
