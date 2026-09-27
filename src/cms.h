@@ -175,6 +175,17 @@ sixel_cms_open_profile_from_mem(void const *data, size_t length);
 SIXEL_INTERNAL_API sixel_cms_profile_t *
 sixel_cms_create_srgb_profile(void);
 
+/* Container-independent H.273 mapping. Only full-range sRGB and Display P3
+ * with the sRGB transfer are understood; NULL means an unsupported tuple. */
+SIXEL_INTERNAL_API char const *
+sixel_cms_cicp_name(unsigned char const codes[4]);
+
+/* Build a named RGB source for float transforms in the requested engine.
+ * Builtin retains the analytic definition; native engines consume an ICC
+ * serialization. Failure never substitutes another CMS backend. */
+SIXEL_INTERNAL_API sixel_cms_profile_t *
+sixel_cms_create_named_rgb_profile(char const *name);
+
 SIXEL_INTERNAL_API sixel_cms_profile_t *
 sixel_cms_create_rgb_profile_from_gamma_chrm(double file_gamma,
                                              double white_x,

@@ -2709,6 +2709,7 @@ sixel_builtin_apng_emit_frame(
     int height;
     int depth;
     char const *stbi_reason;
+    int color_converted;
 
     status = SIXEL_FALSE;
     frame = NULL;
@@ -2839,12 +2840,17 @@ sixel_builtin_apng_emit_frame(
         for (index = 0u; index < pixel_count; ++index) {
             memcpy(rgb_pixels + index * 3u, subframe + index * 4u, 3u);
         }
-        sixel_frompng_apply_colorspace_fallback(rgb_pixels,
-                                                width,
-                                                height,
-                                                png_data,
-                                                png_size,
-                                                allocator);
+        color_converted =
+            sixel_frompng_apply_colorspace_fallback_pixelformat(rgb_pixels,
+                width, height, SIXEL_PIXELFORMAT_RGB888, png_data,
+                png_size, allocator);
+        if (!color_converted &&
+            sixel_frompng_cicp_name(png_data, png_size) != NULL) {
+            sixel_helper_set_additional_message(
+                "builtin APNG: selected cICP transform failed");
+            status = SIXEL_RUNTIME_ERROR;
+            goto end;
+        }
         for (index = 0u; index < pixel_count; ++index) {
             memcpy(subframe + index * 4u, rgb_pixels + index * 3u, 3u);
         }
@@ -5158,6 +5164,7 @@ sixel_builtin_load_png_single_frame(
 {
     SIXELSTATUS status;
     int pal_loaded;
+    char const *cicp_name;
 
     status = SIXEL_OK;
     pal_loaded = 0;
@@ -5169,13 +5176,17 @@ sixel_builtin_load_png_single_frame(
         ri == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    cicp_name = enable_cms ? sixel_frompng_cicp_name(
+        sixel_chunk_get_buffer(chunk), sixel_chunk_get_size(chunk)) : NULL;
 
     /*
      * Both indexed PNG fast paths accept only an explicit background pointer.
      * A bKGD chunk must use frompng so source priority, colorspace conversion,
      * partial alpha, and the alpha-zero mask are resolved together.
+     * Display P3 also needs this path: a byte sRGB palette loses its gamut.
      */
-    if (has_bkgd_chunk != 0) {
+    if (has_bkgd_chunk != 0 ||
+        (cicp_name != NULL && strcmp(cicp_name, "srgb") != 0)) {
         return sixel_frompng_load_nonindexed(chunk,
                                              allocator,
                                              frame,

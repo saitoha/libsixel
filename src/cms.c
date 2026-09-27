@@ -1642,6 +1642,86 @@ sixel_cms_create_srgb_profile(void)
     return NULL;
 }
 
+char const *
+sixel_cms_cicp_name(unsigned char const codes[4])
+{
+    if (codes == NULL || codes[1] != 13u || codes[2] != 0u ||
+        codes[3] != 1u) {
+        return NULL;
+    }
+    switch (codes[0]) {
+    case 1u:
+        return "srgb";
+    case 12u:
+        return "display-p3";
+    default:
+        return NULL;
+    }
+}
+
+sixel_cms_profile_t *
+sixel_cms_create_named_rgb_profile(char const *name)
+{
+    sixel_cms_profile_t *profile;
+    sixel_color_def_t *definition;
+    sixel_allocator_t *allocator;
+    sixel_cms_engine_t engine;
+    unsigned char *bytes;
+    size_t length;
+    int opened;
+
+    engine = sixel_cms_get_engine();
+    if (engine == SIXEL_CMS_ENGINE_NONE) {
+        return NULL;
+    }
+    definition = sixel_cdef_name(name);
+    if (definition == NULL) {
+        return NULL;
+    }
+    profile = sixel_cms_allocate_profile();
+    if (profile == NULL) {
+        sixel_cdef_free(definition);
+        return NULL;
+    }
+    if (engine == SIXEL_CMS_ENGINE_BUILTIN) {
+        profile->rgb_definition = definition;
+        profile->backend = SIXEL_CMS_PROFILE_BACKEND_BUILTIN;
+        profile->colorspace = SIXEL_CMS_COLORSPACE_RGB;
+        profile->is_srgb_profile = strcmp(name, "srgb") == 0;
+        return profile;
+    }
+    allocator = NULL;
+    bytes = NULL;
+    length = 0u;
+    opened = 0;
+    if (SIXEL_SUCCEEDED(sixel_allocator_new(&allocator, NULL, NULL,
+                                             NULL, NULL)) &&
+        SIXEL_SUCCEEDED(sixel_cdef_export_icc(definition, &bytes,
+                                               &length, allocator))) {
+#if HAVE_LCMS2
+        if (engine == SIXEL_CMS_ENGINE_LCMS2) {
+            opened = sixel_cms_profile_open_lcms2(profile, bytes, length);
+        }
+#endif
+#if SIXEL_CMS_HAVE_COLORSYNC
+        if (engine == SIXEL_CMS_ENGINE_COLORSYNC) {
+            opened = sixel_cms_profile_open_colorsync(profile, bytes,
+                                                       length);
+        }
+#endif
+    }
+    if (allocator != NULL) {
+        sixel_allocator_free(allocator, bytes);
+    }
+    sixel_allocator_unref(allocator);
+    sixel_cdef_free(definition);
+    if (!opened) {
+        sixel_cms_close_profile(profile);
+        return NULL;
+    }
+    return profile;
+}
+
 SIXELAPI sixel_cms_profile_t *
 sixel_cms_create_linear_srgb_profile(void)
 {

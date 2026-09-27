@@ -128,6 +128,67 @@ sixel_frompng_parse_ihdr(unsigned char const *buffer,
     return 1;
 }
 
+char const *
+sixel_frompng_cicp_name(unsigned char const *buffer, size_t size)
+{
+    unsigned char depth;
+    unsigned char type;
+    unsigned char const *chunk;
+    char const *name;
+    size_t offset;
+    size_t length;
+    size_t i;
+    unsigned int bit;
+    uint32_t crc;
+    int seen;
+    int seen_palette;
+
+    if (!sixel_frompng_parse_ihdr(buffer, size, &depth, &type)) {
+        return NULL;
+    }
+    name = NULL;
+    seen = 0;
+    seen_palette = 0;
+    for (offset = 33u; offset <= size && size - offset >= 12u;
+         offset += length + 12u) {
+        length = sixel_frompng_read_be32(buffer + offset);
+        if (length > size - offset - 12u) {
+            return NULL;
+        }
+        chunk = buffer + offset + 4u;
+        if (memcmp(chunk, "IDAT", 4u) == 0 ||
+            memcmp(chunk, "IEND", 4u) == 0) {
+            return name;
+        }
+        if (memcmp(chunk, "PLTE", 4u) == 0) {
+            seen_palette = 1;
+        }
+        if (memcmp(chunk, "cICP", 4u) != 0) {
+            continue;
+        }
+        if (seen || seen_palette || length != 4u) {
+            return NULL;
+        }
+        seen = 1;
+        /* This tiny metadata CRC is independent of the optional libpng
+         * version. Never promote corrupt codes to a color interpretation. */
+        crc = UINT32_C(0xffffffff);
+        for (i = 0u; i < 8u; ++i) {
+            crc ^= chunk[i];
+            for (bit = 0u; bit < 8u; ++bit) {
+                crc = (crc >> 1) ^ ((crc & 1u)
+                    ? UINT32_C(0xedb88320) : 0u);
+            }
+        }
+        if ((crc ^ UINT32_C(0xffffffff)) !=
+            sixel_frompng_read_be32(chunk + 8u)) {
+            return NULL;
+        }
+        name = sixel_cms_cicp_name(chunk + 4u);
+    }
+    return NULL;
+}
+
 static void
 sixel_frompng_expand_sample_to_bg(uint16_t sample,
                                   unsigned char bitdepth,
@@ -659,6 +720,10 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
     int has_chrm;
     int has_gama;
     int converted;
+    char const *cicp_name;
+    float *cicp_pixels;
+    size_t sample;
+    double value;
 
     staged = NULL;
     icc_profile = NULL;
@@ -688,6 +753,47 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
         return 0;
     }
     pixel_bytes = pixel_count * 3u * sample_bytes;
+    cicp_name = sixel_frompng_cicp_name(buffer, size);
+    if (cicp_name != NULL) {
+        if (strcmp(cicp_name, "srgb") == 0) {
+            return 1;
+        }
+        chunk_profile = sixel_cms_create_named_rgb_profile(cicp_name);
+        if (chunk_profile == NULL) {
+            return 0;
+        }
+        if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+            sixel_cms_close_profile(chunk_profile);
+            return 0;
+        }
+        cicp_pixels = (float *)sixel_allocator_malloc(allocator,
+            pixel_count * 3u * sizeof(float));
+        if (cicp_pixels != NULL) {
+            for (sample = 0u; sample < pixel_count * 3u; ++sample) {
+                cicp_pixels[sample] = sample_bytes == 1u
+                    ? pixels[sample] / 255.0f : ((float *)pixels)[sample];
+            }
+            converted = sixel_cms_convert_profile_to_srgb(
+                (unsigned char *)cicp_pixels, width, height,
+                SIXEL_PIXELFORMAT_RGBFLOAT32, chunk_profile);
+            if (converted) {
+                if (sample_bytes == sizeof(float)) {
+                    memcpy(pixels, cicp_pixels, pixel_bytes);
+                } else {
+                    /* The caller owns a bounded gamma byte canvas (APNG).
+                     * Narrow only after the complete float transform. */
+                    for (sample = 0u; sample < pixel_count * 3u; ++sample) {
+                        value = cicp_pixels[sample];
+                        value = value < 0.0 ? 0.0 : value > 1.0 ? 1.0 : value;
+                        pixels[sample] = (unsigned char)(value * 255.0 + 0.5);
+                    }
+                }
+            }
+            sixel_allocator_free(allocator, cicp_pixels);
+        }
+        sixel_cms_close_profile(chunk_profile);
+        return converted;
+    }
     if (!sixel_frompng_detect_chunk_flags(buffer,
                                           size,
                                           &has_iccp,
@@ -1141,11 +1247,12 @@ sixel_frompng_build_chrm_to_srgb_matrix(uint32_t const chrm_xy[8],
  * second profile evaluator or a second source-to-destination matrix. */
 typedef struct {
     sixel_cms_profile_t *profile;
+    int required_profile;
     int transfer_mode;
     double file_gamma;
 } sixel_frompng_source_t;
 
-static void
+static int
 sixel_frompng_select_source(unsigned char const *buffer, size_t size,
                              int enable_cms, int has_alpha,
                              sixel_frompng_source_t *source)
@@ -1163,10 +1270,21 @@ sixel_frompng_select_source(unsigned char const *buffer, size_t size,
     int flag_gama;
     int invalid_chrm;
     uint32_t chrm_xy[8];
+    char const *cicp_name;
 
     memset(source, 0, sizeof(*source));
     if (!enable_cms) {
-        return;
+        return 1;
+    }
+    cicp_name = sixel_frompng_cicp_name(buffer, size);
+    if (cicp_name != NULL) {
+        loader_trace_message("PNGCICP1|source=%s", cicp_name);
+        if (strcmp(cicp_name, "srgb") == 0) {
+            return 1;
+        }
+        source->required_profile = 1;
+        source->profile = sixel_cms_create_named_rgb_profile(cicp_name);
+        return source->profile != NULL;
     }
     icc = NULL;
     icc_size = 0u;
@@ -1194,6 +1312,7 @@ sixel_frompng_select_source(unsigned char const *buffer, size_t size,
         source->transfer_mode = SIXEL_FROMPNG_TRANSFER_GAMA;
     }
     stbi_image_free(icc);
+    return 1;
 }
 
 static void
@@ -1368,7 +1487,13 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
         status = SIXEL_BAD_INTEGER_OVERFLOW;
         goto cleanup;
     }
-    sixel_frompng_select_source(buffer, size, enable_cms, has_alpha, &source);
+    if (!sixel_frompng_select_source(buffer, size, enable_cms, has_alpha,
+                                       &source)) {
+        sixel_helper_set_additional_message(
+            "PNG: cannot create selected cICP source profile");
+        status = SIXEL_RUNTIME_ERROR;
+        goto cleanup;
+    }
     /* Alpha without a composition background needs only a zero mask.
      * Keep RGB bytes until a real transfer/profile transform is required. */
     linear = (has_alpha && has_background) ||
@@ -1400,6 +1525,12 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
             }
             converted = converted && background_converted;
             if (!converted) {
+                if (source.required_profile) {
+                    sixel_helper_set_additional_message(
+                        "PNG: selected cICP transform failed");
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto cleanup;
+                }
                 /* The image may have succeeded before the background failed,
                  * or vice versa. Restore both from the original integers;
                  * fallback must never decode a partially managed image. */

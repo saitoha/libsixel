@@ -80,6 +80,7 @@
 #include "loader-libpng-chrm-area.h"
 #include "timeline-logger.h"
 #include "options.h"
+#include "frompng.h"
 
 typedef struct sixel_loader_libpng_component {
     sixel_loader_component_t base;
@@ -518,7 +519,7 @@ static int
 png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
                       float *pixels, int width, int height, int enable_cms,
                       unsigned int color_chunks, int arithmetic,
-                      char const *role)
+                      char const *role, char const *cicp_name)
 {
     png_charp name;
     png_bytep profile;
@@ -537,6 +538,7 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
     char const *reason;
     size_t count;
     size_t i;
+    sixel_cms_profile_t *cicp_profile;
 
     count = (size_t)width * (size_t)height;
     converted = 0;
@@ -544,6 +546,29 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
     has_matrix = 0;
     gamma = 0.0;
     reason = !enable_cms ? "cms-disabled" : "no-selected-chrm";
+    if (enable_cms && cicp_name != NULL) {
+        loader_trace_message("PNGCICP1|source=%s|role=%s", cicp_name, role);
+        if (strcmp(cicp_name, "srgb") != 0) {
+            cicp_profile = sixel_cms_create_named_rgb_profile(cicp_name);
+            converted = cicp_profile != NULL &&
+                sixel_cms_convert_profile_to_linearrgb(
+                    (unsigned char *)pixels, width, height,
+                    SIXEL_PIXELFORMAT_RGBFLOAT32, cicp_profile);
+            sixel_cms_close_profile(cicp_profile);
+            if (!converted) {
+                sixel_helper_set_additional_message(
+                    "libpng: selected cICP transform failed");
+                return -SIXEL_RUNTIME_ERROR;
+            }
+            return 1;
+        }
+        /* Identity source interpretation still needs transfer decoding for
+         * alpha composition, but must not revive any lower-priority ICC. */
+        for (i = 0u; i < count * 3u; ++i) {
+            pixels[i] = (float)png_decode_srgb_unit(pixels[i]);
+        }
+        return 0;
+    }
     if (enable_cms &&
         (color_chunks & (PNG_INFO_sRGB | PNG_INFO_cHRM)) !=
             (PNG_INFO_sRGB | PNG_INFO_cHRM) &&
@@ -828,6 +853,9 @@ load_png(unsigned char      /* out */ **result,
     unsigned int palette_index;
     unsigned int sample;
     unsigned int color_chunks;
+    char const *cicp_name;
+    int source_color_work;
+    int cicp_identity;
     size_t sample_bytes;
     size_t color_count;
     int palette_colors;
@@ -899,6 +927,15 @@ load_png(unsigned char      /* out */ **result,
 #endif
     png_read_info(png_ptr, info_ptr);
     color_chunks = png_source_color_chunks(buffer, size);
+    cicp_name = enable_cms ? sixel_frompng_cicp_name(buffer, size) : NULL;
+    cicp_identity = cicp_name != NULL && strcmp(cicp_name, "srgb") == 0;
+    if (cicp_identity) {
+        /* sRGB is an identity interpretation: retain eligible byte/indexed
+         * paths even when a conflicting lower-priority chunk is present. */
+        color_chunks = 0u;
+    }
+    source_color_work = color_chunks != 0u ||
+        (cicp_name != NULL && !cicp_identity);
     width = png_get_image_width(png_ptr, info_ptr);
     height = png_get_image_height(png_ptr, info_ptr);
 
@@ -939,7 +976,7 @@ load_png(unsigned char      /* out */ **result,
     alpha_state->has_background = background_from_file || bgcolor != NULL;
     has_transparency = has_tRNS_chunk || has_alpha_chunk ||
                        alpha_state->defer_composition;
-    if (indexed_trns_palette_path && !enable_cms &&
+    if (indexed_trns_palette_path && (!enable_cms || cicp_identity) &&
         !alpha_state->has_background && !alpha_state->defer_composition &&
         png_get_PLTE(png_ptr, info_ptr, &png_palette, pncolors) &&
         *pncolors <= reqcolors) {
@@ -1061,7 +1098,7 @@ load_png(unsigned char      /* out */ **result,
             allocator, (size_t)height * sizeof(*rows));
         /* A static unmanaged byte image needs neither RGB normalization
          * nor floating alpha when only exact zero coverage is retained. */
-        if (sample_bytes == 1u && (!enable_cms || color_chunks == 0u) &&
+        if (sample_bytes == 1u && (!enable_cms || !source_color_work) &&
             !alpha_state->has_background && !alpha_state->defer_composition) {
             alpha_state->mask = (unsigned char *)sixel_allocator_malloc(
                 allocator, pixel_count);
@@ -1123,7 +1160,7 @@ load_png(unsigned char      /* out */ **result,
         cms_converted = png_source_to_linear(png_ptr, info_ptr, float_pixels,
                                              *psx, *psy, enable_cms,
                                              color_chunks, chrm_arithmetic,
-                                             "image");
+                                             "image", cicp_name);
         if (cms_converted < 0) {
             status = (SIXELSTATUS)-cms_converted;
             goto cleanup;
@@ -1134,7 +1171,7 @@ load_png(unsigned char      /* out */ **result,
         if (background_from_file) {
             background_converted = png_source_to_linear(png_ptr, info_ptr,
                 bg_pixel, 1, 1, enable_cms, color_chunks, chrm_arithmetic,
-                "background");
+                "background", cicp_name);
             if (background_converted < 0) {
                 status = (SIXELSTATUS)-background_converted;
                 goto cleanup;
@@ -1465,7 +1502,7 @@ load_png(unsigned char      /* out */ **result,
         }
     }
 
-    if (enable_cms && color_chunks != 0u) {
+    if (enable_cms && source_color_work) {
         color_count = (size_t)*psx * (size_t)*psy;
         palette_colors = (*pixelformat & SIXEL_FORMATTYPE_PALETTE) != 0;
         if (palette_colors) {
@@ -1498,7 +1535,7 @@ load_png(unsigned char      /* out */ **result,
         }
         cms_converted = png_source_to_linear(png_ptr, info_ptr, cms_pixels,
             palette_colors ? *pncolors : *psx, palette_colors ? 1 : *psy, 1,
-            color_chunks, chrm_arithmetic, "image");
+            color_chunks, chrm_arithmetic, "image", cicp_name);
         if (cms_converted < 0) {
             status = (SIXELSTATUS)-cms_converted;
             goto cleanup;

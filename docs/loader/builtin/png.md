@@ -29,6 +29,7 @@ The adapted path also recognizes Apple's private `CgBI` form and performs its ch
 | `IHDR`, `PLTE`, `IDAT`, `IEND` | Parsed as core image structure with ordering and size checks. |
 | `tRNS` | Palette alpha or grayscale/RGB transparent key according to color type. |
 | `bKGD` | File-supplied background candidate, resolved against `-B` by background policy. |
+| `cICP` | Supported SDR tuples select the shared sRGB or Display P3 definition with highest priority; see the [common source policy](../png-color-metadata.md#cicp-source-definitions). |
 | `iCCP` | Embedded ICC source profile; compressed profile data is bounded and inflated before CMS use. |
 | `sRGB` | Declares the standard sRGB interpretation and takes precedence over lower-level gamma/chromaticity fallback. |
 | `cHRM` and `gAMA` | Supply chromaticities and transfer information when a higher-priority usable declaration is absent. |
@@ -37,9 +38,9 @@ The adapted path also recognizes Apple's private `CgBI` form and performs its ch
 | Unknown ancillary chunks | Bounds-checked and skipped. |
 | Unknown critical chunks | Rejected. |
 
-The [shared PNG metadata precedence](../png-color-metadata.md) describes the ColorSync-compatible source choice, including the `iCCP+sRGB+cHRM` exception and the distinction from `iCCP+sRGB` alone. Malformed or non-applicable metadata follows the format path's fallback rules rather than becoming a generic metadata object. Text chunks, `pHYs`, `tIME`, and HDR signaling such as `cICP`, `mDCv`, and `cLLi` have no semantic effect in the current decoder.
+The [shared PNG metadata precedence](../png-color-metadata.md) describes the ColorSync-compatible source choice, including the `iCCP+sRGB+cHRM` exception and the distinction from `iCCP+sRGB` alone. Malformed or non-applicable metadata follows the format path's fallback rules rather than becoming a generic metadata object. Text chunks, `pHYs`, `tIME`, `mDCV`, and `cLLI` have no semantic effect. The supported cICP tuples and the remaining HDR boundary are defined by the shared source policy.
 
-PNG specifies CRC validation, but these in-memory builtin paths currently read past stored CRC fields without verifying them. Successful decode therefore proves structural acceptance by this parser, not checksum authentication.
+PNG specifies CRC validation, but these in-memory builtin paths currently read past stored CRC fields without verifying them. The shared cICP metadata scanner separately verifies that chunk's CRC before adopting its color definition. Successful image decode still does not establish checksum authentication for the whole PNG.
 
 ## Static decode pipeline and output forms
 
@@ -54,7 +55,7 @@ The dispatcher recognizes the PNG signature and performs one header probe from t
 | Sixteen-bit alpha or background composition | Float processing; composition is performed in linear light and may produce `LINEARRGBFLOAT32`. |
 | Successful color-management path | The configured gamma, linear, CIELAB, OKLab, or DIN99d typed target, with byte output only where the target/path permits and `prefer_8bit=1`. |
 
-Indexed palette conversion uses the selected shared CMS in every build and happens before later resize and quantization. If the source palette exceeds `-p COLORS`, or scaling/non-default color mode disables palette fusion, the decoder expands it. `trns_keycolor=1` is a separate optimization for non-indexed `tRNS`: it is used only when there is no resolved background and no CMS operation that requires true color samples; otherwise the ordinary alpha/float path wins.
+A supported P3 cICP source bypasses the byte-palette path and retains its canonical extended RGB through the static float path. Indexed palette conversion otherwise uses the selected shared CMS in every build and happens before later resize and quantization. If the source palette exceeds `-p COLORS`, or scaling/non-default color mode disables palette fusion, the decoder expands it. `trns_keycolor=1` is a separate optimization for non-indexed `tRNS`: it is used only when there is no resolved background and no CMS operation that requires true color samples; otherwise the ordinary alpha/float path wins.
 
 The [source precision contract](png-source-precision.md) describes direct original-sample ICC conversion, extended linear RGB, image/background failure recovery, and exact target rounding. The keycolor byte optimization is excluded for sixteen-bit input, including CMS-disabled images.
 
@@ -70,7 +71,7 @@ The shared palette converter has an explicit format policy. TGA retains its exis
 
 `acTL` declares frame count and play count. Each `fcTL` gives a canvas sub-rectangle, delay numerator/denominator, disposal, and blend operator. `fdAT` carries frame zlib bytes after a sequence number; the default image uses `IDAT`. The [PNG Third Edition APNG structure](https://www.w3.org/TR/png-3/) makes the position of the first `fcTL` decisive: if it precedes `IDAT`, the static default image is also animation frame zero; otherwise the default image is not in the animation, is not emitted through the animation callback, and is not included in `acTL.num_frames`. The implementation checks sequence numbers, declared frame count, chunk order, rectangle overflow, and canvas bounds.
 
-Each frame is reconstructed as a synthetic PNG using shared chunks, decoded through `stbi__load_and_postprocess_8bit()`, and composited onto an RGBA8 canvas. This is a distinct path from `sixel_frompng_load_nonindexed()` and its precision-preserving static pipeline. When CMS is enabled, its shared declarations are evaluated through the static PNG source-choice policy and each decoded rectangle's RGB channels are normalized through the selected shared CMS to eight-bit sRGB before blending. A failed conversion retains the entire original rectangle RGB buffer. Alpha is retained independently. This does not invoke the static float pipeline or change the canvas to linear-light composition:
+Each frame is reconstructed as a synthetic PNG using shared chunks, decoded through `stbi__load_and_postprocess_8bit()`, and composited onto an RGBA8 canvas. This is a distinct path from `sixel_frompng_load_nonindexed()` and its precision-preserving static pipeline. When CMS is enabled, its shared declarations are evaluated through the static PNG source-choice policy and each decoded rectangle's RGB channels are normalized through the selected shared CMS to eight-bit sRGB before blending. A failed legacy conversion retains the entire original rectangle RGB buffer; failure of an adopted P3 cICP transform instead fails loading. P3 cICP is interpreted here, but this byte canvas still narrows its gamut to sRGB. Alpha is retained independently. This does not invoke the static float pipeline or change the canvas to linear-light composition:
 
 | APNG field | Behavior |
 | --- | --- |

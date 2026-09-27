@@ -49,7 +49,7 @@ img2sixel -Llibpng! -S --start-frame=1 animation.png
 
 Quote `!` in shells with interactive history expansion. Build tools should use the repository's `.local/bin` first in `PATH`.
 
-The predicate recognizes the eight-byte PNG signature. libpng handles DEFLATE, row filters, Adam7 interlace, and standard PNG samples: grayscale at 1/2/4/8/16 bits, indexed at 1/2/4/8 bits, and RGB, grayscale-alpha, and RGBA at 8/16 bits. The effective decoder feature set depends on the linked libpng build. This adapter does not implement Apple `CgBI`, HDR tone mapping, or dedicated interpretation of `cICP`, `mDCv`, and `cLLi`. See the [PNG specification](https://www.w3.org/TR/png-3/) and [libpng manual](https://github.com/pnggroup/libpng/blob/libpng16/libpng-manual.txt) for codec-level details.
+The predicate recognizes the eight-byte PNG signature. libpng handles DEFLATE, row filters, Adam7 interlace, and standard PNG samples: grayscale at 1/2/4/8/16 bits, indexed at 1/2/4/8 bits, and RGB, grayscale-alpha, and RGBA at 8/16 bits. The effective decoder feature set depends on the linked libpng build. This adapter does not implement Apple `CgBI`, HDR tone mapping or interpretation of `mDCV`/`cLLI`. Supported SDR cICP tuples use the [shared PNG source policy](png-color-metadata.md#cicp-source-definitions). See the [PNG specification](https://www.w3.org/TR/png-3/) and [libpng manual](https://github.com/pnggroup/libpng/blob/libpng16/libpng-manual.txt) for codec-level details.
 
 ## Processing boundaries
 

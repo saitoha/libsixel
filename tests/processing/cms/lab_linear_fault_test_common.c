@@ -205,6 +205,8 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define sixel_cms_create_linear_srgb_profile clf_local_66
 #define sixel_cms_create_rgb_profile_from_gamma_chrm clf_local_67
 #define sixel_cms_create_rgb_profile_from_gammas_chrm clf_local_68
+#define sixel_cms_cicp_name clf_cicp_name
+#define sixel_cms_create_named_rgb_profile clf_named_profile
 #define sixel_cms_create_srgb_profile clf_local_69
 #define sixel_cms_create_transform clf_local_70
 #define sixel_cms_create_transform_builtin clf_local_71
@@ -458,6 +460,14 @@ sixel_cxform_free(sixel_color_xform_t *transform);
 #define free clf_free
 #define sixel_icc_apply_device_to_xyz_d50_with_a2b_slot clf_icc
 #define ColorSyncTransformConvert clf_cs
+SIXEL_INTERNAL_API char const *
+sixel_cms_cicp_name(unsigned char const codes[4]);
+SIXEL_INTERNAL_API sixel_cms_profile_t *
+sixel_cms_create_named_rgb_profile(char const *name);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_cdef_export_icc(sixel_color_def_t const *definition,
+                      unsigned char **bytes, size_t *length,
+                      sixel_allocator_t *allocator);
 #include "src/cms.c"
 #undef malloc
 #undef free
@@ -559,6 +569,8 @@ sixel_cxform_free(sixel_color_xform_t *transform);
 #undef sixel_cms_create_linear_srgb_profile
 #undef sixel_cms_create_rgb_profile_from_gamma_chrm
 #undef sixel_cms_create_rgb_profile_from_gammas_chrm
+#undef sixel_cms_cicp_name
+#undef sixel_cms_create_named_rgb_profile
 #undef sixel_cms_create_srgb_profile
 #undef sixel_cms_create_transform
 #undef sixel_cms_create_transform_builtin

@@ -36,6 +36,11 @@ extern "C" {
 #include "chunk.h"
 #include "frame.h"
 
+/* Inspect a unique, CRC-valid cICP before PLTE/IDAT. The returned static
+ * name is a supported shared CMS definition, or NULL for ignored metadata. */
+char const *
+sixel_frompng_cicp_name(unsigned char const *buffer, size_t size);
+
 void
 sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,
                                         int width,
