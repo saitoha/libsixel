@@ -80,14 +80,14 @@
           "coverage_id": "BMP-05",
           "details": [
             "choose embedded ICC before calibrated endpoints",
-            "convert RGB channels while retaining alpha"
+            "convert original RGB/CMYK samples to linear float"
           ],
           "phase": "COLOR",
           "role": "color",
           "source": "src/loader-builtin.c",
           "symbols": [
-            "sixel_builtin_apply_bmp_icc_to_rgba_channels",
-            "sixel_builtin_apply_bmp_calibrated_to_rgba_channels"
+            "sixel_builtin_bmp_source",
+            "sixel_builtin_load_bmp_native"
           ],
           "title": "Apply V4/V5 calibrated or embedded profile"
         },

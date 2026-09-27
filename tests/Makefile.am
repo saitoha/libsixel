@@ -255,6 +255,52 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0035_GIF_ICC_LOCAL_ONLY_NUMERIC \
     -DBUILD_TEST_0036_GIF_ICC_EXPLICIT_NO_GLOBAL_NUMERIC \
     -DBUILD_TEST_0037_GIF_ICC_GAMMA_REPLAY_NUMERIC \
+    -DBUILD_TEST_0044_BMP_LEGACY_ICC_RGB_NUMERIC \
+    -DBUILD_TEST_0045_BMP_LEGACY_ICC_CMYK_NUMERIC \
+    -DBUILD_BMP_PRECISION_TEST_COMMON \
+    -DBUILD_TEST_0001_BMP_P3_RGB24_NUMERIC \
+    -DBUILD_TEST_0002_BMP_P3_ALPHA_NUMERIC \
+    -DBUILD_TEST_0003_BMP_P3_BACKGROUND_NUMERIC \
+    -DBUILD_TEST_0004_BMP_GAMMA_BACKGROUND_NUMERIC \
+    -DBUILD_TEST_0005_BMP_KEEP_BACKGROUND_NUMERIC \
+    -DBUILD_TEST_0006_BMP_CALIBRATED_COMMON_NUMERIC \
+    -DBUILD_TEST_0007_BMP_CALIBRATED_SPLIT_NUMERIC \
+    -DBUILD_TEST_0008_BMP_INDEXED_P3_NUMERIC \
+    -DBUILD_TEST_0009_BMP_RLE8_P3_NUMERIC \
+    -DBUILD_TEST_0010_BMP_RLE4_P3_NUMERIC \
+    -DBUILD_TEST_0011_BMP_RGB10_NUMERIC \
+    -DBUILD_TEST_0012_BMP_P3_RGB10_NUMERIC \
+    -DBUILD_TEST_0013_BMP_ALPHA11_NUMERIC \
+    -DBUILD_TEST_0014_BMP_P3_RGB565_NUMERIC \
+    -DBUILD_TEST_0015_BMP_FORCED_RGB565_NUMERIC \
+    -DBUILD_TEST_0016_BMP_TOPDOWN_RGB10_NUMERIC \
+    -DBUILD_TEST_0017_BMP_NONE_RGB10_NUMERIC \
+    -DBUILD_TEST_0018_BMP_RGB24_BYTE_NUMERIC \
+    -DBUILD_TEST_0019_BMP_BINARY_ALPHA_BYTE_NUMERIC \
+    -DBUILD_TEST_0020_BMP_OPAQUE_BACKGROUND_BYTE_NUMERIC \
+    -DBUILD_TEST_0021_BMP_PARTIAL_BACKGROUND_NUMERIC \
+    -DBUILD_TEST_0022_BMP_DEVICE_CMYK_BYTE_NUMERIC \
+    -DBUILD_TEST_0023_BMP_CMYK32_NUMERIC \
+    -DBUILD_TEST_0024_BMP_CMYK_RLE8_NUMERIC \
+    -DBUILD_TEST_0025_BMP_CMYK_RLE4_NUMERIC \
+    -DBUILD_TEST_0026_BMP_GAMMA_TARGET_NUMERIC \
+    -DBUILD_TEST_0027_BMP_PREFER8BIT_NUMERIC \
+    -DBUILD_TEST_0028_BMP_LCMS2_NUMERIC \
+    -DBUILD_TEST_0029_BMP_COLORSYNC_NUMERIC \
+    -DBUILD_TEST_0030_BMP_WRONG_RGB_DOMAIN_BYTE_NUMERIC \
+    -DBUILD_TEST_0031_BMP_WRONG_CMYK_DOMAIN_BYTE_NUMERIC \
+    -DBUILD_TEST_0032_BMP_INVALID_PROFILE_REJECT \
+    -DBUILD_TEST_0033_BMP_TRANSFORM_FAIL \
+    -DBUILD_TEST_0034_BMP_FLOAT_ALLOC_FAIL \
+    -DBUILD_TEST_0035_BMP_MASK_ALLOC_FAIL \
+    -DBUILD_TEST_0036_BMP_NONCONTIGUOUS_REJECT \
+    -DBUILD_TEST_0037_BMP_OVERLAPPING_REJECT \
+    -DBUILD_TEST_0038_BMP_OUT_OF_RANGE_REJECT \
+    -DBUILD_TEST_0039_BMP_RGB30_NUMERIC \
+    -DBUILD_TEST_0040_BMP_EXPLICIT_ZERO_ALPHA_NUMERIC \
+    -DBUILD_TEST_0041_BMP_IMPLICIT_ZERO_ALPHA_NUMERIC \
+    -DBUILD_TEST_0042_BMP_CMYK_LCMS2_NUMERIC \
+    -DBUILD_TEST_0043_BMP_CMYK_COLORSYNC_NUMERIC \
     -DBUILD_GIF_ICC_TEST_COMMON \
     -DBUILD_TEST_0001_GIF_ICC_GLOBAL_NUMERIC \
     -DBUILD_TEST_0002_GIF_ICC_LOCAL_NUMERIC \
@@ -3101,6 +3147,53 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/gif_icc/0035_gif_icc_local_only_numeric.c \
     loader/builtin/gif_icc/0036_gif_icc_explicit_no_global_numeric.c \
     loader/builtin/gif_icc/0037_gif_icc_gamma_replay_numeric.c \
+    loader/builtin/bmp_precision/0044_bmp_legacy_icc_rgb_numeric.c \
+    loader/builtin/bmp_precision/0045_bmp_legacy_icc_cmyk_numeric.c \
+    loader/bmp_precision_test_common.c \
+    loader/bmp_precision_test_common.h \
+    loader/builtin/bmp_precision/0001_bmp_p3_rgb24_numeric.c \
+    loader/builtin/bmp_precision/0002_bmp_p3_alpha_numeric.c \
+    loader/builtin/bmp_precision/0003_bmp_p3_background_numeric.c \
+    loader/builtin/bmp_precision/0004_bmp_gamma_background_numeric.c \
+    loader/builtin/bmp_precision/0005_bmp_keep_background_numeric.c \
+    loader/builtin/bmp_precision/0006_bmp_calibrated_common_numeric.c \
+    loader/builtin/bmp_precision/0007_bmp_calibrated_split_numeric.c \
+    loader/builtin/bmp_precision/0008_bmp_indexed_p3_numeric.c \
+    loader/builtin/bmp_precision/0009_bmp_rle8_p3_numeric.c \
+    loader/builtin/bmp_precision/0010_bmp_rle4_p3_numeric.c \
+    loader/builtin/bmp_precision/0011_bmp_rgb10_numeric.c \
+    loader/builtin/bmp_precision/0012_bmp_p3_rgb10_numeric.c \
+    loader/builtin/bmp_precision/0013_bmp_alpha11_numeric.c \
+    loader/builtin/bmp_precision/0014_bmp_p3_rgb565_numeric.c \
+    loader/builtin/bmp_precision/0015_bmp_forced_rgb565_numeric.c \
+    loader/builtin/bmp_precision/0016_bmp_topdown_rgb10_numeric.c \
+    loader/builtin/bmp_precision/0017_bmp_none_rgb10_numeric.c \
+    loader/builtin/bmp_precision/0018_bmp_rgb24_byte_numeric.c \
+    loader/builtin/bmp_precision/0019_bmp_binary_alpha_byte_numeric.c \
+    loader/builtin/bmp_precision/0020_bmp_opaque_background_byte_numeric.c \
+    loader/builtin/bmp_precision/0021_bmp_partial_background_numeric.c \
+    loader/builtin/bmp_precision/0022_bmp_device_cmyk_byte_numeric.c \
+    loader/builtin/bmp_precision/0023_bmp_cmyk32_numeric.c \
+    loader/builtin/bmp_precision/0024_bmp_cmyk_rle8_numeric.c \
+    loader/builtin/bmp_precision/0025_bmp_cmyk_rle4_numeric.c \
+    loader/builtin/bmp_precision/0026_bmp_gamma_target_numeric.c \
+    loader/builtin/bmp_precision/0027_bmp_prefer8bit_numeric.c \
+    loader/builtin/bmp_precision/0028_bmp_lcms2_numeric.c \
+    loader/builtin/bmp_precision/0029_bmp_colorsync_numeric.c \
+    loader/builtin/bmp_precision/0030_bmp_wrong_rgb_domain_byte_numeric.c \
+    loader/builtin/bmp_precision/0031_bmp_wrong_cmyk_domain_byte_numeric.c \
+    loader/builtin/bmp_precision/0032_bmp_invalid_profile_reject.c \
+    loader/builtin/bmp_precision/0033_bmp_transform_fail.c \
+    loader/builtin/bmp_precision/0034_bmp_float_alloc_fail.c \
+    loader/builtin/bmp_precision/0035_bmp_mask_alloc_fail.c \
+    loader/builtin/bmp_precision/0036_bmp_noncontiguous_reject.c \
+    loader/builtin/bmp_precision/0037_bmp_overlapping_reject.c \
+    loader/builtin/bmp_precision/0038_bmp_out_of_range_reject.c \
+    loader/builtin/bmp_precision/0039_bmp_rgb30_numeric.c \
+    loader/builtin/bmp_precision/0040_bmp_explicit_zero_alpha_numeric.c \
+    loader/builtin/bmp_precision/0041_bmp_implicit_zero_alpha_numeric.c \
+    loader/builtin/bmp_precision/0042_bmp_cmyk_lcms2_numeric.c \
+    loader/builtin/bmp_precision/0043_bmp_cmyk_colorsync_numeric.c \
     loader/gif_icc_test_common.c \
     loader/gif_icc_test_common.h \
     loader/png_cicp_test_common.c \

@@ -59,6 +59,7 @@
 
 #include "allocator.h"
 #include "cms.h"
+#include "colorspace.h"
 #include "chunk-factory.h"
 #include "compat_stub.h"
 #include "frame-private.h"
@@ -1373,278 +1374,6 @@ sixel_builtin_icc_header_declares_signature(unsigned char const *icc_profile,
     return memcmp(icc_profile + 16u, signature, 4u) == 0 ? 1 : 0;
 }
 
-static int
-sixel_builtin_icc_header_declares_rgb(unsigned char const *icc_profile,
-                                      size_t icc_profile_length)
-{
-    return sixel_builtin_icc_header_declares_signature(icc_profile,
-                                                       icc_profile_length,
-                                                       "RGB ");
-}
-
-static int
-sixel_builtin_bmp_open_embedded_icc_rgb_profile(
-    unsigned char const *icc_profile,
-    size_t icc_profile_length,
-    sixel_cms_profile_t **pprofile)
-{
-    sixel_cms_profile_t *src_profile;
-    sixel_cms_color_space_t src_colorspace;
-
-    src_profile = NULL;
-    src_colorspace = SIXEL_CMS_COLORSPACE_UNKNOWN;
-    if (pprofile == NULL ||
-        icc_profile == NULL ||
-        icc_profile_length == 0u) {
-        return -1;
-    }
-    *pprofile = NULL;
-    if (sixel_builtin_icc_header_declares_rgb(icc_profile,
-                                              icc_profile_length) == 0) {
-        return 0;
-    }
-
-    src_profile = sixel_cms_open_profile_from_mem(icc_profile,
-                                                  icc_profile_length);
-    if (src_profile == NULL) {
-        return -1;
-    }
-    src_colorspace = sixel_cms_get_color_space(src_profile);
-    if (src_colorspace != SIXEL_CMS_COLORSPACE_RGB) {
-        /*
-         * RGB/RGBA BMP pixel streams can only consume RGB source profiles.
-         * Non-RGB profiles are non-applicable mismatches, not hard failures.
-         */
-        sixel_cms_close_profile(src_profile);
-        return 0;
-    }
-    *pprofile = src_profile;
-    return 1;
-}
-
-static int
-sixel_builtin_apply_bmp_icc_to_rgba_channels(
-    sixel_frame_t *frame,
-    unsigned char const *icc_profile,
-    size_t icc_profile_length)
-{
-    unsigned char *rgb_pixels;
-    size_t pixel_count;
-    size_t rgb_size;
-    size_t index;
-    int converted;
-    int icc_applicability;
-    sixel_cms_profile_t *src_profile;
-
-    rgb_pixels = NULL;
-    pixel_count = 0u;
-    rgb_size = 0u;
-    index = 0u;
-    converted = 0;
-    icc_applicability = 0;
-    src_profile = NULL;
-    if (frame == NULL ||
-        frame->pixels.u8ptr == NULL ||
-        frame->allocator == NULL ||
-        frame->width <= 0 ||
-        frame->height <= 0 ||
-        icc_profile == NULL ||
-        icc_profile_length == 0u) {
-        return 0;
-    }
-    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
-        return 0;
-    }
-
-    icc_applicability = sixel_builtin_bmp_open_embedded_icc_rgb_profile(
-        icc_profile,
-        icc_profile_length,
-        &src_profile);
-    if (icc_applicability < 0) {
-        loader_trace_message("builtin BMP: embedded ICC conversion failed");
-        return 0;
-    }
-    if (icc_applicability == 0) {
-        return 0;
-    }
-
-    pixel_count = (size_t)frame->width * (size_t)frame->height;
-    if (pixel_count > SIZE_MAX / 3u) {
-        sixel_cms_close_profile(src_profile);
-        return 0;
-    }
-    rgb_size = pixel_count * 3u;
-    rgb_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
-                                                         rgb_size);
-    if (rgb_pixels == NULL) {
-        loader_trace_message(
-            "builtin BMP: skipping embedded ICC conversion "
-            "(temporary RGB allocation failed)");
-        sixel_cms_close_profile(src_profile);
-        return 0;
-    }
-
-    for (index = 0u; index < pixel_count; ++index) {
-        rgb_pixels[index * 3u + 0u] = frame->pixels.u8ptr[index * 4u + 0u];
-        rgb_pixels[index * 3u + 1u] = frame->pixels.u8ptr[index * 4u + 1u];
-        rgb_pixels[index * 3u + 2u] = frame->pixels.u8ptr[index * 4u + 2u];
-    }
-
-    converted = sixel_cms_convert_profile_to_srgb(
-        rgb_pixels,
-        frame->width,
-        frame->height,
-        SIXEL_PIXELFORMAT_RGB888,
-        src_profile);
-    sixel_cms_close_profile(src_profile);
-    src_profile = NULL;
-    if (!converted) {
-        loader_trace_message("builtin BMP: embedded ICC conversion failed");
-        sixel_allocator_free(frame->allocator, rgb_pixels);
-        return 0;
-    }
-
-    for (index = 0u; index < pixel_count; ++index) {
-        frame->pixels.u8ptr[index * 4u + 0u] = rgb_pixels[index * 3u + 0u];
-        frame->pixels.u8ptr[index * 4u + 1u] = rgb_pixels[index * 3u + 1u];
-        frame->pixels.u8ptr[index * 4u + 2u] = rgb_pixels[index * 3u + 2u];
-    }
-
-    sixel_allocator_free(frame->allocator, rgb_pixels);
-    return 1;
-}
-
-static int
-sixel_builtin_apply_bmp_calibrated_rgb_to_rgb8(
-    unsigned char *rgb_pixels,
-    int width,
-    int height,
-    sixel_frombmp_probe_t const *bmp_probe)
-{
-    sixel_cms_profile_t *src_profile;
-    int converted;
-
-    src_profile = NULL;
-    converted = 0;
-    if (rgb_pixels == NULL ||
-        width <= 0 ||
-        height <= 0 ||
-        bmp_probe == NULL ||
-        bmp_probe->has_calibrated_rgb == 0) {
-        return 0;
-    }
-
-    src_profile = sixel_cms_create_rgb_profile_from_gammas_chrm(
-        bmp_probe->calibrated_gamma_r,
-        bmp_probe->calibrated_gamma_g,
-        bmp_probe->calibrated_gamma_b,
-        bmp_probe->white_x,
-        bmp_probe->white_y,
-        bmp_probe->red_x,
-        bmp_probe->red_y,
-        bmp_probe->green_x,
-        bmp_probe->green_y,
-        bmp_probe->blue_x,
-        bmp_probe->blue_y);
-    if (src_profile == NULL) {
-        src_profile = sixel_cms_create_rgb_profile_from_gamma_chrm(
-            bmp_probe->calibrated_gamma,
-            bmp_probe->white_x,
-            bmp_probe->white_y,
-            bmp_probe->red_x,
-            bmp_probe->red_y,
-            bmp_probe->green_x,
-            bmp_probe->green_y,
-            bmp_probe->blue_x,
-            bmp_probe->blue_y);
-    }
-    if (src_profile == NULL) {
-        loader_trace_message(
-            "builtin BMP: calibrated profile creation failed");
-        return 0;
-    }
-
-    converted = sixel_cms_convert_profile_to_srgb(
-        rgb_pixels,
-        width,
-        height,
-        SIXEL_PIXELFORMAT_RGB888,
-        src_profile);
-    sixel_cms_close_profile(src_profile);
-    if (!converted) {
-        loader_trace_message(
-            "builtin BMP: calibrated RGB conversion failed");
-    }
-    return converted;
-}
-
-static int
-sixel_builtin_apply_bmp_calibrated_to_rgba_channels(
-    sixel_frame_t *frame,
-    sixel_frombmp_probe_t const *bmp_probe)
-{
-    unsigned char *rgb_pixels;
-    size_t pixel_count;
-    size_t rgb_size;
-    size_t index;
-    int converted;
-
-    rgb_pixels = NULL;
-    pixel_count = 0u;
-    rgb_size = 0u;
-    index = 0u;
-    converted = 0;
-    if (frame == NULL ||
-        frame->pixels.u8ptr == NULL ||
-        frame->allocator == NULL ||
-        frame->width <= 0 ||
-        frame->height <= 0 ||
-        bmp_probe == NULL ||
-        bmp_probe->has_calibrated_rgb == 0) {
-        return 0;
-    }
-    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
-        return 0;
-    }
-
-    pixel_count = (size_t)frame->width * (size_t)frame->height;
-    if (pixel_count > SIZE_MAX / 3u) {
-        return 0;
-    }
-    rgb_size = pixel_count * 3u;
-    rgb_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
-                                                         rgb_size);
-    if (rgb_pixels == NULL) {
-        loader_trace_message(
-            "builtin BMP: skipping calibrated conversion "
-            "(temporary RGB allocation failed)");
-        return 0;
-    }
-
-    for (index = 0u; index < pixel_count; ++index) {
-        rgb_pixels[index * 3u + 0u] = frame->pixels.u8ptr[index * 4u + 0u];
-        rgb_pixels[index * 3u + 1u] = frame->pixels.u8ptr[index * 4u + 1u];
-        rgb_pixels[index * 3u + 2u] = frame->pixels.u8ptr[index * 4u + 2u];
-    }
-    converted = sixel_builtin_apply_bmp_calibrated_rgb_to_rgb8(
-        rgb_pixels,
-        frame->width,
-        frame->height,
-        bmp_probe);
-    if (!converted) {
-        sixel_allocator_free(frame->allocator, rgb_pixels);
-        return 0;
-    }
-
-    for (index = 0u; index < pixel_count; ++index) {
-        frame->pixels.u8ptr[index * 4u + 0u] = rgb_pixels[index * 3u + 0u];
-        frame->pixels.u8ptr[index * 4u + 1u] = rgb_pixels[index * 3u + 1u];
-        frame->pixels.u8ptr[index * 4u + 2u] = rgb_pixels[index * 3u + 2u];
-    }
-    sixel_allocator_free(frame->allocator, rgb_pixels);
-    return 1;
-}
-
 static void
 sixel_builtin_bmp_convert_cmyk8_to_rgb8_device(unsigned char *rgb_pixels,
                                                 unsigned char const
@@ -1686,146 +1415,276 @@ sixel_builtin_bmp_convert_cmyk8_to_rgb8_device(unsigned char *rgb_pixels,
     }
 }
 
-static unsigned char
-sixel_builtin_cms_clamp_unit_to_u8(float value)
+/* Select source color meaning before deciding the working representation.
+ * A domain mismatch retains the historical unprofiled interpretation. Once
+ * an applicable profile is selected, creation/apply failure must not retry
+ * it as device RGB or CMYK. Embedded profiles override calibrated metadata. */
+static SIXELSTATUS
+sixel_builtin_bmp_source(sixel_frombmp_probe_t const *probe, int enable_cms,
+                          sixel_cms_profile_t **source)
 {
-    double unit;
+    sixel_cms_color_space_t domain;
 
-    unit = (double)value;
-    if (!(unit > 0.0)) {
-        return 0u;
+    *source = NULL;
+    if (!enable_cms || sixel_cms_get_engine() == SIXEL_CMS_ENGINE_NONE) {
+        return SIXEL_OK;
     }
-    if (unit >= 1.0) {
-        return 255u;
+    domain = probe->is_cmyk ? SIXEL_CMS_COLORSPACE_CMYK :
+        SIXEL_CMS_COLORSPACE_RGB;
+    if (probe->icc_profile != NULL && probe->icc_profile_length != 0u) {
+        if (!sixel_builtin_icc_header_declares_signature(probe->icc_profile,
+                probe->icc_profile_length, probe->is_cmyk ? "CMYK" : "RGB ")) {
+            return SIXEL_OK;
+        }
+        *source = sixel_cms_open_profile_from_mem(probe->icc_profile,
+                                                  probe->icc_profile_length);
+        if (*source != NULL && sixel_cms_get_color_space(*source) != domain) {
+            sixel_cms_close_profile(*source);
+            *source = NULL;
+            return SIXEL_OK;
+        }
+    } else if (!probe->is_cmyk && probe->has_calibrated_rgb) {
+        *source = sixel_cms_create_rgb_profile_from_gammas_chrm(
+            probe->calibrated_gamma_r, probe->calibrated_gamma_g,
+            probe->calibrated_gamma_b, probe->white_x, probe->white_y,
+            probe->red_x, probe->red_y, probe->green_x, probe->green_y,
+            probe->blue_x, probe->blue_y);
+    } else {
+        return SIXEL_OK;
     }
-    return (unsigned char)(unit * 255.0 + 0.5);
+    if (*source == NULL) {
+        sixel_helper_set_additional_message(
+            "builtin BMP: selected color profile creation failed");
+        return SIXEL_BAD_INPUT;
+    }
+    return SIXEL_OK;
 }
 
-static int
-sixel_builtin_icc_header_declares_cmyk(unsigned char const *icc_profile,
-                                       size_t icc_profile_length)
+static double
+sixel_builtin_bmp_sample(sixel_bmp_samples_t const *samples,
+                          size_t pixel, int channel)
 {
-    return sixel_builtin_icc_header_declares_signature(icc_profile,
-                                                       icc_profile_length,
-                                                       "CMYK");
+    size_t i;
+
+    i = pixel * (size_t)samples->comp + (size_t)channel;
+    return samples->is_float ? (double)((float const *)samples->pixels)[i] :
+        (double)samples->pixels[i] / 255.0;
 }
 
-static int
-sixel_builtin_bmp_convert_cmyk8_to_rgb8_icc(unsigned char *rgb_pixels,
-                                             unsigned char const *cmyk_pixels,
-                                             size_t pixel_count,
-                                             unsigned char const *icc_profile,
-                                             size_t icc_profile_length)
+/* Native BMP color handling belongs to the adapter. The decoder supplies
+ * typed source samples and never acquires a CMS profile or frame policy. */
+static SIXELSTATUS
+sixel_builtin_load_bmp_native(sixel_chunk_t const *chunk,
+                               sixel_frame_t *frame,
+                               sixel_frombmp_probe_t const *probe,
+                               unsigned char *bgcolor,
+                               int enable_cms, int prefer_float32,
+                               int info40_mode)
 {
-    sixel_cms_profile_t *src_profile;
-    sixel_cms_profile_t *dst_profile;
+    SIXELSTATUS status;
+    sixel_bmp_samples_t samples;
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *destination;
     sixel_cms_transform_t *transform;
-    sixel_cms_color_space_t src_colorspace;
-    float *rgb_float;
-    size_t float_count;
-    size_t float_size;
-    size_t index;
-    int converted;
-    int trace_conversion_failure;
-    int header_declares_cmyk;
+    float *rgb;
+    float background[3];
+    unsigned char *mask;
+    unsigned char *device_rgb;
+    size_t count;
+    size_t i;
+    int c;
+    int has_alpha;
+    int compose;
+    int preserve_zero;
+    int has_zero;
+    int use_float;
+    int format;
+    double alpha;
 
-    src_profile = NULL;
-    dst_profile = NULL;
+    memset(&samples, 0, sizeof(samples));
+    source = NULL;
+    destination = NULL;
     transform = NULL;
-    src_colorspace = SIXEL_CMS_COLORSPACE_UNKNOWN;
-    rgb_float = NULL;
-    float_count = 0u;
-    float_size = 0u;
-    index = 0u;
-    converted = 0;
-    trace_conversion_failure = 1;
-    header_declares_cmyk = 0;
-    if (rgb_pixels == NULL ||
-        cmyk_pixels == NULL ||
-        pixel_count == 0u ||
-        icc_profile == NULL ||
-        icc_profile_length == 0u) {
-        return 0;
+    rgb = NULL;
+    mask = NULL;
+    device_rgb = NULL;
+    memset(background, 0, sizeof(background));
+    has_zero = 0;
+    preserve_zero = bgcolor == NULL ||
+        SIXEL_LOADER_ALPHA_POLICY_PRESERVES_ZERO(loader_transparent_policy());
+    status = sixel_builtin_bmp_source(probe, enable_cms, &source);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
-    if (pixel_count > SIZE_MAX / 3u) {
-        return 0;
+    status = sixel_frombmp_load(chunk, frame->allocator, &samples,
+                                 source != NULL || prefer_float32,
+                                 info40_mode);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
-    header_declares_cmyk = sixel_builtin_icc_header_declares_cmyk(
-        icc_profile,
-        icc_profile_length);
-    if (header_declares_cmyk == 0) {
-        /*
-         * Non-CMYK ICC domains are non-applicable for CMYK BMP pixels.
-         * Skip conversion quietly so backend-specific parser behavior
-         * cannot misclassify unknown profiles as conversion failures.
-         */
-        return 0;
-    }
-    float_count = pixel_count * 3u;
-    if (float_count > SIZE_MAX / sizeof(float)) {
-        return 0;
-    }
-    float_size = float_count * sizeof(float);
-    rgb_float = (float *)malloc(float_size);
-    if (rgb_float == NULL) {
-        return 0;
-    }
-
-    src_profile = sixel_cms_open_profile_from_mem(icc_profile,
-                                                   icc_profile_length);
-    if (src_profile == NULL) {
-        goto cleanup;
-    }
-    src_colorspace = sixel_cms_get_color_space(src_profile);
-    if (src_colorspace != SIXEL_CMS_COLORSPACE_CMYK) {
-        /*
-         * CMYK BMP pixels can only consume CMYK source profiles.
-         * Any non-CMYK profile domain is a non-applicable mismatch.
-         * They should not be reported as conversion failures.
-         */
-        trace_conversion_failure = 0;
-        goto cleanup;
-    }
-    dst_profile = sixel_cms_create_srgb_profile();
-    if (dst_profile == NULL) {
-        goto cleanup;
-    }
-    transform = sixel_cms_create_transform(src_profile,
-                                           SIXEL_CMS_PIXELFORMAT_CMYK_8,
-                                           dst_profile,
-                                           SIXEL_CMS_PIXELFORMAT_RGB_F32,
-                                           SIXEL_CMS_TRANSFORM_DEFAULT);
-    if (transform == NULL) {
-        goto cleanup;
-    }
-
-    converted = sixel_cms_do_transform(transform,
-                                       cmyk_pixels,
-                                       rgb_float,
-                                       pixel_count);
-    if (converted) {
-        for (index = 0u; index < pixel_count; ++index) {
-            rgb_pixels[index * 3u + 0u] =
-                sixel_builtin_cms_clamp_unit_to_u8(
-                    rgb_float[index * 3u + 0u]);
-            rgb_pixels[index * 3u + 1u] =
-                sixel_builtin_cms_clamp_unit_to_u8(
-                    rgb_float[index * 3u + 1u]);
-            rgb_pixels[index * 3u + 2u] =
-                sixel_builtin_cms_clamp_unit_to_u8(
-                    rgb_float[index * 3u + 2u]);
+    count = (size_t)samples.width * (size_t)samples.height;
+    has_alpha = !samples.is_cmyk && samples.comp == 4;
+    compose = 0;
+    if (has_alpha && bgcolor != NULL) {
+        for (i = 0u; i < count; ++i) {
+            alpha = sixel_builtin_bmp_sample(&samples, i, 3);
+            if (alpha < 1.0 && !(alpha == 0.0 && preserve_zero)) {
+                compose = 1;
+                break;
+            }
         }
     }
-
-cleanup:
-    free(rgb_float);
-    sixel_cms_delete_transform(transform);
-    sixel_cms_close_profile(dst_profile);
-    sixel_cms_close_profile(src_profile);
-    if (!converted && trace_conversion_failure) {
-        loader_trace_message("builtin BMP: CMYK ICC conversion failed");
+    /* A real composition requirement also needs original narrow bitfield
+     * ratios. Do not promote an opaque bitmap just because a background was
+     * requested, and never compose after the legacy byte replication. */
+    if (compose && !samples.is_float &&
+        (probe->bpp == 16 || probe->bpp == 32)) {
+        sixel_allocator_free(frame->allocator, samples.pixels);
+        samples.pixels = NULL;
+        status = sixel_frombmp_load(chunk, frame->allocator, &samples, 1,
+                                     info40_mode);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
-    return converted;
+    if (samples.is_cmyk && source == NULL) {
+        device_rgb = sixel_allocator_malloc(frame->allocator, count * 3u);
+        if (device_rgb == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        sixel_builtin_bmp_convert_cmyk8_to_rgb8_device(device_rgb,
+                                                       samples.pixels, count);
+        sixel_allocator_free(frame->allocator, samples.pixels);
+        samples.pixels = device_rgb;
+        device_rgb = NULL;
+        samples.comp = 3;
+        samples.is_cmyk = 0;
+    }
+    use_float = source != NULL || samples.is_float || prefer_float32 ||
+        compose;
+    if (!use_float) {
+        format = has_alpha ? SIXEL_PIXELFORMAT_RGBA8888 :
+            SIXEL_PIXELFORMAT_RGB888;
+        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_pixels_request_t){
+                samples.pixels, NULL, samples.width, samples.height,
+                format, SIXEL_COLORSPACE_GAMMA, -1, SIXEL_FRAME_PIXELS_U8
+            });
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        samples.pixels = NULL;
+        frame->loop_count = 1;
+        if (has_alpha) {
+            status = sixel_builtin_apply_bmp_alpha_policy(frame, bgcolor);
+        }
+        loader_trace_message("builtin BMP: source-preserving byte path");
+        goto end;
+    }
+    if (count > SIZE_MAX / (3u * sizeof(float))) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    rgb = sixel_allocator_malloc(frame->allocator, count * 3u * sizeof(float));
+    if (rgb == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    if (samples.is_cmyk) {
+        destination = sixel_cms_create_linear_srgb_profile();
+        transform = sixel_cms_create_transform(source,
+            SIXEL_CMS_PIXELFORMAT_CMYK_8, destination,
+            SIXEL_CMS_PIXELFORMAT_RGB_F32, SIXEL_CMS_TRANSFORM_DEFAULT);
+        if (transform == NULL || !sixel_cms_do_transform(transform,
+                samples.pixels, rgb, count)) {
+            status = SIXEL_BAD_INPUT;
+            goto color_error;
+        }
+    } else {
+        for (i = 0u; i < count; ++i) {
+            for (c = 0; c < 3; ++c) {
+                rgb[i * 3u + (size_t)c] = (float)(source != NULL ?
+                    sixel_builtin_bmp_sample(&samples, i, c) :
+                    sixel_color_decode_srgb(
+                        sixel_builtin_bmp_sample(&samples, i, c)));
+            }
+        }
+        if (source != NULL && !sixel_cms_convert_profile_to_linearrgb(
+                (unsigned char *)rgb, samples.width, samples.height,
+                SIXEL_PIXELFORMAT_RGBFLOAT32, source)) {
+            status = SIXEL_BAD_INPUT;
+            goto color_error;
+        }
+    }
+    for (i = 0u; i < count * 3u; ++i) {
+        if (!isfinite(rgb[i])) {
+            status = SIXEL_BAD_INPUT;
+            goto color_error;
+        }
+    }
+    if (has_alpha && preserve_zero) {
+        mask = sixel_allocator_malloc(frame->allocator, count);
+        if (mask == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+    }
+    sixel_builtin_fill_linear_bgcolor(background, bgcolor);
+    for (i = 0u; i < count && has_alpha; ++i) {
+        alpha = sixel_builtin_bmp_sample(&samples, i, 3);
+        has_zero |= alpha == 0.0;
+        if (mask != NULL) {
+            mask[i] = alpha == 0.0 ? 1u : 0u;
+        }
+        if (bgcolor != NULL && alpha < 1.0 &&
+            !(alpha == 0.0 && preserve_zero)) {
+            for (c = 0; c < 3; ++c) {
+                rgb[i * 3u + (size_t)c] = (float)(
+                    (double)rgb[i * 3u + (size_t)c] * alpha +
+                    (double)background[c] * (1.0 - alpha));
+            }
+        }
+    }
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            (unsigned char *)rgb, NULL, samples.width, samples.height,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, SIXEL_COLORSPACE_LINEAR,
+            -1, SIXEL_FRAME_PIXELS_FLOAT32
+        });
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    rgb = NULL;
+    frame->loop_count = 1;
+    if (has_zero && mask != NULL) {
+        frame->transparent_mask = mask;
+        frame->transparent_mask_size = count;
+        frame->alpha_zero_is_transparent = 1;
+        mask = NULL;
+    }
+    if (source != NULL) {
+        status = sixel_frame_set_pixelformat(frame,
+                                             loader_cms_target_pixelformat());
+    }
+    loader_trace_message("builtin BMP: canonical float path");
+    goto end;
+color_error:
+    loader_trace_message("builtin BMP: selected ICC/calibrated transform "
+                         "failed; no unmanaged fallback");
+    sixel_helper_set_additional_message(
+        "builtin BMP: selected color conversion failed");
+end:
+    sixel_cms_delete_transform(transform);
+    sixel_cms_close_profile(destination);
+    sixel_cms_close_profile(source);
+    sixel_allocator_free(frame->allocator, rgb);
+    sixel_allocator_free(frame->allocator, mask);
+    sixel_allocator_free(frame->allocator, device_rgb);
+    sixel_allocator_free(frame->allocator, samples.pixels);
+    return status;
 }
 
 static int
@@ -6122,9 +5981,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     SIXELSTATUS status;
     unsigned char *pixels;
     unsigned char *payload_icc_profile;
-    unsigned char const *bmp_icc_profile;
     unsigned char const *bmp_payload;
-    size_t bmp_icc_profile_length;
     size_t bmp_payload_size;
     size_t payload_icc_profile_length;
     sixel_frombmp_probe_t bmp_probe;
@@ -6134,17 +5991,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     int payload_depth;
     int req_comp;
     int tga_truecolor_alpha;
-    int bmp_comp;
-    int bmp_is_cmyk;
     int bmp_png_payload_is_16bit;
-    int cms_converted;
-    int cmyk_converted;
-    int target_pixelformat;
-    int bmp_icc_applicability;
-    size_t pixel_count;
-    size_t rgb_size;
-    unsigned char *rgb_pixels;
-    sixel_cms_profile_t *bmp_icc_src_profile;
     int nwrite;
     char message[80];
 #if HAVE_LCMS2
@@ -6154,9 +6001,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     status = SIXEL_OK;
     pixels = NULL;
     payload_icc_profile = NULL;
-    bmp_icc_profile = NULL;
     bmp_payload = NULL;
-    bmp_icc_profile_length = 0u;
     bmp_payload_size = 0u;
     payload_icc_profile_length = 0u;
     memset(&bmp_probe, 0, sizeof(bmp_probe));
@@ -6166,17 +6011,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     payload_depth = 0;
     req_comp = 3;
     tga_truecolor_alpha = 0;
-    bmp_comp = 0;
-    bmp_is_cmyk = 0;
     bmp_png_payload_is_16bit = 0;
-    cms_converted = 0;
-    cmyk_converted = 0;
-    target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    bmp_icc_applicability = 0;
-    pixel_count = 0u;
-    rgb_size = 0u;
-    rgb_pixels = NULL;
-    bmp_icc_src_profile = NULL;
     nwrite = 0;
     message[0] = '\0';
 #if HAVE_LCMS2
@@ -6308,199 +6143,10 @@ sixel_builtin_load_nonpng_rgb8_fallback(
             payload_chunk->vtbl->unref(payload_chunk);
             return SIXEL_STBI_ERROR;
         }
-        status = sixel_frombmp_load(chunk,
-                                    allocator,
-                                    &pixels,
-                                    &frame->width,
-                                    &frame->height,
-                                    &bmp_comp,
-                                    &bmp_is_cmyk,
-                                    &bmp_icc_profile,
-                                    &bmp_icc_profile_length,
-                                    bmp_info40_mode);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
-        if (bmp_is_cmyk != 0) {
-            if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
-                sixel_allocator_free(allocator, pixels);
-                return SIXEL_BAD_INTEGER_OVERFLOW;
-            }
-            pixel_count = (size_t)frame->width * (size_t)frame->height;
-            if (pixel_count > SIZE_MAX / 3u) {
-                sixel_allocator_free(allocator, pixels);
-                return SIXEL_BAD_INTEGER_OVERFLOW;
-            }
-            rgb_size = pixel_count * 3u;
-            rgb_pixels = (unsigned char *)sixel_allocator_malloc(
-                allocator,
-                rgb_size);
-            if (rgb_pixels == NULL) {
-                sixel_allocator_free(allocator, pixels);
-                sixel_helper_set_additional_message(
-                    "builtin BMP: sixel_allocator_malloc() failed.");
-                return SIXEL_BAD_ALLOCATION;
-            }
-
-            cmyk_converted = 0;
-            if (enable_cms != 0 &&
-                bmp_icc_profile != NULL &&
-                bmp_icc_profile_length != 0u) {
-                cmyk_converted = sixel_builtin_bmp_convert_cmyk8_to_rgb8_icc(
-                    rgb_pixels,
-                    pixels,
-                    pixel_count,
-                    bmp_icc_profile,
-                    bmp_icc_profile_length);
-            }
-            if (!cmyk_converted) {
-                sixel_builtin_bmp_convert_cmyk8_to_rgb8_device(
-                    rgb_pixels,
-                    pixels,
-                    pixel_count);
-            }
-
-            sixel_allocator_free(allocator, pixels);
-            pixels = rgb_pixels;
-            rgb_pixels = NULL;
-            status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
-                sixel_frame_as_interface(frame),
-                &(sixel_frame_pixels_request_t){
-                    pixels,
-                    NULL,
-                    frame->width,
-                    frame->height,
-                    SIXEL_PIXELFORMAT_RGB888,
-                    SIXEL_COLORSPACE_GAMMA,
-                    -1,
-                    SIXEL_FRAME_PIXELS_U8
-                });
-            if (SIXEL_FAILED(status)) {
-                sixel_allocator_free(allocator, pixels);
-                return status;
-            }
-            pixels = NULL;
-            frame->loop_count = 1;
-            if (enable_cms != 0 && cmyk_converted) {
-                target_pixelformat = loader_cms_target_pixelformat();
-                status = sixel_frame_set_pixelformat(frame,
-                                                     target_pixelformat);
-                if (SIXEL_FAILED(status)) {
-                    return status;
-                }
-            }
-            return SIXEL_OK;
-        }
-        if (bmp_comp == 4) {
-            status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
-                sixel_frame_as_interface(frame),
-                &(sixel_frame_pixels_request_t){
-                    pixels,
-                    NULL,
-                    frame->width,
-                    frame->height,
-                    SIXEL_PIXELFORMAT_RGBA8888,
-                    SIXEL_COLORSPACE_GAMMA,
-                    -1,
-                    SIXEL_FRAME_PIXELS_U8
-                });
-            if (SIXEL_FAILED(status)) {
-                sixel_allocator_free(allocator, pixels);
-                return status;
-            }
-            pixels = NULL;
-            frame->loop_count = 1;
-            if (enable_cms != 0) {
-                if (bmp_icc_profile != NULL &&
-                    bmp_icc_profile_length != 0u) {
-                    (void)sixel_builtin_apply_bmp_icc_to_rgba_channels(
-                        frame,
-                        bmp_icc_profile,
-                        bmp_icc_profile_length);
-                } else if (bmp_probe.has_calibrated_rgb != 0) {
-                    (void)sixel_builtin_apply_bmp_calibrated_to_rgba_channels(
-                        frame,
-                        &bmp_probe);
-                }
-            }
-            return sixel_builtin_apply_bmp_alpha_policy(frame, bgcolor);
-        }
-        if (bmp_comp == 3) {
-            status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
-                sixel_frame_as_interface(frame),
-                &(sixel_frame_pixels_request_t){
-                    pixels,
-                    NULL,
-                    frame->width,
-                    frame->height,
-                    SIXEL_PIXELFORMAT_RGB888,
-                    SIXEL_COLORSPACE_GAMMA,
-                    -1,
-                    SIXEL_FRAME_PIXELS_U8
-                });
-            if (SIXEL_FAILED(status)) {
-                sixel_allocator_free(allocator, pixels);
-                return status;
-            }
-            if (enable_cms != 0) {
-                bmp_icc_applicability = 0;
-                if (bmp_icc_profile != NULL &&
-                    bmp_icc_profile_length != 0u) {
-                    bmp_icc_applicability =
-                        sixel_builtin_bmp_open_embedded_icc_rgb_profile(
-                            bmp_icc_profile,
-                            bmp_icc_profile_length,
-                            &bmp_icc_src_profile);
-                    if (bmp_icc_applicability > 0) {
-                        cms_converted = sixel_cms_convert_profile_to_srgb(
-                            pixels,
-                            frame->width,
-                            frame->height,
-                            SIXEL_PIXELFORMAT_RGB888,
-                            bmp_icc_src_profile);
-                        sixel_cms_close_profile(bmp_icc_src_profile);
-                        bmp_icc_src_profile = NULL;
-                    } else {
-                        cms_converted = 0;
-                    }
-                } else if (bmp_probe.has_calibrated_rgb != 0) {
-                    cms_converted =
-                        sixel_builtin_apply_bmp_calibrated_rgb_to_rgb8(
-                            pixels,
-                            frame->width,
-                            frame->height,
-                            &bmp_probe);
-                } else {
-                    cms_converted = 0;
-                }
-                if (!cms_converted) {
-                    if (bmp_icc_profile != NULL &&
-                        bmp_icc_profile_length != 0u &&
-                        bmp_icc_applicability != 0) {
-                        loader_trace_message(
-                            "builtin BMP: embedded ICC conversion failed");
-                    }
-                } else {
-                    target_pixelformat = loader_cms_target_pixelformat();
-                    status = sixel_frame_set_pixelformat(
-                        frame,
-                        target_pixelformat);
-                    if (SIXEL_FAILED(status)) {
-                        return status;
-                    }
-                }
-            }
-            return SIXEL_OK;
-        }
-        nwrite = snprintf(message,
-                          sizeof(message),
-                          "load_with_builtin() failed.\n"
-                          "reason: unknown BMP pixel-format.(depth: %d)\n",
-                          bmp_comp);
-        if (nwrite > 0) {
-            sixel_helper_set_additional_message(message);
-        }
-        return SIXEL_STBI_ERROR;
+        return sixel_builtin_load_bmp_native(chunk, frame, &bmp_probe,
+                                               bgcolor, enable_cms,
+                                               prefer_float32,
+                                               bmp_info40_mode);
     }
 
     tga_truecolor_alpha = sixel_builtin_tga_has_truecolor_alpha(chunk,

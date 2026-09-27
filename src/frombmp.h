@@ -80,24 +80,27 @@ typedef struct sixel_frombmp_probe {
     double blue_y;
 } sixel_frombmp_probe_t;
 
-/*
- * Decode BMP from an in-memory chunk.
- *
- * The decoder normalizes output to RGB888 or RGBA8888 and leaves alpha policy
- * (background composition vs transparent mask) to the caller.
- */
+/* Source samples only; color interpretation and composition belong to the
+ * loader adapter. Float components are normalized from the original packed
+ * integer ratio, including alpha. CMYK samples remain unassociated bytes. */
+typedef struct sixel_bmp_samples {
+    unsigned char *pixels;
+    int width;
+    int height;
+    int comp;
+    int is_cmyk;
+    int is_float;
+} sixel_bmp_samples_t;
+
+/* Wide masks require float. preserve_packed also avoids byte replication
+ * for narrower masks when the caller will perform precision-requiring work.
+ * The caller owns successful output through the supplied allocator. */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_frombmp_load(
-    sixel_chunk_t const *chunk,
-    sixel_allocator_t *allocator,
-    unsigned char **ppixels,
-    int *pwidth,
-    int *pheight,
-    int *pcomp,
-    int *pis_cmyk,
-    unsigned char const **picc_profile,
-    size_t *picc_profile_length,
-    int info40_mode);
+sixel_frombmp_load(sixel_chunk_t const *chunk,
+                   sixel_allocator_t *allocator,
+                   sixel_bmp_samples_t *samples,
+                   int preserve_packed,
+                   int info40_mode);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_frombmp_probe(

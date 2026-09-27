@@ -19,12 +19,12 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [JPEG](../loader/builtin/jpeg.md) | 249 | 102 | 14 | 1 | 57 | 5 | 70 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 273 | 219 | 37 | 1 | 5 | 0 | 11 |
 | [PSD and PSB](../loader/builtin/psd.md) | 1268 | 206 | 551 | 402 | 86 | 3 | 20 |
-| [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
+| [BMP and DIB](../loader/builtin/bmp.md) | 170 | 159 | 0 | 4 | 7 | 0 | 0 |
 | [WebP](../loader/builtin/webp.md) | 308 | 13 | 48 | 241 | 0 | 1 | 5 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 79 | 53 | 8 | 0 | 14 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2791** | **820** | **724** | **652** | **205** | **18** | **372** |
+| **Total** | **2836** | **858** | **724** | **652** | **212** | **18** | **372** |
 
 ## Complete inventory
 
@@ -2364,6 +2364,62 @@ Primary implementation context: [Softimage PIC builtin component](../loader/buil
 | [tests/loader/builtin/1970_loader_builtin_pic_chained_packets_numeric.t](../../tests/loader/builtin/1970_loader_builtin_pic_chained_packets_numeric.t) | Verify chained PIC packets combine exact component lanes. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
 | [tests/loader/builtin/1988_loader_builtin_pic_zero_dimension_reject.t](../../tests/loader/builtin/1988_loader_builtin_pic_zero_dimension_reject.t) | Verify zero-width and zero-height PIC canvases are rejected. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
 | [tests/loader/builtin/1989_loader_builtin_pic_eleventh_packet_reject.t](../../tests/loader/builtin/1989_loader_builtin_pic_eleventh_packet_reject.t) | Verify the descriptor-table upper bound rejects packet eleven. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
+
+<!-- test-plan-end -->
+
+<!-- test-plan: tests/loader/builtin/bmp_precision/*.t -->
+
+### BMP and DIB (bmp_precision/)
+
+Primary implementation context: [BMP builtin component](../loader/builtin/bmp.md).
+
+| Test | Observation | Assertion mechanism | Policy context |
+| --- | --- | --- | --- |
+| [tests/loader/builtin/bmp_precision/0001_bmp_p3_rgb24_numeric.t](../../tests/loader/builtin/bmp_precision/0001_bmp_p3_rgb24_numeric.t) | Verify BMP p3 rgb24. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0002_bmp_p3_alpha_numeric.t](../../tests/loader/builtin/bmp_precision/0002_bmp_p3_alpha_numeric.t) | Verify BMP p3 alpha. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0003_bmp_p3_background_numeric.t](../../tests/loader/builtin/bmp_precision/0003_bmp_p3_background_numeric.t) | Verify BMP p3 background. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0004_bmp_gamma_background_numeric.t](../../tests/loader/builtin/bmp_precision/0004_bmp_gamma_background_numeric.t) | Verify BMP gamma background. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0005_bmp_keep_background_numeric.t](../../tests/loader/builtin/bmp_precision/0005_bmp_keep_background_numeric.t) | Verify BMP keep background. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0006_bmp_calibrated_common_numeric.t](../../tests/loader/builtin/bmp_precision/0006_bmp_calibrated_common_numeric.t) | Verify BMP calibrated common. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0007_bmp_calibrated_split_numeric.t](../../tests/loader/builtin/bmp_precision/0007_bmp_calibrated_split_numeric.t) | Verify BMP calibrated split. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0008_bmp_indexed_p3_numeric.t](../../tests/loader/builtin/bmp_precision/0008_bmp_indexed_p3_numeric.t) | Verify BMP indexed p3. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0009_bmp_rle8_p3_numeric.t](../../tests/loader/builtin/bmp_precision/0009_bmp_rle8_p3_numeric.t) | Verify BMP rle8 p3. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0010_bmp_rle4_p3_numeric.t](../../tests/loader/builtin/bmp_precision/0010_bmp_rle4_p3_numeric.t) | Verify BMP rle4 p3. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0011_bmp_rgb10_numeric.t](../../tests/loader/builtin/bmp_precision/0011_bmp_rgb10_numeric.t) | Verify BMP rgb10. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0012_bmp_p3_rgb10_numeric.t](../../tests/loader/builtin/bmp_precision/0012_bmp_p3_rgb10_numeric.t) | Verify BMP p3 rgb10. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0013_bmp_alpha11_numeric.t](../../tests/loader/builtin/bmp_precision/0013_bmp_alpha11_numeric.t) | Verify BMP alpha11. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0014_bmp_p3_rgb565_numeric.t](../../tests/loader/builtin/bmp_precision/0014_bmp_p3_rgb565_numeric.t) | Verify BMP p3 rgb565. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0015_bmp_forced_rgb565_numeric.t](../../tests/loader/builtin/bmp_precision/0015_bmp_forced_rgb565_numeric.t) | Verify BMP forced rgb565. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0016_bmp_topdown_rgb10_numeric.t](../../tests/loader/builtin/bmp_precision/0016_bmp_topdown_rgb10_numeric.t) | Verify BMP topdown rgb10. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0017_bmp_none_rgb10_numeric.t](../../tests/loader/builtin/bmp_precision/0017_bmp_none_rgb10_numeric.t) | Verify BMP none rgb10. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0018_bmp_rgb24_byte_numeric.t](../../tests/loader/builtin/bmp_precision/0018_bmp_rgb24_byte_numeric.t) | Verify BMP rgb24 byte. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0019_bmp_binary_alpha_byte_numeric.t](../../tests/loader/builtin/bmp_precision/0019_bmp_binary_alpha_byte_numeric.t) | Verify BMP binary alpha byte. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0020_bmp_opaque_background_byte_numeric.t](../../tests/loader/builtin/bmp_precision/0020_bmp_opaque_background_byte_numeric.t) | Verify BMP opaque background byte. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0021_bmp_partial_background_numeric.t](../../tests/loader/builtin/bmp_precision/0021_bmp_partial_background_numeric.t) | Verify BMP partial background. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0022_bmp_device_cmyk_byte_numeric.t](../../tests/loader/builtin/bmp_precision/0022_bmp_device_cmyk_byte_numeric.t) | Verify BMP device cmyk byte. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0023_bmp_cmyk32_numeric.t](../../tests/loader/builtin/bmp_precision/0023_bmp_cmyk32_numeric.t) | Verify BMP cmyk32. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0024_bmp_cmyk_rle8_numeric.t](../../tests/loader/builtin/bmp_precision/0024_bmp_cmyk_rle8_numeric.t) | Verify BMP cmyk rle8. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0025_bmp_cmyk_rle4_numeric.t](../../tests/loader/builtin/bmp_precision/0025_bmp_cmyk_rle4_numeric.t) | Verify BMP cmyk rle4. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0026_bmp_gamma_target_numeric.t](../../tests/loader/builtin/bmp_precision/0026_bmp_gamma_target_numeric.t) | Verify BMP gamma target. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0027_bmp_prefer8bit_numeric.t](../../tests/loader/builtin/bmp_precision/0027_bmp_prefer8bit_numeric.t) | Verify BMP prefer8bit. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0028_bmp_lcms2_numeric.t](../../tests/loader/builtin/bmp_precision/0028_bmp_lcms2_numeric.t) | Verify BMP lcms2. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0029_bmp_colorsync_numeric.t](../../tests/loader/builtin/bmp_precision/0029_bmp_colorsync_numeric.t) | Verify BMP colorsync. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0030_bmp_wrong_rgb_domain_byte_numeric.t](../../tests/loader/builtin/bmp_precision/0030_bmp_wrong_rgb_domain_byte_numeric.t) | Verify BMP wrong rgb domain byte. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0031_bmp_wrong_cmyk_domain_byte_numeric.t](../../tests/loader/builtin/bmp_precision/0031_bmp_wrong_cmyk_domain_byte_numeric.t) | Verify BMP wrong cmyk domain byte. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0032_bmp_invalid_profile_reject.t](../../tests/loader/builtin/bmp_precision/0032_bmp_invalid_profile_reject.t) | Verify BMP invalid profile reject. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0033_bmp_transform_fail.t](../../tests/loader/builtin/bmp_precision/0033_bmp_transform_fail.t) | Verify BMP transform fail. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0034_bmp_float_alloc_fail.t](../../tests/loader/builtin/bmp_precision/0034_bmp_float_alloc_fail.t) | Verify BMP float alloc fail. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0035_bmp_mask_alloc_fail.t](../../tests/loader/builtin/bmp_precision/0035_bmp_mask_alloc_fail.t) | Verify BMP mask alloc fail. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0036_bmp_noncontiguous_reject.t](../../tests/loader/builtin/bmp_precision/0036_bmp_noncontiguous_reject.t) | Verify BMP noncontiguous reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/bmp_precision/0037_bmp_overlapping_reject.t](../../tests/loader/builtin/bmp_precision/0037_bmp_overlapping_reject.t) | Verify BMP overlapping reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/bmp_precision/0038_bmp_out_of_range_reject.t](../../tests/loader/builtin/bmp_precision/0038_bmp_out_of_range_reject.t) | Verify BMP out of range reject. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/bmp_precision/0039_bmp_rgb30_numeric.t](../../tests/loader/builtin/bmp_precision/0039_bmp_rgb30_numeric.t) | Verify BMP rgb30. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0040_bmp_explicit_zero_alpha_numeric.t](../../tests/loader/builtin/bmp_precision/0040_bmp_explicit_zero_alpha_numeric.t) | Verify BMP explicit zero alpha. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0041_bmp_implicit_zero_alpha_numeric.t](../../tests/loader/builtin/bmp_precision/0041_bmp_implicit_zero_alpha_numeric.t) | Verify BMP implicit zero alpha. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0042_bmp_cmyk_lcms2_numeric.t](../../tests/loader/builtin/bmp_precision/0042_bmp_cmyk_lcms2_numeric.t) | Verify BMP cmyk lcms2. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0043_bmp_cmyk_colorsync_numeric.t](../../tests/loader/builtin/bmp_precision/0043_bmp_cmyk_colorsync_numeric.t) | Verify BMP cmyk colorsync. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0044_bmp_legacy_icc_rgb_numeric.t](../../tests/loader/builtin/bmp_precision/0044_bmp_legacy_icc_rgb_numeric.t) | Verify BMP legacy ICC RGB precision. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
+| [tests/loader/builtin/bmp_precision/0045_bmp_legacy_icc_cmyk_numeric.t](../../tests/loader/builtin/bmp_precision/0045_bmp_legacy_icc_cmyk_numeric.t) | Verify BMP legacy ICC CMYK precision. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
 
 <!-- test-plan-end -->
 

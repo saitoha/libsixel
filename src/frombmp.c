@@ -213,7 +213,7 @@ sixel_bmp_xyz_to_xy(double x,
     *y_out = y / sum;
     if (*x_out <= 0.0 || *x_out >= 1.0 ||
         *y_out <= 0.0 || *y_out >= 1.0 ||
-        *x_out + *y_out >= 1.0) {
+        *x_out + *y_out > 1.0) {
         return 0;
     }
     return 1;
@@ -267,6 +267,23 @@ sixel_bmp_shift_signed(unsigned int value, int shift, int bits)
     }
     value >>= (unsigned int)(8 - bits);
     return (int)((value * mul_table[bits]) >> shift_table[bits]);
+}
+
+/* A mask is one contiguous field inside the declared pixel word. Use the
+ * unsigned wrap rule for a full-width field instead of shifting by 32. */
+static int
+sixel_bmp_valid_mask(unsigned int mask, int bpp)
+{
+    if (mask == 0u) {
+        return 1;
+    }
+    if (bpp == 16 && (mask & 0xffff0000u) != 0u) {
+        return 0;
+    }
+    while ((mask & 1u) == 0u) {
+        mask >>= 1u;
+    }
+    return (mask & (mask + 1u)) == 0u;
 }
 
 static void
@@ -745,7 +762,8 @@ sixel_bmp_parse_calibrated_v4v5(
 
     /*
      * Keep per-channel gamma for calibrated RGB profile synthesis and retain
-     * the channel average as a compatibility fallback.
+     * the channel average for legacy probe consumers only. The loader uses
+     * all three values and never averages distinct channel responses.
      */
     gamma_avg = (gamma_r + gamma_g + gamma_b) / 3.0;
     if (gamma_avg <= 0.0) {
@@ -793,7 +811,8 @@ sixel_bmp_parse_v5_embedded_profile(
 
     dib_offset = SIXEL_BMP_FILE_HEADER_SIZE;
     cs_type = buffer + dib_offset + SIXEL_BMP_V5_CSTYPE_OFFSET;
-    if (memcmp(cs_type, "LINK", 4u) == 0) {
+    if (memcmp(cs_type, "KNIL", 4u) == 0 ||
+        memcmp(cs_type, "LINK", 4u) == 0) {
         /*
          * Keep PROFILE_LINKED unsupported by design in the builtin path.
          * Resolving external profile paths would introduce filesystem/network
@@ -803,7 +822,10 @@ sixel_bmp_parse_v5_embedded_profile(
         info->icc_profile_length = 0u;
         return SIXEL_OK;
     }
-    if (memcmp(cs_type, "MBED", 4u) != 0) {
+    /* CSType is a little-endian DWORD: PROFILE_EMBEDDED is 0x4d424544.
+     * Retain the old ASCII spelling accepted by previous releases too. */
+    if (memcmp(cs_type, "DEBM", 4u) != 0 &&
+        memcmp(cs_type, "MBED", 4u) != 0) {
         /*
          * Ignore all non-embedded profile modes and continue pixel decode
          * without applying external color profiles.
@@ -1180,6 +1202,17 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
         if (compression == SIXEL_BMP_COMPRESSION_ALPHABITFIELDS &&
             info->alpha_mask == 0u) {
             return sixel_bmp_fail("builtin BMP: invalid alpha mask");
+        }
+        if (!sixel_bmp_valid_mask(info->red_mask, bpp) ||
+            !sixel_bmp_valid_mask(info->green_mask, bpp) ||
+            !sixel_bmp_valid_mask(info->blue_mask, bpp) ||
+            !sixel_bmp_valid_mask(info->alpha_mask, bpp) ||
+            (info->red_mask & info->green_mask) != 0u ||
+            (info->red_mask & info->blue_mask) != 0u ||
+            (info->green_mask & info->blue_mask) != 0u ||
+            ((info->red_mask | info->green_mask | info->blue_mask) &
+             info->alpha_mask) != 0u) {
+            return sixel_bmp_fail("builtin BMP: invalid color masks");
         }
         info->has_alpha_mask = info->alpha_mask != 0u ? 1 : 0;
         /*
@@ -2606,16 +2639,84 @@ sixel_bmp_decode_truecolor(sixel_bmp_decode_info_t const *info,
     return SIXEL_OK;
 }
 
+/* Decode packed components before any byte expansion. The masks have been
+ * validated by the parser; double division retains their full integer ratio
+ * until the one required binary32 storage rounding. */
+static SIXELSTATUS
+sixel_bmp_decode_packed_float(sixel_bmp_decode_info_t const *info,
+                               float *pixels, int *pcomp)
+{
+    unsigned int masks[4];
+    unsigned int value;
+    unsigned int raw_alpha;
+    unsigned int alpha_or;
+    unsigned int alpha_and;
+    unsigned char const *row;
+    unsigned char const *cursor;
+    size_t x;
+    size_t y;
+    size_t source_row;
+    size_t i;
+    size_t count;
+    int c;
+    int comp;
+
+    masks[0] = info->red_mask;
+    masks[1] = info->green_mask;
+    masks[2] = info->blue_mask;
+    masks[3] = info->alpha_mask;
+    comp = info->has_alpha_mask ? 4 : 3;
+    alpha_or = 0u;
+    alpha_and = info->alpha_mask;
+    count = (size_t)info->width * (size_t)info->height;
+    for (y = 0u; y < (size_t)info->height; ++y) {
+        source_row = info->top_down ? y : (size_t)info->height - 1u - y;
+        row = info->source_bytes + info->pixel_offset +
+            source_row * info->row_stride;
+        for (x = 0u; x < (size_t)info->width; ++x) {
+            cursor = row + x * (size_t)(info->bpp / 8);
+            value = (unsigned int)cursor[0] |
+                ((unsigned int)cursor[1] << 8u);
+            if (info->bpp == 32) {
+                value |= ((unsigned int)cursor[2] << 16u) |
+                    ((unsigned int)cursor[3] << 24u);
+            }
+            i = y * (size_t)info->width + x;
+            for (c = 0; c < comp; ++c) {
+                pixels[i * (size_t)comp + (size_t)c] =
+                    (float)((double)(value & masks[c]) / (double)masks[c]);
+            }
+            raw_alpha = value & info->alpha_mask;
+            alpha_or |= raw_alpha;
+            alpha_and &= raw_alpha;
+        }
+    }
+    if (comp == 4) {
+        if (alpha_or == 0u && !info->has_explicit_alpha) {
+            for (i = 0u; i < count; ++i) {
+                pixels[i * 4u + 3u] = 1.0f;
+            }
+            alpha_and = info->alpha_mask;
+        }
+        /* Check opacity in the integer source, not after float rounding. */
+        if (alpha_and == info->alpha_mask) {
+            for (i = 0u; i < count; ++i) {
+                for (c = 0; c < 3; ++c) {
+                    pixels[i * 3u + (size_t)c] = pixels[i * 4u + (size_t)c];
+                }
+            }
+            comp = 3;
+        }
+    }
+    *pcomp = comp;
+    return SIXEL_OK;
+}
+
 SIXELSTATUS
 sixel_frombmp_load(sixel_chunk_t const *chunk,
                    sixel_allocator_t *allocator,
-                   unsigned char **ppixels,
-                   int *pwidth,
-                   int *pheight,
-                   int *pcomp,
-                   int *pis_cmyk,
-                   unsigned char const **picc_profile,
-                   size_t *picc_profile_length,
+                   sixel_bmp_samples_t *samples,
+                   int preserve_packed,
                    int info40_mode)
 {
     SIXELSTATUS status;
@@ -2624,6 +2725,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
     size_t pixel_count;
     size_t buffer_size;
     int comp;
+    int use_float;
 
     status = SIXEL_FALSE;
     memset(&info, 0, sizeof(info));
@@ -2631,27 +2733,11 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
     pixel_count = 0u;
     buffer_size = 0u;
     comp = 0;
-    if (chunk == NULL ||
-        ppixels == NULL ||
-        pwidth == NULL ||
-        pheight == NULL ||
-        pcomp == NULL ||
-        pis_cmyk == NULL ||
-        allocator == NULL) {
+    use_float = 0;
+    if (chunk == NULL || samples == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-
-    *ppixels = NULL;
-    *pwidth = 0;
-    *pheight = 0;
-    *pcomp = 0;
-    *pis_cmyk = 0;
-    if (picc_profile != NULL) {
-        *picc_profile = NULL;
-    }
-    if (picc_profile_length != NULL) {
-        *picc_profile_length = 0u;
-    }
+    memset(samples, 0, sizeof(*samples));
 
     status = sixel_bmp_parse_header(chunk, &info, info40_mode);
     if (SIXEL_FAILED(status)) {
@@ -2666,7 +2752,27 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
     }
 
     pixel_count = (size_t)info.width * (size_t)info.height;
-    if (info.is_cmyk != 0) {
+    use_float = !info.is_cmyk && (info.bpp == 16 || info.bpp == 32) &&
+        (preserve_packed || sixel_bmp_bitcount(info.red_mask) > 8 ||
+         sixel_bmp_bitcount(info.green_mask) > 8 ||
+         sixel_bmp_bitcount(info.blue_mask) > 8 ||
+         sixel_bmp_bitcount(info.alpha_mask) > 8);
+    if (use_float) {
+        comp = info.has_alpha_mask ? 4 : 3;
+        if (pixel_count > SIZE_MAX / ((size_t)comp * sizeof(float))) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+        buffer_size = pixel_count * (size_t)comp * sizeof(float);
+        pixels = sixel_allocator_malloc(allocator, buffer_size);
+        if (pixels == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        status = sixel_bmp_decode_packed_float(&info, (float *)pixels, &comp);
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(allocator, pixels);
+            return status;
+        }
+    } else if (info.is_cmyk != 0) {
         comp = 4;
         if (pixel_count > SIZE_MAX / 4u) {
             return SIXEL_BAD_INTEGER_OVERFLOW;
@@ -2752,17 +2858,12 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
         }
     }
 
-    *ppixels = pixels;
-    *pwidth = info.width;
-    *pheight = info.height;
-    *pcomp = comp;
-    *pis_cmyk = info.is_cmyk;
-    if (picc_profile != NULL) {
-        *picc_profile = info.icc_profile;
-    }
-    if (picc_profile_length != NULL) {
-        *picc_profile_length = info.icc_profile_length;
-    }
+    samples->pixels = pixels;
+    samples->width = info.width;
+    samples->height = info.height;
+    samples->comp = comp;
+    samples->is_cmyk = info.is_cmyk;
+    samples->is_float = use_float;
     return SIXEL_OK;
 }
 
