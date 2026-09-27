@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify terminal color parser numeric grammar.
+# Policy: docs/functionality/output-colorspace.md
 set -eux
 
 echo "1..1"

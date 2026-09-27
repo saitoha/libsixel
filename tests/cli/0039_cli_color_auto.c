@@ -767,7 +767,7 @@ color_auto_script(color_auto_peer_t *peer, char const *name,
     if (color_auto_is(name, "unsupported")) {
         capability = "\033P1;1;1;0;5./r\033\\";
     } else if (color_auto_is(name, "simple")) {
-        capability = "\033P1;1;1;1;1;220000./r\033\\";
+        capability = "\033P1;1;1;1;1;0;22;22./r\033\\";
     } else if (color_auto_is(name, "icc")) {
         capability = "\033P1;1;1;0;2./runsupported\033\\";
     } else if (color_auto_is(name, "p3-no-s2")) {

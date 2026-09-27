@@ -1,10 +1,10 @@
 # Terminal Graphics Color Management Proposal
 
-Status: experimental protocol proposal, 2026-09-17. This document proposes control sequences and color semantics for applications and terminals exchanging SIXEL graphics. It does not assert adoption by existing terminals or registration of the proposed selectors. Support must be discovered from the receiving session, not inferred from a terminal name, operating system, or display model.
+Status: experimental protocol proposal, revised 2026-09-27. This document proposes control sequences and color semantics for applications and terminals exchanging SIXEL graphics. It does not assert adoption by existing terminals or registration of the proposed selectors. Support must be discovered from the receiving session, not inferred from a terminal name, operating system, or display model.
 
 The proposal separates the interpretation of incoming RGB numbers from the terminal's conversion to an actual display. Applications can send sRGB, convert their source colors into a reported input RGB definition, or request a defined gamut expansion. Ordinary SIXEL RGB percentages contain none of this metadata; see [SIXEL color registers](../sixel-format.md#graphics-color-introducer). The extension supplies the missing agreement outside the image stream.
 
-The [output color-space guide](../functionality/output-colorspace.md) describes the implemented `img2sixel -U` conversions. Automatic negotiation is a proposed CLI feature, not current library behavior. The protocol below also describes simple RGB and ICC definitions that exceed the current selected Display P3 encoder path.
+The [output color-space guide](../functionality/output-colorspace.md) describes the implemented `img2sixel -U` conversions. The selected automatic negotiation path is implemented in the CLI; the library does not perform this negotiation. The protocol below also describes simple RGB and ICC definitions that exceed the current selected Display P3 encoder path.
 
 ## Scope and notation
 
@@ -21,7 +21,7 @@ The examples use `CSI = ESC [` and `DCS = ESC P`, terminated where shown by `ST 
 
 The header follows the DEC control-sequence byte classes: parameter bytes `0x30..0x3f`, intermediate bytes `0x20..0x2f`, and a final byte `0x40..0x7e`. The selector `./p` contains two intermediate bytes, `.` and `/`, followed by final byte `p`; `./r` ends in `r`. These intermediate bytes are in the stated order. ICC data follows the DCS final byte, never inside its parameters. The [xterm control-sequence reference](https://invisible-island.net/xterm/ctlseqs/ctlseqs.html) describes the existing CSI/DCS framing and DECRQSS mechanism; the new selectors and fields here are this proposal's additions.
 
-Numeric fields are unsigned ASCII decimal integers in `0..2147483647`. Signs, colon subparameters, unexpected private prefixes, and overflow are invalid. Overflow must not saturate into a supported value. Only fields explicitly documented below have defaults. Receivers wait for the complete sequence before applying it. CAN or SUB cancels an incomplete sequence; an ESC that does not complete ST abandons the current string and starts escape parsing. Read boundaries do not terminate or restart a sequence.
+Numeric fields are unsigned ASCII decimal integers in `0..9998`. The value `9999` is reserved and invalid in every field, including unknown target and definition identifiers: the [DEC parameter rules](https://www.zx.net.nz/documentation/mds-199909/cd3/term/vt510rmb.pdf#page=92) saturate larger values to `9999`, so accepting it would make a valid field indistinguishable from a clipped value. Receivers reject both literal `9999` and larger values, whether they inspect the original digits or receive saturated parameters. This rule also applies to the numeric fields inside the DECRQSS body. Signs, colon subparameters, unexpected private prefixes, and overflow are invalid. Larger logical values use the explicitly defined base-9999 limbs below; the per-parameter limit does not apply to binary data in the ICC payload. Only fields explicitly documented below have defaults. Receivers wait for the complete sequence before applying it. CAN or SUB cancels an incomplete sequence; an ESC that does not complete ST abandons the current string and starts escape parsing. Read boundaries do not terminate or restart a sequence.
 
 ## Set display color policy
 
@@ -60,7 +60,7 @@ There is no application-generated request identifier. Because a failed DECRQSS r
 
 ```text
 request: CSI ?T./r
-reply:   DCS T;A;S2;S3;C[;G[;P[;W]]]./r <payload> ST
+reply:   DCS T;A;S2;S3;C[;Gh;Gm;Gl[;P[;W]]]./r <payload> ST
 ```
 
 The request has exactly one explicit numeric target, preceded by `?`. Other prefixes, an omitted or empty target, extra parameters, subparameters, and overflow receive no reply. A syntactically valid but unknown target, including `0`, receives an unavailable response echoing that target. The reply has no `?` prefix.
@@ -72,7 +72,7 @@ The request has exactly one explicit numeric target, preceded by `?`. Other pref
 | `S2` | `1` if policy `2` is supported throughout reception, retained storage, and rendering; otherwise `0`. |
 | `S3` | `1` if policy `3` is supported throughout that path; otherwise `0`. |
 | `C` | Color definition, using the allocation below. |
-| `G`, `P`, `W` | Additional fields allowed only for the simple RGB definition, `C=1`. |
+| `Gh`, `Gm`, `Gl`, `P`, `W` | Additional fields allowed only for the simple RGB definition, `C=1`. |
 | Payload | Complete encoded ICC data, required only for `C=2`. |
 
 `A`, `S2`, and `S3` are separate Boolean fields, each explicitly `0` or `1`, not bits packed into a mask. If `A=0`, both support fields must be `0`. Whenever both support fields are `0`, the color definition is sRGB (`C=3`), without extra fields or payload. Thus `1;1;0;0;3./r` reports an available sRGB-only target, while `1;0;0;0;3./r` reports unavailable information. Neither permits assuming device-input support.
@@ -95,29 +95,51 @@ Replies contain capabilities and a fixed RGB definition, not the current policy.
 | `12` | Reserved for BT.2020 RGB. |
 | `13` | Reserved for BT.709 RGB. |
 | `14` | Reserved for ROMM RGB. |
-| `15` and above | Available for future explicitly specified definitions. |
+| `15..9998` | Available for future explicitly specified definitions. |
 
 The reservations at `10..14` do not yet define usable wire color spaces: transfer functions, luminance conventions, and other required details must be specified before advertising them. Parsers must support multi-digit identifiers and must not reinterpret an unknown definition as sRGB.
 
 Named definitions are exact contracts, not approximations to a monitor. In particular, `C=4` is neither DCI-P3 nor P3 primaries with a simple gamma 2.2 curve. The primary and transfer definitions for sRGB and Display P3 are given in [CSS Color 4](https://www.w3.org/TR/css-color-4/#predefined-display-p3). Adobe RGB (1998) uses the exponent `563/256`, as specified by the [ICC RGB registry](https://registry.color.org/rgb-registry/adobergb).
 
-Common-name responses have four fields when `C` is omitted, or five when present, and no payload. `C=2` requires five fields and a nonempty ICC payload. `C=1` requires six to eight fields and no payload. Additional fields, including empty fields, are invalid for a known format that does not define them. An application that does not implement a reported color definition must finish consuming the response without activating that transform.
+Common-name responses have four fields when `C` is omitted, or five when present, and no payload. `C=2` requires five fields and a nonempty ICC payload. `C=1` requires eight to ten fields and no payload. Additional fields, including empty fields, are invalid for a known format that does not define them. An application that does not implement a reported color definition must finish consuming the response without activating that transform.
 
 ### Simple RGB definition
 
 ```text
-DCS T;A;S2;S3;1;G[;P[;W]]./r ST
+DCS T;A;S2;S3;1;Gh;Gm;Gl[;P[;W]]./r ST
 ```
 
 This describes relative SDR RGB with black at linear `(0,0,0)` and white at linear `(1,1,1)`, normalized to white luminance `Y=1`. Each SIXEL channel percentage yields the encoded component `u = percentage / 100`. All three components use the same positive exponent:
 
 ```text
+G = (Gh * 9999 + Gm) * 9999 + Gl
 gamma = G / 100000
 linear = encoded ^ gamma
 encoded = linear ^ (1 / gamma)
 ```
 
-`G` is mandatory in `1..2147483647`; it has no omitted, empty, or zero default. `G=100000` means linear, `220000` means gamma 2.2, and `260000` means gamma 2.6. The terminal uses the reported integer's exponent as its input definition, not a hidden unrounded exponent. A sender deriving the integer from an exponent uses `floor(gamma * 100000 + 0.5)` and validates the result.
+`Gh`, `Gm`, and `Gl` are mandatory, nonempty parameters in `0..9998`, sent high limb first. Zero is a literal limb value, not a default. Reconstruct the logical integer `G` and require `1..2147483647`; the all-zero triple and any larger reconstructed value are invalid. Validate before multiplication so reconstruction cannot overflow a 32-bit implementation. The maximum valid triple is `21;4790;8416`; `21;4790;8417` is already out of range. No parameter contains the unsplit `G`.
+
+A sender first computes `G = floor(gamma * 100000 + 0.5)`, validates the logical range, and divides it into limbs:
+
+```text
+Gh = G / 99980001
+Gm = (G / 9999) % 9999
+Gl = G % 9999
+```
+
+These divisions are integer divisions. The terminal uses the reconstructed integer's exponent as its input definition, not a hidden unrounded exponent. This preserves the exponent precision without placing a value at the scanner's saturation point on the wire.
+
+| Logical `G` | `Gh;Gm;Gl` | Meaning |
+| --- | --- | --- |
+| `1` | `0;0;1` | Smallest positive exponent, 0.00001. |
+| `100000` | `0;10;10` | Linear. |
+| `220000` | `0;22;22` | Gamma 2.2. |
+| `260000` | `0;26;26` | Gamma 2.6. |
+| `219998` | `0;22;20` | Approximation from PNG gAMA=45455. |
+| `2147483647` | `21;4790;8416` | Largest logical value. |
+
+For example, `DCS 1;1;1;1;1;0;22;22./r ST` reports gamma 2.2 with the default primaries and white. `DCS 1;1;1;1;1;0;26;26;2;3./r ST` reports P3 primaries, DCI white and a simple gamma 2.6 curve. This grammar has exactly three gamma limbs; receivers do not infer a different layout from their values or attempt an unsplit-gamma compatibility form.
 
 `P` selects primaries only; `W` selects white independently. Omitted, empty, or zero `P` and `W` each mean `1`. These defaults never depend on previous queries, a physical display, or another color definition. Unknown values are unusable; they are not rounded or replaced by a nearby definition.
 
@@ -137,7 +159,7 @@ The decimal coordinates in these tables are authoritative for this simple format
 
 For each primary `(x,y)`, form a column `(x/y, 1, (1-x-y)/y)` and collect the columns in `V`. Form the corresponding white vector `w`, solve `s = inverse(V) * w`, and define `M = V * diag(s)`. Then `XYZ = M * linear_RGB` and `M * (1,1,1) = w`. Changing `W` does not silently replace or adapt the primary coordinates. When connecting this definition to another reference white, the reference transform uses full Bradford chromatic adaptation; see the [RGB/XYZ conversion examples](https://www.w3.org/TR/css-color-4/#color-conversion-code). Preserve extended intermediate values when converting through a working RGB space; output gamut mapping is a separate operation.
 
-The exponent direction differs from [PNG gAMA](https://www.w3.org/TR/png-3/#11gAMA). For positive PNG integer `g`, the corresponding approximation is `G = floor(10000000000 / g + 0.5)`, evaluated with sufficient arithmetic width. For example, `g=45455` gives `G=219998`, not `45455` or exactly `220000`. A simple power curve cannot exactly replace the piecewise sRGB/Display P3 curve or the Adobe RGB exponent at this integer precision. Use the named definition or ICC for those exact contracts.
+The exponent direction differs from [PNG gAMA](https://www.w3.org/TR/png-3/#11gAMA). For positive PNG integer `g`, the corresponding approximation is `G = floor(10000000000 / g + 0.5)`, evaluated with sufficient arithmetic width. For example, `g=45455` gives `G=219998`, transmitted as `0;22;20`, not `45455` or exactly `220000`. A simple power curve cannot exactly replace the piecewise sRGB/Display P3 curve or the Adobe RGB exponent at this integer precision. Use the named definition or ICC for those exact contracts.
 
 ### ICC definition and 3-in-4 transport
 
@@ -246,8 +268,8 @@ A supporting terminal with no reliable observation returns `CSI ?8822;0;0;0;0;0;
 
 ## Verification and implementation status
 
-This document defines proposed behavior, not a cross-terminal support matrix. The current repository's [output-color contract tests](../functionality/output-colorspace.md#test-coverage) protect selected encoder values and palette behavior. They do not establish implementation of these control sequences, automatic CLI negotiation, arbitrary ICC output, or physical display accuracy.
+This document defines proposed behavior, not a cross-terminal support matrix. The current repository's [output-color contract tests](../functionality/output-colorspace.md#test-coverage) protect selected encoder values and palette behavior. The linked CLI tests exercise selected automatic negotiation with scripted peers, including base-9999 simple-definition syntax and reserved-parameter rejection. They do not establish cross-terminal adoption, simple/ICC output transforms, or physical display accuracy.
 
 A conforming implementation needs exact byte tests for settings and replies, target isolation, defaults and reserved fields, incremental framing, cancellation, invalid definitions, and restoration. Color tests must independently check sRGB preservation, P3 primary retention, policy `2` versus `3`, mixed palette provenance, retained/partial updates, and agreement between output surface values and their color declarations. Test simple definitions and ICC transforms against independent numeric expectations; a perceptual image score cannot substitute for those checks.
 
-Screenshots are supplementary observations whose profiles and viewers affect appearance. Numeric surface checks and declared color spaces do not measure a physical panel. Filter observations must retain their known/unknown distinction. Future CLI tests must also verify actual TTY routing, silent and unsupported receivers, timeouts, failure cleanup, and exclusion of file/pipe output without depending on a named terminal implementation.
+Screenshots are supplementary observations whose profiles and viewers affect appearance. Numeric surface checks and declared color spaces do not measure a physical panel. Filter observations must retain their known/unknown distinction. CLI transport tests also verify actual TTY routing, silent and unsupported receivers, timeouts, failure cleanup, and exclusion of file/pipe output without depending on a named terminal implementation.

@@ -33,7 +33,8 @@ img2sixel_color_start(img2sixel_color_parser_t *parser)
     memset(parser->body_tail, 0, sizeof(parser->body_tail));
 }
 
-/* Decimal protocol parameters have a fixed 31-bit unsigned range. */
+/* DEC scanners saturate at 9999. Reserve that value so a clipped field
+ * cannot become a valid target, definition or simple-RGB gamma limb. */
 static int
 img2sixel_color_number(char const *bytes, size_t size, unsigned long *out)
 {
@@ -50,7 +51,7 @@ img2sixel_color_number(char const *bytes, size_t size, unsigned long *out)
             return 0;
         }
         digit = (unsigned long)(bytes[i] - '0');
-        if (value > (2147483647ul - digit) / 10ul) {
+        if (value > (9998ul - digit) / 10ul) {
             return 0;
         }
         value = value * 10ul + digit;
@@ -104,7 +105,9 @@ img2sixel_color_other_target(char const *bytes, size_t size)
 static img2sixel_color_result_t
 img2sixel_color_capability(img2sixel_color_parser_t *parser)
 {
-    unsigned long values[8];
+    unsigned long values[10];
+    unsigned long gamma;
+    size_t limb;
     size_t count;
     size_t size;
 
@@ -119,8 +122,8 @@ img2sixel_color_capability(img2sixel_color_parser_t *parser)
         return IMG2SIXEL_COLOR_PENDING;
     }
     if (!img2sixel_color_params(parser->header, size - 3u, values,
-                               &count, 8u, (1u << 4) | (1u << 6) |
-                               (1u << 7)) ||
+                               &count, 10u, (1u << 4) | (1u << 8) |
+                               (1u << 9)) ||
         count < 4u || values[0] != 1ul ||
         values[1] > 1ul || values[2] > 1ul || values[3] > 1ul) {
         return IMG2SIXEL_COLOR_INVALID;
@@ -129,21 +132,32 @@ img2sixel_color_capability(img2sixel_color_parser_t *parser)
         values[4] = 3ul;
     }
     /*
-     * Unsupported definitions still have known outer syntax. C=1 carries
-     * G and optional P/W in the header, never a payload. Check that shape
-     * without constructing a transform. Empty/zero P/W default to 1.
+     * Simple RGB carries three mandatory base-9999 gamma limbs, followed
+     * by optional P/W. Validate even though this pilot has no transform.
+     * Bound each Horner step before multiplying: unsigned long can be
+     * 32-bit, and arbitrary valid limbs need more than 32 bits together.
      */
     if (values[4] == 1ul) {
-        if (count < 6u || values[5] == 0ul || parser->payload_size != 0u) {
+        if (count < 8u || parser->payload_size != 0u) {
             return IMG2SIXEL_COLOR_INVALID;
         }
-        if (count < 7u || values[6] == 0ul) {
-            values[6] = 1ul;
+        gamma = 0ul;
+        for (limb = 5u; limb < 8u; ++limb) {
+            if (gamma > (2147483647ul - values[limb]) / 9999ul) {
+                return IMG2SIXEL_COLOR_INVALID;
+            }
+            gamma = gamma * 9999ul + values[limb];
         }
-        if (count < 8u || values[7] == 0ul) {
-            values[7] = 1ul;
+        if (gamma == 0ul) {
+            return IMG2SIXEL_COLOR_INVALID;
         }
-        if (values[6] > 3ul || values[7] > 3ul) {
+        if (count < 9u || values[8] == 0ul) {
+            values[8] = 1ul;
+        }
+        if (count < 10u || values[9] == 0ul) {
+            values[9] = 1ul;
+        }
+        if (values[8] > 3ul || values[9] > 3ul) {
             return IMG2SIXEL_COLOR_INVALID;
         }
     } else if (count > 5u) {

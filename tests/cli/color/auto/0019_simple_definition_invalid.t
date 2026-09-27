@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify terminal color parser simple definition invalid.
+# Policy: docs/functionality/output-colorspace.md
 set -eux
 
 echo "1..1"
