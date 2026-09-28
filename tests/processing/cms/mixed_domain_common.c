@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "src/cms.h"
 #include "src/compat_stub.h"
@@ -295,6 +296,8 @@ cms_mixed_values(int observation)
     sixel_cms_engine_t previous;
     sixel_cms_profile_t *profile;
     sixel_cms_profile_t *permuted;
+    char const *trace_environment;
+    char *trace_topics;
     unsigned char original[1024];
     unsigned char exchanged[1024];
     float raw[CMS_MIXED_MAX * 3u];
@@ -305,6 +308,7 @@ cms_mixed_values(int observation)
     double magnitude;
     double allowance;
     size_t bytes;
+    size_t trace_length;
     size_t p;
     size_t c;
     int mode;
@@ -319,6 +323,20 @@ cms_mixed_values(int observation)
         sixel_cms_set_engine(previous);
         return 77;
     }
+    /* Only the marked conversion owns native-boundary trace assertions.
+     * Reference and arrangement conversions still check every value, but
+     * tracing them floods TAP with records that it immediately discards.
+     * Copy the caller's topic list before changing the process environment. */
+    trace_environment = sixel_compat_getenv("SIXEL_TRACE_TOPIC");
+    if (trace_environment == NULL) { trace_environment = ""; }
+    trace_length = strlen(trace_environment) + 1u;
+    trace_topics = malloc(trace_length);
+    if (trace_topics == NULL) {
+        sixel_cms_set_engine(previous);
+        return 1;
+    }
+    memcpy(trace_topics, trace_environment, trace_length);
+    ok = sixel_compat_setenv("SIXEL_TRACE_TOPIC", "") == 0;
     cms_mixed_fixture(kinds[observation], &f);
     memcpy(original, f.icc, f.length);
     memcpy(exchanged, f.icc, f.length);
@@ -326,7 +344,8 @@ cms_mixed_values(int observation)
     memcpy(ordered, f.input, bytes);
     profile = sixel_cms_open_profile_from_mem(f.icc, f.length);
     permuted = NULL;
-    ok = profile != NULL && md_native(profile, f.input, raw, f.count, f.gray);
+    ok = ok && profile != NULL &&
+        md_native(profile, f.input, raw, f.count, f.gray);
     if (ok && f.swap) {
         ok = md_swap(exchanged, ordered, f.count);
         permuted = sixel_cms_open_profile_from_mem(exchanged, f.length);
@@ -342,7 +361,9 @@ cms_mixed_values(int observation)
                                  mode ? "1" : "0") == 0;
         /* Inspect compatibility Gray as a whole original batch. */
         if (pass == (observation == 6 ? 1 : 0)) {
-            ok = ok && md_expected(&f, mode, 1) && md_expected(&f, mode, 2);
+            ok = ok &&
+                sixel_compat_setenv("SIXEL_TRACE_TOPIC", trace_topics) == 0 &&
+                md_expected(&f, mode, 1) && md_expected(&f, mode, 2);
             fprintf(stderr, "MDPHASE|begin\n");
         }
         memcpy(whole, f.input, bytes);
@@ -350,6 +371,9 @@ cms_mixed_values(int observation)
                                 stricts[observation]);
         if (pass == (observation == 6 ? 1 : 0)) {
             fprintf(stderr, "MDPHASE|end\n");
+            if (sixel_compat_setenv("SIXEL_TRACE_TOPIC", "") != 0) {
+                ok = 0;
+            }
         }
         for (p = 0u; ok && p < f.count; ++p) {
             if (p >= f.normalized || f.non_target || mode) {
@@ -386,6 +410,10 @@ cms_mixed_values(int observation)
     sixel_cms_close_profile(permuted);
     sixel_cms_close_profile(profile);
     sixel_cms_set_engine(previous);
+    if (sixel_compat_setenv("SIXEL_TRACE_TOPIC", trace_topics) != 0) {
+        ok = 0;
+    }
+    free(trace_topics);
     if (!ok) { fprintf(stderr, "mixed observation %d failed\n", observation); }
     return ok ? 0 : 1;
 }

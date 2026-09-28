@@ -22,8 +22,9 @@ nl='
 
 SIXEL_TRACE_TOPIC=webp_decode
 export SIXEL_TRACE_TOPIC
+# Decode every frame without waiting for its presentation duration.
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -L builtin! -o /dev/null "${input_webp}" 2>&1) || command_status=$?
+    -g -L builtin! -o /dev/null "${input_webp}" 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
     echo "not ok" 1 - "builtin WebP animation MVP lossless decode failed"
