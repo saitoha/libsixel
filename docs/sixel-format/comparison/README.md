@@ -10,7 +10,7 @@ The following comparison measures implementations and operating points, not a un
 
 ## Image formats and the terminal
 
-Several of the formats compared on this page began close to terminals and telematic services. How each one relates to a terminal byte stream explains why SIXEL, the oldest of them, matches a recent design direction.
+Several of the formats compared on this page began close to terminals and telematic services. How each one relates to a terminal byte stream shows where SIXEL, the oldest of them, coincides with recent design directions and where it does not.
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/codec-timeline-mobile.svg">
@@ -54,7 +54,13 @@ Dominic Szablewski introduced [QOI](https://phoboslab.org/log/2021/11/qoi-fast-l
 
 ### Where SIXEL fits
 
-SIXEL shares QOI's choice to leave out entropy coding: palette indices become six-row masks and decimal repeat counts, as described in the [format overview](../README.md#ordinary-band-encoding). It adds two properties that none of the later formats has together. Its six-row bands are natural work units for concurrent encoding and, once palette and cursor state are known, decoding, as the next section explains. Its bytes remain printable characters inside a control string, so it travels over the terminal channel itself, whereas GIF relied on file transfer and JPEG on terminal-side capture. SIXEL's costs, a palette limit and larger streams, are measured in the rest of this page.
+SIXEL has no entropy coding, but not as an optimization. It was first used to drive DEC dot-matrix printers, where each data character directly controlled six pins of the print head, and graphics terminals then interpreted it in their own hardware ([Sixel](https://en.wikipedia.org/wiki/Sixel)). A representation that such devices could act on character by character, over a 7-bit printable channel, is the likely reason it has no statistical coder. Its resemblance to QOI is a coincidence of simplicity, not a shared design goal.
+
+That simplicity does not match every property of current processors. Repeat counts and color register numbers are variable-length decimal text after `!` and `#`, as described in the [format overview](../README.md#body-control-functions). Their parsing depends on each digit and on where a number ends, so decoding proceeds character by character with data-dependent branches that fixed-width SIMD lanes handle poorly, and encoding must format each number in decimal. Byte-aligned binary fields, such as QOI's chunks, avoid that work.
+
+Band parallelism was not designed in either. The `-` control separates six-row bands, and a later technique uses it: libsixel's decoder splits a stream at arbitrary byte offsets, advances each part to the next `-`, and reconstructs the palette and cursor state needed there ([decoder threading](../../threading/decoder.md)). That scan is an extra cost before painting, and a register redefined after use or overlapping paint requires a sequential fallback, as the next section notes. On the encoder side, libsixel parallelizes palette application and band serialization as an implementation choice rather than because the format provides for it. The [threading overview](../../threading/overview.md) defines SIXEL bands, work bands and decoder byte spans; [encoder threading](../../threading/encoder.md) and [decoder threading](../../threading/decoder.md) describe the implementations, and the [threading documentation](../../threading/README.md) indexes their measurements.
+
+What remains distinctive is the transport. SIXEL's bytes are printable characters inside a control string, so it travels over the terminal channel itself, whereas GIF relied on file transfer and JPEG on terminal-side capture. Its costs, a palette limit and larger streams, are measured in the rest of this page.
 
 ## Compression and concurrency are different properties
 
