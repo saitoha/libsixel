@@ -2039,6 +2039,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/0066_srgb_linear_wire_lookup.c \
 	quant/palette/0067_srgb_gamma_extended_source.c \
 	quant/palette/0068_srgb_linear_extended_source.c \
+	quant/palette/rgb101_diffusion/0001_spatial_contract.c \
 	quant/palette/srgb_contract_common.c \
 	quant/palette/srgb_contract_common.h \
 	diagnostics/probe/0001_probe_parse.c \
@@ -3938,6 +3939,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0066_srgb_linear_wire_lookup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0067_srgb_gamma_extended_source.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0068_srgb_linear_extended_source.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/rgb101_diffusion/test_runner-0001_spatial_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-srgb_contract_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/status/test_runner-0001_status_timeout.$(OBJEXT) \
@@ -5904,6 +5906,7 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po \
+	quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po \
 	quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po \
 	writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po \
 	writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Po \
@@ -7152,6 +7155,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_P3_MAPFILE_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_P3_PRECISION_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_P3_FS_ERROR_CONTRACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SPATIAL_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_LOADER_OSC11_COLORSPEC_PARSER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_LOADER_OSC11_RESPONSE_PARSER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_LOADER_OSC11_QUERY_CONTROL \
@@ -10471,6 +10475,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0066_srgb_linear_wire_lookup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0067_srgb_gamma_extended_source.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0068_srgb_linear_extended_source.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/rgb101_diffusion/0001_spatial_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/srgb_contract_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/srgb_contract_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
@@ -16589,6 +16594,15 @@ quant/palette/test_runner-0067_srgb_gamma_extended_source.$(OBJEXT):  \
 quant/palette/test_runner-0068_srgb_linear_extended_source.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/rgb101_diffusion/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/rgb101_diffusion
+	@: >>quant/palette/rgb101_diffusion/$(am__dirstamp)
+quant/palette/rgb101_diffusion/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/rgb101_diffusion/$(DEPDIR)
+	@: >>quant/palette/rgb101_diffusion/$(DEPDIR)/$(am__dirstamp)
+quant/palette/rgb101_diffusion/test_runner-0001_spatial_contract.$(OBJEXT):  \
+	quant/palette/rgb101_diffusion/$(am__dirstamp) \
+	quant/palette/rgb101_diffusion/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-srgb_contract_common.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
@@ -16780,6 +16794,7 @@ mostlyclean-compile:
 	-rm -f processing/timeline/*.$(OBJEXT)
 	-rm -f quant/palette/*.$(OBJEXT)
 	-rm -f quant/palette/fallback/*.$(OBJEXT)
+	-rm -f quant/palette/rgb101_diffusion/*.$(OBJEXT)
 	-rm -f quant/palette/usage/*.$(OBJEXT)
 	-rm -f writer/png/*.$(OBJEXT)
 
@@ -18662,6 +18677,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Po@am__quote@ # am--include-marker
@@ -44908,6 +44924,20 @@ quant/palette/test_runner-0068_srgb_linear_extended_source.obj: quant/palette/00
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0068_srgb_linear_extended_source.obj `if test -f 'quant/palette/0068_srgb_linear_extended_source.c'; then $(CYGPATH_W) 'quant/palette/0068_srgb_linear_extended_source.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0068_srgb_linear_extended_source.c'; fi`
 
+quant/palette/rgb101_diffusion/test_runner-0001_spatial_contract.o: quant/palette/rgb101_diffusion/0001_spatial_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/rgb101_diffusion/test_runner-0001_spatial_contract.o -MD -MP -MF quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Tpo -c -o quant/palette/rgb101_diffusion/test_runner-0001_spatial_contract.o `test -f 'quant/palette/rgb101_diffusion/0001_spatial_contract.c' || echo '$(srcdir)/'`quant/palette/rgb101_diffusion/0001_spatial_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Tpo quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/rgb101_diffusion/0001_spatial_contract.c' object='quant/palette/rgb101_diffusion/test_runner-0001_spatial_contract.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/rgb101_diffusion/test_runner-0001_spatial_contract.o `test -f 'quant/palette/rgb101_diffusion/0001_spatial_contract.c' || echo '$(srcdir)/'`quant/palette/rgb101_diffusion/0001_spatial_contract.c
+
+quant/palette/rgb101_diffusion/test_runner-0001_spatial_contract.obj: quant/palette/rgb101_diffusion/0001_spatial_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/rgb101_diffusion/test_runner-0001_spatial_contract.obj -MD -MP -MF quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Tpo -c -o quant/palette/rgb101_diffusion/test_runner-0001_spatial_contract.obj `if test -f 'quant/palette/rgb101_diffusion/0001_spatial_contract.c'; then $(CYGPATH_W) 'quant/palette/rgb101_diffusion/0001_spatial_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/rgb101_diffusion/0001_spatial_contract.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Tpo quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/rgb101_diffusion/0001_spatial_contract.c' object='quant/palette/rgb101_diffusion/test_runner-0001_spatial_contract.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/rgb101_diffusion/test_runner-0001_spatial_contract.obj `if test -f 'quant/palette/rgb101_diffusion/0001_spatial_contract.c'; then $(CYGPATH_W) 'quant/palette/rgb101_diffusion/0001_spatial_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/rgb101_diffusion/0001_spatial_contract.c'; fi`
+
 quant/palette/test_runner-srgb_contract_common.o: quant/palette/srgb_contract_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-srgb_contract_common.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Tpo -c -o quant/palette/test_runner-srgb_contract_common.o `test -f 'quant/palette/srgb_contract_common.c' || echo '$(srcdir)/'`quant/palette/srgb_contract_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Tpo quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
@@ -45729,6 +45759,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/fallback/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/fallback/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/rgb101_diffusion/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/rgb101_diffusion/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/usage/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/usage/$(am__dirstamp)
 	-$(am__rm_f) writer/png/$(DEPDIR)/$(am__dirstamp)
@@ -47620,6 +47652,7 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
+	-rm -f quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po
 	-rm -f quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po
 	-rm -f writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po
 	-rm -f writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Po
@@ -49562,6 +49595,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
+	-rm -f quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po
 	-rm -f quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po
 	-rm -f writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po
 	-rm -f writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Po

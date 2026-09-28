@@ -47,7 +47,7 @@ stateless low-overhead spatial method is worth testing, and `interframe` or
 The checked-in one-image sweep is evidence about those exact commands, not a
 universal ranking.
 
-`-U display-p3` accepts only `none` and `fs`. There, and on the ordinary sRGB float path that uses the same preparation, FS computes its residual against the palette values actually sent rather than the unrounded working palette; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
+`-U display-p3` accepts `none`, the CPU spatial error-diffusion methods below, and `auto`. There, and on the ordinary sRGB float path that uses the same preparation, these kernels compute their residual against the palette values actually sent rather than the unrounded working palette; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
 
 ## Mathematical model
 
@@ -288,9 +288,7 @@ img2sixel -d sierra:variant=2 ...
 img2sixel -d sierra:variant=3 ...
 ```
 
-The Sierra policy is one CLI policy with three variants. `sierra1`,
-`sierra2`, and `sierra3` are accepted concrete names and are used in the
-measurement CSV. Each variant is causal and mirrors under serpentine scan.
+The Sierra policy is one CLI policy with three variants, selected with `sierra:variant=N` as shown above. `sierra1`, `sierra2`, and `sierra3` identify the concrete kernels in the measurement CSV. Each variant is causal and mirrors under serpentine scan.
 
 Variant 1 is the three-tap Sierra Lite, also known as Sierra-2-4A:
 

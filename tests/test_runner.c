@@ -467,6 +467,7 @@ int test_cli_0037_color_parser(int argc, char **argv);
 int test_cli_0038_color_tty(int argc, char **argv);
 int test_cli_0039_color_auto(int argc, char **argv);
 int test_cli_0040_color_job(int argc, char **argv);
+int test_rgb101_spatial(int argc, char **argv);
 int test_srgb_0065(int argc, char **argv);
 int test_srgb_0066(int argc, char **argv);
 int test_srgb_0067(int argc, char **argv);
@@ -2801,6 +2802,8 @@ static test_entry_t const test_entries[] = {
     { "cli/0038_cli_color_tty", test_cli_0038_color_tty },
     { "cli/0039_cli_color_auto", test_cli_0039_color_auto },
     { "cli/0040_cli_color_job", test_cli_0040_color_job },
+    { "palette/rgb101_diffusion/0001_spatial_contract",
+      test_rgb101_spatial },
     { "palette/0065_srgb_gamma_wire_lookup", test_srgb_0065 },
     { "palette/0066_srgb_linear_wire_lookup", test_srgb_0066 },
     { "palette/0067_srgb_gamma_extended_source", test_srgb_0067 },

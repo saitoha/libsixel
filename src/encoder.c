@@ -6935,6 +6935,26 @@ sixel_encoder_resolve_direct_binning(
 static int
 sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
 {
+    /* These CPU spatial kernels consume the authoritative float palette
+     * and propagate residuals without byte projection. AUTO resolves to
+     * Atkinson or FS after the final palette count is known. Positional
+     * noise and temporal history still need separate integration checks. */
+    switch (encoder->method_for_diffuse) {
+    case SIXEL_DIFFUSE_AUTO:
+    case SIXEL_DIFFUSE_NONE:
+    case SIXEL_DIFFUSE_FS:
+    case SIXEL_DIFFUSE_ATKINSON:
+    case SIXEL_DIFFUSE_JAJUNI:
+    case SIXEL_DIFFUSE_STUCKI:
+    case SIXEL_DIFFUSE_BURKES:
+    case SIXEL_DIFFUSE_SIERRA1:
+    case SIXEL_DIFFUSE_SIERRA2:
+    case SIXEL_DIFFUSE_SIERRA3:
+    case SIXEL_DIFFUSE_LSO2:
+        break;
+    default:
+        return 0;
+    }
     return !((encoder->working_colorspace != SIXEL_COLORSPACE_LINEAR &&
              encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA) ||
             encoder->clustering_colorspace != SIXEL_COLORSPACE_LINEAR ||
@@ -6945,8 +6965,6 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
             encoder->palette_binning_policy != SIXEL_PALETTE_BINNING_NONE ||
             encoder->palette_sampling_policy !=
                 SIXEL_PALETTE_SAMPLING_FULL_FRAME ||
-            (encoder->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
-             encoder->method_for_diffuse != SIXEL_DIFFUSE_FS) ||
             encoder->final_merge_mode != SIXEL_FINAL_MERGE_NONE ||
             (encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
              encoder->cover_policy != SIXEL_PALETTE_COVER_OFF) ||
@@ -7000,7 +7018,8 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "display-p3 requires the CPU float K-means pilot: "
             "--precision=auto|float -Xlinear -Wlinear|gamma -Qkmeans -~none "
             "--binning-policy=none --sampling-policy=full-frame "
-            "-dnone|fs -Fnone -_none -trgb, no cover "
+            "CPU spatial diffusion (or -dnone/-dauto), "
+            "-Fnone -_none -trgb, no cover "
             "(-aoff for generated palettes), and normal SIXEL output.");
         return SIXEL_BAD_ARGUMENT;
     }

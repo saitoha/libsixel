@@ -1350,7 +1350,10 @@ further queries; restoration then uses a bounded write without verification.
 .br
 Display P3 requires effective float precision, gamma or linear working
 coordinates, linear clustering, K-means, exact lookup, full-frame sampling,
-none or FS dithering, no binning, merge, cover or snap, and RGB SIXEL output.
+none or CPU spatial error diffusion (including auto), no binning, merge,
+cover or snap, and RGB SIXEL output.
+Supported spatial methods are FS, Atkinson, JJN, Stucki, Burkes, the Sierra
+variants, and LSO2; positional and interframe dithering remain unsupported.
 The P3 float requirement overrides an explicit byte preference.
 Palette input with \fB-m\fP is supported on this same selected path.
 Structured palette files remain sRGB; their converted P3 RGB101 values

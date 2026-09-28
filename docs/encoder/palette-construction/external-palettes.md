@@ -83,7 +83,7 @@ The [selected CPU float Display P3 path](../output/output-colorspace.md) accepts
 
 Existing image mapfiles keep their image-to-palette meaning. In the P3 path, a map image goes through its selected loader/CMS and the same extended float K-means builder used for generated palettes. Its colors remain unrounded until the fixed-palette output boundary, so CMS-retained values outside sRGB survive both gamma and linear working coordinates. This does not introduce an ordered PNG palette format or a PNG `-M` writer.
 
-The other selected-path restrictions still apply, including exact lookup, none/FS diffusion and opaque static RGB source images. Explicit cover-policy options conflict with fixed palettes, so omit `-a` (including `-aoff`); fixed palettes bypass cover. For example:
+The other selected-path restrictions still apply, including exact lookup, [CPU spatial diffusion or none](../output/output-colorspace.md#display-p3-selected-cpu-float-path), and opaque static RGB source images. Explicit cover-policy options conflict with fixed palettes, so omit `-a` (including `-aoff`); fixed palettes bypass cover. For example:
 
 ```sh
 img2sixel --threads=1 --gpu-policy=off --precision=auto \

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify p3 unsupported diffusion rejected.
+# Verify P3 rejects positional bluenoise before writing output.
 # Policy: docs/encoder/output/output-colorspace.md
 set -eux
 
