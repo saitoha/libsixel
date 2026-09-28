@@ -8,33 +8,43 @@ import sys
 
 root = Path(sys.argv[1])
 p = json.loads((root / 'results.json').read_text())
+meta = p['metadata']
 rows = p['rows']
-n = p['metadata']['generations']
-assert len(rows) == 3 * (11 * 4 + 6 * n)
+n = meta['generations']
+settings = meta['settings']
+generation_codecs = ['SIXEL default', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless']
+images = set(meta['inputs'])
+assert images == set(meta['photo_sources']) | {'diagram'}
+generation_images = set(meta['generation_images'])
+assert 'diagram' in generation_images and generation_images <= images
+assert len(rows) == len(images) * len(settings) * 4 + len(generation_images) * len(generation_codecs) * n
+assert {r['image'] for r in rows if r['experiment'] == 'generation'} == generation_images
 keys = set()
 for row in rows:
     key = (row['image'], row['experiment'], row['codec'], row['threads'], row.get('mode'), row.get('generation'))
     assert key not in keys, key
     keys.add(key)
     for field in ['encode_ms', 'decode_ms']:
-        assert len(row[field]) == p['metadata']['runs']
+        assert len(row[field]) == meta['runs']
         assert all(math.isfinite(x) and x > 0 for x in row[field])
     assert 0 <= row['ms_ssim'] <= 1.000001
     assert math.isfinite(row['delta_e']) and row['delta_e'] >= 0
     assert row['bytes'] > 0
     assert row['transport_bytes'] == (row['bytes'] if row['codec'].startswith('SIXEL') else 4 * ((row['bytes'] + 2) // 3))
-    if row['codec'] in ['PNG', 'WebP lossless']:
-        assert row['exact_input']
-        assert row['ms_ssim'] == 1
+    if row['codec'] in ['PNG', 'QOI', 'WebP lossless']:
+        assert row['exact_input'], key
+        assert row['ms_ssim'] == 1, key
     if row['experiment'] == 'generation':
         palette = row['codec'] in ['SIXEL default', 'GIF']
         assert row['mode'] == ('indexed' if palette else 'RGB')
         if palette:
-            assert row['exact_generation_one']
-for name, digest in p['metadata']['inputs'].items():
-    assert hashlib.sha256((root / f'{name}.png').read_bytes()).hexdigest() == digest
-    for codec in {r['codec'] for r in rows if r['experiment'] == 'scaling'}:
+            assert row['exact_generation_one'], key
+# Only the diagram is stored; photographs are identified by source and input
+# digests and must be read from the photo directory to be regenerated.
+assert hashlib.sha256((root / 'diagram.png').read_bytes()).hexdigest() == meta['inputs']['diagram']
+for name in images:
+    for codec in settings:
         group = [r for r in rows if r['image'] == name and r['codec'] == codec and r['experiment'] == 'scaling']
-        assert sorted(r['threads'] for r in group) == [1,2,4,8]
-        assert len({r['decoder_stream_sha256'] for r in group}) == 1
-print(f'validated {len(rows)} records, lossless pixels and retained-index generations')
+        assert sorted(r['threads'] for r in group) == [1, 2, 4, 8], (name, codec)
+        assert len({r['decoder_stream_sha256'] for r in group}) == 1, (name, codec)
+print(f'validated {len(rows)} records for {len(images)} images, lossless pixels and retained-index generations')

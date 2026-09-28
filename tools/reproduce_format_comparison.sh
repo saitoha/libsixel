@@ -7,7 +7,12 @@ PATH="${TOP_SRCDIR}/.local/bin:${PATH}"
 export PATH
 PYTHON=${PYTHON-python3}
 CC=${CC-cc}
-REVISION=${REVISION-$(git -C "${TOP_SRCDIR}" rev-parse HEAD)}
+# Record an immutable commit even when a branch name is supplied.
+REVISION=$(git -C "${TOP_SRCDIR}" rev-parse --verify "${REVISION-HEAD}^{commit}")
+# Directory of source photographs (*.jpg), for example the photo/original
+# directory of the libsixel-dataset repository.
+PHOTOS=${PHOTOS:?set PHOTOS to a directory of source photographs}
+PHOTOS=$(CDPATH='' cd -- "${PHOTOS}" && pwd -P)
 study_dir=${STUDY_DIR-$(mktemp -d "${TMPDIR-/tmp}/sixel-format.XXXXXX")}
 output_dir=${1-${TOP_SRCDIR}/docs/sixel-format/comparison/figures}
 mkdir -p "${study_dir}/source" "${output_dir}"
@@ -20,8 +25,14 @@ cd "${study_dir}/source"
     --without-coregraphics --without-lcms2 --disable-quicklook-extension \
     CFLAGS=-O3 BASH=/bin/sh
 make -j "${BUILD_JOBS-8}"
+headerpad=
 case $(uname -s) in
-    Darwin) library="${study_dir}/source/src/.libs/libsixel.1.dylib" ;;
+    Darwin)
+        library="${study_dir}/source/src/.libs/libsixel.1.dylib"
+        # Leave room for install_name_tool below to write the long absolute
+        # path of the archived build.
+        headerpad=-Wl,-headerpad_max_install_names
+        ;;
     *) library="${study_dir}/source/src/.libs/libsixel.so" ;;
 esac
 # pkg-config intentionally supplies separate compiler/linker arguments.
@@ -30,7 +41,7 @@ esac
     -I"${study_dir}/source/include" $(pkg-config --cflags libwebp) \
     "${TOP_SRCDIR}/tools/format-comparison/codecs.c" "${library}" \
     $(pkg-config --libs libwebp) \
-    -Wl,-rpath,"${study_dir}/source/src/.libs" \
+    -Wl,-rpath,"${study_dir}/source/src/.libs" ${headerpad} \
     -o "${study_dir}/codecs.so"
 case $(uname -s) in
     Darwin)
@@ -43,6 +54,6 @@ esac
 "${PYTHON}" "${TOP_SRCDIR}/tools/format-comparison/measure.py" \
     --source "${study_dir}/source" --library "${library}" \
     --adapter "${study_dir}/codecs.so" --revision "${REVISION}" \
-    --output "${output_dir}"
+    --photos "${PHOTOS}" --output "${output_dir}"
 "${PYTHON}" "${TOP_SRCDIR}/tools/format-comparison/check.py" "${output_dir}"
 "${PYTHON}" "${TOP_SRCDIR}/tools/format-comparison/plot.py" "${output_dir}"

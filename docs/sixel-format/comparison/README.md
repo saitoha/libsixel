@@ -69,6 +69,7 @@ What remains distinctive is the transport. SIXEL's bytes are printable character
 | Ordinary SIXEL | Quantized palette, six-row color masks, decimal run lengths | Palette application and band serialization can run concurrently; decoder scans establish state before independent painting | Yes, with the 7-bit DCS/ST envelope and a SIXEL-capable terminal |
 | GIF | Indexed palette and LZW dictionary coding | Palette construction can be parallelized; LZW decoding has dictionary dependencies | No |
 | PNG | RGB/RGBA, grayscale, or indexed pixels; filtering and DEFLATE | Filtering and implementation-specific work can be parallelized; DEFLATE history and row-filter dependencies constrain straightforward splitting | No |
+| QOI | RGB/RGBA runs, a 64-entry array of recent colors, differences and literals; no entropy coding | Sequential: every pixel depends on the previous pixel and the color array | No |
 | Baseline JPEG used here | Chroma subsampling, block DCT, coefficient quantization and Huffman coding | Block transforms offer parallel work; restart intervals can provide independent entropy segments | No |
 | Lossy WebP | Prediction, block transforms and entropy coding | libwebp provides encoder and decoder multithreading switches; the amount of parallel work depends on the path | No |
 | Lossless WebP | Reversible transforms, backward references and entropy coding | Different dependencies from lossy WebP; enabling the switch does not promise the same speedup | No |
@@ -79,19 +80,21 @@ SIXEL's simpler run-length expansion can therefore be faster than a more compact
 
 ## What is measured
 
-The experiment uses three opaque, gamma RGB8, 768 × 512 images: the repository's `images/snake.png` resized with Lanczos as a photographic workload; a deterministic smooth gradient; and a deterministic flat-color diagram with text. These are illustrative image classes, not a representative image corpus. Inputs are included with the [raw results](figures/results.json). No alpha, animation, ICC profile, metadata-preservation, terminal painting, display upload, or hardware codec work is measured.
+The photographic workload is a corpus of 100 photographs, the `photo/original/*.jpg` files of the libsixel-dataset repository. Each is rotated upright by its EXIF orientation, converted from an embedded ICC profile to sRGB when it has one (67 photographs, six of them Adobe RGB), and fitted inside 1920 × 1080 with Lanczos resampling while keeping its aspect ratio; the results range from 735 × 1080 to 1920 × 1080. The profile is dropped after conversion, so every codec and the quality reference receive the same untagged sRGB samples. The photographs are not stored with the results: the [raw results](figures/results.json) record the SHA-256 of each source file and of each prepared input. A second workload is a deterministic 768 × 512 flat-color diagram with text, stored as [diagram.png](figures/diagram.png). No alpha, animation, metadata preservation, terminal painting, display upload, or hardware codec work is measured.
 
 Each encode starts with pixels in memory and ends with complete image bytes in memory. Each decode starts with bytes in memory and ends with a loaded RGB image, except for the explicitly labeled retained-index generation path. Timings include the Python/native adapters, input/output copies, allocation and cleanup; they exclude disk I/O, process startup, LSQA, Base64 conversion and terminal rendering. They are application-call latencies, not isolated inner-loop throughput. Different wrapper overheads remain a limitation, especially for sub-millisecond JPEG calls. SIXEL decoding uses `sixel_decode_pixels` directly; no downstream PNG writer is included.
 
 | Implementation | Settings |
 | --- | --- |
-| libsixel | Archived committed source; optimized C99 build; 256-color default; `--precision=8bit`, `--gpu-policy=off`, `-E fast`; default diffusion and a separate `-d none` row; borrowed RGB8 or PAL8 frame API |
+| libsixel, default | Archived committed source; optimized C99 build; 256 colors; `--precision=8bit`, `--gpu-policy=off`, `-E fast`; default diffusion; borrowed RGB8 or PAL8 frame API |
+| libsixel, quality | The same build and API with the equivalent of `img2sixel -Qk -Fw -Wc -Xc -dl`: K-means palette, Ward final merge, CIELAB clustering and working color spaces, LSO2 diffusion; `--gpu-policy=off` and library defaults otherwise. The thread budget follows the 1/2/4/8 axis rather than a fixed `-=` value |
 | Pillow JPEG / libjpeg-turbo | Quality 60, 80 and 95; 4:2:0; no optimized Huffman table pass |
 | Pillow GIF | 256-color median-cut quantization for RGB input; existing indices for retained-index input; `optimize=False` |
 | Pillow PNG / zlib | RGB PNG; compression level 6 |
+| QOI | The [`qoi`](https://pypi.org/project/qoi/) Python package, which wraps the reference C implementation; RGB arrays |
 | libwebp | Quality 60, 80 and 95, method 4; separate lossless quality/effort 80, method 4; native API multithreading switch |
 
-Seven samples follow two warm-ups per cell. Graphs use medians and show the interquartile range on the primary timing comparisons. Timed repetitions within a generation start from the same preceding-generation image; only the final result advances the chain. Quality is measured with the repository's `lsqa`, against the original image for every generation, using MS-SSIM and mean Delta E00. PNG and lossless WebP are also checked for exact RGB equality; perceptual scores do not substitute for this check. Values below the project's usual 0.98/0.95 quality gates are reported as failed quality operating points, not accepted regression thresholds.
+Seven samples follow two warm-ups per cell. For each photograph, the charts use the median of its seven samples; latency panels show the distribution of those per-photograph medians as box plots, and quality, size, scaling and generation panels show their means. The diagram charts use the median and interquartile range of the seven samples. Timed repetitions within a generation start from the same preceding-generation image; only the final result advances the chain. The generation experiment runs on every fifth photograph by name (20 photographs) and on the diagram. Quality is measured with the repository's `lsqa`, against the prepared input for every generation, using MS-SSIM and mean Delta E00; identical decoded pixels are evaluated once. PNG, QOI and lossless WebP are also checked for exact RGB equality; perceptual scores do not substitute for this check. Values below the project's usual 0.98/0.95 quality gates are reported as failed quality operating points, not accepted regression thresholds.
 
 The 1/2/4/8 axis is a **configured worker budget**, not CPU affinity or reserved cores. SIXEL receives that count. The [WebP API](https://developers.google.com/speed/webp/docs/api) receives `thread_level=1` / `use_threads=1` for every budget above one, because these are Boolean controls rather than exact counts. The measured Pillow JPEG/GIF/PNG paths remain serial for a single image. Thus their additional-budget points do not imply use of 2/4/8 workers. All runs are sequential; there is no multi-image throughput benchmark. Other host activity and scheduling can affect the results.
 
@@ -105,30 +108,30 @@ The roughly 33% expansion changes the comparison but does not guarantee a SIXEL 
 
 ## Observed results on the recorded host
 
-The checked-in run used an Apple M3 Max (14 logical CPUs), macOS 26.5.1, Apple Clang 21 with `-O3`, libsixel revision `8c92a878cc5afe3513b6a59bf8542b71ee038d18`, Pillow 12.3.0 with libjpeg-turbo 3.1.4.1 and zlib-ng reporting 1.3.1.zlib-ng, and libwebp 1.6.0. Plotting used matplotlib 3.11.1. The source revision identifies the isolated codec build, not unrelated work in the shared checkout.
+The checked-in run used an Apple M3 Max (14 logical CPUs), macOS 26.5.1, Apple Clang 21 with `-O3`, libsixel revision `08ca59d8840a3f2e25f9d7ee303819256b58cdf1`, Pillow 12.3.0 with libjpeg-turbo 3.1.4.1 and zlib-ng reporting 1.3.1.zlib-ng, `qoi` 0.7.2, and libwebp 1.6.0. Plotting used matplotlib 3.10.3. The revision was the `develop` branch when the run started; that branch was later rebased, and its library sources at `9bdd515c89ec1327c68e2da16108741e477c4111` are identical. The source revision identifies the isolated codec build, not unrelated work in the shared checkout.
 
-| Photo observation | Recorded median or quality |
+| Observation over the 100 photographs | Mean of per-photograph medians or scores |
 | --- | --- |
-| Default SIXEL encode, budget 1 → 8 | 57.03 → 21.36 ms; MS-SSIM also changes 0.9885 → 0.9921 |
-| Default SIXEL decode, identical bytes, budget 1 → 8 | 5.18 → 3.07 ms |
-| JPEG quality 80, budget 1 | 0.59 ms encode, 0.65 ms decode; MS-SSIM 0.9979 |
-| SIXEL native bytes versus RGB PNG Base64 payload, budget 1 | 447,985 versus 543,080 bytes; PNG is lossless and SIXEL is not |
-| JPEG quality 80 / WebP quality 80 Base64 payload | 52,168 / 30,104 bytes; both are much smaller than SIXEL here |
-| Retained-index SIXEL encode, generation 1 → 2 | 57.82 → 9.86 ms; generations 2–8 preserve generation-one RGB exactly |
-| Retained-index GIF encode, generation 1 → 2 | 84.70 → 3.65 ms; generations 2–8 preserve generation-one RGB exactly |
+| Default SIXEL encode, budget 1 → 8 | 470.6 → 101.3 ms (median per-photograph speedup 5.4×); mean MS-SSIM 0.9805 → 0.9825 |
+| Quality SIXEL encode, budget 1 → 8 | 631.6 → 230.5 ms; mean MS-SSIM 0.9968 → 0.9952, mean Delta E00 2.07 at budget 1 |
+| Default SIXEL decode, identical bytes, budget 1 → 8 | 24.7 → 14.7 ms (median per-photograph speedup 1.9×) |
+| PNG / QOI, budget 1 | encode 77.9 / 9.7 ms, decode 18.8 / 7.6 ms; both lossless |
+| JPEG quality 80, budget 1 | 2.7 ms encode, 3.0 ms decode; mean MS-SSIM 0.9972 |
+| Transport payload per photograph | default SIXEL 2,348 KiB, quality SIXEL 2,036 KiB, PNG 3,038 KiB, QOI 3,414 KiB, JPEG 80 306 KiB, WebP 80 231 KiB |
+| Retained-index encode, generation 1 → 2 (20 photographs) | SIXEL 521.4 → 116.8 ms, GIF 165.5 → 15.2 ms; generations 2–8 preserve generation-one RGB exactly |
 
-SIXEL's eight-budget photo decode is faster than this RGB PNG decode (about 4.40 ms), but it is slower than this JPEG, GIF and lossy WebP decode. On the diagram, eight-budget SIXEL encoding is about 2.52 ms versus lossy WebP quality 80 at 12.54 ms, while PNG and JPEG remain faster. These are useful examples of workload-dependent tradeoffs, not a Huffman-versus-RLE law or a matched-quality victory.
+Eight-budget SIXEL decoding is faster than this RGB PNG decode for 89 of the 100 photographs, and on average faster than quality-95 and lossless WebP, but slower than QOI, JPEG, GIF and quality-60/80 WebP decoding. Default SIXEL's transport payload is smaller than PNG's for 94 photographs and smaller than QOI's for 97, but it is lossy and much larger than JPEG and lossy WebP. On the diagram, eight-budget default SIXEL encodes in about 6.6 ms versus 12.0 ms for lossy WebP quality 80, while PNG, QOI and JPEG remain faster. These are workload-dependent tradeoffs, not a Huffman-versus-RLE law or a matched-quality victory.
 
-The gradient exposes a real limitation: default one-thread SIXEL and GIF score about 0.9368 and 0.9021 MS-SSIM, below the usual 0.95 floor. These operating points are unsuitable when that quality floor is required. The quantizer's continuing development does not make every default palette sufficient for every image.
+The default settings have a real limitation. Five photographs score below 0.95 MS-SSIM with default SIXEL, the lowest 0.567 on `photo-064`, although their mean Delta E00 of 1.1–3.1 is no worse than the corpus mean of 3.49. In `photo-064`, a black background covers about 81% of the image; the default palette has no exact black, and the background becomes a uniform near-black value. MS-SSIM's luminance term penalizes that offset strongly where the reference mean is near zero. The quality settings keep every photograph at or above 0.95. Such points are unsuitable when that quality floor is required, and they also pull down the default mean.
 
 ## Photographic workload
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/photo-profile-mobile.svg">
-  <img alt="Photographic workload: encoder and RGB decoder latency, measured quality against Base64-adjusted payload size, and native versus transport bytes for SIXEL, GIF, PNG, JPEG and WebP." src="figures/photo-profile-wide.svg">
+  <img alt="Photographic workload: encoder and RGB decoder latency, measured quality against Base64-adjusted payload size, and native versus transport bytes for SIXEL, GIF, PNG, QOI, JPEG and WebP over 100 photographs." src="figures/photo-profile-wide.svg">
 </picture>
 
-The timing points compare all sampled codec configurations; the quality plot shows why file size and latency cannot be interpreted without distortion. The native/transport panel uses representative quality-80 JPEG/WebP rows, both SIXEL diffusion choices, GIF, PNG and lossless WebP.
+The latency boxes compare all sampled codec configurations across the corpus; the quality plot shows why file size and latency cannot be interpreted without distortion, with each photograph as a small mark and each configuration's mean as a numbered mark. Points far below the others are counted in the panel rather than stretching its axis. The native/transport panel uses representative quality-80 JPEG/WebP rows, both SIXEL settings, GIF, PNG, QOI and lossless WebP.
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/photo-scaling-mobile.svg">
@@ -147,9 +150,9 @@ img2sixel --threads=1 -o generation2.six generation1.six
 img2sixel --threads=1 -o generation3.six generation2.six
 ```
 
-A separate CLI verification using the recorded libsixel source build repeated this operation through generation eight for all three fixtures. Every generation's decoded RGB pixels matched generation one exactly. This verifies the actual file-loader/encoder path; the graphed timings remain the in-memory API measurements described above and do not include CLI startup or file I/O.
+A separate CLI verification using the recorded libsixel source build repeated this operation through generation eight for the 20 generation photographs and the diagram. Every generation's decoded RGB pixels matched generation one exactly. This verifies the actual file-loader/encoder path; the graphed timings remain the in-memory API measurements described above and do not include CLI startup or file I/O.
 
-The generation graphs therefore retain one native representation path per codec. SIXEL/GIF preserve first-generation pixels in all measured generations, including the initial quantization error. PNG and lossless WebP preserve the original RGB pixels from generation one without needing a palette; indexed PNG could also reuse palette state, although that mode is not measured here. Lossy JPEG/WebP can accumulate distortion, but the amount depends on the image and settings; a sequence can approach a stable point rather than losing the same amount at every step.
+The generation graphs therefore retain one native representation path per codec. SIXEL/GIF preserve first-generation pixels in all measured generations, including the initial quantization error. PNG, QOI and lossless WebP preserve the original RGB pixels from generation one without needing a palette; indexed PNG could also reuse palette state, although that mode is not measured here. Lossy JPEG/WebP can accumulate distortion, but the amount depends on the image and settings; a sequence can approach a stable point rather than losing the same amount at every step.
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/photo-generations-mobile.svg">
@@ -158,29 +161,10 @@ The generation graphs therefore retain one native representation path per codec.
 
 Indexed decode times have a different output contract from RGB decode times and must not be ranked as interchangeable decoder performance. All generation quality measurements expand indices to RGB outside the timed region.
 
-## Gradients and diagrams
+## Diagram workload
 
-A photograph alone hides both smooth-gradient palette limitations and the favorable long runs in flat graphics. The following figures retain these workloads separately instead of averaging away those differences.
+Photographs hide the favorable long runs in flat graphics. The diagram keeps that workload separate instead of averaging it into the corpus.
 
-### Gradient workload
-
-<picture>
-  <source media="(max-width: 640px)" srcset="figures/gradient-profile-mobile.svg">
-  <img alt="Gradient profile: the same codec settings and measurement boundaries as the photographic workload; full numerical values are in results.json." src="figures/gradient-profile-wide.svg">
-</picture>
-
-<picture>
-  <source media="(max-width: 640px)" srcset="figures/gradient-scaling-mobile.svg">
-  <img alt="Gradient scaling: the same codec settings and measurement boundaries as the photographic workload; full numerical values are in results.json." src="figures/gradient-scaling-wide.svg">
-</picture>
-
-<picture>
-  <source media="(max-width: 640px)" srcset="figures/gradient-generations-mobile.svg">
-  <img alt="Gradient generations: the same codec settings and measurement boundaries as the photographic workload; full numerical values are in results.json." src="figures/gradient-generations-wide.svg">
-</picture>
-
-
-### Diagram workload
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/diagram-profile-mobile.svg">
@@ -201,13 +185,16 @@ A photograph alone hides both smooth-gradient palette limitations and the favora
 
 The [measurement adapter](../../../tools/format-comparison/codecs.c), [driver](../../../tools/format-comparison/measure.py), [result validator](../../../tools/format-comparison/check.py), and [plotter](../../../tools/format-comparison/plot.py) are maintained with this guide. The driver verifies that the adapter and decoder resolve the same libsixel library. This matters on macOS, where an absolute dylib install name can override a build-directory rpath.
 
-Install Python dependencies (`Pillow`, `numpy`, `matplotlib`) in a dedicated environment, and provide a C compiler, pkg-config, libwebp development files and the project's build prerequisites. Then run from the repository root:
+Install Python dependencies (`Pillow`, `numpy`, `qoi`, `matplotlib`) in a dedicated environment, and provide a C compiler, pkg-config, libwebp development files, the project's build prerequisites and a directory of source photographs such as `photo/original` of the libsixel-dataset repository. Then run from the repository root:
 
 ```sh
-PYTHON=/path/to/venv/bin/python tools/reproduce_format_comparison.sh
+PYTHON=/path/to/venv/bin/python PHOTOS=/path/to/libsixel-dataset/photo/original \
+    tools/reproduce_format_comparison.sh
 ```
 
-The wrapper archives a committed revision into an isolated temporary source directory and builds it with `CFLAGS=-O3`. It never benchmarks the shared dirty worktree. Set `REVISION` to reproduce a particular recorded implementation. The saved records retain the original timing samples; selection metadata identifies the original archive and the omitted RGB-requantization controls. The metadata records the full source revision, compiler, CPU, runtime and codec versions, build configuration, adapter/library digests, script digests, and input PNG digests. Timing and output records include all seven samples, stream/pixel hashes, quality, native bytes, transport bytes and generation equality assertions. The source snapshot is kept in the temporary study directory for inspection; `STUDY_DIR` can select that location.
+The recorded run took about three hours and twenty minutes, most of it spent in LSQA on the Full HD outputs. Keep the host awake and on power for the whole run: a sleep inside a timed region inflates that sample.
+
+The wrapper archives a committed revision into an isolated temporary source directory and builds it with `CFLAGS=-O3`. It never benchmarks the shared dirty worktree. Set `REVISION` to reproduce a particular recorded implementation; a branch name is resolved to its commit before the run, and that commit is recorded. The photographs are identified by the SHA-256 of each source file and each prepared input, so a different photo directory is detected when results are compared. The saved records retain every timing sample. The metadata records the full source revision, compiler, CPU, runtime and codec versions, build configuration, adapter/library digests, script digests, the input size and digest of every image, the digest of every source photograph, the ICC profile each photograph was converted from, and the photographs used in the generation experiment. Timing and output records include all seven samples, stream/pixel hashes, quality, native bytes, transport bytes and generation equality assertions. The source snapshot is kept in the temporary study directory for inspection; `STUDY_DIR` can select that location.
 
 To validate the saved data and regenerate figures without rerunning measurements:
 
@@ -216,4 +203,4 @@ python tools/format-comparison/check.py docs/sixel-format/comparison/figures
 python tools/format-comparison/plot.py docs/sixel-format/comparison/figures
 ```
 
-Pass `--check` to the plotter to verify byte-for-byte figure freshness without writing files. The SVGs have deterministic identifiers and no timestamp; use the same matplotlib version for byte-identical plot regeneration. Wide figures use a two-column layout and mobile figures stack the same four panels. Input examples and raw JSON remain available when the host Markdown renderer does not honor `<picture>` media selection.
+Pass `--check` to the plotter to verify byte-for-byte figure freshness without writing files. The SVGs have deterministic identifiers and no timestamp; use the same matplotlib version for byte-identical plot regeneration. Wide figures use a two-column layout and mobile figures stack the same four panels. The diagram input and raw JSON remain available when the host Markdown renderer does not honor `<picture>` media selection.

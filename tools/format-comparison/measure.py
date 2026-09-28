@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Measure native, in-memory codecs and save all samples before plotting.
 
-Requires Pillow, numpy, an isolated libsixel build and the codecs.c adapter.
+Requires Pillow, numpy, qoi, an isolated libsixel build and the codecs.c
+adapter.
 Input/output copies and wrapper allocation are included; disk I/O and LSQA
 are excluded. Palette formats retain decoded indices between generations.
 """
@@ -19,7 +20,8 @@ import subprocess
 import time
 
 import numpy as np
-from PIL import Image, ImageDraw, features
+from PIL import Image, ImageCms, ImageDraw, ImageOps, features
+import qoi
 
 P = C.c_void_p
 I = C.c_int
@@ -67,7 +69,7 @@ class Codecs:
                 palette = buffer(bytes(image.getpalette()).ljust(768, b'\0'))
             if codec.startswith('SIXEL'):
                 ok = self.a.study_sixel_encode(pixels, *image.size, palette,
-                    256, threads, codec.endswith('none'), C.byref(data), C.byref(size))
+                    256, threads, codec.endswith('quality'), C.byref(data), C.byref(size))
             else:
                 quality = 80 if codec.endswith('lossless') else int(codec.split()[-1])
                 ok = self.a.study_webp_encode(pixels, *image.size, quality,
@@ -78,6 +80,8 @@ class Codecs:
                 return C.string_at(data, size.value)
             finally:
                 self.a.study_free(data)
+        if codec == 'QOI':
+            return qoi.encode(np.asarray(image.convert('RGB')))
         output = io.BytesIO()
         if codec.startswith('JPEG'):
             image.save(output, 'JPEG', quality=int(codec.split()[-1]), subsampling=2, optimize=False)
@@ -122,16 +126,45 @@ class Codecs:
                 return Image.frombytes('RGB', (w.value, h.value), C.string_at(pixels, w.value * h.value * 3))
             finally:
                 self.a.study_free(pixels)
+        if codec == 'QOI':
+            return Image.fromarray(qoi.decode(data), 'RGB')
         image = Image.open(io.BytesIO(data))
         image.load()
         return image.copy() if indexed else image.convert('RGB')
 
 
-def fixtures(source, out):
-    images = {'photo': Image.open(source / 'images/snake.png').convert('RGB').resize((768, 512), Image.Resampling.LANCZOS)}
-    y, x = np.mgrid[:512, :768]
-    rgb = np.stack((x * 255 / 767, y * 255 / 511, (np.sin(x / 65) * .5 + .5) * 255), axis=-1).astype('uint8')
-    images['gradient'] = Image.fromarray(rgb)
+def photo_fixtures(directory, fit):
+    """Load each source photo upright in sRGB and fit it inside `fit` (width,
+    height) with Lanczos, preserving the aspect ratio and never enlarging.
+
+    Every codec treats RGB samples as sRGB, and LSQA would apply an embedded
+    profile only to the reference. Convert a tagged photo to sRGB with its
+    profile and drop the profile so that both sides share one interpretation.
+    """
+    images, sources, profiles = {}, {}, {}
+    srgb = ImageCms.createProfile('sRGB')
+    for path in sorted(directory.glob('*.jpg')):
+        image = ImageOps.exif_transpose(Image.open(path))
+        icc = image.info.get('icc_profile')
+        profiles[path.stem] = None
+        if icc:
+            source = ImageCms.ImageCmsProfile(io.BytesIO(icc))
+            profiles[path.stem] = ImageCms.getProfileDescription(source).strip()
+            image = ImageCms.profileToProfile(
+                image, source, srgb, outputMode='RGB',
+                renderingIntent=ImageCms.Intent.RELATIVE_COLORIMETRIC)
+        image = image.convert('RGB')
+        image.info = {}
+        scale = min(1.0, fit[0] / image.width, fit[1] / image.height)
+        size = (max(1, round(image.width * scale)), max(1, round(image.height * scale)))
+        images[path.stem] = image.resize(size, Image.Resampling.LANCZOS)
+        images[path.stem].info = {}
+        sources[path.stem] = sha(path.read_bytes())
+    return images, sources, profiles
+
+
+def diagram_fixture():
+    """Return the deterministic flat-color diagram with text."""
     image = Image.new('RGB', (768, 512), 'white')
     draw = ImageDraw.Draw(image)
     colors = ['#0072b2', '#e69f00', '#009e73', '#cc79a7', '#202020']
@@ -139,10 +172,7 @@ def fixtures(source, out):
         xx, yy = 20 + (n % 6) * 124, 20 + (n // 6) * 96
         draw.rectangle((xx, yy, xx + 105, yy + 65), fill=colors[n % 5])
         draw.text((xx + 5, yy + 72), f'Node {n:02d} / RGB', fill='black')
-    images['diagram'] = image
-    for name, image in images.items():
-        image.save(out / f'{name}.png')
-    return images
+    return image
 
 
 def sampled(fn, runs):
@@ -156,7 +186,15 @@ def sampled(fn, runs):
     return result, samples
 
 
+QUALITY_CACHE = {}
+
+
 def quality(reference, image, lsqa, work):
+    # Identical decoded pixels against the same reference score identically;
+    # evaluate each pair once. LSQA is outside every timed region.
+    key = (str(reference), sha(image.convert('RGB').tobytes()))
+    if key in QUALITY_CACHE:
+        return dict(QUALITY_CACHE[key])
     path = work / 'decoded.png'
     image.convert('RGB').save(path)
     env = os.environ.copy()
@@ -164,7 +202,8 @@ def quality(reference, image, lsqa, work):
     p = subprocess.run([str(lsqa), str(reference), str(path)], capture_output=True, env=env, check=True)
     q = json.loads(p.stdout)
     q = q.get('quality', q)
-    return {'ms_ssim': float(q['MS-SSIM']), 'delta_e': float(q['Δ E00_mean'])}
+    QUALITY_CACHE[key] = {'ms_ssim': float(q['MS-SSIM']), 'delta_e': float(q['Δ E00_mean'])}
+    return dict(QUALITY_CACHE[key])
 
 
 def record(image, codec, threads, encoded, decoded, enc, dec, reference, lsqa, work):
@@ -188,6 +227,12 @@ def main():
     p.add_argument('--revision', required=True)
     p.add_argument('--runs', type=int, default=7)
     p.add_argument('--generations', type=int, default=8)
+    p.add_argument('--photos', type=Path, required=True,
+                   help='directory of source photographs (*.jpg)')
+    p.add_argument('--generation-stride', type=int, default=5,
+                   help='run the generation experiment on every Nth photograph')
+    p.add_argument('--fit', default='1920x1080',
+                   help='fit photographs inside WIDTHxHEIGHT (default: Full HD)')
     args = p.parse_args()
     for key in list(os.environ):
         if key.startswith(('SIXEL_', 'LSQA_')):
@@ -198,10 +243,23 @@ def main():
     import tempfile
     with tempfile.TemporaryDirectory(prefix='format-quality-') as tmp:
         work = Path(tmp)
-        images = fixtures(args.source, out)
+        fit = tuple(int(v) for v in args.fit.lower().split('x'))
+        photos, photo_sources, photo_profiles = photo_fixtures(args.photos, fit)
+        diagram = diagram_fixture()
+        diagram.save(out / 'diagram.png')
+        images = dict(photos, diagram=diagram)
+        # Every Nth photograph in name order keeps the subset spread over the
+        # corpus; the diagram always runs the generation experiment.
+        generation_images = sorted(photos)[::args.generation_stride] + ['diagram']
+        references = {}
+        for name, image in images.items():
+            references[name] = work / f'{name}.png'
+            image.save(references[name])
+            # A reference must not carry a profile that LSQA would apply.
+            assert b'iCCP' not in references[name].read_bytes(), name
         codecs = Codecs(args.adapter.resolve(), args.library.resolve())
         lsqa = args.source / 'assessment/lsqa'
-        settings = ['SIXEL default', 'SIXEL none', 'GIF', 'PNG', 'JPEG 60', 'JPEG 80', 'JPEG 95', 'WebP 60', 'WebP 80', 'WebP 95', 'WebP lossless']
+        settings = ['SIXEL default', 'SIXEL quality', 'GIF', 'PNG', 'QOI', 'JPEG 60', 'JPEG 80', 'JPEG 95', 'WebP 60', 'WebP 80', 'WebP 95', 'WebP lossless']
         rows = []
         payload = {'metadata': {'revision': args.revision, 'platform': platform.platform(),
             'cpu_count': os.cpu_count(), 'python': platform.python_version(),
@@ -213,17 +271,26 @@ def main():
             'adapter_links': subprocess.check_output(['otool', '-L', str(args.adapter)], text=True) if platform.system() == 'Darwin' else subprocess.check_output(['ldd', str(args.adapter)], text=True),
             'measure_script_sha256': sha(Path(__file__).read_bytes()),
             'adapter_source_sha256': sha(Path(__file__).with_name('codecs.c').read_bytes()),
-            'pillow': Image.__version__, 'jpeg': features.version('jpg'), 'zlib': features.version('zlib'),
+            'pillow': Image.__version__, 'jpeg': features.version('jpg'),
+            'libjpeg_turbo': features.version('libjpeg_turbo'), 'zlib': features.version('zlib'),
+            'qoi': getattr(qoi, '__version__', 'unknown'),
             'adapter_sha256': sha(args.adapter.read_bytes()), 'library_sha256': sha(args.library.read_bytes()),
             'runs': args.runs, 'warmups': 2, 'generations': args.generations,
-            'inputs': {k: sha((out / f'{k}.png').read_bytes()) for k in images}}, 'rows': rows}
+            'settings': settings, 'fit': list(fit),
+            'generation_images': generation_images,
+            'photo_directory': str(args.photos),
+            'photo_sources': photo_sources,
+            'photo_profiles_converted_to_srgb': photo_profiles,
+            'inputs': {k: sha(references[k].read_bytes()) for k in images},
+            'input_sizes': {k: list(v.size) for k, v in images.items()}}, 'rows': rows}
         def save():
             (out / 'results.json').write_text(json.dumps(payload, indent=2) + '\n')
         for name, image in images.items():
-            reference = out / f'{name}.png'
+            reference = references[name]
             # Alternate traversal between fixtures; every decoder budget uses
             # the same one-thread stream, independently of encoder changes.
-            for codec in settings[::(-1 if name == 'gradient' else 1)]:
+            order = settings if len(rows) // len(settings) % 2 == 0 else settings[::-1]
+            for codec in order:
                 fixed = codecs.encode(image, codec, 1)
                 expected = codecs.decode(fixed, codec, 1).tobytes()
                 for threads in [1, 2, 4, 8]:
@@ -235,8 +302,10 @@ def main():
                     row.update(image=name, experiment='scaling', decoder_stream_sha256=sha(fixed))
                     rows.append(row)
                     save()
-                print(name, codec, 'scaling complete', flush=True)
-            for codec in ['SIXEL default', 'GIF', 'PNG', 'JPEG 80', 'WebP 80', 'WebP lossless']:
+            print(name, 'scaling complete', flush=True)
+            if name not in generation_images:
+                continue
+            for codec in ['SIXEL default', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless']:
                 modes = ['indexed'] if codec in ['SIXEL default', 'GIF'] else ['RGB']
                 for mode in modes:
                     current = image
@@ -251,7 +320,7 @@ def main():
                         rows.append(row)
                         current = decoded if mode == 'indexed' else decoded.convert('RGB')
                         save()
-                    print(name, codec, mode, 'generations complete', flush=True)
+            print(name, 'generations complete', flush=True)
 
 
 if __name__ == '__main__':

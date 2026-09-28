@@ -1275,20 +1275,12 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/sixel-format/comparison/figures/diagram-scaling-mobile.svg \
 	docs/sixel-format/comparison/figures/diagram-scaling-wide.svg \
 	docs/sixel-format/comparison/figures/diagram.png \
-	docs/sixel-format/comparison/figures/gradient-generations-mobile.svg \
-	docs/sixel-format/comparison/figures/gradient-generations-wide.svg \
-	docs/sixel-format/comparison/figures/gradient-profile-mobile.svg \
-	docs/sixel-format/comparison/figures/gradient-profile-wide.svg \
-	docs/sixel-format/comparison/figures/gradient-scaling-mobile.svg \
-	docs/sixel-format/comparison/figures/gradient-scaling-wide.svg \
-	docs/sixel-format/comparison/figures/gradient.png \
 	docs/sixel-format/comparison/figures/photo-generations-mobile.svg \
 	docs/sixel-format/comparison/figures/photo-generations-wide.svg \
 	docs/sixel-format/comparison/figures/photo-profile-mobile.svg \
 	docs/sixel-format/comparison/figures/photo-profile-wide.svg \
 	docs/sixel-format/comparison/figures/photo-scaling-mobile.svg \
 	docs/sixel-format/comparison/figures/photo-scaling-wide.svg \
-	docs/sixel-format/comparison/figures/photo.png \
 	docs/sixel-format/comparison/figures/results.json \
 	docs/testing/mapfile-parser-coverage.md \
 	docs/testing/resampling-coverage.md \
