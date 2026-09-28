@@ -44,7 +44,7 @@ Exact integer output is justified when the propagated error interval, including 
 
 When the interval crosses a boundary, derive the admissible discrete results from that interval and the specified quantizer, and check the pre-quantization value as well where observable. Do not grant every pixel an unconditional `+/-1` allowance. If the contract instead promises correctly rounded output for every input, boundary cases must enforce that stronger promise; inability to meet it is an implementation issue. Exact ties belong to a separate test of the specified tie-breaking rule.
 
-Keep numerical portability and defect detection together: the accepted interval must still reject the wrong transform, premature clipping, lost residual, or extra low-precision store that the test targets. Independence of the oracle and passage on one architecture do not by themselves establish a portable exact-result assertion. [Pixel-format precision](../concepts/pixelformat-precision.md#numerical-validation-follows-the-operation) records the frame-specific tolerances and boundary evidence.
+Keep numerical portability and defect detection together: the accepted interval must still reject the wrong transform, premature clipping, lost residual, or extra low-precision store that the test targets. Independence of the oracle and passage on one architecture do not by themselves establish a portable exact-result assertion. [Pixel-format precision](../concepts/pixelformat-precision/README.md#numerical-validation-follows-the-operation) records the frame-specific tolerances and boundary evidence.
 
 ## Organization and naming
 

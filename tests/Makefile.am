@@ -625,6 +625,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0042_KCENTER_LARGE_BUFFER \
     -DBUILD_TEST_0043_KCENTER_FLOAT_LEGACY_GRID \
     -DBUILD_TEST_0044_KCENTER_PACKED_ALPHA_LAYOUTS \
+    -DBUILD_TEST_0048_POSITIONAL_8BIT_NO_DIFFUSE_GPU_6DELTA \
+    -DBUILD_TEST_0052_POSITIONAL_8BIT_BLUENOISE_GPU_FORCE_KEEP_OFFSET \
     -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
@@ -2780,6 +2782,8 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0012_filter_encode_6delta_plane.c \
     processing/filter/0013_filter_encode_6delta_keycolor.c \
     processing/filter/0014_filter_sample_solid.c \
+    processing/dither/positional/0048_positional_8bit_no_diffuse_gpu_6delta.c \
+    processing/dither/bluenoise/0052_positional_8bit_bluenoise_gpu_force_keep_offset.c \
     processing/dither/clamp/0001_soft_vector.c \
     processing/dither/clamp/0002_auto_soft.c \
     processing/dither/clamp/0003_hard_channels.c \

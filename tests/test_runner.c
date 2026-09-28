@@ -264,6 +264,8 @@ int test_filter_0045_filter_binning_stream_alpha_zero_disabled(
     int argc,
     char **argv);
 int test_gpupal_0001_strtoul(int argc, char **argv);
+int test_positional_0048_gpu_6delta(int argc, char **argv);
+int test_bluenoise_0052_keep_offset(int argc, char **argv);
 int test_gpudeq_0001_strtoul(int argc, char **argv);
 int test_encoder_core_0001_encoder_core_factory(int argc, char **argv);
 int test_or_enc_0027(int argc, char **argv);
@@ -2385,6 +2387,8 @@ static test_entry_t const test_entries[] = {
       test_filter_0045_filter_binning_stream_alpha_zero_disabled },
     { "gpu-palette/0001_gpu_palette_threshold_strtoul",
       test_gpupal_0001_strtoul },
+    { "dither/positional/0048_gpu_6delta", test_positional_0048_gpu_6delta },
+    { "dither/bluenoise/0052_keep_offset", test_bluenoise_0052_keep_offset },
     { "gpu-dequant/0001_gpu_dequant_threshold_strtoul",
       test_gpudeq_0001_strtoul },
     { "security/0001_issue222_encoder_encode_bytes_packed_g1",
