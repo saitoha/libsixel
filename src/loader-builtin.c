@@ -2114,6 +2114,10 @@ typedef struct sixel_builtin_apng_canvas {
     int width;
     int height;
     int enable_cms;
+    unsigned char const *background;
+    int background_source;
+    sixel_frame_t *image;
+    sixel_frame_interface_t *saved;
 } sixel_builtin_apng_canvas_t;
 
 typedef struct sixel_builtin_apng_state {
@@ -2537,6 +2541,245 @@ sixel_builtin_apng_blend_rect(sixel_builtin_apng_canvas_t const *canvas,
     }
 }
 
+/* Promote only when source precision, color work or fractional blending
+ * requires it. Earlier byte frames have exact binary alpha, so promotion
+ * loses neither their coverage nor their original byte RGB samples. */
+static SIXELSTATUS
+sixel_builtin_apng_float_canvas(sixel_builtin_apng_canvas_t *canvas,
+                                sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    sixel_frame_t *frame;
+    sixel_frame_interface_t *iface;
+    float *rgb;
+    float *alpha;
+    size_t count;
+    size_t i;
+    int c;
+
+    if (canvas->image != NULL) {
+        return SIXEL_OK;
+    }
+    count = (size_t)canvas->width * (size_t)canvas->height;
+    if (count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    frame = NULL;
+    rgb = NULL;
+    alpha = NULL;
+    status = sixel_frame_create_from_factory(&frame, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    rgb = (float *)sixel_allocator_malloc(allocator,
+                                           count * 3u * sizeof(float));
+    alpha = (float *)sixel_allocator_malloc(allocator, count * sizeof(float));
+    if (rgb == NULL || alpha == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    for (i = 0u; i < count; ++i) {
+        for (c = 0; c < 3; ++c) {
+            rgb[i * 3u + c] = sixel_builtin_decode_srgb_unit(
+                (float)canvas->pixels[i * 4u + c] / 255.0f);
+        }
+        alpha[i] = (float)canvas->pixels[i * 4u + 3u] / 255.0f;
+    }
+    iface = sixel_frame_as_interface(frame);
+    status = iface->vtbl->init_pixels(iface,
+        &(sixel_frame_pixels_request_t){rgb, NULL, canvas->width,
+            canvas->height, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+            SIXEL_COLORSPACE_LINEAR, -1, SIXEL_FRAME_PIXELS_FLOAT32});
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    rgb = NULL;
+    status = iface->vtbl->set_alpha(iface,
+        &(sixel_frame_alpha_t){alpha, count});
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    alpha = NULL;
+    canvas->image = frame;
+    frame = NULL;
+end:
+    sixel_allocator_free(allocator, rgb);
+    sixel_allocator_free(allocator, alpha);
+    sixel_frame_unref(frame);
+    return status;
+}
+
+static void
+sixel_builtin_apng_reset_float(sixel_builtin_apng_canvas_t *canvas)
+{
+    sixel_frame_interface_t *iface;
+    sixel_frame_pixels_view_t pixels;
+    sixel_frame_alpha_t alpha;
+
+    iface = sixel_frame_as_interface(canvas->image);
+    iface->vtbl->get_pixels(iface, &pixels);
+    iface->vtbl->get_alpha(iface, &alpha);
+    memset(pixels.pixels_float32, 0, alpha.count * 3u * sizeof(float));
+    memset(alpha.values, 0, alpha.count * sizeof(float));
+}
+
+static SIXELSTATUS
+sixel_builtin_apng_float_frame(sixel_builtin_apng_canvas_t *canvas,
+    sixel_builtin_apng_frame_control_t const *control,
+    unsigned char const *png_data, size_t png_size,
+    int frame_no, int loop_no, int multiframe, int emit_callback,
+    sixel_load_image_function fn_load, void *callback_context,
+    void *cancel_context, sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    sixel_chunk_t *chunk;
+    sixel_frame_t *rectangle;
+    sixel_frame_interface_t *iface;
+    sixel_frame_interface_t *rect;
+    sixel_frame_interface_t *emitted;
+    sixel_frame_pixels_view_t source;
+    sixel_frame_pixels_view_t destination;
+    sixel_frame_alpha_t src_alpha;
+    sixel_frame_alpha_t dst_alpha;
+    sixel_frompng_composition_t composition;
+    sixel_frame_timeline_t timeline;
+    size_t x;
+    size_t y;
+    size_t si;
+    size_t di;
+    int c;
+    int preserve_zero;
+    double sa;
+    double da;
+    double oa;
+
+    chunk = NULL;
+    rectangle = NULL;
+    emitted = NULL;
+    memset(&composition, 0, sizeof(composition));
+    status = sixel_chunk_create_from_memory(&chunk, png_data, png_size, NULL,
+                                             allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_frame_create_from_factory(&rectangle, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_frompng_load_rect(chunk, allocator, rectangle,
+        canvas->enable_cms, canvas->background, canvas->background_source,
+        &composition);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    rect = sixel_frame_as_interface(rectangle);
+    rect->vtbl->get_pixels(rect, &source);
+    rect->vtbl->get_alpha(rect, &src_alpha);
+    if (source.width != (int)control->width ||
+        source.height != (int)control->height) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    status = sixel_builtin_apng_float_canvas(canvas, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    iface = sixel_frame_as_interface(canvas->image);
+    if (control->dispose_op == 2) {
+        if (canvas->saved != NULL) {
+            canvas->saved->vtbl->unref(canvas->saved);
+            canvas->saved = NULL;
+        }
+        status = iface->vtbl->clone(iface, allocator, &canvas->saved);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+    iface->vtbl->get_pixels(iface, &destination);
+    iface->vtbl->get_alpha(iface, &dst_alpha);
+    for (y = 0u; y < control->height; ++y) {
+        for (x = 0u; x < control->width; ++x) {
+            si = y * control->width + x;
+            di = (y + control->y_offset) * (size_t)canvas->width +
+                x + control->x_offset;
+            sa = src_alpha.values[si];
+            da = control->blend_op == 0 ? 0.0 : dst_alpha.values[di];
+            oa = sa + da * (1.0 - sa);
+            for (c = 0; c < 3; ++c) {
+                /* SOURCE preserves hidden straight RGB; OVER with no coverage
+                 * has no contributing color. CMS never evaluates alpha. */
+                destination.pixels_float32[di * 3u + c] =
+                    control->blend_op == 0 ? source.pixels_float32[si * 3u + c]
+                    : oa == 0.0 ? 0.0f : (float)(
+                        (source.pixels_float32[si * 3u + c] * sa +
+                         destination.pixels_float32[di * 3u + c] *
+                         da * (1.0 - sa)) / oa);
+            }
+            dst_alpha.values[di] = (float)oa;
+        }
+    }
+    if (emit_callback) {
+        status = iface->vtbl->clone(iface, allocator, &emitted);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        preserve_zero = SIXEL_LOADER_ALPHA_POLICY_PRESERVES_ZERO(
+            loader_transparent_policy());
+        /* The legacy callback takes the concrete frame factory product. */
+        status = sixel_frame_resolve_alpha((sixel_frame_t *)emitted,
+            composition.has_background ? composition.background : NULL,
+            preserve_zero);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        if (composition.managed) {
+            status = emitted->vtbl->set_pixelformat(emitted,
+                loader_cms_target_pixelformat());
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+        memset(&timeline, 0, sizeof(timeline));
+        timeline.delay = (int)control->delay_cs;
+        timeline.frame_no = frame_no;
+        timeline.loop_count = loop_no;
+        timeline.multiframe = multiframe;
+        emitted->vtbl->set_timeline(emitted, &timeline);
+        status = fn_load((sixel_frame_t *)emitted, callback_context);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        if (sixel_loader_callback_is_canceled(cancel_context)) {
+            status = SIXEL_INTERRUPTED;
+            goto end;
+        }
+    }
+    if (control->dispose_op == 1) {
+        for (y = 0u; y < control->height; ++y) {
+            di = (y + control->y_offset) * (size_t)canvas->width +
+                control->x_offset;
+            memset(destination.pixels_float32 + di * 3u, 0,
+                   (size_t)control->width * 3u * sizeof(float));
+            memset(dst_alpha.values + di, 0,
+                   (size_t)control->width * sizeof(float));
+        }
+    } else if (control->dispose_op == 2) {
+        sixel_frame_unref(canvas->image);
+        canvas->image = (sixel_frame_t *)canvas->saved;
+        canvas->saved = NULL;
+    }
+    status = SIXEL_OK;
+end:
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
+    if (emitted != NULL) {
+        emitted->vtbl->unref(emitted);
+    }
+    sixel_frame_unref(rectangle);
+    return status;
+}
+
 static SIXELSTATUS
 sixel_builtin_apng_emit_frame(
     sixel_builtin_apng_state_t const *state,
@@ -2558,7 +2801,6 @@ sixel_builtin_apng_emit_frame(
     size_t png_size;
     unsigned char *png_data;
     unsigned char *subframe;
-    unsigned char *rgb_pixels;
     unsigned char *emitted;
     unsigned char ihdr_copy[13];
     size_t canvas_bytes;
@@ -2568,14 +2810,12 @@ sixel_builtin_apng_emit_frame(
     int height;
     int depth;
     char const *stbi_reason;
-    int color_converted;
 
     status = SIXEL_FALSE;
     frame = NULL;
     stb_context = (stbi__context){ 0 };
     png_data = NULL;
     subframe = NULL;
-    rgb_pixels = NULL;
     emitted = NULL;
     width = 0;
     height = 0;
@@ -2646,6 +2886,15 @@ sixel_builtin_apng_emit_frame(
         alpha_zero_is_transparent,
         emit_callback);
 
+    if (canvas->image != NULL || ihdr_copy[8] == 16 ||
+        (canvas->enable_cms &&
+         sixel_frompng_has_color_work(png_data, png_size))) {
+        status = sixel_builtin_apng_float_frame(canvas, control, png_data,
+            png_size, frame_no, loop_no, multiframe, emit_callback,
+            fn_load, callback_context, cancel_context, allocator);
+        goto end;
+    }
+
     stbi_allocation_failed = 0;
     stbi__start_mem(&stb_context, png_data, (int)png_size);
     subframe = stbi__load_and_postprocess_8bit(&stb_context,
@@ -2681,37 +2930,16 @@ sixel_builtin_apng_emit_frame(
         goto end;
     }
 
-    /*
-     * stb expands the samples but does not evaluate the shared PNG color
-     * declarations. Normalize each rectangle to sRGB before storing it in
-     * the gamma RGBA8 canvas, using the same source choice as static PNG.
-     * Pack only RGB so neither the ICC transform nor its fallback changes
-     * coverage. The canvas remains byte based; this is not float decoding.
-     */
-    if (canvas->enable_cms) {
-        pixel_count = (size_t)width * (size_t)height;
-        rgb_pixels = (unsigned char *)sixel_allocator_malloc(
-            allocator, pixel_count * 3u);
-        if (rgb_pixels == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
+    /* Binary coverage and unmanaged bytes need no float arithmetic. A
+     * fractional sample promotes the retained canvas before its first OVER. */
+    pixel_count = (size_t)width * (size_t)height;
+    for (index = 0u; index < pixel_count; ++index) {
+        if (subframe[index * 4u + 3u] != 0u &&
+            subframe[index * 4u + 3u] != 255u) {
+            status = sixel_builtin_apng_float_frame(canvas, control, png_data,
+                png_size, frame_no, loop_no, multiframe, emit_callback,
+                fn_load, callback_context, cancel_context, allocator);
             goto end;
-        }
-        for (index = 0u; index < pixel_count; ++index) {
-            memcpy(rgb_pixels + index * 3u, subframe + index * 4u, 3u);
-        }
-        color_converted =
-            sixel_frompng_apply_colorspace_fallback_pixelformat(rgb_pixels,
-                width, height, SIXEL_PIXELFORMAT_RGB888, png_data,
-                png_size, allocator);
-        if (!color_converted &&
-            sixel_frompng_cicp_name(png_data, png_size) != NULL) {
-            sixel_helper_set_additional_message(
-                "builtin APNG: selected cICP transform failed");
-            status = SIXEL_RUNTIME_ERROR;
-            goto end;
-        }
-        for (index = 0u; index < pixel_count; ++index) {
-            memcpy(subframe + index * 4u, rgb_pixels + index * 3u, 3u);
         }
     }
 
@@ -2788,7 +3016,6 @@ dispose:
 
 end:
     sixel_allocator_free(allocator, png_data);
-    sixel_allocator_free(allocator, rgb_pixels);
     stbi_free(subframe);
     sixel_allocator_free(allocator, emitted);
     sixel_frame_unref(frame);
@@ -2997,6 +3224,9 @@ sixel_builtin_apng_begin_loop_iteration(
     if (runtime->loop_no > 0 && runtime->canvas_bytes > 0u) {
         memset(canvas->pixels, 0, runtime->canvas_bytes);
         memset(canvas->backup, 0, runtime->canvas_bytes);
+    }
+    if (runtime->loop_no > 0 && canvas->image != NULL) {
+        sixel_builtin_apng_reset_float(canvas);
     }
     sixel_trace_topic_message(
         "apng",
@@ -3315,6 +3545,13 @@ sixel_builtin_apng_process_chunk(
                 enable_cms,
                 runtime->has_trns_chunk,
                 runtime->has_alpha_chunk);
+        /* Each reconstructed PNG needs the original key/palette coverage,
+         * including fractional tRNS entries on the float canvas path. */
+        if (runtime->seen_idat == 0 && state->chunk_size == 0u &&
+            !sixel_builtin_apng_append_shared_chunk(state, runtime->p,
+                (size_t)runtime->length + 12u, allocator)) {
+            return SIXEL_BAD_ALLOCATION;
+        }
     } else if (memcmp(runtime->p + 4, "acTL", 4) != 0 &&
                memcmp(runtime->p + 4, "fcTL", 4) != 0 &&
                memcmp(runtime->p + 4, "fdAT", 4) != 0 &&
@@ -3451,6 +3688,7 @@ sixel_builtin_load_apng_frames(
     sixel_allocator_t *allocator,
     int fstatic,
     unsigned char *bgcolor,
+    int bgcolor_source,
     int enable_cms,
     int loop_control,
     int start_frame_no,
@@ -3474,6 +3712,8 @@ sixel_builtin_load_apng_frames(
     memset(&control, 0, sizeof(control));
     memset(&canvas, 0, sizeof(canvas));
     canvas.enable_cms = enable_cms;
+    canvas.background = bgcolor;
+    canvas.background_source = bgcolor_source;
     memset(&runtime, 0, sizeof(runtime));
     apng_start_frame_no = start_frame_no;
     stop_decode = 0;
@@ -3591,6 +3831,10 @@ end:
         runtime.saw_animation,
         runtime.raster_decode_started,
         static_fallback_allowed != NULL ? *static_fallback_allowed : 0);
+    sixel_frame_unref(canvas.image);
+    if (canvas.saved != NULL) {
+        canvas.saved->vtbl->unref(canvas.saved);
+    }
     sixel_allocator_free(allocator, canvas.pixels);
     sixel_allocator_free(allocator, canvas.backup);
     sixel_builtin_apng_release_loop_buffers(&state, allocator);
@@ -6465,6 +6709,7 @@ sixel_builtin_load_stbi_png_path(
             load_request->allocator,
             load_request->fstatic,
             load_request->bgcolor,
+            load_request->bgcolor_source,
             load_request->enable_cms,
             load_request->loop_control,
             load_context->start_frame_no,

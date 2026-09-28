@@ -94,9 +94,8 @@ png_metadata_check(int fixture, int engine, int background)
             colorspace = SIXEL_COLORSPACE_GAMMA;
         }
     }
-    if (fixture >= 38) {
-        format = fixture == 38 ? SIXEL_PIXELFORMAT_PAL8
-                               : SIXEL_PIXELFORMAT_RGB888;
+    if (fixture == 38) {
+        format = SIXEL_PIXELFORMAT_PAL8;
         colorspace = SIXEL_COLORSPACE_GAMMA;
     }
     if (probe.pixelformat[0] != format ||
@@ -132,8 +131,8 @@ png_metadata_check(int fixture, int engine, int background)
             }
         }
     }
-    if (fixture >= 38) {
-        byte_rgb = fixture == 38 ? probe.palette[0] : probe.rgb[0];
+    if (fixture == 38) {
+        byte_rgb = probe.palette[0];
         for (c = 0; c < 24; ++c) {
             /* Native RGB8 packing has its own integer quantization boundary.
              * The two candidates come from continuous source-derived color,

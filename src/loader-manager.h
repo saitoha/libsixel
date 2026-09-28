@@ -59,7 +59,7 @@ loader_manager_parse_loader_order(
     char const *order,
     sixel_option_argument_list_resolution_t *resolution);
 
-void
+SIXEL_INTERNAL_API void
 loader_manager_init_loader_suboptions(
     sixel_loader_suboptions_t *suboptions);
 

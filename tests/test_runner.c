@@ -337,6 +337,8 @@ int test_frame_0018_resampling(int argc, char **argv);
 int test_frame_0054_geometry(int argc, char **argv);
 int test_frame_0098_dynamic(int argc, char **argv);
 int test_frame_0178_byte(int argc, char **argv);
+int test_apng_0001_float(int argc, char **argv);
+int test_frame_0239_alpha(int argc, char **argv);
 int test_frame_0003_transparent_mask_clip(int argc, char **argv);
 int test_frame_0004_transparent_mask_resize(int argc, char **argv);
 int test_frame_0005_transparent_mask_resize_bilinear(int argc, char **argv);
@@ -1035,10 +1037,10 @@ int test_loader_0136_loader_builtin_png_adam7_indexed4_digest(
 int test_loader_0137_loader_builtin_png_gray16_sub8bit_numeric(
     int argc,
     char **argv);
-int test_loader_0138_loader_builtin_apng_blend_over_digest(
+int test_loader_0138_loader_builtin_apng_blend_over_numeric(
     int argc,
     char **argv);
-int test_loader_0139_loader_builtin_apng_dispose_background_digest(
+int test_loader_0139_loader_builtin_apng_dispose_background_numeric(
     int argc,
     char **argv);
 int test_loader_0140_loader_builtin_jpeg_gray16_sub8bit_numeric(
@@ -2511,6 +2513,8 @@ static test_entry_t const test_entries[] = {
     { "frame/0054_float_geometry_state", test_frame_0054_geometry },
     { "frame/0098_float_dynamic_range", test_frame_0098_dynamic },
     { "frame/0178_float_byte_boundary", test_frame_0178_byte },
+    { "apng/0001_float", test_apng_0001_float },
+    { "frame/0239_alpha", test_frame_0239_alpha },
     { "frame/0003_frame_transparent_mask_clip",
       test_frame_0003_transparent_mask_clip },
     { "frame/0004_frame_transparent_mask_resize",
@@ -3319,10 +3323,10 @@ static test_entry_t const test_entries[] = {
       test_loader_0136_loader_builtin_png_adam7_indexed4_digest },
     { "loader/0137_loader_builtin_png_gray16_sub8bit_numeric",
       test_loader_0137_loader_builtin_png_gray16_sub8bit_numeric },
-    { "loader/0138_loader_builtin_apng_blend_over_digest",
-      test_loader_0138_loader_builtin_apng_blend_over_digest },
-    { "loader/0139_loader_builtin_apng_dispose_background_digest",
-      test_loader_0139_loader_builtin_apng_dispose_background_digest },
+    { "loader/0138_loader_builtin_apng_blend_over_numeric",
+      test_loader_0138_loader_builtin_apng_blend_over_numeric },
+    { "loader/0139_loader_builtin_apng_dispose_background_numeric",
+      test_loader_0139_loader_builtin_apng_dispose_background_numeric },
     { "loader/0140_loader_builtin_jpeg_gray16_sub8bit_numeric",
       test_loader_0140_loader_builtin_jpeg_gray16_sub8bit_numeric },
     { "loader/0141_loader_builtin_jpeg_progressive_420_digest",

@@ -742,7 +742,7 @@
           "coverage_id": "PNG-05",
           "details": [
             "exclude default IDAT unless fcTL precedes it",
-            "decode RGBA8 frames; late errors remain terminal"
+            "byte fast path or linear RGB plus alpha; late errors terminal"
           ],
           "phase": "ANIMATE",
           "role": "decode",

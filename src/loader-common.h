@@ -98,10 +98,10 @@ typedef struct sixel_loader_timeline_callback_state {
  * Returning the previous pointer keeps nested loads balanced without copying
  * the option structure or exposing process-global mutable configuration.
  */
-sixel_loader_suboptions_t const *
+SIXEL_INTERNAL_API sixel_loader_suboptions_t const *
 sixel_loader_activate_suboptions(
     sixel_loader_suboptions_t const *suboptions);
-void sixel_loader_restore_suboptions(
+SIXEL_INTERNAL_API void sixel_loader_restore_suboptions(
     sixel_loader_suboptions_t const *suboptions);
 sixel_loader_suboptions_t const *sixel_loader_active_suboptions(void);
 

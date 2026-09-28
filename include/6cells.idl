@@ -817,6 +817,14 @@ struct frame_transparency {
     size_t transparent_mask_size;
 };
 
+/* Internal straight-alpha plane, independent of RGB coordinates and masks.
+ * get_alpha() borrows storage; set_alpha() takes ownership only on success.
+ * A NULL plane with count zero removes fractional coverage. */
+struct frame_alpha {
+    float *values;
+    size_t count;
+};
+
 [component, refcounted]
 [responsibility("own pixel storage and per-frame metadata")]
 [forbid_state("lookup_policy", "dither_policy", "decode_state")]
@@ -853,6 +861,9 @@ interface frame {
     SIXELSTATUS clone(
         in allocator *allocator,
         out frame **frame_out);
+    SIXELSTATUS get_alpha(out frame_alpha *alpha);
+    [mutates]
+    SIXELSTATUS set_alpha(in frame_alpha const *alpha);
 };
 
 [classid("image/frame")]

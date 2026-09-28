@@ -242,7 +242,7 @@ loader_background_unlock(void)
 #define SIXEL_LOADER_TIMELINE_OPT_ICC        (1u << 2)
 #define SIXEL_LOADER_TIMELINE_CB_MAGIC       0x534c544dU
 
-sixel_loader_suboptions_t const *
+SIXEL_INTERNAL_API sixel_loader_suboptions_t const *
 sixel_loader_activate_suboptions(
     sixel_loader_suboptions_t const *suboptions)
 {
@@ -253,7 +253,7 @@ sixel_loader_activate_suboptions(
     return previous;
 }
 
-void
+SIXEL_INTERNAL_API void
 sixel_loader_restore_suboptions(
     sixel_loader_suboptions_t const *suboptions)
 {

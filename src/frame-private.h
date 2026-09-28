@@ -59,8 +59,25 @@ struct sixel_frame {
     int alpha_zero_is_transparent;  /* alpha=0 pixels are keycolor candidates */
     unsigned char *transparent_mask; /* per-pixel transparency mask */
     size_t transparent_mask_size;   /* entry count for transparent_mask */
+    float *alpha;                  /* owned straight fractional coverage */
+    size_t alpha_count;            /* one finite [0,1] sample per pixel */
     sixel_allocator_t *allocator;   /* allocator object */
 };
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Resolve straight linear RGB plus continuous alpha at a delivery boundary.
+ * A NULL background retains RGB and only marks exact alpha-zero samples.
+ * Failure leaves all frame storage and metadata unchanged. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_resolve_alpha(sixel_frame_t *frame,
+                          float const *background, int preserve_zero);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LIBSIXEL_FRAME_PRIVATE_H */
 

@@ -41,6 +41,9 @@ extern "C" {
 char const *
 sixel_frompng_cicp_name(unsigned char const *buffer, size_t size);
 
+int
+sixel_frompng_has_color_work(unsigned char const *buffer, size_t size);
+
 void
 sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,
                                         int width,
@@ -66,6 +69,21 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
                               int enable_cms,
                               unsigned char const *bgcolor,
                               int bgcolor_source);
+
+/* Animation rectangles retain straight coverage for later canvas blending.
+ * Background interpretation is returned separately, never baked into RGB. */
+typedef struct sixel_frompng_composition {
+    float background[3];
+    int has_background;
+    int managed;
+} sixel_frompng_composition_t;
+
+SIXELSTATUS
+sixel_frompng_load_rect(sixel_chunk_t const *pchunk,
+                        sixel_allocator_t *allocator, sixel_frame_t *frame,
+                        int enable_cms, unsigned char const *bgcolor,
+                        int bgcolor_source,
+                        sixel_frompng_composition_t *composition);
 
 #ifdef __cplusplus
 }

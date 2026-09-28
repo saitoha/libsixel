@@ -234,6 +234,9 @@ pmfi_apply_icc(unsigned char *pixels, int width, int height, int format,
 #define sixel_frompng_decode_samples pmfi_decode_samples
 #define sixel_frompng_has_transparency pmfi_has_transparency
 #define sixel_frompng_load_nonindexed pmfi_load_nonindexed
+#define sixel_frompng_load_samples pmfi_load_samples
+#define sixel_frompng_load_rect pmfi_load_rect
+#define sixel_frompng_has_color_work pmfi_has_color_work
 #define sixel_frompng_source_t pmfi_source_t
 #define SIXEL_FROMPNG_TRANSFER_SRGB PMFI_TRANSFER_SRGB
 #define SIXEL_FROMPNG_TRANSFER_GAMA PMFI_TRANSFER_GAMA
@@ -274,6 +277,9 @@ pmfi_apply_icc(unsigned char *pixels, int width, int height, int format,
 #undef sixel_frompng_decode_samples
 #undef sixel_frompng_has_transparency
 #undef sixel_frompng_load_nonindexed
+#undef sixel_frompng_load_samples
+#undef sixel_frompng_load_rect
+#undef sixel_frompng_has_color_work
 #undef sixel_frompng_source_t
 #undef SIXEL_FROMPNG_TRANSFER_SRGB
 #undef SIXEL_FROMPNG_TRANSFER_GAMA

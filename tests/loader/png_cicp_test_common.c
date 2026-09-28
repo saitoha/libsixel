@@ -241,8 +241,7 @@ png_cicp_test(int specimen, int native)
     unmanaged = specimen == 25;
     use_icc = (specimen >= 11 && specimen <= 13) || specimen == 16;
     use_lower = specimen == 12 || specimen == 17;
-    byte_expected = srgb || (specimen >= 18 && specimen <= 25) ||
-        (apng && !native);
+    byte_expected = srgb || (specimen >= 18 && specimen <= 25);
     channels = (gray ? 1 : 3) + has_alpha;
     allocator = NULL;
     component = NULL;
@@ -496,7 +495,7 @@ png_cicp_test(int specimen, int native)
                     value = value * alpha + lin[c] * (1.0 - alpha);
                 }
             }
-            if (specimen == 26 || (apng && !native)) {
+            if (specimen == 26) {
                 value = cicp_encode(value);
             }
             if (byte_expected) {

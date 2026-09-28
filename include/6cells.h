@@ -1334,6 +1334,14 @@ typedef struct sixel_frame_transparency {
     size_t transparent_mask_size;
 } sixel_frame_transparency_t;
 
+/* Internal straight-alpha plane, independent of RGB coordinates and masks.
+ * get_alpha() borrows storage; set_alpha() takes ownership only on success.
+ * A NULL plane with count zero removes fractional coverage. */
+typedef struct sixel_frame_alpha {
+    float *values;
+    size_t count;
+} sixel_frame_alpha_t;
+
 /*
  * IDL responsibility:
  * - own pixel storage and per-frame metadata
@@ -1384,6 +1392,9 @@ typedef struct sixel_frame_transparency {
  *     SIXELSTATUS clone(
  *         in allocator *allocator,
  *         out frame **frame_out);
+ *     SIXELSTATUS get_alpha(out frame_alpha *alpha);
+ *     [mutates]
+ *     SIXELSTATUS set_alpha(in frame_alpha const *alpha);
  * };
  */
 
@@ -1434,6 +1445,12 @@ typedef struct sixel_frame_vtbl {
         sixel_frame_interface_t *self,
         sixel_allocator_t *allocator,
         sixel_frame_interface_t **frame_out);
+    SIXELSTATUS (*get_alpha)(
+        sixel_frame_interface_t *self,
+        sixel_frame_alpha_t *alpha);
+    SIXELSTATUS (*set_alpha)(
+        sixel_frame_interface_t *self,
+        sixel_frame_alpha_t const *alpha);
 } sixel_frame_vtbl_t;
 
 struct sixel_frame_interface {

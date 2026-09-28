@@ -647,6 +647,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0054_FRAME_FLOAT_GEOMETRY_STATE \
     -DBUILD_TEST_0098_FRAME_FLOAT_DYNAMIC_RANGE \
     -DBUILD_TEST_0178_FRAME_FLOAT_BYTE_BOUNDARY \
+    -DBUILD_TEST_0239_FRAME_ALPHA_PLANE \
+    -DBUILD_TEST_0001_FLOAT_ALPHA \
     -DBUILD_TEST_0001_RESIZE_LINEAR_FLOAT32 \
     -DBUILD_TEST_0002_RESIZE_ALLOCATION_FAILURE \
     -DBUILD_TEST_0001_FRAME_SAMPLES \
@@ -836,8 +838,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0135_LOADER_BUILTIN_PNG_FILTER_MODES_NUMERIC \
     -DBUILD_TEST_0136_LOADER_BUILTIN_PNG_ADAM7_INDEXED4_DIGEST \
     -DBUILD_TEST_0137_LOADER_BUILTIN_PNG_GRAY16_SUB8BIT_NUMERIC \
-    -DBUILD_TEST_0138_LOADER_BUILTIN_APNG_BLEND_OVER_DIGEST \
-    -DBUILD_TEST_0139_LOADER_BUILTIN_APNG_DISPOSE_BACKGROUND_DIGEST \
+    -DBUILD_TEST_0138_LOADER_BUILTIN_APNG_BLEND_OVER_NUMERIC \
+    -DBUILD_TEST_0139_LOADER_BUILTIN_APNG_DISPOSE_BACKGROUND_NUMERIC \
     -DBUILD_TEST_0140_LOADER_BUILTIN_JPEG_GRAY16_SUB8BIT_NUMERIC \
     -DBUILD_TEST_0141_LOADER_BUILTIN_JPEG_PROGRESSIVE_420_DIGEST \
     -DBUILD_TEST_0142_LOADER_BUILTIN_JPEG_GRAY16_RESTART_NUMERIC \
@@ -2905,6 +2907,8 @@ test_runner_SOURCES = test_runner.c \
     processing/frame/0054_frame_float_geometry_state.c \
     processing/frame/0098_frame_float_dynamic_range.c \
     processing/frame/0178_frame_float_byte_boundary.c \
+    processing/frame/0239_frame_alpha_plane.c \
+    loader/builtin/apng/0001_float_alpha.c \
     processing/frame/frame_transparent_mask_resize_test_common.c \
     processing/frame/frame_transparent_mask_resize_test_common.h \
     processing/geometry/resampling_exact_test_driver.c \
@@ -3575,8 +3579,8 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c \
     loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c \
     loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c \
-    loader/builtin/0138_loader_builtin_apng_blend_over_digest.c \
-    loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c \
+    loader/builtin/0138_loader_builtin_apng_blend_over_numeric.c \
+    loader/builtin/0139_loader_builtin_apng_dispose_background_numeric.c \
     loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c \
     loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c \
     loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c \

@@ -189,7 +189,7 @@ loader_manager_parse_loader_order(
         sizeof(diagnostic));
 }
 
-void
+SIXEL_INTERNAL_API void
 loader_manager_init_loader_suboptions(
     sixel_loader_suboptions_t *suboptions)
 {

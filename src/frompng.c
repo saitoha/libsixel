@@ -1315,6 +1315,27 @@ sixel_frompng_select_source(unsigned char const *buffer, size_t size,
     return 1;
 }
 
+static int
+sixel_frompng_has_transparency(unsigned char const *buffer, size_t size);
+
+/* Qualify the animation byte path using the same source-choice policy.
+ * This probe owns no pixels; actual conversion stays in the shared decoder. */
+int
+sixel_frompng_has_color_work(unsigned char const *buffer, size_t size)
+{
+    sixel_frompng_source_t source;
+    int result;
+
+    if (!sixel_frompng_select_source(buffer, size, 1,
+            sixel_frompng_has_transparency(buffer, size), &source)) {
+        return 1;
+    }
+    result = source.profile != NULL ||
+        source.transfer_mode == SIXEL_FROMPNG_TRANSFER_GAMA;
+    sixel_cms_close_profile(source.profile);
+    return result;
+}
+
 static void
 sixel_frompng_normalize_samples(float *pixels,
                                  unsigned char const *samples8,
@@ -1400,13 +1421,14 @@ sixel_frompng_has_transparency(unsigned char const *buffer, size_t size)
     return 0;
 }
 
-SIXELSTATUS
-sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
+static SIXELSTATUS
+sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
                               sixel_allocator_t *allocator,
                               sixel_frame_t *frame,
                               int enable_cms,
                               unsigned char const *bgcolor,
-                              int bgcolor_source)
+                              int bgcolor_source,
+                              sixel_frompng_composition_t *composition)
 {
     SIXELSTATUS status;
     sixel_frompng_source_t source;
@@ -1433,6 +1455,7 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
     unsigned char *mask;
     unsigned char *output;
     float *pixels;
+    float *alpha_values;
     size_t count;
     size_t i;
     int c;
@@ -1450,6 +1473,7 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
     samples16 = NULL;
     samples8 = NULL;
     pixels = NULL;
+    alpha_values = NULL;
     mask = NULL;
     has_zero = 0;
     converted = 0;
@@ -1496,7 +1520,7 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
     }
     /* Alpha without a composition background needs only a zero mask.
      * Keep RGB bytes until a real transfer/profile transform is required. */
-    linear = (has_alpha && has_background) ||
+    linear = composition != NULL || (has_alpha && has_background) ||
         source.transfer_mode == SIXEL_FROMPNG_TRANSFER_GAMA;
     if (linear || is_16bit || source.profile != NULL) {
         pixels = (float *)sixel_allocator_malloc(allocator,
@@ -1516,7 +1540,8 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
             converted = sixel_cms_convert_profile_to_linearrgb(
                 (unsigned char *)pixels, frame->width, frame->height,
                 SIXEL_PIXELFORMAT_RGBFLOAT32, source.profile);
-            if (from_file && has_alpha && has_background) {
+            if (from_file && (has_alpha || composition != NULL) &&
+                has_background) {
                 /* Both applications use the same selected source profile.
                  * Neither result is published until both have succeeded. */
                 background_converted = sixel_cms_convert_profile_to_linearrgb(
@@ -1547,7 +1572,7 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
         if (linear && !converted) {
             sixel_frompng_decode_samples(pixels, count, &source);
         }
-        if (has_alpha && has_background) {
+        if ((has_alpha || composition != NULL) && has_background) {
             if (from_file) {
                 if (!converted) {
                     sixel_frompng_decode_samples(background, 1u, &source);
@@ -1563,14 +1588,31 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
             }
         }
     }
-    if (has_alpha && preserve_zero) {
+    if (composition != NULL) {
+        alpha_values = (float *)sixel_allocator_malloc(allocator,
+                                                       count * sizeof(float));
+        if (alpha_values == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+        for (i = 0u; i < count; ++i) {
+            alpha_values[i] = !has_alpha ? 1.0f : is_16bit
+                ? (float)((double)samples16[i * 4u + 3u] / 65535.0)
+                : (float)((double)samples8[i * 4u + 3u] / 255.0);
+        }
+        memcpy(composition->background, background, sizeof(background));
+        composition->has_background = has_background;
+        composition->managed = converted ||
+            source.transfer_mode == SIXEL_FROMPNG_TRANSFER_GAMA;
+    }
+    if (composition == NULL && has_alpha && preserve_zero) {
         mask = (unsigned char *)sixel_allocator_malloc(allocator, count);
         if (mask == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto cleanup;
         }
     }
-    if (has_alpha) {
+    if (composition == NULL && has_alpha) {
         for (i = 0u; i < count; ++i) {
             /* Alpha remains a normalized coverage sample. Color transfer and
              * profile evaluation above process RGB channels only. */
@@ -1632,7 +1674,17 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
         frame->transparent_mask_size = count;
         mask = NULL;
     }
-    if (converted || source.transfer_mode == SIXEL_FROMPNG_TRANSFER_GAMA) {
+    if (alpha_values != NULL) {
+        status = sixel_frame_as_interface(frame)->vtbl->set_alpha(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_alpha_t){alpha_values, count});
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        alpha_values = NULL;
+    }
+    if (composition == NULL &&
+        (converted || source.transfer_mode == SIXEL_FROMPNG_TRANSFER_GAMA)) {
         target = loader_cms_target_pixelformat();
         /* The setter keeps gamma in double until the final byte rounding.
          * An intermediate gamma float store could cross a half-byte tie. */
@@ -1645,7 +1697,32 @@ cleanup:
     stbi_image_free(samples8);
     sixel_allocator_free(allocator, pixels);
     sixel_allocator_free(allocator, mask);
+    sixel_allocator_free(allocator, alpha_values);
     return status;
+}
+
+SIXELSTATUS
+sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
+                              sixel_allocator_t *allocator,
+                              sixel_frame_t *frame, int enable_cms,
+                              unsigned char const *bgcolor, int bgcolor_source)
+{
+    return sixel_frompng_load_samples(pchunk, allocator, frame, enable_cms,
+                                     bgcolor, bgcolor_source, NULL);
+}
+
+SIXELSTATUS
+sixel_frompng_load_rect(sixel_chunk_t const *pchunk,
+                        sixel_allocator_t *allocator, sixel_frame_t *frame,
+                        int enable_cms, unsigned char const *bgcolor,
+                        int bgcolor_source,
+                        sixel_frompng_composition_t *composition)
+{
+    if (composition == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return sixel_frompng_load_samples(pchunk, allocator, frame, enable_cms,
+                                     bgcolor, bgcolor_source, composition);
 }
 
 /* emacs Local Variables:      */

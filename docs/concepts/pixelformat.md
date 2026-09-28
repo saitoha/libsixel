@@ -37,6 +37,16 @@ Loader normalization does not require every frame to have exactly one storage sh
 
 The stable contract is semantic: fractional alpha must be resolved before SIXEL encoding, while exact alpha-zero coverage can be carried separately from color so that clipping, resizing, palette construction, and dithering do not accidentally paint it. Geometry operations transform the mask with the pixel plane.
 
+### Internal continuous alpha plane
+
+An internal RGB float frame may own a separate straight-alpha plane with one finite float32 coverage value in `[0,1]` per pixel. RGB remains `RGBFLOAT32` or `LINEARRGBFLOAT32`; no `RGBAFLOAT32` public pixel format is introduced and the accepted pixel formats of `sixel_encode()` do not change. Color conversion touches RGB only. Alpha is coverage, not a color coordinate, and receives neither a transfer function nor an ICC transform.
+
+The frame interface's `set_alpha()` adopts allocator-compatible storage only on success, while `get_alpha()` returns borrowed storage. Clone copies both planes, storage accounting includes both, crop applies identical coordinates, reinitialization clears alpha, and destruction releases it. A continuous plane cannot coexist with a palette transparency key or binary mask. Converting its RGB to byte or non-RGB coordinates is rejected until coverage is resolved.
+
+The current consumer is the builtin APNG compositor. Its retained canvas keeps straight linear RGB and coverage between frames. Before the legacy loader callback, a cloned frame resolves coverage through the common frame compositor: with a background, blend in linear light according to zero-alpha policy; without one, retain straight RGB and mark exact alpha zero in the binary mask. Extended RGB is preserved. This operation publishes the new pixels and mask only after allocation and numeric validation succeed.
+
+Continuous-alpha resampling is not implemented by this change: changing dimensions while such a plane is attached returns `SIXEL_BAD_ARGUMENT`. Existing encoder resizing still operates after the loader callback on resolved RGB and a binary mask. Moving composition past resampling requires a separate premultiplied-color resampling contract; merely adding alpha storage does not change that order.
+
 ## Alpha resolution
 
 SIXEL cannot encode fractional alpha. When a background is resolved, loader paths composite fractional samples into color values. Depending on the [alpha policy](../loader/alpha-policy/README.md), exact alpha-zero samples are either also composited or retained as holes. Background source selection and colorspace are governed separately by the [background policy](../loader/background-policy.md).
@@ -72,6 +82,25 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 | PF-08 | Alpha-zero input produces no SIXEL body paint while `clear` selects DCS `P2=0` and `keep` selects DCS `P2=1`. | [tests/quant/palette/usage/0182_clear_policy_omits_alpha_zero.t](../../tests/quant/palette/usage/0182_clear_policy_omits_alpha_zero.t), [tests/quant/palette/usage/0167_keep_policy_omits_alpha_zero.t](../../tests/quant/palette/usage/0167_keep_policy_omits_alpha_zero.t) |
 | PF-09 | A transparent mask applies the same fence to the parallel dither path. | [tests/processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c](../../tests/processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c), [tests/processing/filter/0044_filter_dither_transparent_mask_fence_parallel.t](../../tests/processing/filter/0044_filter_dither_transparent_mask_fence_parallel.t) |
 | PF-10 | Palette sampling excludes exact alpha-zero samples only when the frame enables alpha-zero interpretation. | [tests/processing/filter/0042_filter_binning_stream_alpha_zero.c](../../tests/processing/filter/0042_filter_binning_stream_alpha_zero.c), [tests/processing/filter/0042_filter_binning_stream_alpha_zero.t](../../tests/processing/filter/0042_filter_binning_stream_alpha_zero.t), [tests/processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c](../../tests/processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c), [tests/processing/filter/0045_filter_binning_stream_alpha_zero_disabled.t](../../tests/processing/filter/0045_filter_binning_stream_alpha_zero_disabled.t) |
+
+| PF-11 | Adopting a continuous plane retains its pointer and count. | [tests/processing/frame/0239_frame_alpha_adopt.t](../../tests/processing/frame/0239_frame_alpha_adopt.t) |
+| PF-12 | A mismatched alpha count fails without ownership transfer. | [tests/processing/frame/0240_frame_alpha_bad_count.t](../../tests/processing/frame/0240_frame_alpha_bad_count.t) |
+| PF-13 | Non-finite alpha is rejected. | [tests/processing/frame/0241_frame_alpha_nonfinite.t](../../tests/processing/frame/0241_frame_alpha_nonfinite.t) |
+| PF-14 | Alpha outside the coverage interval is rejected. | [tests/processing/frame/0242_frame_alpha_out_of_range.t](../../tests/processing/frame/0242_frame_alpha_out_of_range.t) |
+| PF-15 | Clone owns an independent continuous plane. | [tests/processing/frame/0243_frame_alpha_clone.t](../../tests/processing/frame/0243_frame_alpha_clone.t) |
+| PF-16 | Storage accounting includes the alpha plane. | [tests/processing/frame/0244_frame_alpha_storage_size.t](../../tests/processing/frame/0244_frame_alpha_storage_size.t) |
+| PF-17 | Crop moves RGB and alpha with the same coordinates. | [tests/processing/frame/0245_frame_alpha_crop.t](../../tests/processing/frame/0245_frame_alpha_crop.t) |
+| PF-18 | RGB transfer conversion preserves the alpha plane. | [tests/processing/frame/0246_frame_alpha_rgb_conversion.t](../../tests/processing/frame/0246_frame_alpha_rgb_conversion.t) |
+| PF-19 | Byte conversion is rejected while continuous alpha is attached. | [tests/processing/frame/0247_frame_alpha_byte_reject.t](../../tests/processing/frame/0247_frame_alpha_byte_reject.t) |
+| PF-20 | Without a background, alpha zero becomes a mask and RGB remains straight. | [tests/processing/frame/0248_frame_alpha_resolve_no_background.t](../../tests/processing/frame/0248_frame_alpha_resolve_no_background.t) |
+| PF-21 | Preserve-zero background composition keeps holes and hidden RGB. | [tests/processing/frame/0249_frame_alpha_resolve_preserve_zero.t](../../tests/processing/frame/0249_frame_alpha_resolve_preserve_zero.t) |
+| PF-22 | Composite policy resolves all coverage against the background. | [tests/processing/frame/0250_frame_alpha_resolve_composite.t](../../tests/processing/frame/0250_frame_alpha_resolve_composite.t) |
+| PF-23 | Allocation failure leaves both original planes intact. | [tests/processing/frame/0251_frame_alpha_resolve_allocation_atomic.t](../../tests/processing/frame/0251_frame_alpha_resolve_allocation_atomic.t) |
+| PF-24 | Invalid RGB leaves both original planes intact. | [tests/processing/frame/0252_frame_alpha_resolve_nonfinite_atomic.t](../../tests/processing/frame/0252_frame_alpha_resolve_nonfinite_atomic.t) |
+| PF-25 | Dimension-changing resize rejects unresolved continuous alpha. | [tests/processing/frame/0253_frame_alpha_resize_reject.t](../../tests/processing/frame/0253_frame_alpha_resize_reject.t) |
+| PF-26 | Frame reinitialization releases the old alpha plane. | [tests/processing/frame/0254_frame_alpha_reinit.t](../../tests/processing/frame/0254_frame_alpha_reinit.t) |
+
+| PF-27 | A transparency key cannot be attached to a continuous-alpha frame. | [tests/processing/frame/0255_frame_alpha_mask_reject.t](../../tests/processing/frame/0255_frame_alpha_mask_reject.t) |
 
 ### Coverage boundary
 

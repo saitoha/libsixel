@@ -237,7 +237,7 @@ PIPELINES: dict[str, dict[str, object]] = {
                    "sixel_builtin_apng_blend_rect",
                    "sixel_builtin_apng_emit_pending_frame"),
                   ("exclude default IDAT unless fcTL precedes it",
-                   "decode RGBA8 frames; late errors remain terminal"),
+                   "byte fast path or linear RGB plus alpha; late errors terminal"),
                   "decode"),
             stage("PNG-06", "OUTPUT", "Finalize alpha, orientation and frame",
                   "src/loader-builtin.c",
