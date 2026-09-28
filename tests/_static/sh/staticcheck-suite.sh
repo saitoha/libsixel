@@ -826,6 +826,10 @@ run_case_tap "staticcheck-doc-types-inventory" \
     "$src_root/tests/_static/sh/staticcheck-doc-types-inventory.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-docs-dist-sync" \
+    "$src_root/tests/_static/sh/staticcheck-docs-dist-sync.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-doc-test-links" \
     "$src_root/tests/_static/sh/staticcheck-doc-test-links.sh" \
     "$src_root" || fail_and_exit $?

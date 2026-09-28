@@ -102,6 +102,8 @@ The [`staticcheck-test-plan-links`](../tests/_static/sh/staticcheck-test-plan-li
 
 The [`staticcheck-doc-types-inventory`](../tests/_static/sh/staticcheck-doc-types-inventory.sh) check requires exactly one row per document and only the listed type and audience values. It does not judge whether a classification is correct; that remains an editorial review.
 
+Every file under `docs/`, including figures and measurement data, must also be listed in the top-level `Makefile.am` `EXTRA_DIST` so that source releases carry the complete documentation. The [`staticcheck-docs-dist-sync`](../tests/_static/sh/staticcheck-docs-dist-sync.sh) check reports files missing from that list and listed files that no longer exist.
+
 ## Adding a document
 
 Add a document only when the topic is durable and materially distinct from the existing references. Give it a stable subject-oriented name, place it in the owning subject directory, and add it to `README.md` when users or contributors should discover it. Add a repository-level link only when contributors must read it before working in that area.
@@ -118,7 +120,8 @@ Keep the directory layout aligned with the index classification. A document with
 | DG-02 | Documentation math uses only TeX commands verified to render on GitHub.com. | [tests/_static/sh/staticcheck-docs-github-math.sh](../tests/_static/sh/staticcheck-docs-github-math.sh) |
 | DG-03 | Marked test-plan inventories contain every scoped test exactly once and every listed test links back without using `Policy:` for non-contract coverage. | [tests/_static/sh/staticcheck-test-plan-links.sh](../tests/_static/sh/staticcheck-test-plan-links.sh) |
 | DG-04 | The document-type inventory lists every Markdown document under `docs/` exactly once with a known type and audience. | [tests/_static/sh/staticcheck-doc-types-inventory.sh](../tests/_static/sh/staticcheck-doc-types-inventory.sh) |
+| DG-05 | Every file under `docs/` is listed in `EXTRA_DIST`, and every listed `docs/` path exists. | [tests/_static/sh/staticcheck-docs-dist-sync.sh](../tests/_static/sh/staticcheck-docs-dist-sync.sh) |
 
 ### Coverage boundary
 
-The static checks validate paths, the completeness of reciprocal behavioral-contract and test-plan inventories, and document-type inventory coverage. They do not infer missing contracts from prose, treat a defensive inventory as contract coverage, decide whether a policy contract is decomposed at the correct granularity, or decide whether its owning test proves the stated behavior; those are reviewed through the coverage audit required by this document.
+The static checks validate paths, the completeness of reciprocal behavioral-contract and test-plan inventories, document-type inventory coverage, and distribution of every documentation file. They do not infer missing contracts from prose, treat a defensive inventory as contract coverage, decide whether a policy contract is decomposed at the correct granularity, or decide whether its owning test proves the stated behavior; those are reviewed through the coverage audit required by this document.

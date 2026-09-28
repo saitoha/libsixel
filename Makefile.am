@@ -725,6 +725,58 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	tools/palette_gradient.py \
 	tools/palette-gradient-requirements.txt \
 	docs/quality/palette-gradient-analysis.md \
+	docs/cli/abort-trace/README.md \
+	docs/cli/abort-trace/figures/abort-trace-macos.png \
+	docs/cli/correction-suggestions.md \
+	docs/cli/prefix-matching.md \
+	docs/cli/suboptions.md \
+	docs/encoder/output/encode-policy/README.md \
+	docs/encoder/output/encode-policy/figures/encode-policy-band-mobile.svg \
+	docs/encoder/output/encode-policy/figures/encode-policy-band-wide.svg \
+	docs/encoder/output/encode-policy/figures/encode-policy-figures.json \
+	docs/encoder/output/encode-policy/figures/encode-policy-overpaint-mobile.svg \
+	docs/encoder/output/encode-policy/figures/encode-policy-overpaint-wide.svg \
+	docs/encoder/output/encode-policy/measurements/encode-policy-comparison.csv \
+	docs/encoder/output/encode-policy/measurements/encode-policy-results.png \
+	docs/encoder/output/encode-policy/measurements/encode-policy-run.json \
+	docs/encoder/output/encode-policy/measurements/encode-policy-speed.csv \
+	docs/encoder/palette-application/dithering/measurements/dither-policy-spectrum-atlas.png \
+	docs/encoder/palette-application/dithering/measurements/dither-policy-spectrum-overview.png \
+	docs/encoder/palette-application/dithering/measurements/dither-spectrum-curves.csv \
+	docs/encoder/palette-application/dithering/measurements/dither-spectrum-run.json \
+	docs/encoder/palette-application/dithering/measurements/dither-spectrum-summary.csv \
+	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-kmeans-high-k.csv \
+	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-kmeans-high-k.png \
+	docs/encoder/palette-construction/external-palettes.md \
+	docs/quality/color-evaluation.md \
+	docs/sixel-format/comparison/README.md \
+	docs/sixel-format/comparison/figures/codec-timeline-figures.json \
+	docs/sixel-format/comparison/figures/codec-timeline-mobile.svg \
+	docs/sixel-format/comparison/figures/codec-timeline-wide.svg \
+	docs/sixel-format/comparison/figures/diagram-generations-mobile.svg \
+	docs/sixel-format/comparison/figures/diagram-generations-wide.svg \
+	docs/sixel-format/comparison/figures/diagram-profile-mobile.svg \
+	docs/sixel-format/comparison/figures/diagram-profile-wide.svg \
+	docs/sixel-format/comparison/figures/diagram-scaling-mobile.svg \
+	docs/sixel-format/comparison/figures/diagram-scaling-wide.svg \
+	docs/sixel-format/comparison/figures/diagram.png \
+	docs/sixel-format/comparison/figures/gradient-generations-mobile.svg \
+	docs/sixel-format/comparison/figures/gradient-generations-wide.svg \
+	docs/sixel-format/comparison/figures/gradient-profile-mobile.svg \
+	docs/sixel-format/comparison/figures/gradient-profile-wide.svg \
+	docs/sixel-format/comparison/figures/gradient-scaling-mobile.svg \
+	docs/sixel-format/comparison/figures/gradient-scaling-wide.svg \
+	docs/sixel-format/comparison/figures/gradient.png \
+	docs/sixel-format/comparison/figures/photo-generations-mobile.svg \
+	docs/sixel-format/comparison/figures/photo-generations-wide.svg \
+	docs/sixel-format/comparison/figures/photo-profile-mobile.svg \
+	docs/sixel-format/comparison/figures/photo-profile-wide.svg \
+	docs/sixel-format/comparison/figures/photo-scaling-mobile.svg \
+	docs/sixel-format/comparison/figures/photo-scaling-wide.svg \
+	docs/sixel-format/comparison/figures/photo.png \
+	docs/sixel-format/comparison/figures/results.json \
+	docs/testing/mapfile-parser-coverage.md \
+	docs/testing/resampling-coverage.md \
 	tests/tools/palette-gradient/run.py \
 	tests/tools/palette-gradient/0001_geometry.py \
 	tests/tools/palette-gradient/0002_extraction.py \
