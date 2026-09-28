@@ -378,7 +378,6 @@ LIPO = @LIPO@
 LN_S = @LN_S@
 LSO_TAP_DATE_CMD = @LSO_TAP_DATE_CMD@
 LS_DASH_PATH = @LS_DASH_PATH@
-LS_DEFAULT_MAKEFLAGS = @LS_DEFAULT_MAKEFLAGS@
 LS_LTVERSION = @LS_LTVERSION@
 LS_SH_PATH = @LS_SH_PATH@
 LTLIBOBJS = @LTLIBOBJS@
@@ -1328,14 +1327,9 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	tools/timeline.py
 
 
-# Honor user-supplied make parallel flags while providing a CPU-based default.
-#
-# Do not rewrite MAKEFLAGS in the Makefile. GNU make computes runtime parallel
-# behavior before variable expansion, so mutating MAKEFLAGS here can produce
-# inconsistent results. Instead, append the default via AM_MAKEFLAGS only when
-# no user-provided job control is visible in MFLAGS/MAKEFLAGS.
-# Accept both explicit jobs options and GNU make jobserver tokens.
-LS_USER_JOBS = $(filter -j% --jobs --jobs=% --jobserver-auth=% --jobserver-fds=% --jobserver-style=%,$(MFLAGS) $(MAKEFLAGS))
+# Let make propagate the caller's job limit and jobserver to recursive builds.
+# Do not infer a default from MAKEFLAGS: some make versions omit explicit -j1,
+# so absence of a jobs flag must still mean serial execution.
 # GNV make loses the following libtool object target when recursive makes are
 # run with the silent flag.  Keep build recursion serial there, and force
 # Automake's verbose recipes so generated prerequisite recipes do not poison
@@ -1343,7 +1337,7 @@ LS_USER_JOBS = $(filter -j% --jobs --jobs=% --jobserver-auth=% --jobserver-fds=%
 # Test sharding is controlled separately by OPENVMS_TEST_JOBS.
 @OPENVMS_GNV_TRUE@LS_OPENVMS_BUILD_MAKEFLAGS = -j1 V=1
 @OPENVMS_GNV_FALSE@LS_SILENT_MAKEFLAGS = -s
-AM_MAKEFLAGS = $(LS_SILENT_MAKEFLAGS) $(LS_OPENVMS_BUILD_MAKEFLAGS) $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
+AM_MAKEFLAGS = $(LS_SILENT_MAKEFLAGS) $(LS_OPENVMS_BUILD_MAKEFLAGS)
 FUZZ_IMG2SIXEL_EMBED_CPPFLAGS = \
 	-DHAVE_CONFIG_H \
 	-DBUILD_IMG2SIXEL \

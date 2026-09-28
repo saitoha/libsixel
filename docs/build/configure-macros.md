@@ -27,7 +27,7 @@ Three common outputs should be distinguished. `AC_DEFINE` supplies C preprocesso
 
 | File | Provider and purpose | Use in libsixel |
 | --- | --- | --- |
-| [ax_count_cpus.m4](../../m4/ax_count_cpus.m4) | Autoconf Archive `AX_COUNT_CPUS`. | Produces `CPU_COUNT` for configure probe concurrency and default recursive-make job flags. |
+| [ax_count_cpus.m4](../../m4/ax_count_cpus.m4) | Autoconf Archive `AX_COUNT_CPUS`. | Produces `CPU_COUNT` for configure probe concurrency and configured output generation. |
 | [ax_gcc_builtin.m4](../../m4/ax_gcc_builtin.m4) | Autoconf Archive `AX_GCC_BUILTIN`. | Probes `__builtin_unreachable` in the non-MSVC configuration branch. |
 | [ax_gcc_func_attribute.m4](../../m4/ax_gcc_func_attribute.m4) | Autoconf Archive `AX_GCC_FUNC_ATTRIBUTE`. | Probes the `deprecated` function attribute outside the excluded MSVC/OpenVMS branches. |
 | [ax_gcc_var_attribute.m4](../../m4/ax_gcc_var_attribute.m4) | Autoconf Archive `AX_GCC_VAR_ATTRIBUTE`. | Probes the `deprecated` variable attribute alongside the function-attribute check. |
@@ -45,7 +45,7 @@ The `AX_` prefix and embedded upstream headers identify imported macros, not a f
 
 `AX_COUNT_CPUS` tries available operating-system interfaces and utilities, including `getconf`, `nproc`, platform-specific `sysctl` or processor queries, and Windows processor metadata. It counts available logical processors where the selected interface supports that distinction and defaults to one if detection fails. The macro does not itself launch configure probes or change make's jobserver.
 
-The project uses the resulting `CPU_COUNT` in two places. The parallel probe macros bound batches of compiler work; the configure logic also prepares `LS_DEFAULT_MAKEFLAGS` for recursive builds when job flags were not supplied. The root Makefile still respects explicit `-j` and inherited jobserver state. These are build-time scheduling choices, separate from libsixel's runtime thread budget.
+The project uses the resulting `CPU_COUNT` to bound batches of configure probes and to request parallel configured output generation where supported. It does not choose make's job count. Build parallelism follows the caller's `-j` option and inherited jobserver state, as described in [Autotools build orchestration](autotools.md#configure-time-parallelism). Configure scheduling, make scheduling, and libsixel's runtime thread budget are separate controls.
 
 OpenVMS/GNV selects conservative single-worker probe and output paths because child-status and shell semantics can invalidate otherwise reasonable parallel execution. The [Autotools orchestration chapter](autotools.md#limitations-and-local-remedies) and [OpenVMS ledger](../misc/platforms/openvms.md) explain these boundaries.
 

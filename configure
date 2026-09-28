@@ -837,7 +837,6 @@ BUILD_LSO_TIMEOUT_TRUE
 BUILDING_ON_WINDOWS_FALSE
 BUILDING_ON_WINDOWS_TRUE
 LSO_TAP_DATE_CMD
-LS_DEFAULT_MAKEFLAGS
 SIXEL_LIBTOOL_PATH_SEPARATOR
 SIXEL_LIBTOOL_BUILD_LIBS
 SIXEL_SHLIBPATH_OVERRIDES_RUNPATH
@@ -15893,11 +15892,8 @@ case "$shlibpath_var" in
 esac
 
 
-# Provide a conservative default parallelism for Makefiles when the caller
-# did not already set -j/--jobs. The logic is:
-# 1) Detect CPU_COUNT with AX_COUNT_CPUS.
-# 2) Leave MAKEFLAGS untouched when -j or --jobs is present.
-# 3) Otherwise, set LS_DEFAULT_MAKEFLAGS to "-j${CPU_COUNT}".
+# Detect concurrency for configure probes and configured output generation.
+# Build concurrency is controlled separately by the caller's make invocation.
                   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking the number of available CPUs" >&5
 printf %s "checking the number of available CPUs... " >&6; }
       CPU_COUNT="0"
@@ -16002,20 +15998,6 @@ printf "%s\n" "unable to detect (assuming 1)" >&6; }
                    ;;
 esac
 fi
-LS_DEFAULT_MAKEFLAGS=""
-case " $MAKEFLAGS " in
-  *\ -j*|*\ --jobs*|*\ --jobs=* )
-    ;;
-  *)
-    if test "x$sixel_openvms_mode" != "xyes"
-then :
-
-      LS_DEFAULT_MAKEFLAGS="-j${CPU_COUNT}"
-
-fi
-    ;;
-esac
-
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for date +%s.%N with sub-second resolution" >&5
 printf %s "checking for date +%s.%N with sub-second resolution... " >&6; }

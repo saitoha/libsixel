@@ -783,23 +783,9 @@ case "$shlibpath_var" in
 esac
 AC_SUBST([SIXEL_LIBTOOL_PATH_SEPARATOR])
 
-# Provide a conservative default parallelism for Makefiles when the caller
-# did not already set -j/--jobs. The logic is:
-# 1) Detect CPU_COUNT with AX_COUNT_CPUS.
-# 2) Leave MAKEFLAGS untouched when -j or --jobs is present.
-# 3) Otherwise, set LS_DEFAULT_MAKEFLAGS to "-j${CPU_COUNT}".
+# Detect concurrency for configure probes and configured output generation.
+# Build concurrency is controlled separately by the caller's make invocation.
 AX_COUNT_CPUS
-LS_DEFAULT_MAKEFLAGS=""
-case " $MAKEFLAGS " in
-  *\ -j*|*\ --jobs*|*\ --jobs=* )
-    ;;
-  *)
-    AS_IF([test "x$sixel_openvms_mode" != "xyes"], [
-      LS_DEFAULT_MAKEFLAGS="-j${CPU_COUNT}"
-    ])
-    ;;
-esac
-AC_SUBST([LS_DEFAULT_MAKEFLAGS])
 
 AC_CACHE_CHECK([for date +%s.%N with sub-second resolution],
                [ac_cv_lso_date_epoch_nsec],

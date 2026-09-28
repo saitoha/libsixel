@@ -811,14 +811,9 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	tools/snap_policy_suite.json \
 	tools/timeline.py
 
-# Honor user-supplied make parallel flags while providing a CPU-based default.
-#
-# Do not rewrite MAKEFLAGS in the Makefile. GNU make computes runtime parallel
-# behavior before variable expansion, so mutating MAKEFLAGS here can produce
-# inconsistent results. Instead, append the default via AM_MAKEFLAGS only when
-# no user-provided job control is visible in MFLAGS/MAKEFLAGS.
-# Accept both explicit jobs options and GNU make jobserver tokens.
-LS_USER_JOBS = $(filter -j% --jobs --jobs=% --jobserver-auth=% --jobserver-fds=% --jobserver-style=%,$(MFLAGS) $(MAKEFLAGS))
+# Let make propagate the caller's job limit and jobserver to recursive builds.
+# Do not infer a default from MAKEFLAGS: some make versions omit explicit -j1,
+# so absence of a jobs flag must still mean serial execution.
 if OPENVMS_GNV
 # GNV make loses the following libtool object target when recursive makes are
 # run with the silent flag.  Keep build recursion serial there, and force
@@ -829,7 +824,7 @@ LS_OPENVMS_BUILD_MAKEFLAGS = -j1 V=1
 else
 LS_SILENT_MAKEFLAGS = -s
 endif
-AM_MAKEFLAGS = $(LS_SILENT_MAKEFLAGS) $(LS_OPENVMS_BUILD_MAKEFLAGS) $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
+AM_MAKEFLAGS = $(LS_SILENT_MAKEFLAGS) $(LS_OPENVMS_BUILD_MAKEFLAGS)
 
 # Automake/libtool may require a top-level ltmain.sh in DIST_COMMON even when
 # AC_CONFIG_AUX_DIR points at build-aux/.  Generate it from the canonical copy
