@@ -1,5 +1,5 @@
 #!/bin/sh
-# Policy: docs/functionality/output-colorspace.md
+# Policy: docs/encoder/output/output-colorspace.md
 # Verify CLI terminal color transport SIGTERM cancellation before I/O wait.
 set -eux
 
