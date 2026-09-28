@@ -8,6 +8,54 @@ Color quantization has continued to develop in the twenty-first century. For con
 
 The following comparison measures implementations and operating points, not a universal ranking of formats. It deliberately includes outcomes that favor the other codecs.
 
+## Image formats and the terminal
+
+Several of the formats compared on this page began close to terminals and telematic services. How each one relates to a terminal byte stream explains why SIXEL, the oldest of them, matches a recent design direction.
+
+<picture>
+  <source media="(max-width: 640px)" srcset="figures/codec-timeline-mobile.svg">
+  <img src="figures/codec-timeline-wide.svg" alt="Timeline from 1970 to 2025, one event per row: ECMA-35 1971, ECMA-48 1976, VT240 1984, JPEG committee 1986, VT340 1987, GIF87a 1987, GIF89a specification 1990, JPEG T.81 1992, PNG 1.0 1996, JPEG 2000 2000, RLogin 2.9.0 2010, Gate One 1.0 2012, libsixel 2014 and QOI 2021." loading="lazy">
+</picture>
+
+| Format | Origin and intended use | How the end of an image is found | Bytes inside the image data |
+| --- | --- | --- | --- |
+| SIXEL | DEC printers, then graphics terminals such as the VT240 and VT340 | the ST control function that ends its DCS | printable 7-bit characters only |
+| GIF (1987) | CompuServe's online service and its VIDTEX terminal software | a `;` trailer after length-prefixed data blocks | any byte |
+| JPEG (1992) | photographic videotex, standardized in the telematic T series | the EOI marker; markers are recognizable without decoding | any byte except an unstuffed `0xFF` |
+| PNG (1996) | a patent-free lossless replacement for GIF | the IEND chunk after length-prefixed chunks | any byte |
+| JPEG 2000 (2000) | a successor to JPEG with scalable coding | the EOC marker in the codestream, but a JP2 box or last tile-part may extend to the end of the file or codestream | any byte, with marker values kept out of coded data |
+| QOI (2021) | simple, fast lossless coding | a fixed eight-byte end marker; the header also gives the pixel count | any byte |
+
+### Terminal control and SIXEL
+
+[ECMA-35](https://ecma-international.org/publications-and-standards/standards/ecma-35/), which specifies the same code extension techniques as ISO/IEC 2022, was first published in December 1971, and [ECMA-48](https://ecma-international.org/publications-and-standards/standards/ecma-48/), which defines control functions such as DCS and ST, in March 1976. SIXEL is a Device Control String in that framework. Its image data consists of printable 7-bit characters, and ST ends it, so an ordinary ECMA-48 parser can carry it without a capture mode or a transport encoding. DEC used SIXEL for printers and then for screens, for example on the [VT240](https://terminals-wiki.org/wiki/index.php/DEC_VT240), introduced in January 1984, and the colour [VT340](https://terminals-wiki.org/wiki/index.php/DEC_VT340) of April 1987. See the [SIXEL format overview](../README.md) for the syntax.
+
+### JPEG: born in telematic terminal standardization
+
+The JPEG committee was created in November 1986 by experts linked to CCITT Study Group VIII, whose remit was terminal equipment for telematic services such as facsimile, Teletex and Videotex, and to ISO TC97 SC2/WG8, part of the committee for coded character sets whose scope also covered switching between character and graphic coding. Its motivating application was photographic videotex over ISDN, studied in the ESPRIT 563 PICA project. CCITT approved the result in 1992 as [T.81](https://www.w3.org/Graphics/JPEG/itu-t81.pdf), a recommendation in the T series for telematic terminals ([Sebestyén, 2020](https://www.itu.int/dms_pub/itu-s/opb/journal/S-JOURNAL-ICTS.V3I1-2020-13-PDF-E.pdf)).
+
+T.81 assigns every marker the two bytes `0xFF` and a byte other than `0x00` or `0xFF`, and stuffs a `0x00` after any `0xFF` produced by entropy coding (clauses B.1.1.2 and B.1.1.5). A reader can therefore locate each part and the final EOI marker without decoding the image. The entropy-coded data can still contain every other byte value, including C0 and C1 control codes, so JPEG was not designed to pass through an ordinary terminal parser. A terminal must deliberately capture it. [Gate One](https://liftoff.github.io/GateOne/ReleaseNotes/index.html), a Python HTML5 terminal emulator whose 1.0 release in March 2012 displayed images written with `cat`, did this by carving a JPEG from its SOI marker to the next EOI, and a PNG through its IEND chunk ([`terminal.py`](https://github.com/liftoff/GateOne/blob/master/terminal/terminal.py)). A plain search for the first EOI ends too early when a marker segment embeds another JPEG, such as an EXIF thumbnail; the segments must be parsed by length.
+
+### GIF: images for an online service's terminals
+
+CompuServe published [GIF87a](https://www.w3.org/Graphics/GIF/spec-gif87.txt) on 15 June 1987 as an exchange and display mechanism for graphics on a variety of hardware, to be transferred with the B Protocol implemented in its VIDTEX terminal products. The [GIF89a specification](https://www.w3.org/Graphics/GIF/spec-gif89a.txt), dated 31 July 1990, adds an On-line Capabilities Dialogue: a host asks an interactive GIF decoder for its display capabilities with `ESC [ > 0 g`, a control sequence in the ECMA-48 form, and the decoder replies. A GIF stream consists of length-prefixed data sub-blocks and ends with a `;` trailer, while its LZW-compressed data are arbitrary bytes.
+
+### PNG: lossless and patent-free
+
+On 28 December 1994 CompuServe announced royalties for GIF software under Unisys's LZW patent; the first PNG draft followed on 4 January 1995, and PNG 1.0 became a W3C Recommendation on 1 October 1996 ([PNG history](http://www.libpng.org/pub/png/pnghist.html)). [RFC 2083](https://www.rfc-editor.org/rfc/rfc2083) describes PNG as a patent-free replacement for GIF that also covers truecolor and alpha, compressed losslessly with deflate, which combines LZ77 and Huffman coding. Its eight-byte signature is designed to detect damage by channels that are not 8-bit transparent: a non-ASCII first byte catches transfers that clear bit 7, CR-LF catches newline translation, and a control-Z stops display under MS-DOS. PNG treats text and terminal channels as hazards to detect rather than as a transport.
+
+### JPEG 2000: markers remain, framing moves outward
+
+[JPEG 2000](https://www.itu.int/rec/T-REC-T.800) keeps markers in its codestream, including an end-of-codestream marker, and keeps marker values out of coded data. Its framing, however, can defer to the surrounding structure: the last tile-part may declare a zero length and run until the end-of-codestream marker, and a box in the JP2 file format may declare a zero length meaning that it extends to the end of the file. A JP2 image therefore need not announce its own end within a longer byte stream, which makes it less suited than JPEG to being carved out of terminal output.
+
+### QOI: speed from simplicity
+
+Dominic Szablewski introduced [QOI](https://phoboslab.org/log/2021/11/qoi-fast-lossless-image-compression) on 24 November 2021 as a lossless format that uses neither Huffman coding nor a DCT; he reported sizes similar to PNG with 20 to 50 times faster compression and 3 to 4 times faster decompression, single-threaded and without SIMD. The [specification](https://qoiformat.org/qoi-specification.pdf) (version 1.0, 5 January 2022) encodes each pixel as a run, an index into a 64-entry array of previously seen colors, a difference from the previous pixel, or a literal value. Decoding therefore proceeds strictly in order; QOI's advantage is the absence of an entropy coder, not parallel structure.
+
+### Where SIXEL fits
+
+SIXEL shares QOI's choice to leave out entropy coding: palette indices become six-row masks and decimal repeat counts, as described in the [format overview](../README.md#ordinary-band-encoding). It adds two properties that none of the later formats has together. Its six-row bands are natural work units for concurrent encoding and, once palette and cursor state are known, decoding, as the next section explains. Its bytes remain printable characters inside a control string, so it travels over the terminal channel itself, whereas GIF relied on file transfer and JPEG on terminal-side capture. SIXEL's costs, a palette limit and larger streams, are measured in the rest of this page.
+
 ## Compression and concurrency are different properties
 
 | Format / mode | Image representation and compression | Parallelism relevant to a single image | Native 7-bit terminal image protocol? |

@@ -1,0 +1,104 @@
+{
+  "events": [
+    {
+      "detail": "code extension (ISO 2022)",
+      "label": "ECMA-35",
+      "lane": "terminal",
+      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-35/",
+      "year": 1971.9
+    },
+    {
+      "detail": "control functions, DCS/ST",
+      "label": "ECMA-48",
+      "lane": "terminal",
+      "source": "https://ecma-international.org/publications-and-standards/standards/ecma-48/",
+      "year": 1976.2
+    },
+    {
+      "detail": "SIXEL on a DEC screen",
+      "label": "VT240",
+      "lane": "sixel",
+      "source": "https://terminals-wiki.org/wiki/index.php/DEC_VT240",
+      "year": 1984.0
+    },
+    {
+      "detail": "ISDN photo-videotex",
+      "label": "JPEG committee",
+      "lane": "format",
+      "source": "https://www.itu.int/dms_pub/itu-s/opb/journal/S-JOURNAL-ICTS.V3I1-2020-13-PDF-E.pdf",
+      "year": 1986.85
+    },
+    {
+      "detail": "color SIXEL terminal",
+      "label": "VT340",
+      "lane": "sixel",
+      "source": "https://terminals-wiki.org/wiki/index.php/DEC_VT340",
+      "year": 1987.3
+    },
+    {
+      "detail": "CompuServe VIDTEX",
+      "label": "GIF87a",
+      "lane": "format",
+      "source": "https://www.w3.org/Graphics/GIF/spec-gif87.txt",
+      "year": 1987.45
+    },
+    {
+      "detail": "ESC [ > 0 g dialogue",
+      "label": "GIF89a",
+      "lane": "format",
+      "source": "https://www.w3.org/Graphics/GIF/spec-gif89a.txt",
+      "year": 1990.58
+    },
+    {
+      "detail": "telematic T series",
+      "label": "JPEG T.81",
+      "lane": "format",
+      "source": "https://www.w3.org/Graphics/JPEG/itu-t81.pdf",
+      "year": 1992.7
+    },
+    {
+      "detail": "signature detects damage",
+      "label": "PNG 1.0",
+      "lane": "format",
+      "source": "http://www.libpng.org/pub/png/pnghist.html",
+      "year": 1996.75
+    },
+    {
+      "detail": "JP2 box may end at EOF",
+      "label": "JPEG 2000",
+      "lane": "format",
+      "source": "https://www.itu.int/rec/T-REC-T.800",
+      "year": 2000.9
+    },
+    {
+      "detail": "SIXEL returns",
+      "label": "RLogin 2.9.0",
+      "lane": "sixel",
+      "source": "https://github.com/kmiya-culti/RLogin",
+      "year": 2010.7
+    },
+    {
+      "detail": "cat JPEG/PNG",
+      "label": "Gate One 1.0",
+      "lane": "terminal",
+      "source": "https://liftoff.github.io/GateOne/ReleaseNotes/index.html",
+      "year": 2012.18
+    },
+    {
+      "detail": "library forms",
+      "label": "libsixel",
+      "lane": "sixel",
+      "source": "docs/project-history.md",
+      "year": 2014.0
+    },
+    {
+      "detail": "no entropy coding",
+      "label": "QOI",
+      "lane": "format",
+      "source": "https://phoboslab.org/log/2021/11/qoi-fast-lossless-image-compression",
+      "year": 2021.9
+    }
+  ],
+  "generator": "tools/plot_codec_timeline_figures.py",
+  "kind": "documentary timeline from cited sources, not a measurement"
+}

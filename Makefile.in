@@ -1229,6 +1229,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	tools/plot_encoder_execution_map_figures.py \
 	tools/plot_encoding_pipeline_figures.py \
 	tools/plot_sixel_format_figures.py \
+	tools/plot_codec_timeline_figures.py \
 	tools/plot_builtin_loader_format_figures.py \
 	tools/measure_png_loaders.py \
 	tools/bench/png-loader.c \
