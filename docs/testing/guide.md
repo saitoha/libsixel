@@ -14,11 +14,37 @@ Choose assertions from the contract being tested. Value and state assertions est
 
 For a numerical-correctness claim, derive expected values from the documented contract and an independent reference, such as literal source samples or a separately derived formula. Agreement between two paths that share the same converter or expected-value generator establishes consistency, not independent correctness. State which kind of evidence a test provides. A regression test should fail against the faulty behavior it is intended to detect.
 
-Use exact comparisons for properties the contract makes exact, such as integer samples, dimensions, indices, masks and format tags. For floating-point results, document the reference, error metric and tolerance at the owning numeric contract. Separate external-library approximation from adapter arithmetic where both contribute to the result; an external-library error budget must not conceal an implementation error in later arithmetic. Do not relax a tolerance merely to accept current output.
+Use exact comparisons for properties the contract makes exact, such as copied samples, dimensions, indices, masks and format tags. An integer result derived from floating-point arithmetic also needs the quantization analysis below; its storage type alone does not justify exact comparison. For numerical results, document the reference, error metric and tolerance at the owning numeric contract. Do not relax a tolerance merely to accept current output.
 
 When implementation selection is part of the observation, verify the path that actually executed, not only the requested configuration. An unintended backend, engine or fallback must not satisfy a test for another path. Test an intentional fallback as its own behavior. Likewise, protect a no-conversion or no-allocation contract with an observable trace or counter; correct output alone does not establish that unnecessary work was avoided.
 
 Fixture size and execution cost follow [organization and naming](#organization-and-naming) and [process and file cost](#process-and-file-cost). Subject documents supply their own numeric contracts, reference values, tolerances and supported execution paths, and link here for these general assertion rules.
+
+### Intermediate floating-point error
+
+An independent reference establishes what is being computed; it does not require bit-identical floating-point results. Unless the contract explicitly requires exact arithmetic or representation preservation, allow justified differences caused by intermediate rounding, excess evaluation precision, fused multiply-add, and math-library approximations across supported builds. Float32 storage does not imply float32 intermediate arithmetic, nor does a double intermediate make the whole calculation exact. Do not disable otherwise supported arithmetic merely to reproduce one host's output bits.
+
+Derive an error budget for the tested input domain and observation boundary. Account for source-sample and coefficient quantization, intermediate arithmetic and cancellation, nonlinear approximation, final storage rounding, and reference uncertainty. Specify whether the reference starts from ideal source values or the exact stored inputs; if it uses ideal values, include the input-representation error. Propagate errors through the intervening operations rather than adding errors expressed in different coordinate units. Separate external-library approximation from adapter arithmetic where both contribute; a generous CMS budget must not conceal a wrong matrix, normalization or rounding operation in the adapter.
+
+For finite numerical results, a common component-wise comparison is:
+
+```text
+abs(actual - expected) <= atol + rtol * max(abs(actual), abs(expected))
+```
+
+Document the units, input range, chosen absolute and relative terms, and their rationale. A justified absolute-only or relative-only comparison is also valid. A ULP bound must identify the compared representation and its treatment of zero and subnormals; it is not a universal substitute for an error budget. Near zero or after cancellation, relative error or scaling by the largest input can conceal the loss of the entire expected residual. Use a bound at the result's meaningful scale, and check required nonzero values or signs separately when necessary. Neither `FLT_EPSILON` alone nor the largest error observed on one machine is a sufficient pipeline-wide budget.
+
+Check finiteness explicitly before a finite-value comparison: `abs(actual - expected) > tolerance` alone can accept NaN. Test required rejection of NaN, infinity, domain errors and overflow separately from approximation accuracy. Exact byte preservation, including signed zero or NaN representation when the contract requires it, remains an exact assertion; do not replace those tests with approximate equality.
+
+Record relevant floating-point environment assumptions. Tests of ordinary arithmetic do not implicitly promise support for every `fesetround()` mode, reassociation under unsafe compiler options, or flush-to-zero behavior. Tests that change the environment must restore it. If a tie-breaking rule or rounding mode is itself the contract, test it explicitly with controlled representable inputs; do not infer it from a long transform whose intermediates may already have rounded.
+
+### Quantization after floating-point arithmetic
+
+Exact integer output is justified when the propagated error interval, including reference uncertainty, stays inside one quantization bin. Record the distance to the nearest decision boundary in the same units as the error budget. This applies to byte or palette rounding and to threshold-based masks or branch decisions, even if the intermediate value is never exposed by the API.
+
+When the interval crosses a boundary, derive the admissible discrete results from that interval and the specified quantizer, and check the pre-quantization value as well where observable. Do not grant every pixel an unconditional `+/-1` allowance. If the contract instead promises correctly rounded output for every input, boundary cases must enforce that stronger promise; inability to meet it is an implementation issue. Exact ties belong to a separate test of the specified tie-breaking rule.
+
+Keep numerical portability and defect detection together: the accepted interval must still reject the wrong transform, premature clipping, lost residual, or extra low-precision store that the test targets. Independence of the oracle and passage on one architecture do not by themselves establish a portable exact-result assertion. [Pixel-format precision](../concepts/pixelformat-precision.md#numerical-validation-follows-the-operation) records the frame-specific tolerances and boundary evidence.
 
 ## Organization and naming
 
