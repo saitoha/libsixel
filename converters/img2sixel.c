@@ -772,7 +772,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :shared_instance=0|1 (:S0 or :S1)\n"
         "          0 -> build worker-local lookup state\n"
         "          1 -> share one lookup state across workers\n"
-        "      eytzinger -> implicit binary tree lookup with local neighbour scan (default)\n"
+        "      eytzinger -> projected binary tree lookup\n"
         "      fhedt      -> Voronoi grid built via 3D EDT with optional boundary refinement\n"
         "        sub-option:\n"
         "          :resolution=64|128|256 (:Rvalue)\n"
@@ -786,7 +786,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :pin_threads=0|1 (:P0 or :P1)\n"
         "      vptree    -> VP-tree lookup built from palette entries\n"
         "      rbc       -> Random Ball Cover cluster pruning\n"
-        "      mahalanobis -> RBC clusters with Mahalanobis lower bounds\n"
+        "      mahalanobis -> exhaustive normalized scan in RBC cluster order\n"
         "    CLI sub-options override their SIXEL_LOOKUP_* environments.\n"
     },
     {
@@ -1186,7 +1186,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS environment value\n"
         "    P3: effective float precision; -X/-W accept all five spaces;\n"
         "    -Qkmeans|center|medoids; any sampling;\n"
-        "    lookup none/certlut/5bit/6bit/auto/vptree/rbc/mahalanobis;\n"
+        "    lookup none/certlut/5bit/6bit/auto/vptree/rbc/mahalanobis/"
+        "eytzinger;\n"
         "    binning: kmeans any, center none/exact/hard/auto,\n"
         "    medoids none/auto;\n"
         "    none/CPU diffusion/auto;\n"

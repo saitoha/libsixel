@@ -16,7 +16,7 @@ static int const lookup_formats[] = {
 static char const *const lookup_classes[] = {
     "lookup/certlut.float32", "lookup/5bit.float32", "lookup/6bit.float32",
     "lookup/vptree.float32", "lookup/rbc.float32",
-    "lookup/mahalanobis.float32"
+    "lookup/mahalanobis.float32", "lookup/eytzinger.float32"
 };
 
 static int
@@ -73,6 +73,38 @@ lookup_values(sixel_lookup_policy_interface_t *policy,
     int axis;
     int ok;
 
+    if (strcmp(mode, "bound") == 0) {
+        /* #0 has the smallest nonnegative key but is farther than #1.
+         * The old unscaled key-square bound incorrectly skipped #1 in
+         * both unequal-range formats. All coordinates are binary exact;
+         * squared metric distances are about .0491 versus .0396. */
+        scale = ranges[space][1];
+        memset(palette, 0, sizeof(palette));
+        memset(query, 0, sizeof(query));
+        palette[0] = .15625f + 1.f / 1024;
+        palette[1] = -.15625f * scale;
+        palette[4] = .140625f * scale;
+        palette[5] = .140625f * scale;
+        palette[6] = -2;
+        palette[7] = -2 * scale;
+        palette[9] = 2;
+        palette[10] = 2 * scale;
+        return lookup_prepare(policy, allocator, palette, space, 4) &&
+            lookup_map(policy, query, 1);
+    }
+    if (strcmp(mode, "projection") == 0) {
+        /* Each component and the unique nearest distance are finite.
+         * Three large positive terms overflow a float projection key. */
+        for (axis = 0; axis < 3; ++axis) {
+            palette[axis] = FLT_MAX;
+            palette[3 + axis] = FLT_MAX * .75f;
+            palette[6 + axis] = -FLT_MAX;
+            palette[9 + axis] = -FLT_MAX * .5f;
+            query[axis] = FLT_MAX * .8125f;
+        }
+        return lookup_prepare(policy, allocator, palette, space, 4) &&
+            lookup_map(policy, query, 1);
+    }
     for (axis = 0; axis < 3; ++axis) {
         memset(palette, 0, sizeof(palette));
         memset(query, 0, sizeof(query));
@@ -179,7 +211,10 @@ lookup_oracle(sixel_lookup_policy_interface_t *policy,
     int actual;
     int strict;
 
-    scale = ldexp(1.0, exponent);
+    /* Exponent 100 selects a mixed-scale witness: a shared huge first
+     * component cancels in distance, while independently varying small
+     * components can be lost in rounded projection keys. */
+    scale = ldexp(1.0, exponent == 100 ? 46 : exponent);
     strict = 0;
     for (index = 0; index < 41; ++index) {
         for (axis = 0; axis < 3; ++axis) {
@@ -187,6 +222,9 @@ lookup_oracle(sixel_lookup_policy_interface_t *policy,
                 - 48) / 16.0;
             palette[index * 3 + axis] =
                 (float)(component * scale * ranges[space][axis]);
+            if (exponent == 100 && axis == 0) {
+                palette[index * 3] = (float)ldexp(1.0, 100);
+            }
         }
     }
     memcpy(original, palette, sizeof(palette));
@@ -203,6 +241,9 @@ lookup_oracle(sixel_lookup_policy_interface_t *policy,
                 : ((sample * (11 + axis * 6)) % 31 - 15) / 64.0;
             query[axis] = (float)(palette[index * 3 + axis] +
                 component * scale * ranges[space][axis]);
+            if (exponent == 100 && axis == 0) {
+                query[axis] = palette[index * 3];
+            }
         }
         memcpy(saved, query, sizeof(query));
         best = DBL_MAX;
@@ -264,7 +305,7 @@ test_extended_lookup(int argc, char **argv)
     }
     backend = atoi(argv[2]);
     space = atoi(argv[3]);
-    if (backend < 0 || backend > 5 || space < 0 || space > 4) {
+    if (backend < 0 || backend > 6 || space < 0 || space > 4) {
         return EXIT_FAILURE;
     }
     allocator = NULL;
@@ -289,7 +330,8 @@ test_extended_lookup(int argc, char **argv)
     if (strncmp(argv[1], "oracle", 6) == 0) {
         ok = lookup_oracle(first, allocator, space,
             strcmp(argv[1], "oracle_large") == 0 ? 120 :
-            strcmp(argv[1], "oracle_small") == 0 ? -120 : 0);
+            strcmp(argv[1], "oracle_small") == 0 ? -120 :
+                strcmp(argv[1], "oracle_mixed") == 0 ? 100 : 0);
     } else {
         ok = strcmp(argv[1], "isolation") == 0
             ? lookup_isolation(first, second, allocator)

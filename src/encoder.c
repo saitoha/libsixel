@@ -6970,6 +6970,7 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
     case SIXEL_LUT_POLICY_VPTREE:
     case SIXEL_LUT_POLICY_RBC:
     case SIXEL_LUT_POLICY_MAHALANOBIS:
+    case SIXEL_LUT_POLICY_EYTZINGER:
         break;
     default:
         return 0;
@@ -7047,7 +7048,7 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
         sixel_helper_set_additional_message(
             "display-p3 requires the selected CPU float palette path: "
             "--precision=auto|float -Qkmeans|center|medoids "
-            "-~none|certlut|5bit|6bit|auto|vptree|rbc|mahalanobis "
+            "-~none|certlut|5bit|6bit|auto|vptree|rbc|mahalanobis|eytzinger "
             "-X/-W gamma|linear|oklab|cielab|din99d "
             "CPU spatial diffusion (or -dnone/-dauto), "
             "-Fnone|ward -_none -trgb, no cover "

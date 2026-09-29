@@ -753,6 +753,56 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_BINNING_CONTRACT \
     -DBUILD_TEST_0001_MERGE_CONTRACT \
     -DBUILD_TEST_0001_EXTENDED_LOOKUP \
+    -DBUILD_TEST_0001_EYT_GAMMA_RANGE \
+    -DBUILD_TEST_0002_EYT_LINEAR_RANGE \
+    -DBUILD_TEST_0003_EYT_OKLAB_RANGE \
+    -DBUILD_TEST_0004_EYT_CIELAB_RANGE \
+    -DBUILD_TEST_0005_EYT_DIN99D_RANGE \
+    -DBUILD_TEST_0006_EYT_GAMMA_FRACTION \
+    -DBUILD_TEST_0007_EYT_LINEAR_FRACTION \
+    -DBUILD_TEST_0008_EYT_OKLAB_FRACTION \
+    -DBUILD_TEST_0009_EYT_CIELAB_FRACTION \
+    -DBUILD_TEST_0010_EYT_DIN99D_FRACTION \
+    -DBUILD_TEST_0011_EYT_CIELAB_METRIC \
+    -DBUILD_TEST_0012_EYT_DIN99D_METRIC \
+    -DBUILD_TEST_0013_EYT_OVERFLOW \
+    -DBUILD_TEST_0014_EYT_UNDERFLOW \
+    -DBUILD_TEST_0015_EYT_ISOLATION \
+    -DBUILD_TEST_0016_EYT_GAMMA_ORACLE \
+    -DBUILD_TEST_0017_EYT_LINEAR_ORACLE \
+    -DBUILD_TEST_0018_EYT_OKLAB_ORACLE \
+    -DBUILD_TEST_0019_EYT_CIELAB_ORACLE \
+    -DBUILD_TEST_0020_EYT_DIN99D_ORACLE \
+    -DBUILD_TEST_0021_EYT_GAMMA_ORACLE_LARGE \
+    -DBUILD_TEST_0022_EYT_LINEAR_ORACLE_LARGE \
+    -DBUILD_TEST_0023_EYT_OKLAB_ORACLE_LARGE \
+    -DBUILD_TEST_0024_EYT_CIELAB_ORACLE_LARGE \
+    -DBUILD_TEST_0025_EYT_DIN99D_ORACLE_LARGE \
+    -DBUILD_TEST_0026_EYT_GAMMA_ORACLE_SMALL \
+    -DBUILD_TEST_0027_EYT_LINEAR_ORACLE_SMALL \
+    -DBUILD_TEST_0028_EYT_OKLAB_ORACLE_SMALL \
+    -DBUILD_TEST_0029_EYT_CIELAB_ORACLE_SMALL \
+    -DBUILD_TEST_0030_EYT_DIN99D_ORACLE_SMALL \
+    -DBUILD_TEST_0031_EYT_LAB_BOUND \
+    -DBUILD_TEST_0032_EYT_DIN99D_BOUND \
+    -DBUILD_TEST_0033_EYT_PROJECTION_OVERFLOW \
+    -DBUILD_TEST_0034_EYT_GAMMA_MIXED \
+    -DBUILD_TEST_0035_EYT_LINEAR_MIXED \
+    -DBUILD_TEST_0036_EYT_OKLAB_MIXED \
+    -DBUILD_TEST_0037_EYT_CIELAB_MIXED \
+    -DBUILD_TEST_0038_EYT_DIN99D_MIXED \
+    -DBUILD_TEST_0001_EYT_GAMMA_SRGB \
+    -DBUILD_TEST_0002_EYT_GAMMA_P3 \
+    -DBUILD_TEST_0003_EYT_LINEAR_SRGB \
+    -DBUILD_TEST_0004_EYT_LINEAR_P3 \
+    -DBUILD_TEST_0005_EYT_OKLAB_SRGB \
+    -DBUILD_TEST_0006_EYT_OKLAB_P3 \
+    -DBUILD_TEST_0007_EYT_CIELAB_SRGB \
+    -DBUILD_TEST_0008_EYT_CIELAB_P3 \
+    -DBUILD_TEST_0009_EYT_DIN99D_SRGB \
+    -DBUILD_TEST_0010_EYT_DIN99D_P3 \
+    -DBUILD_TEST_0011_EYT_BYTE_ELIGIBILITY \
+    -DBUILD_TEST_0012_EYT_BANDS_PRIVATE \
     -DBUILD_TEST_0001_MAH_GAMMA_RANGE \
     -DBUILD_TEST_0002_MAH_LINEAR_RANGE \
     -DBUILD_TEST_0003_MAH_OKLAB_RANGE \
@@ -4092,6 +4142,56 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/solvers_float/0001_solver_contract.c \
     quant/palette/merge_float/0001_merge_contract.c \
     processing/lookup/extended/0001_extended_lookup.c \
+    processing/lookup/eytzinger/0001_eyt_gamma_range.c \
+    processing/lookup/eytzinger/0002_eyt_linear_range.c \
+    processing/lookup/eytzinger/0003_eyt_oklab_range.c \
+    processing/lookup/eytzinger/0004_eyt_cielab_range.c \
+    processing/lookup/eytzinger/0005_eyt_din99d_range.c \
+    processing/lookup/eytzinger/0006_eyt_gamma_fraction.c \
+    processing/lookup/eytzinger/0007_eyt_linear_fraction.c \
+    processing/lookup/eytzinger/0008_eyt_oklab_fraction.c \
+    processing/lookup/eytzinger/0009_eyt_cielab_fraction.c \
+    processing/lookup/eytzinger/0010_eyt_din99d_fraction.c \
+    processing/lookup/eytzinger/0011_eyt_cielab_metric.c \
+    processing/lookup/eytzinger/0012_eyt_din99d_metric.c \
+    processing/lookup/eytzinger/0013_eyt_overflow.c \
+    processing/lookup/eytzinger/0014_eyt_underflow.c \
+    processing/lookup/eytzinger/0015_eyt_isolation.c \
+    processing/lookup/eytzinger/0016_eyt_gamma_oracle.c \
+    processing/lookup/eytzinger/0017_eyt_linear_oracle.c \
+    processing/lookup/eytzinger/0018_eyt_oklab_oracle.c \
+    processing/lookup/eytzinger/0019_eyt_cielab_oracle.c \
+    processing/lookup/eytzinger/0020_eyt_din99d_oracle.c \
+    processing/lookup/eytzinger/0021_eyt_gamma_oracle_large.c \
+    processing/lookup/eytzinger/0022_eyt_linear_oracle_large.c \
+    processing/lookup/eytzinger/0023_eyt_oklab_oracle_large.c \
+    processing/lookup/eytzinger/0024_eyt_cielab_oracle_large.c \
+    processing/lookup/eytzinger/0025_eyt_din99d_oracle_large.c \
+    processing/lookup/eytzinger/0026_eyt_gamma_oracle_small.c \
+    processing/lookup/eytzinger/0027_eyt_linear_oracle_small.c \
+    processing/lookup/eytzinger/0028_eyt_oklab_oracle_small.c \
+    processing/lookup/eytzinger/0029_eyt_cielab_oracle_small.c \
+    processing/lookup/eytzinger/0030_eyt_din99d_oracle_small.c \
+    processing/lookup/eytzinger/0031_eyt_lab_bound.c \
+    processing/lookup/eytzinger/0032_eyt_din99d_bound.c \
+    processing/lookup/eytzinger/0033_eyt_projection_overflow.c \
+    processing/lookup/eytzinger/0034_eyt_gamma_mixed.c \
+    processing/lookup/eytzinger/0035_eyt_linear_mixed.c \
+    processing/lookup/eytzinger/0036_eyt_oklab_mixed.c \
+    processing/lookup/eytzinger/0037_eyt_cielab_mixed.c \
+    processing/lookup/eytzinger/0038_eyt_din99d_mixed.c \
+    quant/palette/eytzinger_float/0001_eyt_gamma_srgb.c \
+    quant/palette/eytzinger_float/0002_eyt_gamma_p3.c \
+    quant/palette/eytzinger_float/0003_eyt_linear_srgb.c \
+    quant/palette/eytzinger_float/0004_eyt_linear_p3.c \
+    quant/palette/eytzinger_float/0005_eyt_oklab_srgb.c \
+    quant/palette/eytzinger_float/0006_eyt_oklab_p3.c \
+    quant/palette/eytzinger_float/0007_eyt_cielab_srgb.c \
+    quant/palette/eytzinger_float/0008_eyt_cielab_p3.c \
+    quant/palette/eytzinger_float/0009_eyt_din99d_srgb.c \
+    quant/palette/eytzinger_float/0010_eyt_din99d_p3.c \
+    quant/palette/eytzinger_float/0011_eyt_byte_eligibility.c \
+    quant/palette/eytzinger_float/0012_eyt_bands_private.c \
     processing/lookup/mahalanobis/0001_mah_gamma_range.c \
     processing/lookup/mahalanobis/0002_mah_linear_range.c \
     processing/lookup/mahalanobis/0003_mah_oklab_range.c \

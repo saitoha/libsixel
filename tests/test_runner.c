@@ -473,6 +473,56 @@ int test_palette_sampling_float(int argc, char **argv);
 int test_palette_binning_float(int argc, char **argv);
 int test_palette_merge_float(int argc, char **argv);
 int test_extended_lookup(int argc, char **argv);
+int test_eyt_lookup_0001(int argc, char **argv);
+int test_eyt_lookup_0002(int argc, char **argv);
+int test_eyt_lookup_0003(int argc, char **argv);
+int test_eyt_lookup_0004(int argc, char **argv);
+int test_eyt_lookup_0005(int argc, char **argv);
+int test_eyt_lookup_0006(int argc, char **argv);
+int test_eyt_lookup_0007(int argc, char **argv);
+int test_eyt_lookup_0008(int argc, char **argv);
+int test_eyt_lookup_0009(int argc, char **argv);
+int test_eyt_lookup_0010(int argc, char **argv);
+int test_eyt_lookup_0011(int argc, char **argv);
+int test_eyt_lookup_0012(int argc, char **argv);
+int test_eyt_lookup_0013(int argc, char **argv);
+int test_eyt_lookup_0014(int argc, char **argv);
+int test_eyt_lookup_0015(int argc, char **argv);
+int test_eyt_lookup_0016(int argc, char **argv);
+int test_eyt_lookup_0017(int argc, char **argv);
+int test_eyt_lookup_0018(int argc, char **argv);
+int test_eyt_lookup_0019(int argc, char **argv);
+int test_eyt_lookup_0020(int argc, char **argv);
+int test_eyt_lookup_0021(int argc, char **argv);
+int test_eyt_lookup_0022(int argc, char **argv);
+int test_eyt_lookup_0023(int argc, char **argv);
+int test_eyt_lookup_0024(int argc, char **argv);
+int test_eyt_lookup_0025(int argc, char **argv);
+int test_eyt_lookup_0026(int argc, char **argv);
+int test_eyt_lookup_0027(int argc, char **argv);
+int test_eyt_lookup_0028(int argc, char **argv);
+int test_eyt_lookup_0029(int argc, char **argv);
+int test_eyt_lookup_0030(int argc, char **argv);
+int test_eyt_lookup_0031(int argc, char **argv);
+int test_eyt_lookup_0032(int argc, char **argv);
+int test_eyt_lookup_0033(int argc, char **argv);
+int test_eyt_lookup_0034(int argc, char **argv);
+int test_eyt_lookup_0035(int argc, char **argv);
+int test_eyt_lookup_0036(int argc, char **argv);
+int test_eyt_lookup_0037(int argc, char **argv);
+int test_eyt_lookup_0038(int argc, char **argv);
+int test_eyt_palette_0001(int argc, char **argv);
+int test_eyt_palette_0002(int argc, char **argv);
+int test_eyt_palette_0003(int argc, char **argv);
+int test_eyt_palette_0004(int argc, char **argv);
+int test_eyt_palette_0005(int argc, char **argv);
+int test_eyt_palette_0006(int argc, char **argv);
+int test_eyt_palette_0007(int argc, char **argv);
+int test_eyt_palette_0008(int argc, char **argv);
+int test_eyt_palette_0009(int argc, char **argv);
+int test_eyt_palette_0010(int argc, char **argv);
+int test_eyt_palette_0011(int argc, char **argv);
+int test_eyt_palette_0012(int argc, char **argv);
 int test_mah_lookup_0001(int argc, char **argv);
 int test_mah_lookup_0002(int argc, char **argv);
 int test_mah_lookup_0003(int argc, char **argv);
@@ -2855,6 +2905,106 @@ static test_entry_t const test_entries[] = {
     { "palette/binning_float/0001_binning_contract",
       test_palette_binning_float },
     { "lookup/extended/0001_extended_lookup", test_extended_lookup },
+    { "lookup/eytzinger/0001_eyt_gamma_range",
+      test_eyt_lookup_0001 },
+    { "lookup/eytzinger/0002_eyt_linear_range",
+      test_eyt_lookup_0002 },
+    { "lookup/eytzinger/0003_eyt_oklab_range",
+      test_eyt_lookup_0003 },
+    { "lookup/eytzinger/0004_eyt_cielab_range",
+      test_eyt_lookup_0004 },
+    { "lookup/eytzinger/0005_eyt_din99d_range",
+      test_eyt_lookup_0005 },
+    { "lookup/eytzinger/0006_eyt_gamma_fraction",
+      test_eyt_lookup_0006 },
+    { "lookup/eytzinger/0007_eyt_linear_fraction",
+      test_eyt_lookup_0007 },
+    { "lookup/eytzinger/0008_eyt_oklab_fraction",
+      test_eyt_lookup_0008 },
+    { "lookup/eytzinger/0009_eyt_cielab_fraction",
+      test_eyt_lookup_0009 },
+    { "lookup/eytzinger/0010_eyt_din99d_fraction",
+      test_eyt_lookup_0010 },
+    { "lookup/eytzinger/0011_eyt_cielab_metric",
+      test_eyt_lookup_0011 },
+    { "lookup/eytzinger/0012_eyt_din99d_metric",
+      test_eyt_lookup_0012 },
+    { "lookup/eytzinger/0013_eyt_overflow",
+      test_eyt_lookup_0013 },
+    { "lookup/eytzinger/0014_eyt_underflow",
+      test_eyt_lookup_0014 },
+    { "lookup/eytzinger/0015_eyt_isolation",
+      test_eyt_lookup_0015 },
+    { "lookup/eytzinger/0016_eyt_gamma_oracle",
+      test_eyt_lookup_0016 },
+    { "lookup/eytzinger/0017_eyt_linear_oracle",
+      test_eyt_lookup_0017 },
+    { "lookup/eytzinger/0018_eyt_oklab_oracle",
+      test_eyt_lookup_0018 },
+    { "lookup/eytzinger/0019_eyt_cielab_oracle",
+      test_eyt_lookup_0019 },
+    { "lookup/eytzinger/0020_eyt_din99d_oracle",
+      test_eyt_lookup_0020 },
+    { "lookup/eytzinger/0021_eyt_gamma_oracle_large",
+      test_eyt_lookup_0021 },
+    { "lookup/eytzinger/0022_eyt_linear_oracle_large",
+      test_eyt_lookup_0022 },
+    { "lookup/eytzinger/0023_eyt_oklab_oracle_large",
+      test_eyt_lookup_0023 },
+    { "lookup/eytzinger/0024_eyt_cielab_oracle_large",
+      test_eyt_lookup_0024 },
+    { "lookup/eytzinger/0025_eyt_din99d_oracle_large",
+      test_eyt_lookup_0025 },
+    { "lookup/eytzinger/0026_eyt_gamma_oracle_small",
+      test_eyt_lookup_0026 },
+    { "lookup/eytzinger/0027_eyt_linear_oracle_small",
+      test_eyt_lookup_0027 },
+    { "lookup/eytzinger/0028_eyt_oklab_oracle_small",
+      test_eyt_lookup_0028 },
+    { "lookup/eytzinger/0029_eyt_cielab_oracle_small",
+      test_eyt_lookup_0029 },
+    { "lookup/eytzinger/0030_eyt_din99d_oracle_small",
+      test_eyt_lookup_0030 },
+    { "lookup/eytzinger/0031_eyt_lab_bound",
+      test_eyt_lookup_0031 },
+    { "lookup/eytzinger/0032_eyt_din99d_bound",
+      test_eyt_lookup_0032 },
+    { "lookup/eytzinger/0033_eyt_projection_overflow",
+      test_eyt_lookup_0033 },
+    { "lookup/eytzinger/0034_eyt_gamma_mixed",
+      test_eyt_lookup_0034 },
+    { "lookup/eytzinger/0035_eyt_linear_mixed",
+      test_eyt_lookup_0035 },
+    { "lookup/eytzinger/0036_eyt_oklab_mixed",
+      test_eyt_lookup_0036 },
+    { "lookup/eytzinger/0037_eyt_cielab_mixed",
+      test_eyt_lookup_0037 },
+    { "lookup/eytzinger/0038_eyt_din99d_mixed",
+      test_eyt_lookup_0038 },
+    { "palette/eytzinger_float/0001_eyt_gamma_srgb",
+      test_eyt_palette_0001 },
+    { "palette/eytzinger_float/0002_eyt_gamma_p3",
+      test_eyt_palette_0002 },
+    { "palette/eytzinger_float/0003_eyt_linear_srgb",
+      test_eyt_palette_0003 },
+    { "palette/eytzinger_float/0004_eyt_linear_p3",
+      test_eyt_palette_0004 },
+    { "palette/eytzinger_float/0005_eyt_oklab_srgb",
+      test_eyt_palette_0005 },
+    { "palette/eytzinger_float/0006_eyt_oklab_p3",
+      test_eyt_palette_0006 },
+    { "palette/eytzinger_float/0007_eyt_cielab_srgb",
+      test_eyt_palette_0007 },
+    { "palette/eytzinger_float/0008_eyt_cielab_p3",
+      test_eyt_palette_0008 },
+    { "palette/eytzinger_float/0009_eyt_din99d_srgb",
+      test_eyt_palette_0009 },
+    { "palette/eytzinger_float/0010_eyt_din99d_p3",
+      test_eyt_palette_0010 },
+    { "palette/eytzinger_float/0011_eyt_byte_eligibility",
+      test_eyt_palette_0011 },
+    { "palette/eytzinger_float/0012_eyt_bands_private",
+      test_eyt_palette_0012 },
     { "lookup/mahalanobis/0001_mah_gamma_range",
       test_mah_lookup_0001 },
     { "lookup/mahalanobis/0002_mah_linear_range",

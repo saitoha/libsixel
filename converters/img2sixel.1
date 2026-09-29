@@ -827,7 +827,7 @@ vptree  -> VP-tree lookup built from palette entries with safe-distance
 .br
 rbc     -> Random Ball Cover cluster pruning.
 .br
-mahalanobis -> RBC clusters with Mahalanobis lower bounds.
+mahalanobis -> exhaustive normalized scan in RBC cluster order.
 .PP
 When shared_instance is present on the command line, it overrides
 SIXEL_LOOKUP_5BIT_SHARED_INSTANCE,
@@ -1351,7 +1351,7 @@ further queries; restoration then uses a bounded write without verification.
 Display P3 requires effective float precision; clustering and working
 coordinates accept gamma, linear, Oklab, CIELAB or DIN99d independently.
 It accepts K-means, K-center or K-medoids, any sampling policy,
-lookup none/certlut/5bit/6bit/auto/vptree/rbc/mahalanobis,
+lookup none/certlut/5bit/6bit/auto/vptree/rbc/mahalanobis/eytzinger,
 none or CPU spatial error diffusion (including auto), none or Ward merge,
 no cover or active snap, and RGB SIXEL output.
 K-means accepts any binning policy; K-center accepts none, exact, hard

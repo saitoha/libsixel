@@ -65,7 +65,7 @@ changed that default from `eytzinger` to `certlut`. Statements that call
 `6bit` "the 1.11 default" must therefore name the exact revision or release;
 this document describes the current source tree.
 
-`-U display-p3` accepts `none`, `certlut`, `5bit`, `6bit`, `auto` (resolved to `6bit`), `vptree`, `rbc` and `mahalanobis`. On that path, and on the ordinary sRGB float path that uses the same preparation, lookup retains the unrounded float working palette; separately converted and rounded RGB101 codes serve only serialization; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
+`-U display-p3` accepts `none`, `certlut`, `5bit`, `6bit`, `auto` (resolved to `6bit`), `vptree`, `rbc`, `mahalanobis` and `eytzinger`. On that path, and on the ordinary sRGB float path that uses the same preparation, lookup retains the unrounded float working palette; separately converted and rounded RGB101 codes serve only serialization; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
 
 ## Policy chapters
 
@@ -119,11 +119,11 @@ colorspace and the lookup policy.
 
 ## Extended float coordinates
 
-The selected [CPU float palette path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path) retains negative, above-nominal and fractional coordinates in `none`, `certlut`, `5bit`, `6bit`, `vptree`, `rbc` and `mahalanobis` lookup. The separately clipped RGB101 wire palette does not replace these working entries. The remaining `eytzinger` and `fhedt` classes are not yet admitted to this path; their existing representation and approximation contracts remain in effect.
+The selected [CPU float palette path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path) retains negative, above-nominal and fractional coordinates in `none`, `certlut`, `5bit`, `6bit`, `vptree`, `rbc`, `mahalanobis` and `eytzinger` lookup. The separately clipped RGB101 wire palette does not replace these working entries. The remaining `fhedt` class is not yet admitted to this path; its existing grid representation and approximation contract remains in effect.
 
-`certlut`, `5bit`, `6bit`, `vptree`, `rbc` and `mahalanobis` retain their normalized metric, with weights derived from the declared channel ranges, rather than the observed palette extent. Unlike `none`, this rescales the opponent axes in CIELAB and DIN99d. Float storage does not mean float arithmetic throughout: these six classes subtract, square and accumulate distances in double. Construction metadata uses the same precision: `certlut` split-plane bounds, VP-tree radii and safe-cache thresholds, and RBC ball radii must not narrow distances back to float before pruning. This avoids overflow and underflow of squared distances for finite binary32 coordinates without clipping them. Working palette values and nominal metric coefficients retain float32 precision. Most classes store float32 search copies; `mahalanobis` widens those exact values into a private double copy at preparation to avoid repeated conversion during exhaustive queries. It does not promise exact real arithmetic or identical index choice at numerically indistinguishable ties. General error-budget rules are in the [testing guide](../../../testing/guide.md#intermediate-floating-point-error).
+`certlut`, `5bit`, `6bit`, `vptree`, `rbc`, `mahalanobis` and `eytzinger` retain their normalized metric, with weights derived from the declared channel ranges, rather than the observed palette extent. Unlike `none`, this rescales the opponent axes in CIELAB and DIN99d. Float storage does not mean float arithmetic throughout: these seven classes subtract, square and accumulate distances in double. Construction metadata uses the same precision: `certlut` split-plane bounds, VP-tree radii and safe-cache thresholds, RBC ball radii, and Eytzinger projection keys and stopping bounds must not narrow distances back to float before pruning. This avoids overflow and underflow of squared distances for finite binary32 coordinates without clipping them. Working palette values and nominal metric coefficients retain float32 precision. Most classes store float32 search copies; `mahalanobis` and `eytzinger` widen those exact values into a private double copy at preparation to avoid repeated conversion during candidate comparisons. It does not promise exact real arithmetic or identical index choice at numerically indistinguishable ties. General error-budget rules are in the [testing guide](../../../testing/guide.md#intermediate-floating-point-error).
 
-Prepared float lookup objects own their palette copies. Repreparing one instance replaces its palette and search structure without changing another instance. For `certlut`, `5bit` and `6bit`, worker sharing is limited to immutable prepared float data. VP-tree, RBC and Mahalanobis use worker-local instances; VP-tree also disables its previous-index cache when configured for parallel dithering. No query mutates the working palette or its wire cache.
+Prepared float lookup objects own their palette copies. Repreparing one instance replaces its palette and search structure without changing another instance. For `certlut`, `5bit` and `6bit`, worker sharing is limited to immutable prepared float data. VP-tree, RBC, Mahalanobis and Eytzinger use worker-local instances; VP-tree also disables its previous-index cache when configured for parallel dithering. No query mutates the working palette or its wire cache.
 
 ## Result guarantees
 
@@ -148,8 +148,7 @@ is globally optimal.
 | `certlut`, 8-bit | Approximate | The current cube test checks only the center's second-nearest competitor, not every possible boundary competitor |
 | `certlut`, float32 | Nearest-distance exact | kd-tree pruning preserves the normalized policy minimum |
 | `eytzinger`, 8-bit | Approximate | A fixed projected-neighbor window can omit the true nearest entry |
-| `eytzinger`, float32 unit-range RGB/OKLab | Nearest-distance exact | Projection distance is a valid lower bound in these formats |
-| `eytzinger`, float32 unequal-range Lab/DIN99d | Approximate | The current projection normalization does not prove a lower bound for the weighted metric |
+| `eytzinger`, float32 | Nearest-distance exact | Dual-metric projection bound with conservative rounding allowance |
 | `fhedt`, 8-bit at `R < 256` | Approximate | Grid quantization and bounded refinement do not scan the full palette |
 | `fhedt`, 8-bit at `R = 256` | Nearest-distance exact | Every byte-valued RGB tuple has a grid coordinate |
 | `fhedt`, float32 | Approximate | Even `R = 256` discretizes a continuous working space |
@@ -785,15 +784,14 @@ evaluates the full metric:
 D_w(i, x) = sum_d w[d] (x[d] - c[i][d])^2
 ```
 
-A projection can support an exact stopping proof when its coefficient vector is
-a unit vector in the transformed metric space. Then Cauchy-Schwarz gives:
+Cauchy-Schwarz in the declared weighted metric gives the general bound:
 
 ```text
-(h(x) - h(c[i]))^2 <= D_w(i, x)
+S = sum_d a[d]^2 / w[d]
+(h(x) - h(c[i]))^2 <= S * D_w(i, x)
 ```
 
-Once the projected difference alone exceeds the best full distance, all
-farther keys on that side can be ignored.
+The float path retains its nominal metric and projection coefficients. It computes `S` from those stored coefficients and compares a conservative squared key gap with `S` times the best distance. Assuming `S = 1` is only justified for a unit projection in the transformed metric; unequal-range Lab and DIN99d require the explicit factor. Once this lower bound exceeds the best full distance, all farther sorted keys on that side can be ignored.
 
 ### Eytzinger array layout
 
@@ -834,22 +832,15 @@ itself a general lower bound for squared RGB distance.
 
 ### Float32 query and guarantee
 
-The float32 implementation scans outward from the insertion point until the
-squared projected difference exceeds the best full distance. This is a valid
-nearest-distance proof for current unit-range RGB and OKLab float formats,
-where the coefficients are `1 / sqrt(3)` and the policy metric has unit channel
-weights.
+The float32 implementation scans outward from the insertion point across the complete palette, using the dual-metric bound above to stop. It finds the nearest normalized weighted distance in gamma RGB, linear RGB, OKLab, CIELAB and DIN99d, subject to finite arithmetic and indistinguishable ties. The byte implementation retains its fixed-window approximation.
 
-For CIELAB and DIN99d float formats, channel ranges differ. The current code
-sets metric weights to inverse squared ranges but normalizes the projection
-coefficients by the sum of those weights. That coefficient vector is not, in
-general, a unit vector in the transformed metric. The stopping test is
-therefore not a proof for those formats, and this document classifies those
-queries as approximate.
+Palette and query coordinates may be negative, exceed nominal channel ranges or contain sub-byte differences. Their authoritative working representation remains float32. Preparation copies the exact palette values into private double search storage, and each query is widened once. Distances, projection keys and bounds are evaluated and stored in double, avoiding overflow and underflow for finite binary32 inputs. The projection coefficients retain their existing binary32 values; the dual-metric norm accounts for that coefficient rounding.
 
-DIN99d's [common coordinate divisor](../../../concepts/din99d/README.md#coordinates-and-normalization) preserves native Euclidean geometry, but its declared storage bounds are still `[0,1]` for lightness and `[-1,1]` for the two opponent axes. This range-based projection issue therefore remains after the DIN99d conversion correction.
+A sorted key can lose small components when its terms have very different magnitudes or cancel. Before squaring a key gap, the stopping test subtracts an absolute error allowance: eight double epsilons times the absolute projection-term sum for the query, plus the maximum such allowance over all palette entries. A nonpositive corrected gap cannot stop the scan. The norm also includes a 32-double-epsilon allowance for its three-term calculation, distance accumulation and stopping comparison. These guards may inspect more candidates; they do not clamp pixels, palette entries or dither compensation. Independent mixed-scale oracles cover this case in all five working spaces. General floating-point test expectations are in the [testing guide](../../../testing/guide.md#intermediate-floating-point-error).
 
-This distinction is easy to miss: continuing until a bound is exceeded is exact only when the value being compared really is a lower bound.
+Earlier float implementations compared the raw squared key gap with distance, without the dual-metric factor. This could skip a nearer color in unequal-range Lab or DIN99d. The current bound corrects that limitation without changing the range-normalized selection metric. DIN99d's [common coordinate divisor](../../../concepts/din99d/README.md#coordinates-and-normalization) and its declared storage ranges remain separate concepts.
+
+Private search storage adds 12 bytes per palette entry compared with a float copy, plus eight bytes per color for the two widened key arrays and four bytes for their sentinel. No image-sized buffer is introduced. Reprepare replaces one object's data; worker-local ownership prevents concurrent encoders from sharing mutable search state.
 
 ### Cost
 
@@ -2143,6 +2134,24 @@ The following focused tests cover the selected extended float lookup path. Range
 | LUTM-10 | `mahalanobis`: sRGB/P3 wire output, retained native palette and actual consumer. | [tests/quant/palette/mahalanobis_float/0001_mah_gamma_srgb.t](../../../../tests/quant/palette/mahalanobis_float/0001_mah_gamma_srgb.t), [tests/quant/palette/mahalanobis_float/0002_mah_gamma_p3.t](../../../../tests/quant/palette/mahalanobis_float/0002_mah_gamma_p3.t), [tests/quant/palette/mahalanobis_float/0003_mah_linear_srgb.t](../../../../tests/quant/palette/mahalanobis_float/0003_mah_linear_srgb.t), [tests/quant/palette/mahalanobis_float/0004_mah_linear_p3.t](../../../../tests/quant/palette/mahalanobis_float/0004_mah_linear_p3.t), [tests/quant/palette/mahalanobis_float/0005_mah_oklab_srgb.t](../../../../tests/quant/palette/mahalanobis_float/0005_mah_oklab_srgb.t), [tests/quant/palette/mahalanobis_float/0006_mah_oklab_p3.t](../../../../tests/quant/palette/mahalanobis_float/0006_mah_oklab_p3.t), [tests/quant/palette/mahalanobis_float/0007_mah_cielab_srgb.t](../../../../tests/quant/palette/mahalanobis_float/0007_mah_cielab_srgb.t), [tests/quant/palette/mahalanobis_float/0008_mah_cielab_p3.t](../../../../tests/quant/palette/mahalanobis_float/0008_mah_cielab_p3.t), [tests/quant/palette/mahalanobis_float/0009_mah_din99d_srgb.t](../../../../tests/quant/palette/mahalanobis_float/0009_mah_din99d_srgb.t), [tests/quant/palette/mahalanobis_float/0010_mah_din99d_p3.t](../../../../tests/quant/palette/mahalanobis_float/0010_mah_din99d_p3.t) |
 | LUTM-11 | `mahalanobis`: Byte fast-path eligibility. | [tests/quant/palette/mahalanobis_float/0011_mah_byte_eligibility.t](../../../../tests/quant/palette/mahalanobis_float/0011_mah_byte_eligibility.t) |
 | LUTM-12 | `mahalanobis`: Worker-local FS bands, overlap and stable wire cache. | [tests/quant/palette/mahalanobis_float/0012_mah_bands_private.t](../../../../tests/quant/palette/mahalanobis_float/0012_mah_bands_private.t) |
+
+| ID | Contract | Owning tests |
+| --- | --- | --- |
+| LUTY-01 | `eytzinger`: Signed and above-nominal coordinates. | [tests/processing/lookup/eytzinger/0001_eyt_gamma_range.t](../../../../tests/processing/lookup/eytzinger/0001_eyt_gamma_range.t), [tests/processing/lookup/eytzinger/0002_eyt_linear_range.t](../../../../tests/processing/lookup/eytzinger/0002_eyt_linear_range.t), [tests/processing/lookup/eytzinger/0003_eyt_oklab_range.t](../../../../tests/processing/lookup/eytzinger/0003_eyt_oklab_range.t), [tests/processing/lookup/eytzinger/0004_eyt_cielab_range.t](../../../../tests/processing/lookup/eytzinger/0004_eyt_cielab_range.t), [tests/processing/lookup/eytzinger/0005_eyt_din99d_range.t](../../../../tests/processing/lookup/eytzinger/0005_eyt_din99d_range.t) |
+| LUTY-02 | `eytzinger`: Sub-byte separation. | [tests/processing/lookup/eytzinger/0006_eyt_gamma_fraction.t](../../../../tests/processing/lookup/eytzinger/0006_eyt_gamma_fraction.t), [tests/processing/lookup/eytzinger/0007_eyt_linear_fraction.t](../../../../tests/processing/lookup/eytzinger/0007_eyt_linear_fraction.t), [tests/processing/lookup/eytzinger/0008_eyt_oklab_fraction.t](../../../../tests/processing/lookup/eytzinger/0008_eyt_oklab_fraction.t), [tests/processing/lookup/eytzinger/0009_eyt_cielab_fraction.t](../../../../tests/processing/lookup/eytzinger/0009_eyt_cielab_fraction.t), [tests/processing/lookup/eytzinger/0010_eyt_din99d_fraction.t](../../../../tests/processing/lookup/eytzinger/0010_eyt_din99d_fraction.t) |
+| LUTY-03 | `eytzinger`: Declared normalized metric. | [tests/processing/lookup/eytzinger/0011_eyt_cielab_metric.t](../../../../tests/processing/lookup/eytzinger/0011_eyt_cielab_metric.t), [tests/processing/lookup/eytzinger/0012_eyt_din99d_metric.t](../../../../tests/processing/lookup/eytzinger/0012_eyt_din99d_metric.t) |
+| LUTY-04 | `eytzinger`: Finite distances above float range. | [tests/processing/lookup/eytzinger/0013_eyt_overflow.t](../../../../tests/processing/lookup/eytzinger/0013_eyt_overflow.t) |
+| LUTY-05 | `eytzinger`: Finite distances below float range. | [tests/processing/lookup/eytzinger/0014_eyt_underflow.t](../../../../tests/processing/lookup/eytzinger/0014_eyt_underflow.t) |
+| LUTY-06 | `eytzinger`: Reprepare and two-instance isolation. | [tests/processing/lookup/eytzinger/0015_eyt_isolation.t](../../../../tests/processing/lookup/eytzinger/0015_eyt_isolation.t) |
+| LUTY-07 | `eytzinger`: 41-color exhaustive oracle at exponent 0. | [tests/processing/lookup/eytzinger/0016_eyt_gamma_oracle.t](../../../../tests/processing/lookup/eytzinger/0016_eyt_gamma_oracle.t), [tests/processing/lookup/eytzinger/0017_eyt_linear_oracle.t](../../../../tests/processing/lookup/eytzinger/0017_eyt_linear_oracle.t), [tests/processing/lookup/eytzinger/0018_eyt_oklab_oracle.t](../../../../tests/processing/lookup/eytzinger/0018_eyt_oklab_oracle.t), [tests/processing/lookup/eytzinger/0019_eyt_cielab_oracle.t](../../../../tests/processing/lookup/eytzinger/0019_eyt_cielab_oracle.t), [tests/processing/lookup/eytzinger/0020_eyt_din99d_oracle.t](../../../../tests/processing/lookup/eytzinger/0020_eyt_din99d_oracle.t) |
+| LUTY-08 | `eytzinger`: 41-color exhaustive oracle at exponent 120. | [tests/processing/lookup/eytzinger/0021_eyt_gamma_oracle_large.t](../../../../tests/processing/lookup/eytzinger/0021_eyt_gamma_oracle_large.t), [tests/processing/lookup/eytzinger/0022_eyt_linear_oracle_large.t](../../../../tests/processing/lookup/eytzinger/0022_eyt_linear_oracle_large.t), [tests/processing/lookup/eytzinger/0023_eyt_oklab_oracle_large.t](../../../../tests/processing/lookup/eytzinger/0023_eyt_oklab_oracle_large.t), [tests/processing/lookup/eytzinger/0024_eyt_cielab_oracle_large.t](../../../../tests/processing/lookup/eytzinger/0024_eyt_cielab_oracle_large.t), [tests/processing/lookup/eytzinger/0025_eyt_din99d_oracle_large.t](../../../../tests/processing/lookup/eytzinger/0025_eyt_din99d_oracle_large.t) |
+| LUTY-09 | `eytzinger`: 41-color exhaustive oracle at exponent -120. | [tests/processing/lookup/eytzinger/0026_eyt_gamma_oracle_small.t](../../../../tests/processing/lookup/eytzinger/0026_eyt_gamma_oracle_small.t), [tests/processing/lookup/eytzinger/0027_eyt_linear_oracle_small.t](../../../../tests/processing/lookup/eytzinger/0027_eyt_linear_oracle_small.t), [tests/processing/lookup/eytzinger/0028_eyt_oklab_oracle_small.t](../../../../tests/processing/lookup/eytzinger/0028_eyt_oklab_oracle_small.t), [tests/processing/lookup/eytzinger/0029_eyt_cielab_oracle_small.t](../../../../tests/processing/lookup/eytzinger/0029_eyt_cielab_oracle_small.t), [tests/processing/lookup/eytzinger/0030_eyt_din99d_oracle_small.t](../../../../tests/processing/lookup/eytzinger/0030_eyt_din99d_oracle_small.t) |
+| LUTY-10 | `eytzinger`: Unequal-range dual-metric stopping bound. | [tests/processing/lookup/eytzinger/0031_eyt_lab_bound.t](../../../../tests/processing/lookup/eytzinger/0031_eyt_lab_bound.t), [tests/processing/lookup/eytzinger/0032_eyt_din99d_bound.t](../../../../tests/processing/lookup/eytzinger/0032_eyt_din99d_bound.t) |
+| LUTY-11 | `eytzinger`: Finite coordinates with keys beyond float range. | [tests/processing/lookup/eytzinger/0033_eyt_projection_overflow.t](../../../../tests/processing/lookup/eytzinger/0033_eyt_projection_overflow.t) |
+| LUTY-12 | `eytzinger`: Mixed-scale projection rounding cannot hide a nearest color. | [tests/processing/lookup/eytzinger/0034_eyt_gamma_mixed.t](../../../../tests/processing/lookup/eytzinger/0034_eyt_gamma_mixed.t), [tests/processing/lookup/eytzinger/0035_eyt_linear_mixed.t](../../../../tests/processing/lookup/eytzinger/0035_eyt_linear_mixed.t), [tests/processing/lookup/eytzinger/0036_eyt_oklab_mixed.t](../../../../tests/processing/lookup/eytzinger/0036_eyt_oklab_mixed.t), [tests/processing/lookup/eytzinger/0037_eyt_cielab_mixed.t](../../../../tests/processing/lookup/eytzinger/0037_eyt_cielab_mixed.t), [tests/processing/lookup/eytzinger/0038_eyt_din99d_mixed.t](../../../../tests/processing/lookup/eytzinger/0038_eyt_din99d_mixed.t) |
+| LUTY-13 | `eytzinger`: sRGB/P3 wire output, retained native palette and actual consumer. | [tests/quant/palette/eytzinger_float/0001_eyt_gamma_srgb.t](../../../../tests/quant/palette/eytzinger_float/0001_eyt_gamma_srgb.t), [tests/quant/palette/eytzinger_float/0002_eyt_gamma_p3.t](../../../../tests/quant/palette/eytzinger_float/0002_eyt_gamma_p3.t), [tests/quant/palette/eytzinger_float/0003_eyt_linear_srgb.t](../../../../tests/quant/palette/eytzinger_float/0003_eyt_linear_srgb.t), [tests/quant/palette/eytzinger_float/0004_eyt_linear_p3.t](../../../../tests/quant/palette/eytzinger_float/0004_eyt_linear_p3.t), [tests/quant/palette/eytzinger_float/0005_eyt_oklab_srgb.t](../../../../tests/quant/palette/eytzinger_float/0005_eyt_oklab_srgb.t), [tests/quant/palette/eytzinger_float/0006_eyt_oklab_p3.t](../../../../tests/quant/palette/eytzinger_float/0006_eyt_oklab_p3.t), [tests/quant/palette/eytzinger_float/0007_eyt_cielab_srgb.t](../../../../tests/quant/palette/eytzinger_float/0007_eyt_cielab_srgb.t), [tests/quant/palette/eytzinger_float/0008_eyt_cielab_p3.t](../../../../tests/quant/palette/eytzinger_float/0008_eyt_cielab_p3.t), [tests/quant/palette/eytzinger_float/0009_eyt_din99d_srgb.t](../../../../tests/quant/palette/eytzinger_float/0009_eyt_din99d_srgb.t), [tests/quant/palette/eytzinger_float/0010_eyt_din99d_p3.t](../../../../tests/quant/palette/eytzinger_float/0010_eyt_din99d_p3.t) |
+| LUTY-14 | `eytzinger`: Byte fast-path eligibility. | [tests/quant/palette/eytzinger_float/0011_eyt_byte_eligibility.t](../../../../tests/quant/palette/eytzinger_float/0011_eyt_byte_eligibility.t) |
+| LUTY-15 | `eytzinger`: Worker-local FS bands, overlap and stable wire cache. | [tests/quant/palette/eytzinger_float/0012_eyt_bands_private.t](../../../../tests/quant/palette/eytzinger_float/0012_eyt_bands_private.t) |
 
 ### Quality regression tests
 
