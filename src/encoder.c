@@ -6935,7 +6935,7 @@ sixel_encoder_resolve_direct_binning(
 
 /* The selected float pipeline keeps a separate RGB101 wire cache. Keep
  * this predicate shared with P3 validation so sRGB cannot enter with an
- * unconnected merge, snap, alpha, cache or alternate lookup policy. */
+ * unconnected snap, alpha, cache or alternate lookup policy. */
 static int
 sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
 {
@@ -6976,7 +6976,10 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
              encoder->quantize_model_kmeans_feedback_mode !=
                 SIXEL_PALETTE_KMEANS_FEEDBACK_OFF) ||
             encoder->lut_policy != SIXEL_LUT_POLICY_NONE ||
-            encoder->final_merge_mode != SIXEL_FINAL_MERGE_NONE ||
+            (sixel_resolve_final_merge_mode(encoder->final_merge_mode) !=
+                 SIXEL_FINAL_MERGE_NONE &&
+             sixel_resolve_final_merge_mode(encoder->final_merge_mode) !=
+                 SIXEL_FINAL_MERGE_WARD) ||
             (encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
              encoder->cover_policy != SIXEL_PALETTE_COVER_OFF) ||
             (encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE &&
@@ -7032,7 +7035,7 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "--precision=auto|float -Qkmeans|center|medoids -~none "
             "-X/-W gamma|linear|oklab|cielab|din99d "
             "CPU spatial diffusion (or -dnone/-dauto), "
-            "-Fnone -_none -trgb, no cover "
+            "-Fnone|ward -_none -trgb, no cover "
             "(-aoff for generated palettes), and normal SIXEL output.");
         return SIXEL_BAD_ARGUMENT;
     }

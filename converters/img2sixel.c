@@ -1189,8 +1189,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    binning: kmeans any, center none/exact/hard/auto,\n"
         "    medoids none/auto;\n"
         "    none/CPU diffusion/auto;\n"
-        "    no merge/cover; snap none or rate=0; -m with K-means only\n"
-        "    -M exports sRGB8; positional/interframe dither unsupported\n"
+        "    none/ward merge; no cover; snap none or rate=0\n"
+        "    -m with K-means only; -M exports sRGB8; no positional/interframe\n"
     },
     {
         '1',

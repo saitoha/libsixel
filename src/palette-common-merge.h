@@ -42,11 +42,11 @@ extern "C" {
 void
 sixel_final_merge_load_env(void);
 
-void
+SIXEL_INTERNAL_API void
 sixel_set_final_merge_target_factor_override(int enabled,
                                              double factor);
 
-void
+SIXEL_INTERNAL_API void
 sixel_set_final_merge_lloyd_iterations_override(int enabled,
                                                 unsigned int iterations);
 
@@ -67,7 +67,10 @@ sixel_final_merge_target(unsigned int reqcolors, int final_merge_mode);
 int
 sixel_resolve_final_merge_mode(int final_merge_mode);
 
-int
+/* Nominal byte-scaled double coordinates may remain out of range when
+ * preserve_extended is set. Returns -1 on workspace allocation failure in
+ * that mode; callers must report failure rather than truncate the palette. */
+SIXEL_INTERNAL_API int
 sixel_palette_apply_merge(unsigned long *weights,
                           double *sums,
                           unsigned int depth,
@@ -76,6 +79,7 @@ sixel_palette_apply_merge(unsigned long *weights,
                           int final_merge_mode,
                           int use_reversible,
                           int pixelformat,
+                          int preserve_extended,
                           sixel_allocator_t *allocator);
 
 #ifdef __cplusplus

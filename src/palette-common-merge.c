@@ -1152,7 +1152,7 @@ sixel_final_merge_target(unsigned int reqcolors, int final_merge_mode)
     return scaled;
 }
 
-/* Merge clusters using either Ward linkage or hierarchical k-means. */
+/* Merge weighted centers without changing their nominal metric scale. */
 int
 sixel_palette_apply_merge(unsigned long *weights,
                           double *sums,
@@ -1162,6 +1162,7 @@ sixel_palette_apply_merge(unsigned long *weights,
                           int final_merge_mode,
                           int use_reversible,
                           int pixelformat,
+                          int preserve_extended,
                           sixel_allocator_t *allocator)
 {
     sixel_final_merge_cluster_t *clusters;
@@ -1180,9 +1181,10 @@ sixel_palette_apply_merge(unsigned long *weights,
     int result;
     /*
      * The caller supplies population counts alongside channel sums expressed
-     * in the standard 0-255 domain (but kept in double precision).  Retaining
-     * the fractional parts lets the float32 pipeline keep its extra accuracy
-     * until the very last step that snaps to the SIXEL tone grid.
+     * in nominal 0-255 coordinates, kept in double precision. Extended
+     * builds may exceed those nominal bounds: they must retain signed sums
+     * and fractional means. Wire quantization belongs to a separate cache,
+     * not this weighted-mean operation or an implicit snap policy.
      */
     if (weights == NULL || sums == NULL) {
         return cluster_count;
@@ -1194,6 +1196,13 @@ sixel_palette_apply_merge(unsigned long *weights,
         allocator,
         (size_t)cluster_count * sizeof(sixel_final_merge_cluster_t));
     if (clusters == NULL) {
+        /* An extended caller must not truncate unmerged clusters and claim
+         * success. Legacy builders retain their existing fallback contract. */
+        if (preserve_extended) {
+            sixel_helper_set_additional_message(
+                "final palette merge: cannot allocate cluster workspace.");
+            return -1;
+        }
         return cluster_count;
     }
     for (index = 0; index < cluster_count; ++index) {
@@ -1266,14 +1275,14 @@ sixel_palette_apply_merge(unsigned long *weights,
             } else if (plane == 1) {
                 component = component_g;
             }
-            if (component < 0.0) {
+            if (!preserve_extended && component < 0.0) {
                 component = 0.0;
             }
-            if (component > 255.0) {
+            if (!preserve_extended && component > 255.0) {
                 component = 255.0;
             }
             scaled = component * used_weight;
-            if (scaled < 0.0) {
+            if (!preserve_extended && scaled < 0.0) {
                 scaled = 0.0;
             }
             sums[(size_t)result * (size_t)depth + (size_t)plane] = scaled;
@@ -1300,14 +1309,14 @@ sixel_palette_apply_merge(unsigned long *weights,
             } else if (plane == 1) {
                 component = component_g;
             }
-            if (component < 0.0) {
+            if (!preserve_extended && component < 0.0) {
                 component = 0.0;
             }
-            if (component > 255.0) {
+            if (!preserve_extended && component > 255.0) {
                 component = 255.0;
             }
             scaled = component * used_weight;
-            if (scaled < 0.0) {
+            if (!preserve_extended && scaled < 0.0) {
                 scaled = 0.0;
             }
             sums[(size_t)0 * (size_t)depth + (size_t)plane] = scaled;

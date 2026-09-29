@@ -65,7 +65,7 @@ changed that default from `eytzinger` to `certlut`. Statements that call
 `6bit` "the 1.11 default" must therefore name the exact revision or release;
 this document describes the current source tree.
 
-`-U display-p3` accepts only the exact `none` policy. On that path, and on the ordinary sRGB float path that uses the same preparation, the palette is converted and rounded to its sent RGB values before lookup, so the chosen index is the nearest color that the stream will actually carry; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
+`-U display-p3` accepts only the exact `none` policy. On that path, and on the ordinary sRGB float path that uses the same preparation, lookup retains the unrounded float working palette; separately converted and rounded RGB101 codes serve only serialization; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
 
 ## Policy chapters
 

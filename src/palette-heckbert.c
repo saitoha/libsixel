@@ -3131,6 +3131,7 @@ mediancut(tupletable2 const colorfreqtable,
                                                   resolved_merge,
                                                   use_reversible,
                                                   pixelformat,
+                                                  0,
                                                   allocator);
         if (cluster_total < 1) {
             cluster_total = 1;

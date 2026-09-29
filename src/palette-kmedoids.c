@@ -11522,6 +11522,8 @@ build_palette_kmedoids(unsigned char **result,
     double *sort_weights;
     double float32_channel_scale[3];
     double float32_channel_offset[3];
+    double bin_scale[3];
+    double bin_offset[3];
     int input_is_float32;
     int job_init;
     int job_iter;
@@ -11728,11 +11730,14 @@ build_palette_kmedoids(unsigned char **result,
     if (reqcolors == 0u) {
         reqcolors = 1u;
     }
+    memcpy(bin_scale, float32_channel_scale, sizeof(bin_scale));
+    memcpy(bin_offset, float32_channel_offset, sizeof(bin_offset));
     if (preserve_extended_rgb && input_is_float32) {
-        /* Private candidate bins retain observed representatives. Expand
-         * only their addresses; medoid distances keep native coordinates. */
+        /* Candidate addresses may expand; Ward still uses the nominal
+         * channel scales. Reusing bin bounds there would change its metric
+         * according to this image's extrema, even without any clipping. */
         status = sixel_palette_bin_expand_bounds(data, pixel_count, 1,
-            float32_channel_scale, float32_channel_offset);
+            bin_scale, bin_offset);
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -11810,8 +11815,8 @@ build_palette_kmedoids(unsigned char **result,
                                             channels,
                                             pixel_stride,
                                             input_is_float32,
-                                            float32_channel_scale,
-                                            float32_channel_offset,
+                                            bin_scale,
+                                            bin_offset,
                                             histbits,
                                             point_budget,
                                             rare_keep,
@@ -12321,10 +12326,10 @@ build_palette_kmedoids(unsigned char **result,
                         float32_channel_scale,
                         float32_channel_offset);
                 }
-                if (merge_component < 0.0) {
+                if (!preserve_extended_rgb && merge_component < 0.0) {
                     merge_component = 0.0;
                 }
-                if (merge_component > 255.0) {
+                if (!preserve_extended_rgb && merge_component > 255.0) {
                     merge_component = 255.0;
                 }
                 merge_sums[slot * 3u + channel]
@@ -12340,7 +12345,12 @@ build_palette_kmedoids(unsigned char **result,
                                                   resolved_merge,
                                                   use_reversible,
                                                   pixelformat,
+                                                  preserve_extended_rgb,
                                                   allocator);
+        if (cluster_total < 0) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         if (cluster_total < 1) {
             cluster_total = 1;
         }

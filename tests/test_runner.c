@@ -471,6 +471,7 @@ int test_rgb101_spatial(int argc, char **argv);
 int test_palette_space(int argc, char **argv);
 int test_palette_sampling_float(int argc, char **argv);
 int test_palette_binning_float(int argc, char **argv);
+int test_palette_merge_float(int argc, char **argv);
 int test_palette_solvers_float(int argc, char **argv);
 int test_srgb_0065(int argc, char **argv);
 int test_srgb_0066(int argc, char **argv);
@@ -2809,6 +2810,8 @@ static test_entry_t const test_entries[] = {
     { "palette/color_space/0001_space_contract", test_palette_space },
     { "palette/binning_float/0001_binning_contract",
       test_palette_binning_float },
+    { "palette/merge_float/0001_merge_contract",
+      test_palette_merge_float },
     { "palette/solvers_float/0001_solver_contract",
       test_palette_solvers_float },
     { "palette/sampling_float/0001_sampling_contract",

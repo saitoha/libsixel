@@ -34,7 +34,7 @@ $$
 Q = \left\lfloor K f \right\rfloor,
 $$
 
-where `f` is `merge_oversplit`, then the final merge reduces those `Q` representatives to `K`. The default factor is 1.81, the accepted range is 1.0 through 3.0, and the provisional size is capped by the available sample or histogram population. If the source contains no more than `K` unique colors, the K-means path bypasses the unnecessary merge.
+where `f` is `merge_oversplit`, then the final merge reduces those `Q` representatives to `K`. The default factor is 1.81, the accepted range is 1.0 through 3.0, and the provisional size is capped by the available sample or histogram population. If the retained samples contain no more than `K` unique colors, the K-means path bypasses the unnecessary merge.
 
 The name **merge** therefore means agglomerating provisional clusters. It does not concatenate palettes, blend output pixels, or merge animation frames. The stage changes the palette consumed by cover repair, snapping, lookup, and dithering, so downstream quality and SIXEL size can change even when every later option is fixed.
 
@@ -48,11 +48,21 @@ $$
 
 The implementation repeatedly merges the pair with the smallest cost until only `K` clusters remain. The new center is the population-weighted mean of the two old centers, and its weight is their sum. Unlike simply deleting the closest center, the Ward factor accounts for cluster population: merging two large groups is more expensive than merging two equally separated small groups.
 
-The distance `d` is Euclidean distance in the quantizer's clustering coordinates, with the channel weights described below. [DIN99d](../../../concepts/din99d/README.md) uses one common coordinate divisor, so equal channel weights preserve its native Euclidean geometry up to an overall scale. For Oklab, CIELAB, and DIN99d coordinates, `channel_l` assigns a fraction of the distance weight to the lightness axis and divides the remainder equally between the two chroma axes. The default `channel_l=1/3` therefore gives all three axes equal weight. For other coordinate families the implementation uses the ordinary sum of the three squared component differences and `channel_l` has no effect.
+The distance `d` is Euclidean distance in the quantizer's nominal byte-scaled clustering coordinates, with the channel weights described below. The float builders apply each format's fixed nominal channel scale and offset in double precision, without rounding those coordinates to bytes; image-dependent bin bounds do not redefine this metric. [DIN99d](../../../concepts/din99d/README.md) uses one common coordinate divisor, so equal channel weights preserve its native Euclidean geometry up to an overall scale. For Oklab, CIELAB, and DIN99d coordinates, `channel_l` assigns a fraction of the distance weight to the lightness axis and divides the remainder equally between the two chroma axes. The default `channel_l=1/3` therefore gives all three axes equal weight. For other coordinate families the implementation uses the ordinary sum of the three squared component differences and `channel_l` has no effect.
 
 The fast implementation stores a dense `Q` by `Q` pair-cost matrix and cached minimum for each row. It updates pairs touching the surviving cluster after every merge. Storage is `Theta(Q^2)`. Initial cost construction is `Theta(Q^2)`; the conservative time bound is `O(Q^3)` because cached minima may need rescanning, although the row cache avoids recomputing every distance at every step in the usual path. If the dense workspace cannot be allocated, the implementation falls back to a full pair scan rather than changing the chosen Ward criterion.
 
 The algorithm and terminology come from Joe H. Ward Jr.'s 1963 paper, [Hierarchical Grouping to Optimize an Objective Function](https://doi.org/10.1080/01621459.1963.10500845).
+
+## Float-coordinate preservation
+
+On the [selected ordinary sRGB and Display P3 float path](../../output/output-colorspace.md#selected-ordinary-srgb-float-path), K-means, K-center and K-medoids retain signed and above-range means through Ward reduction. The nominal coordinate scale is an affine metric convention, not a restriction to `0..255`: neither the incoming mean nor the outgoing weighted sum is clamped or rounded to a byte. K-means post-merge Lloyd uses the retained samples, and empty-cluster repair keeps signed channel sums. The authoritative float palette remains separate from the RGB101 output cache; Ward does not force snapping. Byte-eligible jobs keep the existing byte path.
+
+K-means skips unnecessary merging only when the retained coordinates fit in the requested palette, using exact coordinate equality with positive and negative zero considered equal. Clipping a probe copy to bytes would incorrectly merge distinct source colors for this decision. K-medoids uses expanded bounds only to address its private candidate bins, retaining the nominal channel scale for Ward distances. Changing the latter according to each image's extrema would change the requested objective.
+
+The builders currently round aggregate cluster populations to unsigned integer counts before Ward. Fractional weights from soft binning can therefore lose population precision at this boundary, even though the associated coordinates remain in double precision.
+
+For example, provisional one-axis centers `-2`, `-1` and `3`, with weights `1`, `3` and `2`, have pair costs proportional to `3/4`, `96/5` and `50/3`. Ward merges the first pair into `-1.25` with weight `4`, leaving `3` with weight `2`. Bounds enforcement here would change both the centroid and subsequent distances. The selected path reports cluster-workspace allocation failure instead of truncating an unmerged palette or retrying a byte solver. The existing dense-matrix-to-full-scan fallback preserves the same Ward criterion.
 
 ## Ward and Lloyd solve different steps
 
@@ -247,6 +257,8 @@ The checked-in run controls sampling, binning, precision, clustering and working
 
 <!-- test-coverage: enforced -->
 
+### Behavioral contract tests
+
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | MP-01 | The final-merge filter dispatches through its component interface and reports progress. | [tests/processing/filter/0006_filter_final_merge.t](../../../../tests/processing/filter/0006_filter_final_merge.t) |
@@ -259,6 +271,55 @@ The checked-in run controls sampling, binning, precision, clustering and working
 | MP-08 | The `channel_l` value reaches the palette consumer through CLI and environment paths and obeys its range contract. | [tests/cli/options/regression/0021_merge_policy_channel_l_image_regression.t](../../../../tests/cli/options/regression/0021_merge_policy_channel_l_image_regression.t) |
 | MP-09 | The oversplit factor reaches the palette consumer and obeys its range contract. | [tests/cli/options/regression/0022_merge_policy_oversplit_image_regression.t](../../../../tests/cli/options/regression/0022_merge_policy_oversplit_image_regression.t) |
 | MP-10 | The Lloyd count reaches the palette consumer and obeys its range contract. | [tests/cli/options/regression/0023_merge_policy_lloyd_image_regression.t](../../../../tests/cli/options/regression/0023_merge_policy_lloyd_image_regression.t) |
+| MP-15 | K-means retains independently derived Ward means on all three gamma axes with 0 Lloyd passes. | [tests/quant/palette/merge_float/0001_kmeans_gamma_l0_signed_mean.t](../../../../tests/quant/palette/merge_float/0001_kmeans_gamma_l0_signed_mean.t) |
+| MP-16 | K-means retains independently derived Ward means on all three gamma axes with 3 Lloyd passes. | [tests/quant/palette/merge_float/0002_kmeans_gamma_l3_signed_mean.t](../../../../tests/quant/palette/merge_float/0002_kmeans_gamma_l3_signed_mean.t) |
+| MP-17 | K-means retains independently derived Ward means on all three linear axes with 0 Lloyd passes. | [tests/quant/palette/merge_float/0003_kmeans_linear_l0_signed_mean.t](../../../../tests/quant/palette/merge_float/0003_kmeans_linear_l0_signed_mean.t) |
+| MP-18 | K-means retains independently derived Ward means on all three linear axes with 3 Lloyd passes. | [tests/quant/palette/merge_float/0004_kmeans_linear_l3_signed_mean.t](../../../../tests/quant/palette/merge_float/0004_kmeans_linear_l3_signed_mean.t) |
+| MP-19 | K-means retains independently derived Ward means on all three oklab axes with 0 Lloyd passes. | [tests/quant/palette/merge_float/0005_kmeans_oklab_l0_signed_mean.t](../../../../tests/quant/palette/merge_float/0005_kmeans_oklab_l0_signed_mean.t) |
+| MP-20 | K-means retains independently derived Ward means on all three oklab axes with 3 Lloyd passes. | [tests/quant/palette/merge_float/0006_kmeans_oklab_l3_signed_mean.t](../../../../tests/quant/palette/merge_float/0006_kmeans_oklab_l3_signed_mean.t) |
+| MP-21 | K-means retains independently derived Ward means on all three cielab axes with 0 Lloyd passes. | [tests/quant/palette/merge_float/0007_kmeans_cielab_l0_signed_mean.t](../../../../tests/quant/palette/merge_float/0007_kmeans_cielab_l0_signed_mean.t) |
+| MP-22 | K-means retains independently derived Ward means on all three cielab axes with 3 Lloyd passes. | [tests/quant/palette/merge_float/0008_kmeans_cielab_l3_signed_mean.t](../../../../tests/quant/palette/merge_float/0008_kmeans_cielab_l3_signed_mean.t) |
+| MP-23 | K-means retains independently derived Ward means on all three din99d axes with 0 Lloyd passes. | [tests/quant/palette/merge_float/0009_kmeans_din99d_l0_signed_mean.t](../../../../tests/quant/palette/merge_float/0009_kmeans_din99d_l0_signed_mean.t) |
+| MP-24 | K-means retains independently derived Ward means on all three din99d axes with 3 Lloyd passes. | [tests/quant/palette/merge_float/0010_kmeans_din99d_l3_signed_mean.t](../../../../tests/quant/palette/merge_float/0010_kmeans_din99d_l3_signed_mean.t) |
+| MP-25 | K-center retains independently derived Ward means on all three gamma axes with 0 Lloyd passes. | [tests/quant/palette/merge_float/0011_kcenter_gamma_l0_signed_mean.t](../../../../tests/quant/palette/merge_float/0011_kcenter_gamma_l0_signed_mean.t) |
+| MP-26 | K-center retains independently derived Ward means on all three linear axes with 0 Lloyd passes. | [tests/quant/palette/merge_float/0012_kcenter_linear_l0_signed_mean.t](../../../../tests/quant/palette/merge_float/0012_kcenter_linear_l0_signed_mean.t) |
+| MP-27 | K-center retains independently derived Ward means on all three oklab axes with 0 Lloyd passes. | [tests/quant/palette/merge_float/0013_kcenter_oklab_l0_signed_mean.t](../../../../tests/quant/palette/merge_float/0013_kcenter_oklab_l0_signed_mean.t) |
+| MP-28 | K-center retains independently derived Ward means on all three cielab axes with 0 Lloyd passes. | [tests/quant/palette/merge_float/0014_kcenter_cielab_l0_signed_mean.t](../../../../tests/quant/palette/merge_float/0014_kcenter_cielab_l0_signed_mean.t) |
+| MP-29 | K-center retains independently derived Ward means on all three din99d axes with 0 Lloyd passes. | [tests/quant/palette/merge_float/0015_kcenter_din99d_l0_signed_mean.t](../../../../tests/quant/palette/merge_float/0015_kcenter_din99d_l0_signed_mean.t) |
+| MP-30 | K-medoids retains independently derived Ward means on all three gamma axes with 0 Lloyd passes. | [tests/quant/palette/merge_float/0016_kmedoids_gamma_l0_signed_mean.t](../../../../tests/quant/palette/merge_float/0016_kmedoids_gamma_l0_signed_mean.t) |
+| MP-31 | K-medoids retains independently derived Ward means on all three linear axes with 0 Lloyd passes. | [tests/quant/palette/merge_float/0017_kmedoids_linear_l0_signed_mean.t](../../../../tests/quant/palette/merge_float/0017_kmedoids_linear_l0_signed_mean.t) |
+| MP-32 | K-medoids retains independently derived Ward means on all three oklab axes with 0 Lloyd passes. | [tests/quant/palette/merge_float/0018_kmedoids_oklab_l0_signed_mean.t](../../../../tests/quant/palette/merge_float/0018_kmedoids_oklab_l0_signed_mean.t) |
+| MP-33 | K-medoids retains independently derived Ward means on all three cielab axes with 0 Lloyd passes. | [tests/quant/palette/merge_float/0019_kmedoids_cielab_l0_signed_mean.t](../../../../tests/quant/palette/merge_float/0019_kmedoids_cielab_l0_signed_mean.t) |
+| MP-34 | K-medoids retains independently derived Ward means on all three din99d axes with 0 Lloyd passes. | [tests/quant/palette/merge_float/0020_kmedoids_din99d_l0_signed_mean.t](../../../../tests/quant/palette/merge_float/0020_kmedoids_din99d_l0_signed_mean.t) |
+| MP-35 | Medoids nominal metric. | [tests/quant/palette/merge_float/0021_medoids_nominal_metric.t](../../../../tests/quant/palette/merge_float/0021_medoids_nominal_metric.t) |
+| MP-36 | Ward signed sums. | [tests/quant/palette/merge_float/0022_ward_signed_sums.t](../../../../tests/quant/palette/merge_float/0022_ward_signed_sums.t) |
+| MP-37 | Ward legacy bounds. | [tests/quant/palette/merge_float/0023_ward_legacy_bounds.t](../../../../tests/quant/palette/merge_float/0023_ward_legacy_bounds.t) |
+| MP-38 | Ward allocation failure. | [tests/quant/palette/merge_float/0024_ward_allocation_failure.t](../../../../tests/quant/palette/merge_float/0024_ward_allocation_failure.t) |
+| MP-39 | K-means emits the expected srgb wire endpoints with selected float Ward construction. | [tests/quant/palette/merge_float/0025_kmeans_srgb_wire.t](../../../../tests/quant/palette/merge_float/0025_kmeans_srgb_wire.t) |
+| MP-40 | K-means emits the expected p3 wire endpoints with selected float Ward construction. | [tests/quant/palette/merge_float/0026_kmeans_p3_wire.t](../../../../tests/quant/palette/merge_float/0026_kmeans_p3_wire.t) |
+| MP-41 | K-means launches a palette worker and emits the expected srgb wire endpoints from the float path. | [tests/quant/palette/merge_float/0027_kmeans_srgb_worker.t](../../../../tests/quant/palette/merge_float/0027_kmeans_srgb_worker.t) |
+| MP-42 | K-means launches a palette worker and emits the expected p3 wire endpoints from the float path. | [tests/quant/palette/merge_float/0028_kmeans_p3_worker.t](../../../../tests/quant/palette/merge_float/0028_kmeans_p3_worker.t) |
+| MP-43 | K-means keeps byte-eligible gamma Ward jobs in RGB888 and emits independently expected gray codes. | [tests/quant/palette/merge_float/0029_kmeans_byte_eligibility.t](../../../../tests/quant/palette/merge_float/0029_kmeans_byte_eligibility.t) |
+| MP-44 | K-center emits the expected srgb wire endpoints with selected float Ward construction. | [tests/quant/palette/merge_float/0030_kcenter_srgb_wire.t](../../../../tests/quant/palette/merge_float/0030_kcenter_srgb_wire.t) |
+| MP-45 | K-center emits the expected p3 wire endpoints with selected float Ward construction. | [tests/quant/palette/merge_float/0031_kcenter_p3_wire.t](../../../../tests/quant/palette/merge_float/0031_kcenter_p3_wire.t) |
+| MP-46 | K-center launches a palette worker and emits the expected srgb wire endpoints from the float path. | [tests/quant/palette/merge_float/0032_kcenter_srgb_worker.t](../../../../tests/quant/palette/merge_float/0032_kcenter_srgb_worker.t) |
+| MP-47 | K-center launches a palette worker and emits the expected p3 wire endpoints from the float path. | [tests/quant/palette/merge_float/0033_kcenter_p3_worker.t](../../../../tests/quant/palette/merge_float/0033_kcenter_p3_worker.t) |
+| MP-48 | K-center keeps byte-eligible gamma Ward jobs in RGB888 and emits independently expected gray codes. | [tests/quant/palette/merge_float/0034_kcenter_byte_eligibility.t](../../../../tests/quant/palette/merge_float/0034_kcenter_byte_eligibility.t) |
+| MP-49 | K-medoids emits the expected srgb wire endpoints with selected float Ward construction. | [tests/quant/palette/merge_float/0035_kmedoids_srgb_wire.t](../../../../tests/quant/palette/merge_float/0035_kmedoids_srgb_wire.t) |
+| MP-50 | K-medoids emits the expected p3 wire endpoints with selected float Ward construction. | [tests/quant/palette/merge_float/0036_kmedoids_p3_wire.t](../../../../tests/quant/palette/merge_float/0036_kmedoids_p3_wire.t) |
+| MP-51 | K-medoids launches a palette worker and emits the expected srgb wire endpoints from the float path. | [tests/quant/palette/merge_float/0037_kmedoids_srgb_worker.t](../../../../tests/quant/palette/merge_float/0037_kmedoids_srgb_worker.t) |
+| MP-52 | K-medoids launches a palette worker and emits the expected p3 wire endpoints from the float path. | [tests/quant/palette/merge_float/0038_kmedoids_p3_worker.t](../../../../tests/quant/palette/merge_float/0038_kmedoids_p3_worker.t) |
+| MP-53 | K-medoids keeps byte-eligible gamma Ward jobs in RGB888 and emits independently expected gray codes. | [tests/quant/palette/merge_float/0039_kmedoids_byte_eligibility.t](../../../../tests/quant/palette/merge_float/0039_kmedoids_byte_eligibility.t) |
+| MP-54 | Kmeans merge failure and recovery. | [tests/quant/palette/merge_float/0040_kmeans_merge_failure.t](../../../../tests/quant/palette/merge_float/0040_kmeans_merge_failure.t) |
+| MP-55 | Kcenter merge failure and recovery. | [tests/quant/palette/merge_float/0041_kcenter_merge_failure.t](../../../../tests/quant/palette/merge_float/0041_kcenter_merge_failure.t) |
+| MP-56 | Kmedoids merge failure and recovery. | [tests/quant/palette/merge_float/0042_kmedoids_merge_failure.t](../../../../tests/quant/palette/merge_float/0042_kmedoids_merge_failure.t) |
+| MP-57 | Equal signed zeros count as one native color and unnecessary merge is bypassed. | [tests/quant/palette/merge_float/0043_kmeans_signed_zero_unique.t](../../../../tests/quant/palette/merge_float/0043_kmeans_signed_zero_unique.t) |
+| MP-58 | Empty-cluster repair retains the signed remaining sum for a repeated negative color. | [tests/quant/palette/merge_float/0044_kmeans_empty_signed_sum.t](../../../../tests/quant/palette/merge_float/0044_kmeans_empty_signed_sum.t) |
+
+### Quality regression tests
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
 | MP-11 | Ward output retains the K-means float32 quality floor. | [tests/quant/palette/usage/0026_merge_kmeans_float32_lsqa.t](../../../../tests/quant/palette/usage/0026_merge_kmeans_float32_lsqa.t) |
 | MP-12 | Ward output retains the Heckbert float32 quality floor. | [tests/quant/palette/usage/0027_merge_heckbert_float32_lsqa.t](../../../../tests/quant/palette/usage/0027_merge_heckbert_float32_lsqa.t) |
 | MP-13 | Ward output retains the K-means 8-bit quality floor. | [tests/quant/palette/usage/0028_merge_kmeans_8bit_lsqa.t](../../../../tests/quant/palette/usage/0028_merge_kmeans_8bit_lsqa.t) |
@@ -266,4 +327,4 @@ The checked-in run controls sampling, binning, precision, clustering and working
 
 ### Coverage boundary
 
-The automated tests fix parsing, precedence, consumer wiring, component dispatch, and minimum LSQA quality for the two principal quantizers and precision paths. They do not assert the benchmark's exact timing, byte length, or metric curves because those vary with implementation, compiler, and host. The artifact checker instead fixes the measurement grid, metadata, command controls, effective-pipeline preflight, derived ratios, and plot validity; reviewers must interpret whether a changed curve justifies a policy or default change.
+The behavioral tests independently check weighted means in all five typed spaces, K-means with and without Lloyd refinement, nominal metric separation, signed common-merge sums, allocation failure and recovery, real sRGB/P3 encoder and worker output, and byte eligibility. They also cover parsing, precedence, consumer wiring and component dispatch. The separate quality tests enforce minimum LSQA quality for the two principal quantizers and precision paths. They do not assert the benchmark's exact timing, byte length, or metric curves because those vary with implementation, compiler, and host. The artifact checker instead fixes the measurement grid, metadata, command controls, effective-pipeline preflight, derived ratios, and plot validity; reviewers must interpret whether a changed curve justifies a policy or default change.

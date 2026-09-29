@@ -7023,10 +7023,10 @@ sixel_kcenter_build_merge_phase(sixel_kcenter_build_runtime_t *rt)
         for (channel = 0u; channel < 3u; ++channel) {
             component = rt->cluster_sums[slot * 3u + channel]
                 / rt->cluster_weights[slot];
-            if (component < 0.0) {
+            if (!rt->preserve_extended_rgb && component < 0.0) {
                 component = 0.0;
             }
-            if (component > 255.0) {
+            if (!rt->preserve_extended_rgb && component > 255.0) {
                 component = 255.0;
             }
             rt->merge_sums[slot * 3u + channel]
@@ -7042,7 +7042,11 @@ sixel_kcenter_build_merge_phase(sixel_kcenter_build_runtime_t *rt)
                                                   (int)rt->resolved_merge,
                                                   rt->use_reversible,
                                                   rt->pixelformat,
+                                                  rt->preserve_extended_rgb,
                                                   rt->allocator);
+    if (rt->cluster_total < 0) {
+        return SIXEL_BAD_ALLOCATION;
+    }
     if (rt->cluster_total < 1) {
         rt->cluster_total = 1;
     }

@@ -1858,7 +1858,10 @@ sixel_palette_generate_extended(
              request->quantize_model != SIXEL_QUANTIZE_MODEL_KCENTER &&
              request->quantize_model != SIXEL_QUANTIZE_MODEL_KMEDOIDS) ||
             request->use_reversible != 0 ||
-            request->final_merge_mode != SIXEL_FINAL_MERGE_NONE ||
+            (sixel_resolve_final_merge_mode(request->final_merge_mode) !=
+                 SIXEL_FINAL_MERGE_NONE &&
+             sixel_resolve_final_merge_mode(request->final_merge_mode) !=
+                 SIXEL_FINAL_MERGE_WARD) ||
             !SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
         return SIXEL_BAD_ARGUMENT;
     }

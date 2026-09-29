@@ -657,6 +657,76 @@ sixel_palette_count_unique_within_limit(unsigned char const *data,
     return status;
 }
 
+/* Count the actual retained coordinates, not a clipped byte projection.
+ * Slots borrow point indices, so memory depends on K rather than image size.
+ * Canonical zero hashing agrees with numeric equality for +0 and -0. */
+static SIXELSTATUS
+sixel_kmeans_float_unique(double const *points, unsigned int count,
+                          unsigned int limit, int *within,
+                          sixel_allocator_t *allocator)
+{
+    unsigned int *table;
+    unsigned int size;
+    unsigned int row;
+    unsigned int slot;
+    unsigned int other;
+    unsigned int unique;
+    unsigned int channel;
+    size_t byte;
+    uint32_t hash;
+    double key[3];
+    unsigned char const *bytes;
+
+    if (limit == 0 || limit > SIXEL_PALETTE_MAX) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    size = 8;
+    while (size < limit * 2u) {
+        size *= 2u;
+    }
+    table = sixel_allocator_calloc(allocator, size, sizeof(*table));
+    if (table == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    unique = 0;
+    *within = 1;
+    for (row = 0; row < count; ++row) {
+        for (channel = 0; channel < 3; ++channel) {
+            key[channel] = points[(size_t)row * 3u + channel];
+            if (key[channel] == 0.0) {
+                key[channel] = 0.0;
+            }
+        }
+        bytes = (unsigned char const *)(void const *)key;
+        hash = 2166136261u;
+        for (byte = 0; byte < sizeof(key); ++byte) {
+            hash = (hash ^ bytes[byte]) * (uint32_t)16777619u;
+        }
+        slot = hash & (size - 1u);
+        while (table[slot] != 0) {
+            other = table[slot] - 1u;
+            for (channel = 0; channel < 3; ++channel) {
+                if (key[channel] != points[(size_t)other * 3u + channel]) {
+                    break;
+                }
+            }
+            if (channel == 3) {
+                break;
+            }
+            slot = (slot + 1u) & (size - 1u);
+        }
+        if (table[slot] == 0) {
+            table[slot] = row + 1u;
+            if (++unique > limit) {
+                *within = 0;
+                break;
+            }
+        }
+    }
+    sixel_allocator_free(allocator, table);
+    return SIXEL_OK;
+}
+
 static double
 sixel_palette_kmeans_sum_float_to_byte(double component,
                                        double sample_total,
@@ -1674,7 +1744,14 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     resolved_merge = sixel_resolve_final_merge_mode(final_merge_mode);
     apply_merge = (resolved_merge == SIXEL_FINAL_MERGE_WARD);
     if (apply_merge) {
-        if (input_is_) {
+        if (preserve_extended_rgb) {
+            unique_status = sixel_kmeans_float_unique(work_samples,
+                work_sample_count, reqcolors, &unique_within, allocator);
+            if (SIXEL_FAILED(unique_status)) {
+                status = unique_status;
+                goto end;
+            }
+        } else if (input_is_) {
             unique_buffer = (unsigned char *)sixel_allocator_malloc(
                 allocator, (size_t)pixel_count * 3U);
             if (unique_buffer == NULL) {
@@ -2164,7 +2241,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                             work_samples[farthest_base + channel]
                             * farthest_sample_weight;
                         channel_sum[channel] -= removed_component;
-                        if (channel_sum[channel] < 0.0) {
+                        if (!preserve_extended_rgb &&
+                                channel_sum[channel] < 0.0) {
                             channel_sum[channel] = 0.0;
                         }
                     }
@@ -2449,10 +2527,10 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                         float32_channel_scale,
                         float32_channel_offset);
                 }
-                if (merge_component < 0.0) {
+                if (!preserve_extended_rgb && merge_component < 0.0) {
                     merge_component = 0.0;
                 }
-                if (merge_component > 255.0) {
+                if (!preserve_extended_rgb && merge_component > 255.0) {
                     merge_component = 255.0;
                 }
                 merge_sums[index * 3U + channel]
@@ -2467,7 +2545,12 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                                                   resolved_merge,
                                                   use_reversible,
                                                   pixelformat,
+                                                  preserve_extended_rgb,
                                                   allocator);
+        if (cluster_total < 0) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         if (cluster_total < 1) {
             cluster_total = 1;
         }
@@ -2724,7 +2807,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                             work_samples[farthest_base + channel]
                             * farthest_sample_weight;
                         channel_sum[channel] -= removed_component;
-                        if (channel_sum[channel] < 0.0) {
+                        if (!preserve_extended_rgb &&
+                                channel_sum[channel] < 0.0) {
                             channel_sum[channel] = 0.0;
                         }
                     }
