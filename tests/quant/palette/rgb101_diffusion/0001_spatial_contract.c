@@ -140,7 +140,7 @@ spatial_encoder(spatial_method_t const *method, int p3, int linear)
      * comes from a production transform. Margins exceed .05 RGB101 units.
      * One color fixes the centroid independently of clustering/scan order;
      * the companion residual tests, not these painted indexes, prove
-     * that error is propagated using the inverse sent palette. */
+     * that error is propagated using the unrounded working palette. */
     expected = p3 ? "#0;2;81;20;13#" : "#0;2;88;10;1#";
     ok = SIXEL_SUCCEEDED(sixel_encoder_encode_frame(encoder, frame, output))
         && strstr(capture.bytes, expected) != NULL;
@@ -196,7 +196,7 @@ spatial_residual(spatial_method_t const *method, int p3, int linear)
     float original[3];
     float pixels[6];
     double source[3] = { 1.0, -.03125, .125 };
-    double sent;
+    double center;
     double expected;
     void *object;
     int n;
@@ -214,19 +214,19 @@ spatial_residual(spatial_method_t const *method, int p3, int linear)
     lookup.base.vtbl = &vtbl;
     for (n = 0; n < 3; ++n) {
         if (p3) {
-            sent = color_p3_red_linear[n];
+            center = color_p3_red_linear[n] * .8;
             if (!linear) {
-                sent = spatial_gamma(sent);
+                center = spatial_gamma(center);
             }
-            original[n] = (float)sent;
+            original[n] = (float)center;
         } else {
-            /* The generated center (.351 code) moves to .35 on the wire.
-             * Keep expected values independent of the prepared palette. */
+            /* The .351 center emits .35, but snap none keeps the original
+             * center for diffusion. A sent-color substitution must fail. */
             original[n] = linear
                 ? (float)pow((.351 + .055) / 1.055, 2.4) : .351f;
-            sent = linear ? pow((.35 + .055) / 1.055, 2.4) : .35;
+            center = linear ? pow((.351 + .055) / 1.055, 2.4) : .351;
         }
-        pixels[n] = (float)(sent + .125);
+        pixels[n] = (float)(center + .125);
         pixels[n + 3] = (float)source[n];
     }
     if (method->create == NULL ||
@@ -255,7 +255,7 @@ spatial_residual(spatial_method_t const *method, int p3, int linear)
         goto end;
     }
     for (n = 0; n < 3; ++n) {
-        if (wire[n] != (p3 ? (n == 0 ? 100 : 0) : 35)) {
+        if (wire[n] != (p3 ? (n == 0 ? 91 : 0) : 35)) {
             goto end;
         }
     }

@@ -11,8 +11,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-# This source is not on the RGB101 grid. Export after inverse projection of
-# the P3 wire palette changes it; the interchange boundary must precede that.
+# This source is not on the RGB101 grid. Export must preserve its pre-wire
+# sRGB values even when the separate output copy rounds to P3 wire colors.
 actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
     -Lbuiltin! --cms-engine=none --precision=float32 \
     --sampling-policy=full-frame --binning-policy=none \

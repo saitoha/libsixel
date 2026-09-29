@@ -66,7 +66,7 @@ The generated palette keeps its snapped float32 coordinates through clustering-t
 
 ## Policy values
 
-The default is `none`, preserving the unconstrained palette pipeline unless snapping is requested explicitly.
+The default is `none`, preserving the unconstrained palette pipeline unless snapping is requested explicitly. Integer RGB101 rounding is still required when serializing SIXEL, but that output-only rounding must not replace the working palette used by lookup and diffusion. Preparing an output cache early does not authorize early snapping; see the [selected float output boundary](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
 
 ### `none`
 
@@ -98,7 +98,7 @@ Both `nearest` and `reversible` target the same 101-level set. Their difference 
 
 ## Timing policy
 
-The `timing` suboption forms an additive ladder:
+The `timing` suboption defines the following additive ladder. Some existing consumers do not implement the full contract; see [Known contract violations](#known-contract-violations).
 
 | Value | Snap stages |
 | --- | --- |
@@ -118,7 +118,7 @@ $$
 x' = x + \rho(s-x), \qquad 0 \le \rho \le 1,
 $$
 
-where $x$ is the current component in the active representation, $s$ is the selected safe-tone target, and `rate` is $\rho$. `rate=1` reaches the target and preserves exact safe-tone membership. `rate=0` leaves the clamped input unchanged. Intermediate rates intentionally relax the fixed-point guarantee and are quality-tuning controls rather than reversible output settings.
+where $x$ is the current component in the active representation, $s$ is the selected safe-tone target, and `rate` is $\rho$. `rate=1` reaches the target and preserves exact safe-tone membership. `rate=0` leaves the input unchanged. Intermediate rates intentionally relax the fixed-point guarantee and are quality-tuning controls rather than reversible output settings.
 
 ## Configuration and precedence
 
@@ -252,9 +252,20 @@ This historical schema-2 snapshot measures one machine, one thread count, one qu
 
 ## Implementation references
 
-The top-level schema and environment bindings are declared in [`options-registry.c`](../../../../src/options-registry.c). [`palette-common-snap.c`](../../../../src/palette-common-snap.c) owns safe-tone selection, working-space candidate comparison, timing, and approach rate; [`palette-common-snap.h`](../../../../src/palette-common-snap.h) owns the precomputed table and internal policy types. Quantizers call the shared snap hooks on typed coordinates and refresh their packed byte views. [`dither.c`](../../../../src/dither.c) retains snapped float palettes, while [`palette.c`](../../../../src/palette.c) owns their composition with cover repair. [`encoder-core-encode.c`](../../../../src/encoder-core-encode.c) and [`encoder.c`](../../../../src/encoder.c) finalize exact output-grid values for SIXEL and palette files.
+The top-level schema and environment bindings are declared in [`options-registry.c`](../../../../src/options-registry.c). [`palette-common-snap.c`](../../../../src/palette-common-snap.c) owns safe-tone selection, working-space candidate comparison, timing, and approach rate; [`palette-common-snap.h`](../../../../src/palette-common-snap.h) owns the precomputed table and internal policy types. Quantizers call the shared snap hooks on typed coordinates and refresh their packed byte views. [`dither.c`](../../../../src/dither.c) retains snapped float palettes, while [`palette.c`](../../../../src/palette.c) owns their composition with cover repair. [`encoder-core-encode.c`](../../../../src/encoder-core-encode.c) and [`encoder.c`](../../../../src/encoder.c) finalize exact output-grid values for SIXEL; palette export uses its separate interchange boundary.
 
 For neighboring stages, see [Palette Construction Pipeline](../pipeline/README.md), [Palette Quantization](../quantization/README.md), [Palette Cover Policy](../cover-policy/README.md), [Encoder Working Precision](../../precision/README.md), [Dithering](../../palette-application/dithering/README.md), and [Lookup Policy](../../palette-application/lookup-policy/README.md).
+
+## Known contract violations
+
+The following are implementation defects, not alternative semantics for the options above. The selected extended float path avoids these old consumers by requiring K-means, disabled snap and merge, and no binning.
+
+| Location | Remaining defect |
+| --- | --- |
+| Inactive solver hooks in [`palette-common-snap.c`](../../../../src/palette-common-snap.c) | Disabled or timing-ineligible hooks still clamp components and reduce double coordinates to float. For example, `(-0.25, 1.25, 0.123456789012345)` becomes `(0, 1, 0.12345679104328156)`. The selected extended K-means path bypasses these hooks. |
+| Heckbert histogram construction in [`palette-heckbert.c`](../../../../src/palette-heckbert.c) | Enabling snap changes histogram input and reconstructed bin values before the final pass, without consulting `timing` or `rate`. Thus `once` does not confine snapping to the final palette. |
+| Early timing stages | [`palette-common-merge.c`](../../../../src/palette-common-merge.c) ignores the supplied snap enablement; neither merge stage has a caller. K-center and K-medoids currently call the final snap but have no seed or iteration snap hooks. K-means does have seed and iteration hooks. Parsing all timing values does not establish their execution. |
+| Legacy image-map construction in [`encoder.c`](../../../../src/encoder.c) | Unlike structured palette import, the ordinary image-map builder can consult snap environment settings without the encoder's explicit override. In that path, `SIXEL_PALETTE_SNAP_POLICY=nearest` can change the map palette even with explicit `-_none`. |
 
 ## Test coverage
 
@@ -277,7 +288,8 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 | SP-11 | Exact snap resolves the output grid after conversion to SMPTE-C. | [tests/quant/palette/0047_snap_smptec_grid.t](../../../../tests/quant/palette/0047_snap_smptec_grid.t) |
 | SP-12 | A partial final snap blends once in float precision without enabling exact output-grid enforcement. | [tests/quant/palette/0048_snap_partial_once.t](../../../../tests/quant/palette/0048_snap_partial_once.t) |
 | SP-13 | Zero approach rate preserves byte-identical output with snapping disabled, including mixed perceptual spaces. | [tests/quant/palette/0049_snap_zero_identity.t](../../../../tests/quant/palette/0049_snap_zero_identity.t) |
+| SP-14 | Preparing RGB101 output codes leaves the snap-disabled working palette and nearest-color decisions unchanged for P3 and gamma/linear sRGB. | [tests/quant/palette/0052_p3_unsnapped_palette_lookup.t](../../../../tests/quant/palette/0052_p3_unsnapped_palette_lookup.t), [tests/quant/palette/0065_srgb_gamma_unsnapped_lookup.t](../../../../tests/quant/palette/0065_srgb_gamma_unsnapped_lookup.t), [tests/quant/palette/0066_srgb_linear_unsnapped_lookup.t](../../../../tests/quant/palette/0066_srgb_linear_unsnapped_lookup.t) |
 
 ### Coverage audit boundary
 
-The focused suite covers the top-level enable/disable path, every registered suboption consumer, and the accepted fixed-palette bypass for `-m`, `-b`, and `-e`. It does not yet directly test every policy spelling, invalid or empty top-level values, repeated-option last-wins behavior, multi-frame state, exact membership of all 101 tones, byte-for-byte re-encoding, or image-quality effects of the ordering interaction with cover repair. The image tests enforce a broad MS-SSIM floor on one small fixture but do not replace the reproducible measurement suite described above.
+The focused suite covers top-level enablement, registered option binding, final typed snapping, and the structured-mapfile, built-in and monochrome bypasses. Suboption trace messages establish configuration delivery, not execution of every solver stage. The existing timing quality test does not detect the missing merge hooks, and the fixed-palette tests do not cover the image-map environment defect above. It does not yet directly test every policy spelling, invalid or empty top-level values, repeated-option last-wins behavior, multi-frame state, exact membership of all 101 tones, byte-for-byte re-encoding, or image-quality effects of the ordering interaction with cover repair. The image tests enforce a broad MS-SSIM floor on one small fixture but do not replace the reproducible measurement suite described above.

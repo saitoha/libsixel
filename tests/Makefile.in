@@ -2035,8 +2035,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/0055_p3_mapfile_contract.c \
 	quant/palette/0059_p3_precision_contract.c \
 	quant/palette/0062_p3_fs_error_contract.c \
-	quant/palette/0065_srgb_gamma_wire_lookup.c \
-	quant/palette/0066_srgb_linear_wire_lookup.c \
+	quant/palette/0065_srgb_gamma_unsnapped_lookup.c \
+	quant/palette/0066_srgb_linear_unsnapped_lookup.c \
 	quant/palette/0067_srgb_gamma_extended_source.c \
 	quant/palette/0068_srgb_linear_extended_source.c \
 	quant/palette/rgb101_diffusion/0001_spatial_contract.c \
@@ -3935,8 +3935,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0055_p3_mapfile_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0059_p3_precision_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0062_p3_fs_error_contract.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0065_srgb_gamma_wire_lookup.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0066_srgb_linear_wire_lookup.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0065_srgb_gamma_unsnapped_lookup.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0066_srgb_linear_unsnapped_lookup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0067_srgb_gamma_extended_source.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0068_srgb_linear_extended_source.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/rgb101_diffusion/test_runner-0001_spatial_contract.$(OBJEXT) \
@@ -5899,8 +5899,8 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-0055_p3_mapfile_contract.Po \
 	quant/palette/$(DEPDIR)/test_runner-0059_p3_precision_contract.Po \
 	quant/palette/$(DEPDIR)/test_runner-0062_p3_fs_error_contract.Po \
-	quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Po \
-	quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Po \
+	quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_unsnapped_lookup.Po \
+	quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_unsnapped_lookup.Po \
 	quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po \
 	quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po \
 	quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po \
@@ -6973,8 +6973,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_FS_VERTICAL_RESIDUAL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_FS_SERPENTINE_RESIDUAL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_PARALLEL_OVERLAP \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_SRGB_GAMMA_WIRE_LOOKUP \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_SRGB_LINEAR_WIRE_LOOKUP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_SRGB_GAMMA_UNSNAPPED_LOOKUP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_SRGB_LINEAR_UNSNAPPED_LOOKUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0067_SRGB_GAMMA_EXTENDED_SOURCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0068_SRGB_LINEAR_EXTENDED_SOURCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_SRGB_CONTRACT_COMMON \
@@ -10471,8 +10471,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0055_p3_mapfile_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0059_p3_precision_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0062_p3_fs_error_contract.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0065_srgb_gamma_wire_lookup.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0066_srgb_linear_wire_lookup.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0065_srgb_gamma_unsnapped_lookup.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0066_srgb_linear_unsnapped_lookup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0067_srgb_gamma_extended_source.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0068_srgb_linear_extended_source.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/rgb101_diffusion/0001_spatial_contract.c \
@@ -16582,10 +16582,10 @@ quant/palette/test_runner-0059_p3_precision_contract.$(OBJEXT):  \
 quant/palette/test_runner-0062_p3_fs_error_contract.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
-quant/palette/test_runner-0065_srgb_gamma_wire_lookup.$(OBJEXT):  \
+quant/palette/test_runner-0065_srgb_gamma_unsnapped_lookup.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
-quant/palette/test_runner-0066_srgb_linear_wire_lookup.$(OBJEXT):  \
+quant/palette/test_runner-0066_srgb_linear_unsnapped_lookup.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-0067_srgb_gamma_extended_source.$(OBJEXT):  \
@@ -18670,8 +18670,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0055_p3_mapfile_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0059_p3_precision_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0062_p3_fs_error_contract.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_unsnapped_lookup.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_unsnapped_lookup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po@am__quote@ # am--include-marker
@@ -44868,33 +44868,33 @@ quant/palette/test_runner-0062_p3_fs_error_contract.obj: quant/palette/0062_p3_f
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0062_p3_fs_error_contract.obj `if test -f 'quant/palette/0062_p3_fs_error_contract.c'; then $(CYGPATH_W) 'quant/palette/0062_p3_fs_error_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0062_p3_fs_error_contract.c'; fi`
 
-quant/palette/test_runner-0065_srgb_gamma_wire_lookup.o: quant/palette/0065_srgb_gamma_wire_lookup.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0065_srgb_gamma_wire_lookup.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Tpo -c -o quant/palette/test_runner-0065_srgb_gamma_wire_lookup.o `test -f 'quant/palette/0065_srgb_gamma_wire_lookup.c' || echo '$(srcdir)/'`quant/palette/0065_srgb_gamma_wire_lookup.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Tpo quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0065_srgb_gamma_wire_lookup.c' object='quant/palette/test_runner-0065_srgb_gamma_wire_lookup.o' libtool=no @AMDEPBACKSLASH@
+quant/palette/test_runner-0065_srgb_gamma_unsnapped_lookup.o: quant/palette/0065_srgb_gamma_unsnapped_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0065_srgb_gamma_unsnapped_lookup.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_unsnapped_lookup.Tpo -c -o quant/palette/test_runner-0065_srgb_gamma_unsnapped_lookup.o `test -f 'quant/palette/0065_srgb_gamma_unsnapped_lookup.c' || echo '$(srcdir)/'`quant/palette/0065_srgb_gamma_unsnapped_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_unsnapped_lookup.Tpo quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_unsnapped_lookup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0065_srgb_gamma_unsnapped_lookup.c' object='quant/palette/test_runner-0065_srgb_gamma_unsnapped_lookup.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0065_srgb_gamma_wire_lookup.o `test -f 'quant/palette/0065_srgb_gamma_wire_lookup.c' || echo '$(srcdir)/'`quant/palette/0065_srgb_gamma_wire_lookup.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0065_srgb_gamma_unsnapped_lookup.o `test -f 'quant/palette/0065_srgb_gamma_unsnapped_lookup.c' || echo '$(srcdir)/'`quant/palette/0065_srgb_gamma_unsnapped_lookup.c
 
-quant/palette/test_runner-0065_srgb_gamma_wire_lookup.obj: quant/palette/0065_srgb_gamma_wire_lookup.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0065_srgb_gamma_wire_lookup.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Tpo -c -o quant/palette/test_runner-0065_srgb_gamma_wire_lookup.obj `if test -f 'quant/palette/0065_srgb_gamma_wire_lookup.c'; then $(CYGPATH_W) 'quant/palette/0065_srgb_gamma_wire_lookup.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0065_srgb_gamma_wire_lookup.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Tpo quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0065_srgb_gamma_wire_lookup.c' object='quant/palette/test_runner-0065_srgb_gamma_wire_lookup.obj' libtool=no @AMDEPBACKSLASH@
+quant/palette/test_runner-0065_srgb_gamma_unsnapped_lookup.obj: quant/palette/0065_srgb_gamma_unsnapped_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0065_srgb_gamma_unsnapped_lookup.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_unsnapped_lookup.Tpo -c -o quant/palette/test_runner-0065_srgb_gamma_unsnapped_lookup.obj `if test -f 'quant/palette/0065_srgb_gamma_unsnapped_lookup.c'; then $(CYGPATH_W) 'quant/palette/0065_srgb_gamma_unsnapped_lookup.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0065_srgb_gamma_unsnapped_lookup.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_unsnapped_lookup.Tpo quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_unsnapped_lookup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0065_srgb_gamma_unsnapped_lookup.c' object='quant/palette/test_runner-0065_srgb_gamma_unsnapped_lookup.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0065_srgb_gamma_wire_lookup.obj `if test -f 'quant/palette/0065_srgb_gamma_wire_lookup.c'; then $(CYGPATH_W) 'quant/palette/0065_srgb_gamma_wire_lookup.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0065_srgb_gamma_wire_lookup.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0065_srgb_gamma_unsnapped_lookup.obj `if test -f 'quant/palette/0065_srgb_gamma_unsnapped_lookup.c'; then $(CYGPATH_W) 'quant/palette/0065_srgb_gamma_unsnapped_lookup.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0065_srgb_gamma_unsnapped_lookup.c'; fi`
 
-quant/palette/test_runner-0066_srgb_linear_wire_lookup.o: quant/palette/0066_srgb_linear_wire_lookup.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0066_srgb_linear_wire_lookup.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Tpo -c -o quant/palette/test_runner-0066_srgb_linear_wire_lookup.o `test -f 'quant/palette/0066_srgb_linear_wire_lookup.c' || echo '$(srcdir)/'`quant/palette/0066_srgb_linear_wire_lookup.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Tpo quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0066_srgb_linear_wire_lookup.c' object='quant/palette/test_runner-0066_srgb_linear_wire_lookup.o' libtool=no @AMDEPBACKSLASH@
+quant/palette/test_runner-0066_srgb_linear_unsnapped_lookup.o: quant/palette/0066_srgb_linear_unsnapped_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0066_srgb_linear_unsnapped_lookup.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_unsnapped_lookup.Tpo -c -o quant/palette/test_runner-0066_srgb_linear_unsnapped_lookup.o `test -f 'quant/palette/0066_srgb_linear_unsnapped_lookup.c' || echo '$(srcdir)/'`quant/palette/0066_srgb_linear_unsnapped_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_unsnapped_lookup.Tpo quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_unsnapped_lookup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0066_srgb_linear_unsnapped_lookup.c' object='quant/palette/test_runner-0066_srgb_linear_unsnapped_lookup.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0066_srgb_linear_wire_lookup.o `test -f 'quant/palette/0066_srgb_linear_wire_lookup.c' || echo '$(srcdir)/'`quant/palette/0066_srgb_linear_wire_lookup.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0066_srgb_linear_unsnapped_lookup.o `test -f 'quant/palette/0066_srgb_linear_unsnapped_lookup.c' || echo '$(srcdir)/'`quant/palette/0066_srgb_linear_unsnapped_lookup.c
 
-quant/palette/test_runner-0066_srgb_linear_wire_lookup.obj: quant/palette/0066_srgb_linear_wire_lookup.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0066_srgb_linear_wire_lookup.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Tpo -c -o quant/palette/test_runner-0066_srgb_linear_wire_lookup.obj `if test -f 'quant/palette/0066_srgb_linear_wire_lookup.c'; then $(CYGPATH_W) 'quant/palette/0066_srgb_linear_wire_lookup.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0066_srgb_linear_wire_lookup.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Tpo quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0066_srgb_linear_wire_lookup.c' object='quant/palette/test_runner-0066_srgb_linear_wire_lookup.obj' libtool=no @AMDEPBACKSLASH@
+quant/palette/test_runner-0066_srgb_linear_unsnapped_lookup.obj: quant/palette/0066_srgb_linear_unsnapped_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0066_srgb_linear_unsnapped_lookup.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_unsnapped_lookup.Tpo -c -o quant/palette/test_runner-0066_srgb_linear_unsnapped_lookup.obj `if test -f 'quant/palette/0066_srgb_linear_unsnapped_lookup.c'; then $(CYGPATH_W) 'quant/palette/0066_srgb_linear_unsnapped_lookup.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0066_srgb_linear_unsnapped_lookup.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_unsnapped_lookup.Tpo quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_unsnapped_lookup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0066_srgb_linear_unsnapped_lookup.c' object='quant/palette/test_runner-0066_srgb_linear_unsnapped_lookup.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0066_srgb_linear_wire_lookup.obj `if test -f 'quant/palette/0066_srgb_linear_wire_lookup.c'; then $(CYGPATH_W) 'quant/palette/0066_srgb_linear_wire_lookup.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0066_srgb_linear_wire_lookup.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0066_srgb_linear_unsnapped_lookup.obj `if test -f 'quant/palette/0066_srgb_linear_unsnapped_lookup.c'; then $(CYGPATH_W) 'quant/palette/0066_srgb_linear_unsnapped_lookup.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0066_srgb_linear_unsnapped_lookup.c'; fi`
 
 quant/palette/test_runner-0067_srgb_gamma_extended_source.o: quant/palette/0067_srgb_gamma_extended_source.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0067_srgb_gamma_extended_source.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Tpo -c -o quant/palette/test_runner-0067_srgb_gamma_extended_source.o `test -f 'quant/palette/0067_srgb_gamma_extended_source.c' || echo '$(srcdir)/'`quant/palette/0067_srgb_gamma_extended_source.c
@@ -47645,8 +47645,8 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0055_p3_mapfile_contract.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0059_p3_precision_contract.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0062_p3_fs_error_contract.Po
-	-rm -f quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Po
-	-rm -f quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_unsnapped_lookup.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_unsnapped_lookup.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
@@ -49588,8 +49588,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0055_p3_mapfile_contract.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0059_p3_precision_contract.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0062_p3_fs_error_contract.Po
-	-rm -f quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_wire_lookup.Po
-	-rm -f quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_wire_lookup.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0065_srgb_gamma_unsnapped_lookup.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_unsnapped_lookup.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po

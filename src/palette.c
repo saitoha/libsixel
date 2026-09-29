@@ -1872,18 +1872,14 @@ sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace,
     sixel_color_def_t *srgb;
     sixel_color_def_t *p3;
     sixel_color_xform_t *forward;
-    sixel_color_xform_t *inverse;
     SIXELSTATUS status;
-    float canonical[SIXEL_PALETTE_MAX * 3];
     unsigned char codes[SIXEL_PALETTE_MAX * 3];
-    unsigned char bytes[SIXEL_PALETTE_MAX * 3];
     double source[3];
     double gamma[3];
     double output[3];
     unsigned int index;
     unsigned int channel;
     unsigned int offset;
-    int pixelformat;
 
     if (palette == NULL ||
             (output_definition != SIXEL_PALETTE_OUTPUT_LEGACY &&
@@ -1906,7 +1902,6 @@ sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace,
     srgb = NULL;
     p3 = NULL;
     forward = NULL;
-    inverse = NULL;
     if (output_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
         srgb = sixel_cdef_name("srgb");
         p3 = sixel_cdef_name("display-p3");
@@ -1914,13 +1909,10 @@ sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace,
             goto end;
         }
         forward = sixel_cxform_new(srgb, p3, 1);
-        inverse = sixel_cxform_new(p3, srgb, 1);
-        if (forward == NULL || inverse == NULL) {
+        if (forward == NULL) {
             goto end;
         }
     }
-    pixelformat = source_colorspace == SIXEL_COLORSPACE_LINEAR
-        ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 : SIXEL_PIXELFORMAT_RGBFLOAT32;
     status = SIXEL_BAD_INPUT;
     for (index = 0U; index < storage->entry_count; ++index) {
         offset = index * 3U;
@@ -1938,8 +1930,9 @@ sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace,
         } else {
             memcpy(output, gamma, sizeof(output));
         }
-        /* This is the only gamut clamp and output quantization. Keep the
-         * integer codes so writer and lookup cannot round independently. */
+        /* Quantize only the serialized view. Snap policy owns changes to
+         * the working palette; caching wire codes must not enable snapping
+         * implicitly or replace the palette used for lookup and diffusion. */
         for (channel = 0U; channel < 3U; ++channel) {
             if (output[channel] < 0.0) {
                 output[channel] = 0.0;
@@ -1948,37 +1941,16 @@ sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace,
             }
             codes[offset + channel] =
                 (unsigned char)(output[channel] * 100.0 + 0.5);
-            output[channel] = (double)codes[offset + channel] / 100.0;
-        }
-        if (inverse != NULL) {
-            if (!sixel_cxform_apply(inverse, output, gamma)) {
-                goto end;
-            }
-        } else {
-            memcpy(gamma, output, sizeof(gamma));
-        }
-        if (!sixel_color_convert(source, gamma, SIXEL_COLORSPACE_GAMMA,
-                                  source_colorspace)) {
-            goto end;
-        }
-        for (channel = 0U; channel < 3U; ++channel) {
-            canonical[offset + channel] = (float)source[channel];
-            bytes[offset + channel] =
-                sixel_pixelformat_float_channel_to_byte(
-                    pixelformat, (int)channel, canonical[offset + channel]);
         }
     }
-    /* Publish the three views atomically only after every transform succeeds.
-     * Their indices remain identical; callers must not compact/reorder them. */
-    memcpy(storage->entries, bytes, storage->entry_count * 3U);
-    memcpy(storage->entries_float32, canonical,
-           storage->entry_count * 3U * sizeof(float));
+    /* Publish only after every transform succeeds. Keep both working views
+     * unchanged, including extended coordinates and unsnapped centroids.
+     * Cached codes retain the same indices; no later reordering is allowed. */
     memcpy(storage->output_rgb101, codes, storage->entry_count * 3U);
     storage->output_rgb101_count = storage->entry_count;
     status = SIXEL_OK;
 end:
     sixel_cxform_free(forward);
-    sixel_cxform_free(inverse);
     sixel_cdef_free(srgb);
     sixel_cdef_free(p3);
     return status;

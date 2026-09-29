@@ -4856,8 +4856,9 @@ sixel_encode_dither(
             status = SIXEL_LOGIC_ERROR;
             goto end;
         }
-        /* Lookup already used the inverse of these exact stored codes.
-         * Never re-transform, clamp to canonical RGB, or sync from bytes. */
+        /* Lookup used the unrounded working palette. Only this private
+         * writer copy uses cached wire codes; never feed them back into
+         * the working palette or reconstruct their values through bytes. */
         for (palette_index = 0U; palette_index < palette_count * 3U;
                 ++palette_index) {
             palette_entries_float32[palette_index] =

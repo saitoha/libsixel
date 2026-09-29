@@ -25,8 +25,6 @@ srgb_palette_contract(int linear)
     unsigned char input_bytes[6] = { 0, 0, 0, 0, 0, 0 };
     float input[6];
     float query[3];
-    double gamma;
-    double expected;
     void *object;
     int code;
     int n;
@@ -71,10 +69,8 @@ srgb_palette_contract(int linear)
     }
     for (n = 0; n < 6; ++n) {
         code = linear ? (n < 3 ? 35 : 37) : (n < 3 ? 10 : 12);
-        gamma = code / 100.0;
-        expected = linear ? pow((gamma + .055) / 1.055, 2.4) : gamma;
-        if (wire[n] != code || !isfinite(floats.entries[n]) ||
-                fabs(floats.entries[n] - expected) > 0.00000002) {
+        if (wire[n] != code || floats.entries[n] != input[n] ||
+                bytes.entries[n] != input_bytes[n]) {
             goto end;
         }
     }
@@ -88,11 +84,11 @@ srgb_palette_contract(int linear)
     lr.depth = 3;
     lr.float_depth = 3 * sizeof(float);
     lr.reqcolor = 2;
-    /* Both queries change their nearest entry after wire quantization.
-     * Merely keeping the pre-output float palette fails this observation. */
+    /* Quantizing only the wire cache must retain the original nearest
+     * entry. Replacing the working palette with sent colors changes it. */
     ok = SIXEL_SUCCEEDED(lookup->vtbl->prepare(lookup, &lr)) &&
         lookup->vtbl->map_pixel(lookup, (unsigned char const *)query) ==
-            (linear ? 0 : 1);
+            (linear ? 1 : 0);
 end:
     if (lookup != NULL) {
         lookup->vtbl->unref(lookup);

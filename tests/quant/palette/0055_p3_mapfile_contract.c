@@ -104,10 +104,9 @@ test_palette_0055_p3_mapfile(int argc, char **argv)
             goto end;
         }
         memset(&capture, 0, sizeof(capture));
-        /* Gray 88/255 and 94/255 become 35/100 and 37/100 on the wire.
-         * At .359, pre-wire lookup selects entry 1; sent-color lookup
-         * selects entry 0 in both gamma and linear workspaces. FS sends
-         * the first error forward (7/16), selecting entry 1 next. */
+        /* With snapping bypassed, .359 selects the original 94/255 entry.
+         * FS then sends a negative error (7/16) to the next pixel, which
+         * selects 88/255. Wire quantization must not move these boundaries. */
         value = linear ? pow((.359 + .055) / 1.055, 2.4) : .359;
         for (n = 0; n < 6; ++n) {
             source[n] = (float)value;
@@ -148,8 +147,8 @@ test_palette_0055_p3_mapfile(int argc, char **argv)
                     palette[expected * 3 + 2] != 0) {
                 goto end;
             }
-        } else if (pixels[0] != (phase == 1 ? 1 : 0) ||
-                   (fs && pixels[1] != 1)) {
+        } else if (pixels[0] != 1 ||
+                   (fs && pixels[1] != 0)) {
             goto end;
         }
         free(pixels);

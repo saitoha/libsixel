@@ -174,7 +174,6 @@ def build(inputs):
             assert distances[owner] < distances[1 - owner]
             cluster_margins.append(str(abs(distances[0] - distances[1])))
         palette = [p3_wire_color(rgb) for rgb in centers]
-        to_native = reference.matmul(reference.inv(reference.native), p3_matrix())
 
         def encode_extended(value):
             absolute = abs(value)
@@ -182,15 +181,9 @@ def build(inputs):
                       D('1.055') * absolute ** (D(1) / D('2.4')) - D('.055'))
             return result if value >= 0 else -result
 
-        sent = []
-        for rgb in palette:
-            gamma = [D(x) / 100 for x in rgb]
-            linear_p3 = [x / D('12.92') if x <= D('.04045') else
-                         ((x + D('.055')) / D('1.055')) ** D('2.4')
-                         for x in gamma]
-            canonical = reference.mv(to_native, list(map(reference.F, linear_p3)))
-            sent.append([encode_extended(D(x.numerator) / D(x.denominator))
-                         for x in canonical])
+        # Snap is disabled: lookup and diffusion use the unrounded centers.
+        # Integer wire colors are a separate serialization-only projection.
+        working_palette = [[encode_extended(x) for x in rgb] for rgb in centers]
         working = [[encode_extended(x) for x in rgb] for rgb in points]
         painted = []
         fs_margins = []
@@ -199,12 +192,12 @@ def build(inputs):
             for x in range(4):
                 index = y * 4 + x
                 distances = [sum((working[index][c] - color[c]) ** 2
-                                 for c in range(3)) for color in sent]
+                                 for c in range(3)) for color in working_palette]
                 owner = 0 if distances[0] < distances[1] else 1
                 fs_margins.append(str(abs(distances[0] - distances[1])))
                 assert abs(distances[0] - distances[1]) > D('.001')
                 painted.append(palette[owner])
-                error = [working[index][c] - sent[owner][c] for c in range(3)]
+                error = [working[index][c] - working_palette[owner][c] for c in range(3)]
                 for dx, dy, numerator in ((1, 0, 7), (-1, 1, 3),
                                           (0, 1, 5), (1, 1, 1)):
                     nx, ny = x + dx, y + dy

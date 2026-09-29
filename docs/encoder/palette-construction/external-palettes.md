@@ -255,6 +255,8 @@ Supplying a palette removes the construction stage but leaves the application st
 | `-d`, `--diffusion` | Applies while input pixels are mapped to the supplied entries. |
 | `-U`, `--output-colorspace` | Selects SIXEL serialization; legacy `-M` output remains sRGB8. |
 
+Legacy image-map reconstruction has a [known snap-environment override defect](snap-policy/README.md#known-contract-violations); the structured-palette bypass tests do not cover that reconstruction path.
+
 The same lookup, cover, and snap rules apply to the other fixed palettes selected by `-b` and `-e`: explicit lookup applies, explicit cover conflicts, and snap is accepted but bypassed. The owning policy documents define the normative details: [Lookup Policy](../palette-application/lookup-policy/README.md), [Palette Cover Policy](cover-policy/README.md), [Palette Snap Policy](snap-policy/README.md), and [Palette Working Color Space](../palette-application/working-colorspace/README.md).
 
 ## Historical use by sayaka on NetBSD/x68k

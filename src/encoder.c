@@ -3301,8 +3301,8 @@ sixel_encoder_convert_frame_colorspace(sixel_frame_t *frame,
 /*
  * Recolor the generated palette into the working colorspace so dithering and
  * LUT builders share the same color interpretation. Legacy serialization
- * converts a copy to output coordinates. P3 prepares its sent palette before
- * lookup, preserving extended values through this intermediate conversion.
+ * converts a copy to output coordinates. The extended path keeps a separate
+ * wire cache, preserving working values through this intermediate conversion.
  */
 static SIXELSTATUS
 sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
@@ -6929,14 +6929,14 @@ sixel_encoder_resolve_direct_binning(
 }
 
 
-/* The bounded RGB101 pipeline owns all palette edits before lookup. Keep
+/* The selected float pipeline keeps a separate RGB101 wire cache. Keep
  * this predicate shared with P3 validation so sRGB cannot enter with an
  * unconnected merge, snap, alpha, cache or alternate lookup policy. */
 static int
 sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
 {
-    /* These CPU spatial kernels consume the authoritative float palette
-     * and propagate residuals without byte projection. AUTO resolves to
+    /* These CPU spatial kernels consume the unrounded float palette and
+     * propagate residuals without byte projection. AUTO resolves to
      * Atkinson or FS after the final palette count is known. Positional
      * noise and temporal history still need separate integration checks. */
     switch (encoder->method_for_diffuse) {
@@ -7855,8 +7855,8 @@ end:
     if (SIXEL_SUCCEEDED(status) && *dither != NULL && !from_map_image &&
             sixel_encoder_rgb101_frame(encoder, frame)) {
         /* Generated and fixed palettes share the same finalization. Keep
-         * order, duplicates and unused slots: writer codes and the inverse
-         * projected lookup/error view must always use identical indices. */
+         * order, duplicates and unused slots: the independent wire cache
+         * and unrounded working palette must use identical indices. */
         (*dither)->use_rgb101_palette = 1;
         if (encoder->palette_output != NULL) {
             status = sixel_encoder_capture_quantized_palette_only(encoder,

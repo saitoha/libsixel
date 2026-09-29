@@ -283,7 +283,7 @@ struct sixel_dither {
     sixel_timeline_logger_t *pipeline_logger; /* parallel timeline logger */
     sixel_dither_frame_context_t frame_context; /* encoder frame metadata */
     sixel_dither_interframe_state_t interframe_state; /* reserved interframe */
-    /* Keep extended working values and use the exact sent RGB101 palette.
+    /* Keep extended working values and cache separate RGB101 wire codes.
      * This algorithm contract is independent of the output primaries. */
     int use_rgb101_palette;
 };

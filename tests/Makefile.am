@@ -565,8 +565,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0041_FS_VERTICAL_RESIDUAL \
     -DBUILD_TEST_0042_FS_SERPENTINE_RESIDUAL \
     -DBUILD_TEST_0043_PARALLEL_OVERLAP \
-    -DBUILD_TEST_0065_SRGB_GAMMA_WIRE_LOOKUP \
-    -DBUILD_TEST_0066_SRGB_LINEAR_WIRE_LOOKUP \
+    -DBUILD_TEST_0065_SRGB_GAMMA_UNSNAPPED_LOOKUP \
+    -DBUILD_TEST_0066_SRGB_LINEAR_UNSNAPPED_LOOKUP \
     -DBUILD_TEST_0067_SRGB_GAMMA_EXTENDED_SOURCE \
     -DBUILD_TEST_0068_SRGB_LINEAR_EXTENDED_SOURCE \
     -DBUILD_SRGB_CONTRACT_COMMON \
@@ -4032,8 +4032,8 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0055_p3_mapfile_contract.c \
     quant/palette/0059_p3_precision_contract.c \
     quant/palette/0062_p3_fs_error_contract.c \
-    quant/palette/0065_srgb_gamma_wire_lookup.c \
-    quant/palette/0066_srgb_linear_wire_lookup.c \
+    quant/palette/0065_srgb_gamma_unsnapped_lookup.c \
+    quant/palette/0066_srgb_linear_unsnapped_lookup.c \
     quant/palette/0067_srgb_gamma_extended_source.c \
     quant/palette/0068_srgb_linear_extended_source.c \
     quant/palette/rgb101_diffusion/0001_spatial_contract.c \

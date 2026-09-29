@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Directly protect canonical palette values, final wire lookup and failure
+/* Directly protect canonical palette values, unsnapped lookup and failure
  * isolation. The independent primary/TRC values are generated from rationals.
  */
 #if defined(HAVE_CONFIG_H)
@@ -168,16 +168,16 @@ test_palette_0051_p3_contract(int argc, char **argv)
             goto end;
         }
         for (index = 0; index < 6; ++index) {
-            if (fabs(floats.entries[index] -
-                    color_p3_gray_linear[index / 3]) > 0.0000001) {
+            if (floats.entries[index] != gray[index] ||
+                    bytes.entries[index] != gray_bytes[index]) {
                 goto end;
             }
         }
-        /* The original midpoint is .105. Sent 35/37 percent colors move it
-         * above .106, so lookup must change from the second entry to first. */
+        /* The original midpoint stays .105 with snap disabled. Feeding
+         * back the wire codes would move it above .106 and select entry 0. */
         if (SIXEL_FAILED(lookup->vtbl->prepare(lookup, &lookup_request)) ||
                 lookup->vtbl->map_pixel(lookup,
-                    (unsigned char const *)query) != 0) {
+                    (unsigned char const *)query) != 1) {
             goto end;
         }
     } else if (strcmp(argv[1], "failure-reset") == 0) {

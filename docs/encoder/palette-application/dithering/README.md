@@ -47,7 +47,7 @@ stateless low-overhead spatial method is worth testing, and `interframe` or
 The checked-in one-image sweep is evidence about those exact commands, not a
 universal ranking.
 
-`-U display-p3` accepts `none`, the CPU spatial error-diffusion methods below, and `auto`. There, and on the ordinary sRGB float path that uses the same preparation, these kernels compute their residual against the palette values actually sent rather than the unrounded working palette; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
+`-U display-p3` accepts `none`, the CPU spatial error-diffusion methods below, and `auto`. There, and on the ordinary sRGB float path that uses the same preparation, these kernels compute their residual against the unrounded working palette; integer output codes are cached separately; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
 
 ## Mathematical model
 
