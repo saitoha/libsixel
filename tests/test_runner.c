@@ -473,6 +473,29 @@ int test_palette_sampling_float(int argc, char **argv);
 int test_palette_binning_float(int argc, char **argv);
 int test_palette_merge_float(int argc, char **argv);
 int test_extended_lookup(int argc, char **argv);
+int test_auto_native_0001(int argc, char **argv);
+int test_auto_native_0002(int argc, char **argv);
+int test_auto_native_0003(int argc, char **argv);
+int test_auto_native_0004(int argc, char **argv);
+int test_auto_native_0005(int argc, char **argv);
+int test_auto_native_0006(int argc, char **argv);
+int test_auto_native_0007(int argc, char **argv);
+int test_auto_native_0008(int argc, char **argv);
+int test_auto_native_0009(int argc, char **argv);
+int test_auto_native_0010(int argc, char **argv);
+int test_auto_native_0011(int argc, char **argv);
+int test_auto_native_0012(int argc, char **argv);
+int test_auto_native_0013(int argc, char **argv);
+int test_auto_native_0014(int argc, char **argv);
+int test_auto_native_0015(int argc, char **argv);
+int test_auto_native_0016(int argc, char **argv);
+int test_auto_native_0017(int argc, char **argv);
+int test_auto_native_0018(int argc, char **argv);
+int test_auto_native_0019(int argc, char **argv);
+int test_auto_native_0020(int argc, char **argv);
+int test_auto_native_0021(int argc, char **argv);
+int test_auto_native_0022(int argc, char **argv);
+int test_auto_native_0023(int argc, char **argv);
 int test_heckbert_native_0032(int argc, char **argv);
 int test_heckbert_native_0030(int argc, char **argv);
 int test_heckbert_native_0031(int argc, char **argv);
@@ -2974,6 +2997,52 @@ static test_entry_t const test_entries[] = {
     { "palette/binning_float/0001_binning_contract",
       test_palette_binning_float },
     { "lookup/extended/0001_extended_lookup", test_extended_lookup },
+    { "palette/auto_float/0001_auto_default_gamma",
+      test_auto_native_0001 },
+    { "palette/auto_float/0002_auto_explicit_gamma",
+      test_auto_native_0002 },
+    { "palette/auto_float/0003_auto_default_p3",
+      test_auto_native_0003 },
+    { "palette/auto_float/0004_auto_default_linear",
+      test_auto_native_0004 },
+    { "palette/auto_float/0005_auto_default_oklab",
+      test_auto_native_0005 },
+    { "palette/auto_float/0006_auto_default_cielab",
+      test_auto_native_0006 },
+    { "palette/auto_float/0007_auto_default_din99d",
+      test_auto_native_0007 },
+    { "palette/auto_float/0008_auto_retain_float",
+      test_auto_native_0008 },
+    { "palette/auto_float/0009_auto_byte_fastpath",
+      test_auto_native_0009 },
+    { "palette/auto_float/0010_auto_byte_promote",
+      test_auto_native_0010 },
+    { "palette/auto_float/0011_auto_exact_kmeans",
+      test_auto_native_0011 },
+    { "palette/auto_float/0012_auto_soft_kmeans",
+      test_auto_native_0012 },
+    { "palette/auto_float/0013_auto_zero_snap",
+      test_auto_native_0013 },
+    { "palette/auto_float/0014_auto_binning_reuse",
+      test_auto_native_0014 },
+    { "palette/auto_float/0015_auto_reject_cover",
+      test_auto_native_0015 },
+    { "palette/auto_float/0016_auto_reject_snap",
+      test_auto_native_0016 },
+    { "palette/auto_float/0017_auto_subbyte_diffusion",
+      test_auto_native_0017 },
+    { "palette/auto_float/0018_auto_explicit_auto_binning",
+      test_auto_native_0018 },
+    { "palette/auto_float/0019_auto_byte_hard_kmeans",
+      test_auto_native_0019 },
+    { "palette/auto_float/0020_auto_hard_kmeans_p3",
+      test_auto_native_0020 },
+    { "palette/auto_float/0021_auto_explicit_p3",
+      test_auto_native_0021 },
+    { "palette/auto_float/0022_auto_reject_kmeans_feedback",
+      test_auto_native_0022 },
+    { "palette/auto_float/0023_auto_irrelevant_heckbert_feedback",
+      test_auto_native_0023 },
     { "palette/heckbert_float/0032_heckbert_subbyte_diffusion",
       test_heckbert_native_0032 },
     { "palette/heckbert_float/0030_heckbert_histogram_allocation",

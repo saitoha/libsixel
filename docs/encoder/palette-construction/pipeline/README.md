@@ -345,7 +345,7 @@ cannot silently erase that request. An asynchronous palette worker commits the
 effective policy, origin, lifecycle phase, resolution reason, and actual
 source-point count only after its successful attempt, before collection
 completes.
-On the selected extended path, K-means, K-center, K-medoids and explicit Heckbert report float solver failure without a byte or alternate-solver retry.
+On the selected extended path, K-means, K-center, K-medoids and Heckbert, including resolved auto requests, report float solver failure without a byte or alternate-solver retry.
 
 When automatic adaptive sampling falls back to the full preprocessed frame,
 binning keeps its request and origin but resolves its sample-dependent metadata

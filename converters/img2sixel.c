@@ -1185,7 +1185,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    CLI overrides SIXEL_OUTPUT_COLORSPACE and the auto timeout\n"
         "    SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS environment value\n"
         "    P3: effective float precision; -X/-W accept all five spaces;\n"
-        "    -Qkmeans|center|medoids|heckbert; any sampling;\n"
+        "    -Qauto|kmeans|center|medoids|heckbert; any sampling;\n"
         "    lookup none/certlut/5bit/6bit/auto/vptree/rbc/mahalanobis/"
         "eytzinger/fhedt;\n"
         "    binning: kmeans any, center none/exact/hard/auto,\n"

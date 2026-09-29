@@ -1,6 +1,6 @@
 # Palette Quantization
 
-The [selected float output path](../../output/output-colorspace.md#k-center-and-k-medoids-representatives) describes extended-coordinate preservation, representative contracts and supported binning for K-means, K-center, K-medoids and explicit Heckbert. It does not change the objectives described here.
+The [selected float output path](../../output/output-colorspace.md#k-center-and-k-medoids-representatives) describes extended-coordinate preservation, representative contracts and supported binning for K-means, K-center, K-medoids and Heckbert, including resolved auto requests. It does not change the objectives described here.
 
 ## Purpose
 
@@ -56,11 +56,9 @@ little.
 -Q auto
 ```
 
-Despite its name, `auto` is not currently an image-dependent solver selector.
-It dispatches to the historical Heckbert median-cut path. It therefore exists
-as a stable default and compatibility spelling, not as a promise that
-libsixel will compare all quantizers and choose the fastest or highest-quality
-one for each image.
+`auto` is the default staged solver choice, not an image-quality contest between algorithms. With omitted, `auto` or `none` binning it selects Heckbert. Explicit `exact`, `hard` or `soft` binning selects K-means, which can consume the required weighted point representation. The requested policy remains `auto`; each frame resolves its actual consumer independently.
+
+On the [selected CPU float path](../../output/output-colorspace.md#selected-ordinary-srgb-float-path), the resolved Heckbert or K-means solver preserves native coordinates just as an explicit request does. This includes `-Q` omission, explicit `-Qauto` and the selected Display P3 path. The existing byte-eligibility rules still apply; automatic solver selection alone does not promote a byte image. Admission checks model-specific restrictions, such as K-means feedback, against the resolved consumer. Fixed-map jobs retain their existing explicit K-means restriction.
 
 Only the common `sample_target` suboption belongs to `auto`. A Heckbert preset must
 be requested explicitly, for example:
@@ -69,15 +67,9 @@ be requested explicitly, for example:
 -Q heckbert:profile=quality
 ```
 
-If a newer explicitly selected solver cannot complete, the palette dispatcher
-also falls back to Heckbert. Callers that need to distinguish a requested
-model from a fallback should record palette-build telemetry rather than infer
-the solver only from the command line.
+Outside the selected native path, legacy solver failures can fall back to Heckbert. A failed selected native build instead returns an error without narrowing the data or silently choosing another solver. Record effective palette-build telemetry when distinguishing the requested policy, resolved consumer and fallback.
 
-The time and space order of `auto` are consequently those of the
-[`heckbert`](#heckbert-recursive-median-cut) chapter below. The important
-semantic distinction is that `auto` reserves future selection policy while
-`heckbert` names the algorithm directly.
+The time and space costs of `auto` follow its resolved [Heckbert](#heckbert-recursive-median-cut) or [K-means](#kmeans-centroid-optimization) consumer. `auto` reserves selection policy while an explicit solver names the algorithm directly.
 
 ## `heckbert`: recursive median cut
 
@@ -145,11 +137,11 @@ These are palette-construction controls, not alternatives to nearest-color looku
 
 ### Native float Heckbert
 
-On the [selected CPU float output path](../../output/output-colorspace.md#heckbert-representatives), explicit `-Qheckbert` builds a histogram of identical finite source triples without an 8bit projection or bounded grid. The tuple coordinates use double arithmetic and a fixed per-axis scale derived from the nominal `-X` channel span. Signed axes are not translated, so very small coordinates are not lost by adding and subtracting a nominal minimum. Negative and above-range values remain available to splitting and representative construction. Distinct native colors also determine whether a palette is large enough to omit diffusion: colors that merely share a byte/bin projection must not trigger that optimization. Nonfinite input fails; a failed native build cannot retry the bounded legacy histogram.
+On the [selected CPU float output path](../../output/output-colorspace.md#heckbert-representatives), `-Qheckbert` and `auto` resolved to Heckbert build a histogram of identical finite source triples without an 8bit projection or bounded grid. The tuple coordinates use double arithmetic and a fixed per-axis scale derived from the nominal `-X` channel span. Signed axes are not translated, so very small coordinates are not lost by adding and subtracting a nominal minimum. Negative and above-range values remain available to splitting and representative construction. Distinct native colors also determine whether a palette is large enough to omit diffusion: colors that merely share a byte/bin projection must not trigger that optimization. Nonfinite input fails; a failed native build cannot retry the bounded legacy histogram.
 
 The three `-s` choices retain their distinct meanings: `center` is the midpoint of each box's extrema, `average` is the mean of its distinct colors, and `histogram` is the occurrence-weighted mean. None rounds its float representative to a byte or a SIXEL percentage. Axis splits use the existing weighted-median projection partitioner for unbounded coordinates; the byte histogram retains its counting-sort implementation. PCA uses centered covariance to avoid cancellation between large second moments. Optional Ward reduction and Lloyd refinement retain signed and fractional coordinates; as in the legacy merge path, refinement may replace the initial `-s` representative with a population centroid.
 
-This exact native histogram may contain more entries than the legacy 5bit/6bit histogram. Its initial deterministic sort costs `O(N log N)` time and `O(N)` space after upstream sampling. The legacy byte path keeps its bounded histogram and integer representative rounding. The `speed` profile's lookup preference still applies to palette application, but no longer coarsens the native histogram. `-Qauto` remains on its existing compatibility path. Active snap and cover remain outside the selected native path; this change does not repair the separately documented [legacy snap defects](../snap-policy/README.md#known-contract-violations).
+This exact native histogram may contain more entries than the legacy 5bit/6bit histogram. Its initial deterministic sort costs `O(N log N)` time and `O(N)` space after upstream sampling. The legacy byte path keeps its bounded histogram and integer representative rounding. The `speed` profile's lookup preference still applies to palette application, but no longer coarsens the native histogram. `-Qauto` uses this path when it resolves to Heckbert and the same admission conditions hold. Active snap and cover remain outside the selected native path; this change does not repair the separately documented [legacy snap defects](../snap-policy/README.md#known-contract-violations).
 
 ## `kmeans`: centroid optimization
 
@@ -727,3 +719,34 @@ For the surrounding data flow, start with
 | HQ-30 | Native histogram allocation failure is reported without a lossy retry. | [tests/quant/palette/heckbert_float/0030_heckbert_histogram_allocation.t](../../../../tests/quant/palette/heckbert_float/0030_heckbert_histogram_allocation.t) |
 | HQ-31 | Native representative allocation failure is reported without a lossy retry. | [tests/quant/palette/heckbert_float/0031_heckbert_representative_allocation.t](../../../../tests/quant/palette/heckbert_float/0031_heckbert_representative_allocation.t) |
 | HQ-32 | Three sub-byte source colors reduced to two entries keep requested FS diffusion active. | [tests/quant/palette/heckbert_float/0032_heckbert_subbyte_diffusion.t](../../../../tests/quant/palette/heckbert_float/0032_heckbert_subbyte_diffusion.t) |
+
+
+### Automatic native-path selection
+
+These observations check two-color native coordinates with a small binary32 error budget, actual solver/lookup state, independent wire values, frame-local resolution and rejection before output. The sub-byte case separately observes effective FS. The feedback cases inject private pending state at the admission boundary; they do not add a feedback suboption to `-Qauto`. This suite is behavioral evidence, not a photograph-quality benchmark.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| AQ-01 | Omitted quantizer/binning preserves native gamma coordinates and resolves to Heckbert. | [tests/quant/palette/auto_float/0001_auto_default_gamma.t](../../../../tests/quant/palette/auto_float/0001_auto_default_gamma.t) |
+| AQ-02 | Explicit auto preserves native gamma coordinates. | [tests/quant/palette/auto_float/0002_auto_explicit_gamma.t](../../../../tests/quant/palette/auto_float/0002_auto_explicit_gamma.t) |
+| AQ-03 | Omitted auto reaches the Display P3 wire path. | [tests/quant/palette/auto_float/0003_auto_default_p3.t](../../../../tests/quant/palette/auto_float/0003_auto_default_p3.t) |
+| AQ-04 | Default auto retains native linear coordinates. | [tests/quant/palette/auto_float/0004_auto_default_linear.t](../../../../tests/quant/palette/auto_float/0004_auto_default_linear.t) |
+| AQ-05 | Default auto retains native Oklab coordinates. | [tests/quant/palette/auto_float/0005_auto_default_oklab.t](../../../../tests/quant/palette/auto_float/0005_auto_default_oklab.t) |
+| AQ-06 | Default auto retains native CIELAB coordinates. | [tests/quant/palette/auto_float/0006_auto_default_cielab.t](../../../../tests/quant/palette/auto_float/0006_auto_default_cielab.t) |
+| AQ-07 | Default auto retains native DIN99d coordinates. | [tests/quant/palette/auto_float/0007_auto_default_din99d.t](../../../../tests/quant/palette/auto_float/0007_auto_default_din99d.t) |
+| AQ-08 | Source float precision survives a base 8bit preference. | [tests/quant/palette/auto_float/0008_auto_retain_float.t](../../../../tests/quant/palette/auto_float/0008_auto_retain_float.t) |
+| AQ-09 | Eligible gamma bytes retain the byte consumer and literal wire levels. | [tests/quant/palette/auto_float/0009_auto_byte_fastpath.t](../../../../tests/quant/palette/auto_float/0009_auto_byte_fastpath.t) |
+| AQ-10 | Explicit float preference promotes otherwise eligible bytes. | [tests/quant/palette/auto_float/0010_auto_byte_promote.t](../../../../tests/quant/palette/auto_float/0010_auto_byte_promote.t) |
+| AQ-11 | Auto with exact binning resolves to native K-means. | [tests/quant/palette/auto_float/0011_auto_exact_kmeans.t](../../../../tests/quant/palette/auto_float/0011_auto_exact_kmeans.t) |
+| AQ-12 | Auto with soft binning resolves to native K-means. | [tests/quant/palette/auto_float/0012_auto_soft_kmeans.t](../../../../tests/quant/palette/auto_float/0012_auto_soft_kmeans.t) |
+| AQ-13 | Zero-rate snap remains inactive for auto. | [tests/quant/palette/auto_float/0013_auto_zero_snap.t](../../../../tests/quant/palette/auto_float/0013_auto_zero_snap.t) |
+| AQ-14 | Reusing one auto encoder resolves none/hard/none binning per frame. | [tests/quant/palette/auto_float/0014_auto_binning_reuse.t](../../../../tests/quant/palette/auto_float/0014_auto_binning_reuse.t) |
+| AQ-15 | P3 auto rejects active cover before writing output. | [tests/quant/palette/auto_float/0015_auto_reject_cover.t](../../../../tests/quant/palette/auto_float/0015_auto_reject_cover.t) |
+| AQ-16 | P3 auto rejects active snap before writing output. | [tests/quant/palette/auto_float/0016_auto_reject_snap.t](../../../../tests/quant/palette/auto_float/0016_auto_reject_snap.t) |
+| AQ-17 | Distinct sub-byte colors keep requested FS active under auto. | [tests/quant/palette/auto_float/0017_auto_subbyte_diffusion.t](../../../../tests/quant/palette/auto_float/0017_auto_subbyte_diffusion.t) |
+| AQ-18 | Explicit auto binning retains native Heckbert selection. | [tests/quant/palette/auto_float/0018_auto_explicit_auto_binning.t](../../../../tests/quant/palette/auto_float/0018_auto_explicit_auto_binning.t) |
+| AQ-19 | Auto with hard binning preserves eligible byte application. | [tests/quant/palette/auto_float/0019_auto_byte_hard_kmeans.t](../../../../tests/quant/palette/auto_float/0019_auto_byte_hard_kmeans.t) |
+| AQ-20 | P3 auto with hard binning resolves to native K-means. | [tests/quant/palette/auto_float/0020_auto_hard_kmeans_p3.t](../../../../tests/quant/palette/auto_float/0020_auto_hard_kmeans_p3.t) |
+| AQ-21 | Explicit auto reaches the Display P3 wire path. | [tests/quant/palette/auto_float/0021_auto_explicit_p3.t](../../../../tests/quant/palette/auto_float/0021_auto_explicit_p3.t) |
+| AQ-22 | P3 admission rejects pending feedback on the resolved K-means consumer. | [tests/quant/palette/auto_float/0022_auto_reject_kmeans_feedback.t](../../../../tests/quant/palette/auto_float/0022_auto_reject_kmeans_feedback.t) |
+| AQ-23 | Pending K-means feedback does not reject auto resolved to Heckbert. | [tests/quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.t](../../../../tests/quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.t) |

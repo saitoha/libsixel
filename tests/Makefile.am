@@ -570,6 +570,30 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0067_SRGB_GAMMA_EXTENDED_SOURCE \
     -DBUILD_TEST_0068_SRGB_LINEAR_EXTENDED_SOURCE \
     -DBUILD_SRGB_CONTRACT_COMMON \
+    -DBUILD_AUTO_TEST_COMMON \
+    -DBUILD_TEST_0001_AUTO_DEFAULT_GAMMA \
+    -DBUILD_TEST_0002_AUTO_EXPLICIT_GAMMA \
+    -DBUILD_TEST_0003_AUTO_DEFAULT_P3 \
+    -DBUILD_TEST_0004_AUTO_DEFAULT_LINEAR \
+    -DBUILD_TEST_0005_AUTO_DEFAULT_OKLAB \
+    -DBUILD_TEST_0006_AUTO_DEFAULT_CIELAB \
+    -DBUILD_TEST_0007_AUTO_DEFAULT_DIN99D \
+    -DBUILD_TEST_0008_AUTO_RETAIN_FLOAT \
+    -DBUILD_TEST_0009_AUTO_BYTE_FASTPATH \
+    -DBUILD_TEST_0010_AUTO_BYTE_PROMOTE \
+    -DBUILD_TEST_0011_AUTO_EXACT_KMEANS \
+    -DBUILD_TEST_0012_AUTO_SOFT_KMEANS \
+    -DBUILD_TEST_0013_AUTO_ZERO_SNAP \
+    -DBUILD_TEST_0014_AUTO_BINNING_REUSE \
+    -DBUILD_TEST_0015_AUTO_REJECT_COVER \
+    -DBUILD_TEST_0016_AUTO_REJECT_SNAP \
+    -DBUILD_TEST_0017_AUTO_SUBBYTE_DIFFUSION \
+    -DBUILD_TEST_0018_AUTO_EXPLICIT_AUTO_BINNING \
+    -DBUILD_TEST_0019_AUTO_BYTE_HARD_KMEANS \
+    -DBUILD_TEST_0020_AUTO_HARD_KMEANS_P3 \
+    -DBUILD_TEST_0021_AUTO_EXPLICIT_P3 \
+    -DBUILD_TEST_0022_AUTO_REJECT_KMEANS_FEEDBACK \
+    -DBUILD_TEST_0023_AUTO_IRRELEVANT_HECKBERT_FEEDBACK \
     -DBUILD_HECKBERT_TEST_COMMON \
     -DBUILD_TEST_0032_HECKBERT_SUBBYTE_DIFFUSION \
     -DBUILD_TEST_0030_HECKBERT_HISTOGRAM_ALLOCATION \
@@ -4341,6 +4365,30 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/mahalanobis_float/0012_mah_bands_private.c \
     quant/palette/lookup_float/0001_lookup_palette.c \
     quant/palette/srgb_contract_common.c \
+    quant/palette/auto_test_common.c \
+    quant/palette/auto_float/0001_auto_default_gamma.c \
+    quant/palette/auto_float/0002_auto_explicit_gamma.c \
+    quant/palette/auto_float/0003_auto_default_p3.c \
+    quant/palette/auto_float/0004_auto_default_linear.c \
+    quant/palette/auto_float/0005_auto_default_oklab.c \
+    quant/palette/auto_float/0006_auto_default_cielab.c \
+    quant/palette/auto_float/0007_auto_default_din99d.c \
+    quant/palette/auto_float/0008_auto_retain_float.c \
+    quant/palette/auto_float/0009_auto_byte_fastpath.c \
+    quant/palette/auto_float/0010_auto_byte_promote.c \
+    quant/palette/auto_float/0011_auto_exact_kmeans.c \
+    quant/palette/auto_float/0012_auto_soft_kmeans.c \
+    quant/palette/auto_float/0013_auto_zero_snap.c \
+    quant/palette/auto_float/0014_auto_binning_reuse.c \
+    quant/palette/auto_float/0015_auto_reject_cover.c \
+    quant/palette/auto_float/0016_auto_reject_snap.c \
+    quant/palette/auto_float/0017_auto_subbyte_diffusion.c \
+    quant/palette/auto_float/0018_auto_explicit_auto_binning.c \
+    quant/palette/auto_float/0019_auto_byte_hard_kmeans.c \
+    quant/palette/auto_float/0020_auto_hard_kmeans_p3.c \
+    quant/palette/auto_float/0021_auto_explicit_p3.c \
+    quant/palette/auto_float/0022_auto_reject_kmeans_feedback.c \
+    quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
     quant/palette/heckbert_test_common.c \
     quant/palette/heckbert_float/0032_heckbert_subbyte_diffusion.c \
     quant/palette/heckbert_float/0030_heckbert_histogram_allocation.c \

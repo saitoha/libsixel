@@ -6939,6 +6939,25 @@ sixel_encoder_resolve_direct_binning(
 static int
 sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
 {
+    sixel_palette_quantizer_resolver_input_t input;
+    sixel_palette_quantizer_selection_t selection;
+    sixel_palette_policy_origin_t origin;
+    int quantize_model;
+
+    quantize_model = encoder->quantize_model;
+    if (quantize_model == SIXEL_QUANTIZE_MODEL_AUTO) {
+        /* Admission follows the same staged choice as palette construction:
+         * AUTO can resolve to K-means when binning requires weighted points.
+         * Do not rewrite the requested policy or commit frame state here. */
+        input.requested = quantize_model;
+        if (SIXEL_FAILED(sixel_encoder_resolve_requested_binning(
+                encoder, &input.binning_requested, &origin)) ||
+                SIXEL_FAILED(sixel_palette_quantizer_select(
+                    &input, &selection))) {
+            return 0;
+        }
+        quantize_model = selection.effective;
+    }
     /* These CPU spatial kernels consume the unrounded float palette and
      * propagate residuals without byte projection. AUTO resolves to
      * Atkinson or FS after the final palette count is known. Positional
@@ -6986,11 +7005,11 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
             encoder->clustering_colorspace < SIXEL_COLORSPACE_GAMMA ||
             encoder->clustering_colorspace > SIXEL_COLORSPACE_DIN99D ||
             encoder->clustering_colorspace == SIXEL_COLORSPACE_SMPTEC ||
-            (encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS &&
-             encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KCENTER &&
-             encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEDOIDS &&
-             encoder->quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT) ||
-            (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS &&
+            (quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS &&
+             quantize_model != SIXEL_QUANTIZE_MODEL_KCENTER &&
+             quantize_model != SIXEL_QUANTIZE_MODEL_KMEDOIDS &&
+             quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT) ||
+            (quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS &&
              encoder->quantize_model_kmeans_feedback_mode !=
                 SIXEL_PALETTE_KMEANS_FEEDBACK_OFF) ||
             (sixel_resolve_final_merge_mode(encoder->final_merge_mode) !=
@@ -7049,7 +7068,7 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
     if (!sixel_encoder_rgb101_options(encoder)) {
         sixel_helper_set_additional_message(
             "display-p3 requires the selected CPU float palette path: "
-            "--precision=auto|float -Qkmeans|center|medoids|heckbert "
+            "--precision=auto|float -Qauto|kmeans|center|medoids|heckbert "
             "-~none|certlut|5bit|6bit|auto|vptree|rbc|mahalanobis|"
             "eytzinger|fhedt "
             "-X/-W gamma|linear|oklab|cielab|din99d "
