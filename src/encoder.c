@@ -4492,7 +4492,7 @@ load_image_callback_for_palette(
             SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
         /* Image maps need the same extended float builder as source images.
          * Retain unrounded working coordinates here: the outer fixed-palette
-         * boundary captures -M and projects the palette to RGB101 once. */
+         * boundary captures -M and caches separate RGB101 output codes. */
         sixel_palette_frame_state_init(&state);
         sixel_palette_policy_resolution_init(&state.quantizer,
             callback_context->encoder->quantize_model,
@@ -6955,9 +6955,14 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
     default:
         return 0;
     }
-    return !((encoder->working_colorspace != SIXEL_COLORSPACE_LINEAR &&
-             encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA) ||
-            encoder->clustering_colorspace != SIXEL_COLORSPACE_LINEAR ||
+    /* All five typed spaces use the extended common transform. SMPTE-C
+     * remains an output-only legacy definition, not a working geometry. */
+    return !(encoder->working_colorspace < SIXEL_COLORSPACE_GAMMA ||
+            encoder->working_colorspace > SIXEL_COLORSPACE_DIN99D ||
+            encoder->working_colorspace == SIXEL_COLORSPACE_SMPTEC ||
+            encoder->clustering_colorspace < SIXEL_COLORSPACE_GAMMA ||
+            encoder->clustering_colorspace > SIXEL_COLORSPACE_DIN99D ||
+            encoder->clustering_colorspace == SIXEL_COLORSPACE_SMPTEC ||
             encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS ||
             encoder->quantize_model_kmeans_feedback_mode !=
                 SIXEL_PALETTE_KMEANS_FEEDBACK_OFF ||
@@ -6997,8 +7002,7 @@ sixel_encoder_rgb101_frame(sixel_encoder_t const *encoder,
     return encoder->output_colorspace == SIXEL_COLORSPACE_GAMMA &&
         (encoder->prefer_float32 || SIXEL_PIXELFORMAT_IS_FLOAT32(format)) &&
         (format == SIXEL_PIXELFORMAT_RGB888 ||
-         format == SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-         format == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) &&
+         SIXEL_PIXELFORMAT_IS_FLOAT32(format)) &&
         sixel_frame_get_multiframe(frame) == 0 &&
         !sixel_encoder_frame_preserves_alpha_key(frame) &&
         sixel_encoder_rgb101_options(encoder);
@@ -7016,7 +7020,8 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
     if (!sixel_encoder_rgb101_options(encoder)) {
         sixel_helper_set_additional_message(
             "display-p3 requires the CPU float K-means pilot: "
-            "--precision=auto|float -Xlinear -Wlinear|gamma -Qkmeans -~none "
+            "--precision=auto|float -Qkmeans -~none "
+            "-X/-W gamma|linear|oklab|cielab|din99d "
             "--binning-policy=none --sampling-policy=full-frame "
             "CPU spatial diffusion (or -dnone/-dauto), "
             "-Fnone -_none -trgb, no cover "
@@ -7039,10 +7044,8 @@ sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
     if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
             (sixel_frame_get_multiframe(frame) != 0 ||
              (sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGB888 &&
-              sixel_frame_get_pixelformat(frame) !=
-                SIXEL_PIXELFORMAT_RGBFLOAT32 &&
-              sixel_frame_get_pixelformat(frame) !=
-                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
+              !SIXEL_PIXELFORMAT_IS_FLOAT32(
+                  sixel_frame_get_pixelformat(frame))) ||
              sixel_encoder_frame_preserves_alpha_key(frame))) {
         sixel_helper_set_additional_message(
             "display-p3 requires an opaque static RGB frame.");

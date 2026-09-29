@@ -1847,8 +1847,7 @@ sixel_palette_generate_extended(
             request->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS ||
             request->use_reversible != 0 ||
             request->final_merge_mode != SIXEL_FINAL_MERGE_NONE ||
-            (request->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
-             request->pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32)) {
+            !SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
         return SIXEL_BAD_ARGUMENT;
     }
     storage = SIXEL_PALETTE_STORAGE(palette);
@@ -1884,8 +1883,11 @@ sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace,
     if (palette == NULL ||
             (output_definition != SIXEL_PALETTE_OUTPUT_LEGACY &&
              output_definition != SIXEL_PALETTE_OUTPUT_DISPLAY_P3) ||
-            (source_colorspace != SIXEL_COLORSPACE_LINEAR &&
-             source_colorspace != SIXEL_COLORSPACE_GAMMA)) {
+            (source_colorspace != SIXEL_COLORSPACE_GAMMA &&
+             source_colorspace != SIXEL_COLORSPACE_LINEAR &&
+             source_colorspace != SIXEL_COLORSPACE_OKLAB &&
+             source_colorspace != SIXEL_COLORSPACE_CIELAB &&
+             source_colorspace != SIXEL_COLORSPACE_DIN99D)) {
         return SIXEL_BAD_ARGUMENT;
     }
     storage = SIXEL_PALETTE_STORAGE(palette);

@@ -89,7 +89,8 @@ enum sixel_palette_output_definition {
 };
 
 /* Keep the installed generate request ABI unchanged. This private entry
- * requires the CPU float K-means path and forbids byte solver fallback. */
+ * requires CPU float K-means, preserves all five typed coordinate spaces,
+ * and forbids byte solver fallback. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_generate_extended(
     sixel_palette_t *palette,

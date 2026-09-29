@@ -69,7 +69,7 @@ test_palette_0055_p3_mapfile(int argc, char **argv)
     palette = NULL;
     result = EXIT_FAILURE;
     memset(&capture, 0, sizeof(capture));
-    if (argc != 3) {
+    if (argc != 3 && argc != 4) {
         return EXIT_FAILURE;
     }
     linear = strstr(argv[1], "gamma") == NULL;
@@ -88,7 +88,7 @@ test_palette_0055_p3_mapfile(int argc, char **argv)
         }
     }
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
-            linear ? "linear" : "gamma")) ||
+            argc == 4 ? argv[3] : (linear ? "linear" : "gamma"))) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd',
                 fs ? "fs" : "none")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'm', argv[2]))) {

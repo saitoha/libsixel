@@ -13,24 +13,22 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-# Black and white fix the two generated entries independently of clustering.
-# The existing byte palette stores Lab as (0,128,128) and (255,128,128).
-# Its a/b midpoint is not exactly neutral. Independent inverse Lab/XYZ/TRC
-# arithmetic in tests/data/color-numeric/palette-export.json gives these RGB8
-# values. This owns the export conversion, not float palette preservation.
+# Black and white fix both entries independently of clustering. The selected
+# float path retains neutral Lab coordinates; exporting must give exact
+# sRGB8 endpoints, without reconstructing a/b from their biased byte codes.
 expected_palette='GIMP Palette
 Name: libsixel export
 Columns: 16
 # Exported by libsixel
-255 254 254	Index 0
-  3   0   0	Index 1'
+255 255 255	Index 0
+  0   0   0	Index 1'
 # Generated palettes do not promise the solver's ordering of these entries.
 reversed_palette='GIMP Palette
 Name: libsixel export
 Columns: 16
 # Exported by libsixel
-  3   0   0	Index 0
-255 254 254	Index 1'
+  0   0   0	Index 0
+255 255 255	Index 1'
 
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \

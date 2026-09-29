@@ -4672,7 +4672,7 @@ sixel_dither_apply_palette_with_mode(
     }
 
     dither->ncolors = ncolors;
-    /* The RGB101 owner already committed all three views in a fixed order.
+    /* The RGB101 owner cached wire codes with the working entry order.
      * Reinitializing even identical byte entries invalidates its wire codes. */
     if (dither->use_rgb101_palette == 0 &&
             ncolors >= 0 &&

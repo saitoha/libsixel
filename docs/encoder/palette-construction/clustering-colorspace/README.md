@@ -45,6 +45,8 @@ construction do not acquire new clustering behavior from `-X`. The current
 alpha-key preservation branch also keeps the frame's existing color space so
 that its reserved transparency entry remains intact.
 
+The [selected CPU float palette path](../../output/output-colorspace.md#selected-ordinary-srgb-float-path) preserves extended centroids in all five `-X` spaces, converts them to any of the five `-W` spaces without nominal-range clipping, and retains the float palette for lookup. Its separate RGB101 output cache does not feed rounded values back into clustering or dithering. Other quantizers and policy combinations retain their existing paths.
+
 ## Distance model
 
 Let `c[i]` be a source color and let `phi_X(c[i])` be that color expressed in

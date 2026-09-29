@@ -7,6 +7,7 @@
 #include <sixel.h>
 #include "src/dither.h"
 #include "src/palette.h"
+#include "src/dither-policy-fs.h"
 #include "src/dither-policy-atkinson.h"
 #include "src/dither-policy-jajuni.h"
 #include "src/dither-policy-stucki.h"
@@ -16,6 +17,7 @@
 #include "src/dither-policy-sierra3.h"
 #include "src/dither-policy-lso2.h"
 #include "tests/data/color-numeric/p3-palette.h"
+#include "tests/data/color-numeric/palette-space.h"
 
 typedef struct spatial_method {
     char const *name;
@@ -36,6 +38,7 @@ static spatial_method_t const spatial_methods[] = {
     { "sierra2", sixel_dither_policy_sierra2_float32_new, 1.0 / 8.0 },
     { "sierra3", sixel_dither_policy_sierra3_float32_new, 5.0 / 32.0 },
     { "lso2", sixel_dither_policy_lso2_float32_new, 794.0 / 3004.0 },
+    { "fs", sixel_dither_policy_fs_float32_new, 7.0 / 16.0 },
     { "auto", NULL, 0.0 }
 };
 
@@ -176,11 +179,21 @@ spatial_lookup_pixel(sixel_lookup_policy_interface_t const *base,
 }
 
 static int
-spatial_residual(spatial_method_t const *method, int p3, int linear)
+spatial_residual(spatial_method_t const *method, int p3, int space)
 {
     static sixel_lookup_policy_vtbl_t const vtbl = {
         NULL, NULL, NULL, spatial_lookup_pixel
     };
+    static int const colors[] = {
+        SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_CIELAB, SIXEL_COLORSPACE_DIN99D
+    };
+    static int const formats[] = {
+        SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_PIXELFORMAT_OKLABFLOAT32, SIXEL_PIXELFORMAT_CIELABFLOAT32,
+        SIXEL_PIXELFORMAT_DIN99DFLOAT32
+    };
+    double const native[3] = { .312, .123, -.127 };
     sixel_dither_t *dither;
     sixel_dither_policy_interface_t *policy;
     sixel_dither_policy_prepare_request_t prepare;
@@ -202,18 +215,23 @@ spatial_residual(spatial_method_t const *method, int p3, int linear)
     int n;
     int ok;
     int colorspace;
+    int linear;
 
     dither = NULL;
     policy = NULL;
     object = NULL;
     ok = 0;
-    colorspace = linear ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA;
+    linear = space == 1;
+    colorspace = colors[space];
     memset(&prepare, 0, sizeof(prepare));
     memset(&request, 0, sizeof(request));
     memset(&lookup, 0, sizeof(lookup));
     lookup.base.vtbl = &vtbl;
     for (n = 0; n < 3; ++n) {
-        if (p3) {
+        if (space >= 2) {
+            center = native[n];
+            original[n] = (float)center;
+        } else if (p3) {
             center = color_p3_red_linear[n] * .8;
             if (!linear) {
                 center = spatial_gamma(center);
@@ -255,7 +273,9 @@ spatial_residual(spatial_method_t const *method, int p3, int linear)
         goto end;
     }
     for (n = 0; n < 3; ++n) {
-        if (wire[n] != (p3 ? (n == 0 ? 91 : 0) : 35)) {
+        if (wire[n] != (space >= 2
+                ? color_palette_space[space].residual_wire[p3][n]
+                : (p3 ? (n == 0 ? 91 : 0) : 35))) {
             goto end;
         }
     }
@@ -267,8 +287,7 @@ spatial_residual(spatial_method_t const *method, int p3, int linear)
     prepare.dither = dither;
     prepare.depth = 3;
     prepare.method_for_scan = SIXEL_SCAN_RASTER;
-    prepare.pixelformat = linear ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-                                : SIXEL_PIXELFORMAT_RGBFLOAT32;
+    prepare.pixelformat = formats[space];
     if (SIXEL_FAILED(policy->vtbl->prepare(policy, &prepare))) {
         goto end;
     }
@@ -287,7 +306,12 @@ spatial_residual(spatial_method_t const *method, int p3, int linear)
         goto end;
     }
     for (n = 0; n < 3; ++n) {
-        expected = source[n] + .125 * method->right_weight;
+        /* LSO2 diffuses only lightness in perceptual working spaces;
+         * chromatic axes retain the source, rather than an RGB error tap. */
+        expected = source[n];
+        if (space < 2 || n == 0 || strcmp(method->name, "lso2") != 0) {
+            expected += .125 * method->right_weight;
+        }
         /* Absolute tolerance covers binary32 palette, sample and residual
          * stores. It excludes both byte-projected palette errors and the
          * missing residual. Red stays extended; the negative green source
@@ -317,19 +341,22 @@ test_rgb101_spatial(int argc, char **argv)
 {
     size_t n;
     int p3;
-    int linear;
+    int space;
 
     if (argc != 5) {
         return EXIT_FAILURE;
     }
     p3 = strcmp(argv[2], "p3") == 0;
-    linear = strcmp(argv[3], "linear") == 0;
+    space = strcmp(argv[3], "linear") == 0 ? 1
+        : strcmp(argv[3], "oklab") == 0 ? 2
+        : strcmp(argv[3], "cielab") == 0 ? 3
+        : strcmp(argv[3], "din99d") == 0 ? 4 : 0;
     for (n = 0U; n < sizeof(spatial_methods) / sizeof(spatial_methods[0]);
             ++n) {
         if (strcmp(argv[4], spatial_methods[n].name) == 0) {
             return strcmp(argv[1], "wire") == 0
-                ? spatial_encoder(&spatial_methods[n], p3, linear)
-                : spatial_residual(&spatial_methods[n], p3, linear);
+                ? spatial_encoder(&spatial_methods[n], p3, space == 1)
+                : spatial_residual(&spatial_methods[n], p3, space);
         }
     }
     return EXIT_FAILURE;

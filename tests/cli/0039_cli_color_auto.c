@@ -444,9 +444,9 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
         arguments[count++] = "-o-";
     }
     if (!baseline && color_auto_is(name, "encode-error")) {
-        /* Unsupported P3 working coordinates fail after policy negotiation.
-         * A byte preference is legal and is promoted by the P3 requirement. */
-        arguments[count++] = "-Woklab";
+        /* Positional dithering remains outside the P3 pilot and fails after
+         * policy negotiation. All five working spaces are now supported. */
+        arguments[count++] = "-da_dither";
     }
     if (!baseline && color_auto_is(name, "stdin")) {
         input = open(fixture, O_RDONLY);
