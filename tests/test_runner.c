@@ -473,6 +473,38 @@ int test_palette_sampling_float(int argc, char **argv);
 int test_palette_binning_float(int argc, char **argv);
 int test_palette_merge_float(int argc, char **argv);
 int test_extended_lookup(int argc, char **argv);
+int test_heckbert_native_0032(int argc, char **argv);
+int test_heckbert_native_0030(int argc, char **argv);
+int test_heckbert_native_0031(int argc, char **argv);
+int test_heckbert_native_0001(int argc, char **argv);
+int test_heckbert_native_0002(int argc, char **argv);
+int test_heckbert_native_0003(int argc, char **argv);
+int test_heckbert_native_0004(int argc, char **argv);
+int test_heckbert_native_0005(int argc, char **argv);
+int test_heckbert_native_0006(int argc, char **argv);
+int test_heckbert_native_0007(int argc, char **argv);
+int test_heckbert_native_0008(int argc, char **argv);
+int test_heckbert_native_0009(int argc, char **argv);
+int test_heckbert_native_0010(int argc, char **argv);
+int test_heckbert_native_0011(int argc, char **argv);
+int test_heckbert_native_0012(int argc, char **argv);
+int test_heckbert_native_0013(int argc, char **argv);
+int test_heckbert_native_0014(int argc, char **argv);
+int test_heckbert_native_0015(int argc, char **argv);
+int test_heckbert_native_0016(int argc, char **argv);
+int test_heckbert_native_0017(int argc, char **argv);
+int test_heckbert_native_0018(int argc, char **argv);
+int test_heckbert_native_0019(int argc, char **argv);
+int test_heckbert_native_0020(int argc, char **argv);
+int test_heckbert_native_0021(int argc, char **argv);
+int test_heckbert_native_0022(int argc, char **argv);
+int test_heckbert_native_0023(int argc, char **argv);
+int test_heckbert_native_0024(int argc, char **argv);
+int test_heckbert_native_0025(int argc, char **argv);
+int test_heckbert_native_0026(int argc, char **argv);
+int test_heckbert_native_0027(int argc, char **argv);
+int test_heckbert_native_0028(int argc, char **argv);
+int test_heckbert_native_0029(int argc, char **argv);
 int test_fh_lookup_0020(int argc, char **argv);
 int test_fh_lookup_0021(int argc, char **argv);
 int test_fh_lookup_0022(int argc, char **argv);
@@ -2942,6 +2974,70 @@ static test_entry_t const test_entries[] = {
     { "palette/binning_float/0001_binning_contract",
       test_palette_binning_float },
     { "lookup/extended/0001_extended_lookup", test_extended_lookup },
+    { "palette/heckbert_float/0032_heckbert_subbyte_diffusion",
+      test_heckbert_native_0032 },
+    { "palette/heckbert_float/0030_heckbert_histogram_allocation",
+      test_heckbert_native_0030 },
+    { "palette/heckbert_float/0031_heckbert_representative_allocation",
+      test_heckbert_native_0031 },
+    { "palette/heckbert_float/0001_heckbert_center",
+      test_heckbert_native_0001 },
+    { "palette/heckbert_float/0002_heckbert_average",
+      test_heckbert_native_0002 },
+    { "palette/heckbert_float/0003_heckbert_histogram",
+      test_heckbert_native_0003 },
+    { "palette/heckbert_float/0004_heckbert_gamma_extended",
+      test_heckbert_native_0004 },
+    { "palette/heckbert_float/0005_heckbert_linear_extended",
+      test_heckbert_native_0005 },
+    { "palette/heckbert_float/0006_heckbert_oklab_extended",
+      test_heckbert_native_0006 },
+    { "palette/heckbert_float/0007_heckbert_cielab_extended",
+      test_heckbert_native_0007 },
+    { "palette/heckbert_float/0008_heckbert_din99d_extended",
+      test_heckbert_native_0008 },
+    { "palette/heckbert_float/0009_heckbert_subbyte",
+      test_heckbert_native_0009 },
+    { "palette/heckbert_float/0010_heckbert_tiny_signed",
+      test_heckbert_native_0010 },
+    { "palette/heckbert_float/0011_heckbert_finite_extrema",
+      test_heckbert_native_0011 },
+    { "palette/heckbert_float/0012_heckbert_range_axis",
+      test_heckbert_native_0012 },
+    { "palette/heckbert_float/0013_heckbert_luminance_axis",
+      test_heckbert_native_0013 },
+    { "palette/heckbert_float/0014_heckbert_pca_split",
+      test_heckbert_native_0014 },
+    { "palette/heckbert_float/0015_heckbert_ward",
+      test_heckbert_native_0015 },
+    { "palette/heckbert_float/0016_heckbert_ward_refine",
+      test_heckbert_native_0016 },
+    { "palette/heckbert_float/0017_heckbert_nan",
+      test_heckbert_native_0017 },
+    { "palette/heckbert_float/0018_heckbert_infinity",
+      test_heckbert_native_0018 },
+    { "palette/heckbert_float/0019_heckbert_ward_linear",
+      test_heckbert_native_0019 },
+    { "palette/heckbert_float/0020_heckbert_ward_oklab",
+      test_heckbert_native_0020 },
+    { "palette/heckbert_float/0021_heckbert_ward_cielab",
+      test_heckbert_native_0021 },
+    { "palette/heckbert_float/0022_heckbert_ward_din99d",
+      test_heckbert_native_0022 },
+    { "palette/heckbert_float/0023_heckbert_gamma_wire",
+      test_heckbert_native_0023 },
+    { "palette/heckbert_float/0024_heckbert_linear_wire",
+      test_heckbert_native_0024 },
+    { "palette/heckbert_float/0025_heckbert_oklab_wire",
+      test_heckbert_native_0025 },
+    { "palette/heckbert_float/0026_heckbert_cielab_wire",
+      test_heckbert_native_0026 },
+    { "palette/heckbert_float/0027_heckbert_din99d_wire",
+      test_heckbert_native_0027 },
+    { "palette/heckbert_float/0028_heckbert_p3_wire",
+      test_heckbert_native_0028 },
+    { "palette/heckbert_float/0029_heckbert_byte",
+      test_heckbert_native_0029 },
     { "lookup/fhedt/0020_fh_enclosing_cell",
       test_fh_lookup_0020 },
     { "lookup/fhedt/0021_fh_collision_refine",

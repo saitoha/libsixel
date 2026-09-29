@@ -85,7 +85,9 @@ int palette_test_kmeans_float32_merge_scaling(void);
  * Tuple table primitives live exclusively inside the Heckbert implementation.
  * Exposing them here avoids leaking histogram internals into palette.c.
  */
-typedef unsigned long sample;
+/* Double tuples also carry native float input. Legacy histogram coordinates
+ * remain integral; their representative rounding is explicit below. */
+typedef double sample;
 typedef sample *tuple;
 
 enum {
@@ -103,6 +105,7 @@ typedef struct tupleint **tupletable;
 typedef struct {
     unsigned int size;
     tupletable table;
+    int preserve_extended;
 } tupletable2;
 
 /*
@@ -286,6 +289,13 @@ alloctupletable(tupletable *result,
     }
 
     mainTableSize = size * sizeof(struct tupleint *);
+    /* The tuple pool must remain double-aligned on 32-bit hosts too. */
+    if (mainTableSize > UINT_MAX - (sizeof(sample) - 1U)) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    mainTableSize = (mainTableSize + sizeof(sample) - 1U)
+        / sizeof(sample) * sizeof(sample);
     if ((UINT_MAX - mainTableSize) / sizeof(struct tupleint) < size) {
         nwrite = sixel_compat_snprintf(message,
                                        sizeof(message),
@@ -631,6 +641,7 @@ sixel_lut_build_histogram(unsigned char const *data,
     if (colorfreqtable == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    colorfreqtable->preserve_extended = 0;
     colorfreqtable->size = 0U;
     colorfreqtable->table = NULL;
 
@@ -1042,15 +1053,15 @@ compareplane_lexicographic(struct tupleint const *lhs,
                            unsigned int depth)
 {
     unsigned int plane;
-    int lhs_value;
-    int rhs_value;
+    sample lhs_value;
+    sample rhs_value;
 
     if (lhs == NULL || rhs == NULL) {
         return 0;
     }
     for (plane = 0U; plane < depth; ++plane) {
-        lhs_value = (int)lhs->tuple[plane];
-        rhs_value = (int)rhs->tuple[plane];
+        lhs_value = lhs->tuple[plane];
+        rhs_value = rhs->tuple[plane];
         if (lhs_value < rhs_value) {
             return -1;
         }
@@ -1206,6 +1217,7 @@ newColorMap(unsigned int newcolors,
     unsigned int i;
 
     status = SIXEL_FALSE;
+    colormap.preserve_extended = 0;
     colormap.size = 0U;
     status = alloctupletable(&colormap.table, depth, newcolors, allocator);
     if (SIXEL_FAILED(status)) {
@@ -1547,8 +1559,9 @@ computePcaAxis(tupletable2 const colorfreqtable,
     }
 
     /*
-     * Collect first and second moments in one scan so PCA split setup does
-     * not walk the same box twice.
+     * Legacy integral tuples use first and second moments from one scan.
+     * Native tuples add a centered covariance pass below: subtracting large,
+     * nearly equal moments can erase a small but meaningful spread.
      */
     for (i = 0U; i < boxSize; ++i) {
         entry = colorfreqtable.table[boxStart + i];
@@ -1574,10 +1587,27 @@ computePcaAxis(tupletable2 const colorfreqtable,
     for (plane = 0U; plane < dims; ++plane) {
         mean[plane] /= weight_sum;
     }
+    if (colorfreqtable.preserve_extended) {
+        memset(second_moment, 0, sizeof(second_moment));
+        for (i = 0U; i < boxSize; ++i) {
+            entry = colorfreqtable.table[boxStart + i];
+            weight = (double)entry->value;
+            for (plane = 0U; plane < dims; ++plane) {
+                tuple_value[plane] = entry->tuple[plane] - mean[plane];
+            }
+            for (plane = 0U; plane < dims; ++plane) {
+                for (other = plane; other < dims; ++other) {
+                    second_moment[plane][other] += weight
+                        * tuple_value[plane] * tuple_value[other];
+                }
+            }
+        }
+    }
     for (plane = 0U; plane < dims; ++plane) {
         for (other = plane; other < dims; ++other) {
             normalized_second = second_moment[plane][other] / weight_sum;
-            cov_value = normalized_second - mean[plane] * mean[other];
+            cov_value = colorfreqtable.preserve_extended ? normalized_second
+                : normalized_second - mean[plane] * mean[other];
             if (plane == other && cov_value < 0.0 && cov_value > -1.0e-9) {
                 cov_value = 0.0;
             }
@@ -1829,6 +1859,9 @@ centerBox(unsigned int boxStart,
             }
         }
         newTuple[plane] = (minval + maxval) / 2;
+        if (!colorfreqtable.preserve_extended) {
+            newTuple[plane] = floor(newTuple[plane]);
+        }
     }
 }
 
@@ -1856,6 +1889,9 @@ averageColors(unsigned int boxStart,
             sum += colorfreqtable.table[boxStart + i]->tuple[plane];
         }
         newTuple[plane] = sum / boxSize;
+        if (!colorfreqtable.preserve_extended) {
+            newTuple[plane] = floor(newTuple[plane]);
+        }
     }
 }
 
@@ -1885,6 +1921,9 @@ averagePixels(unsigned int boxStart,
         }
         if (n != 0U) {
             newTuple[plane] = sum / n;
+            if (!colorfreqtable.preserve_extended) {
+                newTuple[plane] = floor(newTuple[plane]);
+            }
         } else {
             newTuple[plane] = 0;
         }
@@ -1939,7 +1978,7 @@ colormapFromBv(unsigned int newcolors,
 #endif
             break;
         }
-        if (use_reversible) {
+        if (use_reversible && !colorfreqtable.preserve_extended) {
             sixel_palette_reversible_tuple(colormap.table[bi]->tuple,
                                           depth,
                                           pixelformat);
@@ -2434,10 +2473,10 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
         if (weight == 0UL) {
             for (component = 0U; component < depth; ++component) {
                 channel = centers[offset + (size_t)component];
-                if (channel < 0.0) {
+                if (!colorfreqtable.preserve_extended && channel < 0.0) {
                     channel = 0.0;
                 }
-                if (channel > 255.0) {
+                if (!colorfreqtable.preserve_extended && channel > 255.0) {
                     channel = 255.0;
                 }
                 cluster_sums_local[offset + (size_t)component] = channel;
@@ -2471,6 +2510,7 @@ sixel_palette_clusters_to_colormap(unsigned long *weights,
                                    int use_reversible,
                                    int pixelformat,
                                    tupletable2 *colormapP,
+                                   int preserve_extended,
                                    sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -2500,16 +2540,16 @@ sixel_palette_clusters_to_colormap(unsigned long *weights,
         for (plane = 0U; plane < depth; ++plane) {
             component = sums[(size_t)index * (size_t)depth + plane];
             component /= (double)weight;
-            if (component < 0.0) {
+            if (!preserve_extended && component < 0.0) {
                 component = 0.0;
             }
-            if (component > 255.0) {
+            if (!preserve_extended && component > 255.0) {
                 component = 255.0;
             }
             colormap.table[index]->tuple[plane]
-                = (sample)(component + 0.5);
+                = preserve_extended ? component : floor(component + 0.5);
         }
-        if (use_reversible) {
+        if (use_reversible && !preserve_extended) {
             sixel_palette_reversible_tuple(colormap.table[index]->tuple,
                                           depth,
                                           pixelformat);
@@ -2689,6 +2729,18 @@ sixel_palette_heckbert_split_attempt(
         } else {
             axis = largestByNorm(minval, maxval, depth);
         }
+        if (colorfreqtable.preserve_extended) {
+            for (i = 0U; i < 3U; ++i) {
+                pca_axis[i] = i == axis ? 1.0 : 0.0;
+            }
+            if (axis_used != NULL) {
+                *axis_used = axis;
+            }
+            return partitionBoxByPcaMedian(colorfreqtable,
+                boxStart, boxSize, depth, dimensions, pca_axis, sum,
+                pca_workspace, pca_workspace_capacity,
+                medianIndex, lowersum);
+        }
         status = sortBoxByAxisBuckets(colorfreqtable,
                                       boxStart,
                                       boxSize,
@@ -2771,7 +2823,8 @@ splitBox(boxVector bv,
         status = SIXEL_LOGIC_ERROR;
         goto end;
     }
-    if (methodForLargest != SIXEL_LARGE_PCA) {
+    if (!colorfreqtable.preserve_extended &&
+            methodForLargest != SIXEL_LARGE_PCA) {
         axis_count_ptr = axis_count;
     }
     findBoxBoundariesAndWeight(colorfreqtable,
@@ -2812,7 +2865,8 @@ splitBox(boxVector bv,
     for (split_attempt = 0U; split_attempt < split_method_count;
             ++split_attempt) {
         split_method = (int)split_methods[split_attempt];
-        if (split_method != SIXEL_LARGE_PCA && axis_count_ptr == NULL) {
+        if (!colorfreqtable.preserve_extended &&
+                split_method != SIXEL_LARGE_PCA && axis_count_ptr == NULL) {
             findBoxBoundariesAndWeight(colorfreqtable,
                                        depth,
                                        boxStart,
@@ -2988,7 +3042,8 @@ mediancut(tupletable2 const colorfreqtable,
     if (bv == NULL) {
         goto end;
     }
-    if (methodForLargest == SIXEL_LARGE_PCA && colorfreqtable.size > 1U) {
+    if ((methodForLargest == SIXEL_LARGE_PCA ||
+            colorfreqtable.preserve_extended) && colorfreqtable.size > 1U) {
         pca_workspace = (struct sixel_pca_sort_entry *)sixel_allocator_malloc(
             allocator,
             colorfreqtable.size * sizeof(struct sixel_pca_sort_entry));
@@ -3131,8 +3186,13 @@ mediancut(tupletable2 const colorfreqtable,
                                                   resolved_merge,
                                                   use_reversible,
                                                   pixelformat,
-                                                  0,
+                                                  colorfreqtable
+                                                      .preserve_extended,
                                                   allocator);
+        if (colorfreqtable.preserve_extended && cluster_total < 1) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         if (cluster_total < 1) {
             cluster_total = 1;
         }
@@ -3161,15 +3221,10 @@ mediancut(tupletable2 const colorfreqtable,
                                                   &iteration_actual);
             }
         }
-        merge_status = sixel_palette_clusters_to_colormap(cluster_weight,
-                                                          cluster_sums,
-                                                          depth,
-                                                          (unsigned int)
-                                                              cluster_total,
-                                                          use_reversible,
-                                                          pixelformat,
-                                                          colormapP,
-                                                          allocator);
+        merge_status = sixel_palette_clusters_to_colormap(
+            cluster_weight, cluster_sums, depth,
+            (unsigned int)cluster_total, use_reversible, pixelformat,
+            colormapP, colorfreqtable.preserve_extended, allocator);
         merge_wall_stop = sixel_timer_now();
         if (merge_ms != NULL) {
             *merge_ms += (merge_wall_stop - merge_wall_start) * 1000.0;
@@ -3207,6 +3262,10 @@ mediancut(tupletable2 const colorfreqtable,
                                     use_reversible,
                                     pixelformat,
                                     allocator);
+        if (colorfreqtable.preserve_extended && colormapP->size == 0U) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
     }
 
     status = SIXEL_OK;
@@ -3226,6 +3285,95 @@ end:
     }
 
     return status;
+}
+
+/* Native histogram entries retain sub-byte differences and out-of-gamut
+ * coordinates. Occurrence weights describe identical triples, not cells on
+ * a bounded lookup grid. Lookup selection is independent of this histogram.
+ * Scale the nominal span to 255 for existing split/merge metrics, but do not
+ * translate signed axes: subtracting an offset would erase tiny values.
+ * All admitted operations are translation invariant with snap disabled. */
+static int
+sixel_heckbert_native_compare(void const *left, void const *right)
+{
+    struct tupleint const *a;
+    struct tupleint const *b;
+    unsigned int channel;
+
+    a = *(struct tupleint const *const *)left;
+    b = *(struct tupleint const *const *)right;
+    for (channel = 0U; channel < 3U; ++channel) {
+        if (a->tuple[channel] < b->tuple[channel]) {
+            return -1;
+        }
+        if (a->tuple[channel] > b->tuple[channel]) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static SIXELSTATUS
+sixel_heckbert_native_histogram(unsigned char const *data,
+                               unsigned int length,
+                               int pixelformat,
+                               tupletable2 *histogram,
+                               sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    float const *pixels;
+    double range[3];
+    unsigned int count;
+    unsigned int index;
+    unsigned int channel;
+    unsigned int unique;
+    struct tupleint *entry;
+    struct tupleint *previous;
+
+    histogram->preserve_extended = 1;
+    if (data == NULL || !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ||
+            sixel_helper_compute_depth(pixelformat) != 3 * sizeof(float) ||
+            length == 0U || length % (3U * sizeof(float)) != 0U) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    count = length / (3U * sizeof(float));
+    pixels = (float const *)(void const *)data;
+    for (channel = 0U; channel < 3U; ++channel) {
+        range[channel] = sixel_pixelformat_float_channel_range(
+            pixelformat, (int)channel);
+    }
+    status = alloctupletable(&histogram->table, 3U, count, allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    for (index = 0U; index < count; ++index) {
+        entry = histogram->table[index];
+        entry->value = 1U;
+        for (channel = 0U; channel < 3U; ++channel) {
+            if (!isfinite(pixels[index * 3U + channel])) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+            entry->tuple[channel] =
+                (double)pixels[index * 3U + channel]
+                * 255.0 / range[channel];
+        }
+    }
+    qsort(histogram->table, count, sizeof(*histogram->table),
+          sixel_heckbert_native_compare);
+    unique = 0U;
+    previous = NULL;
+    for (index = 0U; index < count; ++index) {
+        entry = histogram->table[index];
+        if (previous != NULL &&
+                sixel_heckbert_native_compare(&previous, &entry) == 0) {
+            previous->value++;
+        } else {
+            histogram->table[unique++] = entry;
+            previous = entry;
+        }
+    }
+    histogram->size = unique;
+    return SIXEL_OK;
 }
 
 /* pcc may ICE on very long parameter lists; bundle into one request object. */
@@ -3278,6 +3426,7 @@ sixel_palette_heckbert_colormap(
     unsigned int n;
 
     status = SIXEL_FALSE;
+    colorfreqtable.preserve_extended = 0;
     colorfreqtable.size = 0U;
     colorfreqtable.table = NULL;
     if (request == NULL || request->colormap == NULL
@@ -3305,18 +3454,28 @@ sixel_palette_heckbert_colormap(
 
     colormapP->size = 0U;
     colormapP->table = NULL;
-    status = sixel_lut_build_histogram(data,
-                                       length,
-                                       depth,
-                                       pixel_stride,
-                                       pixelformat,
-                                       SIXEL_PALETTE_CONTEXT(palette)
-                                           ->quality_mode,
-                                       use_reversible,
-                                       SIXEL_PALETTE_CONTEXT(palette)
-                                           ->lut_policy,
-                                       &colorfreqtable,
-                                       allocator);
+    if (SIXEL_PALETTE_CONTEXT(palette)->preserve_extended_rgb) {
+        /* Active snap is not connected to the native histogram yet. */
+        if (use_reversible) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        status = sixel_heckbert_native_histogram(data, length, pixelformat,
+                                                &colorfreqtable, allocator);
+    } else {
+        status = sixel_lut_build_histogram(data,
+                                           length,
+                                           depth,
+                                           pixel_stride,
+                                           pixelformat,
+                                           SIXEL_PALETTE_CONTEXT(palette)
+                                               ->quality_mode,
+                                           use_reversible,
+                                           SIXEL_PALETTE_CONTEXT(palette)
+                                               ->lut_policy,
+                                           &colorfreqtable,
+                                           allocator);
+    }
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -3343,7 +3502,7 @@ sixel_palette_heckbert_colormap(
                 colormapP->table[i]->tuple[n]
                     = colorfreqtable.table[i]->tuple[n];
             }
-            if (use_reversible) {
+            if (use_reversible && !colorfreqtable.preserve_extended) {
                 sixel_palette_reversible_tuple(
                     colormapP->table[i]->tuple,
                     depth,
@@ -3425,6 +3584,8 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     int input_is_float32;
     float *float_entries;
     int float_stride;
+    int preserve_extended;
+    double component;
     int reversible_for_quantizer;
     sixel_palette_heckbert_colormap_request_t colormap_request;
     double wall_start;
@@ -3496,6 +3657,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    colormap.preserve_extended = 0;
     colormap.size = 0U;
     colormap.table = NULL;
     origcolors = 0U;
@@ -3503,6 +3665,8 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     float_entries = NULL;
     float_stride = 0;
     reversible_for_quantizer = SIXEL_PALETTE_CONTEXT(palette)->use_reversible;
+    preserve_extended = SIXEL_PALETTE_CONTEXT(palette)
+        ->preserve_extended_rgb;
     colormap_request.palette = palette;
     colormap_request.data = data;
     colormap_request.length = length;
@@ -3585,6 +3749,17 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
         && colormap.table != NULL) {
         for (index = 0U; index < colormap.size; ++index) {
             for (plane = 0U; plane < depth; ++plane) {
+                if (preserve_extended) {
+                    component = colormap.table[index]->tuple[plane]
+                        / 255.0 * sixel_pixelformat_float_channel_range(
+                            pixelformat, (int)plane);
+                    float_entries[index * depth + plane] = (float)component;
+                    SIXEL_PALETTE_STORAGE(palette)
+                        ->entries[index * depth + plane] =
+                        sixel_pixelformat_float_channel_to_byte(pixelformat,
+                            (int)plane, (float)component);
+                    continue;
+                }
                 SIXEL_PALETTE_STORAGE(palette)->entries[index * depth + plane]
                     = (unsigned char)colormap.table[index]->tuple[plane];
                 if (float_entries != NULL) {

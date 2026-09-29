@@ -1,6 +1,6 @@
 # Palette Quantization
 
-The [selected float output path](../../output/output-colorspace.md#k-center-and-k-medoids-representatives) describes extended-coordinate preservation, representative contracts and supported binning for K-means, K-center and K-medoids. It does not change the objectives described here.
+The [selected float output path](../../output/output-colorspace.md#k-center-and-k-medoids-representatives) describes extended-coordinate preservation, representative contracts and supported binning for K-means, K-center, K-medoids and explicit Heckbert. It does not change the objectives described here.
 
 ## Purpose
 
@@ -142,6 +142,14 @@ These are palette-construction controls, not alternatives to nearest-color looku
 ### Deprecated complexion score
 
 `-C` / `--complexion-score` remains accepted for compatibility, but the current encoder ignores its argument. It does not apply a skin-tone preference, affect palette distance, or replace a color-space policy. The setter does not numerically validate the ignored value. New commands should express their actual palette, color-space, and lookup choices instead.
+
+### Native float Heckbert
+
+On the [selected CPU float output path](../../output/output-colorspace.md#heckbert-representatives), explicit `-Qheckbert` builds a histogram of identical finite source triples without an 8bit projection or bounded grid. The tuple coordinates use double arithmetic and a fixed per-axis scale derived from the nominal `-X` channel span. Signed axes are not translated, so very small coordinates are not lost by adding and subtracting a nominal minimum. Negative and above-range values remain available to splitting and representative construction. Distinct native colors also determine whether a palette is large enough to omit diffusion: colors that merely share a byte/bin projection must not trigger that optimization. Nonfinite input fails; a failed native build cannot retry the bounded legacy histogram.
+
+The three `-s` choices retain their distinct meanings: `center` is the midpoint of each box's extrema, `average` is the mean of its distinct colors, and `histogram` is the occurrence-weighted mean. None rounds its float representative to a byte or a SIXEL percentage. Axis splits use the existing weighted-median projection partitioner for unbounded coordinates; the byte histogram retains its counting-sort implementation. PCA uses centered covariance to avoid cancellation between large second moments. Optional Ward reduction and Lloyd refinement retain signed and fractional coordinates; as in the legacy merge path, refinement may replace the initial `-s` representative with a population centroid.
+
+This exact native histogram may contain more entries than the legacy 5bit/6bit histogram. Its initial deterministic sort costs `O(N log N)` time and `O(N)` space after upstream sampling. The legacy byte path keeps its bounded histogram and integer representative rounding. The `speed` profile's lookup preference still applies to palette application, but no longer coarsens the native histogram. `-Qauto` remains on its existing compatibility path. Active snap and cover remain outside the selected native path; this change does not repair the separately documented [legacy snap defects](../snap-policy/README.md#known-contract-violations).
 
 ## `kmeans`: centroid optimization
 
@@ -678,3 +686,44 @@ quality cases are under [`tests/quant/palette/`](../../../../tests/quant/palette
 
 For the surrounding data flow, start with
 [Encoding Pipeline](../../pipeline/README.md).
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| HQ-01 | Native Heckbert center. | [tests/quant/palette/heckbert_float/0001_heckbert_center.t](../../../../tests/quant/palette/heckbert_float/0001_heckbert_center.t) |
+| HQ-02 | Native Heckbert average. | [tests/quant/palette/heckbert_float/0002_heckbert_average.t](../../../../tests/quant/palette/heckbert_float/0002_heckbert_average.t) |
+| HQ-03 | Native Heckbert histogram. | [tests/quant/palette/heckbert_float/0003_heckbert_histogram.t](../../../../tests/quant/palette/heckbert_float/0003_heckbert_histogram.t) |
+| HQ-04 | Native Heckbert gamma extended. | [tests/quant/palette/heckbert_float/0004_heckbert_gamma_extended.t](../../../../tests/quant/palette/heckbert_float/0004_heckbert_gamma_extended.t) |
+| HQ-05 | Native Heckbert linear extended. | [tests/quant/palette/heckbert_float/0005_heckbert_linear_extended.t](../../../../tests/quant/palette/heckbert_float/0005_heckbert_linear_extended.t) |
+| HQ-06 | Native Heckbert oklab extended. | [tests/quant/palette/heckbert_float/0006_heckbert_oklab_extended.t](../../../../tests/quant/palette/heckbert_float/0006_heckbert_oklab_extended.t) |
+| HQ-07 | Native Heckbert cielab extended. | [tests/quant/palette/heckbert_float/0007_heckbert_cielab_extended.t](../../../../tests/quant/palette/heckbert_float/0007_heckbert_cielab_extended.t) |
+| HQ-08 | Native Heckbert din99d extended. | [tests/quant/palette/heckbert_float/0008_heckbert_din99d_extended.t](../../../../tests/quant/palette/heckbert_float/0008_heckbert_din99d_extended.t) |
+| HQ-09 | Native Heckbert subbyte. | [tests/quant/palette/heckbert_float/0009_heckbert_subbyte.t](../../../../tests/quant/palette/heckbert_float/0009_heckbert_subbyte.t) |
+| HQ-10 | Native Heckbert tiny signed. | [tests/quant/palette/heckbert_float/0010_heckbert_tiny_signed.t](../../../../tests/quant/palette/heckbert_float/0010_heckbert_tiny_signed.t) |
+| HQ-11 | Native Heckbert finite extrema. | [tests/quant/palette/heckbert_float/0011_heckbert_finite_extrema.t](../../../../tests/quant/palette/heckbert_float/0011_heckbert_finite_extrema.t) |
+| HQ-12 | Native Heckbert range axis. | [tests/quant/palette/heckbert_float/0012_heckbert_range_axis.t](../../../../tests/quant/palette/heckbert_float/0012_heckbert_range_axis.t) |
+| HQ-13 | Native Heckbert luminance axis. | [tests/quant/palette/heckbert_float/0013_heckbert_luminance_axis.t](../../../../tests/quant/palette/heckbert_float/0013_heckbert_luminance_axis.t) |
+| HQ-14 | Native Heckbert pca split. | [tests/quant/palette/heckbert_float/0014_heckbert_pca_split.t](../../../../tests/quant/palette/heckbert_float/0014_heckbert_pca_split.t) |
+| HQ-15 | Native Heckbert ward. | [tests/quant/palette/heckbert_float/0015_heckbert_ward.t](../../../../tests/quant/palette/heckbert_float/0015_heckbert_ward.t) |
+| HQ-16 | Ward refinement preserves signed stable centroids; this fixture does not exercise empty-cluster repair. | [tests/quant/palette/heckbert_float/0016_heckbert_ward_refine.t](../../../../tests/quant/palette/heckbert_float/0016_heckbert_ward_refine.t) |
+| HQ-17 | Native Heckbert nan. | [tests/quant/palette/heckbert_float/0017_heckbert_nan.t](../../../../tests/quant/palette/heckbert_float/0017_heckbert_nan.t) |
+| HQ-18 | Native Heckbert infinity. | [tests/quant/palette/heckbert_float/0018_heckbert_infinity.t](../../../../tests/quant/palette/heckbert_float/0018_heckbert_infinity.t) |
+| HQ-19 | Native Heckbert ward linear. | [tests/quant/palette/heckbert_float/0019_heckbert_ward_linear.t](../../../../tests/quant/palette/heckbert_float/0019_heckbert_ward_linear.t) |
+| HQ-20 | Native Heckbert ward oklab. | [tests/quant/palette/heckbert_float/0020_heckbert_ward_oklab.t](../../../../tests/quant/palette/heckbert_float/0020_heckbert_ward_oklab.t) |
+| HQ-21 | Native Heckbert ward cielab. | [tests/quant/palette/heckbert_float/0021_heckbert_ward_cielab.t](../../../../tests/quant/palette/heckbert_float/0021_heckbert_ward_cielab.t) |
+| HQ-22 | Native Heckbert ward din99d. | [tests/quant/palette/heckbert_float/0022_heckbert_ward_din99d.t](../../../../tests/quant/palette/heckbert_float/0022_heckbert_ward_din99d.t) |
+| HQ-23 | Native Heckbert gamma wire. | [tests/quant/palette/heckbert_float/0023_heckbert_gamma_wire.t](../../../../tests/quant/palette/heckbert_float/0023_heckbert_gamma_wire.t) |
+| HQ-24 | Native Heckbert linear wire. | [tests/quant/palette/heckbert_float/0024_heckbert_linear_wire.t](../../../../tests/quant/palette/heckbert_float/0024_heckbert_linear_wire.t) |
+| HQ-25 | Native Heckbert oklab wire. | [tests/quant/palette/heckbert_float/0025_heckbert_oklab_wire.t](../../../../tests/quant/palette/heckbert_float/0025_heckbert_oklab_wire.t) |
+| HQ-26 | Native Heckbert cielab wire. | [tests/quant/palette/heckbert_float/0026_heckbert_cielab_wire.t](../../../../tests/quant/palette/heckbert_float/0026_heckbert_cielab_wire.t) |
+| HQ-27 | Native Heckbert din99d wire. | [tests/quant/palette/heckbert_float/0027_heckbert_din99d_wire.t](../../../../tests/quant/palette/heckbert_float/0027_heckbert_din99d_wire.t) |
+| HQ-28 | Native Heckbert p3 wire. | [tests/quant/palette/heckbert_float/0028_heckbert_p3_wire.t](../../../../tests/quant/palette/heckbert_float/0028_heckbert_p3_wire.t) |
+| HQ-29 | Native Heckbert byte. | [tests/quant/palette/heckbert_float/0029_heckbert_byte.t](../../../../tests/quant/palette/heckbert_float/0029_heckbert_byte.t) |
+| HQ-30 | Native histogram allocation failure is reported without a lossy retry. | [tests/quant/palette/heckbert_float/0030_heckbert_histogram_allocation.t](../../../../tests/quant/palette/heckbert_float/0030_heckbert_histogram_allocation.t) |
+| HQ-31 | Native representative allocation failure is reported without a lossy retry. | [tests/quant/palette/heckbert_float/0031_heckbert_representative_allocation.t](../../../../tests/quant/palette/heckbert_float/0031_heckbert_representative_allocation.t) |
+| HQ-32 | Three sub-byte source colors reduced to two entries keep requested FS diffusion active. | [tests/quant/palette/heckbert_float/0032_heckbert_subbyte_diffusion.t](../../../../tests/quant/palette/heckbert_float/0032_heckbert_subbyte_diffusion.t) |

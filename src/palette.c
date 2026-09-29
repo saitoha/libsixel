@@ -820,6 +820,11 @@ sixel_palette_apply_mediancut_engine(sixel_palette_t *palette,
         }
     }
 
+    if (SIXEL_PALETTE_CONTEXT(palette)->preserve_extended_rgb) {
+        /* A native failure must never retry through the bounded histogram. */
+        return status;
+    }
+
     engine = sixel_palette_quant_engine_lookup(
         SIXEL_QUANTIZE_MODEL_MEDIANCUT,
         0);
@@ -1856,7 +1861,8 @@ sixel_palette_generate_extended(
     if (palette == NULL || request == NULL || request->prefer_float32 == 0 ||
             (request->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS &&
              request->quantize_model != SIXEL_QUANTIZE_MODEL_KCENTER &&
-             request->quantize_model != SIXEL_QUANTIZE_MODEL_KMEDOIDS) ||
+             request->quantize_model != SIXEL_QUANTIZE_MODEL_KMEDOIDS &&
+             request->quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT) ||
             request->use_reversible != 0 ||
             (sixel_resolve_final_merge_mode(request->final_merge_mode) !=
                  SIXEL_FINAL_MERGE_NONE &&

@@ -570,6 +570,39 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0067_SRGB_GAMMA_EXTENDED_SOURCE \
     -DBUILD_TEST_0068_SRGB_LINEAR_EXTENDED_SOURCE \
     -DBUILD_SRGB_CONTRACT_COMMON \
+    -DBUILD_HECKBERT_TEST_COMMON \
+    -DBUILD_TEST_0032_HECKBERT_SUBBYTE_DIFFUSION \
+    -DBUILD_TEST_0030_HECKBERT_HISTOGRAM_ALLOCATION \
+    -DBUILD_TEST_0031_HECKBERT_REPRESENTATIVE_ALLOCATION \
+    -DBUILD_TEST_0001_HECKBERT_CENTER \
+    -DBUILD_TEST_0002_HECKBERT_AVERAGE \
+    -DBUILD_TEST_0003_HECKBERT_HISTOGRAM \
+    -DBUILD_TEST_0004_HECKBERT_GAMMA_EXTENDED \
+    -DBUILD_TEST_0005_HECKBERT_LINEAR_EXTENDED \
+    -DBUILD_TEST_0006_HECKBERT_OKLAB_EXTENDED \
+    -DBUILD_TEST_0007_HECKBERT_CIELAB_EXTENDED \
+    -DBUILD_TEST_0008_HECKBERT_DIN99D_EXTENDED \
+    -DBUILD_TEST_0009_HECKBERT_SUBBYTE \
+    -DBUILD_TEST_0010_HECKBERT_TINY_SIGNED \
+    -DBUILD_TEST_0011_HECKBERT_FINITE_EXTREMA \
+    -DBUILD_TEST_0012_HECKBERT_RANGE_AXIS \
+    -DBUILD_TEST_0013_HECKBERT_LUMINANCE_AXIS \
+    -DBUILD_TEST_0014_HECKBERT_PCA_SPLIT \
+    -DBUILD_TEST_0015_HECKBERT_WARD \
+    -DBUILD_TEST_0016_HECKBERT_WARD_REFINE \
+    -DBUILD_TEST_0017_HECKBERT_NAN \
+    -DBUILD_TEST_0018_HECKBERT_INFINITY \
+    -DBUILD_TEST_0019_HECKBERT_WARD_LINEAR \
+    -DBUILD_TEST_0020_HECKBERT_WARD_OKLAB \
+    -DBUILD_TEST_0021_HECKBERT_WARD_CIELAB \
+    -DBUILD_TEST_0022_HECKBERT_WARD_DIN99D \
+    -DBUILD_TEST_0023_HECKBERT_GAMMA_WIRE \
+    -DBUILD_TEST_0024_HECKBERT_LINEAR_WIRE \
+    -DBUILD_TEST_0025_HECKBERT_OKLAB_WIRE \
+    -DBUILD_TEST_0026_HECKBERT_CIELAB_WIRE \
+    -DBUILD_TEST_0027_HECKBERT_DIN99D_WIRE \
+    -DBUILD_TEST_0028_HECKBERT_P3_WIRE \
+    -DBUILD_TEST_0029_HECKBERT_BYTE \
     -DBUILD_TEST_0015_FILTER_DITHER_6DELTA_LSO2 \
     -DBUILD_TEST_0016_FILTER_DITHER_6DELTA_JAJUNI \
     -DBUILD_TEST_0017_FILTER_DITHER_6DELTA_STUCKI \
@@ -4308,6 +4341,39 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/mahalanobis_float/0012_mah_bands_private.c \
     quant/palette/lookup_float/0001_lookup_palette.c \
     quant/palette/srgb_contract_common.c \
+    quant/palette/heckbert_test_common.c \
+    quant/palette/heckbert_float/0032_heckbert_subbyte_diffusion.c \
+    quant/palette/heckbert_float/0030_heckbert_histogram_allocation.c \
+    quant/palette/heckbert_float/0031_heckbert_representative_allocation.c \
+    quant/palette/heckbert_float/0001_heckbert_center.c \
+    quant/palette/heckbert_float/0002_heckbert_average.c \
+    quant/palette/heckbert_float/0003_heckbert_histogram.c \
+    quant/palette/heckbert_float/0004_heckbert_gamma_extended.c \
+    quant/palette/heckbert_float/0005_heckbert_linear_extended.c \
+    quant/palette/heckbert_float/0006_heckbert_oklab_extended.c \
+    quant/palette/heckbert_float/0007_heckbert_cielab_extended.c \
+    quant/palette/heckbert_float/0008_heckbert_din99d_extended.c \
+    quant/palette/heckbert_float/0009_heckbert_subbyte.c \
+    quant/palette/heckbert_float/0010_heckbert_tiny_signed.c \
+    quant/palette/heckbert_float/0011_heckbert_finite_extrema.c \
+    quant/palette/heckbert_float/0012_heckbert_range_axis.c \
+    quant/palette/heckbert_float/0013_heckbert_luminance_axis.c \
+    quant/palette/heckbert_float/0014_heckbert_pca_split.c \
+    quant/palette/heckbert_float/0015_heckbert_ward.c \
+    quant/palette/heckbert_float/0016_heckbert_ward_refine.c \
+    quant/palette/heckbert_float/0017_heckbert_nan.c \
+    quant/palette/heckbert_float/0018_heckbert_infinity.c \
+    quant/palette/heckbert_float/0019_heckbert_ward_linear.c \
+    quant/palette/heckbert_float/0020_heckbert_ward_oklab.c \
+    quant/palette/heckbert_float/0021_heckbert_ward_cielab.c \
+    quant/palette/heckbert_float/0022_heckbert_ward_din99d.c \
+    quant/palette/heckbert_float/0023_heckbert_gamma_wire.c \
+    quant/palette/heckbert_float/0024_heckbert_linear_wire.c \
+    quant/palette/heckbert_float/0025_heckbert_oklab_wire.c \
+    quant/palette/heckbert_float/0026_heckbert_cielab_wire.c \
+    quant/palette/heckbert_float/0027_heckbert_din99d_wire.c \
+    quant/palette/heckbert_float/0028_heckbert_p3_wire.c \
+    quant/palette/heckbert_float/0029_heckbert_byte.c \
     quant/palette/srgb_contract_common.h \
     diagnostics/probe/0001_probe_parse.c \
     diagnostics/status/0001_status_timeout.c \

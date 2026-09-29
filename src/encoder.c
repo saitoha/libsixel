@@ -6988,7 +6988,8 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
             encoder->clustering_colorspace == SIXEL_COLORSPACE_SMPTEC ||
             (encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS &&
              encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KCENTER &&
-             encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEDOIDS) ||
+             encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEDOIDS &&
+             encoder->quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT) ||
             (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS &&
              encoder->quantize_model_kmeans_feedback_mode !=
                 SIXEL_PALETTE_KMEANS_FEEDBACK_OFF) ||
@@ -7037,7 +7038,7 @@ sixel_encoder_rgb101_frame(sixel_encoder_t const *encoder,
 }
 
 /* Reject unconnected P3 combinations before starting any output. The first
- * path owns three CPU solver families, exact lookup and opaque RGB frames.
+ * path owns four CPU solver families, native lookup and opaque RGB frames.
  * Its output definition never changes the meaning of frame coordinates. */
 static SIXELSTATUS
 sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
@@ -7048,7 +7049,7 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
     if (!sixel_encoder_rgb101_options(encoder)) {
         sixel_helper_set_additional_message(
             "display-p3 requires the selected CPU float palette path: "
-            "--precision=auto|float -Qkmeans|center|medoids "
+            "--precision=auto|float -Qkmeans|center|medoids|heckbert "
             "-~none|certlut|5bit|6bit|auto|vptree|rbc|mahalanobis|"
             "eytzinger|fhedt "
             "-X/-W gamma|linear|oklab|cielab|din99d "
