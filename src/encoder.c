@@ -6960,7 +6960,9 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
         return 0;
     }
     /* All five typed spaces use the extended common transform. SMPTE-C
-     * remains an output-only legacy definition, not a working geometry. */
+     * remains an output-only legacy definition, not a working geometry.
+     * A zero snap approach is identity and must choose the same precision
+     * path as NONE, independently of its otherwise enabled policy name. */
     return !(encoder->working_colorspace < SIXEL_COLORSPACE_GAMMA ||
             encoder->working_colorspace > SIXEL_COLORSPACE_DIN99D ||
             encoder->working_colorspace == SIXEL_COLORSPACE_SMPTEC ||
@@ -6971,11 +6973,11 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
             encoder->quantize_model_kmeans_feedback_mode !=
                 SIXEL_PALETTE_KMEANS_FEEDBACK_OFF ||
             encoder->lut_policy != SIXEL_LUT_POLICY_NONE ||
-            encoder->palette_binning_policy != SIXEL_PALETTE_BINNING_NONE ||
             encoder->final_merge_mode != SIXEL_FINAL_MERGE_NONE ||
             (encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
              encoder->cover_policy != SIXEL_PALETTE_COVER_OFF) ||
-            encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE ||
+            (encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE &&
+             encoder->snap_policy_approach_rate > 0.0) ||
             encoder->gpu_policy != SIXEL_GPU_POLICY_OFF ||
             encoder->palette_type != SIXEL_PALETTETYPE_RGB ||
             (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT &&
@@ -7024,7 +7026,6 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "display-p3 requires the CPU float K-means pilot: "
             "--precision=auto|float -Qkmeans -~none "
             "-X/-W gamma|linear|oklab|cielab|din99d "
-            "--binning-policy=none "
             "CPU spatial diffusion (or -dnone/-dauto), "
             "-Fnone -_none -trgb, no cover "
             "(-aoff for generated palettes), and normal SIXEL output.");

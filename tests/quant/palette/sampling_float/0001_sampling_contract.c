@@ -113,7 +113,8 @@ end:
 }
 
 static int
-sampling_wire(int space, int p3, char const *mode, char const *precision)
+sampling_wire(int space, int p3, char const *mode, char const *precision,
+              char const *binning)
 {
     static struct {
         int flag;
@@ -121,7 +122,7 @@ sampling_wire(int space, int p3, char const *mode, char const *precision)
     } const options[] = {
         { 'p', "1" }, { 'Q', "kmeans:seed=1" }, { 'F', "none" },
         { 'a', "off" }, { '_', "none" }, { '~', "none" },
-        { 'd', "none" }, { 't', "rgb" }, { '5', "none" }, { '0', "soft" }
+        { 'd', "none" }, { 't', "rgb" }, { '0', "soft" }
     };
     sixel_encoder_t *encoder;
     sixel_output_t *output;
@@ -171,7 +172,9 @@ sampling_wire(int space, int p3, char const *mode, char const *precision)
             goto end;
         }
     }
-    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', worker ? "4" : "1")) ||
+    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '5', binning)) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
+                worker ? "4" : "1")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '.', precision)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '4', automatic
                 ? "auto" : "adaptive-grid")) ||
@@ -228,7 +231,7 @@ test_palette_sampling_float(int argc, char **argv)
     int p3;
     int ok;
 
-    if (argc != 5) {
+    if (argc != 5 && argc != 6) {
         return EXIT_FAILURE;
     }
     space = atoi(argv[2]);
@@ -237,6 +240,7 @@ test_palette_sampling_float(int argc, char **argv)
         return EXIT_FAILURE;
     }
     ok = strcmp(argv[1], "copy") == 0 ? sampling_copy(space)
-        : sampling_wire(space, p3, argv[1], argv[4]);
+        : sampling_wire(space, p3, argv[1], argv[4],
+            argc == 6 ? argv[5] : "none");
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

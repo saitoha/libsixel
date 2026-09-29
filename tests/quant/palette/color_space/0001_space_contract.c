@@ -43,7 +43,7 @@ space_write(char *data, int size, void *context)
 }
 
 static int
-space_wire(int x, int w, int p3)
+space_wire(int x, int w, int p3, char const *binning, char const *snap)
 {
     static struct {
         int flag;
@@ -51,8 +51,8 @@ space_wire(int x, int w, int p3)
     } const options[] = {
         { '=', "1" }, { 'p', "1" }, { '.', "float32" },
         { 'Q', "kmeans:seed=1" }, { 'F', "none" }, { 'a', "off" },
-        { '_', "none" }, { '~', "none" }, { 'd', "none" },
-        { 't', "rgb" }, { '5', "none" }, { '4', "full-frame" }
+        { '~', "none" }, { 'd', "none" },
+        { 't', "rgb" }, { '4', "full-frame" }
     };
     sixel_encoder_t *encoder;
     sixel_output_t *output;
@@ -83,7 +83,9 @@ space_wire(int x, int w, int p3)
             goto end;
         }
     }
-    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
+    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '_', snap)) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '5', binning)) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
                 p3 ? "display-p3" : "gamma")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', space_names[x])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', space_names[w])) ||
@@ -250,7 +252,7 @@ test_palette_space(int argc, char **argv)
     int p3;
     int ok;
 
-    if (argc != 5) {
+    if (argc < 5 || argc > 7) {
         return EXIT_FAILURE;
     }
     x = atoi(argv[2]);
@@ -260,7 +262,9 @@ test_palette_space(int argc, char **argv)
         return EXIT_FAILURE;
     }
     if (strcmp(argv[1], "wire") == 0) {
-        return space_wire(x, w, p3) ? EXIT_SUCCESS : EXIT_FAILURE;
+        return space_wire(x, w, p3, argc >= 6 ? argv[5] : "none",
+            argc == 7 ? argv[6] : "none")
+            ? EXIT_SUCCESS : EXIT_FAILURE;
     }
     allocator = NULL;
     palette = NULL;

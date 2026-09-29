@@ -247,6 +247,8 @@ then aggregates those samples in the selected `-X` coordinates. Hard and soft
 binning can therefore alter both the number and locations of points presented
 to the solver. A color-space comparison must pin both policies.
 
+The [selected float output path](../../output/output-colorspace.md#binning-and-extended-coordinates) extends hard/soft bin-address intervals for out-of-nominal samples while retaining native weighted coordinates and the requested grid depth. Its output-space reference owns the supported combinations and interval contract.
+
 ### Working color space, lookup, and dithering
 
 The generated palette is converted from `-X` to `-W` before palette lookup and

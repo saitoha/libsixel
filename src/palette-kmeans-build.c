@@ -726,6 +726,51 @@ sixel_kmeans_colorspace_from_pixelformat(int pixelformat)
 }
 
 static SIXELSTATUS
+sixel_kmeans_expand_bin_bounds(
+    double const *samples,
+    unsigned int sample_count,
+    double scale[3],
+    double offset[3])
+{
+    double lower;
+    double upper;
+    double minimum;
+    double maximum;
+    double value;
+    unsigned int channel;
+    unsigned int index;
+
+    /* These are addressing bounds, not clustering coordinates. Start with
+     * the nominal interval so in-range jobs retain their established grid.
+     * Extend it only where required: saturating the address would merge
+     * distinct wide-gamut colors into the same edge cell at every bin depth.
+     * Binary32 source extrema and their differences fit safely in double. */
+    for (channel = 0u; channel < 3u; ++channel) {
+        lower = -offset[channel] / scale[channel];
+        upper = lower + 255.0 / scale[channel];
+        minimum = lower;
+        maximum = upper;
+        for (index = 0u; index < sample_count; ++index) {
+            value = samples[(size_t)index * 3u + channel];
+            if (!isfinite(value)) {
+                return SIXEL_BAD_INPUT;
+            }
+            if (value < minimum) {
+                minimum = value;
+            }
+            if (value > maximum) {
+                maximum = value;
+            }
+        }
+        if (minimum < lower || maximum > upper) {
+            scale[channel] = 255.0 / (maximum - minimum);
+            offset[channel] = -minimum * scale[channel];
+        }
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_kmeans_build_point_set(
     double *samples,
     unsigned int sample_count,
@@ -737,6 +782,7 @@ sixel_kmeans_build_point_set(
     unsigned int bits_per_axis,
     sixel_kmeans_mapping_mode mapping_mode,
     sixel_kmeans_softdist_mode softdist_mode,
+    int preserve_extended_rgb,
     sixel_allocator_t *allocator,
     sixel_timeline_logger_t *logger,
     sixel_weighted_point_set_t *output)
@@ -874,6 +920,17 @@ sixel_kmeans_build_point_set(
     config.input_is_float32 = input_is_float32;
     memcpy(config.scale, scale, sizeof(config.scale));
     memcpy(config.offset, offset, sizeof(config.offset));
+    if (preserve_extended_rgb && input_is_float32 &&
+            (effective == SIXEL_PALETTE_BINNING_HARD ||
+             effective == SIXEL_PALETTE_BINNING_SOFT)) {
+        /* Keep the solver's nominal scaling untouched. It also defines
+         * convergence tolerances and compatibility byte projections. */
+        status = sixel_kmeans_expand_bin_bounds(samples, sample_count,
+            config.scale, config.offset);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
     status = sixel_filter_factory_create_binning(&config, &filter);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
@@ -1644,6 +1701,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                                           binbits,
                                           mapping_mode,
                                           softdist_mode,
+                                          preserve_extended_rgb,
                                           allocator,
                                           logger,
                                           &point_set);

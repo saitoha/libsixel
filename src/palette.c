@@ -1852,8 +1852,6 @@ sixel_palette_generate_extended(
     }
     storage = SIXEL_PALETTE_STORAGE(palette);
     if (storage->build_attempt_active == 0 ||
-            storage->build_attempt.binning.policy.requested !=
-                SIXEL_PALETTE_BINNING_NONE ||
             sixel_get_kmeans_feedback_mode() !=
                 SIXEL_PALETTE_KMEANS_FEEDBACK_OFF) {
         return SIXEL_BAD_ARGUMENT;
