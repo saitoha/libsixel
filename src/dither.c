@@ -694,6 +694,15 @@ sixel_dither_prepare_lookup_policy(
     select_request.lut_policy = lut_policy;
     select_request.pixelformat = pixelformat;
 
+    if (dither != NULL && dither->use_rgb101_palette != 0) {
+        /* The typed palette is authoritative even for supplied palettes.
+         * Its byte view cannot prove monochrome equivalence: negative and
+         * above-range colors can project to black and white. Suppress only
+         * that shortcut, while preserving the requested lookup class. */
+        select_request.palette = NULL;
+        select_request.optimize_lookup = 1;
+    }
+
     policy_name = sixel_lookup_policy_select_name_with_override(
         &select_request,
         lut_policy_override);
@@ -4239,7 +4248,7 @@ sixel_dither_apply_palette_with_mode(
     }
     if (dither->use_rgb101_palette != 0 &&
             (!prefer_float_pipeline || !source_has_float ||
-             !palette_has_float || dither->optimized != 0)) {
+             !palette_has_float)) {
         sixel_helper_set_additional_message(
             "RGB101 output requires authoritative float lookup and palette.");
         status = SIXEL_LOGIC_ERROR;

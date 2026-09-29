@@ -6959,6 +6959,18 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
     default:
         return 0;
     }
+    /* These float lookup classes retain native palette coordinates. AUTO
+     * resolves to 6bit, whose float implementation is an exact scan. */
+    switch (encoder->lut_policy) {
+    case SIXEL_LUT_POLICY_NONE:
+    case SIXEL_LUT_POLICY_AUTO:
+    case SIXEL_LUT_POLICY_CERTLUT:
+    case SIXEL_LUT_POLICY_5BIT:
+    case SIXEL_LUT_POLICY_6BIT:
+        break;
+    default:
+        return 0;
+    }
     /* All five typed spaces use the extended common transform. SMPTE-C
      * remains an output-only legacy definition, not a working geometry.
      * A zero snap approach is identity and must choose the same precision
@@ -6975,7 +6987,6 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
             (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS &&
              encoder->quantize_model_kmeans_feedback_mode !=
                 SIXEL_PALETTE_KMEANS_FEEDBACK_OFF) ||
-            encoder->lut_policy != SIXEL_LUT_POLICY_NONE ||
             (sixel_resolve_final_merge_mode(encoder->final_merge_mode) !=
                  SIXEL_FINAL_MERGE_NONE &&
              sixel_resolve_final_merge_mode(encoder->final_merge_mode) !=
@@ -7032,7 +7043,8 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
     if (!sixel_encoder_rgb101_options(encoder)) {
         sixel_helper_set_additional_message(
             "display-p3 requires the selected CPU float palette path: "
-            "--precision=auto|float -Qkmeans|center|medoids -~none "
+            "--precision=auto|float -Qkmeans|center|medoids "
+            "-~none|certlut|5bit|6bit|auto "
             "-X/-W gamma|linear|oklab|cielab|din99d "
             "CPU spatial diffusion (or -dnone/-dauto), "
             "-Fnone|ward -_none -trgb, no cover "

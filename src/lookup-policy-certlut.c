@@ -297,22 +297,24 @@ sixel_lookup_policy_certlut_float_component(float const *palette,
     return palette[index * depth + clamped_axis];
 }
 
-static float
+static double
 sixel_lookup_policy_certlut_float_distance(
     sixel_lookup_policy_certlut_float32_t const *lut,
     float const *sample,
     int palette_index)
 {
-    float diff;
-    float distance;
+    double diff;
+    double distance;
     int component;
 
-    diff = 0.0f;
-    distance = 0.0f;
+    /* Widen before subtraction: finite float coordinates can have squared
+     * distances beyond FLT_MAX. Keep palette storage and metric unchanged. */
+    diff = 0.0;
+    distance = 0.0;
     component = 0;
     for (component = 0; component < SIXEL_LOOKUP_POLICY_CERTLUT_FLOAT_COMPONENTS;
             ++component) {
-        diff = sample[component]
+        diff = (double)sample[component]
             - sixel_lookup_policy_certlut_float_component(
                 lut->palette,
                 lut->depth,
@@ -546,13 +548,13 @@ sixel_lookup_policy_certlut_search_kdtree(
     int node_index,
     float const *sample,
     int *best_index,
-    float *best_distance)
+    double *best_distance)
 {
     sixel_lookup_policy_certlut_float32_node_t const *node;
     float pivot;
-    float diff;
-    float distance;
-    float plane_distance;
+    double diff;
+    double distance;
+    double plane_distance;
     int next;
     int other;
 
@@ -572,7 +574,7 @@ sixel_lookup_policy_certlut_search_kdtree(
                                                         lut->depth,
                                                         node->index,
                                                         node->axis);
-    diff = sample[node->axis] - pivot;
+    diff = (double)sample[node->axis] - pivot;
     next = node->left;
     other = node->right;
     if (diff > 0.0f) {
@@ -717,11 +719,11 @@ sixel_lookup_policy_certlut_map_float32(
 {
     float const *sample;
     int best_index;
-    float best_distance;
+    double best_distance;
 
     sample = NULL;
     best_index = 0;
-    best_distance = FLT_MAX;
+    best_distance = DBL_MAX;
     if (lut == NULL || pixel == NULL || lut->kdnodes == NULL) {
         return 0;
     }

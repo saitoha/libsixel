@@ -463,23 +463,25 @@ sixel_lookup_policy_bit6_float_component(float const *palette,
     return palette[index * depth + clamped_axis];
 }
 
-static float
+static double
 sixel_lookup_policy_bit6_float_distance(
     sixel_lookup_policy_bit6_object_t const *object,
     float const *sample,
     int palette_index)
 {
     enum { SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS = 3 };
-    float diff;
-    float distance;
+    double diff;
+    double distance;
     int component;
 
-    diff = 0.0f;
-    distance = 0.0f;
+    /* Widen before subtraction: finite float coordinates can have squared
+     * distances beyond FLT_MAX. Keep palette storage and metric unchanged. */
+    diff = 0.0;
+    distance = 0.0;
     component = 0;
     for (component = 0; component < SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS;
             ++component) {
-        diff = sample[component]
+        diff = (double)sample[component]
              - sixel_lookup_policy_bit6_float_component(
                    object->state_float.palette,
                    object->state_float.depth,
@@ -500,13 +502,13 @@ sixel_lookup_policy_bit6_float_linear_search(
 {
     int index;
     int best_index;
-    float distance;
-    float best_distance;
+    double distance;
+    double best_distance;
 
     index = 0;
     best_index = 0;
     distance = 0.0f;
-    best_distance = FLT_MAX;
+    best_distance = DBL_MAX;
     if (object == NULL || sample == NULL || object->state_float.ncolors <= 0) {
         return 0;
     }

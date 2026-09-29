@@ -472,6 +472,8 @@ int test_palette_space(int argc, char **argv);
 int test_palette_sampling_float(int argc, char **argv);
 int test_palette_binning_float(int argc, char **argv);
 int test_palette_merge_float(int argc, char **argv);
+int test_extended_lookup(int argc, char **argv);
+int test_lookup_palette(int argc, char **argv);
 int test_palette_solvers_float(int argc, char **argv);
 int test_srgb_0065(int argc, char **argv);
 int test_srgb_0066(int argc, char **argv);
@@ -2810,6 +2812,8 @@ static test_entry_t const test_entries[] = {
     { "palette/color_space/0001_space_contract", test_palette_space },
     { "palette/binning_float/0001_binning_contract",
       test_palette_binning_float },
+    { "lookup/extended/0001_extended_lookup", test_extended_lookup },
+    { "palette/lookup_float/0001_lookup_palette", test_lookup_palette },
     { "palette/merge_float/0001_merge_contract",
       test_palette_merge_float },
     { "palette/solvers_float/0001_solver_contract",

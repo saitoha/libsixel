@@ -2045,6 +2045,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/binning_float/0001_binning_contract.c \
 	quant/palette/solvers_float/0001_solver_contract.c \
 	quant/palette/merge_float/0001_merge_contract.c \
+	processing/lookup/extended/0001_extended_lookup.c \
+	quant/palette/lookup_float/0001_lookup_palette.c \
 	quant/palette/srgb_contract_common.c \
 	quant/palette/srgb_contract_common.h \
 	diagnostics/probe/0001_probe_parse.c \
@@ -3950,6 +3952,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/binning_float/test_runner-0001_binning_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/solvers_float/test_runner-0001_solver_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/merge_float/test_runner-0001_merge_contract.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/extended/test_runner-0001_extended_lookup.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/lookup_float/test_runner-0001_lookup_palette.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-srgb_contract_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/status/test_runner-0001_status_timeout.$(OBJEXT) \
@@ -5857,6 +5861,7 @@ am__depfiles_remade =  \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po \
+	processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po \
 	processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Po \
 	processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po \
 	processing/precision/$(DEPDIR)/test_runner-0001_byte_request_float_source.Po \
@@ -5918,6 +5923,7 @@ am__depfiles_remade =  \
 	quant/palette/color_space/$(DEPDIR)/test_runner-0001_space_contract.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po \
+	quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Po \
 	quant/palette/merge_float/$(DEPDIR)/test_runner-0001_merge_contract.Po \
 	quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po \
 	quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po \
@@ -7175,6 +7181,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SAMPLING_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_BINNING_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_MERGE_CONTRACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_EXTENDED_LOOKUP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LOOKUP_PALETTE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SOLVER_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_LOADER_OSC11_COLORSPEC_PARSER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_LOADER_OSC11_RESPONSE_PARSER \
@@ -10501,6 +10509,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/binning_float/0001_binning_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/solvers_float/0001_solver_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/merge_float/0001_merge_contract.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/extended/0001_extended_lookup.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/lookup_float/0001_lookup_palette.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/srgb_contract_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/srgb_contract_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
@@ -16673,6 +16683,24 @@ quant/palette/merge_float/$(DEPDIR)/$(am__dirstamp):
 quant/palette/merge_float/test_runner-0001_merge_contract.$(OBJEXT):  \
 	quant/palette/merge_float/$(am__dirstamp) \
 	quant/palette/merge_float/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/extended/$(am__dirstamp):
+	@$(MKDIR_P) processing/lookup/extended
+	@: >>processing/lookup/extended/$(am__dirstamp)
+processing/lookup/extended/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/lookup/extended/$(DEPDIR)
+	@: >>processing/lookup/extended/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/extended/test_runner-0001_extended_lookup.$(OBJEXT):  \
+	processing/lookup/extended/$(am__dirstamp) \
+	processing/lookup/extended/$(DEPDIR)/$(am__dirstamp)
+quant/palette/lookup_float/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/lookup_float
+	@: >>quant/palette/lookup_float/$(am__dirstamp)
+quant/palette/lookup_float/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/lookup_float/$(DEPDIR)
+	@: >>quant/palette/lookup_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/lookup_float/test_runner-0001_lookup_palette.$(OBJEXT):  \
+	quant/palette/lookup_float/$(am__dirstamp) \
+	quant/palette/lookup_float/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-srgb_contract_common.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
@@ -16856,6 +16884,7 @@ mostlyclean-compile:
 	-rm -f processing/gpu-dequant/*.$(OBJEXT)
 	-rm -f processing/gpu-palette/*.$(OBJEXT)
 	-rm -f processing/lookup/*.$(OBJEXT)
+	-rm -f processing/lookup/extended/*.$(OBJEXT)
 	-rm -f processing/planner/*.$(OBJEXT)
 	-rm -f processing/precision/*.$(OBJEXT)
 	-rm -f processing/scale/*.$(OBJEXT)
@@ -16866,6 +16895,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/binning_float/*.$(OBJEXT)
 	-rm -f quant/palette/color_space/*.$(OBJEXT)
 	-rm -f quant/palette/fallback/*.$(OBJEXT)
+	-rm -f quant/palette/lookup_float/*.$(OBJEXT)
 	-rm -f quant/palette/merge_float/*.$(OBJEXT)
 	-rm -f quant/palette/rgb101_diffusion/*.$(OBJEXT)
 	-rm -f quant/palette/sampling_float/*.$(OBJEXT)
@@ -18693,6 +18723,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/precision/$(DEPDIR)/test_runner-0001_byte_request_float_source.Po@am__quote@ # am--include-marker
@@ -18754,6 +18785,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/color_space/$(DEPDIR)/test_runner-0001_space_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/merge_float/$(DEPDIR)/test_runner-0001_merge_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po@am__quote@ # am--include-marker
@@ -45088,6 +45120,34 @@ quant/palette/merge_float/test_runner-0001_merge_contract.obj: quant/palette/mer
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/merge_float/test_runner-0001_merge_contract.obj `if test -f 'quant/palette/merge_float/0001_merge_contract.c'; then $(CYGPATH_W) 'quant/palette/merge_float/0001_merge_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/merge_float/0001_merge_contract.c'; fi`
 
+processing/lookup/extended/test_runner-0001_extended_lookup.o: processing/lookup/extended/0001_extended_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/extended/test_runner-0001_extended_lookup.o -MD -MP -MF processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Tpo -c -o processing/lookup/extended/test_runner-0001_extended_lookup.o `test -f 'processing/lookup/extended/0001_extended_lookup.c' || echo '$(srcdir)/'`processing/lookup/extended/0001_extended_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Tpo processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/extended/0001_extended_lookup.c' object='processing/lookup/extended/test_runner-0001_extended_lookup.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/extended/test_runner-0001_extended_lookup.o `test -f 'processing/lookup/extended/0001_extended_lookup.c' || echo '$(srcdir)/'`processing/lookup/extended/0001_extended_lookup.c
+
+processing/lookup/extended/test_runner-0001_extended_lookup.obj: processing/lookup/extended/0001_extended_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/extended/test_runner-0001_extended_lookup.obj -MD -MP -MF processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Tpo -c -o processing/lookup/extended/test_runner-0001_extended_lookup.obj `if test -f 'processing/lookup/extended/0001_extended_lookup.c'; then $(CYGPATH_W) 'processing/lookup/extended/0001_extended_lookup.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/extended/0001_extended_lookup.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Tpo processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/extended/0001_extended_lookup.c' object='processing/lookup/extended/test_runner-0001_extended_lookup.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/extended/test_runner-0001_extended_lookup.obj `if test -f 'processing/lookup/extended/0001_extended_lookup.c'; then $(CYGPATH_W) 'processing/lookup/extended/0001_extended_lookup.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/extended/0001_extended_lookup.c'; fi`
+
+quant/palette/lookup_float/test_runner-0001_lookup_palette.o: quant/palette/lookup_float/0001_lookup_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/lookup_float/test_runner-0001_lookup_palette.o -MD -MP -MF quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Tpo -c -o quant/palette/lookup_float/test_runner-0001_lookup_palette.o `test -f 'quant/palette/lookup_float/0001_lookup_palette.c' || echo '$(srcdir)/'`quant/palette/lookup_float/0001_lookup_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Tpo quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/lookup_float/0001_lookup_palette.c' object='quant/palette/lookup_float/test_runner-0001_lookup_palette.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/lookup_float/test_runner-0001_lookup_palette.o `test -f 'quant/palette/lookup_float/0001_lookup_palette.c' || echo '$(srcdir)/'`quant/palette/lookup_float/0001_lookup_palette.c
+
+quant/palette/lookup_float/test_runner-0001_lookup_palette.obj: quant/palette/lookup_float/0001_lookup_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/lookup_float/test_runner-0001_lookup_palette.obj -MD -MP -MF quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Tpo -c -o quant/palette/lookup_float/test_runner-0001_lookup_palette.obj `if test -f 'quant/palette/lookup_float/0001_lookup_palette.c'; then $(CYGPATH_W) 'quant/palette/lookup_float/0001_lookup_palette.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/lookup_float/0001_lookup_palette.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Tpo quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/lookup_float/0001_lookup_palette.c' object='quant/palette/lookup_float/test_runner-0001_lookup_palette.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/lookup_float/test_runner-0001_lookup_palette.obj `if test -f 'quant/palette/lookup_float/0001_lookup_palette.c'; then $(CYGPATH_W) 'quant/palette/lookup_float/0001_lookup_palette.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/lookup_float/0001_lookup_palette.c'; fi`
+
 quant/palette/test_runner-srgb_contract_common.o: quant/palette/srgb_contract_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-srgb_contract_common.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Tpo -c -o quant/palette/test_runner-srgb_contract_common.o `test -f 'quant/palette/srgb_contract_common.c' || echo '$(srcdir)/'`quant/palette/srgb_contract_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Tpo quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
@@ -45893,6 +45953,8 @@ distclean-generic:
 	-$(am__rm_f) processing/gpu-palette/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/$(am__dirstamp)
+	-$(am__rm_f) processing/lookup/extended/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/lookup/extended/$(am__dirstamp)
 	-$(am__rm_f) processing/planner/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/planner/$(am__dirstamp)
 	-$(am__rm_f) processing/precision/$(DEPDIR)/$(am__dirstamp)
@@ -45913,6 +45975,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/color_space/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/fallback/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/fallback/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/lookup_float/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/lookup_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/merge_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/merge_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/rgb101_diffusion/$(DEPDIR)/$(am__dirstamp)
@@ -47753,6 +47817,7 @@ distclean: distclean-am
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po
+	-rm -f processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po
 	-rm -f processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Po
 	-rm -f processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po
 	-rm -f processing/precision/$(DEPDIR)/test_runner-0001_byte_request_float_source.Po
@@ -47814,6 +47879,7 @@ distclean: distclean-am
 	-rm -f quant/palette/color_space/$(DEPDIR)/test_runner-0001_space_contract.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
+	-rm -f quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Po
 	-rm -f quant/palette/merge_float/$(DEPDIR)/test_runner-0001_merge_contract.Po
 	-rm -f quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po
 	-rm -f quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po
@@ -49701,6 +49767,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po
+	-rm -f processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po
 	-rm -f processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Po
 	-rm -f processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po
 	-rm -f processing/precision/$(DEPDIR)/test_runner-0001_byte_request_float_source.Po
@@ -49762,6 +49829,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/color_space/$(DEPDIR)/test_runner-0001_space_contract.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
+	-rm -f quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Po
 	-rm -f quant/palette/merge_float/$(DEPDIR)/test_runner-0001_merge_contract.Po
 	-rm -f quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po
 	-rm -f quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po
