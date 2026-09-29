@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify precision mode does not reinterpret PNG mapfile palettes.
+# Verify native float image-map export retains unmanaged PNG colors.
 # Policy: docs/encoder/palette-construction/external-palettes.md
 set -eux
 
@@ -11,21 +11,24 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-# Preserve the unmanaged fixture values; CMS defaults are tested separately.
+# The literal PLTE colors are sorted by the native Heckbert histogram.
+# With eight distinct colors and no reduction, export must retain their
+# original byte values, not the legacy histogram cell centers.
+# CMS defaults are tested separately.
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 mapfile_png="${TOP_SRCDIR}/images/map8-palette.png"
 expected_palette='JASC-PAL
 0100
 8
-162 6 6
-6 178 6
-150 158 6
-126 106 250
-194 6 182
-6 174 186
-194 194 194
-2 2 2'
+0 0 0
+3 171 185
+3 175 3
+123 102 248
+149 157 3
+159 3 3
+190 3 180
+191 191 191'
 
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none \
@@ -41,9 +44,9 @@ actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "PNG mapfile changed under float32 precision"
+    echo "not ok" 1 - "float PNG mapfile lost original color values"
     exit 0
 }
 
-echo "ok" 1 - "PNG mapfile is stable under precision mode"
+echo "ok" 1 - "float PNG mapfile retains original color values"
 exit 0

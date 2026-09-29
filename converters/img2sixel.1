@@ -412,7 +412,7 @@ pal\-jasc:, pal\-riff:, gpl:) to force a format. Without TYPE the
 extension or file contents decide the palette type. Using TYPE:- reads
 palette bytes from standard input (for example, gpl:-).
 ACT/PAL/GPL entries are sRGB8 regardless of \fB-W\fP and \fB-U\fP.
-Selected float K-means jobs retain unrounded working palettes for gamma
+Selected CPU float jobs retain unrounded working palettes for gamma
 or Display P3 output. Byte-eligible gamma jobs retain their existing path.
 Image mapfiles on the selected float path retain loader/CMS precision.
 This option is mutually exclusive with \fB-b\fP, \fB-e\fP, and
@@ -1364,7 +1364,7 @@ A zero snap approach rate selects the same path as snap none.
 Supported spatial methods are FS, Atkinson, JJN, Stucki, Burkes, the Sierra
 variants, and LSO2; positional and interframe dithering remain unsupported.
 The P3 float requirement overrides an explicit byte preference.
-Palette input with \fB-m\fP retains the K-means configuration of this path.
+Palette input with \fB-m\fP supports the same CPU solver choices, including AUTO.
 Structured palette files remain sRGB. Lookup and diffusion retain their
 unrounded working coordinates; separate P3 RGB101 codes serve only output. Image mapfiles retain loader/CMS
 color information through float palette construction. Omit explicit

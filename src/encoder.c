@@ -4496,7 +4496,10 @@ load_image_callback_for_palette(
         sixel_palette_frame_state_init(&state);
         sixel_palette_policy_resolution_init(&state.quantizer,
             callback_context->encoder->quantize_model,
-            SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT);
+            callback_context->encoder->quantize_model ==
+                SIXEL_QUANTIZE_MODEL_AUTO
+                ? SIXEL_PALETTE_POLICY_ORIGIN_AUTO
+                : SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT);
         status = sixel_encoder_resolve_requested_binning(
             callback_context->encoder, &binning, &origin);
         if (SIXEL_FAILED(status)) {
@@ -7004,7 +7007,9 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
     default:
         return 0;
     }
-    /* All five typed spaces use the extended common transform. SMPTE-C
+    /* Generated palettes and image maps share the supported solver families;
+     * structured maps bypass construction but retain the working palette.
+     * All five typed spaces use the extended common transform. SMPTE-C
      * remains an output-only legacy definition, not a working geometry.
      * A zero snap approach is identity and must choose the same precision
      * path as NONE, independently of its otherwise enabled policy name. */
@@ -7031,8 +7036,6 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
              encoder->snap_policy_approach_rate > 0.0) ||
             encoder->gpu_policy != SIXEL_GPU_POLICY_OFF ||
             encoder->palette_type != SIXEL_PALETTETYPE_RGB ||
-            (encoder->color_option == SIXEL_COLOR_OPTION_MAPFILE &&
-             encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS) ||
             (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT &&
              encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE) ||
             encoder->ormode != 0 || encoder->fdrcs != 0 ||

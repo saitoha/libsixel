@@ -473,6 +473,42 @@ int test_palette_sampling_float(int argc, char **argv);
 int test_palette_binning_float(int argc, char **argv);
 int test_palette_merge_float(int argc, char **argv);
 int test_extended_lookup(int argc, char **argv);
+int test_map_solver_0001(int argc, char **argv);
+int test_map_solver_0002(int argc, char **argv);
+int test_map_solver_0003(int argc, char **argv);
+int test_map_solver_0004(int argc, char **argv);
+int test_map_solver_0005(int argc, char **argv);
+int test_map_solver_0006(int argc, char **argv);
+int test_map_solver_0007(int argc, char **argv);
+int test_map_solver_0008(int argc, char **argv);
+int test_map_solver_0009(int argc, char **argv);
+int test_map_solver_0010(int argc, char **argv);
+int test_map_solver_0011(int argc, char **argv);
+int test_map_solver_0012(int argc, char **argv);
+int test_map_solver_0013(int argc, char **argv);
+int test_map_solver_0014(int argc, char **argv);
+int test_map_solver_0015(int argc, char **argv);
+int test_map_solver_0016(int argc, char **argv);
+int test_map_solver_0017(int argc, char **argv);
+int test_map_solver_0018(int argc, char **argv);
+int test_map_solver_0019(int argc, char **argv);
+int test_map_solver_0020(int argc, char **argv);
+int test_map_solver_0021(int argc, char **argv);
+int test_map_solver_0022(int argc, char **argv);
+int test_map_solver_0023(int argc, char **argv);
+int test_map_solver_0024(int argc, char **argv);
+int test_map_solver_0025(int argc, char **argv);
+int test_map_solver_0026(int argc, char **argv);
+int test_map_solver_0027(int argc, char **argv);
+int test_map_solver_0028(int argc, char **argv);
+int test_map_solver_0029(int argc, char **argv);
+int test_map_solver_0030(int argc, char **argv);
+int test_map_solver_0031(int argc, char **argv);
+int test_map_solver_0032(int argc, char **argv);
+int test_map_solver_0033(int argc, char **argv);
+int test_map_solver_0034(int argc, char **argv);
+int test_map_solver_0035(int argc, char **argv);
+int test_map_solver_0036(int argc, char **argv);
 int test_map_native_0001(int argc, char **argv);
 int test_map_native_0002(int argc, char **argv);
 int test_map_native_0003(int argc, char **argv);
@@ -3022,6 +3058,78 @@ static test_entry_t const test_entries[] = {
     { "palette/binning_float/0001_binning_contract",
       test_palette_binning_float },
     { "lookup/extended/0001_extended_lookup", test_extended_lookup },
+    { "palette/map_solver/0001_map_heckbert_gamma",
+      test_map_solver_0001 },
+    { "palette/map_solver/0002_map_heckbert_linear",
+      test_map_solver_0002 },
+    { "palette/map_solver/0003_map_heckbert_oklab",
+      test_map_solver_0003 },
+    { "palette/map_solver/0004_map_heckbert_cielab",
+      test_map_solver_0004 },
+    { "palette/map_solver/0005_map_heckbert_din99d",
+      test_map_solver_0005 },
+    { "palette/map_solver/0006_map_center_gamma",
+      test_map_solver_0006 },
+    { "palette/map_solver/0007_map_center_linear",
+      test_map_solver_0007 },
+    { "palette/map_solver/0008_map_center_oklab",
+      test_map_solver_0008 },
+    { "palette/map_solver/0009_map_center_cielab",
+      test_map_solver_0009 },
+    { "palette/map_solver/0010_map_center_din99d",
+      test_map_solver_0010 },
+    { "palette/map_solver/0011_map_medoids_gamma",
+      test_map_solver_0011 },
+    { "palette/map_solver/0012_map_medoids_linear",
+      test_map_solver_0012 },
+    { "palette/map_solver/0013_map_medoids_oklab",
+      test_map_solver_0013 },
+    { "palette/map_solver/0014_map_medoids_cielab",
+      test_map_solver_0014 },
+    { "palette/map_solver/0015_map_medoids_din99d",
+      test_map_solver_0015 },
+    { "palette/map_solver/0016_map_auto_omitted",
+      test_map_solver_0016 },
+    { "palette/map_solver/0017_map_auto_none",
+      test_map_solver_0017 },
+    { "palette/map_solver/0018_map_auto_hard",
+      test_map_solver_0018 },
+    { "palette/map_solver/0019_map_auto_soft",
+      test_map_solver_0019 },
+    { "palette/map_solver/0020_map_auto_exact",
+      test_map_solver_0020 },
+    { "palette/map_solver/0021_map_p3_heckbert",
+      test_map_solver_0021 },
+    { "palette/map_solver/0022_map_p3_center",
+      test_map_solver_0022 },
+    { "palette/map_solver/0023_map_p3_medoids",
+      test_map_solver_0023 },
+    { "palette/map_solver/0024_map_p3_auto_none",
+      test_map_solver_0024 },
+    { "palette/map_solver/0025_map_p3_auto_hard",
+      test_map_solver_0025 },
+    { "palette/map_solver/0026_map_fixed_auto",
+      test_map_solver_0026 },
+    { "palette/map_solver/0027_map_fixed_heckbert",
+      test_map_solver_0027 },
+    { "palette/map_solver/0028_map_fixed_center",
+      test_map_solver_0028 },
+    { "palette/map_solver/0029_map_fixed_medoids",
+      test_map_solver_0029 },
+    { "palette/map_solver/0030_map_byte_auto",
+      test_map_solver_0030 },
+    { "palette/map_solver/0031_map_byte_heckbert",
+      test_map_solver_0031 },
+    { "palette/map_solver/0032_map_byte_center",
+      test_map_solver_0032 },
+    { "palette/map_solver/0033_map_byte_medoids",
+      test_map_solver_0033 },
+    { "palette/map_solver/0034_map_auto_reuse",
+      test_map_solver_0034 },
+    { "palette/map_solver/0035_map_invalid_binning",
+      test_map_solver_0035 },
+    { "palette/map_solver/0036_map_fixed_p3_auto",
+      test_map_solver_0036 },
     { "palette/map_float/0001_map_palette_gamma",
       test_map_native_0001 },
     { "palette/map_float/0002_map_palette_linear",

@@ -73,12 +73,14 @@ map_write(char *data, int size, void *context)
 }
 
 int
-test_map_float(int mode, int space, char const *path)
+test_map_solver(int mode, int space, char const *path,
+                char const *quantizer, char const *binning,
+                int output_p3, int solver)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "1" }, { 'Q', "kmeans:seed=1" }, { 'X', "linear" },
+        { '=', "1" }, { 'X', "linear" },
         { 'F', "none" }, { '_', "none" }, { '~', "5bit" },
-        { 't', "rgb" }, { '4', "full-frame" }, { '5', "none" },
+        { 't', "rgb" }, { '4', "full-frame" },
         { '0', "none" }, { 'U', "gamma" }, { '.', "auto" }
     };
     static char const *const spaces[] = {
@@ -105,6 +107,7 @@ test_map_float(int mode, int space, char const *path)
     int byte_input;
     int byte_work;
     int image;
+    int soft_image;
     int fs;
     int p3;
     int passes;
@@ -113,6 +116,7 @@ test_map_float(int mode, int space, char const *path)
     int j;
     int match;
     int selected;
+    int requested_model;
     int ok;
 
     encoder = NULL;
@@ -122,9 +126,10 @@ test_map_float(int mode, int space, char const *path)
     decoded_palette = NULL;
     ok = 0;
     selected = -1;
-    image = mode == 6;
+    image = mode == 6 || mode == 9 || mode == 10;
+    soft_image = image && binning != NULL && strcmp(binning, "soft") == 0;
     fs = mode == 1;
-    passes = mode == 4 || mode == 5 ? 3 : 1;
+    passes = mode == 4 || mode == 5 || mode == 9 ? 3 : 1;
     memset(&capture, 0, sizeof(capture));
     if (space < 0 || space > 4 ||
             SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
@@ -138,7 +143,13 @@ test_map_float(int mode, int space, char const *path)
             goto end;
         }
     }
-    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', spaces[space])) ||
+    if ((quantizer != NULL && SIXEL_FAILED(sixel_encoder_setopt(encoder,
+                'Q', quantizer))) ||
+            (binning != NULL && SIXEL_FAILED(sixel_encoder_setopt(encoder,
+                '5', binning))) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
+                output_p3 ? "display-p3" : "gamma")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', spaces[space])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd',
                 fs ? "fs" : "none")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'm', path)) ||
@@ -155,10 +166,20 @@ test_map_float(int mode, int space, char const *path)
                 'M', "gpl:-")))) {
         goto end;
     }
+    requested_model = encoder->quantize_model;
     for (pass = 0; pass < passes; ++pass) {
         byte_input = mode == 2 || mode == 3 || (mode == 4 && pass == 1);
         byte_work = byte_input && mode != 3;
-        p3 = mode == 5 && pass == 1;
+        p3 = output_p3 || (mode == 5 && pass == 1);
+        if (mode == 9) {
+            /* Resolve AUTO afresh after changing binning on one encoder. */
+            solver = pass == 1 ? SIXEL_QUANTIZE_MODEL_KMEANS
+                               : SIXEL_QUANTIZE_MODEL_MEDIANCUT;
+            if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '5',
+                    pass == 1 ? "hard" : "none"))) {
+                goto end;
+            }
+        }
         if (mode == 5 && SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
                 p3 ? "display-p3" : "gamma"))) {
             goto end;
@@ -173,20 +194,30 @@ test_map_float(int mode, int space, char const *path)
                     byte_input ? (void *)byte_source : (void *)source,
                     fs ? 2 : 1, 1, byte_input ? SIXEL_PIXELFORMAT_RGB888
                         : image ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-                                : SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1)) ||
-                SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame,
-                    output))) {
+                                : SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
+            goto end;
+        }
+        if (mode == 10) {
+            /* Unsupported image-map binning must fail before output. */
+            ok = SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame,
+                output)) && capture.size == 0;
+            goto end;
+        }
+        if (SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame,
+                output)) || encoder->quantize_model != requested_model) {
             goto end;
         }
         dither = (sixel_dither_t *)encoder->diagnostic_dither;
-        if (dither == NULL || dither->use_rgb101_palette != !byte_work) {
+        if (dither == NULL || dither->use_rgb101_palette != !byte_work ||
+                (image && dither->quantize_model != solver)) {
             goto end;
         }
         if (!byte_work) {
             memset(&view, 0, sizeof(view));
             if (SIXEL_FAILED(dither->palette->vtbl->get_entries_float32(
                     dither->palette, &view)) || view.entries == NULL ||
-                    view.entry_count != 4) {
+                    view.entry_count == 0 || view.entry_count > 256 ||
+                    (!soft_image && view.entry_count != 4)) {
                 goto end;
             }
             if (image) {
@@ -194,7 +225,7 @@ test_map_float(int mode, int space, char const *path)
                  * quantized ICC matrix. 3e-4 covers that profile error;
                  * clipping signed/out-of-sRGB coordinates cannot pass. */
                 match = 0;
-                for (i = 0; i < 4; ++i) {
+                for (i = 0; i < (int)view.entry_count; ++i) {
                     for (j = 0; j < 3; ++j) {
                         if (!isfinite(view.entries[i * 3 + j]) ||
                                 fabs(view.entries[i * 3 + j]
@@ -207,7 +238,7 @@ test_map_float(int mode, int space, char const *path)
                         ++match;
                     }
                 }
-                if (match != 1) {
+                if (match == 0 || (!soft_image && match != 1)) {
                     goto end;
                 }
             } else {
@@ -238,6 +269,22 @@ test_map_float(int mode, int space, char const *path)
             goto end;
         }
         if (image) {
+            if (soft_image) {
+                /* Soft bins may retain nearly equal representatives.
+                 * Require the applied entry to be the independent primary,
+                 * without imposing a tie index or a distinct-entry count. */
+                selected = decoded[0];
+                if (selected >= (int)view.entry_count) {
+                    goto end;
+                }
+                for (j = 0; j < 3; ++j) {
+                    if (!isfinite(view.entries[selected * 3 + j]) ||
+                            fabs(view.entries[selected * 3 + j]
+                                - map_p3_red[space][j]) > 3e-4) {
+                        goto end;
+                    }
+                }
+            }
             if (decoded[0] != selected || selected >= colors ||
                     decoded_palette[selected * 3] != 255 ||
                     decoded_palette[selected * 3 + 1] != 0 ||
@@ -272,4 +319,11 @@ end:
     sixel_output_unref(output);
     sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_map_float(int mode, int space, char const *path)
+{
+    return test_map_solver(mode, space, path, "kmeans:seed=1", "none", 0,
+        SIXEL_QUANTIZE_MODEL_KMEANS);
 }

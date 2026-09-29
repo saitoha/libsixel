@@ -571,6 +571,42 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0068_SRGB_LINEAR_EXTENDED_SOURCE \
     -DBUILD_SRGB_CONTRACT_COMMON \
     -DBUILD_MAP_FLOAT_COMMON \
+    -DBUILD_TEST_0001_MAP_HECKBERT_GAMMA \
+    -DBUILD_TEST_0002_MAP_HECKBERT_LINEAR \
+    -DBUILD_TEST_0003_MAP_HECKBERT_OKLAB \
+    -DBUILD_TEST_0004_MAP_HECKBERT_CIELAB \
+    -DBUILD_TEST_0005_MAP_HECKBERT_DIN99D \
+    -DBUILD_TEST_0006_MAP_CENTER_GAMMA \
+    -DBUILD_TEST_0007_MAP_CENTER_LINEAR \
+    -DBUILD_TEST_0008_MAP_CENTER_OKLAB \
+    -DBUILD_TEST_0009_MAP_CENTER_CIELAB \
+    -DBUILD_TEST_0010_MAP_CENTER_DIN99D \
+    -DBUILD_TEST_0011_MAP_MEDOIDS_GAMMA \
+    -DBUILD_TEST_0012_MAP_MEDOIDS_LINEAR \
+    -DBUILD_TEST_0013_MAP_MEDOIDS_OKLAB \
+    -DBUILD_TEST_0014_MAP_MEDOIDS_CIELAB \
+    -DBUILD_TEST_0015_MAP_MEDOIDS_DIN99D \
+    -DBUILD_TEST_0016_MAP_AUTO_OMITTED \
+    -DBUILD_TEST_0017_MAP_AUTO_NONE \
+    -DBUILD_TEST_0018_MAP_AUTO_HARD \
+    -DBUILD_TEST_0019_MAP_AUTO_SOFT \
+    -DBUILD_TEST_0020_MAP_AUTO_EXACT \
+    -DBUILD_TEST_0021_MAP_P3_HECKBERT \
+    -DBUILD_TEST_0022_MAP_P3_CENTER \
+    -DBUILD_TEST_0023_MAP_P3_MEDOIDS \
+    -DBUILD_TEST_0024_MAP_P3_AUTO_NONE \
+    -DBUILD_TEST_0025_MAP_P3_AUTO_HARD \
+    -DBUILD_TEST_0026_MAP_FIXED_AUTO \
+    -DBUILD_TEST_0027_MAP_FIXED_HECKBERT \
+    -DBUILD_TEST_0028_MAP_FIXED_CENTER \
+    -DBUILD_TEST_0029_MAP_FIXED_MEDOIDS \
+    -DBUILD_TEST_0030_MAP_BYTE_AUTO \
+    -DBUILD_TEST_0031_MAP_BYTE_HECKBERT \
+    -DBUILD_TEST_0032_MAP_BYTE_CENTER \
+    -DBUILD_TEST_0033_MAP_BYTE_MEDOIDS \
+    -DBUILD_TEST_0034_MAP_AUTO_REUSE \
+    -DBUILD_TEST_0035_MAP_INVALID_BINNING \
+    -DBUILD_TEST_0036_MAP_FIXED_P3_AUTO \
     -DBUILD_TEST_0001_MAP_PALETTE_GAMMA \
     -DBUILD_TEST_0002_MAP_PALETTE_LINEAR \
     -DBUILD_TEST_0003_MAP_PALETTE_OKLAB \
@@ -4392,6 +4428,42 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/lookup_float/0001_lookup_palette.c \
     quant/palette/srgb_contract_common.c \
     quant/palette/map_float_common.c \
+    quant/palette/map_solver/0001_map_heckbert_gamma.c \
+    quant/palette/map_solver/0002_map_heckbert_linear.c \
+    quant/palette/map_solver/0003_map_heckbert_oklab.c \
+    quant/palette/map_solver/0004_map_heckbert_cielab.c \
+    quant/palette/map_solver/0005_map_heckbert_din99d.c \
+    quant/palette/map_solver/0006_map_center_gamma.c \
+    quant/palette/map_solver/0007_map_center_linear.c \
+    quant/palette/map_solver/0008_map_center_oklab.c \
+    quant/palette/map_solver/0009_map_center_cielab.c \
+    quant/palette/map_solver/0010_map_center_din99d.c \
+    quant/palette/map_solver/0011_map_medoids_gamma.c \
+    quant/palette/map_solver/0012_map_medoids_linear.c \
+    quant/palette/map_solver/0013_map_medoids_oklab.c \
+    quant/palette/map_solver/0014_map_medoids_cielab.c \
+    quant/palette/map_solver/0015_map_medoids_din99d.c \
+    quant/palette/map_solver/0016_map_auto_omitted.c \
+    quant/palette/map_solver/0017_map_auto_none.c \
+    quant/palette/map_solver/0018_map_auto_hard.c \
+    quant/palette/map_solver/0019_map_auto_soft.c \
+    quant/palette/map_solver/0020_map_auto_exact.c \
+    quant/palette/map_solver/0021_map_p3_heckbert.c \
+    quant/palette/map_solver/0022_map_p3_center.c \
+    quant/palette/map_solver/0023_map_p3_medoids.c \
+    quant/palette/map_solver/0024_map_p3_auto_none.c \
+    quant/palette/map_solver/0025_map_p3_auto_hard.c \
+    quant/palette/map_solver/0026_map_fixed_auto.c \
+    quant/palette/map_solver/0027_map_fixed_heckbert.c \
+    quant/palette/map_solver/0028_map_fixed_center.c \
+    quant/palette/map_solver/0029_map_fixed_medoids.c \
+    quant/palette/map_solver/0030_map_byte_auto.c \
+    quant/palette/map_solver/0031_map_byte_heckbert.c \
+    quant/palette/map_solver/0032_map_byte_center.c \
+    quant/palette/map_solver/0033_map_byte_medoids.c \
+    quant/palette/map_solver/0034_map_auto_reuse.c \
+    quant/palette/map_solver/0035_map_invalid_binning.c \
+    quant/palette/map_solver/0036_map_fixed_p3_auto.c \
     quant/palette/map_float/0001_map_palette_gamma.c \
     quant/palette/map_float/0002_map_palette_linear.c \
     quant/palette/map_float/0003_map_palette_oklab.c \

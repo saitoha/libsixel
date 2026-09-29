@@ -17,12 +17,14 @@ mapfile_png="${TOP_SRCDIR}/images/pngsuite/transparency/tm3n3p02.png"
 expected_palette='JASC-PAL
 0100
 1
-2 2 255'
+0 0 255'
 
 # All four PLTE entries are blue.  Their alpha values differ, so compositing
 # them over the same blue background makes every decoded pixel identical.
+# Native float reconstruction must retain the exact blue endpoint.
 actual_palette=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --alpha-policy=composite \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none \
+        --precision=float32 --alpha-policy=composite \
         -B '#0000ff' -m "${mapfile_png}" -M pal-jasc:- \
         -o /dev/null "${input_image}"
 ) || {
