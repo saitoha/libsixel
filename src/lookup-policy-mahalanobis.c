@@ -32,9 +32,6 @@
 #if HAVE_FLOAT_H
 # include <float.h>
 #endif
-#if HAVE_MATH_H
-# include <math.h>
-#endif
 
 #include "lookup-policy-mahalanobis.h"
 #include "pixelformat.h"
@@ -66,17 +63,14 @@ typedef struct sixel_lookup_policy_mahalanobis_float32 {
     int policy;
     int depth;
     int ncolors;
-    float weights[SIXEL_LOOKUP_POLICY_MAHALANOBIS_FLOAT_COMPONENTS];
-    float *palette;
+    double weights[SIXEL_LOOKUP_POLICY_MAHALANOBIS_FLOAT_COMPONENTS];
+    double *palette;
     sixel_allocator_t *allocator;
     struct {
         int pivot_count;
         int *pivots;
-        float *radius;
         int *member_offset;
         int *member_index;
-        float *mean;
-        float *inv_cov;
         int ready;
     } rbc;
 } sixel_lookup_policy_mahalanobis_float32_t;
@@ -187,11 +181,12 @@ sixel_lookup_policy_mahalanobis_from_base_const(
         policy;
 }
 
-static float
-sixel_lookup_policy_mahalanobis_float32_component(float const *palette,
-                                                  int depth,
-                                                  int index,
-                                                  int axis)
+static double
+sixel_lookup_policy_mahalanobis_float32_component(
+    double const *palette,
+    int depth,
+    int index,
+    int axis)
 {
     int clamped_axis;
 
@@ -205,20 +200,23 @@ sixel_lookup_policy_mahalanobis_float32_component(float const *palette,
     return palette[index * depth + clamped_axis];
 }
 
-static float
+static double
 sixel_lookup_policy_mahalanobis_float32_distance(
     sixel_lookup_policy_mahalanobis_float32_t const *lut,
-    float const *sample,
+    double const *sample,
     int palette_index)
 {
-    float diff;
-    float distance;
+    double diff;
+    double distance;
     int component;
 
-    diff = 0.0f;
-    distance = 0.0f;
+    /* Widen before subtraction: finite float endpoints can differ by
+     * more than FLT_MAX, and squared distances span a wider range. */
+    diff = 0.0;
+    distance = 0.0;
     component = 0;
-    for (component = 0; component < SIXEL_LOOKUP_POLICY_MAHALANOBIS_FLOAT_COMPONENTS;
+    for (component = 0;
+            component < SIXEL_LOOKUP_POLICY_MAHALANOBIS_FLOAT_COMPONENTS;
             ++component) {
         diff = sample[component]
              - sixel_lookup_policy_mahalanobis_float32_component(
@@ -234,75 +232,16 @@ sixel_lookup_policy_mahalanobis_float32_distance(
     return distance;
 }
 
-static float
-sixel_lookup_policy_mahalanobis_weighted_component(
-    sixel_lookup_policy_mahalanobis_float32_t const *lut,
-    float value,
-    int component)
-{
-    float weight;
-
-    weight = lut->weights[component];
-    if (weight <= 0.0f) {
-        return 0.0f;
-    }
-
-    return value * sqrtf(weight);
-}
-
-static float
-sixel_lookup_policy_mahalanobis_quadratic3(float const *m, float const *v)
-{
-    float x0;
-    float x1;
-    float x2;
-
-    x0 = m[0] * v[0] + m[1] * v[1] + m[2] * v[2];
-    x1 = m[3] * v[0] + m[4] * v[1] + m[5] * v[2];
-    x2 = m[6] * v[0] + m[7] * v[1] + m[8] * v[2];
-    return v[0] * x0 + v[1] * x1 + v[2] * x2;
-}
-
-static int
-sixel_lookup_policy_mahalanobis_inverse3(float const *src, float *dst)
-{
-    float det;
-
-    det = src[0] * (src[4] * src[8] - src[5] * src[7])
-        - src[1] * (src[3] * src[8] - src[5] * src[6])
-        + src[2] * (src[3] * src[7] - src[4] * src[6]);
-    if (fabsf(det) < 1.0e-12f) {
-        return 0;
-    }
-
-    dst[0] = (src[4] * src[8] - src[5] * src[7]) / det;
-    dst[1] = (src[2] * src[7] - src[1] * src[8]) / det;
-    dst[2] = (src[1] * src[5] - src[2] * src[4]) / det;
-    dst[3] = (src[5] * src[6] - src[3] * src[8]) / det;
-    dst[4] = (src[0] * src[8] - src[2] * src[6]) / det;
-    dst[5] = (src[2] * src[3] - src[0] * src[5]) / det;
-    dst[6] = (src[3] * src[7] - src[4] * src[6]) / det;
-    dst[7] = (src[1] * src[6] - src[0] * src[7]) / det;
-    dst[8] = (src[0] * src[4] - src[1] * src[3]) / det;
-    return 1;
-}
-
 static void
 sixel_lookup_policy_mahalanobis_float32_clear_state(
     sixel_lookup_policy_mahalanobis_float32_t *lut)
 {
     free(lut->rbc.pivots);
-    free(lut->rbc.radius);
     free(lut->rbc.member_offset);
     free(lut->rbc.member_index);
-    free(lut->rbc.mean);
-    free(lut->rbc.inv_cov);
     lut->rbc.pivots = NULL;
-    lut->rbc.radius = NULL;
     lut->rbc.member_offset = NULL;
     lut->rbc.member_index = NULL;
-    lut->rbc.mean = NULL;
-    lut->rbc.inv_cov = NULL;
     lut->rbc.pivot_count = 0;
     lut->rbc.ready = 0;
 }
@@ -338,15 +277,15 @@ sixel_lookup_policy_mahalanobis_float32_prepare_palette(
     int pixelformat)
 {
     size_t total;
-    size_t float_payload;
+    size_t offset;
     int index;
     int component;
-    float *cursor;
+    double *cursor;
     float const *float_cursor;
     int expected_float_depth;
 
     total = 0U;
-    float_payload = 0U;
+    offset = 0U;
     index = 0;
     component = 0;
     cursor = NULL;
@@ -359,8 +298,8 @@ sixel_lookup_policy_mahalanobis_float32_prepare_palette(
     }
 
     total = (size_t)lut->ncolors * (size_t)lut->depth;
-    lut->palette = (float *)sixel_allocator_malloc(lut->allocator,
-                                                   total * sizeof(float));
+    lut->palette = (double *)sixel_allocator_malloc(
+        lut->allocator, total * sizeof(double));
     if (lut->palette == NULL) {
         sixel_helper_set_additional_message(
             "sixel_lookup_policy_mahalanobis: "
@@ -380,11 +319,13 @@ sixel_lookup_policy_mahalanobis_float32_prepare_palette(
             lut->palette = NULL;
             return SIXEL_BAD_ARGUMENT;
         }
-        float_payload = (size_t)lut->ncolors * (size_t)expected_float_depth;
-        if (float_payload > 0U) {
-            memcpy(cursor, float_cursor, float_payload);
-            return SIXEL_OK;
+        /* Widen once at preparation instead of converting every palette
+         * component in the exhaustive per-pixel scan. Source values and
+         * their nominal float metric weights are preserved exactly. */
+        for (offset = 0U; offset < total; ++offset) {
+            cursor[offset] = float_cursor[offset];
         }
+        return SIXEL_OK;
     }
 
     for (index = 0; index < lut->ncolors; ++index) {
@@ -407,41 +348,18 @@ sixel_lookup_policy_mahalanobis_float32_configure_clusters(
     int pivots;
     int i;
     int j;
-    int k;
-    int c;
     int cursor;
     int best_pivot;
-    int start;
-    int end;
-    float best_distance;
-    float distance;
-    float radius;
-    float cov[9];
-    float mean0;
-    float mean1;
-    float mean2;
-    float d0;
-    float d1;
-    float d2;
+    double best_distance;
+    double distance;
 
     pivots = 0;
     i = 0;
     j = 0;
-    k = 0;
-    c = 0;
     cursor = 0;
     best_pivot = 0;
-    start = 0;
-    end = 0;
     best_distance = 0.0f;
     distance = 0.0f;
-    radius = 0.0f;
-    mean0 = 0.0f;
-    mean1 = 0.0f;
-    mean2 = 0.0f;
-    d0 = 0.0f;
-    d1 = 0.0f;
-    d2 = 0.0f;
 
     sixel_lookup_policy_mahalanobis_float32_clear_state(lut);
     pivots = lut->ncolors;
@@ -453,16 +371,11 @@ sixel_lookup_policy_mahalanobis_float32_configure_clusters(
     }
 
     lut->rbc.pivots = (int *)calloc((size_t)pivots, sizeof(int));
-    lut->rbc.radius = (float *)calloc((size_t)pivots, sizeof(float));
     lut->rbc.member_offset = (int *)calloc((size_t)pivots + 1U, sizeof(int));
     lut->rbc.member_index = (int *)calloc((size_t)lut->ncolors, sizeof(int));
-    lut->rbc.mean = (float *)calloc((size_t)pivots * 3U, sizeof(float));
-    lut->rbc.inv_cov = (float *)calloc((size_t)pivots * 9U, sizeof(float));
-    if (lut->rbc.pivots == NULL || lut->rbc.radius == NULL
+    if (lut->rbc.pivots == NULL
             || lut->rbc.member_offset == NULL
-            || lut->rbc.member_index == NULL
-            || lut->rbc.mean == NULL
-            || lut->rbc.inv_cov == NULL) {
+            || lut->rbc.member_index == NULL) {
         sixel_lookup_policy_mahalanobis_float32_clear_state(lut);
         return SIXEL_BAD_ALLOCATION;
     }
@@ -473,7 +386,7 @@ sixel_lookup_policy_mahalanobis_float32_configure_clusters(
 
     for (i = 0; i < lut->ncolors; ++i) {
         best_pivot = 0;
-        best_distance = FLT_MAX;
+        best_distance = DBL_MAX;
         for (j = 0; j < pivots; ++j) {
             distance = sixel_lookup_policy_mahalanobis_float32_distance(
                 lut,
@@ -494,13 +407,10 @@ sixel_lookup_policy_mahalanobis_float32_configure_clusters(
     for (j = 0; j < pivots; ++j) {
         lut->rbc.member_offset[j + 1] += lut->rbc.member_offset[j];
     }
-    for (j = 0; j < pivots; ++j) {
-        lut->rbc.radius[j] = 0.0f;
-    }
 
     for (i = 0; i < lut->ncolors; ++i) {
         best_pivot = 0;
-        best_distance = FLT_MAX;
+        best_distance = DBL_MAX;
         for (j = 0; j < pivots; ++j) {
             distance = sixel_lookup_policy_mahalanobis_float32_distance(
                 lut,
@@ -521,10 +431,6 @@ sixel_lookup_policy_mahalanobis_float32_configure_clusters(
             return SIXEL_RUNTIME_ERROR;
         }
         lut->rbc.member_index[cursor] = i;
-        radius = sqrtf(best_distance);
-        if (radius > lut->rbc.radius[best_pivot]) {
-            lut->rbc.radius[best_pivot] = radius;
-        }
     }
 
     for (j = pivots; j > 0; --j) {
@@ -533,110 +439,17 @@ sixel_lookup_policy_mahalanobis_float32_configure_clusters(
     lut->rbc.member_offset[0] = 0;
 
     for (j = 0; j < pivots; ++j) {
-        start = lut->rbc.member_offset[j];
-        end = lut->rbc.member_offset[j + 1];
-        if (start < 0 || end < start || end > lut->ncolors) {
+        if (lut->rbc.member_offset[j] < 0 ||
+                lut->rbc.member_offset[j + 1] < lut->rbc.member_offset[j] ||
+                lut->rbc.member_offset[j + 1] > lut->ncolors) {
             sixel_lookup_policy_mahalanobis_float32_clear_state(lut);
             return SIXEL_RUNTIME_ERROR;
         }
-
-        mean0 = 0.0f;
-        mean1 = 0.0f;
-        mean2 = 0.0f;
-        lut->rbc.inv_cov[j * 9 + 0] = 1.0f;
-        lut->rbc.inv_cov[j * 9 + 4] = 1.0f;
-        lut->rbc.inv_cov[j * 9 + 8] = 1.0f;
-
-        if (start == end) {
-            continue;
-        }
-
-        for (k = start; k < end; ++k) {
-            if (!sixel_lookup_policy_mahalanobis_member_index_at(
-                    lut,
-                    k,
-                    &c)) {
-                continue;
-            }
-            if (c < 0 || c >= lut->ncolors) {
-                continue;
-            }
-            mean0 += lut->palette[c * 3 + 0];
-            mean1 += lut->palette[c * 3 + 1];
-            mean2 += lut->palette[c * 3 + 2];
-        }
-        i = end - start;
-        mean0 /= (float)i;
-        mean1 /= (float)i;
-        mean2 /= (float)i;
-        lut->rbc.mean[j * 3 + 0] =
-            sixel_lookup_policy_mahalanobis_weighted_component(lut, mean0, 0);
-        lut->rbc.mean[j * 3 + 1] =
-            sixel_lookup_policy_mahalanobis_weighted_component(lut, mean1, 1);
-        lut->rbc.mean[j * 3 + 2] =
-            sixel_lookup_policy_mahalanobis_weighted_component(lut, mean2, 2);
-
-        if (i < 2) {
-            continue;
-        }
-
-        memset(cov, 0, sizeof(cov));
-        for (k = start; k < end; ++k) {
-            if (!sixel_lookup_policy_mahalanobis_member_index_at(
-                    lut,
-                    k,
-                    &c)) {
-                continue;
-            }
-            if (c < 0 || c >= lut->ncolors) {
-                continue;
-            }
-            d0 = sixel_lookup_policy_mahalanobis_weighted_component(
-                lut,
-                lut->palette[c * 3 + 0],
-                0) - lut->rbc.mean[j * 3 + 0];
-            d1 = sixel_lookup_policy_mahalanobis_weighted_component(
-                lut,
-                lut->palette[c * 3 + 1],
-                1) - lut->rbc.mean[j * 3 + 1];
-            d2 = sixel_lookup_policy_mahalanobis_weighted_component(
-                lut,
-                lut->palette[c * 3 + 2],
-                2) - lut->rbc.mean[j * 3 + 2];
-            cov[0] += d0 * d0;
-            cov[1] += d0 * d1;
-            cov[2] += d0 * d2;
-            cov[4] += d1 * d1;
-            cov[5] += d1 * d2;
-            cov[8] += d2 * d2;
-        }
-        cov[0] /= (float)(i - 1);
-        cov[1] /= (float)(i - 1);
-        cov[2] /= (float)(i - 1);
-        cov[3] = cov[1];
-        cov[4] /= (float)(i - 1);
-        cov[5] /= (float)(i - 1);
-        cov[6] = cov[2];
-        cov[7] = cov[5];
-        cov[8] /= (float)(i - 1);
-        cov[0] += 1.0e-6f;
-        cov[4] += 1.0e-6f;
-        cov[8] += 1.0e-6f;
-        if (!sixel_lookup_policy_mahalanobis_inverse3(
-                cov,
-                lut->rbc.inv_cov + j * 9)) {
-            lut->rbc.inv_cov[j * 9 + 0] = 1.0f;
-            lut->rbc.inv_cov[j * 9 + 1] = 0.0f;
-            lut->rbc.inv_cov[j * 9 + 2] = 0.0f;
-            lut->rbc.inv_cov[j * 9 + 3] = 0.0f;
-            lut->rbc.inv_cov[j * 9 + 4] = 1.0f;
-            lut->rbc.inv_cov[j * 9 + 5] = 0.0f;
-            lut->rbc.inv_cov[j * 9 + 6] = 0.0f;
-            lut->rbc.inv_cov[j * 9 + 7] = 0.0f;
-            lut->rbc.inv_cov[j * 9 + 8] = 1.0f;
-        }
     }
 
+    /* The historical covariance score never pruned or ordered queries.
+     * Keep only the deterministic cluster traversal used for tie choices;
+     * unused statistics would add overflow-prone work for extended RGB. */
     lut->rbc.pivot_count = pivots;
     lut->rbc.ready = 1;
     return SIXEL_OK;
@@ -653,9 +466,9 @@ sixel_lookup_policy_mahalanobis_float32_search(
     int end;
     int idx;
     int best_index;
-    float best2;
-    float dist2;
-    float diff[3];
+    double query[3];
+    double best2;
+    double dist2;
 
     j = 0;
     k = 0;
@@ -663,33 +476,17 @@ sixel_lookup_policy_mahalanobis_float32_search(
     end = 0;
     idx = 0;
     best_index = 0;
-    best2 = FLT_MAX;
+    best2 = DBL_MAX;
     dist2 = 0.0f;
-    diff[0] = 0.0f;
-    diff[1] = 0.0f;
-    diff[2] = 0.0f;
 
     if (lut->rbc.ready == 0) {
         return 0;
     }
 
+    query[0] = sample[0];
+    query[1] = sample[1];
+    query[2] = sample[2];
     for (j = 0; j < lut->rbc.pivot_count; ++j) {
-        diff[0] = sixel_lookup_policy_mahalanobis_weighted_component(
-            lut,
-            sample[0],
-            0) - lut->rbc.mean[j * 3 + 0];
-        diff[1] = sixel_lookup_policy_mahalanobis_weighted_component(
-            lut,
-            sample[1],
-            1) - lut->rbc.mean[j * 3 + 1];
-        diff[2] = sixel_lookup_policy_mahalanobis_weighted_component(
-            lut,
-            sample[2],
-            2) - lut->rbc.mean[j * 3 + 2];
-        (void)sixel_lookup_policy_mahalanobis_quadratic3(
-            lut->rbc.inv_cov + j * 9,
-            diff);
-
         start = lut->rbc.member_offset[j];
         end = lut->rbc.member_offset[j + 1];
         if (start < 0 || end < start || end > lut->ncolors) {
@@ -707,7 +504,7 @@ sixel_lookup_policy_mahalanobis_float32_search(
             }
             dist2 = sixel_lookup_policy_mahalanobis_float32_distance(
                 lut,
-                sample,
+                query,
                 idx);
             if (dist2 < best2) {
                 best2 = dist2;
@@ -750,7 +547,8 @@ sixel_lookup_policy_mahalanobis_configure_float32(
     base_weights[0] = 1.0f;
     base_weights[1] = 1.0f;
     base_weights[2] = 1.0f;
-    for (component = 0; component < SIXEL_LOOKUP_POLICY_MAHALANOBIS_FLOAT_COMPONENTS;
+    for (component = 0;
+            component < SIXEL_LOOKUP_POLICY_MAHALANOBIS_FLOAT_COMPONENTS;
             ++component) {
         range = sixel_pixelformat_float_channel_range(request->pixelformat,
                                                       component);
@@ -758,7 +556,9 @@ sixel_lookup_policy_mahalanobis_configure_float32(
             range = 1.0f;
         }
         scale = 1.0f / range;
-        lut->weights[component] = base_weights[component] * scale * scale;
+        /* Retain the historical binary32 metric coefficient, then widen. */
+        lut->weights[component] =
+            (float)(base_weights[component] * scale * scale);
     }
 
     status = sixel_lookup_policy_mahalanobis_float32_prepare_palette(

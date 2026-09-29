@@ -65,7 +65,7 @@ changed that default from `eytzinger` to `certlut`. Statements that call
 `6bit` "the 1.11 default" must therefore name the exact revision or release;
 this document describes the current source tree.
 
-`-U display-p3` accepts `none`, `certlut`, `5bit`, `6bit`, `auto` (resolved to `6bit`), `vptree` and `rbc`. On that path, and on the ordinary sRGB float path that uses the same preparation, lookup retains the unrounded float working palette; separately converted and rounded RGB101 codes serve only serialization; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
+`-U display-p3` accepts `none`, `certlut`, `5bit`, `6bit`, `auto` (resolved to `6bit`), `vptree`, `rbc` and `mahalanobis`. On that path, and on the ordinary sRGB float path that uses the same preparation, lookup retains the unrounded float working palette; separately converted and rounded RGB101 codes serve only serialization; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
 
 ## Policy chapters
 
@@ -84,8 +84,7 @@ and dominant costs differ materially:
   transform.
 - [`vptree`](#policy-vptree): metric VP-tree and safe previous-color cache.
 - [`rbc`](#policy-rbc): Random Ball Cover cluster pruning.
-- [`mahalanobis`](#policy-mahalanobis): covariance metadata over RBC clusters
-  and the current exhaustive query.
+- [`mahalanobis`](#policy-mahalanobis): exhaustive normalized lookup in deterministic RBC cluster order.
 - [Measured quality and speed comparison](#measured-quality-and-speed-comparison):
   reproducible color-error, MS-SSIM, and elapsed-time curves.
 
@@ -120,11 +119,11 @@ colorspace and the lookup policy.
 
 ## Extended float coordinates
 
-The selected [CPU float palette path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path) retains negative, above-nominal and fractional coordinates in `none`, `certlut`, `5bit`, `6bit`, `vptree` and `rbc` lookup. The separately clipped RGB101 wire palette does not replace these working entries. The remaining `mahalanobis`, `eytzinger` and `fhedt` classes are not yet admitted to this path; their existing representation and approximation contracts remain in effect.
+The selected [CPU float palette path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path) retains negative, above-nominal and fractional coordinates in `none`, `certlut`, `5bit`, `6bit`, `vptree`, `rbc` and `mahalanobis` lookup. The separately clipped RGB101 wire palette does not replace these working entries. The remaining `eytzinger` and `fhedt` classes are not yet admitted to this path; their existing representation and approximation contracts remain in effect.
 
-`certlut`, `5bit`, `6bit`, `vptree` and `rbc` retain their normalized metric, with weights derived from the declared channel ranges, rather than the observed palette extent. Unlike `none`, this rescales the opponent axes in CIELAB and DIN99d. Float storage does not mean float arithmetic throughout: these five classes subtract, square and accumulate distances in double. Construction metadata uses the same precision: `certlut` split-plane bounds, VP-tree radii and safe-cache thresholds, and RBC ball radii must not narrow distances back to float before pruning. This avoids overflow and underflow of squared distances for finite binary32 coordinates without clipping them. Palette storage and metric weights remain float32. It does not promise exact real arithmetic or identical index choice at numerically indistinguishable ties. General error-budget rules are in the [testing guide](../../../testing/guide.md#intermediate-floating-point-error).
+`certlut`, `5bit`, `6bit`, `vptree`, `rbc` and `mahalanobis` retain their normalized metric, with weights derived from the declared channel ranges, rather than the observed palette extent. Unlike `none`, this rescales the opponent axes in CIELAB and DIN99d. Float storage does not mean float arithmetic throughout: these six classes subtract, square and accumulate distances in double. Construction metadata uses the same precision: `certlut` split-plane bounds, VP-tree radii and safe-cache thresholds, and RBC ball radii must not narrow distances back to float before pruning. This avoids overflow and underflow of squared distances for finite binary32 coordinates without clipping them. Working palette values and nominal metric coefficients retain float32 precision. Most classes store float32 search copies; `mahalanobis` widens those exact values into a private double copy at preparation to avoid repeated conversion during exhaustive queries. It does not promise exact real arithmetic or identical index choice at numerically indistinguishable ties. General error-budget rules are in the [testing guide](../../../testing/guide.md#intermediate-floating-point-error).
 
-Prepared float lookup objects own their palette copies. Repreparing one instance replaces its palette and search structure without changing another instance. For `certlut`, `5bit` and `6bit`, worker sharing is limited to immutable prepared float data. VP-tree and RBC use worker-local instances; VP-tree also disables its previous-index cache when configured for parallel dithering. No query mutates the working palette or its wire cache.
+Prepared float lookup objects own their palette copies. Repreparing one instance replaces its palette and search structure without changing another instance. For `certlut`, `5bit` and `6bit`, worker sharing is limited to immutable prepared float data. VP-tree, RBC and Mahalanobis use worker-local instances; VP-tree also disables its previous-index cache when configured for parallel dithering. No query mutates the working palette or its wire cache.
 
 ## Result guarantees
 
@@ -1281,28 +1280,17 @@ Its current implementation is
 
 ### Purpose and current status
 
-The float32 `mahalanobis` policy prepares RBC-like clusters, then describes the
-shape of each cluster with a mean and inverse covariance matrix. This metadata
-could support anisotropic ordering or bounds. In the current query path,
-however, the computed Mahalanobis value is not used to prune or order
-clusters: every palette member is still scanned.
+The float32 `mahalanobis` policy retains its historical name and deterministic RBC-like cluster traversal, but selects colors by normalized weighted Euclidean distance. It scans every palette member. Earlier versions also built means and inverse covariance matrices and calculated a Mahalanobis score without using it for ordering, pruning or selection. That unconsumed statistical work has been removed: extended finite coordinates should not pass through unused, overflow-prone covariance arithmetic.
 
 ```text
-palette
-   |
-   v
-deterministic RBC clusters
-   |
-   +--> mean and covariance per cluster
-   |
-query --> evaluate Mahalanobis form --> value currently discarded
-   |
-   v
-scan every member of every cluster with weighted Euclidean distance
+palette --> deterministic RBC clusters
+                         |
+query -------------------+
+                         v
+scan every member with normalized weighted Euclidean distance
 ```
 
-The 8-bit implementation is also a direct scan and does not construct the
-float32 covariance state.
+Active distance subtraction, squaring and accumulation use double. The working palette remains float32; preparation widens its exact values and the existing binary32 metric coefficients into a private double search copy, then widens each query once. The search palette uses 12 additional bytes per color compared with a float32 copy, before accounting for removed covariance state. Clusters preserve member traversal and the existing nearest-distance contract, including freedom at ties. No query mutates the palette. The 8-bit implementation remains a direct unweighted scan.
 
 ### Mahalanobis mathematics
 
@@ -1329,24 +1317,17 @@ Euclidean contours             Mahalanobis contours
 A long, correlated color cluster can therefore regard motion along its major
 axis as less surprising than the same raw motion across its narrow axis.
 
-libsixel computes covariance in range-weighted coordinates and adds `1e-6` to
-the diagonal before inversion. This regularization avoids a singular matrix for
-flat or nearly collinear clusters. Single-member clusters retain an identity
-matrix.
+The historical implementation computed covariance in range-weighted coordinates with a `1e-6` diagonal regularizer. This described its unused metadata, not the selection metric. The mathematical form above explains the policy's name; current queries do not evaluate it.
 
 ### Returned lookup result
 
-It is essential not to confuse the policy's name with its returned distance.
-The current query calculates `M[j](../../../functionality/x)` and discards the value. It then compares
-every member using:
+Every member is compared using:
 
 ```text
 D_w(i, x) = sum_d w[d] (x[d] - c[i][d])^2
 ```
 
-Thus the returned palette color minimizes normalized weighted Euclidean
-distance, not Mahalanobis distance. The covariance preparation currently adds
-work without reducing asymptotic query cost.
+The returned color minimizes normalized weighted Euclidean distance, not Mahalanobis distance. Removing the unused covariance calculation does not introduce anisotropic selection or pruning.
 
 ### Guarantee
 
@@ -1363,15 +1344,12 @@ This result can differ from float32 `none` in unequal-range color spaces because
 With `J = min(K,16)`:
 
 ```text
-cluster assignment and statistics   Theta(K J)
+cluster assignment                  Theta(K J)
 one float32 query                    Theta(K)
 whole float32 image                  Theta(K J + P K)
 extra space                          Theta(K + J)
 one 8-bit query                      Theta(K)
 ```
-
-The 3-by-3 matrix operations are constant per cluster. They affect constants,
-not the current linear dependence on palette size.
 
 Any future pruning rule must prove a lower bound in the same metric as the
 final palette comparison. A Mahalanobis score is not automatically a lower
@@ -2150,6 +2128,21 @@ The following focused tests cover the selected extended float lookup path. Range
 | LUTE-17 | `rbc`: sRGB/P3 wire output, retained float palette and actual consumer. | [tests/quant/palette/lookup_float/0058_rbc_gamma_srgb.t](../../../../tests/quant/palette/lookup_float/0058_rbc_gamma_srgb.t), [tests/quant/palette/lookup_float/0059_rbc_gamma_p3.t](../../../../tests/quant/palette/lookup_float/0059_rbc_gamma_p3.t), [tests/quant/palette/lookup_float/0060_rbc_linear_srgb.t](../../../../tests/quant/palette/lookup_float/0060_rbc_linear_srgb.t), [tests/quant/palette/lookup_float/0061_rbc_linear_p3.t](../../../../tests/quant/palette/lookup_float/0061_rbc_linear_p3.t), [tests/quant/palette/lookup_float/0062_rbc_oklab_srgb.t](../../../../tests/quant/palette/lookup_float/0062_rbc_oklab_srgb.t), [tests/quant/palette/lookup_float/0063_rbc_oklab_p3.t](../../../../tests/quant/palette/lookup_float/0063_rbc_oklab_p3.t), [tests/quant/palette/lookup_float/0064_rbc_cielab_srgb.t](../../../../tests/quant/palette/lookup_float/0064_rbc_cielab_srgb.t), [tests/quant/palette/lookup_float/0065_rbc_cielab_p3.t](../../../../tests/quant/palette/lookup_float/0065_rbc_cielab_p3.t), [tests/quant/palette/lookup_float/0066_rbc_din99d_srgb.t](../../../../tests/quant/palette/lookup_float/0066_rbc_din99d_srgb.t), [tests/quant/palette/lookup_float/0067_rbc_din99d_p3.t](../../../../tests/quant/palette/lookup_float/0067_rbc_din99d_p3.t) |
 | LUTE-18 | `rbc`: Byte fast-path eligibility. | [tests/quant/palette/lookup_float/0068_rbc_byte_eligibility.t](../../../../tests/quant/palette/lookup_float/0068_rbc_byte_eligibility.t) |
 | LUTE-19 | `rbc`: Worker-local FS bands, overlap and stable wire cache. | [tests/quant/palette/lookup_float/0069_rbc_bands_private.t](../../../../tests/quant/palette/lookup_float/0069_rbc_bands_private.t) |
+
+| ID | Contract | Owning tests |
+| --- | --- | --- |
+| LUTM-01 | `mahalanobis`: Signed and above-nominal coordinates. | [tests/processing/lookup/mahalanobis/0001_mah_gamma_range.t](../../../../tests/processing/lookup/mahalanobis/0001_mah_gamma_range.t), [tests/processing/lookup/mahalanobis/0002_mah_linear_range.t](../../../../tests/processing/lookup/mahalanobis/0002_mah_linear_range.t), [tests/processing/lookup/mahalanobis/0003_mah_oklab_range.t](../../../../tests/processing/lookup/mahalanobis/0003_mah_oklab_range.t), [tests/processing/lookup/mahalanobis/0004_mah_cielab_range.t](../../../../tests/processing/lookup/mahalanobis/0004_mah_cielab_range.t), [tests/processing/lookup/mahalanobis/0005_mah_din99d_range.t](../../../../tests/processing/lookup/mahalanobis/0005_mah_din99d_range.t) |
+| LUTM-02 | `mahalanobis`: Sub-byte separation. | [tests/processing/lookup/mahalanobis/0006_mah_gamma_fraction.t](../../../../tests/processing/lookup/mahalanobis/0006_mah_gamma_fraction.t), [tests/processing/lookup/mahalanobis/0007_mah_linear_fraction.t](../../../../tests/processing/lookup/mahalanobis/0007_mah_linear_fraction.t), [tests/processing/lookup/mahalanobis/0008_mah_oklab_fraction.t](../../../../tests/processing/lookup/mahalanobis/0008_mah_oklab_fraction.t), [tests/processing/lookup/mahalanobis/0009_mah_cielab_fraction.t](../../../../tests/processing/lookup/mahalanobis/0009_mah_cielab_fraction.t), [tests/processing/lookup/mahalanobis/0010_mah_din99d_fraction.t](../../../../tests/processing/lookup/mahalanobis/0010_mah_din99d_fraction.t) |
+| LUTM-03 | `mahalanobis`: Declared normalized metric. | [tests/processing/lookup/mahalanobis/0011_mah_cielab_metric.t](../../../../tests/processing/lookup/mahalanobis/0011_mah_cielab_metric.t), [tests/processing/lookup/mahalanobis/0012_mah_din99d_metric.t](../../../../tests/processing/lookup/mahalanobis/0012_mah_din99d_metric.t) |
+| LUTM-04 | `mahalanobis`: Finite distances above float range. | [tests/processing/lookup/mahalanobis/0013_mah_overflow.t](../../../../tests/processing/lookup/mahalanobis/0013_mah_overflow.t) |
+| LUTM-05 | `mahalanobis`: Finite distances below float range. | [tests/processing/lookup/mahalanobis/0014_mah_underflow.t](../../../../tests/processing/lookup/mahalanobis/0014_mah_underflow.t) |
+| LUTM-06 | `mahalanobis`: Reprepare and two-instance isolation. | [tests/processing/lookup/mahalanobis/0015_mah_isolation.t](../../../../tests/processing/lookup/mahalanobis/0015_mah_isolation.t) |
+| LUTM-07 | `mahalanobis`: 41-color exhaustive oracle at exponent 0. | [tests/processing/lookup/mahalanobis/0016_mah_gamma_oracle.t](../../../../tests/processing/lookup/mahalanobis/0016_mah_gamma_oracle.t), [tests/processing/lookup/mahalanobis/0017_mah_linear_oracle.t](../../../../tests/processing/lookup/mahalanobis/0017_mah_linear_oracle.t), [tests/processing/lookup/mahalanobis/0018_mah_oklab_oracle.t](../../../../tests/processing/lookup/mahalanobis/0018_mah_oklab_oracle.t), [tests/processing/lookup/mahalanobis/0019_mah_cielab_oracle.t](../../../../tests/processing/lookup/mahalanobis/0019_mah_cielab_oracle.t), [tests/processing/lookup/mahalanobis/0020_mah_din99d_oracle.t](../../../../tests/processing/lookup/mahalanobis/0020_mah_din99d_oracle.t) |
+| LUTM-08 | `mahalanobis`: 41-color exhaustive oracle at exponent 120. | [tests/processing/lookup/mahalanobis/0021_mah_gamma_oracle_large.t](../../../../tests/processing/lookup/mahalanobis/0021_mah_gamma_oracle_large.t), [tests/processing/lookup/mahalanobis/0022_mah_linear_oracle_large.t](../../../../tests/processing/lookup/mahalanobis/0022_mah_linear_oracle_large.t), [tests/processing/lookup/mahalanobis/0023_mah_oklab_oracle_large.t](../../../../tests/processing/lookup/mahalanobis/0023_mah_oklab_oracle_large.t), [tests/processing/lookup/mahalanobis/0024_mah_cielab_oracle_large.t](../../../../tests/processing/lookup/mahalanobis/0024_mah_cielab_oracle_large.t), [tests/processing/lookup/mahalanobis/0025_mah_din99d_oracle_large.t](../../../../tests/processing/lookup/mahalanobis/0025_mah_din99d_oracle_large.t) |
+| LUTM-09 | `mahalanobis`: 41-color exhaustive oracle at exponent -120. | [tests/processing/lookup/mahalanobis/0026_mah_gamma_oracle_small.t](../../../../tests/processing/lookup/mahalanobis/0026_mah_gamma_oracle_small.t), [tests/processing/lookup/mahalanobis/0027_mah_linear_oracle_small.t](../../../../tests/processing/lookup/mahalanobis/0027_mah_linear_oracle_small.t), [tests/processing/lookup/mahalanobis/0028_mah_oklab_oracle_small.t](../../../../tests/processing/lookup/mahalanobis/0028_mah_oklab_oracle_small.t), [tests/processing/lookup/mahalanobis/0029_mah_cielab_oracle_small.t](../../../../tests/processing/lookup/mahalanobis/0029_mah_cielab_oracle_small.t), [tests/processing/lookup/mahalanobis/0030_mah_din99d_oracle_small.t](../../../../tests/processing/lookup/mahalanobis/0030_mah_din99d_oracle_small.t) |
+| LUTM-10 | `mahalanobis`: sRGB/P3 wire output, retained native palette and actual consumer. | [tests/quant/palette/mahalanobis_float/0001_mah_gamma_srgb.t](../../../../tests/quant/palette/mahalanobis_float/0001_mah_gamma_srgb.t), [tests/quant/palette/mahalanobis_float/0002_mah_gamma_p3.t](../../../../tests/quant/palette/mahalanobis_float/0002_mah_gamma_p3.t), [tests/quant/palette/mahalanobis_float/0003_mah_linear_srgb.t](../../../../tests/quant/palette/mahalanobis_float/0003_mah_linear_srgb.t), [tests/quant/palette/mahalanobis_float/0004_mah_linear_p3.t](../../../../tests/quant/palette/mahalanobis_float/0004_mah_linear_p3.t), [tests/quant/palette/mahalanobis_float/0005_mah_oklab_srgb.t](../../../../tests/quant/palette/mahalanobis_float/0005_mah_oklab_srgb.t), [tests/quant/palette/mahalanobis_float/0006_mah_oklab_p3.t](../../../../tests/quant/palette/mahalanobis_float/0006_mah_oklab_p3.t), [tests/quant/palette/mahalanobis_float/0007_mah_cielab_srgb.t](../../../../tests/quant/palette/mahalanobis_float/0007_mah_cielab_srgb.t), [tests/quant/palette/mahalanobis_float/0008_mah_cielab_p3.t](../../../../tests/quant/palette/mahalanobis_float/0008_mah_cielab_p3.t), [tests/quant/palette/mahalanobis_float/0009_mah_din99d_srgb.t](../../../../tests/quant/palette/mahalanobis_float/0009_mah_din99d_srgb.t), [tests/quant/palette/mahalanobis_float/0010_mah_din99d_p3.t](../../../../tests/quant/palette/mahalanobis_float/0010_mah_din99d_p3.t) |
+| LUTM-11 | `mahalanobis`: Byte fast-path eligibility. | [tests/quant/palette/mahalanobis_float/0011_mah_byte_eligibility.t](../../../../tests/quant/palette/mahalanobis_float/0011_mah_byte_eligibility.t) |
+| LUTM-12 | `mahalanobis`: Worker-local FS bands, overlap and stable wire cache. | [tests/quant/palette/mahalanobis_float/0012_mah_bands_private.t](../../../../tests/quant/palette/mahalanobis_float/0012_mah_bands_private.t) |
 
 ### Quality regression tests
 

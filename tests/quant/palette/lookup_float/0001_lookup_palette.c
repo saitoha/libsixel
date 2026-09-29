@@ -13,7 +13,8 @@
 #include "src/palette.h"
 
 static char const *const lookup_options[] = {
-    "certlut", "5bit", "6bit", "auto", "default", "vptree", "rbc"
+    "certlut", "5bit", "6bit", "auto", "default", "vptree", "rbc",
+    "mahalanobis"
 };
 static char const *const lookup_spaces[] = {
     "gamma", "linear", "oklab", "cielab", "din99d"
@@ -26,7 +27,8 @@ static int const lookup_formats[] = {
 static int const lookup_codes[] = {
     SIXEL_LUT_POLICY_CERTLUT, SIXEL_LUT_POLICY_5BIT, SIXEL_LUT_POLICY_6BIT,
     SIXEL_LUT_POLICY_AUTO, SIXEL_LUT_POLICY_CERTLUT,
-    SIXEL_LUT_POLICY_VPTREE, SIXEL_LUT_POLICY_RBC
+    SIXEL_LUT_POLICY_VPTREE, SIXEL_LUT_POLICY_RBC,
+    SIXEL_LUT_POLICY_MAHALANOBIS
 };
 
 typedef struct lookup_capture {
@@ -301,7 +303,7 @@ test_lookup_palette(int argc, char **argv)
     policy = atoi(argv[2]);
     space = atoi(argv[3]);
     p3 = atoi(argv[4]);
-    if (policy < 0 || policy > 6 || space < 0 || space > 4 ||
+    if (policy < 0 || policy > 7 || space < 0 || space > 4 ||
             p3 < 0 || p3 > 1) {
         return EXIT_FAILURE;
     }

@@ -753,6 +753,48 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_BINNING_CONTRACT \
     -DBUILD_TEST_0001_MERGE_CONTRACT \
     -DBUILD_TEST_0001_EXTENDED_LOOKUP \
+    -DBUILD_TEST_0001_MAH_GAMMA_RANGE \
+    -DBUILD_TEST_0002_MAH_LINEAR_RANGE \
+    -DBUILD_TEST_0003_MAH_OKLAB_RANGE \
+    -DBUILD_TEST_0004_MAH_CIELAB_RANGE \
+    -DBUILD_TEST_0005_MAH_DIN99D_RANGE \
+    -DBUILD_TEST_0006_MAH_GAMMA_FRACTION \
+    -DBUILD_TEST_0007_MAH_LINEAR_FRACTION \
+    -DBUILD_TEST_0008_MAH_OKLAB_FRACTION \
+    -DBUILD_TEST_0009_MAH_CIELAB_FRACTION \
+    -DBUILD_TEST_0010_MAH_DIN99D_FRACTION \
+    -DBUILD_TEST_0011_MAH_CIELAB_METRIC \
+    -DBUILD_TEST_0012_MAH_DIN99D_METRIC \
+    -DBUILD_TEST_0013_MAH_OVERFLOW \
+    -DBUILD_TEST_0014_MAH_UNDERFLOW \
+    -DBUILD_TEST_0015_MAH_ISOLATION \
+    -DBUILD_TEST_0016_MAH_GAMMA_ORACLE \
+    -DBUILD_TEST_0017_MAH_LINEAR_ORACLE \
+    -DBUILD_TEST_0018_MAH_OKLAB_ORACLE \
+    -DBUILD_TEST_0019_MAH_CIELAB_ORACLE \
+    -DBUILD_TEST_0020_MAH_DIN99D_ORACLE \
+    -DBUILD_TEST_0021_MAH_GAMMA_ORACLE_LARGE \
+    -DBUILD_TEST_0022_MAH_LINEAR_ORACLE_LARGE \
+    -DBUILD_TEST_0023_MAH_OKLAB_ORACLE_LARGE \
+    -DBUILD_TEST_0024_MAH_CIELAB_ORACLE_LARGE \
+    -DBUILD_TEST_0025_MAH_DIN99D_ORACLE_LARGE \
+    -DBUILD_TEST_0026_MAH_GAMMA_ORACLE_SMALL \
+    -DBUILD_TEST_0027_MAH_LINEAR_ORACLE_SMALL \
+    -DBUILD_TEST_0028_MAH_OKLAB_ORACLE_SMALL \
+    -DBUILD_TEST_0029_MAH_CIELAB_ORACLE_SMALL \
+    -DBUILD_TEST_0030_MAH_DIN99D_ORACLE_SMALL \
+    -DBUILD_TEST_0001_MAH_GAMMA_SRGB \
+    -DBUILD_TEST_0002_MAH_GAMMA_P3 \
+    -DBUILD_TEST_0003_MAH_LINEAR_SRGB \
+    -DBUILD_TEST_0004_MAH_LINEAR_P3 \
+    -DBUILD_TEST_0005_MAH_OKLAB_SRGB \
+    -DBUILD_TEST_0006_MAH_OKLAB_P3 \
+    -DBUILD_TEST_0007_MAH_CIELAB_SRGB \
+    -DBUILD_TEST_0008_MAH_CIELAB_P3 \
+    -DBUILD_TEST_0009_MAH_DIN99D_SRGB \
+    -DBUILD_TEST_0010_MAH_DIN99D_P3 \
+    -DBUILD_TEST_0011_MAH_BYTE_ELIGIBILITY \
+    -DBUILD_TEST_0012_MAH_BANDS_PRIVATE \
     -DBUILD_TEST_0001_LOOKUP_PALETTE \
     -DBUILD_TEST_0001_SOLVER_CONTRACT \
     -DBUILD_TEST_0050_LOADER_OSC11_COLORSPEC_PARSER \
@@ -4050,6 +4092,48 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/solvers_float/0001_solver_contract.c \
     quant/palette/merge_float/0001_merge_contract.c \
     processing/lookup/extended/0001_extended_lookup.c \
+    processing/lookup/mahalanobis/0001_mah_gamma_range.c \
+    processing/lookup/mahalanobis/0002_mah_linear_range.c \
+    processing/lookup/mahalanobis/0003_mah_oklab_range.c \
+    processing/lookup/mahalanobis/0004_mah_cielab_range.c \
+    processing/lookup/mahalanobis/0005_mah_din99d_range.c \
+    processing/lookup/mahalanobis/0006_mah_gamma_fraction.c \
+    processing/lookup/mahalanobis/0007_mah_linear_fraction.c \
+    processing/lookup/mahalanobis/0008_mah_oklab_fraction.c \
+    processing/lookup/mahalanobis/0009_mah_cielab_fraction.c \
+    processing/lookup/mahalanobis/0010_mah_din99d_fraction.c \
+    processing/lookup/mahalanobis/0011_mah_cielab_metric.c \
+    processing/lookup/mahalanobis/0012_mah_din99d_metric.c \
+    processing/lookup/mahalanobis/0013_mah_overflow.c \
+    processing/lookup/mahalanobis/0014_mah_underflow.c \
+    processing/lookup/mahalanobis/0015_mah_isolation.c \
+    processing/lookup/mahalanobis/0016_mah_gamma_oracle.c \
+    processing/lookup/mahalanobis/0017_mah_linear_oracle.c \
+    processing/lookup/mahalanobis/0018_mah_oklab_oracle.c \
+    processing/lookup/mahalanobis/0019_mah_cielab_oracle.c \
+    processing/lookup/mahalanobis/0020_mah_din99d_oracle.c \
+    processing/lookup/mahalanobis/0021_mah_gamma_oracle_large.c \
+    processing/lookup/mahalanobis/0022_mah_linear_oracle_large.c \
+    processing/lookup/mahalanobis/0023_mah_oklab_oracle_large.c \
+    processing/lookup/mahalanobis/0024_mah_cielab_oracle_large.c \
+    processing/lookup/mahalanobis/0025_mah_din99d_oracle_large.c \
+    processing/lookup/mahalanobis/0026_mah_gamma_oracle_small.c \
+    processing/lookup/mahalanobis/0027_mah_linear_oracle_small.c \
+    processing/lookup/mahalanobis/0028_mah_oklab_oracle_small.c \
+    processing/lookup/mahalanobis/0029_mah_cielab_oracle_small.c \
+    processing/lookup/mahalanobis/0030_mah_din99d_oracle_small.c \
+    quant/palette/mahalanobis_float/0001_mah_gamma_srgb.c \
+    quant/palette/mahalanobis_float/0002_mah_gamma_p3.c \
+    quant/palette/mahalanobis_float/0003_mah_linear_srgb.c \
+    quant/palette/mahalanobis_float/0004_mah_linear_p3.c \
+    quant/palette/mahalanobis_float/0005_mah_oklab_srgb.c \
+    quant/palette/mahalanobis_float/0006_mah_oklab_p3.c \
+    quant/palette/mahalanobis_float/0007_mah_cielab_srgb.c \
+    quant/palette/mahalanobis_float/0008_mah_cielab_p3.c \
+    quant/palette/mahalanobis_float/0009_mah_din99d_srgb.c \
+    quant/palette/mahalanobis_float/0010_mah_din99d_p3.c \
+    quant/palette/mahalanobis_float/0011_mah_byte_eligibility.c \
+    quant/palette/mahalanobis_float/0012_mah_bands_private.c \
     quant/palette/lookup_float/0001_lookup_palette.c \
     quant/palette/srgb_contract_common.c \
     quant/palette/srgb_contract_common.h \

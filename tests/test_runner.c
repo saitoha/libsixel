@@ -473,6 +473,48 @@ int test_palette_sampling_float(int argc, char **argv);
 int test_palette_binning_float(int argc, char **argv);
 int test_palette_merge_float(int argc, char **argv);
 int test_extended_lookup(int argc, char **argv);
+int test_mah_lookup_0001(int argc, char **argv);
+int test_mah_lookup_0002(int argc, char **argv);
+int test_mah_lookup_0003(int argc, char **argv);
+int test_mah_lookup_0004(int argc, char **argv);
+int test_mah_lookup_0005(int argc, char **argv);
+int test_mah_lookup_0006(int argc, char **argv);
+int test_mah_lookup_0007(int argc, char **argv);
+int test_mah_lookup_0008(int argc, char **argv);
+int test_mah_lookup_0009(int argc, char **argv);
+int test_mah_lookup_0010(int argc, char **argv);
+int test_mah_lookup_0011(int argc, char **argv);
+int test_mah_lookup_0012(int argc, char **argv);
+int test_mah_lookup_0013(int argc, char **argv);
+int test_mah_lookup_0014(int argc, char **argv);
+int test_mah_lookup_0015(int argc, char **argv);
+int test_mah_lookup_0016(int argc, char **argv);
+int test_mah_lookup_0017(int argc, char **argv);
+int test_mah_lookup_0018(int argc, char **argv);
+int test_mah_lookup_0019(int argc, char **argv);
+int test_mah_lookup_0020(int argc, char **argv);
+int test_mah_lookup_0021(int argc, char **argv);
+int test_mah_lookup_0022(int argc, char **argv);
+int test_mah_lookup_0023(int argc, char **argv);
+int test_mah_lookup_0024(int argc, char **argv);
+int test_mah_lookup_0025(int argc, char **argv);
+int test_mah_lookup_0026(int argc, char **argv);
+int test_mah_lookup_0027(int argc, char **argv);
+int test_mah_lookup_0028(int argc, char **argv);
+int test_mah_lookup_0029(int argc, char **argv);
+int test_mah_lookup_0030(int argc, char **argv);
+int test_mah_palette_0001(int argc, char **argv);
+int test_mah_palette_0002(int argc, char **argv);
+int test_mah_palette_0003(int argc, char **argv);
+int test_mah_palette_0004(int argc, char **argv);
+int test_mah_palette_0005(int argc, char **argv);
+int test_mah_palette_0006(int argc, char **argv);
+int test_mah_palette_0007(int argc, char **argv);
+int test_mah_palette_0008(int argc, char **argv);
+int test_mah_palette_0009(int argc, char **argv);
+int test_mah_palette_0010(int argc, char **argv);
+int test_mah_palette_0011(int argc, char **argv);
+int test_mah_palette_0012(int argc, char **argv);
 int test_lookup_palette(int argc, char **argv);
 int test_palette_solvers_float(int argc, char **argv);
 int test_srgb_0065(int argc, char **argv);
@@ -2813,6 +2855,90 @@ static test_entry_t const test_entries[] = {
     { "palette/binning_float/0001_binning_contract",
       test_palette_binning_float },
     { "lookup/extended/0001_extended_lookup", test_extended_lookup },
+    { "lookup/mahalanobis/0001_mah_gamma_range",
+      test_mah_lookup_0001 },
+    { "lookup/mahalanobis/0002_mah_linear_range",
+      test_mah_lookup_0002 },
+    { "lookup/mahalanobis/0003_mah_oklab_range",
+      test_mah_lookup_0003 },
+    { "lookup/mahalanobis/0004_mah_cielab_range",
+      test_mah_lookup_0004 },
+    { "lookup/mahalanobis/0005_mah_din99d_range",
+      test_mah_lookup_0005 },
+    { "lookup/mahalanobis/0006_mah_gamma_fraction",
+      test_mah_lookup_0006 },
+    { "lookup/mahalanobis/0007_mah_linear_fraction",
+      test_mah_lookup_0007 },
+    { "lookup/mahalanobis/0008_mah_oklab_fraction",
+      test_mah_lookup_0008 },
+    { "lookup/mahalanobis/0009_mah_cielab_fraction",
+      test_mah_lookup_0009 },
+    { "lookup/mahalanobis/0010_mah_din99d_fraction",
+      test_mah_lookup_0010 },
+    { "lookup/mahalanobis/0011_mah_cielab_metric",
+      test_mah_lookup_0011 },
+    { "lookup/mahalanobis/0012_mah_din99d_metric",
+      test_mah_lookup_0012 },
+    { "lookup/mahalanobis/0013_mah_overflow",
+      test_mah_lookup_0013 },
+    { "lookup/mahalanobis/0014_mah_underflow",
+      test_mah_lookup_0014 },
+    { "lookup/mahalanobis/0015_mah_isolation",
+      test_mah_lookup_0015 },
+    { "lookup/mahalanobis/0016_mah_gamma_oracle",
+      test_mah_lookup_0016 },
+    { "lookup/mahalanobis/0017_mah_linear_oracle",
+      test_mah_lookup_0017 },
+    { "lookup/mahalanobis/0018_mah_oklab_oracle",
+      test_mah_lookup_0018 },
+    { "lookup/mahalanobis/0019_mah_cielab_oracle",
+      test_mah_lookup_0019 },
+    { "lookup/mahalanobis/0020_mah_din99d_oracle",
+      test_mah_lookup_0020 },
+    { "lookup/mahalanobis/0021_mah_gamma_oracle_large",
+      test_mah_lookup_0021 },
+    { "lookup/mahalanobis/0022_mah_linear_oracle_large",
+      test_mah_lookup_0022 },
+    { "lookup/mahalanobis/0023_mah_oklab_oracle_large",
+      test_mah_lookup_0023 },
+    { "lookup/mahalanobis/0024_mah_cielab_oracle_large",
+      test_mah_lookup_0024 },
+    { "lookup/mahalanobis/0025_mah_din99d_oracle_large",
+      test_mah_lookup_0025 },
+    { "lookup/mahalanobis/0026_mah_gamma_oracle_small",
+      test_mah_lookup_0026 },
+    { "lookup/mahalanobis/0027_mah_linear_oracle_small",
+      test_mah_lookup_0027 },
+    { "lookup/mahalanobis/0028_mah_oklab_oracle_small",
+      test_mah_lookup_0028 },
+    { "lookup/mahalanobis/0029_mah_cielab_oracle_small",
+      test_mah_lookup_0029 },
+    { "lookup/mahalanobis/0030_mah_din99d_oracle_small",
+      test_mah_lookup_0030 },
+    { "palette/mahalanobis_float/0001_mah_gamma_srgb",
+      test_mah_palette_0001 },
+    { "palette/mahalanobis_float/0002_mah_gamma_p3",
+      test_mah_palette_0002 },
+    { "palette/mahalanobis_float/0003_mah_linear_srgb",
+      test_mah_palette_0003 },
+    { "palette/mahalanobis_float/0004_mah_linear_p3",
+      test_mah_palette_0004 },
+    { "palette/mahalanobis_float/0005_mah_oklab_srgb",
+      test_mah_palette_0005 },
+    { "palette/mahalanobis_float/0006_mah_oklab_p3",
+      test_mah_palette_0006 },
+    { "palette/mahalanobis_float/0007_mah_cielab_srgb",
+      test_mah_palette_0007 },
+    { "palette/mahalanobis_float/0008_mah_cielab_p3",
+      test_mah_palette_0008 },
+    { "palette/mahalanobis_float/0009_mah_din99d_srgb",
+      test_mah_palette_0009 },
+    { "palette/mahalanobis_float/0010_mah_din99d_p3",
+      test_mah_palette_0010 },
+    { "palette/mahalanobis_float/0011_mah_byte_eligibility",
+      test_mah_palette_0011 },
+    { "palette/mahalanobis_float/0012_mah_bands_private",
+      test_mah_palette_0012 },
     { "palette/lookup_float/0001_lookup_palette", test_lookup_palette },
     { "palette/merge_float/0001_merge_contract",
       test_palette_merge_float },
