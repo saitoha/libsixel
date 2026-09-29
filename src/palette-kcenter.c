@@ -58,6 +58,7 @@
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-kcenter.h"
+#include "palette-bin-histogram.h"
 #include "palette-private.h"
 #include "options.h"
 #include "pixelformat.h"
@@ -487,6 +488,7 @@ typedef struct sixel_kcenter_build_ctx {
     sixel_allocator_t *allocator;
     int pixelformat;
     int treat_input_as_float32;
+    int preserve_extended_rgb;
     sixel_palette_binning_state_t *binning;
     sixel_timeline_logger_t *logger;
     int *job_seq;
@@ -2053,6 +2055,7 @@ typedef struct sixel_kcenter_collect_ctx {
     double entropy_norm;
     double effective_density;
     int input_is_float32;
+    int preserve_extended_rgb;
     int use_perceptual_strata;
     int oklab_perceptual_space;
     sixel_kcenter_bin_t *bins;
@@ -2191,10 +2194,13 @@ sixel_kcenter_collect_build_bins_and_stats(sixel_kcenter_collect_ctx_t *ctx)
                     ctx->float32_channel_scale[channel] +
                     ctx->float32_channel_offset[channel];
             }
-            if (coordinate < 0.0) {
-                coordinate = 0.0;
-            } else if (coordinate > 255.0) {
-                coordinate = 255.0;
+            /* Scaling defines solver geometry, not a storage gamut. */
+            if (ctx->preserve_extended_rgb == 0) {
+                if (coordinate < 0.0) {
+                    coordinate = 0.0;
+                } else if (coordinate > 255.0) {
+                    coordinate = 255.0;
+                }
             }
             if (channel == 0u) {
                 ctx->bins[index].r = coordinate;
@@ -2726,10 +2732,16 @@ sixel_kcenter_collect_hybrid_score_strata(
                 + ctx->bins[state->index].g * 0.587
                 + ctx->bins[state->index].b * 0.114;
         }
-        state->luma_bucket = (unsigned int)(
-            (state->luma_value * (double)SIXEL_KCENTER_LUMA_BUCKETS) / 256.0);
-        if (state->luma_bucket >= SIXEL_KCENTER_LUMA_BUCKETS) {
+        /* Extended coordinates can be negative or exceed UINT_MAX. Bound
+         * the stratum address before conversion, never the source color. */
+        if (state->luma_value <= 0.0) {
+            state->luma_bucket = 0u;
+        } else if (state->luma_value >= 256.0) {
             state->luma_bucket = SIXEL_KCENTER_LUMA_BUCKETS - 1u;
+        } else {
+            state->luma_bucket = (unsigned int)(
+                (state->luma_value * (double)SIXEL_KCENTER_LUMA_BUCKETS)
+                / 256.0);
         }
 
         if (ctx->use_perceptual_strata) {
@@ -2908,6 +2920,7 @@ sixel_kcenter_collect_points(double **points_out,
                              sixel_weighted_point_set_t const *input,
                              int pixelformat,
                              int input_is_float32,
+                             int preserve_extended_rgb,
                              unsigned int point_budget,
                              double prune_mass,
                              unsigned int reqcolors,
@@ -2944,6 +2957,7 @@ sixel_kcenter_collect_points(double **points_out,
     collect.input = input;
     collect.pixelformat = pixelformat;
     collect.input_is_float32 = input_is_float32;
+    collect.preserve_extended_rgb = preserve_extended_rgb;
     collect.point_budget = point_budget;
     collect.prune_mass = prune_mass;
     collect.reqcolors = reqcolors;
@@ -5939,6 +5953,7 @@ typedef struct sixel_kcenter_build_runtime {
     sixel_allocator_t *allocator;
     int pixelformat;
     int treat_input_as_float32;
+    int preserve_extended_rgb;
     sixel_palette_binning_state_t *binning;
     sixel_timeline_logger_t *logger;
     int *job_seq;
@@ -6063,6 +6078,7 @@ sixel_kcenter_build_runtime_init(sixel_kcenter_build_runtime_t *rt,
     rt->pixelformat = ctx->pixelformat;
     rt->treat_input_as_float32 = ctx->treat_input_as_float32;
     rt->binning = ctx->binning;
+    rt->preserve_extended_rgb = ctx->preserve_extended_rgb;
     rt->logger = ctx->logger;
     rt->job_seq = ctx->job_seq;
     rt->engine_name = ctx->engine_name;
@@ -6310,8 +6326,18 @@ sixel_kcenter_build_binned_points(
     config.output_order = policy == SIXEL_PALETTE_BINNING_HARD
         ? SIXEL_FILTER_BINNING_OUTPUT_BIN_KEY_ASCENDING
         : SIXEL_FILTER_BINNING_OUTPUT_NATIVE;
-    config.coordinate_mode =
-        SIXEL_FILTER_BINNING_COORDINATE_CLAMPED;
+    config.coordinate_mode = rt->preserve_extended_rgb
+        ? SIXEL_FILTER_BINNING_COORDINATE_SOURCE
+        : SIXEL_FILTER_BINNING_COORDINATE_CLAMPED;
+    if (rt->preserve_extended_rgb && rt->input_is_float32 &&
+            policy == SIXEL_PALETTE_BINNING_HARD) {
+        status = sixel_palette_bin_expand_bounds(sample_data,
+            sample_length / (3u * sizeof(float)), 1,
+            config.scale, config.offset);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
     status = sixel_filter_factory_create_binning(&config, &filter);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
@@ -6468,6 +6494,7 @@ sixel_kcenter_build_prepare_and_collect(sixel_kcenter_build_runtime_t *rt)
         &binned_points,
         rt->pixelformat,
         rt->input_is_float32,
+        rt->preserve_extended_rgb,
         rt->point_budget,
         rt->prune_mass,
         rt->reqcolors,
@@ -7108,12 +7135,6 @@ sixel_kcenter_build_export_phase(sixel_kcenter_build_runtime_t *rt)
     for (slot = 0u; slot < rt->final_count; ++slot) {
         for (channel = 0u; channel < 3u; ++channel) {
             component = rt->final_centers[slot * 3u + channel];
-            if (component < 0.0) {
-                component = 0.0;
-            }
-            if (component > 255.0) {
-                component = 255.0;
-            }
             if (rt->float_palette != NULL) {
                 if (rt->float32_channel_scale[channel] > 0.0) {
                     restored_component = component;
@@ -7123,10 +7144,18 @@ sixel_kcenter_build_export_phase(sixel_kcenter_build_runtime_t *rt)
                     restored_component = 0.0;
                 }
                 rt->float_palette[slot * 3u + channel]
-                    = sixel_pixelformat_float_channel_clamp(
-                        rt->pixelformat,
-                        (int)channel,
-                        (float)restored_component);
+                    = rt->preserve_extended_rgb
+                        ? (float)restored_component
+                        : sixel_pixelformat_float_channel_clamp(
+                            rt->pixelformat, (int)channel,
+                            (float)restored_component);
+            }
+            /* Only the compatibility byte view is saturated. */
+            if (component < 0.0) {
+                component = 0.0;
+            }
+            if (component > 255.0) {
+                component = 255.0;
             }
             rt->palette[slot * 3u + channel] = (unsigned char)(component + 0.5);
         }
@@ -7555,6 +7584,8 @@ sixel_palette_build_kcenter_internal(sixel_kcenter_internal_ctx_t *ctx)
     build_ctx->allocator = work_allocator;
     build_ctx->pixelformat = pixelformat;
     build_ctx->treat_input_as_float32 = treat_input_as_float32;
+    build_ctx->preserve_extended_rgb = SIXEL_PALETTE_CONTEXT(palette)
+        ->preserve_extended_rgb;
     build_ctx->binning = SIXEL_PALETTE_CONTEXT(palette)->attempt != NULL
         ? &SIXEL_PALETTE_CONTEXT(palette)->attempt->binning
         : NULL;

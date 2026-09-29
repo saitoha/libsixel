@@ -751,6 +751,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_SPACE_CONTRACT \
     -DBUILD_TEST_0001_SAMPLING_CONTRACT \
     -DBUILD_TEST_0001_BINNING_CONTRACT \
+    -DBUILD_TEST_0001_SOLVER_CONTRACT \
     -DBUILD_TEST_0050_LOADER_OSC11_COLORSPEC_PARSER \
     -DBUILD_TEST_0051_LOADER_OSC11_RESPONSE_PARSER \
     -DBUILD_TEST_0052_LOADER_OSC11_QUERY_CONTROL \
@@ -4043,6 +4044,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/color_space/0001_space_contract.c \
     quant/palette/sampling_float/0001_sampling_contract.c \
     quant/palette/binning_float/0001_binning_contract.c \
+    quant/palette/solvers_float/0001_solver_contract.c \
     quant/palette/srgb_contract_common.c \
     quant/palette/srgb_contract_common.h \
     diagnostics/probe/0001_probe_parse.c \

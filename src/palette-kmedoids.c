@@ -58,6 +58,7 @@
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-kmedoids.h"
+#include "palette-bin-histogram.h"
 #include "palette-private.h"
 #include "options.h"
 #include "pixelformat.h"
@@ -11446,6 +11447,7 @@ build_palette_kmedoids(unsigned char **result,
                        sixel_allocator_t *allocator,
                        int pixelformat,
                        int treat_input_as_float32,
+                       int preserve_extended_rgb,
                        sixel_timeline_logger_t *logger,
                        int *job_seq,
                        char const *engine_name,
@@ -11725,6 +11727,15 @@ build_palette_kmedoids(unsigned char **result,
 
     if (reqcolors == 0u) {
         reqcolors = 1u;
+    }
+    if (preserve_extended_rgb && input_is_float32) {
+        /* Private candidate bins retain observed representatives. Expand
+         * only their addresses; medoid distances keep native coordinates. */
+        status = sixel_palette_bin_expand_bounds(data, pixel_count, 1,
+            float32_channel_scale, float32_channel_offset);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
     }
     override_lock_acquired = sixel_kmedoids_override_lock_acquire();
 
@@ -12407,10 +12418,10 @@ build_palette_kmedoids(unsigned char **result,
             restored_component = final_centers[slot * 3u + channel];
             if (float_palette != NULL) {
                 float_palette[slot * 3u + channel]
-                    = sixel_pixelformat_float_channel_clamp(
-                        pixelformat,
-                        (int)channel,
-                        (float)restored_component);
+                    = preserve_extended_rgb ? (float)restored_component
+                        : sixel_pixelformat_float_channel_clamp(
+                            pixelformat, (int)channel,
+                            (float)restored_component);
             }
             if (input_is_float32) {
                 restored_component
@@ -12729,6 +12740,8 @@ sixel_palette_build_kmedoids_internal(sixel_palette_t *palette,
                                     work_allocator,
                                     pixelformat,
                                     treat_input_as_float32,
+                                    SIXEL_PALETTE_CONTEXT(palette)
+                                        ->preserve_extended_rgb,
                                     logger,
                                     job_seq,
                                     engine_name,

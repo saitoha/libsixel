@@ -2043,6 +2043,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/color_space/0001_space_contract.c \
 	quant/palette/sampling_float/0001_sampling_contract.c \
 	quant/palette/binning_float/0001_binning_contract.c \
+	quant/palette/solvers_float/0001_solver_contract.c \
 	quant/palette/srgb_contract_common.c \
 	quant/palette/srgb_contract_common.h \
 	diagnostics/probe/0001_probe_parse.c \
@@ -3946,6 +3947,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/color_space/test_runner-0001_space_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/sampling_float/test_runner-0001_sampling_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/binning_float/test_runner-0001_binning_contract.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/solvers_float/test_runner-0001_solver_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-srgb_contract_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/status/test_runner-0001_status_timeout.$(OBJEXT) \
@@ -5916,6 +5918,7 @@ am__depfiles_remade =  \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po \
 	quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po \
 	quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po \
+	quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Po \
 	quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po \
 	writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po \
 	writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Po \
@@ -7168,6 +7171,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SPACE_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SAMPLING_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_BINNING_CONTRACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SOLVER_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_LOADER_OSC11_COLORSPEC_PARSER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_LOADER_OSC11_RESPONSE_PARSER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_LOADER_OSC11_QUERY_CONTROL \
@@ -10491,6 +10495,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/color_space/0001_space_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/sampling_float/0001_sampling_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/binning_float/0001_binning_contract.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/solvers_float/0001_solver_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/srgb_contract_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/srgb_contract_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
@@ -16645,6 +16650,15 @@ quant/palette/binning_float/$(DEPDIR)/$(am__dirstamp):
 quant/palette/binning_float/test_runner-0001_binning_contract.$(OBJEXT):  \
 	quant/palette/binning_float/$(am__dirstamp) \
 	quant/palette/binning_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/solvers_float/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/solvers_float
+	@: >>quant/palette/solvers_float/$(am__dirstamp)
+quant/palette/solvers_float/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/solvers_float/$(DEPDIR)
+	@: >>quant/palette/solvers_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/solvers_float/test_runner-0001_solver_contract.$(OBJEXT):  \
+	quant/palette/solvers_float/$(am__dirstamp) \
+	quant/palette/solvers_float/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-srgb_contract_common.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
@@ -16840,6 +16854,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/fallback/*.$(OBJEXT)
 	-rm -f quant/palette/rgb101_diffusion/*.$(OBJEXT)
 	-rm -f quant/palette/sampling_float/*.$(OBJEXT)
+	-rm -f quant/palette/solvers_float/*.$(OBJEXT)
 	-rm -f quant/palette/usage/*.$(OBJEXT)
 	-rm -f writer/png/*.$(OBJEXT)
 
@@ -18726,6 +18741,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Po@am__quote@ # am--include-marker
@@ -45028,6 +45044,20 @@ quant/palette/binning_float/test_runner-0001_binning_contract.obj: quant/palette
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/binning_float/test_runner-0001_binning_contract.obj `if test -f 'quant/palette/binning_float/0001_binning_contract.c'; then $(CYGPATH_W) 'quant/palette/binning_float/0001_binning_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/binning_float/0001_binning_contract.c'; fi`
 
+quant/palette/solvers_float/test_runner-0001_solver_contract.o: quant/palette/solvers_float/0001_solver_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/solvers_float/test_runner-0001_solver_contract.o -MD -MP -MF quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Tpo -c -o quant/palette/solvers_float/test_runner-0001_solver_contract.o `test -f 'quant/palette/solvers_float/0001_solver_contract.c' || echo '$(srcdir)/'`quant/palette/solvers_float/0001_solver_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Tpo quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/solvers_float/0001_solver_contract.c' object='quant/palette/solvers_float/test_runner-0001_solver_contract.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/solvers_float/test_runner-0001_solver_contract.o `test -f 'quant/palette/solvers_float/0001_solver_contract.c' || echo '$(srcdir)/'`quant/palette/solvers_float/0001_solver_contract.c
+
+quant/palette/solvers_float/test_runner-0001_solver_contract.obj: quant/palette/solvers_float/0001_solver_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/solvers_float/test_runner-0001_solver_contract.obj -MD -MP -MF quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Tpo -c -o quant/palette/solvers_float/test_runner-0001_solver_contract.obj `if test -f 'quant/palette/solvers_float/0001_solver_contract.c'; then $(CYGPATH_W) 'quant/palette/solvers_float/0001_solver_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/solvers_float/0001_solver_contract.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Tpo quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/solvers_float/0001_solver_contract.c' object='quant/palette/solvers_float/test_runner-0001_solver_contract.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/solvers_float/test_runner-0001_solver_contract.obj `if test -f 'quant/palette/solvers_float/0001_solver_contract.c'; then $(CYGPATH_W) 'quant/palette/solvers_float/0001_solver_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/solvers_float/0001_solver_contract.c'; fi`
+
 quant/palette/test_runner-srgb_contract_common.o: quant/palette/srgb_contract_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-srgb_contract_common.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Tpo -c -o quant/palette/test_runner-srgb_contract_common.o `test -f 'quant/palette/srgb_contract_common.c' || echo '$(srcdir)/'`quant/palette/srgb_contract_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Tpo quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
@@ -45857,6 +45887,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/rgb101_diffusion/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/sampling_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/sampling_float/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/solvers_float/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/solvers_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/usage/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/usage/$(am__dirstamp)
 	-$(am__rm_f) writer/png/$(DEPDIR)/$(am__dirstamp)
@@ -47752,6 +47784,7 @@ distclean: distclean-am
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po
 	-rm -f quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po
+	-rm -f quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Po
 	-rm -f quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po
 	-rm -f writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po
 	-rm -f writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Po
@@ -49698,6 +49731,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po
 	-rm -f quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po
+	-rm -f quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Po
 	-rm -f quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po
 	-rm -f writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po
 	-rm -f writer/png/$(DEPDIR)/test_runner-0007_p3_indexed.Po

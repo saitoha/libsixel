@@ -62,6 +62,13 @@ sixel_palette_bin_histogram_dispose(
     sixel_palette_bin_histogram_t *histogram,
     sixel_allocator_t *allocator);
 
+/* Expand only bin addresses; source coordinates and solver scales stay intact. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_bin_expand_bounds(void const *samples,
+                               unsigned int sample_count,
+                               int input_is_float32,
+                               double scale[3], double offset[3]);
+
 SIXEL_INTERNAL_API double
 sixel_palette_bin_map_sample_to_unit(
     double sample,

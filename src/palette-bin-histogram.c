@@ -311,6 +311,61 @@ sixel_palette_bin_srgb_encode(double value)
     return 1.055 * pow(clamped, 1.0 / 2.4) - 0.055;
 }
 
+SIXELSTATUS
+sixel_palette_bin_expand_bounds(
+    void const *samples,
+    unsigned int sample_count,
+    int input_is_float32,
+    double scale[3],
+    double offset[3])
+{
+    double lower;
+    double upper;
+    double minimum;
+    double maximum;
+    double value;
+    unsigned int channel;
+    unsigned int index;
+
+    if (samples == NULL || scale == NULL || offset == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    /* These are addressing bounds, not clustering coordinates. Start with
+     * the nominal interval so in-range jobs retain their established grid.
+     * Extend it only where required: saturating the address would merge
+     * distinct wide-gamut colors into the same edge cell at every bin depth.
+     * Binary32 source extrema and their differences fit safely in double. */
+    for (channel = 0u; channel < 3u; ++channel) {
+        if (!isfinite(scale[channel]) || scale[channel] <= 0.0 ||
+                !isfinite(offset[channel])) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        lower = -offset[channel] / scale[channel];
+        upper = lower + 255.0 / scale[channel];
+        minimum = lower;
+        maximum = upper;
+        for (index = 0u; index < sample_count; ++index) {
+            value = input_is_float32
+                ? ((float const *)samples)[(size_t)index * 3u + channel]
+                : ((double const *)samples)[(size_t)index * 3u + channel];
+            if (!isfinite(value)) {
+                return SIXEL_BAD_INPUT;
+            }
+            if (value < minimum) {
+                minimum = value;
+            }
+            if (value > maximum) {
+                maximum = value;
+            }
+        }
+        if (minimum < lower || maximum > upper) {
+            scale[channel] = 255.0 / (maximum - minimum);
+            offset[channel] = -minimum * scale[channel];
+        }
+    }
+    return SIXEL_OK;
+}
+
 double
 sixel_palette_bin_map_sample_to_unit(
     double sample,

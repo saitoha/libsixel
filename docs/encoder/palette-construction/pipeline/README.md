@@ -331,7 +331,7 @@ thread-local pointer refers to the encoder's stack frame. Concurrent palette
 instances are therefore independent, and re-entry on one active instance is
 rejected instead of overwriting another operation's result target.
 
-A failed float32 K-means or K-center engine resets the attempt lifecycle before
+Outside the [selected extended float path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path), a failed float32 K-means or K-center engine resets the attempt lifecycle before
 invoking its legacy byte engine. Float samples are normalized to RGB888 for
 that retry because the legacy engines consume byte samples; passing the float
 buffer through unchanged cannot form a valid legacy input. Exact binning is
@@ -345,6 +345,8 @@ cannot silently erase that request. An asynchronous palette worker commits the
 effective policy, origin, lifecycle phase, resolution reason, and actual
 source-point count only after its successful attempt, before collection
 completes.
+On the selected extended path, K-means, K-center and K-medoids report float solver failure without a byte or Heckbert retry.
+
 When automatic adaptive sampling falls back to the full preprocessed frame,
 binning keeps its request and origin but resolves its sample-dependent metadata
 again against the replacement sample stream.

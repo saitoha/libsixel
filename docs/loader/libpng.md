@@ -2,7 +2,7 @@
 
 The `libpng` loader decodes PNG scanlines with the external libpng library and implements APNG playback in [`loader-libpng.c`](../../src/loader-libpng.c). libsixel owns frame representation, color management, alpha/background normalization, orientation, and delivery. An APNG-patched libpng is not required.
 
-The [selected Display P3 output path](../encoder/output/output-colorspace.md#display-p3-selected-cpu-float-path) connects opaque static RGB samples through builtin CMS, CPU float K-means and exact lookup to final P3 RGB101 SIXEL. Its explicitly selected libpng cases do not extend this guarantee to every source domain or encoder policy.
+The [selected Display P3 output path](../encoder/output/output-colorspace.md#display-p3-selected-cpu-float-path) connects opaque static RGB samples through builtin CMS, the selected CPU float quantizers and exact lookup to final P3 RGB101 SIXEL. Its explicitly selected libpng cases do not extend this guarantee to every source domain or encoder policy.
 
 ## Origin and stages of support
 

@@ -1,5 +1,7 @@
 # Palette Quantization
 
+The [selected float output path](../../output/output-colorspace.md#k-center-and-k-medoids-representatives) describes extended-coordinate preservation, representative contracts and supported binning for K-means, K-center and K-medoids. It does not change the objectives described here.
+
 ## Purpose
 
 Palette quantization constructs a small set of colors that represents a much

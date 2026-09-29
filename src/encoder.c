@@ -6969,9 +6969,12 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
             encoder->clustering_colorspace < SIXEL_COLORSPACE_GAMMA ||
             encoder->clustering_colorspace > SIXEL_COLORSPACE_DIN99D ||
             encoder->clustering_colorspace == SIXEL_COLORSPACE_SMPTEC ||
-            encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS ||
-            encoder->quantize_model_kmeans_feedback_mode !=
-                SIXEL_PALETTE_KMEANS_FEEDBACK_OFF ||
+            (encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS &&
+             encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KCENTER &&
+             encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEDOIDS) ||
+            (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS &&
+             encoder->quantize_model_kmeans_feedback_mode !=
+                SIXEL_PALETTE_KMEANS_FEEDBACK_OFF) ||
             encoder->lut_policy != SIXEL_LUT_POLICY_NONE ||
             encoder->final_merge_mode != SIXEL_FINAL_MERGE_NONE ||
             (encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
@@ -6980,6 +6983,8 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
              encoder->snap_policy_approach_rate > 0.0) ||
             encoder->gpu_policy != SIXEL_GPU_POLICY_OFF ||
             encoder->palette_type != SIXEL_PALETTETYPE_RGB ||
+            (encoder->color_option == SIXEL_COLOR_OPTION_MAPFILE &&
+             encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS) ||
             (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT &&
              !(encoder->color_option == SIXEL_COLOR_OPTION_MAPFILE &&
                encoder->output_color_definition ==
@@ -7013,7 +7018,7 @@ sixel_encoder_rgb101_frame(sixel_encoder_t const *encoder,
 }
 
 /* Reject unconnected P3 combinations before starting any output. The first
- * path deliberately owns one CPU solver/lookup and opaque static RGB frames.
+ * path owns three CPU solver families, exact lookup and opaque RGB frames.
  * Its output definition never changes the meaning of frame coordinates. */
 static SIXELSTATUS
 sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
@@ -7023,8 +7028,8 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
     }
     if (!sixel_encoder_rgb101_options(encoder)) {
         sixel_helper_set_additional_message(
-            "display-p3 requires the CPU float K-means pilot: "
-            "--precision=auto|float -Qkmeans -~none "
+            "display-p3 requires the selected CPU float palette path: "
+            "--precision=auto|float -Qkmeans|center|medoids -~none "
             "-X/-W gamma|linear|oklab|cielab|din99d "
             "CPU spatial diffusion (or -dnone/-dauto), "
             "-Fnone -_none -trgb, no cover "

@@ -891,6 +891,9 @@ sixel_palette_apply_kcenter_engines(sixel_palette_t *palette,
             if (SIXEL_SUCCEEDED(status)) {
                 return status;
             }
+            if (context != NULL && context->preserve_extended_rgb != 0) {
+                return status;
+            }
             if (have_saved_binning) {
                 requested_binning =
                     (sixel_palette_binning_policy_t)
@@ -904,6 +907,9 @@ sixel_palette_apply_kcenter_engines(sixel_palette_t *palette,
         }
     }
 
+    if (context != NULL && context->preserve_extended_rgb != 0) {
+        return status;
+    }
     /*
      * The legacy engine consumes RGB888 samples.  Preserve its byte-domain
      * contract when a float solver fails instead of reinterpreting raw float
@@ -994,6 +1000,10 @@ sixel_palette_apply_kmedoids_engines(sixel_palette_t *palette,
         }
     }
 
+    /* The selected float contract cannot retry byte or Heckbert engines. */
+    if (SIXEL_PALETTE_CONTEXT(palette)->preserve_extended_rgb != 0) {
+        return status;
+    }
     engine = sixel_palette_quant_engine_lookup(
         SIXEL_QUANTIZE_MODEL_KMEDOIDS,
         0);
@@ -1844,7 +1854,9 @@ sixel_palette_generate_extended(
     sixel_palette_storage_t *storage;
 
     if (palette == NULL || request == NULL || request->prefer_float32 == 0 ||
-            request->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS ||
+            (request->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS &&
+             request->quantize_model != SIXEL_QUANTIZE_MODEL_KCENTER &&
+             request->quantize_model != SIXEL_QUANTIZE_MODEL_KMEDOIDS) ||
             request->use_reversible != 0 ||
             request->final_merge_mode != SIXEL_FINAL_MERGE_NONE ||
             !SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
@@ -1852,8 +1864,9 @@ sixel_palette_generate_extended(
     }
     storage = SIXEL_PALETTE_STORAGE(palette);
     if (storage->build_attempt_active == 0 ||
-            sixel_get_kmeans_feedback_mode() !=
-                SIXEL_PALETTE_KMEANS_FEEDBACK_OFF) {
+            (request->quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS &&
+             sixel_get_kmeans_feedback_mode() !=
+                SIXEL_PALETTE_KMEANS_FEEDBACK_OFF)) {
         return SIXEL_BAD_ARGUMENT;
     }
     /* The opt-in is a call argument, not retained instance or thread state.

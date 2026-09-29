@@ -1185,9 +1185,11 @@ static cli_option_help_t const g_option_help_table[] = {
         "    CLI overrides SIXEL_OUTPUT_COLORSPACE and the auto timeout\n"
         "    SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS environment value\n"
         "    P3: effective float precision; -X/-W accept all five spaces;\n"
-        "    any sampling/binning policy; exact lookup;\n"
+        "    -Qkmeans|center|medoids; any sampling; exact lookup;\n"
+        "    binning: kmeans any, center none/exact/hard/auto,\n"
+        "    medoids none/auto;\n"
         "    none/CPU diffusion/auto;\n"
-        "    no merge/cover; snap none or rate=0; -m supported on this path\n"
+        "    no merge/cover; snap none or rate=0; -m with K-means only\n"
         "    -M exports sRGB8; positional/interframe dither unsupported\n"
     },
     {
