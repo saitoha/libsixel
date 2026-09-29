@@ -72,7 +72,7 @@ typedef struct sixel_lookup_policy_rbc_float32 {
     struct {
         int pivot_count;
         int *pivots;
-        float *radius;
+        double *radius;
         int *member_offset;
         int *member_index;
         float *mean;
@@ -202,22 +202,24 @@ sixel_lookup_policy_rbc_float32_component(float const *palette,
     return palette[index * depth + clamped_axis];
 }
 
-static float
+static double
 sixel_lookup_policy_rbc_float32_distance(
     sixel_lookup_policy_rbc_float32_t const *lut,
     float const *sample,
     int palette_index)
 {
-    float diff;
-    float distance;
+    double diff;
+    double distance;
     int component;
 
-    diff = 0.0f;
-    distance = 0.0f;
+    /* Widen subtraction and squared distances before building ball radii.
+     * Both construction and queries must retain the same finite range. */
+    diff = 0.0;
+    distance = 0.0;
     component = 0;
     for (component = 0; component < SIXEL_LOOKUP_POLICY_RBC_FLOAT_COMPONENTS;
             ++component) {
-        diff = sample[component]
+        diff = (double)sample[component]
              - sixel_lookup_policy_rbc_float32_component(
                    lut->palette,
                    lut->depth,
@@ -330,9 +332,9 @@ sixel_lookup_policy_rbc_float32_configure_clusters(sixel_lookup_policy_rbc_float
     int best_pivot;
     int start;
     int end;
-    float best_distance;
-    float distance;
-    float radius;
+    double best_distance;
+    double distance;
+    double radius;
 
     pivots = 0;
     i = 0;
@@ -356,7 +358,7 @@ sixel_lookup_policy_rbc_float32_configure_clusters(sixel_lookup_policy_rbc_float
     }
 
     lut->rbc.pivots = (int *)calloc((size_t)pivots, sizeof(int));
-    lut->rbc.radius = (float *)calloc((size_t)pivots, sizeof(float));
+    lut->rbc.radius = (double *)calloc((size_t)pivots, sizeof(double));
     lut->rbc.member_offset = (int *)calloc((size_t)pivots + 1U, sizeof(int));
     lut->rbc.member_index = (int *)calloc((size_t)lut->ncolors, sizeof(int));
     if (lut->rbc.pivots == NULL || lut->rbc.radius == NULL
@@ -372,7 +374,7 @@ sixel_lookup_policy_rbc_float32_configure_clusters(sixel_lookup_policy_rbc_float
 
     for (i = 0; i < lut->ncolors; ++i) {
         best_pivot = 0;
-        best_distance = FLT_MAX;
+        best_distance = DBL_MAX;
         for (j = 0; j < pivots; ++j) {
             distance = sixel_lookup_policy_rbc_float32_distance(
                 lut,
@@ -400,7 +402,7 @@ sixel_lookup_policy_rbc_float32_configure_clusters(sixel_lookup_policy_rbc_float
 
     for (i = 0; i < lut->ncolors; ++i) {
         best_pivot = 0;
-        best_distance = FLT_MAX;
+        best_distance = DBL_MAX;
         for (j = 0; j < pivots; ++j) {
             distance = sixel_lookup_policy_rbc_float32_distance(
                 lut,
@@ -421,7 +423,7 @@ sixel_lookup_policy_rbc_float32_configure_clusters(sixel_lookup_policy_rbc_float
             return SIXEL_RUNTIME_ERROR;
         }
         lut->rbc.member_index[cursor] = i;
-        radius = sqrtf(best_distance);
+        radius = sqrt(best_distance);
         if (radius > lut->rbc.radius[best_pivot]) {
             lut->rbc.radius[best_pivot] = radius;
         }
@@ -466,10 +468,10 @@ sixel_lookup_policy_rbc_float32_search(sixel_lookup_policy_rbc_float32_t const *
     int end;
     int idx;
     int best_index;
-    float best2;
-    float dist2;
-    float lb2;
-    float lb;
+    double best2;
+    double dist2;
+    double lb2;
+    double lb;
 
     j = 0;
     k = 0;
@@ -477,7 +479,7 @@ sixel_lookup_policy_rbc_float32_search(sixel_lookup_policy_rbc_float32_t const *
     end = 0;
     idx = 0;
     best_index = 0;
-    best2 = FLT_MAX;
+    best2 = DBL_MAX;
     dist2 = 0.0f;
     lb2 = 0.0f;
     lb = 0.0f;
@@ -491,7 +493,7 @@ sixel_lookup_policy_rbc_float32_search(sixel_lookup_policy_rbc_float32_t const *
             lut,
             sample,
             lut->rbc.pivots[j]);
-        lb = sqrtf(dist2) - lut->rbc.radius[j];
+        lb = sqrt(dist2) - lut->rbc.radius[j];
         if (lb < 0.0f) {
             lb = 0.0f;
         }

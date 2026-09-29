@@ -13,7 +13,7 @@
 #include "src/palette.h"
 
 static char const *const lookup_options[] = {
-    "certlut", "5bit", "6bit", "auto", "default"
+    "certlut", "5bit", "6bit", "auto", "default", "vptree", "rbc"
 };
 static char const *const lookup_spaces[] = {
     "gamma", "linear", "oklab", "cielab", "din99d"
@@ -24,7 +24,9 @@ static int const lookup_formats[] = {
     SIXEL_PIXELFORMAT_DIN99DFLOAT32
 };
 static int const lookup_codes[] = {
-    SIXEL_LUT_POLICY_CERTLUT, SIXEL_LUT_POLICY_5BIT, SIXEL_LUT_POLICY_6BIT
+    SIXEL_LUT_POLICY_CERTLUT, SIXEL_LUT_POLICY_5BIT, SIXEL_LUT_POLICY_6BIT,
+    SIXEL_LUT_POLICY_AUTO, SIXEL_LUT_POLICY_CERTLUT,
+    SIXEL_LUT_POLICY_VPTREE, SIXEL_LUT_POLICY_RBC
 };
 
 typedef struct lookup_capture {
@@ -299,12 +301,12 @@ test_lookup_palette(int argc, char **argv)
     policy = atoi(argv[2]);
     space = atoi(argv[3]);
     p3 = atoi(argv[4]);
-    if (policy < 0 || policy > 4 || space < 0 || space > 4 ||
+    if (policy < 0 || policy > 6 || space < 0 || space > 4 ||
             p3 < 0 || p3 > 1) {
         return EXIT_FAILURE;
     }
     ok = strcmp(argv[1], "bands") == 0
-        ? policy < 3 && lookup_bands(policy, p3)
+        ? (policy < 3 || policy >= 5) && lookup_bands(policy, p3)
         : lookup_encode(policy, space, p3, strcmp(argv[1], "byte") == 0);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

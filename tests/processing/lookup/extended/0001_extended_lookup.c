@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* Native float nearest-color contracts, independent of RGB byte views. */
 #include <float.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +14,8 @@ static int const lookup_formats[] = {
     SIXEL_PIXELFORMAT_DIN99DFLOAT32
 };
 static char const *const lookup_classes[] = {
-    "lookup/certlut.float32", "lookup/5bit.float32", "lookup/6bit.float32"
+    "lookup/certlut.float32", "lookup/5bit.float32", "lookup/6bit.float32",
+    "lookup/vptree.float32", "lookup/rbc.float32"
 };
 
 static int
@@ -23,7 +25,7 @@ lookup_prepare(sixel_lookup_policy_interface_t *policy,
 {
     /* Deliberately contradictory byte coordinates expose loss of the
      * authoritative float view. No tested class borrows this byte view. */
-    static unsigned char const bytes[12] = { 0 };
+    static unsigned char const bytes[123] = { 0 };
     sixel_lookup_policy_prepare_request_t request;
 
     memset(&request, 0, sizeof(request));
@@ -150,6 +152,100 @@ lookup_isolation(sixel_lookup_policy_interface_t *first,
         lookup_map(first, query, 1) && lookup_map(second, query, 0);
 }
 
+/* Compare the accelerated result to a separately expressed normalized
+ * exhaustive distance. The palette has more entries than RBC pivots, so
+ * ball radii and VP-tree branch/cache decisions all affect these queries. */
+static int
+lookup_oracle(sixel_lookup_policy_interface_t *policy,
+              sixel_allocator_t *allocator, int space, int exponent)
+{
+    static double const ranges[5][3] = {
+        { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 }, { 1, 3, 3 }, { 1, 2, 2 }
+    };
+    float palette[123];
+    float original[123];
+    float query[3];
+    float saved[3];
+    double distances[41];
+    double scale;
+    double component;
+    double best;
+    double next;
+    double budget;
+    int index;
+    int axis;
+    int sample;
+    int actual;
+    int strict;
+
+    scale = ldexp(1.0, exponent);
+    strict = 0;
+    for (index = 0; index < 41; ++index) {
+        for (axis = 0; axis < 3; ++axis) {
+            component = ((index * (17 + axis * 8) + axis * 13) % 97
+                - 48) / 16.0;
+            palette[index * 3 + axis] =
+                (float)(component * scale * ranges[space][axis]);
+        }
+    }
+    memcpy(original, palette, sizeof(palette));
+    if (!lookup_prepare(policy, allocator, palette, space, 41)) {
+        return 0;
+    }
+    for (sample = 0; sample < 492; ++sample) {
+        /* Repeat exact hits and nearby probes, then jump between clusters.
+         * Binary fractions and power-of-two scaling avoid input rounding
+         * differences between the ordinary, overflow and underflow cases. */
+        index = ((sample / 3) * 19) % 41;
+        for (axis = 0; axis < 3; ++axis) {
+            component = sample % 3 == 0 ? 0.0
+                : ((sample * (11 + axis * 6)) % 31 - 15) / 64.0;
+            query[axis] = (float)(palette[index * 3 + axis] +
+                component * scale * ranges[space][axis]);
+        }
+        memcpy(saved, query, sizeof(query));
+        best = DBL_MAX;
+        next = DBL_MAX;
+        for (index = 0; index < 41; ++index) {
+            distances[index] = 0.0;
+            for (axis = 0; axis < 3; ++axis) {
+                component = ((double)query[axis] -
+                    palette[index * 3 + axis]) / ranges[space][axis];
+                distances[index] += component * component;
+            }
+            if (distances[index] < best) {
+                next = best;
+                best = distances[index];
+            } else if (distances[index] < next) {
+                next = distances[index];
+            }
+        }
+        actual = policy->vtbl->map_pixel(policy,
+            (unsigned char const *)query);
+        if (actual < 0 || actual >= 41) {
+            return 0;
+        }
+        /* Production stores 1/range then its square in float (up to three
+         * float rounding errors); this reference divides in double. Allow
+         * eight float epsilons on both compared distances, not an absolute
+         * tolerance that would hide the scaled underflow cases. */
+        budget = 8 * FLT_EPSILON * (best + distances[actual]);
+        if (distances[actual] - best > budget ||
+                memcmp(saved, query, sizeof(query)) != 0) {
+            fprintf(stderr, "oracle space=%d exp=%d sample=%d index=%d "
+                "distance=%.17g minimum=%.17g budget=%.17g\n",
+                space, exponent, sample, actual, distances[actual],
+                best, budget);
+            return 0;
+        }
+        if (next - best > 8 * FLT_EPSILON * (best + next)) {
+            ++strict;
+        }
+    }
+    return strict >= 450 &&
+        memcmp(original, palette, sizeof(palette)) == 0;
+}
+
 int
 test_extended_lookup(int argc, char **argv)
 {
@@ -167,7 +263,7 @@ test_extended_lookup(int argc, char **argv)
     }
     backend = atoi(argv[2]);
     space = atoi(argv[3]);
-    if (backend < 0 || backend > 2 || space < 0 || space > 4) {
+    if (backend < 0 || backend > 4 || space < 0 || space > 4) {
         return EXIT_FAILURE;
     }
     allocator = NULL;
@@ -189,9 +285,15 @@ test_extended_lookup(int argc, char **argv)
                 lookup_classes[backend], allocator, (void **)&second))) {
         goto end;
     }
-    ok = strcmp(argv[1], "isolation") == 0
-        ? lookup_isolation(first, second, allocator)
-        : lookup_values(first, allocator, space, argv[1]);
+    if (strncmp(argv[1], "oracle", 6) == 0) {
+        ok = lookup_oracle(first, allocator, space,
+            strcmp(argv[1], "oracle_large") == 0 ? 120 :
+            strcmp(argv[1], "oracle_small") == 0 ? -120 : 0);
+    } else {
+        ok = strcmp(argv[1], "isolation") == 0
+            ? lookup_isolation(first, second, allocator)
+            : lookup_values(first, allocator, space, argv[1]);
+    }
 end:
     if (second != NULL) {
         second->vtbl->unref(second);

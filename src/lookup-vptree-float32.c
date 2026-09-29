@@ -44,12 +44,12 @@ typedef struct sixel_lookup_vptree_float32_node {
     int pivot;
     int left;
     int right;
-    float radius;
+    double radius;
 } sixel_lookup_vptree_float32_node_t;
 
 typedef struct sixel_lookup_vptree_float32_pair {
     int index;
-    float distance;
+    double distance;
 } sixel_lookup_vptree_float32_pair_t;
 
 struct sixel_lookup_vptree_float32 {
@@ -61,7 +61,7 @@ struct sixel_lookup_vptree_float32 {
     sixel_lookup_vptree_float32_node_t *nodes;
     int node_count;
     int root;
-    float *safe_dist2;
+    double *safe_dist2;
     int cache_enabled;
     int cached_index;
 };
@@ -83,7 +83,10 @@ struct sixel_lookup_vptree_float32 {
  *   safe_dist2[i] = nearest_palette_dist2[i] / 4
  *
  * This allows early confirmation of the nearest palette entry while
- * preserving correctness.
+ * preserving correctness. Distances, radii and safe thresholds use double:
+ * finite float coordinates can have squared distances outside float range.
+ * Keeping only the query distance wide would still corrupt pruning/cache
+ * decisions through narrowed construction metadata.
  */
 static void
 sixel_lookup_vptree_float32_release(sixel_lookup_vptree_float32_t *tree)
@@ -101,15 +104,15 @@ sixel_lookup_vptree_float32_release(sixel_lookup_vptree_float32_t *tree)
     tree->cached_index = -1;
 }
 
-static float
+static double
 sixel_lookup_vptree_float32_palette_distance(
     sixel_lookup_vptree_float32_t const *tree,
     int left_index,
     int right_index)
 {
     int component;
-    float diff;
-    float distance;
+    double diff;
+    double distance;
     float const *left;
     float const *right;
 
@@ -117,28 +120,28 @@ sixel_lookup_vptree_float32_palette_distance(
     left = tree->palette + (size_t)left_index * (size_t)tree->depth;
     right = tree->palette + (size_t)right_index * (size_t)tree->depth;
     for (component = 0; component < 3; ++component) {
-        diff = left[component] - right[component];
+        diff = (double)left[component] - right[component];
         distance += diff * diff * tree->weights[component];
     }
 
     return distance;
 }
 
-static float
+static double
 sixel_lookup_vptree_float32_pixel_distance(
     sixel_lookup_vptree_float32_t const *tree,
     float const *pixel,
     int palette_index)
 {
     int component;
-    float diff;
-    float distance;
+    double diff;
+    double distance;
     float const *entry;
 
     distance = 0.0f;
     entry = tree->palette + (size_t)palette_index * (size_t)tree->depth;
     for (component = 0; component < 3; ++component) {
-        diff = pixel[component] - entry[component];
+        diff = (double)pixel[component] - entry[component];
         distance += diff * diff * tree->weights[component];
     }
 
@@ -151,15 +154,15 @@ sixel_lookup_vptree_float32_prepare_safe_distances(
 {
     int index;
     int other;
-    float best;
-    float distance;
+    double best;
+    double distance;
 
     if (tree->safe_dist2 == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     for (index = 0; index < tree->ncolors; ++index) {
-        best = FLT_MAX;
+        best = DBL_MAX;
         for (other = 0; other < tree->ncolors; ++other) {
             if (other == index) {
                 continue;
@@ -171,7 +174,7 @@ sixel_lookup_vptree_float32_prepare_safe_distances(
                 best = distance;
             }
         }
-        if (best == FLT_MAX) {
+        if (best == DBL_MAX) {
             best = 0.0f;
         }
         tree->safe_dist2[index] = best * 0.25f;
@@ -215,7 +218,7 @@ sixel_lookup_vptree_float32_build(sixel_lookup_vptree_float32_t *tree,
     int *right_indices;
     int index;
     int offset;
-    float distance;
+    double distance;
 
     if (count <= 0) {
         return -1;
@@ -259,7 +262,7 @@ sixel_lookup_vptree_float32_build(sixel_lookup_vptree_float32_t *tree,
           sixel_lookup_vptree_float32_pair_compare);
 
     mid = pair_count / 2;
-    node->radius = sqrtf(pairs[mid].distance);
+    node->radius = sqrt(pairs[mid].distance);
 
     left_count = mid;
     right_count = pair_count - mid;
@@ -319,14 +322,14 @@ sixel_lookup_vptree_float32_search(sixel_lookup_vptree_float32_t *tree,
                                    int node_index,
                                    float const *pixel,
                                    int *best_index,
-                                   float *best_distance)
+                                   double *best_distance)
 {
     sixel_lookup_vptree_float32_node_t const *node;
     int pivot;
-    float distance;
-    float radius;
-    float target;
-    float diff;
+    double distance;
+    double radius;
+    double target;
+    double diff;
     int search_done;
 
     if (node_index < 0) {
@@ -349,7 +352,7 @@ sixel_lookup_vptree_float32_search(sixel_lookup_vptree_float32_t *tree,
     }
 
     radius = node->radius;
-    target = sqrtf(distance);
+    target = sqrt(distance);
     search_done = 0;
 
     if (target < radius) {
@@ -477,9 +480,9 @@ sixel_lookup_vptree_float32_configure(sixel_lookup_vptree_float32_t *tree,
         return SIXEL_BAD_ALLOCATION;
     }
 
-    tree->safe_dist2 = (float *)sixel_allocator_malloc(
+    tree->safe_dist2 = (double *)sixel_allocator_malloc(
         tree->allocator,
-        (size_t)ncolors * sizeof(float));
+        (size_t)ncolors * sizeof(double));
     if (tree->safe_dist2 == NULL) {
         sixel_helper_set_additional_message(
             "sixel_lookup_vptree_float32_configure: safe distance allocation "
@@ -524,16 +527,16 @@ sixel_lookup_vptree_float32_map(sixel_lookup_vptree_float32_t *tree,
                                 float const *pixel)
 {
     int best_index;
-    float best_distance;
+    double best_distance;
     int cached_index;
-    float distance;
+    double distance;
 
     if (tree == NULL || pixel == NULL || tree->root < 0) {
         return 0;
     }
 
     best_index = 0;
-    best_distance = FLT_MAX;
+    best_distance = DBL_MAX;
     if (tree->cache_enabled && tree->cached_index >= 0) {
         cached_index = tree->cached_index;
         distance = sixel_lookup_vptree_float32_pixel_distance(tree,
