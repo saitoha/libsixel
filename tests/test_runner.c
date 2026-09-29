@@ -469,6 +469,7 @@ int test_cli_0039_color_auto(int argc, char **argv);
 int test_cli_0040_color_job(int argc, char **argv);
 int test_rgb101_spatial(int argc, char **argv);
 int test_palette_space(int argc, char **argv);
+int test_palette_sampling_float(int argc, char **argv);
 int test_srgb_0065(int argc, char **argv);
 int test_srgb_0066(int argc, char **argv);
 int test_srgb_0067(int argc, char **argv);
@@ -2804,6 +2805,8 @@ static test_entry_t const test_entries[] = {
     { "cli/0039_cli_color_auto", test_cli_0039_color_auto },
     { "cli/0040_cli_color_job", test_cli_0040_color_job },
     { "palette/color_space/0001_space_contract", test_palette_space },
+    { "palette/sampling_float/0001_sampling_contract",
+      test_palette_sampling_float },
     { "palette/rgb101_diffusion/0001_spatial_contract",
       test_rgb101_spatial },
     { "palette/0065_srgb_gamma_unsnapped_lookup", test_srgb_0065 },

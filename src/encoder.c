@@ -4844,10 +4844,14 @@ sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
                                             context->encoder->allocator);
     if (SIXEL_SUCCEEDED(status)) {
         context->palette_job_initialized = 1;
+        /* Match the synchronous builder: a base auto/byte preference
+         * must not discard precision already retained by the source. */
         clustering_pixelformat =
             sixel_encoder_pixelformat_for_colorspace(
                 context->encoder->clustering_colorspace,
-                context->encoder->prefer_float32);
+                context->encoder->prefer_float32 ||
+                SIXEL_PIXELFORMAT_IS_FLOAT32(
+                    sixel_frame_get_pixelformat(context->frame)));
         status = sixel_encoder_palette_job_launch(&context->palette_job,
                                                   context->frame,
                                                   clustering_pixelformat,
@@ -6968,8 +6972,6 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
                 SIXEL_PALETTE_KMEANS_FEEDBACK_OFF ||
             encoder->lut_policy != SIXEL_LUT_POLICY_NONE ||
             encoder->palette_binning_policy != SIXEL_PALETTE_BINNING_NONE ||
-            encoder->palette_sampling_policy !=
-                SIXEL_PALETTE_SAMPLING_FULL_FRAME ||
             encoder->final_merge_mode != SIXEL_FINAL_MERGE_NONE ||
             (encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
              encoder->cover_policy != SIXEL_PALETTE_COVER_OFF) ||
@@ -7022,7 +7024,7 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "display-p3 requires the CPU float K-means pilot: "
             "--precision=auto|float -Qkmeans -~none "
             "-X/-W gamma|linear|oklab|cielab|din99d "
-            "--binning-policy=none --sampling-policy=full-frame "
+            "--binning-policy=none "
             "CPU spatial diffusion (or -dnone/-dauto), "
             "-Fnone -_none -trgb, no cover "
             "(-aoff for generated palettes), and normal SIXEL output.");
