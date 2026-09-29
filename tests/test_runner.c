@@ -473,6 +473,31 @@ int test_palette_sampling_float(int argc, char **argv);
 int test_palette_binning_float(int argc, char **argv);
 int test_palette_merge_float(int argc, char **argv);
 int test_extended_lookup(int argc, char **argv);
+int test_map_native_0001(int argc, char **argv);
+int test_map_native_0002(int argc, char **argv);
+int test_map_native_0003(int argc, char **argv);
+int test_map_native_0004(int argc, char **argv);
+int test_map_native_0005(int argc, char **argv);
+int test_map_native_0006(int argc, char **argv);
+int test_map_native_0007(int argc, char **argv);
+int test_map_native_0008(int argc, char **argv);
+int test_map_native_0009(int argc, char **argv);
+int test_map_native_0010(int argc, char **argv);
+int test_map_native_0011(int argc, char **argv);
+int test_map_native_0012(int argc, char **argv);
+int test_map_native_0013(int argc, char **argv);
+int test_map_native_0014(int argc, char **argv);
+int test_map_native_0015(int argc, char **argv);
+int test_map_native_0016(int argc, char **argv);
+int test_map_native_0017(int argc, char **argv);
+int test_map_native_0018(int argc, char **argv);
+int test_map_native_0019(int argc, char **argv);
+int test_map_native_0020(int argc, char **argv);
+int test_map_native_0021(int argc, char **argv);
+int test_map_native_0022(int argc, char **argv);
+int test_map_native_0023(int argc, char **argv);
+int test_map_native_0024(int argc, char **argv);
+int test_map_native_0025(int argc, char **argv);
 int test_auto_native_0001(int argc, char **argv);
 int test_auto_native_0002(int argc, char **argv);
 int test_auto_native_0003(int argc, char **argv);
@@ -2997,6 +3022,56 @@ static test_entry_t const test_entries[] = {
     { "palette/binning_float/0001_binning_contract",
       test_palette_binning_float },
     { "lookup/extended/0001_extended_lookup", test_extended_lookup },
+    { "palette/map_float/0001_map_palette_gamma",
+      test_map_native_0001 },
+    { "palette/map_float/0002_map_palette_linear",
+      test_map_native_0002 },
+    { "palette/map_float/0003_map_palette_oklab",
+      test_map_native_0003 },
+    { "palette/map_float/0004_map_palette_cielab",
+      test_map_native_0004 },
+    { "palette/map_float/0005_map_palette_din99d",
+      test_map_native_0005 },
+    { "palette/map_float/0006_map_fs_gamma",
+      test_map_native_0006 },
+    { "palette/map_float/0007_map_fs_linear",
+      test_map_native_0007 },
+    { "palette/map_float/0008_map_fs_oklab",
+      test_map_native_0008 },
+    { "palette/map_float/0009_map_fs_cielab",
+      test_map_native_0009 },
+    { "palette/map_float/0010_map_fs_din99d",
+      test_map_native_0010 },
+    { "palette/map_float/0011_map_act",
+      test_map_native_0011 },
+    { "palette/map_float/0012_map_riff",
+      test_map_native_0012 },
+    { "palette/map_float/0013_map_gpl",
+      test_map_native_0013 },
+    { "palette/map_float/0014_map_byte",
+      test_map_native_0014 },
+    { "palette/map_float/0015_map_promote",
+      test_map_native_0015 },
+    { "palette/map_float/0016_map_precision_reuse",
+      test_map_native_0016 },
+    { "palette/map_float/0017_map_output_reuse",
+      test_map_native_0017 },
+    { "palette/map_float/0018_map_image_gamma",
+      test_map_native_0018 },
+    { "palette/map_float/0019_map_image_linear",
+      test_map_native_0019 },
+    { "palette/map_float/0020_map_image_oklab",
+      test_map_native_0020 },
+    { "palette/map_float/0021_map_image_cielab",
+      test_map_native_0021 },
+    { "palette/map_float/0022_map_image_din99d",
+      test_map_native_0022 },
+    { "palette/map_float/0023_map_export_gamma",
+      test_map_native_0023 },
+    { "palette/map_float/0024_map_export_cielab",
+      test_map_native_0024 },
+    { "palette/map_float/0025_map_zero_snap",
+      test_map_native_0025 },
     { "palette/auto_float/0001_auto_default_gamma",
       test_auto_native_0001 },
     { "palette/auto_float/0002_auto_explicit_gamma",

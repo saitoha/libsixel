@@ -4401,6 +4401,7 @@ typedef struct sixel_callback_context_for_mapfile {
     int gpu_policy;
     size_t gpu_palette_threshold;
     int prefer_float32;
+    int preserve_float_palette;
 } sixel_callback_context_for_mapfile_t;
 
 static SIXELSTATUS
@@ -4488,8 +4489,7 @@ load_image_callback_for_palette(
         goto end;
     }
 
-    if (callback_context->encoder->output_color_definition ==
-            SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+    if (callback_context->preserve_float_palette) {
         /* Image maps need the same extended float builder as source images.
          * Retain unrounded working coordinates here: the outer fixed-palette
          * boundary captures -M and caches separate RGB101 output codes. */
@@ -6098,10 +6098,11 @@ sixel_encoder_palette_job_wait(sixel_palette_async_job_t *job,
  * independent of -W.
  * Convert once at the parser boundary and keep float coordinates alongside
  * the byte compatibility view. An ordinary gamma job needs no extra
- * allocation; P3 needs a float view for destination projection. */
+ * allocation; selected float jobs need an authoritative working view. */
 static SIXELSTATUS
 sixel_encoder_import_srgb_palette(sixel_encoder_t *encoder,
-                                  sixel_dither_t *dither)
+                                  sixel_dither_t *dither,
+                                  int preserve_float)
 {
     SIXELSTATUS status;
     sixel_palette_entries_view_t view;
@@ -6109,7 +6110,8 @@ sixel_encoder_import_srgb_palette(sixel_encoder_t *encoder,
     float entries[256 * 3];
     size_t index;
 
-    if (encoder->working_colorspace == SIXEL_COLORSPACE_GAMMA &&
+    if (!preserve_float &&
+            encoder->working_colorspace == SIXEL_COLORSPACE_GAMMA &&
             encoder->output_color_definition !=
                 SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
         return SIXEL_OK;
@@ -6141,7 +6143,8 @@ sixel_encoder_import_srgb_palette(sixel_encoder_t *encoder,
 static SIXELSTATUS
 sixel_prepare_specified_palette(
     sixel_dither_t  /* out */   **dither,
-    sixel_encoder_t /* in */    *encoder)
+    sixel_encoder_t /* in */    *encoder,
+    int preserve_float)
 {
     SIXELSTATUS status;
     sixel_callback_context_for_mapfile_t callback_context;
@@ -6351,7 +6354,8 @@ palette_cleanup:
             stream = NULL;
         }
         if (SIXEL_SUCCEEDED(status)) {
-            status = sixel_encoder_import_srgb_palette(encoder, *dither);
+            status = sixel_encoder_import_srgb_palette(encoder, *dither,
+                                                       preserve_float);
             if (SIXEL_FAILED(status)) {
                 sixel_dither_unref(*dither);
                 *dither = NULL;
@@ -6371,7 +6375,12 @@ palette_cleanup:
     callback_context.gpu_policy = encoder->gpu_policy;
     callback_context.gpu_palette_threshold =
         encoder->gpu_palette_threshold;
-    callback_context.prefer_float32 = encoder->prefer_float32;
+    /* The source frame can require float even when the base preference is
+     * auto/8bit. Preserve the map loader's coordinates before conversion to
+     * the working space and use the same native builder as that source. */
+    callback_context.prefer_float32 =
+        encoder->prefer_float32 || preserve_float;
+    callback_context.preserve_float_palette = preserve_float;
 
     status = sixel_loader_new(&loader, encoder->allocator);
     if (SIXEL_FAILED(status)) {
@@ -7025,9 +7034,7 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
             (encoder->color_option == SIXEL_COLOR_OPTION_MAPFILE &&
              encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS) ||
             (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT &&
-             !(encoder->color_option == SIXEL_COLOR_OPTION_MAPFILE &&
-               encoder->output_color_definition ==
-                   SIXEL_PALETTE_OUTPUT_DISPLAY_P3)) ||
+             encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE) ||
             encoder->ormode != 0 || encoder->fdrcs != 0 ||
             encoder->fuse_macro != 0 || encoder->macro_number >= 0 ||
             encoder->sixdelta_enabled != 0 || encoder->output_is_png != 0 ||
@@ -7238,7 +7245,8 @@ sixel_encoder_prepare_palette(
             dither_cache_hit = 1;
             status = SIXEL_OK;
         } else {
-            status = sixel_prepare_specified_palette(dither, encoder);
+            status = sixel_prepare_specified_palette(dither, encoder,
+                sixel_encoder_rgb101_frame(encoder, frame));
         }
         goto end;
     case SIXEL_COLOR_OPTION_BUILTIN:
@@ -7252,7 +7260,8 @@ sixel_encoder_prepare_palette(
             status = sixel_prepare_builtin_palette(dither,
                                                      encoder->builtin_palette);
             if (SIXEL_SUCCEEDED(status)) {
-                status = sixel_encoder_import_srgb_palette(encoder, *dither);
+                status = sixel_encoder_import_srgb_palette(encoder, *dither,
+                                                           0);
             }
         }
         goto end;

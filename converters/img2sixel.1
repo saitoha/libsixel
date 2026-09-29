@@ -412,6 +412,9 @@ pal\-jasc:, pal\-riff:, gpl:) to force a format. Without TYPE the
 extension or file contents decide the palette type. Using TYPE:- reads
 palette bytes from standard input (for example, gpl:-).
 ACT/PAL/GPL entries are sRGB8 regardless of \fB-W\fP and \fB-U\fP.
+Selected float K-means jobs retain unrounded working palettes for gamma
+or Display P3 output. Byte-eligible gamma jobs retain their existing path.
+Image mapfiles on the selected float path retain loader/CMS precision.
 This option is mutually exclusive with \fB-b\fP, \fB-e\fP, and
 \fB-I\fP. Repeating \fB-m\fP is allowed; the last mapfile wins.
 .TP 5

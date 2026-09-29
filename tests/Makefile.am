@@ -570,6 +570,32 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0067_SRGB_GAMMA_EXTENDED_SOURCE \
     -DBUILD_TEST_0068_SRGB_LINEAR_EXTENDED_SOURCE \
     -DBUILD_SRGB_CONTRACT_COMMON \
+    -DBUILD_MAP_FLOAT_COMMON \
+    -DBUILD_TEST_0001_MAP_PALETTE_GAMMA \
+    -DBUILD_TEST_0002_MAP_PALETTE_LINEAR \
+    -DBUILD_TEST_0003_MAP_PALETTE_OKLAB \
+    -DBUILD_TEST_0004_MAP_PALETTE_CIELAB \
+    -DBUILD_TEST_0005_MAP_PALETTE_DIN99D \
+    -DBUILD_TEST_0006_MAP_FS_GAMMA \
+    -DBUILD_TEST_0007_MAP_FS_LINEAR \
+    -DBUILD_TEST_0008_MAP_FS_OKLAB \
+    -DBUILD_TEST_0009_MAP_FS_CIELAB \
+    -DBUILD_TEST_0010_MAP_FS_DIN99D \
+    -DBUILD_TEST_0011_MAP_ACT \
+    -DBUILD_TEST_0012_MAP_RIFF \
+    -DBUILD_TEST_0013_MAP_GPL \
+    -DBUILD_TEST_0014_MAP_BYTE \
+    -DBUILD_TEST_0015_MAP_PROMOTE \
+    -DBUILD_TEST_0016_MAP_PRECISION_REUSE \
+    -DBUILD_TEST_0017_MAP_OUTPUT_REUSE \
+    -DBUILD_TEST_0018_MAP_IMAGE_GAMMA \
+    -DBUILD_TEST_0019_MAP_IMAGE_LINEAR \
+    -DBUILD_TEST_0020_MAP_IMAGE_OKLAB \
+    -DBUILD_TEST_0021_MAP_IMAGE_CIELAB \
+    -DBUILD_TEST_0022_MAP_IMAGE_DIN99D \
+    -DBUILD_TEST_0023_MAP_EXPORT_GAMMA \
+    -DBUILD_TEST_0024_MAP_EXPORT_CIELAB \
+    -DBUILD_TEST_0025_MAP_ZERO_SNAP \
     -DBUILD_AUTO_TEST_COMMON \
     -DBUILD_TEST_0001_AUTO_DEFAULT_GAMMA \
     -DBUILD_TEST_0002_AUTO_EXPLICIT_GAMMA \
@@ -4365,6 +4391,32 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/mahalanobis_float/0012_mah_bands_private.c \
     quant/palette/lookup_float/0001_lookup_palette.c \
     quant/palette/srgb_contract_common.c \
+    quant/palette/map_float_common.c \
+    quant/palette/map_float/0001_map_palette_gamma.c \
+    quant/palette/map_float/0002_map_palette_linear.c \
+    quant/palette/map_float/0003_map_palette_oklab.c \
+    quant/palette/map_float/0004_map_palette_cielab.c \
+    quant/palette/map_float/0005_map_palette_din99d.c \
+    quant/palette/map_float/0006_map_fs_gamma.c \
+    quant/palette/map_float/0007_map_fs_linear.c \
+    quant/palette/map_float/0008_map_fs_oklab.c \
+    quant/palette/map_float/0009_map_fs_cielab.c \
+    quant/palette/map_float/0010_map_fs_din99d.c \
+    quant/palette/map_float/0011_map_act.c \
+    quant/palette/map_float/0012_map_riff.c \
+    quant/palette/map_float/0013_map_gpl.c \
+    quant/palette/map_float/0014_map_byte.c \
+    quant/palette/map_float/0015_map_promote.c \
+    quant/palette/map_float/0016_map_precision_reuse.c \
+    quant/palette/map_float/0017_map_output_reuse.c \
+    quant/palette/map_float/0018_map_image_gamma.c \
+    quant/palette/map_float/0019_map_image_linear.c \
+    quant/palette/map_float/0020_map_image_oklab.c \
+    quant/palette/map_float/0021_map_image_cielab.c \
+    quant/palette/map_float/0022_map_image_din99d.c \
+    quant/palette/map_float/0023_map_export_gamma.c \
+    quant/palette/map_float/0024_map_export_cielab.c \
+    quant/palette/map_float/0025_map_zero_snap.c \
     quant/palette/auto_test_common.c \
     quant/palette/auto_float/0001_auto_default_gamma.c \
     quant/palette/auto_float/0002_auto_explicit_gamma.c \

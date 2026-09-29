@@ -83,7 +83,7 @@ The [selected CPU float Display P3 path](../output/output-colorspace.md) accepts
 
 Existing image mapfiles keep their image-to-palette meaning. In the P3 path, a map image goes through its selected loader/CMS and the same extended float K-means builder used for generated palettes. Its colors remain unrounded until the fixed-palette output boundary, so CMS-retained values outside sRGB survive all five working coordinate choices. This does not introduce an ordered PNG palette format or a PNG `-M` writer.
 
-The other selected-path restrictions still apply, including exact lookup, [CPU spatial diffusion or none](../output/output-colorspace.md#display-p3-selected-cpu-float-path), and opaque static RGB source images. Explicit cover-policy options conflict with fixed palettes, so omit `-a` (including `-aoff`); fixed palettes bypass cover. For example:
+The other selected-path restrictions still apply, including the supported lookup policies, [CPU spatial diffusion or none](../output/output-colorspace.md#display-p3-selected-cpu-float-path), and opaque static RGB source images. Explicit cover-policy options conflict with fixed palettes, so omit `-a` (including `-aoff`); fixed palettes bypass cover. For example:
 
 ```sh
 img2sixel --threads=1 --gpu-policy=off --precision=auto \
@@ -91,6 +91,14 @@ img2sixel --threads=1 --gpu-policy=off --precision=auto \
   --sampling-policy=full-frame --binning-policy=none \
   -d fs -t rgb -U display-p3 -m colors.pal input.png
 ```
+
+## Selected ordinary sRGB output
+
+The same [selected opaque static CPU float path](../output/output-colorspace.md#selected-ordinary-srgb-float-path) accepts `-Ugamma -m` with explicit K-means, supported lookup/spatial diffusion, none or Ward merge, and disabled snap (including zero approach rate). Cover is bypassed for fixed palettes; omit `-a`. Selection requires that the source already has float storage or that encoder processing requires float. A byte-eligible gamma source stays on its existing path; mapfile selection alone does not promote it. Automatic or other quantizer requests, active snap, animation/alpha and the other pilot exclusions retain their existing ordinary-sRGB behavior.
+
+Structured ACT, JASC PAL, RIFF PAL and GPL entries remain sRGB8 and retain their order, duplicates and unused entries. For selected float application, import creates an authoritative float working palette even in gamma. Lookup and error diffusion use those unrounded coordinates; only a separate RGB101 output copy is rounded. The supplied entries are not snapped implicitly. `-M` captures the sRGB8 export before wire rounding. Byte-fast-path jobs keep the original allocation and representation behavior.
+
+For a selected float image-map job, the callback preserves loader/CMS precision before conversion to `-W`, then reuses the native palette builder with the explicit K-means configuration. This extends the P3 image-map behavior to ordinary sRGB output; it does not turn the image into an ordered palette format. The builder uses the configured clustering/binning/merge controls on the loaded map frame, unlike the legacy reconstruction path. Values outside sRGB remain available to palette application in all five working spaces; the final sRGB wire/export boundary necessarily clips them. A byte source with no independent float requirement remains outside this selected migration even if its separate map image contains CMS metadata.
 
 ## Exporting a palette with `-M`
 
@@ -255,7 +263,7 @@ Supplying a palette removes the construction stage but leaves the application st
 | `-d`, `--diffusion` | Applies while input pixels are mapped to the supplied entries. |
 | `-U`, `--output-colorspace` | Selects SIXEL serialization; legacy `-M` output remains sRGB8. |
 
-Legacy image-map reconstruction has a [known snap-environment override defect](snap-policy/README.md#known-contract-violations); the structured-palette bypass tests do not cover that reconstruction path.
+The selected float image-map builder is the documented exception to the construction bypass above; it uses the native construction controls before the resulting palette becomes fixed. Legacy image-map reconstruction has a [known snap-environment override defect](snap-policy/README.md#known-contract-violations); the structured-palette bypass tests do not cover that reconstruction path.
 
 The same lookup, cover, and snap rules apply to the other fixed palettes selected by `-b` and `-e`: explicit lookup applies, explicit cover conflicts, and snap is accepted but bypassed. The owning policy documents define the normative details: [Lookup Policy](../palette-application/lookup-policy/README.md), [Palette Cover Policy](cover-policy/README.md), [Palette Snap Policy](snap-policy/README.md), and [Palette Working Color Space](../palette-application/working-colorspace/README.md).
 
@@ -340,6 +348,38 @@ Perceptual-workspace fixed-palette contracts:
 | EP-54 | P3 oklab image map. | [tests/quant/palette/color_space/0069_p3_oklab_image_map.t](../../../tests/quant/palette/color_space/0069_p3_oklab_image_map.t) |
 | EP-55 | P3 cielab image map. | [tests/quant/palette/color_space/0070_p3_cielab_image_map.t](../../../tests/quant/palette/color_space/0070_p3_cielab_image_map.t) |
 | EP-56 | P3 din99d image map. | [tests/quant/palette/color_space/0071_p3_din99d_image_map.t](../../../tests/quant/palette/color_space/0071_p3_din99d_image_map.t) |
+
+### Selected ordinary-sRGB mapfile contracts
+
+These value tests check actual application and a separate wire cache, not perceptual similarity. Structured working entries use independently calculated sRGB transfer/opponent equations (the reference equations in `tools/generate_color_fixtures.py`), with component tolerance `2e-6 + abs(expected) * 5e-6` in the normalized working units for coefficient and binary32 storage error. The P3 image-map primary starts from ideal chromaticities and allows `3e-4` per component for the fixture ICC matrix quantization and subsequent conversions; clamping its signed/above-range RGB coordinates is much larger than this budget. Discrete indices, order, wire codes and captured export bytes are exact. Export tests observe the prepared `-M` payload; the format writers have separate coverage above.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| EP-57 | Retain ordered sRGB entries as independently derived working coordinates and literal wire values (palette gamma). | [tests/quant/palette/map_float/0001_map_palette_gamma.t](../../../tests/quant/palette/map_float/0001_map_palette_gamma.t) |
+| EP-58 | Retain ordered sRGB entries as independently derived working coordinates and literal wire values (palette linear). | [tests/quant/palette/map_float/0002_map_palette_linear.t](../../../tests/quant/palette/map_float/0002_map_palette_linear.t) |
+| EP-59 | Retain ordered sRGB entries as independently derived working coordinates and literal wire values (palette oklab). | [tests/quant/palette/map_float/0003_map_palette_oklab.t](../../../tests/quant/palette/map_float/0003_map_palette_oklab.t) |
+| EP-60 | Retain ordered sRGB entries as independently derived working coordinates and literal wire values (palette cielab). | [tests/quant/palette/map_float/0004_map_palette_cielab.t](../../../tests/quant/palette/map_float/0004_map_palette_cielab.t) |
+| EP-61 | Retain ordered sRGB entries as independently derived working coordinates and literal wire values (palette din99d). | [tests/quant/palette/map_float/0005_map_palette_din99d.t](../../../tests/quant/palette/map_float/0005_map_palette_din99d.t) |
+| EP-62 | Select unsnapped gray entries with nonzero FS residual feedback (fs gamma). | [tests/quant/palette/map_float/0006_map_fs_gamma.t](../../../tests/quant/palette/map_float/0006_map_fs_gamma.t) |
+| EP-63 | Select unsnapped gray entries with nonzero FS residual feedback (fs linear). | [tests/quant/palette/map_float/0007_map_fs_linear.t](../../../tests/quant/palette/map_float/0007_map_fs_linear.t) |
+| EP-64 | Select unsnapped gray entries with nonzero FS residual feedback (fs oklab). | [tests/quant/palette/map_float/0008_map_fs_oklab.t](../../../tests/quant/palette/map_float/0008_map_fs_oklab.t) |
+| EP-65 | Select unsnapped gray entries with nonzero FS residual feedback (fs cielab). | [tests/quant/palette/map_float/0009_map_fs_cielab.t](../../../tests/quant/palette/map_float/0009_map_fs_cielab.t) |
+| EP-66 | Select unsnapped gray entries with nonzero FS residual feedback (fs din99d). | [tests/quant/palette/map_float/0010_map_fs_din99d.t](../../../tests/quant/palette/map_float/0010_map_fs_din99d.t) |
+| EP-67 | Retain ordered sRGB entries as independently derived working coordinates and literal wire values (act). | [tests/quant/palette/map_float/0011_map_act.t](../../../tests/quant/palette/map_float/0011_map_act.t) |
+| EP-68 | Retain ordered sRGB entries as independently derived working coordinates and literal wire values (riff). | [tests/quant/palette/map_float/0012_map_riff.t](../../../tests/quant/palette/map_float/0012_map_riff.t) |
+| EP-69 | Retain ordered sRGB entries as independently derived working coordinates and literal wire values (gpl). | [tests/quant/palette/map_float/0013_map_gpl.t](../../../tests/quant/palette/map_float/0013_map_gpl.t) |
+| EP-70 | Retain actual gamma byte application (byte). | [tests/quant/palette/map_float/0014_map_byte.t](../../../tests/quant/palette/map_float/0014_map_byte.t) |
+| EP-71 | Honor explicit float promotion of otherwise eligible bytes (promote). | [tests/quant/palette/map_float/0015_map_promote.t](../../../tests/quant/palette/map_float/0015_map_promote.t) |
+| EP-72 | Resolve float/byte/float source precision when reusing an encoder (precision reuse). | [tests/quant/palette/map_float/0016_map_precision_reuse.t](../../../tests/quant/palette/map_float/0016_map_precision_reuse.t) |
+| EP-73 | Keep unprojected working entries across gamma/P3/gamma output reuse (output reuse). | [tests/quant/palette/map_float/0017_map_output_reuse.t](../../../tests/quant/palette/map_float/0017_map_output_reuse.t) |
+| EP-74 | Retain a CMS-loaded image-map P3 primary outside sRGB and apply its selected entry (image gamma). | [tests/quant/palette/map_float/0018_map_image_gamma.t](../../../tests/quant/palette/map_float/0018_map_image_gamma.t) |
+| EP-75 | Retain a CMS-loaded image-map P3 primary outside sRGB and apply its selected entry (image linear). | [tests/quant/palette/map_float/0019_map_image_linear.t](../../../tests/quant/palette/map_float/0019_map_image_linear.t) |
+| EP-76 | Retain a CMS-loaded image-map P3 primary outside sRGB and apply its selected entry (image oklab). | [tests/quant/palette/map_float/0020_map_image_oklab.t](../../../tests/quant/palette/map_float/0020_map_image_oklab.t) |
+| EP-77 | Retain a CMS-loaded image-map P3 primary outside sRGB and apply its selected entry (image cielab). | [tests/quant/palette/map_float/0021_map_image_cielab.t](../../../tests/quant/palette/map_float/0021_map_image_cielab.t) |
+| EP-78 | Retain a CMS-loaded image-map P3 primary outside sRGB and apply its selected entry (image din99d). | [tests/quant/palette/map_float/0022_map_image_din99d.t](../../../tests/quant/palette/map_float/0022_map_image_din99d.t) |
+| EP-79 | Capture original ordered sRGB8 entries before RGB101 rounding (export gamma). | [tests/quant/palette/map_float/0023_map_export_gamma.t](../../../tests/quant/palette/map_float/0023_map_export_gamma.t) |
+| EP-80 | Capture original ordered sRGB8 entries before RGB101 rounding (export cielab). | [tests/quant/palette/map_float/0024_map_export_cielab.t](../../../tests/quant/palette/map_float/0024_map_export_cielab.t) |
+| EP-81 | Treat zero-rate snap as inactive (zero snap). | [tests/quant/palette/map_float/0025_map_zero_snap.t](../../../tests/quant/palette/map_float/0025_map_zero_snap.t) |
 
 ### Defensive, malformed-input, and supplementary tests
 

@@ -459,6 +459,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    gpl:) to force a format. Without TYPE the extension or file contents decide. TYPE:-\n"
         "    reads palette bytes from stdin (for example, gpl:-).\n"
         "    ACT/PAL/GPL entries are sRGB8, independent of -W and -U.\n"
+        "    Selected float K-means jobs retain unrounded working palettes\n"
+        "    for gamma or P3 output; byte-eligible jobs keep their fast path.\n"
         "    This option is mutually exclusive with -b, -e, and -I. Repeating\n"
         "    -m is allowed; the last mapfile wins.\n"
     },
