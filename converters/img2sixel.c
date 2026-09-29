@@ -1187,7 +1187,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    P3: effective float precision; -X/-W accept all five spaces;\n"
         "    -Qkmeans|center|medoids; any sampling;\n"
         "    lookup none/certlut/5bit/6bit/auto/vptree/rbc/mahalanobis/"
-        "eytzinger;\n"
+        "eytzinger/fhedt;\n"
         "    binning: kmeans any, center none/exact/hard/auto,\n"
         "    medoids none/auto;\n"
         "    none/CPU diffusion/auto;\n"

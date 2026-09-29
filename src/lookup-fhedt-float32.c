@@ -97,8 +97,10 @@ struct sixel_lookup_fhedt_shared_float32 {
     int refine;
     int use_dist2;
     float weights[3];
-    float channel_min[3];
-    float channel_scale[3];
+    double channel_min[3];
+    double channel_max[3];
+    double channel_scale[3];
+    double grid_weights[3];
     int ncolors;
     int depth;
     int pixelformat;
@@ -106,6 +108,7 @@ struct sixel_lookup_fhedt_shared_float32 {
     int use_u16;
     float *palette;
     unsigned char *palette_quant;
+    int *seed_next;
     float *dist2;
     uint8_t *indices8;
     uint16_t *indices16;
@@ -119,58 +122,81 @@ static int const sixel_lookup_fhedt_tile_xy_default_float32 = 8;
 static int const sixel_lookup_fhedt_tile_depth_default_float32 = 8;
 
 /*
- * FHEDT builds a unit lattice, so palette and sample components must be
- * normalized to [0, 1].  For float32 working color spaces with asymmetric
- * channel ranges (Lab/DIN99d), normalize using:
- *
- *   normalized = (clamp(value) - min) / (max - min)
- *
- * The clamped, unnormalized values are still stored for distance refinement.
+ * The grid is an index, not a color representation. Extend the nominal box
+ * to contain every palette entry; keep the original working coordinates
+ * for refinement. Only rounding noise at the grid endpoints is bounded.
+ * Queries outside this box take a native-coordinate scan before indexing.
  */
-static float
+static double
 sixel_lookup_fhedt_normalize_component_float32(
     sixel_lookup_fhedt_shared_float32_t const *shared,
     float value,
     int component)
 {
-    float clamped;
-    float normalized;
+    double normalized;
 
-    clamped = sixel_pixelformat_float_channel_clamp(shared->pixelformat,
-                                                    component,
-                                                    value);
-    normalized = (clamped - shared->channel_min[component])
+    normalized = ((double)value - shared->channel_min[component])
                  * shared->channel_scale[component];
-    if (normalized < 0.0f) {
-        normalized = 0.0f;
+    if (normalized < 0.0) {
+        normalized = 0.0;
     }
-    if (normalized > 1.0f) {
-        normalized = 1.0f;
+    if (normalized > 1.0) {
+        normalized = 1.0;
     }
-
     return normalized;
 }
 
 static void
 sixel_lookup_fhedt_prepare_ranges_float32(
     sixel_lookup_fhedt_shared_float32_t *shared,
-    int pixelformat)
+    int pixelformat,
+    float const *palette)
 {
-    float minimum;
-    float range;
+    double minimum;
+    double maximum;
+    double range;
+    double value;
+    double largest;
     int component;
+    int index;
 
     shared->pixelformat = pixelformat;
+    largest = 0.0;
     for (component = 0; component < 3; ++component) {
         minimum = sixel_pixelformat_float_channel_min(pixelformat,
                                                       component);
         range = sixel_pixelformat_float_channel_range(pixelformat,
                                                       component);
-        shared->channel_min[component] = minimum;
-        if (range <= 0.0f) {
-            range = 1.0f;
+        if (range <= 0.0) {
+            range = 1.0;
         }
-        shared->channel_scale[component] = 1.0f / range;
+        maximum = minimum + range;
+        for (index = 0; index < shared->ncolors; ++index) {
+            value = palette[index * shared->depth + component];
+            if (value < minimum) {
+                minimum = value;
+            }
+            if (value > maximum) {
+                maximum = value;
+            }
+        }
+        /* Widen before subtraction: opposite finite float extrema have a
+         * finite double span but overflow a float subtraction. */
+        range = maximum - minimum;
+        shared->channel_min[component] = minimum;
+        shared->channel_max[component] = maximum;
+        shared->channel_scale[component] = 1.0 / range;
+        shared->grid_weights[component] =
+            (double)shared->weights[component] * range * range;
+        if (shared->grid_weights[component] > largest) {
+            largest = shared->grid_weights[component];
+        }
+    }
+    /* One grid step represents range/(R-1) native units. The common
+     * factor cancels in comparisons. Normalize to keep optional float
+     * distance storage bounded without changing the working metric. */
+    for (component = 0; component < 3; ++component) {
+        shared->grid_weights[component] /= largest;
     }
 }
 
@@ -238,8 +264,8 @@ sixel_lookup_fhedt_choose_tile_defaults_float32(float const *palette,
     for (component = 0; component < 3 && component < depth; ++component) {
         mean_component[component] = sum_component[component]
                                     / (double)ncolors;
-        span_sum += (double)(max_component[component] -
-                             min_component[component]);
+        span_sum += (double)max_component[component]
+                  - (double)min_component[component];
     }
 
     for (color = 0; color < ncolors; ++color) {
@@ -708,10 +734,6 @@ sixel_lookup_fhedt_float32_signature(float const *palette,
     uint32_t bits;
     size_t total;
     size_t index;
-    float normalized;
-    float minimum[3];
-    float range[3];
-    int component;
 
     hash = 0x811c9dc5U;
     hash = sixel_lookup_fhedt_mix_u32_float32(hash, (uint32_t)resolution);
@@ -725,29 +747,11 @@ sixel_lookup_fhedt_float32_signature(float const *palette,
     memcpy(&bits, &wcomp3, sizeof(bits));
     hash = sixel_lookup_fhedt_mix_u32_float32(hash, bits);
 
-    for (component = 0; component < 3; ++component) {
-        minimum[component] = sixel_pixelformat_float_channel_min(pixelformat,
-                                                                 component);
-        range[component] = sixel_pixelformat_float_channel_range(pixelformat,
-                                                                 component);
-        if (range[component] <= 0.0f) {
-            range[component] = 1.0f;
-        }
-    }
-
+    hash = sixel_lookup_fhedt_mix_u32_float32(hash, (uint32_t)pixelformat);
     total = (size_t)ncolors * (size_t)depth;
     for (index = 0U; index < total; ++index) {
-        component = (int)(index % (size_t)depth);
-        normalized = sixel_pixelformat_float_channel_clamp(pixelformat,
-                                                           component,
-                                                           palette[index]);
-        normalized = (normalized - minimum[component]) / range[component];
-        if (normalized < 0.0f) {
-            normalized = 0.0f;
-        } else if (normalized > 1.0f) {
-            normalized = 1.0f;
-        }
-        memcpy(&bits, &normalized, sizeof(bits));
+        /* Extended values must not alias the clipped palette in caches. */
+        memcpy(&bits, &palette[index], sizeof(bits));
         hash = sixel_lookup_fhedt_mix_u32_float32(hash, bits);
     }
 
@@ -786,6 +790,7 @@ sixel_lookup_fhedt_shared_release_palette_float32(
         sixel_allocator_free(allocator, shared->palette);
         shared->palette = NULL;
     }
+    sixel_allocator_free(allocator, shared->seed_next);
     if (shared->palette_quant != NULL) {
         sixel_allocator_free(allocator, shared->palette_quant);
         shared->palette_quant = NULL;
@@ -868,7 +873,7 @@ sixel_lookup_fhedt_quantize_palette_float32(float const *palette,
     int index;
     int component;
     float sample;
-    float normalized;
+    double normalized;
     int quantized;
     int limit;
 
@@ -883,7 +888,7 @@ sixel_lookup_fhedt_quantize_palette_float32(float const *palette,
                 shared,
                 sample,
                 component);
-            quantized = (int)lroundf(normalized * (float)limit);
+            quantized = (int)(normalized * (double)limit + 0.5);
             if (quantized < 0) {
                 quantized = 0;
             }
@@ -899,10 +904,7 @@ sixel_lookup_fhedt_quantize_palette_float32(float const *palette,
                                      shared->depth,
                                      index,
                                      component)]
-                = sixel_pixelformat_float_channel_clamp(
-                    shared->pixelformat,
-                    component,
-                    sample);
+                = sample;
         }
     }
 }
@@ -994,7 +996,8 @@ sixel_lookup_fhedt_seed_grid_float32(int resolution,
                             int depth,
                             int ncolors,
                             unsigned char const *palette_quant,
-                            double *distances,
+                            int *seed_next,
+                                double *distances,
                             int *sources)
 {
     size_t plane;
@@ -1028,6 +1031,8 @@ sixel_lookup_fhedt_seed_grid_float32(int resolution,
         offset = ((size_t)z * plane) + ((size_t)y * (size_t)resolution)
                + (size_t)x;
         distances[offset] = 0.0;
+        /* Preserve every native entry sharing a quantized seed. */
+        seed_next[index] = sources[offset];
         sources[offset] = index;
     }
 }
@@ -1041,71 +1046,59 @@ sixel_lookup_fhedt_edt1d_scalar_float32(double *line_dist,
     double zbuf[257];
     int vbuf[256];
     double scratch[256];
+    int source_scratch[256];
     int k;
     int q;
     int i;
+    int idx;
     int hull_end;
     double s;
     double candidate;
     double denom;
 
-    if (length <= 0) {
+    if (length <= 0 || length > 256) {
         return;
     }
-    if (length > 256) {
-        length = 256;
-    }
-
-    vbuf[0] = 0;
-    zbuf[0] = -DBL_MAX;
-    zbuf[1] = DBL_MAX;
-    k = 0;
-
-    for (q = 1; q < length; ++q) {
-        denom = 2.0 * weight * (double)(q - vbuf[k]);
-        if (denom == 0.0) {
-            denom = 1.0;
+    k = -1;
+    for (q = 0; q < length; ++q) {
+        if (line_src[q] < 0) {
+            continue;
         }
-        candidate = (line_dist[q] + weight * (double)(q * q))
-                  - (line_dist[vbuf[k]]
-                     + weight * (double)(vbuf[k] * vbuf[k]));
-        s = candidate / denom;
-        while (k > 0 && s <= zbuf[k]) {
-            --k;
+        s = -DBL_MAX;
+        while (k >= 0) {
             denom = 2.0 * weight * (double)(q - vbuf[k]);
-            if (denom == 0.0) {
-                denom = 1.0;
-            }
-            candidate = (line_dist[q] + weight * (double)(q * q))
-                      - (line_dist[vbuf[k]]
-                         + weight * (double)(vbuf[k] * vbuf[k]));
+            candidate = (line_dist[q] - line_dist[vbuf[k]])
+                      + weight * (double)(q - vbuf[k])
+                               * (double)(q + vbuf[k]);
             s = candidate / denom;
+            if (s > zbuf[k]) {
+                break;
+            }
+            --k;
         }
         ++k;
         vbuf[k] = q;
-        zbuf[k] = s;
+        zbuf[k] = k == 0 ? -DBL_MAX : s;
         zbuf[k + 1] = DBL_MAX;
     }
-
+    if (k < 0) {
+        return;
+    }
     hull_end = k;
     k = 0;
     for (i = 0; i < length; ++i) {
-        int idx;
         while (k < hull_end && zbuf[k + 1] < (double)i) {
             ++k;
         }
-        scratch[i] = line_dist[i];
         idx = vbuf[k];
-        if (idx < 0 || idx >= length) {
-            continue;
-        }
         scratch[i] = line_dist[idx]
                    + weight * (double)((i - idx) * (i - idx));
-        line_src[i] = line_src[idx];
+        /* Do not overwrite labels still needed by later output sites. */
+        source_scratch[i] = line_src[idx];
     }
-
     for (i = 0; i < length; ++i) {
         line_dist[i] = scratch[i];
+        line_src[i] = source_scratch[i];
     }
 }
 
@@ -1603,7 +1596,7 @@ sixel_lookup_fhedt_apply_edt_float32(sixel_lookup_fhedt_shared_float32_t *shared
     plan_x.sources = sources;
     plan_x.timeline = timeline;
     plan_x.edt1d = edt1d;
-    plan_x.weight = (double)shared->weights[0];
+    plan_x.weight = shared->grid_weights[0];
     plan_x.stride_y = stride_y;
     plan_x.stride_z = stride_z;
     plan_x.res = res;
@@ -1638,7 +1631,7 @@ sixel_lookup_fhedt_apply_edt_float32(sixel_lookup_fhedt_shared_float32_t *shared
     plan_y.sources = sources;
     plan_y.timeline = timeline;
     plan_y.edt1d = edt1d;
-    plan_y.weight = (double)shared->weights[1];
+    plan_y.weight = shared->grid_weights[1];
     plan_y.stride_y = stride_y;
     plan_y.stride_z = stride_z;
     plan_y.res = res;
@@ -1671,7 +1664,7 @@ sixel_lookup_fhedt_apply_edt_float32(sixel_lookup_fhedt_shared_float32_t *shared
     plan_z.sources = sources;
     plan_z.timeline = timeline;
     plan_z.edt1d = edt1d;
-    plan_z.weight = (double)shared->weights[2];
+    plan_z.weight = shared->grid_weights[2];
     plan_z.stride_y = stride_y;
     plan_z.stride_z = stride_z;
     plan_z.res = res;
@@ -1867,6 +1860,7 @@ sixel_lookup_fhedt_float32_build(sixel_lookup_fhedt_float32_t *fhedt,
     shared->boundary = NULL;
     shared->palette = NULL;
     shared->palette_quant = NULL;
+    shared->seed_next = NULL;
 
     palette_size = (size_t)ncolors * (size_t)depth;
     shared->palette = (float *)sixel_allocator_malloc(fhedt->allocator,
@@ -1875,14 +1869,17 @@ sixel_lookup_fhedt_float32_build(sixel_lookup_fhedt_float32_t *fhedt,
     shared->palette_quant = (unsigned char *)sixel_allocator_malloc(
         fhedt->allocator,
         palette_size);
-    if (shared->palette == NULL || shared->palette_quant == NULL) {
+    shared->seed_next = sixel_allocator_malloc(fhedt->allocator,
+        (size_t)ncolors * sizeof(int));
+    if (shared->palette == NULL || shared->palette_quant == NULL
+            || shared->seed_next == NULL) {
         sixel_lookup_fhedt_shared_destroy_float32(fhedt->allocator, shared);
         sixel_helper_set_additional_message(
             "sixel_lookup_fhedt_float32_build: palette allocation failed.");
         sixel_lookup_fhedt_timeline_close_float32(&timeline);
         return SIXEL_BAD_ALLOCATION;
     }
-    sixel_lookup_fhedt_prepare_ranges_float32(shared, pixelformat);
+    sixel_lookup_fhedt_prepare_ranges_float32(shared, pixelformat, palette);
     sixel_lookup_fhedt_quantize_palette_float32(palette, shared);
 
     threads = sixel_lookup_fhedt_resolve_threads_float32();
@@ -1976,6 +1973,7 @@ sixel_lookup_fhedt_float32_build(sixel_lookup_fhedt_float32_t *fhedt,
                                 shared->depth,
                                 shared->ncolors,
                                 shared->palette_quant,
+                                shared->seed_next,
                                 distances,
                                 sources);
     sixel_lookup_fhedt_apply_edt_float32(shared,
@@ -2010,9 +2008,9 @@ sixel_lookup_fhedt_float32_build(sixel_lookup_fhedt_float32_t *fhedt,
      * so this radius bounds the squared displacement a pixel can accumulate
      * inside the cell.
      */
-    shared->safe_radius2 = ((double)wcomp1 * 0.25)
-                         + ((double)wcomp2 * 0.25)
-                         + ((double)wcomp3 * 0.25);
+    shared->safe_radius2 = (shared->grid_weights[0] * 0.25)
+                         + (shared->grid_weights[1] * 0.25)
+                         + (shared->grid_weights[2] * 0.25);
 
     fhedt->shared = shared;
 
@@ -2092,11 +2090,18 @@ sixel_lookup_fhedt_float32_configure(sixel_lookup_fhedt_float32_t *fhedt,
                                     int parallel_dither_active)
 {
     SIXELSTATUS status;
+    size_t index;
 
-    (void)pixelformat;
-
-    if (fhedt == NULL || palette == NULL) {
+    if (fhedt == NULL || palette == NULL || ncolors <= 0
+            || ncolors > 65536 || !isfinite(wcomp1)
+            || !isfinite(wcomp2) || !isfinite(wcomp3)
+            || wcomp1 <= 0 || wcomp2 <= 0 || wcomp3 <= 0) {
         return SIXEL_BAD_ARGUMENT;
+    }
+    for (index = 0; index < (size_t)ncolors * 3U; ++index) {
+        if (!isfinite(palette[index])) {
+            return SIXEL_BAD_ARGUMENT;
+        }
     }
     if (!sixel_lookup_fhedt_validate_resolution_float32(resolution)) {
         sixel_helper_set_additional_message(
@@ -2126,6 +2131,18 @@ sixel_lookup_fhedt_float32_configure(sixel_lookup_fhedt_float32_t *fhedt,
                                              pixelformat);
     if (SIXEL_FAILED(status)) {
         return status;
+    }
+
+    fhedt->shared->signature = sixel_lookup_fhedt_float32_signature(
+        palette, ncolors, resolution, refine,
+        wcomp1, wcomp2, wcomp3, 3, pixelformat);
+    /* A rebuild may reuse its address, including changed refine settings. */
+#if SIXEL_FHEDT_TLS_AVAILABLE == 0
+    if (parallel_dither_active == 0)
+#endif
+    {
+        sixel_lookup_fhedt_cache_clear_float32(
+            &sixel_lookup_fhedt_thread_cache_float32);
     }
 
     if (shared_flag != 0) {
@@ -2274,33 +2291,68 @@ sixel_lookup_fhedt_refine_candidates_float32(
                 used[used_count] = candidate;
                 ++used_count;
 
-                p1 = shared->palette[sixel_lookup_fhedt_palette_index_float32(
-                    shared->depth,
-                    candidate,
-                    0)];
-                p2 = shared->palette[sixel_lookup_fhedt_palette_index_float32(
-                    shared->depth,
-                    candidate,
-                    1)];
-                p3 = shared->palette[sixel_lookup_fhedt_palette_index_float32(
-                    shared->depth,
-                    candidate,
-                    2)];
-                dx = (double)(pixel[0] - p1);
-                dy = (double)(pixel[1] - p2);
-                dz = (double)(pixel[2] - p3);
-                distance = weight1 * dx * dx
-                         + weight2 * dy * dy
-                         + weight3 * dz * dz;
-                if (distance < best_distance) {
-                    best_distance = distance;
-                    best_index = candidate;
-                }
+                do {
+                    p1 = shared->palette[
+                        sixel_lookup_fhedt_palette_index_float32(
+                        shared->depth,
+                        candidate,
+                        0)];
+                    p2 = shared->palette[
+                        sixel_lookup_fhedt_palette_index_float32(
+                        shared->depth,
+                        candidate,
+                        1)];
+                    p3 = shared->palette[
+                        sixel_lookup_fhedt_palette_index_float32(
+                        shared->depth,
+                        candidate,
+                        2)];
+                    dx = ((double)pixel[0] - (double)p1);
+                    dy = ((double)pixel[1] - (double)p2);
+                    dz = ((double)pixel[2] - (double)p3);
+                    distance = weight1 * dx * dx
+                             + weight2 * dy * dy
+                             + weight3 * dz * dz;
+                    if (distance < best_distance) {
+                        best_distance = distance;
+                        best_index = candidate;
+                    }
+                    candidate = shared->seed_next[candidate];
+                } while (candidate >= 0);
             }
         }
     }
 
     return best_index;
+}
+
+static int
+sixel_lookup_fhedt_scan_float32(
+    sixel_lookup_fhedt_shared_float32_t const *shared,
+    float const *pixel)
+{
+    double best;
+    double distance;
+    double delta;
+    int index;
+    int component;
+    int result;
+
+    best = DBL_MAX;
+    result = 0;
+    for (index = 0; index < shared->ncolors; ++index) {
+        distance = 0.0;
+        for (component = 0; component < 3; ++component) {
+            delta = (double)pixel[component]
+                  - (double)shared->palette[index * 3 + component];
+            distance += (double)shared->weights[component] * delta * delta;
+        }
+        if (distance < best) {
+            best = distance;
+            result = index;
+        }
+    }
+    return result;
 }
 
 int
@@ -2317,34 +2369,55 @@ sixel_lookup_fhedt_float32_map(sixel_lookup_fhedt_float32_t *fhedt,
     int index;
     size_t offset;
     size_t plane;
-    float scaled;
+    double scaled;
+    /* Refine at the enclosing cell, not the rounded lookup site. */
+    int lower[3];
+    int component;
 
     if (fhedt == NULL || pixel == NULL || fhedt->shared == NULL) {
         return -1;
+    }
+
+    /* Never reuse an edge-voxel answer for a different exterior query.
+     * Diffusion may cross the box even when every source pixel is inside. */
+    for (component = 0; component < 3; ++component) {
+        if (!isfinite(pixel[component])) {
+            return -1;
+        }
+    }
+    for (component = 0; component < 3; ++component) {
+        if ((double)pixel[component] < fhedt->shared->channel_min[component]
+                || (double)pixel[component] >
+                    fhedt->shared->channel_max[component]) {
+            return sixel_lookup_fhedt_scan_float32(fhedt->shared, pixel);
+        }
     }
 
     limit = fhedt->shared->resolution - 1;
     scaled = sixel_lookup_fhedt_normalize_component_float32(fhedt->shared,
                                                            pixel[0],
                                                            0)
-             * (float)limit;
-    x = (int)lroundf(scaled);
+             * (double)limit;
+    lower[0] = (int)scaled;
+    x = (int)(scaled + 0.5);
     if (x > limit) {
         x = limit;
     }
     scaled = sixel_lookup_fhedt_normalize_component_float32(fhedt->shared,
                                                            pixel[1],
                                                            1)
-             * (float)limit;
-    y = (int)lroundf(scaled);
+             * (double)limit;
+    lower[1] = (int)scaled;
+    y = (int)(scaled + 0.5);
     if (y > limit) {
         y = limit;
     }
     scaled = sixel_lookup_fhedt_normalize_component_float32(fhedt->shared,
                                                            pixel[2],
                                                            2)
-             * (float)limit;
-    z = (int)lroundf(scaled);
+             * (double)limit;
+    lower[2] = (int)scaled;
+    z = (int)(scaled + 0.5);
     if (z > limit) {
         z = limit;
     }
@@ -2371,14 +2444,15 @@ sixel_lookup_fhedt_float32_map(sixel_lookup_fhedt_float32_t *fhedt,
 
     index = sixel_lookup_fhedt_read_index_float32(fhedt->shared, offset);
     if (fhedt->shared->refine != 0
-        && sixel_lookup_fhedt_boundary_bit_float32(fhedt->shared, offset) != 0) {
+        && (fhedt->shared->seed_next[index] >= 0 ||
+            sixel_lookup_fhedt_boundary_bit_float32(fhedt->shared, offset))) {
         should_refine = sixel_lookup_fhedt_refine_needed_float32(fhedt->shared, offset);
-        if (should_refine != 0) {
+        if (should_refine != 0 || fhedt->shared->seed_next[index] >= 0) {
             index = sixel_lookup_fhedt_refine_candidates_float32(fhedt->shared,
                                                         pixel,
-                                                        x,
-                                                        y,
-                                                        z);
+                                                        lower[0],
+                                                        lower[1],
+                                                        lower[2]);
         }
     }
 

@@ -65,7 +65,7 @@ changed that default from `eytzinger` to `certlut`. Statements that call
 `6bit` "the 1.11 default" must therefore name the exact revision or release;
 this document describes the current source tree.
 
-`-U display-p3` accepts `none`, `certlut`, `5bit`, `6bit`, `auto` (resolved to `6bit`), `vptree`, `rbc`, `mahalanobis` and `eytzinger`. On that path, and on the ordinary sRGB float path that uses the same preparation, lookup retains the unrounded float working palette; separately converted and rounded RGB101 codes serve only serialization; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
+`-U display-p3` accepts `none`, `certlut`, `5bit`, `6bit`, `auto` (resolved to `6bit`), `vptree`, `rbc`, `mahalanobis`, `eytzinger` and `fhedt`. On that path, and on the ordinary sRGB float path that uses the same preparation, lookup retains the unrounded float working palette; separately converted and rounded RGB101 codes serve only serialization; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
 
 ## Policy chapters
 
@@ -119,9 +119,9 @@ colorspace and the lookup policy.
 
 ## Extended float coordinates
 
-The selected [CPU float palette path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path) retains negative, above-nominal and fractional coordinates in `none`, `certlut`, `5bit`, `6bit`, `vptree`, `rbc`, `mahalanobis` and `eytzinger` lookup. The separately clipped RGB101 wire palette does not replace these working entries. The remaining `fhedt` class is not yet admitted to this path; its existing grid representation and approximation contract remains in effect.
+The selected [CPU float palette path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path) retains negative, above-nominal and fractional coordinates in `none`, `certlut`, `5bit`, `6bit`, `vptree`, `rbc`, `mahalanobis`, `eytzinger` and `fhedt` lookup. The separately clipped RGB101 wire palette does not replace these working entries. FHEDT retains these coordinates separately from its approximate finite grid, as described in [FHEDT](#policy-fhedt).
 
-`certlut`, `5bit`, `6bit`, `vptree`, `rbc`, `mahalanobis` and `eytzinger` retain their normalized metric, with weights derived from the declared channel ranges, rather than the observed palette extent. Unlike `none`, this rescales the opponent axes in CIELAB and DIN99d. Float storage does not mean float arithmetic throughout: these seven classes subtract, square and accumulate distances in double. Construction metadata uses the same precision: `certlut` split-plane bounds, VP-tree radii and safe-cache thresholds, RBC ball radii, and Eytzinger projection keys and stopping bounds must not narrow distances back to float before pruning. This avoids overflow and underflow of squared distances for finite binary32 coordinates without clipping them. Working palette values and nominal metric coefficients retain float32 precision. Most classes store float32 search copies; `mahalanobis` and `eytzinger` widen those exact values into a private double copy at preparation to avoid repeated conversion during candidate comparisons. It does not promise exact real arithmetic or identical index choice at numerically indistinguishable ties. General error-budget rules are in the [testing guide](../../../testing/guide.md#intermediate-floating-point-error).
+`certlut`, `5bit`, `6bit`, `vptree`, `rbc`, `mahalanobis`, `eytzinger` and `fhedt` retain their normalized metric, with weights derived from the declared channel ranges, rather than the observed palette extent. Unlike `none`, this rescales the opponent axes in CIELAB and DIN99d. Float storage does not mean float arithmetic throughout: these seven classes subtract, square and accumulate distances in double. Construction metadata uses the same precision: `certlut` split-plane bounds, VP-tree radii and safe-cache thresholds, RBC ball radii, and Eytzinger projection keys and stopping bounds must not narrow distances back to float before pruning. This avoids overflow and underflow of squared distances for finite binary32 coordinates without clipping them. Working palette values and nominal metric coefficients retain float32 precision. Most classes store float32 search copies; `mahalanobis`, `eytzinger` and `fhedt` widen those exact values into a private double copy at preparation to avoid repeated conversion during candidate comparisons. It does not promise exact real arithmetic or identical index choice at numerically indistinguishable ties. General error-budget rules are in the [testing guide](../../../testing/guide.md#intermediate-floating-point-error).
 
 Prepared float lookup objects own their palette copies. Repreparing one instance replaces its palette and search structure without changing another instance. For `certlut`, `5bit` and `6bit`, worker sharing is limited to immutable prepared float data. VP-tree, RBC, Mahalanobis and Eytzinger use worker-local instances; VP-tree also disables its previous-index cache when configured for parallel dithering. No query mutates the working palette or its wire cache.
 
@@ -878,10 +878,7 @@ palette-application path also supports an Eytzinger mode in
 
 ### Purpose and intuition
 
-`fhedt` builds a discrete Voronoi map of the palette over a three-dimensional
-color grid. Instead of searching the palette independently for every pixel, it
-propagates the nearest palette label through the grid once and then answers a
-query by indexing that grid.
+`fhedt` builds a discrete Voronoi map of the palette over a three-dimensional color grid. Instead of searching the palette independently for every pixel, it propagates the nearest palette label through the grid once and then answers a query by indexing that grid.
 
 ```text
 palette entries
@@ -906,15 +903,13 @@ The current resolutions are `R = 64`, `128`, or `256`; the default is `64`.
 
 ### One-dimensional transform
 
-For one line of grid sites, let `f(q)` be zero at a palette seed and infinity
-elsewhere. A weighted squared-Euclidean distance transform computes:
+For one line of grid sites, let `f(q)` be zero at a palette seed and infinity elsewhere. A weighted squared-Euclidean distance transform computes:
 
 ```text
 g(i) = min_q (f(q) + w (i - q)^2)
 ```
 
-Every source position `q` contributes a parabola. The algorithm maintains the
-lower envelope of those parabolas, producing the complete line in linear time.
+Every source position `q` contributes a parabola. The algorithm maintains the lower envelope of those parabolas, producing the complete line in linear time.
 
 ```text
 cost
@@ -926,17 +921,19 @@ cost
        q1       q2          q3
 ```
 
-Squared Euclidean distance is separable. Applying the one-dimensional
-transform on X, then Y, then Z computes the three-dimensional minimum without
-enumerating every palette entry at every grid coordinate.
+Squared Euclidean distance is separable. Applying the one-dimensional transform on X, then Y, then Z computes the three-dimensional minimum without enumerating every palette entry at every grid coordinate.
+
+### Float palette domain and metric
+
+The float grid covers the union of the nominal working-space box and all finite palette entries. It never clips the stored palette to nominal channel bounds. The grid index rounds each component after an affine transform into `0..R-1`; these grid coordinates are search metadata and do not replace the original float palette or the independently serialized RGB101 codes.
+
+If the native squared-distance coefficient is `w[d]` and the grid box spans `span[d]`, the EDT uses weights proportional to `w[d] * span[d]^2`. The common factor `1/(R-1)^2` and a common normalization cancel in nearest-label comparisons. In particular, Lab/DIN99d channel normalization is applied once rather than again after mapping each channel into a unit grid. Range subtraction, EDT costs and native refinement differences are evaluated in double; opposite finite float extrema do not overflow an intermediate float subtraction.
+
+A finite query outside this box takes a full native-palette distance scan and bypasses the voxel cache. This preserves diffusion overshoot instead of mapping all exterior colors onto a grid face. In-box queries retain the approximate grid algorithm, including seed collisions: when several palette entries round to the same seed coordinate, the last one supplies that seed label. With refinement enabled, a per-seed chain retains the other entries for native-distance comparison, even if that seed has no Voronoi boundary. The optional distance shortcut does not skip this collision refinement. Expanding the box can make cells coarser; retaining float coordinates does not remove this approximation. Nonfinite palette entries are rejected before indexing.
 
 ### Query and boundary refinement
 
-A query converts each color channel to a grid coordinate and reads the stored
-source label. At `R < 256`, many byte colors share a grid cell. An optional
-boundary bit marks cells where neighboring Voronoi labels disagree; the query
-can then compare the source labels from at most eight surrounding lattice
-vertices.
+A query converts each color channel to a grid coordinate and reads the stored source label. Float refinement examines the eight corners of the cell enclosing the actual query, using its floor coordinate as the lower corner. At `R < 256`, many byte colors share a grid cell. An optional boundary bit marks cells where neighboring Voronoi labels disagree; the query can then compare the source labels from at most eight surrounding lattice vertices. Float refinement also visits any native entries sharing those seed coordinates.
 
 ```text
 one quantized cell
@@ -949,64 +946,44 @@ one quantized cell
     |/        |/
     o---------o
 
-refinement compares no more than the eight labels
+refinement compares up to eight seed labels
+(float also visits native entries sharing those seeds)
 ```
 
-This improves a boundary answer but is not an exhaustive palette scan. A true
-nearest color whose label is absent from those corners can still be omitted.
+This improves a boundary answer but is not an exhaustive palette scan. A true nearest color whose label is absent from those corners can still be omitted.
 
 ### Guarantee
 
-For 8-bit RGB at `R = 256`, each possible byte tuple has its own grid
-coordinate. The transformed label is therefore nearest-distance exact; duplicate
-or equidistant palette entries may still differ in tie index.
+For 8-bit RGB at `R = 256`, each possible byte tuple has its own grid coordinate. The transformed label is therefore nearest-distance exact; duplicate or equidistant palette entries may still differ in tie index.
 
-At `R = 64` or `128`, the query discretizes byte RGB and is approximate, even
-with boundary refinement. Float32 input remains continuous, so all supported
-finite resolutions are approximate.
+At `R = 64` or `128`, the query discretizes byte RGB and is approximate, even with boundary refinement. Float32 input remains continuous, so all supported finite resolutions are approximate.
 
-The optional `SIXEL_LOOKUP_FHEDT_USE_CACHE=1` setting adds a per-thread cache
-keyed by voxel. It can make repeated colors in one voxel reuse the first refined
-answer. The default is off; when enabled at an approximate resolution it adds
-history dependence.
+The optional `SIXEL_LOOKUP_FHEDT_USE_CACHE=1` setting adds a per-thread cache keyed by voxel. For in-box queries it can make repeated colors in one voxel reuse the first refined answer. Exterior scans do not read or populate this cache. The default is off; when enabled at an approximate resolution it adds history dependence.
 
 ### Cost
 
-Each one-dimensional pass is linear in the number of grid cells. With three
-fixed dimensions:
+Each one-dimensional pass is linear in the number of grid cells. With three fixed dimensions:
 
 ```text
 preparation       Theta(R^3 + K)
-one query         Theta(1)
-whole image       Theta(R^3 + K + P)
+byte query        Theta(1)
+float query       O(K) worst case; usually a grid read and few candidates
+whole byte image  Theta(R^3 + K + P)
+whole float image O(R^3 + K + P K) worst case
 extra space       Theta(R^3 + K)
 ```
 
-Thus application is linear in pixel count after a fixed grid-build cost. The
-constant is substantial: increasing `R` from 64 to 256 multiplies cell count by
-64. Small images may not amortize construction, and memory bandwidth can
-dominate the transform.
+Float exterior scans and native entries colliding at a seed account for the `O(K)` query bound. Collision chains add one integer per palette entry; they do not add an image-sized buffer. The fixed grid-build cost is substantial: increasing `R` from 64 to 256 multiplies cell count by 64. Small images may not amortize construction, and memory bandwidth can dominate the transform.
 
-Tiling, first-touch, thread pinning, retained distances, and shared-grid knobs
-change constants and NUMA behavior, not the asymptotic order. Their current
-names and defaults are in the [`img2sixel(1)` manual](../../../../converters/img2sixel.1).
+Tiling, first-touch, thread pinning, retained distances, and shared-grid knobs change constants and NUMA behavior, not the asymptotic order. Their current names and defaults are in the [`img2sixel(1)` manual](../../../../converters/img2sixel.1).
 
 ### Name and sources
 
-`fhedt` means Felzenszwalb-Huttenlocher Euclidean Distance Transform. The core
-linear-time lower-envelope algorithm comes from Pedro F. Felzenszwalb and
-Daniel P. Huttenlocher,
-[“Distance Transforms of Sampled Functions”](https://cs.brown.edu/people/pfelzens/papers/dt-final.pdf).
+`fhedt` means Felzenszwalb-Huttenlocher Euclidean Distance Transform. The core linear-time lower-envelope algorithm comes from Pedro F. Felzenszwalb and Daniel P. Huttenlocher, [“Distance Transforms of Sampled Functions”](https://cs.brown.edu/people/pfelzens/papers/dt-final.pdf).
 
-The libsixel option was originally named `vpte` and was renamed to `fhedt` in
-the [attribution-oriented rename commit](https://github.com/saitoha/libsixel/commit/ac25344a8d49e9f8c2545dfad1b1d00598e48343).
-The three-dimensional palette-label construction and bounded corner refinement
-are libsixel adaptations of the separable transform.
+The libsixel option was originally named `vpte` and was renamed to `fhedt` in the [attribution-oriented rename commit](https://github.com/saitoha/libsixel/commit/ac25344a8d49e9f8c2545dfad1b1d00598e48343). The three-dimensional palette-label construction and bounded corner refinement are libsixel adaptations of the separable transform.
 
-The policy wrapper is
-[`lookup-policy-fhedt.c`](../../../../src/lookup-policy-fhedt.c). The representation
-backends are [`lookup-fhedt-8bit.c`](../../../../src/lookup-fhedt-8bit.c) and
-[`lookup-fhedt-float32.c`](../../../../src/lookup-fhedt-float32.c).
+The policy wrapper is [`lookup-policy-fhedt.c`](../../../../src/lookup-policy-fhedt.c). The representation backends are [`lookup-fhedt-8bit.c`](../../../../src/lookup-fhedt-8bit.c) and [`lookup-fhedt-float32.c`](../../../../src/lookup-fhedt-float32.c).
 
 ## Policy: `vptree`
 
@@ -2152,6 +2129,26 @@ The following focused tests cover the selected extended float lookup path. Range
 | LUTY-13 | `eytzinger`: sRGB/P3 wire output, retained native palette and actual consumer. | [tests/quant/palette/eytzinger_float/0001_eyt_gamma_srgb.t](../../../../tests/quant/palette/eytzinger_float/0001_eyt_gamma_srgb.t), [tests/quant/palette/eytzinger_float/0002_eyt_gamma_p3.t](../../../../tests/quant/palette/eytzinger_float/0002_eyt_gamma_p3.t), [tests/quant/palette/eytzinger_float/0003_eyt_linear_srgb.t](../../../../tests/quant/palette/eytzinger_float/0003_eyt_linear_srgb.t), [tests/quant/palette/eytzinger_float/0004_eyt_linear_p3.t](../../../../tests/quant/palette/eytzinger_float/0004_eyt_linear_p3.t), [tests/quant/palette/eytzinger_float/0005_eyt_oklab_srgb.t](../../../../tests/quant/palette/eytzinger_float/0005_eyt_oklab_srgb.t), [tests/quant/palette/eytzinger_float/0006_eyt_oklab_p3.t](../../../../tests/quant/palette/eytzinger_float/0006_eyt_oklab_p3.t), [tests/quant/palette/eytzinger_float/0007_eyt_cielab_srgb.t](../../../../tests/quant/palette/eytzinger_float/0007_eyt_cielab_srgb.t), [tests/quant/palette/eytzinger_float/0008_eyt_cielab_p3.t](../../../../tests/quant/palette/eytzinger_float/0008_eyt_cielab_p3.t), [tests/quant/palette/eytzinger_float/0009_eyt_din99d_srgb.t](../../../../tests/quant/palette/eytzinger_float/0009_eyt_din99d_srgb.t), [tests/quant/palette/eytzinger_float/0010_eyt_din99d_p3.t](../../../../tests/quant/palette/eytzinger_float/0010_eyt_din99d_p3.t) |
 | LUTY-14 | `eytzinger`: Byte fast-path eligibility. | [tests/quant/palette/eytzinger_float/0011_eyt_byte_eligibility.t](../../../../tests/quant/palette/eytzinger_float/0011_eyt_byte_eligibility.t) |
 | LUTY-15 | `eytzinger`: Worker-local FS bands, overlap and stable wire cache. | [tests/quant/palette/eytzinger_float/0012_eyt_bands_private.t](../../../../tests/quant/palette/eytzinger_float/0012_eyt_bands_private.t) |
+
+### FHEDT native float coverage
+
+| ID | Contract | Owning tests |
+| --- | --- | --- |
+| LUTF-01 | `fhedt`: Independent nearest-seed references for nominal and extended grids; refinement disabled. | [tests/processing/lookup/fhedt/0001_fh_gamma_grid.t](../../../../tests/processing/lookup/fhedt/0001_fh_gamma_grid.t), [tests/processing/lookup/fhedt/0002_fh_linear_grid.t](../../../../tests/processing/lookup/fhedt/0002_fh_linear_grid.t), [tests/processing/lookup/fhedt/0003_fh_oklab_grid.t](../../../../tests/processing/lookup/fhedt/0003_fh_oklab_grid.t), [tests/processing/lookup/fhedt/0004_fh_cielab_grid.t](../../../../tests/processing/lookup/fhedt/0004_fh_cielab_grid.t), [tests/processing/lookup/fhedt/0005_fh_din99d_grid.t](../../../../tests/processing/lookup/fhedt/0005_fh_din99d_grid.t), [tests/processing/lookup/fhedt/0006_fh_gamma_expanded_grid.t](../../../../tests/processing/lookup/fhedt/0006_fh_gamma_expanded_grid.t), [tests/processing/lookup/fhedt/0007_fh_cielab_expanded_grid.t](../../../../tests/processing/lookup/fhedt/0007_fh_cielab_expanded_grid.t), [tests/processing/lookup/fhedt/0008_fh_din99d_expanded_grid.t](../../../../tests/processing/lookup/fhedt/0008_fh_din99d_expanded_grid.t) |
+| LUTF-02 | `fhedt`: Exterior native-distance scan bypasses edge-voxel cache, with dist2 off/on. | [tests/processing/lookup/fhedt/0009_fh_outside_cache.t](../../../../tests/processing/lookup/fhedt/0009_fh_outside_cache.t), [tests/processing/lookup/fhedt/0010_fh_outside_dist2.t](../../../../tests/processing/lookup/fhedt/0010_fh_outside_dist2.t) |
+| LUTF-03 | `fhedt`: Unrounded palette coordinates decide boundary refinement, with dist2 off/on. | [tests/processing/lookup/fhedt/0011_fh_native_refine.t](../../../../tests/processing/lookup/fhedt/0011_fh_native_refine.t), [tests/processing/lookup/fhedt/0012_fh_native_refine_dist2.t](../../../../tests/processing/lookup/fhedt/0012_fh_native_refine_dist2.t) |
+| LUTF-04 | `fhedt`: Quantized seed collision remains approximate. | [tests/processing/lookup/fhedt/0013_fh_seed_collision.t](../../../../tests/processing/lookup/fhedt/0013_fh_seed_collision.t) |
+| LUTF-05 | `fhedt`: Opposite finite float extrema retain finite grid arithmetic. | [tests/processing/lookup/fhedt/0014_fh_finite_extrema.t](../../../../tests/processing/lookup/fhedt/0014_fh_finite_extrema.t) |
+| LUTF-06 | `fhedt`: Cache signatures distinguish extended palettes. | [tests/processing/lookup/fhedt/0015_fh_signature.t](../../../../tests/processing/lookup/fhedt/0015_fh_signature.t) |
+| LUTF-07 | `fhedt`: Rebuilding a palette invalidates cached indices. | [tests/processing/lookup/fhedt/0016_fh_reprepare.t](../../../../tests/processing/lookup/fhedt/0016_fh_reprepare.t) |
+| LUTF-08 | `fhedt`: Nonfinite palettes are rejected before indexing. | [tests/processing/lookup/fhedt/0017_fh_nonfinite.t](../../../../tests/processing/lookup/fhedt/0017_fh_nonfinite.t) |
+| LUTF-09 | `fhedt`: sRGB/P3 output, native palette and actual FHEDT consumer. | [tests/quant/palette/fhedt_float/0001_fh_gamma_srgb.t](../../../../tests/quant/palette/fhedt_float/0001_fh_gamma_srgb.t), [tests/quant/palette/fhedt_float/0002_fh_gamma_p3.t](../../../../tests/quant/palette/fhedt_float/0002_fh_gamma_p3.t), [tests/quant/palette/fhedt_float/0003_fh_linear_srgb.t](../../../../tests/quant/palette/fhedt_float/0003_fh_linear_srgb.t), [tests/quant/palette/fhedt_float/0004_fh_linear_p3.t](../../../../tests/quant/palette/fhedt_float/0004_fh_linear_p3.t), [tests/quant/palette/fhedt_float/0005_fh_oklab_srgb.t](../../../../tests/quant/palette/fhedt_float/0005_fh_oklab_srgb.t), [tests/quant/palette/fhedt_float/0006_fh_oklab_p3.t](../../../../tests/quant/palette/fhedt_float/0006_fh_oklab_p3.t), [tests/quant/palette/fhedt_float/0007_fh_cielab_srgb.t](../../../../tests/quant/palette/fhedt_float/0007_fh_cielab_srgb.t), [tests/quant/palette/fhedt_float/0008_fh_cielab_p3.t](../../../../tests/quant/palette/fhedt_float/0008_fh_cielab_p3.t), [tests/quant/palette/fhedt_float/0009_fh_din99d_srgb.t](../../../../tests/quant/palette/fhedt_float/0009_fh_din99d_srgb.t), [tests/quant/palette/fhedt_float/0010_fh_din99d_p3.t](../../../../tests/quant/palette/fhedt_float/0010_fh_din99d_p3.t) |
+| LUTF-10 | `fhedt`: Eligible byte input stays on the byte path. | [tests/quant/palette/fhedt_float/0011_fh_byte_eligibility.t](../../../../tests/quant/palette/fhedt_float/0011_fh_byte_eligibility.t) |
+| LUTF-11 | `fhedt`: Worker-local FS bands, overlap and stable wire cache. | [tests/quant/palette/fhedt_float/0012_fh_bands_private.t](../../../../tests/quant/palette/fhedt_float/0012_fh_bands_private.t) |
+
+| LUTF-12 | `fhedt`: Exterior distances retain strict ordering above and below the float arithmetic range. | [tests/processing/lookup/fhedt/0018_fh_outside_extreme.t](../../../../tests/processing/lookup/fhedt/0018_fh_outside_extreme.t), [tests/processing/lookup/fhedt/0019_fh_outside_tiny.t](../../../../tests/processing/lookup/fhedt/0019_fh_outside_tiny.t) |
+
+| LUTF-13 | `fhedt`: Enclosing-cell refinement, colliding native seeds and two-instance cache isolation. | [tests/processing/lookup/fhedt/0020_fh_enclosing_cell.t](../../../../tests/processing/lookup/fhedt/0020_fh_enclosing_cell.t), [tests/processing/lookup/fhedt/0021_fh_collision_refine.t](../../../../tests/processing/lookup/fhedt/0021_fh_collision_refine.t), [tests/processing/lookup/fhedt/0022_fh_collision_dist2.t](../../../../tests/processing/lookup/fhedt/0022_fh_collision_dist2.t), [tests/processing/lookup/fhedt/0023_fh_instance_isolation.t](../../../../tests/processing/lookup/fhedt/0023_fh_instance_isolation.t) |
 
 ### Quality regression tests
 

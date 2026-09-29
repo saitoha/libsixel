@@ -753,6 +753,42 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_BINNING_CONTRACT \
     -DBUILD_TEST_0001_MERGE_CONTRACT \
     -DBUILD_TEST_0001_EXTENDED_LOOKUP \
+    -DBUILD_FHEDT_TEST_COMMON \
+    -DBUILD_TEST_0020_FH_ENCLOSING_CELL \
+    -DBUILD_TEST_0021_FH_COLLISION_REFINE \
+    -DBUILD_TEST_0022_FH_COLLISION_DIST2 \
+    -DBUILD_TEST_0023_FH_INSTANCE_ISOLATION \
+    -DBUILD_TEST_0018_FH_OUTSIDE_EXTREME \
+    -DBUILD_TEST_0019_FH_OUTSIDE_TINY \
+    -DBUILD_TEST_0001_FH_GAMMA_GRID \
+    -DBUILD_TEST_0002_FH_LINEAR_GRID \
+    -DBUILD_TEST_0003_FH_OKLAB_GRID \
+    -DBUILD_TEST_0004_FH_CIELAB_GRID \
+    -DBUILD_TEST_0005_FH_DIN99D_GRID \
+    -DBUILD_TEST_0006_FH_GAMMA_EXPANDED_GRID \
+    -DBUILD_TEST_0007_FH_CIELAB_EXPANDED_GRID \
+    -DBUILD_TEST_0008_FH_DIN99D_EXPANDED_GRID \
+    -DBUILD_TEST_0009_FH_OUTSIDE_CACHE \
+    -DBUILD_TEST_0010_FH_OUTSIDE_DIST2 \
+    -DBUILD_TEST_0011_FH_NATIVE_REFINE \
+    -DBUILD_TEST_0012_FH_NATIVE_REFINE_DIST2 \
+    -DBUILD_TEST_0013_FH_SEED_COLLISION \
+    -DBUILD_TEST_0014_FH_FINITE_EXTREMA \
+    -DBUILD_TEST_0015_FH_SIGNATURE \
+    -DBUILD_TEST_0016_FH_REPREPARE \
+    -DBUILD_TEST_0017_FH_NONFINITE \
+    -DBUILD_TEST_0001_FH_GAMMA_SRGB \
+    -DBUILD_TEST_0002_FH_GAMMA_P3 \
+    -DBUILD_TEST_0003_FH_LINEAR_SRGB \
+    -DBUILD_TEST_0004_FH_LINEAR_P3 \
+    -DBUILD_TEST_0005_FH_OKLAB_SRGB \
+    -DBUILD_TEST_0006_FH_OKLAB_P3 \
+    -DBUILD_TEST_0007_FH_CIELAB_SRGB \
+    -DBUILD_TEST_0008_FH_CIELAB_P3 \
+    -DBUILD_TEST_0009_FH_DIN99D_SRGB \
+    -DBUILD_TEST_0010_FH_DIN99D_P3 \
+    -DBUILD_TEST_0011_FH_BYTE_ELIGIBILITY \
+    -DBUILD_TEST_0012_FH_BANDS_PRIVATE \
     -DBUILD_TEST_0001_EYT_GAMMA_RANGE \
     -DBUILD_TEST_0002_EYT_LINEAR_RANGE \
     -DBUILD_TEST_0003_EYT_OKLAB_RANGE \
@@ -4142,6 +4178,42 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/solvers_float/0001_solver_contract.c \
     quant/palette/merge_float/0001_merge_contract.c \
     processing/lookup/extended/0001_extended_lookup.c \
+    processing/lookup/fhedt_test_common.c \
+    processing/lookup/fhedt/0020_fh_enclosing_cell.c \
+    processing/lookup/fhedt/0021_fh_collision_refine.c \
+    processing/lookup/fhedt/0022_fh_collision_dist2.c \
+    processing/lookup/fhedt/0023_fh_instance_isolation.c \
+    processing/lookup/fhedt/0018_fh_outside_extreme.c \
+    processing/lookup/fhedt/0019_fh_outside_tiny.c \
+    processing/lookup/fhedt/0001_fh_gamma_grid.c \
+    processing/lookup/fhedt/0002_fh_linear_grid.c \
+    processing/lookup/fhedt/0003_fh_oklab_grid.c \
+    processing/lookup/fhedt/0004_fh_cielab_grid.c \
+    processing/lookup/fhedt/0005_fh_din99d_grid.c \
+    processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c \
+    processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c \
+    processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c \
+    processing/lookup/fhedt/0009_fh_outside_cache.c \
+    processing/lookup/fhedt/0010_fh_outside_dist2.c \
+    processing/lookup/fhedt/0011_fh_native_refine.c \
+    processing/lookup/fhedt/0012_fh_native_refine_dist2.c \
+    processing/lookup/fhedt/0013_fh_seed_collision.c \
+    processing/lookup/fhedt/0014_fh_finite_extrema.c \
+    processing/lookup/fhedt/0015_fh_signature.c \
+    processing/lookup/fhedt/0016_fh_reprepare.c \
+    processing/lookup/fhedt/0017_fh_nonfinite.c \
+    quant/palette/fhedt_float/0001_fh_gamma_srgb.c \
+    quant/palette/fhedt_float/0002_fh_gamma_p3.c \
+    quant/palette/fhedt_float/0003_fh_linear_srgb.c \
+    quant/palette/fhedt_float/0004_fh_linear_p3.c \
+    quant/palette/fhedt_float/0005_fh_oklab_srgb.c \
+    quant/palette/fhedt_float/0006_fh_oklab_p3.c \
+    quant/palette/fhedt_float/0007_fh_cielab_srgb.c \
+    quant/palette/fhedt_float/0008_fh_cielab_p3.c \
+    quant/palette/fhedt_float/0009_fh_din99d_srgb.c \
+    quant/palette/fhedt_float/0010_fh_din99d_p3.c \
+    quant/palette/fhedt_float/0011_fh_byte_eligibility.c \
+    quant/palette/fhedt_float/0012_fh_bands_private.c \
     processing/lookup/eytzinger/0001_eyt_gamma_range.c \
     processing/lookup/eytzinger/0002_eyt_linear_range.c \
     processing/lookup/eytzinger/0003_eyt_oklab_range.c \

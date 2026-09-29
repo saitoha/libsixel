@@ -473,6 +473,43 @@ int test_palette_sampling_float(int argc, char **argv);
 int test_palette_binning_float(int argc, char **argv);
 int test_palette_merge_float(int argc, char **argv);
 int test_extended_lookup(int argc, char **argv);
+int test_fh_lookup_0020(int argc, char **argv);
+int test_fh_lookup_0021(int argc, char **argv);
+int test_fh_lookup_0022(int argc, char **argv);
+int test_fh_lookup_0023(int argc, char **argv);
+
+int test_fh_lookup_0018(int argc, char **argv);
+int test_fh_lookup_0019(int argc, char **argv);
+
+int test_fh_lookup_0001(int argc, char **argv);
+int test_fh_lookup_0002(int argc, char **argv);
+int test_fh_lookup_0003(int argc, char **argv);
+int test_fh_lookup_0004(int argc, char **argv);
+int test_fh_lookup_0005(int argc, char **argv);
+int test_fh_lookup_0006(int argc, char **argv);
+int test_fh_lookup_0007(int argc, char **argv);
+int test_fh_lookup_0008(int argc, char **argv);
+int test_fh_lookup_0009(int argc, char **argv);
+int test_fh_lookup_0010(int argc, char **argv);
+int test_fh_lookup_0011(int argc, char **argv);
+int test_fh_lookup_0012(int argc, char **argv);
+int test_fh_lookup_0013(int argc, char **argv);
+int test_fh_lookup_0014(int argc, char **argv);
+int test_fh_lookup_0015(int argc, char **argv);
+int test_fh_lookup_0016(int argc, char **argv);
+int test_fh_lookup_0017(int argc, char **argv);
+int test_fh_palette_0001(int argc, char **argv);
+int test_fh_palette_0002(int argc, char **argv);
+int test_fh_palette_0003(int argc, char **argv);
+int test_fh_palette_0004(int argc, char **argv);
+int test_fh_palette_0005(int argc, char **argv);
+int test_fh_palette_0006(int argc, char **argv);
+int test_fh_palette_0007(int argc, char **argv);
+int test_fh_palette_0008(int argc, char **argv);
+int test_fh_palette_0009(int argc, char **argv);
+int test_fh_palette_0010(int argc, char **argv);
+int test_fh_palette_0011(int argc, char **argv);
+int test_fh_palette_0012(int argc, char **argv);
 int test_eyt_lookup_0001(int argc, char **argv);
 int test_eyt_lookup_0002(int argc, char **argv);
 int test_eyt_lookup_0003(int argc, char **argv);
@@ -2905,6 +2942,78 @@ static test_entry_t const test_entries[] = {
     { "palette/binning_float/0001_binning_contract",
       test_palette_binning_float },
     { "lookup/extended/0001_extended_lookup", test_extended_lookup },
+    { "lookup/fhedt/0020_fh_enclosing_cell",
+      test_fh_lookup_0020 },
+    { "lookup/fhedt/0021_fh_collision_refine",
+      test_fh_lookup_0021 },
+    { "lookup/fhedt/0022_fh_collision_dist2",
+      test_fh_lookup_0022 },
+    { "lookup/fhedt/0023_fh_instance_isolation",
+      test_fh_lookup_0023 },
+
+    { "lookup/fhedt/0018_fh_outside_extreme",
+      test_fh_lookup_0018 },
+    { "lookup/fhedt/0019_fh_outside_tiny",
+      test_fh_lookup_0019 },
+
+    { "lookup/fhedt/0001_fh_gamma_grid",
+      test_fh_lookup_0001 },
+    { "lookup/fhedt/0002_fh_linear_grid",
+      test_fh_lookup_0002 },
+    { "lookup/fhedt/0003_fh_oklab_grid",
+      test_fh_lookup_0003 },
+    { "lookup/fhedt/0004_fh_cielab_grid",
+      test_fh_lookup_0004 },
+    { "lookup/fhedt/0005_fh_din99d_grid",
+      test_fh_lookup_0005 },
+    { "lookup/fhedt/0006_fh_gamma_expanded_grid",
+      test_fh_lookup_0006 },
+    { "lookup/fhedt/0007_fh_cielab_expanded_grid",
+      test_fh_lookup_0007 },
+    { "lookup/fhedt/0008_fh_din99d_expanded_grid",
+      test_fh_lookup_0008 },
+    { "lookup/fhedt/0009_fh_outside_cache",
+      test_fh_lookup_0009 },
+    { "lookup/fhedt/0010_fh_outside_dist2",
+      test_fh_lookup_0010 },
+    { "lookup/fhedt/0011_fh_native_refine",
+      test_fh_lookup_0011 },
+    { "lookup/fhedt/0012_fh_native_refine_dist2",
+      test_fh_lookup_0012 },
+    { "lookup/fhedt/0013_fh_seed_collision",
+      test_fh_lookup_0013 },
+    { "lookup/fhedt/0014_fh_finite_extrema",
+      test_fh_lookup_0014 },
+    { "lookup/fhedt/0015_fh_signature",
+      test_fh_lookup_0015 },
+    { "lookup/fhedt/0016_fh_reprepare",
+      test_fh_lookup_0016 },
+    { "lookup/fhedt/0017_fh_nonfinite",
+      test_fh_lookup_0017 },
+    { "palette/fhedt_float/0001_fh_gamma_srgb",
+      test_fh_palette_0001 },
+    { "palette/fhedt_float/0002_fh_gamma_p3",
+      test_fh_palette_0002 },
+    { "palette/fhedt_float/0003_fh_linear_srgb",
+      test_fh_palette_0003 },
+    { "palette/fhedt_float/0004_fh_linear_p3",
+      test_fh_palette_0004 },
+    { "palette/fhedt_float/0005_fh_oklab_srgb",
+      test_fh_palette_0005 },
+    { "palette/fhedt_float/0006_fh_oklab_p3",
+      test_fh_palette_0006 },
+    { "palette/fhedt_float/0007_fh_cielab_srgb",
+      test_fh_palette_0007 },
+    { "palette/fhedt_float/0008_fh_cielab_p3",
+      test_fh_palette_0008 },
+    { "palette/fhedt_float/0009_fh_din99d_srgb",
+      test_fh_palette_0009 },
+    { "palette/fhedt_float/0010_fh_din99d_p3",
+      test_fh_palette_0010 },
+    { "palette/fhedt_float/0011_fh_byte_eligibility",
+      test_fh_palette_0011 },
+    { "palette/fhedt_float/0012_fh_bands_private",
+      test_fh_palette_0012 },
     { "lookup/eytzinger/0001_eyt_gamma_range",
       test_eyt_lookup_0001 },
     { "lookup/eytzinger/0002_eyt_linear_range",

@@ -2046,6 +2046,42 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/solvers_float/0001_solver_contract.c \
 	quant/palette/merge_float/0001_merge_contract.c \
 	processing/lookup/extended/0001_extended_lookup.c \
+	processing/lookup/fhedt_test_common.c \
+	processing/lookup/fhedt/0020_fh_enclosing_cell.c \
+	processing/lookup/fhedt/0021_fh_collision_refine.c \
+	processing/lookup/fhedt/0022_fh_collision_dist2.c \
+	processing/lookup/fhedt/0023_fh_instance_isolation.c \
+	processing/lookup/fhedt/0018_fh_outside_extreme.c \
+	processing/lookup/fhedt/0019_fh_outside_tiny.c \
+	processing/lookup/fhedt/0001_fh_gamma_grid.c \
+	processing/lookup/fhedt/0002_fh_linear_grid.c \
+	processing/lookup/fhedt/0003_fh_oklab_grid.c \
+	processing/lookup/fhedt/0004_fh_cielab_grid.c \
+	processing/lookup/fhedt/0005_fh_din99d_grid.c \
+	processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c \
+	processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c \
+	processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c \
+	processing/lookup/fhedt/0009_fh_outside_cache.c \
+	processing/lookup/fhedt/0010_fh_outside_dist2.c \
+	processing/lookup/fhedt/0011_fh_native_refine.c \
+	processing/lookup/fhedt/0012_fh_native_refine_dist2.c \
+	processing/lookup/fhedt/0013_fh_seed_collision.c \
+	processing/lookup/fhedt/0014_fh_finite_extrema.c \
+	processing/lookup/fhedt/0015_fh_signature.c \
+	processing/lookup/fhedt/0016_fh_reprepare.c \
+	processing/lookup/fhedt/0017_fh_nonfinite.c \
+	quant/palette/fhedt_float/0001_fh_gamma_srgb.c \
+	quant/palette/fhedt_float/0002_fh_gamma_p3.c \
+	quant/palette/fhedt_float/0003_fh_linear_srgb.c \
+	quant/palette/fhedt_float/0004_fh_linear_p3.c \
+	quant/palette/fhedt_float/0005_fh_oklab_srgb.c \
+	quant/palette/fhedt_float/0006_fh_oklab_p3.c \
+	quant/palette/fhedt_float/0007_fh_cielab_srgb.c \
+	quant/palette/fhedt_float/0008_fh_cielab_p3.c \
+	quant/palette/fhedt_float/0009_fh_din99d_srgb.c \
+	quant/palette/fhedt_float/0010_fh_din99d_p3.c \
+	quant/palette/fhedt_float/0011_fh_byte_eligibility.c \
+	quant/palette/fhedt_float/0012_fh_bands_private.c \
 	processing/lookup/eytzinger/0001_eyt_gamma_range.c \
 	processing/lookup/eytzinger/0002_eyt_linear_range.c \
 	processing/lookup/eytzinger/0003_eyt_oklab_range.c \
@@ -4045,6 +4081,42 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/solvers_float/test_runner-0001_solver_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/merge_float/test_runner-0001_merge_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/extended/test_runner-0001_extended_lookup.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-fhedt_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0021_fh_collision_refine.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0022_fh_collision_dist2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0023_fh_instance_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0018_fh_outside_extreme.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0019_fh_outside_tiny.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0001_fh_gamma_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0002_fh_linear_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0003_fh_oklab_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0004_fh_cielab_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0005_fh_din99d_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0006_fh_gamma_expanded_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0007_fh_cielab_expanded_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0008_fh_din99d_expanded_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0009_fh_outside_cache.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0010_fh_outside_dist2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0011_fh_native_refine.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0012_fh_native_refine_dist2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0013_fh_seed_collision.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0014_fh_finite_extrema.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0015_fh_signature.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0016_fh_reprepare.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0017_fh_nonfinite.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fhedt_float/test_runner-0001_fh_gamma_srgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fhedt_float/test_runner-0002_fh_gamma_p3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fhedt_float/test_runner-0003_fh_linear_srgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fhedt_float/test_runner-0004_fh_linear_p3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fhedt_float/test_runner-0005_fh_oklab_srgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fhedt_float/test_runner-0006_fh_oklab_p3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fhedt_float/test_runner-0007_fh_cielab_srgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fhedt_float/test_runner-0008_fh_cielab_p3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fhedt_float/test_runner-0009_fh_din99d_srgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fhedt_float/test_runner-0010_fh_din99d_p3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fhedt_float/test_runner-0011_fh_byte_eligibility.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fhedt_float/test_runner-0012_fh_bands_private.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/eytzinger/test_runner-0001_eyt_gamma_range.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/eytzinger/test_runner-0002_eyt_linear_range.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/eytzinger/test_runner-0003_eyt_oklab_range.$(OBJEXT) \
@@ -6045,6 +6117,7 @@ am__depfiles_remade =  \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po \
+	processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po \
 	processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po \
 	processing/lookup/eytzinger/$(DEPDIR)/test_runner-0001_eyt_gamma_range.Po \
 	processing/lookup/eytzinger/$(DEPDIR)/test_runner-0002_eyt_linear_range.Po \
@@ -6084,6 +6157,29 @@ am__depfiles_remade =  \
 	processing/lookup/eytzinger/$(DEPDIR)/test_runner-0036_eyt_oklab_mixed.Po \
 	processing/lookup/eytzinger/$(DEPDIR)/test_runner-0037_eyt_cielab_mixed.Po \
 	processing/lookup/eytzinger/$(DEPDIR)/test_runner-0038_eyt_din99d_mixed.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0001_fh_gamma_grid.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0002_fh_linear_grid.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0003_fh_oklab_grid.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0004_fh_cielab_grid.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0005_fh_din99d_grid.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0006_fh_gamma_expanded_grid.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0007_fh_cielab_expanded_grid.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0008_fh_din99d_expanded_grid.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0009_fh_outside_cache.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0010_fh_outside_dist2.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0011_fh_native_refine.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0012_fh_native_refine_dist2.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0013_fh_seed_collision.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0014_fh_finite_extrema.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0015_fh_signature.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0016_fh_reprepare.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0017_fh_nonfinite.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0018_fh_outside_extreme.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0019_fh_outside_tiny.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0020_fh_enclosing_cell.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0021_fh_collision_refine.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0022_fh_collision_dist2.Po \
+	processing/lookup/fhedt/$(DEPDIR)/test_runner-0023_fh_instance_isolation.Po \
 	processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0001_mah_gamma_range.Po \
 	processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0002_mah_linear_range.Po \
 	processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0003_mah_oklab_range.Po \
@@ -6187,6 +6283,18 @@ am__depfiles_remade =  \
 	quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0012_eyt_bands_private.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po \
+	quant/palette/fhedt_float/$(DEPDIR)/test_runner-0001_fh_gamma_srgb.Po \
+	quant/palette/fhedt_float/$(DEPDIR)/test_runner-0002_fh_gamma_p3.Po \
+	quant/palette/fhedt_float/$(DEPDIR)/test_runner-0003_fh_linear_srgb.Po \
+	quant/palette/fhedt_float/$(DEPDIR)/test_runner-0004_fh_linear_p3.Po \
+	quant/palette/fhedt_float/$(DEPDIR)/test_runner-0005_fh_oklab_srgb.Po \
+	quant/palette/fhedt_float/$(DEPDIR)/test_runner-0006_fh_oklab_p3.Po \
+	quant/palette/fhedt_float/$(DEPDIR)/test_runner-0007_fh_cielab_srgb.Po \
+	quant/palette/fhedt_float/$(DEPDIR)/test_runner-0008_fh_cielab_p3.Po \
+	quant/palette/fhedt_float/$(DEPDIR)/test_runner-0009_fh_din99d_srgb.Po \
+	quant/palette/fhedt_float/$(DEPDIR)/test_runner-0010_fh_din99d_p3.Po \
+	quant/palette/fhedt_float/$(DEPDIR)/test_runner-0011_fh_byte_eligibility.Po \
+	quant/palette/fhedt_float/$(DEPDIR)/test_runner-0012_fh_bands_private.Po \
 	quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Po \
 	quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0001_mah_gamma_srgb.Po \
 	quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0002_mah_gamma_p3.Po \
@@ -7458,6 +7566,42 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_BINNING_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_MERGE_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_EXTENDED_LOOKUP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_FHEDT_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_FH_ENCLOSING_CELL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_FH_COLLISION_REFINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_FH_COLLISION_DIST2 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_FH_INSTANCE_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_FH_OUTSIDE_EXTREME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_FH_OUTSIDE_TINY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FH_GAMMA_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_FH_LINEAR_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_FH_OKLAB_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_FH_CIELAB_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_FH_DIN99D_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_FH_GAMMA_EXPANDED_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_FH_CIELAB_EXPANDED_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_FH_DIN99D_EXPANDED_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_FH_OUTSIDE_CACHE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_FH_OUTSIDE_DIST2 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_FH_NATIVE_REFINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_FH_NATIVE_REFINE_DIST2 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_FH_SEED_COLLISION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_FH_FINITE_EXTREMA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_FH_SIGNATURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_FH_REPREPARE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_FH_NONFINITE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FH_GAMMA_SRGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_FH_GAMMA_P3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_FH_LINEAR_SRGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_FH_LINEAR_P3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_FH_OKLAB_SRGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_FH_OKLAB_P3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_FH_CIELAB_SRGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_FH_CIELAB_P3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_FH_DIN99D_SRGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_FH_DIN99D_P3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_FH_BYTE_ELIGIBILITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_FH_BANDS_PRIVATE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_EYT_GAMMA_RANGE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_EYT_LINEAR_RANGE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_EYT_OKLAB_RANGE \
@@ -10878,6 +11022,42 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/solvers_float/0001_solver_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/merge_float/0001_merge_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/extended/0001_extended_lookup.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0020_fh_enclosing_cell.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0021_fh_collision_refine.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0022_fh_collision_dist2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0023_fh_instance_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0018_fh_outside_extreme.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0019_fh_outside_tiny.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0001_fh_gamma_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0002_fh_linear_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0003_fh_oklab_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0004_fh_cielab_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0005_fh_din99d_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0009_fh_outside_cache.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0010_fh_outside_dist2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0011_fh_native_refine.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0012_fh_native_refine_dist2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0013_fh_seed_collision.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0014_fh_finite_extrema.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0015_fh_signature.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0016_fh_reprepare.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0017_fh_nonfinite.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fhedt_float/0001_fh_gamma_srgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fhedt_float/0002_fh_gamma_p3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fhedt_float/0003_fh_linear_srgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fhedt_float/0004_fh_linear_p3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fhedt_float/0005_fh_oklab_srgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fhedt_float/0006_fh_oklab_p3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fhedt_float/0007_fh_cielab_srgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fhedt_float/0008_fh_cielab_p3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fhedt_float/0009_fh_din99d_srgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fhedt_float/0010_fh_din99d_p3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fhedt_float/0011_fh_byte_eligibility.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fhedt_float/0012_fh_bands_private.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/eytzinger/0001_eyt_gamma_range.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/eytzinger/0002_eyt_linear_range.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/eytzinger/0003_eyt_oklab_range.c \
@@ -17152,6 +17332,126 @@ processing/lookup/extended/$(DEPDIR)/$(am__dirstamp):
 processing/lookup/extended/test_runner-0001_extended_lookup.$(OBJEXT):  \
 	processing/lookup/extended/$(am__dirstamp) \
 	processing/lookup/extended/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/test_runner-fhedt_test_common.$(OBJEXT):  \
+	processing/lookup/$(am__dirstamp) \
+	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/$(am__dirstamp):
+	@$(MKDIR_P) processing/lookup/fhedt
+	@: >>processing/lookup/fhedt/$(am__dirstamp)
+processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/lookup/fhedt/$(DEPDIR)
+	@: >>processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0021_fh_collision_refine.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0022_fh_collision_dist2.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0023_fh_instance_isolation.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0018_fh_outside_extreme.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0019_fh_outside_tiny.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0001_fh_gamma_grid.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0002_fh_linear_grid.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0003_fh_oklab_grid.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0004_fh_cielab_grid.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0005_fh_din99d_grid.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0006_fh_gamma_expanded_grid.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0007_fh_cielab_expanded_grid.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0008_fh_din99d_expanded_grid.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0009_fh_outside_cache.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0010_fh_outside_dist2.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0011_fh_native_refine.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0012_fh_native_refine_dist2.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0013_fh_seed_collision.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0014_fh_finite_extrema.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0015_fh_signature.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0016_fh_reprepare.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt/test_runner-0017_fh_nonfinite.$(OBJEXT):  \
+	processing/lookup/fhedt/$(am__dirstamp) \
+	processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fhedt_float/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/fhedt_float
+	@: >>quant/palette/fhedt_float/$(am__dirstamp)
+quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/fhedt_float/$(DEPDIR)
+	@: >>quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fhedt_float/test_runner-0001_fh_gamma_srgb.$(OBJEXT):  \
+	quant/palette/fhedt_float/$(am__dirstamp) \
+	quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fhedt_float/test_runner-0002_fh_gamma_p3.$(OBJEXT):  \
+	quant/palette/fhedt_float/$(am__dirstamp) \
+	quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fhedt_float/test_runner-0003_fh_linear_srgb.$(OBJEXT):  \
+	quant/palette/fhedt_float/$(am__dirstamp) \
+	quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fhedt_float/test_runner-0004_fh_linear_p3.$(OBJEXT):  \
+	quant/palette/fhedt_float/$(am__dirstamp) \
+	quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fhedt_float/test_runner-0005_fh_oklab_srgb.$(OBJEXT):  \
+	quant/palette/fhedt_float/$(am__dirstamp) \
+	quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fhedt_float/test_runner-0006_fh_oklab_p3.$(OBJEXT):  \
+	quant/palette/fhedt_float/$(am__dirstamp) \
+	quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fhedt_float/test_runner-0007_fh_cielab_srgb.$(OBJEXT):  \
+	quant/palette/fhedt_float/$(am__dirstamp) \
+	quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fhedt_float/test_runner-0008_fh_cielab_p3.$(OBJEXT):  \
+	quant/palette/fhedt_float/$(am__dirstamp) \
+	quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fhedt_float/test_runner-0009_fh_din99d_srgb.$(OBJEXT):  \
+	quant/palette/fhedt_float/$(am__dirstamp) \
+	quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fhedt_float/test_runner-0010_fh_din99d_p3.$(OBJEXT):  \
+	quant/palette/fhedt_float/$(am__dirstamp) \
+	quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fhedt_float/test_runner-0011_fh_byte_eligibility.$(OBJEXT):  \
+	quant/palette/fhedt_float/$(am__dirstamp) \
+	quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fhedt_float/test_runner-0012_fh_bands_private.$(OBJEXT):  \
+	quant/palette/fhedt_float/$(am__dirstamp) \
+	quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp)
 processing/lookup/eytzinger/$(am__dirstamp):
 	@$(MKDIR_P) processing/lookup/eytzinger
 	@: >>processing/lookup/eytzinger/$(am__dirstamp)
@@ -17646,6 +17946,7 @@ mostlyclean-compile:
 	-rm -f processing/lookup/*.$(OBJEXT)
 	-rm -f processing/lookup/extended/*.$(OBJEXT)
 	-rm -f processing/lookup/eytzinger/*.$(OBJEXT)
+	-rm -f processing/lookup/fhedt/*.$(OBJEXT)
 	-rm -f processing/lookup/mahalanobis/*.$(OBJEXT)
 	-rm -f processing/planner/*.$(OBJEXT)
 	-rm -f processing/precision/*.$(OBJEXT)
@@ -17658,6 +17959,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/color_space/*.$(OBJEXT)
 	-rm -f quant/palette/eytzinger_float/*.$(OBJEXT)
 	-rm -f quant/palette/fallback/*.$(OBJEXT)
+	-rm -f quant/palette/fhedt_float/*.$(OBJEXT)
 	-rm -f quant/palette/lookup_float/*.$(OBJEXT)
 	-rm -f quant/palette/mahalanobis_float/*.$(OBJEXT)
 	-rm -f quant/palette/merge_float/*.$(OBJEXT)
@@ -19487,6 +19789,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/eytzinger/$(DEPDIR)/test_runner-0001_eyt_gamma_range.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/eytzinger/$(DEPDIR)/test_runner-0002_eyt_linear_range.Po@am__quote@ # am--include-marker
@@ -19526,6 +19829,29 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/eytzinger/$(DEPDIR)/test_runner-0036_eyt_oklab_mixed.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/eytzinger/$(DEPDIR)/test_runner-0037_eyt_cielab_mixed.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/eytzinger/$(DEPDIR)/test_runner-0038_eyt_din99d_mixed.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0001_fh_gamma_grid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0002_fh_linear_grid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0003_fh_oklab_grid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0004_fh_cielab_grid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0005_fh_din99d_grid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0006_fh_gamma_expanded_grid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0007_fh_cielab_expanded_grid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0008_fh_din99d_expanded_grid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0009_fh_outside_cache.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0010_fh_outside_dist2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0011_fh_native_refine.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0012_fh_native_refine_dist2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0013_fh_seed_collision.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0014_fh_finite_extrema.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0015_fh_signature.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0016_fh_reprepare.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0017_fh_nonfinite.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0018_fh_outside_extreme.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0019_fh_outside_tiny.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0020_fh_enclosing_cell.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0021_fh_collision_refine.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0022_fh_collision_dist2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0023_fh_instance_isolation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0001_mah_gamma_range.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0002_mah_linear_range.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0003_mah_oklab_range.Po@am__quote@ # am--include-marker
@@ -19629,6 +19955,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0012_eyt_bands_private.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fhedt_float/$(DEPDIR)/test_runner-0001_fh_gamma_srgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fhedt_float/$(DEPDIR)/test_runner-0002_fh_gamma_p3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fhedt_float/$(DEPDIR)/test_runner-0003_fh_linear_srgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fhedt_float/$(DEPDIR)/test_runner-0004_fh_linear_p3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fhedt_float/$(DEPDIR)/test_runner-0005_fh_oklab_srgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fhedt_float/$(DEPDIR)/test_runner-0006_fh_oklab_p3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fhedt_float/$(DEPDIR)/test_runner-0007_fh_cielab_srgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fhedt_float/$(DEPDIR)/test_runner-0008_fh_cielab_p3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fhedt_float/$(DEPDIR)/test_runner-0009_fh_din99d_srgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fhedt_float/$(DEPDIR)/test_runner-0010_fh_din99d_p3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fhedt_float/$(DEPDIR)/test_runner-0011_fh_byte_eligibility.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fhedt_float/$(DEPDIR)/test_runner-0012_fh_bands_private.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0001_mah_gamma_srgb.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0002_mah_gamma_p3.Po@am__quote@ # am--include-marker
@@ -45990,6 +46328,510 @@ processing/lookup/extended/test_runner-0001_extended_lookup.obj: processing/look
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/extended/test_runner-0001_extended_lookup.obj `if test -f 'processing/lookup/extended/0001_extended_lookup.c'; then $(CYGPATH_W) 'processing/lookup/extended/0001_extended_lookup.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/extended/0001_extended_lookup.c'; fi`
 
+processing/lookup/test_runner-fhedt_test_common.o: processing/lookup/fhedt_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-fhedt_test_common.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Tpo -c -o processing/lookup/test_runner-fhedt_test_common.o `test -f 'processing/lookup/fhedt_test_common.c' || echo '$(srcdir)/'`processing/lookup/fhedt_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Tpo processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_test_common.c' object='processing/lookup/test_runner-fhedt_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-fhedt_test_common.o `test -f 'processing/lookup/fhedt_test_common.c' || echo '$(srcdir)/'`processing/lookup/fhedt_test_common.c
+
+processing/lookup/test_runner-fhedt_test_common.obj: processing/lookup/fhedt_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-fhedt_test_common.obj -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Tpo -c -o processing/lookup/test_runner-fhedt_test_common.obj `if test -f 'processing/lookup/fhedt_test_common.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Tpo processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_test_common.c' object='processing/lookup/test_runner-fhedt_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-fhedt_test_common.obj `if test -f 'processing/lookup/fhedt_test_common.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_test_common.c'; fi`
+
+processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.o: processing/lookup/fhedt/0020_fh_enclosing_cell.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0020_fh_enclosing_cell.Tpo -c -o processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.o `test -f 'processing/lookup/fhedt/0020_fh_enclosing_cell.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0020_fh_enclosing_cell.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0020_fh_enclosing_cell.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0020_fh_enclosing_cell.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0020_fh_enclosing_cell.c' object='processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.o `test -f 'processing/lookup/fhedt/0020_fh_enclosing_cell.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0020_fh_enclosing_cell.c
+
+processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.obj: processing/lookup/fhedt/0020_fh_enclosing_cell.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0020_fh_enclosing_cell.Tpo -c -o processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.obj `if test -f 'processing/lookup/fhedt/0020_fh_enclosing_cell.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0020_fh_enclosing_cell.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0020_fh_enclosing_cell.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0020_fh_enclosing_cell.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0020_fh_enclosing_cell.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0020_fh_enclosing_cell.c' object='processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.obj `if test -f 'processing/lookup/fhedt/0020_fh_enclosing_cell.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0020_fh_enclosing_cell.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0020_fh_enclosing_cell.c'; fi`
+
+processing/lookup/fhedt/test_runner-0021_fh_collision_refine.o: processing/lookup/fhedt/0021_fh_collision_refine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0021_fh_collision_refine.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0021_fh_collision_refine.Tpo -c -o processing/lookup/fhedt/test_runner-0021_fh_collision_refine.o `test -f 'processing/lookup/fhedt/0021_fh_collision_refine.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0021_fh_collision_refine.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0021_fh_collision_refine.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0021_fh_collision_refine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0021_fh_collision_refine.c' object='processing/lookup/fhedt/test_runner-0021_fh_collision_refine.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0021_fh_collision_refine.o `test -f 'processing/lookup/fhedt/0021_fh_collision_refine.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0021_fh_collision_refine.c
+
+processing/lookup/fhedt/test_runner-0021_fh_collision_refine.obj: processing/lookup/fhedt/0021_fh_collision_refine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0021_fh_collision_refine.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0021_fh_collision_refine.Tpo -c -o processing/lookup/fhedt/test_runner-0021_fh_collision_refine.obj `if test -f 'processing/lookup/fhedt/0021_fh_collision_refine.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0021_fh_collision_refine.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0021_fh_collision_refine.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0021_fh_collision_refine.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0021_fh_collision_refine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0021_fh_collision_refine.c' object='processing/lookup/fhedt/test_runner-0021_fh_collision_refine.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0021_fh_collision_refine.obj `if test -f 'processing/lookup/fhedt/0021_fh_collision_refine.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0021_fh_collision_refine.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0021_fh_collision_refine.c'; fi`
+
+processing/lookup/fhedt/test_runner-0022_fh_collision_dist2.o: processing/lookup/fhedt/0022_fh_collision_dist2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0022_fh_collision_dist2.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0022_fh_collision_dist2.Tpo -c -o processing/lookup/fhedt/test_runner-0022_fh_collision_dist2.o `test -f 'processing/lookup/fhedt/0022_fh_collision_dist2.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0022_fh_collision_dist2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0022_fh_collision_dist2.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0022_fh_collision_dist2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0022_fh_collision_dist2.c' object='processing/lookup/fhedt/test_runner-0022_fh_collision_dist2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0022_fh_collision_dist2.o `test -f 'processing/lookup/fhedt/0022_fh_collision_dist2.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0022_fh_collision_dist2.c
+
+processing/lookup/fhedt/test_runner-0022_fh_collision_dist2.obj: processing/lookup/fhedt/0022_fh_collision_dist2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0022_fh_collision_dist2.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0022_fh_collision_dist2.Tpo -c -o processing/lookup/fhedt/test_runner-0022_fh_collision_dist2.obj `if test -f 'processing/lookup/fhedt/0022_fh_collision_dist2.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0022_fh_collision_dist2.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0022_fh_collision_dist2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0022_fh_collision_dist2.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0022_fh_collision_dist2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0022_fh_collision_dist2.c' object='processing/lookup/fhedt/test_runner-0022_fh_collision_dist2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0022_fh_collision_dist2.obj `if test -f 'processing/lookup/fhedt/0022_fh_collision_dist2.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0022_fh_collision_dist2.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0022_fh_collision_dist2.c'; fi`
+
+processing/lookup/fhedt/test_runner-0023_fh_instance_isolation.o: processing/lookup/fhedt/0023_fh_instance_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0023_fh_instance_isolation.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0023_fh_instance_isolation.Tpo -c -o processing/lookup/fhedt/test_runner-0023_fh_instance_isolation.o `test -f 'processing/lookup/fhedt/0023_fh_instance_isolation.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0023_fh_instance_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0023_fh_instance_isolation.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0023_fh_instance_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0023_fh_instance_isolation.c' object='processing/lookup/fhedt/test_runner-0023_fh_instance_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0023_fh_instance_isolation.o `test -f 'processing/lookup/fhedt/0023_fh_instance_isolation.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0023_fh_instance_isolation.c
+
+processing/lookup/fhedt/test_runner-0023_fh_instance_isolation.obj: processing/lookup/fhedt/0023_fh_instance_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0023_fh_instance_isolation.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0023_fh_instance_isolation.Tpo -c -o processing/lookup/fhedt/test_runner-0023_fh_instance_isolation.obj `if test -f 'processing/lookup/fhedt/0023_fh_instance_isolation.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0023_fh_instance_isolation.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0023_fh_instance_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0023_fh_instance_isolation.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0023_fh_instance_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0023_fh_instance_isolation.c' object='processing/lookup/fhedt/test_runner-0023_fh_instance_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0023_fh_instance_isolation.obj `if test -f 'processing/lookup/fhedt/0023_fh_instance_isolation.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0023_fh_instance_isolation.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0023_fh_instance_isolation.c'; fi`
+
+processing/lookup/fhedt/test_runner-0018_fh_outside_extreme.o: processing/lookup/fhedt/0018_fh_outside_extreme.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0018_fh_outside_extreme.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0018_fh_outside_extreme.Tpo -c -o processing/lookup/fhedt/test_runner-0018_fh_outside_extreme.o `test -f 'processing/lookup/fhedt/0018_fh_outside_extreme.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0018_fh_outside_extreme.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0018_fh_outside_extreme.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0018_fh_outside_extreme.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0018_fh_outside_extreme.c' object='processing/lookup/fhedt/test_runner-0018_fh_outside_extreme.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0018_fh_outside_extreme.o `test -f 'processing/lookup/fhedt/0018_fh_outside_extreme.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0018_fh_outside_extreme.c
+
+processing/lookup/fhedt/test_runner-0018_fh_outside_extreme.obj: processing/lookup/fhedt/0018_fh_outside_extreme.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0018_fh_outside_extreme.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0018_fh_outside_extreme.Tpo -c -o processing/lookup/fhedt/test_runner-0018_fh_outside_extreme.obj `if test -f 'processing/lookup/fhedt/0018_fh_outside_extreme.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0018_fh_outside_extreme.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0018_fh_outside_extreme.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0018_fh_outside_extreme.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0018_fh_outside_extreme.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0018_fh_outside_extreme.c' object='processing/lookup/fhedt/test_runner-0018_fh_outside_extreme.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0018_fh_outside_extreme.obj `if test -f 'processing/lookup/fhedt/0018_fh_outside_extreme.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0018_fh_outside_extreme.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0018_fh_outside_extreme.c'; fi`
+
+processing/lookup/fhedt/test_runner-0019_fh_outside_tiny.o: processing/lookup/fhedt/0019_fh_outside_tiny.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0019_fh_outside_tiny.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0019_fh_outside_tiny.Tpo -c -o processing/lookup/fhedt/test_runner-0019_fh_outside_tiny.o `test -f 'processing/lookup/fhedt/0019_fh_outside_tiny.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0019_fh_outside_tiny.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0019_fh_outside_tiny.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0019_fh_outside_tiny.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0019_fh_outside_tiny.c' object='processing/lookup/fhedt/test_runner-0019_fh_outside_tiny.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0019_fh_outside_tiny.o `test -f 'processing/lookup/fhedt/0019_fh_outside_tiny.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0019_fh_outside_tiny.c
+
+processing/lookup/fhedt/test_runner-0019_fh_outside_tiny.obj: processing/lookup/fhedt/0019_fh_outside_tiny.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0019_fh_outside_tiny.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0019_fh_outside_tiny.Tpo -c -o processing/lookup/fhedt/test_runner-0019_fh_outside_tiny.obj `if test -f 'processing/lookup/fhedt/0019_fh_outside_tiny.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0019_fh_outside_tiny.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0019_fh_outside_tiny.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0019_fh_outside_tiny.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0019_fh_outside_tiny.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0019_fh_outside_tiny.c' object='processing/lookup/fhedt/test_runner-0019_fh_outside_tiny.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0019_fh_outside_tiny.obj `if test -f 'processing/lookup/fhedt/0019_fh_outside_tiny.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0019_fh_outside_tiny.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0019_fh_outside_tiny.c'; fi`
+
+processing/lookup/fhedt/test_runner-0001_fh_gamma_grid.o: processing/lookup/fhedt/0001_fh_gamma_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0001_fh_gamma_grid.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0001_fh_gamma_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0001_fh_gamma_grid.o `test -f 'processing/lookup/fhedt/0001_fh_gamma_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0001_fh_gamma_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0001_fh_gamma_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0001_fh_gamma_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0001_fh_gamma_grid.c' object='processing/lookup/fhedt/test_runner-0001_fh_gamma_grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0001_fh_gamma_grid.o `test -f 'processing/lookup/fhedt/0001_fh_gamma_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0001_fh_gamma_grid.c
+
+processing/lookup/fhedt/test_runner-0001_fh_gamma_grid.obj: processing/lookup/fhedt/0001_fh_gamma_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0001_fh_gamma_grid.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0001_fh_gamma_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0001_fh_gamma_grid.obj `if test -f 'processing/lookup/fhedt/0001_fh_gamma_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0001_fh_gamma_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0001_fh_gamma_grid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0001_fh_gamma_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0001_fh_gamma_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0001_fh_gamma_grid.c' object='processing/lookup/fhedt/test_runner-0001_fh_gamma_grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0001_fh_gamma_grid.obj `if test -f 'processing/lookup/fhedt/0001_fh_gamma_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0001_fh_gamma_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0001_fh_gamma_grid.c'; fi`
+
+processing/lookup/fhedt/test_runner-0002_fh_linear_grid.o: processing/lookup/fhedt/0002_fh_linear_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0002_fh_linear_grid.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0002_fh_linear_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0002_fh_linear_grid.o `test -f 'processing/lookup/fhedt/0002_fh_linear_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0002_fh_linear_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0002_fh_linear_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0002_fh_linear_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0002_fh_linear_grid.c' object='processing/lookup/fhedt/test_runner-0002_fh_linear_grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0002_fh_linear_grid.o `test -f 'processing/lookup/fhedt/0002_fh_linear_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0002_fh_linear_grid.c
+
+processing/lookup/fhedt/test_runner-0002_fh_linear_grid.obj: processing/lookup/fhedt/0002_fh_linear_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0002_fh_linear_grid.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0002_fh_linear_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0002_fh_linear_grid.obj `if test -f 'processing/lookup/fhedt/0002_fh_linear_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0002_fh_linear_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0002_fh_linear_grid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0002_fh_linear_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0002_fh_linear_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0002_fh_linear_grid.c' object='processing/lookup/fhedt/test_runner-0002_fh_linear_grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0002_fh_linear_grid.obj `if test -f 'processing/lookup/fhedt/0002_fh_linear_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0002_fh_linear_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0002_fh_linear_grid.c'; fi`
+
+processing/lookup/fhedt/test_runner-0003_fh_oklab_grid.o: processing/lookup/fhedt/0003_fh_oklab_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0003_fh_oklab_grid.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0003_fh_oklab_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0003_fh_oklab_grid.o `test -f 'processing/lookup/fhedt/0003_fh_oklab_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0003_fh_oklab_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0003_fh_oklab_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0003_fh_oklab_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0003_fh_oklab_grid.c' object='processing/lookup/fhedt/test_runner-0003_fh_oklab_grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0003_fh_oklab_grid.o `test -f 'processing/lookup/fhedt/0003_fh_oklab_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0003_fh_oklab_grid.c
+
+processing/lookup/fhedt/test_runner-0003_fh_oklab_grid.obj: processing/lookup/fhedt/0003_fh_oklab_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0003_fh_oklab_grid.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0003_fh_oklab_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0003_fh_oklab_grid.obj `if test -f 'processing/lookup/fhedt/0003_fh_oklab_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0003_fh_oklab_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0003_fh_oklab_grid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0003_fh_oklab_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0003_fh_oklab_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0003_fh_oklab_grid.c' object='processing/lookup/fhedt/test_runner-0003_fh_oklab_grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0003_fh_oklab_grid.obj `if test -f 'processing/lookup/fhedt/0003_fh_oklab_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0003_fh_oklab_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0003_fh_oklab_grid.c'; fi`
+
+processing/lookup/fhedt/test_runner-0004_fh_cielab_grid.o: processing/lookup/fhedt/0004_fh_cielab_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0004_fh_cielab_grid.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0004_fh_cielab_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0004_fh_cielab_grid.o `test -f 'processing/lookup/fhedt/0004_fh_cielab_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0004_fh_cielab_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0004_fh_cielab_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0004_fh_cielab_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0004_fh_cielab_grid.c' object='processing/lookup/fhedt/test_runner-0004_fh_cielab_grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0004_fh_cielab_grid.o `test -f 'processing/lookup/fhedt/0004_fh_cielab_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0004_fh_cielab_grid.c
+
+processing/lookup/fhedt/test_runner-0004_fh_cielab_grid.obj: processing/lookup/fhedt/0004_fh_cielab_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0004_fh_cielab_grid.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0004_fh_cielab_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0004_fh_cielab_grid.obj `if test -f 'processing/lookup/fhedt/0004_fh_cielab_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0004_fh_cielab_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0004_fh_cielab_grid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0004_fh_cielab_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0004_fh_cielab_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0004_fh_cielab_grid.c' object='processing/lookup/fhedt/test_runner-0004_fh_cielab_grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0004_fh_cielab_grid.obj `if test -f 'processing/lookup/fhedt/0004_fh_cielab_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0004_fh_cielab_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0004_fh_cielab_grid.c'; fi`
+
+processing/lookup/fhedt/test_runner-0005_fh_din99d_grid.o: processing/lookup/fhedt/0005_fh_din99d_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0005_fh_din99d_grid.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0005_fh_din99d_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0005_fh_din99d_grid.o `test -f 'processing/lookup/fhedt/0005_fh_din99d_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0005_fh_din99d_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0005_fh_din99d_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0005_fh_din99d_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0005_fh_din99d_grid.c' object='processing/lookup/fhedt/test_runner-0005_fh_din99d_grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0005_fh_din99d_grid.o `test -f 'processing/lookup/fhedt/0005_fh_din99d_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0005_fh_din99d_grid.c
+
+processing/lookup/fhedt/test_runner-0005_fh_din99d_grid.obj: processing/lookup/fhedt/0005_fh_din99d_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0005_fh_din99d_grid.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0005_fh_din99d_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0005_fh_din99d_grid.obj `if test -f 'processing/lookup/fhedt/0005_fh_din99d_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0005_fh_din99d_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0005_fh_din99d_grid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0005_fh_din99d_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0005_fh_din99d_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0005_fh_din99d_grid.c' object='processing/lookup/fhedt/test_runner-0005_fh_din99d_grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0005_fh_din99d_grid.obj `if test -f 'processing/lookup/fhedt/0005_fh_din99d_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0005_fh_din99d_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0005_fh_din99d_grid.c'; fi`
+
+processing/lookup/fhedt/test_runner-0006_fh_gamma_expanded_grid.o: processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0006_fh_gamma_expanded_grid.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0006_fh_gamma_expanded_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0006_fh_gamma_expanded_grid.o `test -f 'processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0006_fh_gamma_expanded_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0006_fh_gamma_expanded_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c' object='processing/lookup/fhedt/test_runner-0006_fh_gamma_expanded_grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0006_fh_gamma_expanded_grid.o `test -f 'processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c
+
+processing/lookup/fhedt/test_runner-0006_fh_gamma_expanded_grid.obj: processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0006_fh_gamma_expanded_grid.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0006_fh_gamma_expanded_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0006_fh_gamma_expanded_grid.obj `if test -f 'processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0006_fh_gamma_expanded_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0006_fh_gamma_expanded_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c' object='processing/lookup/fhedt/test_runner-0006_fh_gamma_expanded_grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0006_fh_gamma_expanded_grid.obj `if test -f 'processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0006_fh_gamma_expanded_grid.c'; fi`
+
+processing/lookup/fhedt/test_runner-0007_fh_cielab_expanded_grid.o: processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0007_fh_cielab_expanded_grid.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0007_fh_cielab_expanded_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0007_fh_cielab_expanded_grid.o `test -f 'processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0007_fh_cielab_expanded_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0007_fh_cielab_expanded_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c' object='processing/lookup/fhedt/test_runner-0007_fh_cielab_expanded_grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0007_fh_cielab_expanded_grid.o `test -f 'processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c
+
+processing/lookup/fhedt/test_runner-0007_fh_cielab_expanded_grid.obj: processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0007_fh_cielab_expanded_grid.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0007_fh_cielab_expanded_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0007_fh_cielab_expanded_grid.obj `if test -f 'processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0007_fh_cielab_expanded_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0007_fh_cielab_expanded_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c' object='processing/lookup/fhedt/test_runner-0007_fh_cielab_expanded_grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0007_fh_cielab_expanded_grid.obj `if test -f 'processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0007_fh_cielab_expanded_grid.c'; fi`
+
+processing/lookup/fhedt/test_runner-0008_fh_din99d_expanded_grid.o: processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0008_fh_din99d_expanded_grid.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0008_fh_din99d_expanded_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0008_fh_din99d_expanded_grid.o `test -f 'processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0008_fh_din99d_expanded_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0008_fh_din99d_expanded_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c' object='processing/lookup/fhedt/test_runner-0008_fh_din99d_expanded_grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0008_fh_din99d_expanded_grid.o `test -f 'processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c
+
+processing/lookup/fhedt/test_runner-0008_fh_din99d_expanded_grid.obj: processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0008_fh_din99d_expanded_grid.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0008_fh_din99d_expanded_grid.Tpo -c -o processing/lookup/fhedt/test_runner-0008_fh_din99d_expanded_grid.obj `if test -f 'processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0008_fh_din99d_expanded_grid.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0008_fh_din99d_expanded_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c' object='processing/lookup/fhedt/test_runner-0008_fh_din99d_expanded_grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0008_fh_din99d_expanded_grid.obj `if test -f 'processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0008_fh_din99d_expanded_grid.c'; fi`
+
+processing/lookup/fhedt/test_runner-0009_fh_outside_cache.o: processing/lookup/fhedt/0009_fh_outside_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0009_fh_outside_cache.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0009_fh_outside_cache.Tpo -c -o processing/lookup/fhedt/test_runner-0009_fh_outside_cache.o `test -f 'processing/lookup/fhedt/0009_fh_outside_cache.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0009_fh_outside_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0009_fh_outside_cache.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0009_fh_outside_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0009_fh_outside_cache.c' object='processing/lookup/fhedt/test_runner-0009_fh_outside_cache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0009_fh_outside_cache.o `test -f 'processing/lookup/fhedt/0009_fh_outside_cache.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0009_fh_outside_cache.c
+
+processing/lookup/fhedt/test_runner-0009_fh_outside_cache.obj: processing/lookup/fhedt/0009_fh_outside_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0009_fh_outside_cache.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0009_fh_outside_cache.Tpo -c -o processing/lookup/fhedt/test_runner-0009_fh_outside_cache.obj `if test -f 'processing/lookup/fhedt/0009_fh_outside_cache.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0009_fh_outside_cache.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0009_fh_outside_cache.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0009_fh_outside_cache.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0009_fh_outside_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0009_fh_outside_cache.c' object='processing/lookup/fhedt/test_runner-0009_fh_outside_cache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0009_fh_outside_cache.obj `if test -f 'processing/lookup/fhedt/0009_fh_outside_cache.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0009_fh_outside_cache.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0009_fh_outside_cache.c'; fi`
+
+processing/lookup/fhedt/test_runner-0010_fh_outside_dist2.o: processing/lookup/fhedt/0010_fh_outside_dist2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0010_fh_outside_dist2.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0010_fh_outside_dist2.Tpo -c -o processing/lookup/fhedt/test_runner-0010_fh_outside_dist2.o `test -f 'processing/lookup/fhedt/0010_fh_outside_dist2.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0010_fh_outside_dist2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0010_fh_outside_dist2.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0010_fh_outside_dist2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0010_fh_outside_dist2.c' object='processing/lookup/fhedt/test_runner-0010_fh_outside_dist2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0010_fh_outside_dist2.o `test -f 'processing/lookup/fhedt/0010_fh_outside_dist2.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0010_fh_outside_dist2.c
+
+processing/lookup/fhedt/test_runner-0010_fh_outside_dist2.obj: processing/lookup/fhedt/0010_fh_outside_dist2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0010_fh_outside_dist2.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0010_fh_outside_dist2.Tpo -c -o processing/lookup/fhedt/test_runner-0010_fh_outside_dist2.obj `if test -f 'processing/lookup/fhedt/0010_fh_outside_dist2.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0010_fh_outside_dist2.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0010_fh_outside_dist2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0010_fh_outside_dist2.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0010_fh_outside_dist2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0010_fh_outside_dist2.c' object='processing/lookup/fhedt/test_runner-0010_fh_outside_dist2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0010_fh_outside_dist2.obj `if test -f 'processing/lookup/fhedt/0010_fh_outside_dist2.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0010_fh_outside_dist2.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0010_fh_outside_dist2.c'; fi`
+
+processing/lookup/fhedt/test_runner-0011_fh_native_refine.o: processing/lookup/fhedt/0011_fh_native_refine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0011_fh_native_refine.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0011_fh_native_refine.Tpo -c -o processing/lookup/fhedt/test_runner-0011_fh_native_refine.o `test -f 'processing/lookup/fhedt/0011_fh_native_refine.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0011_fh_native_refine.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0011_fh_native_refine.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0011_fh_native_refine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0011_fh_native_refine.c' object='processing/lookup/fhedt/test_runner-0011_fh_native_refine.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0011_fh_native_refine.o `test -f 'processing/lookup/fhedt/0011_fh_native_refine.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0011_fh_native_refine.c
+
+processing/lookup/fhedt/test_runner-0011_fh_native_refine.obj: processing/lookup/fhedt/0011_fh_native_refine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0011_fh_native_refine.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0011_fh_native_refine.Tpo -c -o processing/lookup/fhedt/test_runner-0011_fh_native_refine.obj `if test -f 'processing/lookup/fhedt/0011_fh_native_refine.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0011_fh_native_refine.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0011_fh_native_refine.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0011_fh_native_refine.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0011_fh_native_refine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0011_fh_native_refine.c' object='processing/lookup/fhedt/test_runner-0011_fh_native_refine.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0011_fh_native_refine.obj `if test -f 'processing/lookup/fhedt/0011_fh_native_refine.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0011_fh_native_refine.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0011_fh_native_refine.c'; fi`
+
+processing/lookup/fhedt/test_runner-0012_fh_native_refine_dist2.o: processing/lookup/fhedt/0012_fh_native_refine_dist2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0012_fh_native_refine_dist2.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0012_fh_native_refine_dist2.Tpo -c -o processing/lookup/fhedt/test_runner-0012_fh_native_refine_dist2.o `test -f 'processing/lookup/fhedt/0012_fh_native_refine_dist2.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0012_fh_native_refine_dist2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0012_fh_native_refine_dist2.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0012_fh_native_refine_dist2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0012_fh_native_refine_dist2.c' object='processing/lookup/fhedt/test_runner-0012_fh_native_refine_dist2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0012_fh_native_refine_dist2.o `test -f 'processing/lookup/fhedt/0012_fh_native_refine_dist2.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0012_fh_native_refine_dist2.c
+
+processing/lookup/fhedt/test_runner-0012_fh_native_refine_dist2.obj: processing/lookup/fhedt/0012_fh_native_refine_dist2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0012_fh_native_refine_dist2.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0012_fh_native_refine_dist2.Tpo -c -o processing/lookup/fhedt/test_runner-0012_fh_native_refine_dist2.obj `if test -f 'processing/lookup/fhedt/0012_fh_native_refine_dist2.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0012_fh_native_refine_dist2.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0012_fh_native_refine_dist2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0012_fh_native_refine_dist2.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0012_fh_native_refine_dist2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0012_fh_native_refine_dist2.c' object='processing/lookup/fhedt/test_runner-0012_fh_native_refine_dist2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0012_fh_native_refine_dist2.obj `if test -f 'processing/lookup/fhedt/0012_fh_native_refine_dist2.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0012_fh_native_refine_dist2.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0012_fh_native_refine_dist2.c'; fi`
+
+processing/lookup/fhedt/test_runner-0013_fh_seed_collision.o: processing/lookup/fhedt/0013_fh_seed_collision.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0013_fh_seed_collision.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0013_fh_seed_collision.Tpo -c -o processing/lookup/fhedt/test_runner-0013_fh_seed_collision.o `test -f 'processing/lookup/fhedt/0013_fh_seed_collision.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0013_fh_seed_collision.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0013_fh_seed_collision.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0013_fh_seed_collision.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0013_fh_seed_collision.c' object='processing/lookup/fhedt/test_runner-0013_fh_seed_collision.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0013_fh_seed_collision.o `test -f 'processing/lookup/fhedt/0013_fh_seed_collision.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0013_fh_seed_collision.c
+
+processing/lookup/fhedt/test_runner-0013_fh_seed_collision.obj: processing/lookup/fhedt/0013_fh_seed_collision.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0013_fh_seed_collision.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0013_fh_seed_collision.Tpo -c -o processing/lookup/fhedt/test_runner-0013_fh_seed_collision.obj `if test -f 'processing/lookup/fhedt/0013_fh_seed_collision.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0013_fh_seed_collision.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0013_fh_seed_collision.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0013_fh_seed_collision.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0013_fh_seed_collision.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0013_fh_seed_collision.c' object='processing/lookup/fhedt/test_runner-0013_fh_seed_collision.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0013_fh_seed_collision.obj `if test -f 'processing/lookup/fhedt/0013_fh_seed_collision.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0013_fh_seed_collision.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0013_fh_seed_collision.c'; fi`
+
+processing/lookup/fhedt/test_runner-0014_fh_finite_extrema.o: processing/lookup/fhedt/0014_fh_finite_extrema.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0014_fh_finite_extrema.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0014_fh_finite_extrema.Tpo -c -o processing/lookup/fhedt/test_runner-0014_fh_finite_extrema.o `test -f 'processing/lookup/fhedt/0014_fh_finite_extrema.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0014_fh_finite_extrema.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0014_fh_finite_extrema.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0014_fh_finite_extrema.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0014_fh_finite_extrema.c' object='processing/lookup/fhedt/test_runner-0014_fh_finite_extrema.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0014_fh_finite_extrema.o `test -f 'processing/lookup/fhedt/0014_fh_finite_extrema.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0014_fh_finite_extrema.c
+
+processing/lookup/fhedt/test_runner-0014_fh_finite_extrema.obj: processing/lookup/fhedt/0014_fh_finite_extrema.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0014_fh_finite_extrema.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0014_fh_finite_extrema.Tpo -c -o processing/lookup/fhedt/test_runner-0014_fh_finite_extrema.obj `if test -f 'processing/lookup/fhedt/0014_fh_finite_extrema.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0014_fh_finite_extrema.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0014_fh_finite_extrema.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0014_fh_finite_extrema.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0014_fh_finite_extrema.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0014_fh_finite_extrema.c' object='processing/lookup/fhedt/test_runner-0014_fh_finite_extrema.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0014_fh_finite_extrema.obj `if test -f 'processing/lookup/fhedt/0014_fh_finite_extrema.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0014_fh_finite_extrema.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0014_fh_finite_extrema.c'; fi`
+
+processing/lookup/fhedt/test_runner-0015_fh_signature.o: processing/lookup/fhedt/0015_fh_signature.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0015_fh_signature.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0015_fh_signature.Tpo -c -o processing/lookup/fhedt/test_runner-0015_fh_signature.o `test -f 'processing/lookup/fhedt/0015_fh_signature.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0015_fh_signature.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0015_fh_signature.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0015_fh_signature.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0015_fh_signature.c' object='processing/lookup/fhedt/test_runner-0015_fh_signature.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0015_fh_signature.o `test -f 'processing/lookup/fhedt/0015_fh_signature.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0015_fh_signature.c
+
+processing/lookup/fhedt/test_runner-0015_fh_signature.obj: processing/lookup/fhedt/0015_fh_signature.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0015_fh_signature.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0015_fh_signature.Tpo -c -o processing/lookup/fhedt/test_runner-0015_fh_signature.obj `if test -f 'processing/lookup/fhedt/0015_fh_signature.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0015_fh_signature.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0015_fh_signature.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0015_fh_signature.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0015_fh_signature.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0015_fh_signature.c' object='processing/lookup/fhedt/test_runner-0015_fh_signature.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0015_fh_signature.obj `if test -f 'processing/lookup/fhedt/0015_fh_signature.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0015_fh_signature.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0015_fh_signature.c'; fi`
+
+processing/lookup/fhedt/test_runner-0016_fh_reprepare.o: processing/lookup/fhedt/0016_fh_reprepare.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0016_fh_reprepare.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0016_fh_reprepare.Tpo -c -o processing/lookup/fhedt/test_runner-0016_fh_reprepare.o `test -f 'processing/lookup/fhedt/0016_fh_reprepare.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0016_fh_reprepare.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0016_fh_reprepare.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0016_fh_reprepare.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0016_fh_reprepare.c' object='processing/lookup/fhedt/test_runner-0016_fh_reprepare.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0016_fh_reprepare.o `test -f 'processing/lookup/fhedt/0016_fh_reprepare.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0016_fh_reprepare.c
+
+processing/lookup/fhedt/test_runner-0016_fh_reprepare.obj: processing/lookup/fhedt/0016_fh_reprepare.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0016_fh_reprepare.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0016_fh_reprepare.Tpo -c -o processing/lookup/fhedt/test_runner-0016_fh_reprepare.obj `if test -f 'processing/lookup/fhedt/0016_fh_reprepare.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0016_fh_reprepare.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0016_fh_reprepare.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0016_fh_reprepare.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0016_fh_reprepare.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0016_fh_reprepare.c' object='processing/lookup/fhedt/test_runner-0016_fh_reprepare.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0016_fh_reprepare.obj `if test -f 'processing/lookup/fhedt/0016_fh_reprepare.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0016_fh_reprepare.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0016_fh_reprepare.c'; fi`
+
+processing/lookup/fhedt/test_runner-0017_fh_nonfinite.o: processing/lookup/fhedt/0017_fh_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0017_fh_nonfinite.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0017_fh_nonfinite.Tpo -c -o processing/lookup/fhedt/test_runner-0017_fh_nonfinite.o `test -f 'processing/lookup/fhedt/0017_fh_nonfinite.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0017_fh_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0017_fh_nonfinite.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0017_fh_nonfinite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0017_fh_nonfinite.c' object='processing/lookup/fhedt/test_runner-0017_fh_nonfinite.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0017_fh_nonfinite.o `test -f 'processing/lookup/fhedt/0017_fh_nonfinite.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0017_fh_nonfinite.c
+
+processing/lookup/fhedt/test_runner-0017_fh_nonfinite.obj: processing/lookup/fhedt/0017_fh_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0017_fh_nonfinite.obj -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0017_fh_nonfinite.Tpo -c -o processing/lookup/fhedt/test_runner-0017_fh_nonfinite.obj `if test -f 'processing/lookup/fhedt/0017_fh_nonfinite.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0017_fh_nonfinite.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0017_fh_nonfinite.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0017_fh_nonfinite.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0017_fh_nonfinite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt/0017_fh_nonfinite.c' object='processing/lookup/fhedt/test_runner-0017_fh_nonfinite.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt/test_runner-0017_fh_nonfinite.obj `if test -f 'processing/lookup/fhedt/0017_fh_nonfinite.c'; then $(CYGPATH_W) 'processing/lookup/fhedt/0017_fh_nonfinite.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt/0017_fh_nonfinite.c'; fi`
+
+quant/palette/fhedt_float/test_runner-0001_fh_gamma_srgb.o: quant/palette/fhedt_float/0001_fh_gamma_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0001_fh_gamma_srgb.o -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0001_fh_gamma_srgb.Tpo -c -o quant/palette/fhedt_float/test_runner-0001_fh_gamma_srgb.o `test -f 'quant/palette/fhedt_float/0001_fh_gamma_srgb.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0001_fh_gamma_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0001_fh_gamma_srgb.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0001_fh_gamma_srgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0001_fh_gamma_srgb.c' object='quant/palette/fhedt_float/test_runner-0001_fh_gamma_srgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0001_fh_gamma_srgb.o `test -f 'quant/palette/fhedt_float/0001_fh_gamma_srgb.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0001_fh_gamma_srgb.c
+
+quant/palette/fhedt_float/test_runner-0001_fh_gamma_srgb.obj: quant/palette/fhedt_float/0001_fh_gamma_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0001_fh_gamma_srgb.obj -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0001_fh_gamma_srgb.Tpo -c -o quant/palette/fhedt_float/test_runner-0001_fh_gamma_srgb.obj `if test -f 'quant/palette/fhedt_float/0001_fh_gamma_srgb.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0001_fh_gamma_srgb.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0001_fh_gamma_srgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0001_fh_gamma_srgb.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0001_fh_gamma_srgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0001_fh_gamma_srgb.c' object='quant/palette/fhedt_float/test_runner-0001_fh_gamma_srgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0001_fh_gamma_srgb.obj `if test -f 'quant/palette/fhedt_float/0001_fh_gamma_srgb.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0001_fh_gamma_srgb.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0001_fh_gamma_srgb.c'; fi`
+
+quant/palette/fhedt_float/test_runner-0002_fh_gamma_p3.o: quant/palette/fhedt_float/0002_fh_gamma_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0002_fh_gamma_p3.o -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0002_fh_gamma_p3.Tpo -c -o quant/palette/fhedt_float/test_runner-0002_fh_gamma_p3.o `test -f 'quant/palette/fhedt_float/0002_fh_gamma_p3.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0002_fh_gamma_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0002_fh_gamma_p3.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0002_fh_gamma_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0002_fh_gamma_p3.c' object='quant/palette/fhedt_float/test_runner-0002_fh_gamma_p3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0002_fh_gamma_p3.o `test -f 'quant/palette/fhedt_float/0002_fh_gamma_p3.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0002_fh_gamma_p3.c
+
+quant/palette/fhedt_float/test_runner-0002_fh_gamma_p3.obj: quant/palette/fhedt_float/0002_fh_gamma_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0002_fh_gamma_p3.obj -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0002_fh_gamma_p3.Tpo -c -o quant/palette/fhedt_float/test_runner-0002_fh_gamma_p3.obj `if test -f 'quant/palette/fhedt_float/0002_fh_gamma_p3.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0002_fh_gamma_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0002_fh_gamma_p3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0002_fh_gamma_p3.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0002_fh_gamma_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0002_fh_gamma_p3.c' object='quant/palette/fhedt_float/test_runner-0002_fh_gamma_p3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0002_fh_gamma_p3.obj `if test -f 'quant/palette/fhedt_float/0002_fh_gamma_p3.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0002_fh_gamma_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0002_fh_gamma_p3.c'; fi`
+
+quant/palette/fhedt_float/test_runner-0003_fh_linear_srgb.o: quant/palette/fhedt_float/0003_fh_linear_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0003_fh_linear_srgb.o -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0003_fh_linear_srgb.Tpo -c -o quant/palette/fhedt_float/test_runner-0003_fh_linear_srgb.o `test -f 'quant/palette/fhedt_float/0003_fh_linear_srgb.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0003_fh_linear_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0003_fh_linear_srgb.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0003_fh_linear_srgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0003_fh_linear_srgb.c' object='quant/palette/fhedt_float/test_runner-0003_fh_linear_srgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0003_fh_linear_srgb.o `test -f 'quant/palette/fhedt_float/0003_fh_linear_srgb.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0003_fh_linear_srgb.c
+
+quant/palette/fhedt_float/test_runner-0003_fh_linear_srgb.obj: quant/palette/fhedt_float/0003_fh_linear_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0003_fh_linear_srgb.obj -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0003_fh_linear_srgb.Tpo -c -o quant/palette/fhedt_float/test_runner-0003_fh_linear_srgb.obj `if test -f 'quant/palette/fhedt_float/0003_fh_linear_srgb.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0003_fh_linear_srgb.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0003_fh_linear_srgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0003_fh_linear_srgb.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0003_fh_linear_srgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0003_fh_linear_srgb.c' object='quant/palette/fhedt_float/test_runner-0003_fh_linear_srgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0003_fh_linear_srgb.obj `if test -f 'quant/palette/fhedt_float/0003_fh_linear_srgb.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0003_fh_linear_srgb.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0003_fh_linear_srgb.c'; fi`
+
+quant/palette/fhedt_float/test_runner-0004_fh_linear_p3.o: quant/palette/fhedt_float/0004_fh_linear_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0004_fh_linear_p3.o -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0004_fh_linear_p3.Tpo -c -o quant/palette/fhedt_float/test_runner-0004_fh_linear_p3.o `test -f 'quant/palette/fhedt_float/0004_fh_linear_p3.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0004_fh_linear_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0004_fh_linear_p3.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0004_fh_linear_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0004_fh_linear_p3.c' object='quant/palette/fhedt_float/test_runner-0004_fh_linear_p3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0004_fh_linear_p3.o `test -f 'quant/palette/fhedt_float/0004_fh_linear_p3.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0004_fh_linear_p3.c
+
+quant/palette/fhedt_float/test_runner-0004_fh_linear_p3.obj: quant/palette/fhedt_float/0004_fh_linear_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0004_fh_linear_p3.obj -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0004_fh_linear_p3.Tpo -c -o quant/palette/fhedt_float/test_runner-0004_fh_linear_p3.obj `if test -f 'quant/palette/fhedt_float/0004_fh_linear_p3.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0004_fh_linear_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0004_fh_linear_p3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0004_fh_linear_p3.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0004_fh_linear_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0004_fh_linear_p3.c' object='quant/palette/fhedt_float/test_runner-0004_fh_linear_p3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0004_fh_linear_p3.obj `if test -f 'quant/palette/fhedt_float/0004_fh_linear_p3.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0004_fh_linear_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0004_fh_linear_p3.c'; fi`
+
+quant/palette/fhedt_float/test_runner-0005_fh_oklab_srgb.o: quant/palette/fhedt_float/0005_fh_oklab_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0005_fh_oklab_srgb.o -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0005_fh_oklab_srgb.Tpo -c -o quant/palette/fhedt_float/test_runner-0005_fh_oklab_srgb.o `test -f 'quant/palette/fhedt_float/0005_fh_oklab_srgb.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0005_fh_oklab_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0005_fh_oklab_srgb.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0005_fh_oklab_srgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0005_fh_oklab_srgb.c' object='quant/palette/fhedt_float/test_runner-0005_fh_oklab_srgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0005_fh_oklab_srgb.o `test -f 'quant/palette/fhedt_float/0005_fh_oklab_srgb.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0005_fh_oklab_srgb.c
+
+quant/palette/fhedt_float/test_runner-0005_fh_oklab_srgb.obj: quant/palette/fhedt_float/0005_fh_oklab_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0005_fh_oklab_srgb.obj -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0005_fh_oklab_srgb.Tpo -c -o quant/palette/fhedt_float/test_runner-0005_fh_oklab_srgb.obj `if test -f 'quant/palette/fhedt_float/0005_fh_oklab_srgb.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0005_fh_oklab_srgb.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0005_fh_oklab_srgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0005_fh_oklab_srgb.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0005_fh_oklab_srgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0005_fh_oklab_srgb.c' object='quant/palette/fhedt_float/test_runner-0005_fh_oklab_srgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0005_fh_oklab_srgb.obj `if test -f 'quant/palette/fhedt_float/0005_fh_oklab_srgb.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0005_fh_oklab_srgb.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0005_fh_oklab_srgb.c'; fi`
+
+quant/palette/fhedt_float/test_runner-0006_fh_oklab_p3.o: quant/palette/fhedt_float/0006_fh_oklab_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0006_fh_oklab_p3.o -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0006_fh_oklab_p3.Tpo -c -o quant/palette/fhedt_float/test_runner-0006_fh_oklab_p3.o `test -f 'quant/palette/fhedt_float/0006_fh_oklab_p3.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0006_fh_oklab_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0006_fh_oklab_p3.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0006_fh_oklab_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0006_fh_oklab_p3.c' object='quant/palette/fhedt_float/test_runner-0006_fh_oklab_p3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0006_fh_oklab_p3.o `test -f 'quant/palette/fhedt_float/0006_fh_oklab_p3.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0006_fh_oklab_p3.c
+
+quant/palette/fhedt_float/test_runner-0006_fh_oklab_p3.obj: quant/palette/fhedt_float/0006_fh_oklab_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0006_fh_oklab_p3.obj -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0006_fh_oklab_p3.Tpo -c -o quant/palette/fhedt_float/test_runner-0006_fh_oklab_p3.obj `if test -f 'quant/palette/fhedt_float/0006_fh_oklab_p3.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0006_fh_oklab_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0006_fh_oklab_p3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0006_fh_oklab_p3.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0006_fh_oklab_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0006_fh_oklab_p3.c' object='quant/palette/fhedt_float/test_runner-0006_fh_oklab_p3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0006_fh_oklab_p3.obj `if test -f 'quant/palette/fhedt_float/0006_fh_oklab_p3.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0006_fh_oklab_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0006_fh_oklab_p3.c'; fi`
+
+quant/palette/fhedt_float/test_runner-0007_fh_cielab_srgb.o: quant/palette/fhedt_float/0007_fh_cielab_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0007_fh_cielab_srgb.o -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0007_fh_cielab_srgb.Tpo -c -o quant/palette/fhedt_float/test_runner-0007_fh_cielab_srgb.o `test -f 'quant/palette/fhedt_float/0007_fh_cielab_srgb.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0007_fh_cielab_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0007_fh_cielab_srgb.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0007_fh_cielab_srgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0007_fh_cielab_srgb.c' object='quant/palette/fhedt_float/test_runner-0007_fh_cielab_srgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0007_fh_cielab_srgb.o `test -f 'quant/palette/fhedt_float/0007_fh_cielab_srgb.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0007_fh_cielab_srgb.c
+
+quant/palette/fhedt_float/test_runner-0007_fh_cielab_srgb.obj: quant/palette/fhedt_float/0007_fh_cielab_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0007_fh_cielab_srgb.obj -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0007_fh_cielab_srgb.Tpo -c -o quant/palette/fhedt_float/test_runner-0007_fh_cielab_srgb.obj `if test -f 'quant/palette/fhedt_float/0007_fh_cielab_srgb.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0007_fh_cielab_srgb.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0007_fh_cielab_srgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0007_fh_cielab_srgb.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0007_fh_cielab_srgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0007_fh_cielab_srgb.c' object='quant/palette/fhedt_float/test_runner-0007_fh_cielab_srgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0007_fh_cielab_srgb.obj `if test -f 'quant/palette/fhedt_float/0007_fh_cielab_srgb.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0007_fh_cielab_srgb.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0007_fh_cielab_srgb.c'; fi`
+
+quant/palette/fhedt_float/test_runner-0008_fh_cielab_p3.o: quant/palette/fhedt_float/0008_fh_cielab_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0008_fh_cielab_p3.o -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0008_fh_cielab_p3.Tpo -c -o quant/palette/fhedt_float/test_runner-0008_fh_cielab_p3.o `test -f 'quant/palette/fhedt_float/0008_fh_cielab_p3.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0008_fh_cielab_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0008_fh_cielab_p3.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0008_fh_cielab_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0008_fh_cielab_p3.c' object='quant/palette/fhedt_float/test_runner-0008_fh_cielab_p3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0008_fh_cielab_p3.o `test -f 'quant/palette/fhedt_float/0008_fh_cielab_p3.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0008_fh_cielab_p3.c
+
+quant/palette/fhedt_float/test_runner-0008_fh_cielab_p3.obj: quant/palette/fhedt_float/0008_fh_cielab_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0008_fh_cielab_p3.obj -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0008_fh_cielab_p3.Tpo -c -o quant/palette/fhedt_float/test_runner-0008_fh_cielab_p3.obj `if test -f 'quant/palette/fhedt_float/0008_fh_cielab_p3.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0008_fh_cielab_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0008_fh_cielab_p3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0008_fh_cielab_p3.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0008_fh_cielab_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0008_fh_cielab_p3.c' object='quant/palette/fhedt_float/test_runner-0008_fh_cielab_p3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0008_fh_cielab_p3.obj `if test -f 'quant/palette/fhedt_float/0008_fh_cielab_p3.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0008_fh_cielab_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0008_fh_cielab_p3.c'; fi`
+
+quant/palette/fhedt_float/test_runner-0009_fh_din99d_srgb.o: quant/palette/fhedt_float/0009_fh_din99d_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0009_fh_din99d_srgb.o -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0009_fh_din99d_srgb.Tpo -c -o quant/palette/fhedt_float/test_runner-0009_fh_din99d_srgb.o `test -f 'quant/palette/fhedt_float/0009_fh_din99d_srgb.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0009_fh_din99d_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0009_fh_din99d_srgb.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0009_fh_din99d_srgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0009_fh_din99d_srgb.c' object='quant/palette/fhedt_float/test_runner-0009_fh_din99d_srgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0009_fh_din99d_srgb.o `test -f 'quant/palette/fhedt_float/0009_fh_din99d_srgb.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0009_fh_din99d_srgb.c
+
+quant/palette/fhedt_float/test_runner-0009_fh_din99d_srgb.obj: quant/palette/fhedt_float/0009_fh_din99d_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0009_fh_din99d_srgb.obj -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0009_fh_din99d_srgb.Tpo -c -o quant/palette/fhedt_float/test_runner-0009_fh_din99d_srgb.obj `if test -f 'quant/palette/fhedt_float/0009_fh_din99d_srgb.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0009_fh_din99d_srgb.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0009_fh_din99d_srgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0009_fh_din99d_srgb.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0009_fh_din99d_srgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0009_fh_din99d_srgb.c' object='quant/palette/fhedt_float/test_runner-0009_fh_din99d_srgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0009_fh_din99d_srgb.obj `if test -f 'quant/palette/fhedt_float/0009_fh_din99d_srgb.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0009_fh_din99d_srgb.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0009_fh_din99d_srgb.c'; fi`
+
+quant/palette/fhedt_float/test_runner-0010_fh_din99d_p3.o: quant/palette/fhedt_float/0010_fh_din99d_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0010_fh_din99d_p3.o -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0010_fh_din99d_p3.Tpo -c -o quant/palette/fhedt_float/test_runner-0010_fh_din99d_p3.o `test -f 'quant/palette/fhedt_float/0010_fh_din99d_p3.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0010_fh_din99d_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0010_fh_din99d_p3.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0010_fh_din99d_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0010_fh_din99d_p3.c' object='quant/palette/fhedt_float/test_runner-0010_fh_din99d_p3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0010_fh_din99d_p3.o `test -f 'quant/palette/fhedt_float/0010_fh_din99d_p3.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0010_fh_din99d_p3.c
+
+quant/palette/fhedt_float/test_runner-0010_fh_din99d_p3.obj: quant/palette/fhedt_float/0010_fh_din99d_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0010_fh_din99d_p3.obj -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0010_fh_din99d_p3.Tpo -c -o quant/palette/fhedt_float/test_runner-0010_fh_din99d_p3.obj `if test -f 'quant/palette/fhedt_float/0010_fh_din99d_p3.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0010_fh_din99d_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0010_fh_din99d_p3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0010_fh_din99d_p3.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0010_fh_din99d_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0010_fh_din99d_p3.c' object='quant/palette/fhedt_float/test_runner-0010_fh_din99d_p3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0010_fh_din99d_p3.obj `if test -f 'quant/palette/fhedt_float/0010_fh_din99d_p3.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0010_fh_din99d_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0010_fh_din99d_p3.c'; fi`
+
+quant/palette/fhedt_float/test_runner-0011_fh_byte_eligibility.o: quant/palette/fhedt_float/0011_fh_byte_eligibility.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0011_fh_byte_eligibility.o -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0011_fh_byte_eligibility.Tpo -c -o quant/palette/fhedt_float/test_runner-0011_fh_byte_eligibility.o `test -f 'quant/palette/fhedt_float/0011_fh_byte_eligibility.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0011_fh_byte_eligibility.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0011_fh_byte_eligibility.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0011_fh_byte_eligibility.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0011_fh_byte_eligibility.c' object='quant/palette/fhedt_float/test_runner-0011_fh_byte_eligibility.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0011_fh_byte_eligibility.o `test -f 'quant/palette/fhedt_float/0011_fh_byte_eligibility.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0011_fh_byte_eligibility.c
+
+quant/palette/fhedt_float/test_runner-0011_fh_byte_eligibility.obj: quant/palette/fhedt_float/0011_fh_byte_eligibility.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0011_fh_byte_eligibility.obj -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0011_fh_byte_eligibility.Tpo -c -o quant/palette/fhedt_float/test_runner-0011_fh_byte_eligibility.obj `if test -f 'quant/palette/fhedt_float/0011_fh_byte_eligibility.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0011_fh_byte_eligibility.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0011_fh_byte_eligibility.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0011_fh_byte_eligibility.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0011_fh_byte_eligibility.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0011_fh_byte_eligibility.c' object='quant/palette/fhedt_float/test_runner-0011_fh_byte_eligibility.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0011_fh_byte_eligibility.obj `if test -f 'quant/palette/fhedt_float/0011_fh_byte_eligibility.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0011_fh_byte_eligibility.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0011_fh_byte_eligibility.c'; fi`
+
+quant/palette/fhedt_float/test_runner-0012_fh_bands_private.o: quant/palette/fhedt_float/0012_fh_bands_private.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0012_fh_bands_private.o -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0012_fh_bands_private.Tpo -c -o quant/palette/fhedt_float/test_runner-0012_fh_bands_private.o `test -f 'quant/palette/fhedt_float/0012_fh_bands_private.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0012_fh_bands_private.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0012_fh_bands_private.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0012_fh_bands_private.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0012_fh_bands_private.c' object='quant/palette/fhedt_float/test_runner-0012_fh_bands_private.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0012_fh_bands_private.o `test -f 'quant/palette/fhedt_float/0012_fh_bands_private.c' || echo '$(srcdir)/'`quant/palette/fhedt_float/0012_fh_bands_private.c
+
+quant/palette/fhedt_float/test_runner-0012_fh_bands_private.obj: quant/palette/fhedt_float/0012_fh_bands_private.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fhedt_float/test_runner-0012_fh_bands_private.obj -MD -MP -MF quant/palette/fhedt_float/$(DEPDIR)/test_runner-0012_fh_bands_private.Tpo -c -o quant/palette/fhedt_float/test_runner-0012_fh_bands_private.obj `if test -f 'quant/palette/fhedt_float/0012_fh_bands_private.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0012_fh_bands_private.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0012_fh_bands_private.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fhedt_float/$(DEPDIR)/test_runner-0012_fh_bands_private.Tpo quant/palette/fhedt_float/$(DEPDIR)/test_runner-0012_fh_bands_private.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fhedt_float/0012_fh_bands_private.c' object='quant/palette/fhedt_float/test_runner-0012_fh_bands_private.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fhedt_float/test_runner-0012_fh_bands_private.obj `if test -f 'quant/palette/fhedt_float/0012_fh_bands_private.c'; then $(CYGPATH_W) 'quant/palette/fhedt_float/0012_fh_bands_private.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fhedt_float/0012_fh_bands_private.c'; fi`
+
 processing/lookup/eytzinger/test_runner-0001_eyt_gamma_range.o: processing/lookup/eytzinger/0001_eyt_gamma_range.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/eytzinger/test_runner-0001_eyt_gamma_range.o -MD -MP -MF processing/lookup/eytzinger/$(DEPDIR)/test_runner-0001_eyt_gamma_range.Tpo -c -o processing/lookup/eytzinger/test_runner-0001_eyt_gamma_range.o `test -f 'processing/lookup/eytzinger/0001_eyt_gamma_range.c' || echo '$(srcdir)/'`processing/lookup/eytzinger/0001_eyt_gamma_range.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/eytzinger/$(DEPDIR)/test_runner-0001_eyt_gamma_range.Tpo processing/lookup/eytzinger/$(DEPDIR)/test_runner-0001_eyt_gamma_range.Po
@@ -48101,6 +48943,8 @@ distclean-generic:
 	-$(am__rm_f) processing/lookup/extended/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/eytzinger/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/eytzinger/$(am__dirstamp)
+	-$(am__rm_f) processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/lookup/fhedt/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/mahalanobis/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/mahalanobis/$(am__dirstamp)
 	-$(am__rm_f) processing/planner/$(DEPDIR)/$(am__dirstamp)
@@ -48125,6 +48969,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/eytzinger_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/fallback/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/fallback/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/fhedt_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/lookup_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/lookup_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/mahalanobis_float/$(DEPDIR)/$(am__dirstamp)
@@ -49969,6 +50815,7 @@ distclean: distclean-am
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po
+	-rm -f processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po
 	-rm -f processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0001_eyt_gamma_range.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0002_eyt_linear_range.Po
@@ -50008,6 +50855,29 @@ distclean: distclean-am
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0036_eyt_oklab_mixed.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0037_eyt_cielab_mixed.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0038_eyt_din99d_mixed.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0001_fh_gamma_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0002_fh_linear_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0003_fh_oklab_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0004_fh_cielab_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0005_fh_din99d_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0006_fh_gamma_expanded_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0007_fh_cielab_expanded_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0008_fh_din99d_expanded_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0009_fh_outside_cache.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0010_fh_outside_dist2.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0011_fh_native_refine.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0012_fh_native_refine_dist2.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0013_fh_seed_collision.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0014_fh_finite_extrema.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0015_fh_signature.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0016_fh_reprepare.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0017_fh_nonfinite.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0018_fh_outside_extreme.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0019_fh_outside_tiny.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0020_fh_enclosing_cell.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0021_fh_collision_refine.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0022_fh_collision_dist2.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0023_fh_instance_isolation.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0001_mah_gamma_range.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0002_mah_linear_range.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0003_mah_oklab_range.Po
@@ -50111,6 +50981,18 @@ distclean: distclean-am
 	-rm -f quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0012_eyt_bands_private.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0001_fh_gamma_srgb.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0002_fh_gamma_p3.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0003_fh_linear_srgb.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0004_fh_linear_p3.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0005_fh_oklab_srgb.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0006_fh_oklab_p3.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0007_fh_cielab_srgb.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0008_fh_cielab_p3.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0009_fh_din99d_srgb.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0010_fh_din99d_p3.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0011_fh_byte_eligibility.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0012_fh_bands_private.Po
 	-rm -f quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Po
 	-rm -f quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0001_mah_gamma_srgb.Po
 	-rm -f quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0002_mah_gamma_p3.Po
@@ -52011,6 +52893,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po
+	-rm -f processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po
 	-rm -f processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0001_eyt_gamma_range.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0002_eyt_linear_range.Po
@@ -52050,6 +52933,29 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0036_eyt_oklab_mixed.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0037_eyt_cielab_mixed.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0038_eyt_din99d_mixed.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0001_fh_gamma_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0002_fh_linear_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0003_fh_oklab_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0004_fh_cielab_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0005_fh_din99d_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0006_fh_gamma_expanded_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0007_fh_cielab_expanded_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0008_fh_din99d_expanded_grid.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0009_fh_outside_cache.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0010_fh_outside_dist2.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0011_fh_native_refine.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0012_fh_native_refine_dist2.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0013_fh_seed_collision.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0014_fh_finite_extrema.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0015_fh_signature.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0016_fh_reprepare.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0017_fh_nonfinite.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0018_fh_outside_extreme.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0019_fh_outside_tiny.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0020_fh_enclosing_cell.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0021_fh_collision_refine.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0022_fh_collision_dist2.Po
+	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0023_fh_instance_isolation.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0001_mah_gamma_range.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0002_mah_linear_range.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0003_mah_oklab_range.Po
@@ -52153,6 +53059,18 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0012_eyt_bands_private.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0001_fh_gamma_srgb.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0002_fh_gamma_p3.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0003_fh_linear_srgb.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0004_fh_linear_p3.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0005_fh_oklab_srgb.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0006_fh_oklab_p3.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0007_fh_cielab_srgb.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0008_fh_cielab_p3.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0009_fh_din99d_srgb.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0010_fh_din99d_p3.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0011_fh_byte_eligibility.Po
+	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0012_fh_bands_private.Po
 	-rm -f quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Po
 	-rm -f quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0001_mah_gamma_srgb.Po
 	-rm -f quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0002_mah_gamma_p3.Po

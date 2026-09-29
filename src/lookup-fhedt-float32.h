@@ -75,14 +75,14 @@ typedef struct sixel_lookup_fhedt_float32 {
     int parallel_dither_active;
 } sixel_lookup_fhedt_float32_t;
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_fhedt_float32_create(sixel_allocator_t *allocator,
                                  sixel_lookup_fhedt_float32_t **fhedt_out);
 
-void
+SIXEL_INTERNAL_API void
 sixel_lookup_fhedt_float32_unref(sixel_lookup_fhedt_float32_t *fhedt);
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_fhedt_float32_configure(sixel_lookup_fhedt_float32_t *fhedt,
                                  float const *palette,
                                  int ncolors,
@@ -101,11 +101,11 @@ sixel_lookup_fhedt_float32_configure(sixel_lookup_fhedt_float32_t *fhedt,
                                  int pixelformat,
                                  int parallel_dither_active);
 
-int
+SIXEL_INTERNAL_API int
 sixel_lookup_fhedt_float32_map(sixel_lookup_fhedt_float32_t *fhedt,
                               float const *pixel);
 
-uint32_t
+SIXEL_INTERNAL_API uint32_t
 sixel_lookup_fhedt_float32_signature(float const *palette,
                                     int ncolors,
                                     int resolution,
