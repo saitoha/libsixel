@@ -683,6 +683,33 @@ int test_fh_lookup_0020(int argc, char **argv);
 int test_fh_lookup_0021(int argc, char **argv);
 int test_fh_lookup_0022(int argc, char **argv);
 int test_fh_lookup_0023(int argc, char **argv);
+int test_output_native_0001(int argc, char **argv);
+int test_output_native_0002(int argc, char **argv);
+int test_output_native_0003(int argc, char **argv);
+int test_output_native_0004(int argc, char **argv);
+int test_output_native_0005(int argc, char **argv);
+int test_output_native_0006(int argc, char **argv);
+int test_output_native_0007(int argc, char **argv);
+int test_output_native_0008(int argc, char **argv);
+int test_output_native_0009(int argc, char **argv);
+int test_output_native_0010(int argc, char **argv);
+int test_output_native_0011(int argc, char **argv);
+int test_output_native_0012(int argc, char **argv);
+int test_output_native_0013(int argc, char **argv);
+int test_output_native_0014(int argc, char **argv);
+int test_output_native_0015(int argc, char **argv);
+int test_output_native_0016(int argc, char **argv);
+int test_output_native_0017(int argc, char **argv);
+int test_output_native_0018(int argc, char **argv);
+int test_output_native_0019(int argc, char **argv);
+int test_output_native_0020(int argc, char **argv);
+int test_output_native_0021(int argc, char **argv);
+int test_output_native_0022(int argc, char **argv);
+int test_output_native_0023(int argc, char **argv);
+int test_output_native_0024(int argc, char **argv);
+int test_output_native_0025(int argc, char **argv);
+int test_output_native_0026(int argc, char **argv);
+int test_output_native_0027(int argc, char **argv);
 int test_fh_byte_0001(int argc, char **argv);
 int test_fh_byte_0002(int argc, char **argv);
 int test_fh_byte_0003(int argc, char **argv);
@@ -3595,6 +3622,60 @@ static test_entry_t const test_entries[] = {
       test_fh_lookup_0022 },
     { "lookup/fhedt/0023_fh_instance_isolation",
       test_fh_lookup_0023 },
+    { "quant/palette/output_float/0001_linear_gamma",
+      test_output_native_0001 },
+    { "quant/palette/output_float/0002_linear_linear",
+      test_output_native_0002 },
+    { "quant/palette/output_float/0003_linear_oklab",
+      test_output_native_0003 },
+    { "quant/palette/output_float/0004_linear_cielab",
+      test_output_native_0004 },
+    { "quant/palette/output_float/0005_linear_din99d",
+      test_output_native_0005 },
+    { "quant/palette/output_float/0006_smptec_gamma",
+      test_output_native_0006 },
+    { "quant/palette/output_float/0007_smptec_linear",
+      test_output_native_0007 },
+    { "quant/palette/output_float/0008_smptec_oklab",
+      test_output_native_0008 },
+    { "quant/palette/output_float/0009_smptec_cielab",
+      test_output_native_0009 },
+    { "quant/palette/output_float/0010_smptec_din99d",
+      test_output_native_0010 },
+    { "quant/palette/output_float/0011_linear_center",
+      test_output_native_0011 },
+    { "quant/palette/output_float/0012_linear_medoids",
+      test_output_native_0012 },
+    { "quant/palette/output_float/0013_linear_heckbert",
+      test_output_native_0013 },
+    { "quant/palette/output_float/0014_linear_auto",
+      test_output_native_0014 },
+    { "quant/palette/output_float/0015_smptec_center",
+      test_output_native_0015 },
+    { "quant/palette/output_float/0016_smptec_medoids",
+      test_output_native_0016 },
+    { "quant/palette/output_float/0017_smptec_heckbert",
+      test_output_native_0017 },
+    { "quant/palette/output_float/0018_smptec_auto",
+      test_output_native_0018 },
+    { "quant/palette/output_float/0019_linear_byte",
+      test_output_native_0019 },
+    { "quant/palette/output_float/0020_smptec_byte",
+      test_output_native_0020 },
+    { "quant/palette/output_float/0021_linear_zero_snap",
+      test_output_native_0021 },
+    { "quant/palette/output_float/0022_smptec_zero_snap",
+      test_output_native_0022 },
+    { "quant/palette/output_float/0023_linear_8bit_preference",
+      test_output_native_0023 },
+    { "quant/palette/output_float/0024_smptec_8bit_preference",
+      test_output_native_0024 },
+    { "quant/palette/output_float/0025_linear_fixed_map",
+      test_output_native_0025 },
+    { "quant/palette/output_float/0026_smptec_fixed_map",
+      test_output_native_0026 },
+    { "quant/palette/output_float/0027_output_reuse",
+      test_output_native_0027 },
     { "lookup/fhedt_byte/0001_y_labels",
       test_fh_byte_0001 },
     { "lookup/fhedt_byte/0002_z_labels",

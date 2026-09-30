@@ -12,26 +12,30 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-# CMS is disabled. The existing quantizer produces byte-linear entries
-# (90,2,2), (2,110,2), etc. Apply the sRGB transfer curve and round to
-# RGB8 for export, independently of -Ulinear; e.g. 90/255 -> 160/255.
+# CMS is disabled. These eight occupied RGB colors come directly from the
+# PNG samples (the indexed fixture also has an unused white PLTE entry).
+# With no binning/snap and fewer colors than the palette budget, native
+# Heckbert keeps singleton colors through the linear working round trip.
+# Export must recover source sRGB8, not byte-rounded linear coordinates.
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 mapfile_png="${TOP_SRCDIR}/tests/data/inputs/formats/map8_embedded_icc.png"
 expected_palette='JASC-PAL
 0100
 8
-160 22 22
-22 175 22
-150 160 22
-127 108 249
-192 22 181
-22 173 187
-192 192 192
-22 22 22'
+0 0 0
+3 171 185
+3 175 3
+123 102 248
+149 157 3
+159 3 3
+190 3 180
+191 191 191'
 
 actual_palette=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none --threads=1 \
+        --quantize-model=heckbert --binning-policy=none \
+        --sampling-policy=full-frame --snap-policy=none --diffusion=none \
         -L builtin! --working-colorspace=linear --output-colorspace=linear \
         -m "${mapfile_png}" -M pal:- -o /dev/null "${input_image}"
 ) || {

@@ -7106,13 +7106,13 @@ sixel_encoder_rgb101_candidate(sixel_encoder_t const *encoder,
     format = sixel_frame_get_pixelformat(frame);
     /* Eligibility is separate from precision: an independently loaded map
      * may need float even when this source has sufficient RGB888 samples. */
-    /* Final snap construction is shared across legacy output definitions;
-     * only the wire cache applies -U. Otherwise -M would change with -U. */
+    /* Working-palette precision is independent of the legacy output
+     * definition, whether snap is active or not. Only the wire cache
+     * applies -U; selecting linear/SMPTE-C must not restore byte projection
+     * or bounded intermediate conversions in construction/application. */
     return (encoder->output_colorspace == SIXEL_COLORSPACE_GAMMA ||
-            (encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE &&
-             encoder->snap_policy_approach_rate > 0.0 &&
-             (encoder->output_colorspace == SIXEL_COLORSPACE_LINEAR ||
-              encoder->output_colorspace == SIXEL_COLORSPACE_SMPTEC))) &&
+            encoder->output_colorspace == SIXEL_COLORSPACE_LINEAR ||
+            encoder->output_colorspace == SIXEL_COLORSPACE_SMPTEC) &&
         (format == SIXEL_PIXELFORMAT_RGB888 ||
          SIXEL_PIXELFORMAT_IS_FLOAT32(format)) &&
         sixel_frame_get_multiframe(frame) == 0 &&

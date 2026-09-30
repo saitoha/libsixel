@@ -2052,6 +2052,34 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/merge_float/0002_scan_contract.c \
 	processing/lookup/extended/0001_extended_lookup.c \
 	processing/lookup/fhedt_test_common.c \
+	quant/palette/output_float_test_common.c \
+	quant/palette/output_float/0001_linear_gamma.c \
+	quant/palette/output_float/0002_linear_linear.c \
+	quant/palette/output_float/0003_linear_oklab.c \
+	quant/palette/output_float/0004_linear_cielab.c \
+	quant/palette/output_float/0005_linear_din99d.c \
+	quant/palette/output_float/0006_smptec_gamma.c \
+	quant/palette/output_float/0007_smptec_linear.c \
+	quant/palette/output_float/0008_smptec_oklab.c \
+	quant/palette/output_float/0009_smptec_cielab.c \
+	quant/palette/output_float/0010_smptec_din99d.c \
+	quant/palette/output_float/0011_linear_center.c \
+	quant/palette/output_float/0012_linear_medoids.c \
+	quant/palette/output_float/0013_linear_heckbert.c \
+	quant/palette/output_float/0014_linear_auto.c \
+	quant/palette/output_float/0015_smptec_center.c \
+	quant/palette/output_float/0016_smptec_medoids.c \
+	quant/palette/output_float/0017_smptec_heckbert.c \
+	quant/palette/output_float/0018_smptec_auto.c \
+	quant/palette/output_float/0019_linear_byte.c \
+	quant/palette/output_float/0020_smptec_byte.c \
+	quant/palette/output_float/0021_linear_zero_snap.c \
+	quant/palette/output_float/0022_smptec_zero_snap.c \
+	quant/palette/output_float/0023_linear_8bit_preference.c \
+	quant/palette/output_float/0024_smptec_8bit_preference.c \
+	quant/palette/output_float/0025_linear_fixed_map.c \
+	quant/palette/output_float/0026_smptec_fixed_map.c \
+	quant/palette/output_float/0027_output_reuse.c \
 	processing/lookup/fhedt_byte_test_common.c \
 	processing/lookup/fhedt_byte/0001_y_labels.c \
 	processing/lookup/fhedt_byte/0002_z_labels.c \
@@ -4336,6 +4364,34 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/merge_float/test_runner-0002_scan_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/extended/test_runner-0001_extended_lookup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-fhedt_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-output_float_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0001_linear_gamma.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0002_linear_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0003_linear_oklab.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0004_linear_cielab.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0005_linear_din99d.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0006_smptec_gamma.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0007_smptec_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0008_smptec_oklab.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0009_smptec_cielab.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0010_smptec_din99d.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0011_linear_center.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0012_linear_medoids.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0013_linear_heckbert.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0014_linear_auto.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0015_smptec_center.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0016_smptec_medoids.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0017_smptec_heckbert.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0018_smptec_auto.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0019_linear_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0020_smptec_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0021_linear_zero_snap.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0022_smptec_zero_snap.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0023_linear_8bit_preference.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0024_smptec_8bit_preference.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0025_linear_fixed_map.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0026_smptec_fixed_map.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0027_output_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-fhedt_byte_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_byte/test_runner-0001_y_labels.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_byte/test_runner-0002_z_labels.$(OBJEXT) \
@@ -6868,6 +6924,7 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-heckbert_test_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-map_float_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-map_precision_common.Po \
+	quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po \
 	quant/palette/auto_float/$(DEPDIR)/test_runner-0001_auto_default_gamma.Po \
 	quant/palette/auto_float/$(DEPDIR)/test_runner-0002_auto_explicit_gamma.Po \
@@ -7053,6 +7110,33 @@ am__depfiles_remade =  \
 	quant/palette/map_solver/$(DEPDIR)/test_runner-0036_map_fixed_p3_auto.Po \
 	quant/palette/merge_float/$(DEPDIR)/test_runner-0001_merge_contract.Po \
 	quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0001_linear_gamma.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0002_linear_linear.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0003_linear_oklab.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0004_linear_cielab.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0005_linear_din99d.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0006_smptec_gamma.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0007_smptec_linear.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0008_smptec_oklab.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0009_smptec_cielab.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0010_smptec_din99d.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0011_linear_center.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0012_linear_medoids.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0013_linear_heckbert.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0014_linear_auto.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0015_smptec_center.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0016_smptec_medoids.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0017_smptec_heckbert.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0018_smptec_auto.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0019_linear_byte.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0020_smptec_byte.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0021_linear_zero_snap.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0022_smptec_zero_snap.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0023_linear_8bit_preference.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0024_smptec_8bit_preference.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Po \
+	quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Po \
 	quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po \
 	quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po \
 	quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Po \
@@ -8551,6 +8635,34 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_SCAN_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_EXTENDED_LOOKUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_FHEDT_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_OUTPUT_FLOAT_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LINEAR_GAMMA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_LINEAR_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_LINEAR_OKLAB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_LINEAR_CIELAB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_LINEAR_DIN99D \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_SMPTEC_GAMMA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_SMPTEC_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_SMPTEC_OKLAB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_SMPTEC_CIELAB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_SMPTEC_DIN99D \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_LINEAR_CENTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_LINEAR_MEDOIDS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_LINEAR_HECKBERT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_LINEAR_AUTO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_SMPTEC_CENTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_SMPTEC_MEDOIDS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_SMPTEC_HECKBERT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_SMPTEC_AUTO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_LINEAR_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_SMPTEC_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_LINEAR_ZERO_SNAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_SMPTEC_ZERO_SNAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_LINEAR_8BIT_PREFERENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_SMPTEC_8BIT_PREFERENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_LINEAR_FIXED_MAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_SMPTEC_FIXED_MAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_OUTPUT_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_FHEDT_BYTE_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_Y_LABELS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_Z_LABELS \
@@ -12021,6 +12133,34 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/merge_float/0002_scan_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/extended/0001_extended_lookup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0001_linear_gamma.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0002_linear_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0003_linear_oklab.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0004_linear_cielab.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0005_linear_din99d.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0006_smptec_gamma.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0007_smptec_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0008_smptec_oklab.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0009_smptec_cielab.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0010_smptec_din99d.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0011_linear_center.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0012_linear_medoids.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0013_linear_heckbert.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0014_linear_auto.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0015_smptec_center.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0016_smptec_medoids.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0017_smptec_heckbert.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0018_smptec_auto.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0019_linear_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0020_smptec_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0021_linear_zero_snap.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0022_smptec_zero_snap.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0023_linear_8bit_preference.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0024_smptec_8bit_preference.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0025_linear_fixed_map.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0026_smptec_fixed_map.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0027_output_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_byte_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_byte/0001_y_labels.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_byte/0002_z_labels.c \
@@ -18609,6 +18749,96 @@ processing/lookup/extended/test_runner-0001_extended_lookup.$(OBJEXT):  \
 processing/lookup/test_runner-fhedt_test_common.$(OBJEXT):  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-output_float_test_common.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/output_float
+	@: >>quant/palette/output_float/$(am__dirstamp)
+quant/palette/output_float/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/output_float/$(DEPDIR)
+	@: >>quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0001_linear_gamma.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0002_linear_linear.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0003_linear_oklab.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0004_linear_cielab.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0005_linear_din99d.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0006_smptec_gamma.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0007_smptec_linear.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0008_smptec_oklab.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0009_smptec_cielab.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0010_smptec_din99d.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0011_linear_center.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0012_linear_medoids.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0013_linear_heckbert.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0014_linear_auto.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0015_smptec_center.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0016_smptec_medoids.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0017_smptec_heckbert.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0018_smptec_auto.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0019_linear_byte.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0020_smptec_byte.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0021_linear_zero_snap.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0022_smptec_zero_snap.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0023_linear_8bit_preference.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0024_smptec_8bit_preference.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0025_linear_fixed_map.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0026_smptec_fixed_map.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/output_float/test_runner-0027_output_reuse.$(OBJEXT):  \
+	quant/palette/output_float/$(am__dirstamp) \
+	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
 processing/lookup/test_runner-fhedt_byte_test_common.$(OBJEXT):  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
@@ -20024,6 +20254,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/map_precision/*.$(OBJEXT)
 	-rm -f quant/palette/map_solver/*.$(OBJEXT)
 	-rm -f quant/palette/merge_float/*.$(OBJEXT)
+	-rm -f quant/palette/output_float/*.$(OBJEXT)
 	-rm -f quant/palette/rgb101_diffusion/*.$(OBJEXT)
 	-rm -f quant/palette/sampling_float/*.$(OBJEXT)
 	-rm -f quant/palette/snap_float/*.$(OBJEXT)
@@ -22105,6 +22336,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-heckbert_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-map_float_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-map_precision_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_float/$(DEPDIR)/test_runner-0001_auto_default_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_float/$(DEPDIR)/test_runner-0002_auto_explicit_gamma.Po@am__quote@ # am--include-marker
@@ -22290,6 +22522,33 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_solver/$(DEPDIR)/test_runner-0036_map_fixed_p3_auto.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/merge_float/$(DEPDIR)/test_runner-0001_merge_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0001_linear_gamma.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0002_linear_linear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0003_linear_oklab.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0004_linear_cielab.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0005_linear_din99d.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0006_smptec_gamma.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0007_smptec_linear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0008_smptec_oklab.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0009_smptec_cielab.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0010_smptec_din99d.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0011_linear_center.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0012_linear_medoids.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0013_linear_heckbert.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0014_linear_auto.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0015_smptec_center.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0016_smptec_medoids.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0017_smptec_heckbert.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0018_smptec_auto.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0019_linear_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0020_smptec_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0021_linear_zero_snap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0022_smptec_zero_snap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0023_linear_8bit_preference.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0024_smptec_8bit_preference.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Po@am__quote@ # am--include-marker
@@ -48722,6 +48981,398 @@ processing/lookup/test_runner-fhedt_test_common.obj: processing/lookup/fhedt_tes
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-fhedt_test_common.obj `if test -f 'processing/lookup/fhedt_test_common.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_test_common.c'; fi`
 
+quant/palette/test_runner-output_float_test_common.o: quant/palette/output_float_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-output_float_test_common.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Tpo -c -o quant/palette/test_runner-output_float_test_common.o `test -f 'quant/palette/output_float_test_common.c' || echo '$(srcdir)/'`quant/palette/output_float_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Tpo quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float_test_common.c' object='quant/palette/test_runner-output_float_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-output_float_test_common.o `test -f 'quant/palette/output_float_test_common.c' || echo '$(srcdir)/'`quant/palette/output_float_test_common.c
+
+quant/palette/test_runner-output_float_test_common.obj: quant/palette/output_float_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-output_float_test_common.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Tpo -c -o quant/palette/test_runner-output_float_test_common.obj `if test -f 'quant/palette/output_float_test_common.c'; then $(CYGPATH_W) 'quant/palette/output_float_test_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Tpo quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float_test_common.c' object='quant/palette/test_runner-output_float_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-output_float_test_common.obj `if test -f 'quant/palette/output_float_test_common.c'; then $(CYGPATH_W) 'quant/palette/output_float_test_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float_test_common.c'; fi`
+
+quant/palette/output_float/test_runner-0001_linear_gamma.o: quant/palette/output_float/0001_linear_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0001_linear_gamma.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0001_linear_gamma.Tpo -c -o quant/palette/output_float/test_runner-0001_linear_gamma.o `test -f 'quant/palette/output_float/0001_linear_gamma.c' || echo '$(srcdir)/'`quant/palette/output_float/0001_linear_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0001_linear_gamma.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0001_linear_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0001_linear_gamma.c' object='quant/palette/output_float/test_runner-0001_linear_gamma.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0001_linear_gamma.o `test -f 'quant/palette/output_float/0001_linear_gamma.c' || echo '$(srcdir)/'`quant/palette/output_float/0001_linear_gamma.c
+
+quant/palette/output_float/test_runner-0001_linear_gamma.obj: quant/palette/output_float/0001_linear_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0001_linear_gamma.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0001_linear_gamma.Tpo -c -o quant/palette/output_float/test_runner-0001_linear_gamma.obj `if test -f 'quant/palette/output_float/0001_linear_gamma.c'; then $(CYGPATH_W) 'quant/palette/output_float/0001_linear_gamma.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0001_linear_gamma.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0001_linear_gamma.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0001_linear_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0001_linear_gamma.c' object='quant/palette/output_float/test_runner-0001_linear_gamma.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0001_linear_gamma.obj `if test -f 'quant/palette/output_float/0001_linear_gamma.c'; then $(CYGPATH_W) 'quant/palette/output_float/0001_linear_gamma.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0001_linear_gamma.c'; fi`
+
+quant/palette/output_float/test_runner-0002_linear_linear.o: quant/palette/output_float/0002_linear_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0002_linear_linear.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0002_linear_linear.Tpo -c -o quant/palette/output_float/test_runner-0002_linear_linear.o `test -f 'quant/palette/output_float/0002_linear_linear.c' || echo '$(srcdir)/'`quant/palette/output_float/0002_linear_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0002_linear_linear.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0002_linear_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0002_linear_linear.c' object='quant/palette/output_float/test_runner-0002_linear_linear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0002_linear_linear.o `test -f 'quant/palette/output_float/0002_linear_linear.c' || echo '$(srcdir)/'`quant/palette/output_float/0002_linear_linear.c
+
+quant/palette/output_float/test_runner-0002_linear_linear.obj: quant/palette/output_float/0002_linear_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0002_linear_linear.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0002_linear_linear.Tpo -c -o quant/palette/output_float/test_runner-0002_linear_linear.obj `if test -f 'quant/palette/output_float/0002_linear_linear.c'; then $(CYGPATH_W) 'quant/palette/output_float/0002_linear_linear.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0002_linear_linear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0002_linear_linear.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0002_linear_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0002_linear_linear.c' object='quant/palette/output_float/test_runner-0002_linear_linear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0002_linear_linear.obj `if test -f 'quant/palette/output_float/0002_linear_linear.c'; then $(CYGPATH_W) 'quant/palette/output_float/0002_linear_linear.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0002_linear_linear.c'; fi`
+
+quant/palette/output_float/test_runner-0003_linear_oklab.o: quant/palette/output_float/0003_linear_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0003_linear_oklab.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0003_linear_oklab.Tpo -c -o quant/palette/output_float/test_runner-0003_linear_oklab.o `test -f 'quant/palette/output_float/0003_linear_oklab.c' || echo '$(srcdir)/'`quant/palette/output_float/0003_linear_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0003_linear_oklab.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0003_linear_oklab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0003_linear_oklab.c' object='quant/palette/output_float/test_runner-0003_linear_oklab.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0003_linear_oklab.o `test -f 'quant/palette/output_float/0003_linear_oklab.c' || echo '$(srcdir)/'`quant/palette/output_float/0003_linear_oklab.c
+
+quant/palette/output_float/test_runner-0003_linear_oklab.obj: quant/palette/output_float/0003_linear_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0003_linear_oklab.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0003_linear_oklab.Tpo -c -o quant/palette/output_float/test_runner-0003_linear_oklab.obj `if test -f 'quant/palette/output_float/0003_linear_oklab.c'; then $(CYGPATH_W) 'quant/palette/output_float/0003_linear_oklab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0003_linear_oklab.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0003_linear_oklab.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0003_linear_oklab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0003_linear_oklab.c' object='quant/palette/output_float/test_runner-0003_linear_oklab.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0003_linear_oklab.obj `if test -f 'quant/palette/output_float/0003_linear_oklab.c'; then $(CYGPATH_W) 'quant/palette/output_float/0003_linear_oklab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0003_linear_oklab.c'; fi`
+
+quant/palette/output_float/test_runner-0004_linear_cielab.o: quant/palette/output_float/0004_linear_cielab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0004_linear_cielab.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0004_linear_cielab.Tpo -c -o quant/palette/output_float/test_runner-0004_linear_cielab.o `test -f 'quant/palette/output_float/0004_linear_cielab.c' || echo '$(srcdir)/'`quant/palette/output_float/0004_linear_cielab.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0004_linear_cielab.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0004_linear_cielab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0004_linear_cielab.c' object='quant/palette/output_float/test_runner-0004_linear_cielab.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0004_linear_cielab.o `test -f 'quant/palette/output_float/0004_linear_cielab.c' || echo '$(srcdir)/'`quant/palette/output_float/0004_linear_cielab.c
+
+quant/palette/output_float/test_runner-0004_linear_cielab.obj: quant/palette/output_float/0004_linear_cielab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0004_linear_cielab.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0004_linear_cielab.Tpo -c -o quant/palette/output_float/test_runner-0004_linear_cielab.obj `if test -f 'quant/palette/output_float/0004_linear_cielab.c'; then $(CYGPATH_W) 'quant/palette/output_float/0004_linear_cielab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0004_linear_cielab.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0004_linear_cielab.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0004_linear_cielab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0004_linear_cielab.c' object='quant/palette/output_float/test_runner-0004_linear_cielab.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0004_linear_cielab.obj `if test -f 'quant/palette/output_float/0004_linear_cielab.c'; then $(CYGPATH_W) 'quant/palette/output_float/0004_linear_cielab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0004_linear_cielab.c'; fi`
+
+quant/palette/output_float/test_runner-0005_linear_din99d.o: quant/palette/output_float/0005_linear_din99d.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0005_linear_din99d.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0005_linear_din99d.Tpo -c -o quant/palette/output_float/test_runner-0005_linear_din99d.o `test -f 'quant/palette/output_float/0005_linear_din99d.c' || echo '$(srcdir)/'`quant/palette/output_float/0005_linear_din99d.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0005_linear_din99d.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0005_linear_din99d.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0005_linear_din99d.c' object='quant/palette/output_float/test_runner-0005_linear_din99d.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0005_linear_din99d.o `test -f 'quant/palette/output_float/0005_linear_din99d.c' || echo '$(srcdir)/'`quant/palette/output_float/0005_linear_din99d.c
+
+quant/palette/output_float/test_runner-0005_linear_din99d.obj: quant/palette/output_float/0005_linear_din99d.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0005_linear_din99d.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0005_linear_din99d.Tpo -c -o quant/palette/output_float/test_runner-0005_linear_din99d.obj `if test -f 'quant/palette/output_float/0005_linear_din99d.c'; then $(CYGPATH_W) 'quant/palette/output_float/0005_linear_din99d.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0005_linear_din99d.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0005_linear_din99d.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0005_linear_din99d.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0005_linear_din99d.c' object='quant/palette/output_float/test_runner-0005_linear_din99d.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0005_linear_din99d.obj `if test -f 'quant/palette/output_float/0005_linear_din99d.c'; then $(CYGPATH_W) 'quant/palette/output_float/0005_linear_din99d.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0005_linear_din99d.c'; fi`
+
+quant/palette/output_float/test_runner-0006_smptec_gamma.o: quant/palette/output_float/0006_smptec_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0006_smptec_gamma.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0006_smptec_gamma.Tpo -c -o quant/palette/output_float/test_runner-0006_smptec_gamma.o `test -f 'quant/palette/output_float/0006_smptec_gamma.c' || echo '$(srcdir)/'`quant/palette/output_float/0006_smptec_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0006_smptec_gamma.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0006_smptec_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0006_smptec_gamma.c' object='quant/palette/output_float/test_runner-0006_smptec_gamma.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0006_smptec_gamma.o `test -f 'quant/palette/output_float/0006_smptec_gamma.c' || echo '$(srcdir)/'`quant/palette/output_float/0006_smptec_gamma.c
+
+quant/palette/output_float/test_runner-0006_smptec_gamma.obj: quant/palette/output_float/0006_smptec_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0006_smptec_gamma.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0006_smptec_gamma.Tpo -c -o quant/palette/output_float/test_runner-0006_smptec_gamma.obj `if test -f 'quant/palette/output_float/0006_smptec_gamma.c'; then $(CYGPATH_W) 'quant/palette/output_float/0006_smptec_gamma.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0006_smptec_gamma.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0006_smptec_gamma.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0006_smptec_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0006_smptec_gamma.c' object='quant/palette/output_float/test_runner-0006_smptec_gamma.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0006_smptec_gamma.obj `if test -f 'quant/palette/output_float/0006_smptec_gamma.c'; then $(CYGPATH_W) 'quant/palette/output_float/0006_smptec_gamma.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0006_smptec_gamma.c'; fi`
+
+quant/palette/output_float/test_runner-0007_smptec_linear.o: quant/palette/output_float/0007_smptec_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0007_smptec_linear.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0007_smptec_linear.Tpo -c -o quant/palette/output_float/test_runner-0007_smptec_linear.o `test -f 'quant/palette/output_float/0007_smptec_linear.c' || echo '$(srcdir)/'`quant/palette/output_float/0007_smptec_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0007_smptec_linear.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0007_smptec_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0007_smptec_linear.c' object='quant/palette/output_float/test_runner-0007_smptec_linear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0007_smptec_linear.o `test -f 'quant/palette/output_float/0007_smptec_linear.c' || echo '$(srcdir)/'`quant/palette/output_float/0007_smptec_linear.c
+
+quant/palette/output_float/test_runner-0007_smptec_linear.obj: quant/palette/output_float/0007_smptec_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0007_smptec_linear.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0007_smptec_linear.Tpo -c -o quant/palette/output_float/test_runner-0007_smptec_linear.obj `if test -f 'quant/palette/output_float/0007_smptec_linear.c'; then $(CYGPATH_W) 'quant/palette/output_float/0007_smptec_linear.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0007_smptec_linear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0007_smptec_linear.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0007_smptec_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0007_smptec_linear.c' object='quant/palette/output_float/test_runner-0007_smptec_linear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0007_smptec_linear.obj `if test -f 'quant/palette/output_float/0007_smptec_linear.c'; then $(CYGPATH_W) 'quant/palette/output_float/0007_smptec_linear.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0007_smptec_linear.c'; fi`
+
+quant/palette/output_float/test_runner-0008_smptec_oklab.o: quant/palette/output_float/0008_smptec_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0008_smptec_oklab.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0008_smptec_oklab.Tpo -c -o quant/palette/output_float/test_runner-0008_smptec_oklab.o `test -f 'quant/palette/output_float/0008_smptec_oklab.c' || echo '$(srcdir)/'`quant/palette/output_float/0008_smptec_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0008_smptec_oklab.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0008_smptec_oklab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0008_smptec_oklab.c' object='quant/palette/output_float/test_runner-0008_smptec_oklab.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0008_smptec_oklab.o `test -f 'quant/palette/output_float/0008_smptec_oklab.c' || echo '$(srcdir)/'`quant/palette/output_float/0008_smptec_oklab.c
+
+quant/palette/output_float/test_runner-0008_smptec_oklab.obj: quant/palette/output_float/0008_smptec_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0008_smptec_oklab.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0008_smptec_oklab.Tpo -c -o quant/palette/output_float/test_runner-0008_smptec_oklab.obj `if test -f 'quant/palette/output_float/0008_smptec_oklab.c'; then $(CYGPATH_W) 'quant/palette/output_float/0008_smptec_oklab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0008_smptec_oklab.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0008_smptec_oklab.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0008_smptec_oklab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0008_smptec_oklab.c' object='quant/palette/output_float/test_runner-0008_smptec_oklab.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0008_smptec_oklab.obj `if test -f 'quant/palette/output_float/0008_smptec_oklab.c'; then $(CYGPATH_W) 'quant/palette/output_float/0008_smptec_oklab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0008_smptec_oklab.c'; fi`
+
+quant/palette/output_float/test_runner-0009_smptec_cielab.o: quant/palette/output_float/0009_smptec_cielab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0009_smptec_cielab.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0009_smptec_cielab.Tpo -c -o quant/palette/output_float/test_runner-0009_smptec_cielab.o `test -f 'quant/palette/output_float/0009_smptec_cielab.c' || echo '$(srcdir)/'`quant/palette/output_float/0009_smptec_cielab.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0009_smptec_cielab.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0009_smptec_cielab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0009_smptec_cielab.c' object='quant/palette/output_float/test_runner-0009_smptec_cielab.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0009_smptec_cielab.o `test -f 'quant/palette/output_float/0009_smptec_cielab.c' || echo '$(srcdir)/'`quant/palette/output_float/0009_smptec_cielab.c
+
+quant/palette/output_float/test_runner-0009_smptec_cielab.obj: quant/palette/output_float/0009_smptec_cielab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0009_smptec_cielab.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0009_smptec_cielab.Tpo -c -o quant/palette/output_float/test_runner-0009_smptec_cielab.obj `if test -f 'quant/palette/output_float/0009_smptec_cielab.c'; then $(CYGPATH_W) 'quant/palette/output_float/0009_smptec_cielab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0009_smptec_cielab.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0009_smptec_cielab.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0009_smptec_cielab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0009_smptec_cielab.c' object='quant/palette/output_float/test_runner-0009_smptec_cielab.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0009_smptec_cielab.obj `if test -f 'quant/palette/output_float/0009_smptec_cielab.c'; then $(CYGPATH_W) 'quant/palette/output_float/0009_smptec_cielab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0009_smptec_cielab.c'; fi`
+
+quant/palette/output_float/test_runner-0010_smptec_din99d.o: quant/palette/output_float/0010_smptec_din99d.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0010_smptec_din99d.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0010_smptec_din99d.Tpo -c -o quant/palette/output_float/test_runner-0010_smptec_din99d.o `test -f 'quant/palette/output_float/0010_smptec_din99d.c' || echo '$(srcdir)/'`quant/palette/output_float/0010_smptec_din99d.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0010_smptec_din99d.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0010_smptec_din99d.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0010_smptec_din99d.c' object='quant/palette/output_float/test_runner-0010_smptec_din99d.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0010_smptec_din99d.o `test -f 'quant/palette/output_float/0010_smptec_din99d.c' || echo '$(srcdir)/'`quant/palette/output_float/0010_smptec_din99d.c
+
+quant/palette/output_float/test_runner-0010_smptec_din99d.obj: quant/palette/output_float/0010_smptec_din99d.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0010_smptec_din99d.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0010_smptec_din99d.Tpo -c -o quant/palette/output_float/test_runner-0010_smptec_din99d.obj `if test -f 'quant/palette/output_float/0010_smptec_din99d.c'; then $(CYGPATH_W) 'quant/palette/output_float/0010_smptec_din99d.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0010_smptec_din99d.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0010_smptec_din99d.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0010_smptec_din99d.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0010_smptec_din99d.c' object='quant/palette/output_float/test_runner-0010_smptec_din99d.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0010_smptec_din99d.obj `if test -f 'quant/palette/output_float/0010_smptec_din99d.c'; then $(CYGPATH_W) 'quant/palette/output_float/0010_smptec_din99d.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0010_smptec_din99d.c'; fi`
+
+quant/palette/output_float/test_runner-0011_linear_center.o: quant/palette/output_float/0011_linear_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0011_linear_center.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0011_linear_center.Tpo -c -o quant/palette/output_float/test_runner-0011_linear_center.o `test -f 'quant/palette/output_float/0011_linear_center.c' || echo '$(srcdir)/'`quant/palette/output_float/0011_linear_center.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0011_linear_center.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0011_linear_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0011_linear_center.c' object='quant/palette/output_float/test_runner-0011_linear_center.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0011_linear_center.o `test -f 'quant/palette/output_float/0011_linear_center.c' || echo '$(srcdir)/'`quant/palette/output_float/0011_linear_center.c
+
+quant/palette/output_float/test_runner-0011_linear_center.obj: quant/palette/output_float/0011_linear_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0011_linear_center.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0011_linear_center.Tpo -c -o quant/palette/output_float/test_runner-0011_linear_center.obj `if test -f 'quant/palette/output_float/0011_linear_center.c'; then $(CYGPATH_W) 'quant/palette/output_float/0011_linear_center.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0011_linear_center.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0011_linear_center.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0011_linear_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0011_linear_center.c' object='quant/palette/output_float/test_runner-0011_linear_center.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0011_linear_center.obj `if test -f 'quant/palette/output_float/0011_linear_center.c'; then $(CYGPATH_W) 'quant/palette/output_float/0011_linear_center.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0011_linear_center.c'; fi`
+
+quant/palette/output_float/test_runner-0012_linear_medoids.o: quant/palette/output_float/0012_linear_medoids.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0012_linear_medoids.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0012_linear_medoids.Tpo -c -o quant/palette/output_float/test_runner-0012_linear_medoids.o `test -f 'quant/palette/output_float/0012_linear_medoids.c' || echo '$(srcdir)/'`quant/palette/output_float/0012_linear_medoids.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0012_linear_medoids.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0012_linear_medoids.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0012_linear_medoids.c' object='quant/palette/output_float/test_runner-0012_linear_medoids.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0012_linear_medoids.o `test -f 'quant/palette/output_float/0012_linear_medoids.c' || echo '$(srcdir)/'`quant/palette/output_float/0012_linear_medoids.c
+
+quant/palette/output_float/test_runner-0012_linear_medoids.obj: quant/palette/output_float/0012_linear_medoids.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0012_linear_medoids.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0012_linear_medoids.Tpo -c -o quant/palette/output_float/test_runner-0012_linear_medoids.obj `if test -f 'quant/palette/output_float/0012_linear_medoids.c'; then $(CYGPATH_W) 'quant/palette/output_float/0012_linear_medoids.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0012_linear_medoids.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0012_linear_medoids.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0012_linear_medoids.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0012_linear_medoids.c' object='quant/palette/output_float/test_runner-0012_linear_medoids.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0012_linear_medoids.obj `if test -f 'quant/palette/output_float/0012_linear_medoids.c'; then $(CYGPATH_W) 'quant/palette/output_float/0012_linear_medoids.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0012_linear_medoids.c'; fi`
+
+quant/palette/output_float/test_runner-0013_linear_heckbert.o: quant/palette/output_float/0013_linear_heckbert.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0013_linear_heckbert.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0013_linear_heckbert.Tpo -c -o quant/palette/output_float/test_runner-0013_linear_heckbert.o `test -f 'quant/palette/output_float/0013_linear_heckbert.c' || echo '$(srcdir)/'`quant/palette/output_float/0013_linear_heckbert.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0013_linear_heckbert.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0013_linear_heckbert.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0013_linear_heckbert.c' object='quant/palette/output_float/test_runner-0013_linear_heckbert.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0013_linear_heckbert.o `test -f 'quant/palette/output_float/0013_linear_heckbert.c' || echo '$(srcdir)/'`quant/palette/output_float/0013_linear_heckbert.c
+
+quant/palette/output_float/test_runner-0013_linear_heckbert.obj: quant/palette/output_float/0013_linear_heckbert.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0013_linear_heckbert.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0013_linear_heckbert.Tpo -c -o quant/palette/output_float/test_runner-0013_linear_heckbert.obj `if test -f 'quant/palette/output_float/0013_linear_heckbert.c'; then $(CYGPATH_W) 'quant/palette/output_float/0013_linear_heckbert.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0013_linear_heckbert.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0013_linear_heckbert.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0013_linear_heckbert.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0013_linear_heckbert.c' object='quant/palette/output_float/test_runner-0013_linear_heckbert.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0013_linear_heckbert.obj `if test -f 'quant/palette/output_float/0013_linear_heckbert.c'; then $(CYGPATH_W) 'quant/palette/output_float/0013_linear_heckbert.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0013_linear_heckbert.c'; fi`
+
+quant/palette/output_float/test_runner-0014_linear_auto.o: quant/palette/output_float/0014_linear_auto.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0014_linear_auto.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0014_linear_auto.Tpo -c -o quant/palette/output_float/test_runner-0014_linear_auto.o `test -f 'quant/palette/output_float/0014_linear_auto.c' || echo '$(srcdir)/'`quant/palette/output_float/0014_linear_auto.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0014_linear_auto.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0014_linear_auto.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0014_linear_auto.c' object='quant/palette/output_float/test_runner-0014_linear_auto.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0014_linear_auto.o `test -f 'quant/palette/output_float/0014_linear_auto.c' || echo '$(srcdir)/'`quant/palette/output_float/0014_linear_auto.c
+
+quant/palette/output_float/test_runner-0014_linear_auto.obj: quant/palette/output_float/0014_linear_auto.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0014_linear_auto.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0014_linear_auto.Tpo -c -o quant/palette/output_float/test_runner-0014_linear_auto.obj `if test -f 'quant/palette/output_float/0014_linear_auto.c'; then $(CYGPATH_W) 'quant/palette/output_float/0014_linear_auto.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0014_linear_auto.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0014_linear_auto.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0014_linear_auto.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0014_linear_auto.c' object='quant/palette/output_float/test_runner-0014_linear_auto.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0014_linear_auto.obj `if test -f 'quant/palette/output_float/0014_linear_auto.c'; then $(CYGPATH_W) 'quant/palette/output_float/0014_linear_auto.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0014_linear_auto.c'; fi`
+
+quant/palette/output_float/test_runner-0015_smptec_center.o: quant/palette/output_float/0015_smptec_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0015_smptec_center.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0015_smptec_center.Tpo -c -o quant/palette/output_float/test_runner-0015_smptec_center.o `test -f 'quant/palette/output_float/0015_smptec_center.c' || echo '$(srcdir)/'`quant/palette/output_float/0015_smptec_center.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0015_smptec_center.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0015_smptec_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0015_smptec_center.c' object='quant/palette/output_float/test_runner-0015_smptec_center.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0015_smptec_center.o `test -f 'quant/palette/output_float/0015_smptec_center.c' || echo '$(srcdir)/'`quant/palette/output_float/0015_smptec_center.c
+
+quant/palette/output_float/test_runner-0015_smptec_center.obj: quant/palette/output_float/0015_smptec_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0015_smptec_center.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0015_smptec_center.Tpo -c -o quant/palette/output_float/test_runner-0015_smptec_center.obj `if test -f 'quant/palette/output_float/0015_smptec_center.c'; then $(CYGPATH_W) 'quant/palette/output_float/0015_smptec_center.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0015_smptec_center.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0015_smptec_center.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0015_smptec_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0015_smptec_center.c' object='quant/palette/output_float/test_runner-0015_smptec_center.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0015_smptec_center.obj `if test -f 'quant/palette/output_float/0015_smptec_center.c'; then $(CYGPATH_W) 'quant/palette/output_float/0015_smptec_center.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0015_smptec_center.c'; fi`
+
+quant/palette/output_float/test_runner-0016_smptec_medoids.o: quant/palette/output_float/0016_smptec_medoids.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0016_smptec_medoids.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0016_smptec_medoids.Tpo -c -o quant/palette/output_float/test_runner-0016_smptec_medoids.o `test -f 'quant/palette/output_float/0016_smptec_medoids.c' || echo '$(srcdir)/'`quant/palette/output_float/0016_smptec_medoids.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0016_smptec_medoids.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0016_smptec_medoids.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0016_smptec_medoids.c' object='quant/palette/output_float/test_runner-0016_smptec_medoids.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0016_smptec_medoids.o `test -f 'quant/palette/output_float/0016_smptec_medoids.c' || echo '$(srcdir)/'`quant/palette/output_float/0016_smptec_medoids.c
+
+quant/palette/output_float/test_runner-0016_smptec_medoids.obj: quant/palette/output_float/0016_smptec_medoids.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0016_smptec_medoids.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0016_smptec_medoids.Tpo -c -o quant/palette/output_float/test_runner-0016_smptec_medoids.obj `if test -f 'quant/palette/output_float/0016_smptec_medoids.c'; then $(CYGPATH_W) 'quant/palette/output_float/0016_smptec_medoids.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0016_smptec_medoids.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0016_smptec_medoids.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0016_smptec_medoids.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0016_smptec_medoids.c' object='quant/palette/output_float/test_runner-0016_smptec_medoids.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0016_smptec_medoids.obj `if test -f 'quant/palette/output_float/0016_smptec_medoids.c'; then $(CYGPATH_W) 'quant/palette/output_float/0016_smptec_medoids.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0016_smptec_medoids.c'; fi`
+
+quant/palette/output_float/test_runner-0017_smptec_heckbert.o: quant/palette/output_float/0017_smptec_heckbert.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0017_smptec_heckbert.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0017_smptec_heckbert.Tpo -c -o quant/palette/output_float/test_runner-0017_smptec_heckbert.o `test -f 'quant/palette/output_float/0017_smptec_heckbert.c' || echo '$(srcdir)/'`quant/palette/output_float/0017_smptec_heckbert.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0017_smptec_heckbert.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0017_smptec_heckbert.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0017_smptec_heckbert.c' object='quant/palette/output_float/test_runner-0017_smptec_heckbert.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0017_smptec_heckbert.o `test -f 'quant/palette/output_float/0017_smptec_heckbert.c' || echo '$(srcdir)/'`quant/palette/output_float/0017_smptec_heckbert.c
+
+quant/palette/output_float/test_runner-0017_smptec_heckbert.obj: quant/palette/output_float/0017_smptec_heckbert.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0017_smptec_heckbert.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0017_smptec_heckbert.Tpo -c -o quant/palette/output_float/test_runner-0017_smptec_heckbert.obj `if test -f 'quant/palette/output_float/0017_smptec_heckbert.c'; then $(CYGPATH_W) 'quant/palette/output_float/0017_smptec_heckbert.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0017_smptec_heckbert.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0017_smptec_heckbert.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0017_smptec_heckbert.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0017_smptec_heckbert.c' object='quant/palette/output_float/test_runner-0017_smptec_heckbert.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0017_smptec_heckbert.obj `if test -f 'quant/palette/output_float/0017_smptec_heckbert.c'; then $(CYGPATH_W) 'quant/palette/output_float/0017_smptec_heckbert.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0017_smptec_heckbert.c'; fi`
+
+quant/palette/output_float/test_runner-0018_smptec_auto.o: quant/palette/output_float/0018_smptec_auto.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0018_smptec_auto.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0018_smptec_auto.Tpo -c -o quant/palette/output_float/test_runner-0018_smptec_auto.o `test -f 'quant/palette/output_float/0018_smptec_auto.c' || echo '$(srcdir)/'`quant/palette/output_float/0018_smptec_auto.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0018_smptec_auto.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0018_smptec_auto.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0018_smptec_auto.c' object='quant/palette/output_float/test_runner-0018_smptec_auto.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0018_smptec_auto.o `test -f 'quant/palette/output_float/0018_smptec_auto.c' || echo '$(srcdir)/'`quant/palette/output_float/0018_smptec_auto.c
+
+quant/palette/output_float/test_runner-0018_smptec_auto.obj: quant/palette/output_float/0018_smptec_auto.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0018_smptec_auto.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0018_smptec_auto.Tpo -c -o quant/palette/output_float/test_runner-0018_smptec_auto.obj `if test -f 'quant/palette/output_float/0018_smptec_auto.c'; then $(CYGPATH_W) 'quant/palette/output_float/0018_smptec_auto.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0018_smptec_auto.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0018_smptec_auto.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0018_smptec_auto.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0018_smptec_auto.c' object='quant/palette/output_float/test_runner-0018_smptec_auto.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0018_smptec_auto.obj `if test -f 'quant/palette/output_float/0018_smptec_auto.c'; then $(CYGPATH_W) 'quant/palette/output_float/0018_smptec_auto.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0018_smptec_auto.c'; fi`
+
+quant/palette/output_float/test_runner-0019_linear_byte.o: quant/palette/output_float/0019_linear_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0019_linear_byte.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0019_linear_byte.Tpo -c -o quant/palette/output_float/test_runner-0019_linear_byte.o `test -f 'quant/palette/output_float/0019_linear_byte.c' || echo '$(srcdir)/'`quant/palette/output_float/0019_linear_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0019_linear_byte.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0019_linear_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0019_linear_byte.c' object='quant/palette/output_float/test_runner-0019_linear_byte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0019_linear_byte.o `test -f 'quant/palette/output_float/0019_linear_byte.c' || echo '$(srcdir)/'`quant/palette/output_float/0019_linear_byte.c
+
+quant/palette/output_float/test_runner-0019_linear_byte.obj: quant/palette/output_float/0019_linear_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0019_linear_byte.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0019_linear_byte.Tpo -c -o quant/palette/output_float/test_runner-0019_linear_byte.obj `if test -f 'quant/palette/output_float/0019_linear_byte.c'; then $(CYGPATH_W) 'quant/palette/output_float/0019_linear_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0019_linear_byte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0019_linear_byte.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0019_linear_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0019_linear_byte.c' object='quant/palette/output_float/test_runner-0019_linear_byte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0019_linear_byte.obj `if test -f 'quant/palette/output_float/0019_linear_byte.c'; then $(CYGPATH_W) 'quant/palette/output_float/0019_linear_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0019_linear_byte.c'; fi`
+
+quant/palette/output_float/test_runner-0020_smptec_byte.o: quant/palette/output_float/0020_smptec_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0020_smptec_byte.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0020_smptec_byte.Tpo -c -o quant/palette/output_float/test_runner-0020_smptec_byte.o `test -f 'quant/palette/output_float/0020_smptec_byte.c' || echo '$(srcdir)/'`quant/palette/output_float/0020_smptec_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0020_smptec_byte.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0020_smptec_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0020_smptec_byte.c' object='quant/palette/output_float/test_runner-0020_smptec_byte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0020_smptec_byte.o `test -f 'quant/palette/output_float/0020_smptec_byte.c' || echo '$(srcdir)/'`quant/palette/output_float/0020_smptec_byte.c
+
+quant/palette/output_float/test_runner-0020_smptec_byte.obj: quant/palette/output_float/0020_smptec_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0020_smptec_byte.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0020_smptec_byte.Tpo -c -o quant/palette/output_float/test_runner-0020_smptec_byte.obj `if test -f 'quant/palette/output_float/0020_smptec_byte.c'; then $(CYGPATH_W) 'quant/palette/output_float/0020_smptec_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0020_smptec_byte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0020_smptec_byte.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0020_smptec_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0020_smptec_byte.c' object='quant/palette/output_float/test_runner-0020_smptec_byte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0020_smptec_byte.obj `if test -f 'quant/palette/output_float/0020_smptec_byte.c'; then $(CYGPATH_W) 'quant/palette/output_float/0020_smptec_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0020_smptec_byte.c'; fi`
+
+quant/palette/output_float/test_runner-0021_linear_zero_snap.o: quant/palette/output_float/0021_linear_zero_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0021_linear_zero_snap.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0021_linear_zero_snap.Tpo -c -o quant/palette/output_float/test_runner-0021_linear_zero_snap.o `test -f 'quant/palette/output_float/0021_linear_zero_snap.c' || echo '$(srcdir)/'`quant/palette/output_float/0021_linear_zero_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0021_linear_zero_snap.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0021_linear_zero_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0021_linear_zero_snap.c' object='quant/palette/output_float/test_runner-0021_linear_zero_snap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0021_linear_zero_snap.o `test -f 'quant/palette/output_float/0021_linear_zero_snap.c' || echo '$(srcdir)/'`quant/palette/output_float/0021_linear_zero_snap.c
+
+quant/palette/output_float/test_runner-0021_linear_zero_snap.obj: quant/palette/output_float/0021_linear_zero_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0021_linear_zero_snap.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0021_linear_zero_snap.Tpo -c -o quant/palette/output_float/test_runner-0021_linear_zero_snap.obj `if test -f 'quant/palette/output_float/0021_linear_zero_snap.c'; then $(CYGPATH_W) 'quant/palette/output_float/0021_linear_zero_snap.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0021_linear_zero_snap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0021_linear_zero_snap.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0021_linear_zero_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0021_linear_zero_snap.c' object='quant/palette/output_float/test_runner-0021_linear_zero_snap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0021_linear_zero_snap.obj `if test -f 'quant/palette/output_float/0021_linear_zero_snap.c'; then $(CYGPATH_W) 'quant/palette/output_float/0021_linear_zero_snap.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0021_linear_zero_snap.c'; fi`
+
+quant/palette/output_float/test_runner-0022_smptec_zero_snap.o: quant/palette/output_float/0022_smptec_zero_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0022_smptec_zero_snap.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0022_smptec_zero_snap.Tpo -c -o quant/palette/output_float/test_runner-0022_smptec_zero_snap.o `test -f 'quant/palette/output_float/0022_smptec_zero_snap.c' || echo '$(srcdir)/'`quant/palette/output_float/0022_smptec_zero_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0022_smptec_zero_snap.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0022_smptec_zero_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0022_smptec_zero_snap.c' object='quant/palette/output_float/test_runner-0022_smptec_zero_snap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0022_smptec_zero_snap.o `test -f 'quant/palette/output_float/0022_smptec_zero_snap.c' || echo '$(srcdir)/'`quant/palette/output_float/0022_smptec_zero_snap.c
+
+quant/palette/output_float/test_runner-0022_smptec_zero_snap.obj: quant/palette/output_float/0022_smptec_zero_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0022_smptec_zero_snap.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0022_smptec_zero_snap.Tpo -c -o quant/palette/output_float/test_runner-0022_smptec_zero_snap.obj `if test -f 'quant/palette/output_float/0022_smptec_zero_snap.c'; then $(CYGPATH_W) 'quant/palette/output_float/0022_smptec_zero_snap.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0022_smptec_zero_snap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0022_smptec_zero_snap.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0022_smptec_zero_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0022_smptec_zero_snap.c' object='quant/palette/output_float/test_runner-0022_smptec_zero_snap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0022_smptec_zero_snap.obj `if test -f 'quant/palette/output_float/0022_smptec_zero_snap.c'; then $(CYGPATH_W) 'quant/palette/output_float/0022_smptec_zero_snap.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0022_smptec_zero_snap.c'; fi`
+
+quant/palette/output_float/test_runner-0023_linear_8bit_preference.o: quant/palette/output_float/0023_linear_8bit_preference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0023_linear_8bit_preference.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0023_linear_8bit_preference.Tpo -c -o quant/palette/output_float/test_runner-0023_linear_8bit_preference.o `test -f 'quant/palette/output_float/0023_linear_8bit_preference.c' || echo '$(srcdir)/'`quant/palette/output_float/0023_linear_8bit_preference.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0023_linear_8bit_preference.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0023_linear_8bit_preference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0023_linear_8bit_preference.c' object='quant/palette/output_float/test_runner-0023_linear_8bit_preference.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0023_linear_8bit_preference.o `test -f 'quant/palette/output_float/0023_linear_8bit_preference.c' || echo '$(srcdir)/'`quant/palette/output_float/0023_linear_8bit_preference.c
+
+quant/palette/output_float/test_runner-0023_linear_8bit_preference.obj: quant/palette/output_float/0023_linear_8bit_preference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0023_linear_8bit_preference.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0023_linear_8bit_preference.Tpo -c -o quant/palette/output_float/test_runner-0023_linear_8bit_preference.obj `if test -f 'quant/palette/output_float/0023_linear_8bit_preference.c'; then $(CYGPATH_W) 'quant/palette/output_float/0023_linear_8bit_preference.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0023_linear_8bit_preference.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0023_linear_8bit_preference.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0023_linear_8bit_preference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0023_linear_8bit_preference.c' object='quant/palette/output_float/test_runner-0023_linear_8bit_preference.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0023_linear_8bit_preference.obj `if test -f 'quant/palette/output_float/0023_linear_8bit_preference.c'; then $(CYGPATH_W) 'quant/palette/output_float/0023_linear_8bit_preference.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0023_linear_8bit_preference.c'; fi`
+
+quant/palette/output_float/test_runner-0024_smptec_8bit_preference.o: quant/palette/output_float/0024_smptec_8bit_preference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0024_smptec_8bit_preference.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0024_smptec_8bit_preference.Tpo -c -o quant/palette/output_float/test_runner-0024_smptec_8bit_preference.o `test -f 'quant/palette/output_float/0024_smptec_8bit_preference.c' || echo '$(srcdir)/'`quant/palette/output_float/0024_smptec_8bit_preference.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0024_smptec_8bit_preference.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0024_smptec_8bit_preference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0024_smptec_8bit_preference.c' object='quant/palette/output_float/test_runner-0024_smptec_8bit_preference.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0024_smptec_8bit_preference.o `test -f 'quant/palette/output_float/0024_smptec_8bit_preference.c' || echo '$(srcdir)/'`quant/palette/output_float/0024_smptec_8bit_preference.c
+
+quant/palette/output_float/test_runner-0024_smptec_8bit_preference.obj: quant/palette/output_float/0024_smptec_8bit_preference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0024_smptec_8bit_preference.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0024_smptec_8bit_preference.Tpo -c -o quant/palette/output_float/test_runner-0024_smptec_8bit_preference.obj `if test -f 'quant/palette/output_float/0024_smptec_8bit_preference.c'; then $(CYGPATH_W) 'quant/palette/output_float/0024_smptec_8bit_preference.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0024_smptec_8bit_preference.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0024_smptec_8bit_preference.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0024_smptec_8bit_preference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0024_smptec_8bit_preference.c' object='quant/palette/output_float/test_runner-0024_smptec_8bit_preference.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0024_smptec_8bit_preference.obj `if test -f 'quant/palette/output_float/0024_smptec_8bit_preference.c'; then $(CYGPATH_W) 'quant/palette/output_float/0024_smptec_8bit_preference.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0024_smptec_8bit_preference.c'; fi`
+
+quant/palette/output_float/test_runner-0025_linear_fixed_map.o: quant/palette/output_float/0025_linear_fixed_map.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0025_linear_fixed_map.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Tpo -c -o quant/palette/output_float/test_runner-0025_linear_fixed_map.o `test -f 'quant/palette/output_float/0025_linear_fixed_map.c' || echo '$(srcdir)/'`quant/palette/output_float/0025_linear_fixed_map.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0025_linear_fixed_map.c' object='quant/palette/output_float/test_runner-0025_linear_fixed_map.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0025_linear_fixed_map.o `test -f 'quant/palette/output_float/0025_linear_fixed_map.c' || echo '$(srcdir)/'`quant/palette/output_float/0025_linear_fixed_map.c
+
+quant/palette/output_float/test_runner-0025_linear_fixed_map.obj: quant/palette/output_float/0025_linear_fixed_map.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0025_linear_fixed_map.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Tpo -c -o quant/palette/output_float/test_runner-0025_linear_fixed_map.obj `if test -f 'quant/palette/output_float/0025_linear_fixed_map.c'; then $(CYGPATH_W) 'quant/palette/output_float/0025_linear_fixed_map.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0025_linear_fixed_map.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0025_linear_fixed_map.c' object='quant/palette/output_float/test_runner-0025_linear_fixed_map.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0025_linear_fixed_map.obj `if test -f 'quant/palette/output_float/0025_linear_fixed_map.c'; then $(CYGPATH_W) 'quant/palette/output_float/0025_linear_fixed_map.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0025_linear_fixed_map.c'; fi`
+
+quant/palette/output_float/test_runner-0026_smptec_fixed_map.o: quant/palette/output_float/0026_smptec_fixed_map.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0026_smptec_fixed_map.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Tpo -c -o quant/palette/output_float/test_runner-0026_smptec_fixed_map.o `test -f 'quant/palette/output_float/0026_smptec_fixed_map.c' || echo '$(srcdir)/'`quant/palette/output_float/0026_smptec_fixed_map.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0026_smptec_fixed_map.c' object='quant/palette/output_float/test_runner-0026_smptec_fixed_map.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0026_smptec_fixed_map.o `test -f 'quant/palette/output_float/0026_smptec_fixed_map.c' || echo '$(srcdir)/'`quant/palette/output_float/0026_smptec_fixed_map.c
+
+quant/palette/output_float/test_runner-0026_smptec_fixed_map.obj: quant/palette/output_float/0026_smptec_fixed_map.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0026_smptec_fixed_map.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Tpo -c -o quant/palette/output_float/test_runner-0026_smptec_fixed_map.obj `if test -f 'quant/palette/output_float/0026_smptec_fixed_map.c'; then $(CYGPATH_W) 'quant/palette/output_float/0026_smptec_fixed_map.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0026_smptec_fixed_map.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0026_smptec_fixed_map.c' object='quant/palette/output_float/test_runner-0026_smptec_fixed_map.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0026_smptec_fixed_map.obj `if test -f 'quant/palette/output_float/0026_smptec_fixed_map.c'; then $(CYGPATH_W) 'quant/palette/output_float/0026_smptec_fixed_map.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0026_smptec_fixed_map.c'; fi`
+
+quant/palette/output_float/test_runner-0027_output_reuse.o: quant/palette/output_float/0027_output_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0027_output_reuse.o -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Tpo -c -o quant/palette/output_float/test_runner-0027_output_reuse.o `test -f 'quant/palette/output_float/0027_output_reuse.c' || echo '$(srcdir)/'`quant/palette/output_float/0027_output_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0027_output_reuse.c' object='quant/palette/output_float/test_runner-0027_output_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0027_output_reuse.o `test -f 'quant/palette/output_float/0027_output_reuse.c' || echo '$(srcdir)/'`quant/palette/output_float/0027_output_reuse.c
+
+quant/palette/output_float/test_runner-0027_output_reuse.obj: quant/palette/output_float/0027_output_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/output_float/test_runner-0027_output_reuse.obj -MD -MP -MF quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Tpo -c -o quant/palette/output_float/test_runner-0027_output_reuse.obj `if test -f 'quant/palette/output_float/0027_output_reuse.c'; then $(CYGPATH_W) 'quant/palette/output_float/0027_output_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0027_output_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Tpo quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/output_float/0027_output_reuse.c' object='quant/palette/output_float/test_runner-0027_output_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0027_output_reuse.obj `if test -f 'quant/palette/output_float/0027_output_reuse.c'; then $(CYGPATH_W) 'quant/palette/output_float/0027_output_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0027_output_reuse.c'; fi`
+
 processing/lookup/test_runner-fhedt_byte_test_common.o: processing/lookup/fhedt_byte_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-fhedt_byte_test_common.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Tpo -c -o processing/lookup/test_runner-fhedt_byte_test_common.o `test -f 'processing/lookup/fhedt_byte_test_common.c' || echo '$(srcdir)/'`processing/lookup/fhedt_byte_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Tpo processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po
@@ -54779,6 +55430,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/map_solver/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/merge_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/merge_float/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/output_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/rgb101_diffusion/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/rgb101_diffusion/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/sampling_float/$(DEPDIR)/$(am__dirstamp)
@@ -56873,6 +57526,7 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-heckbert_test_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-map_float_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-map_precision_common.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
 	-rm -f quant/palette/auto_float/$(DEPDIR)/test_runner-0001_auto_default_gamma.Po
 	-rm -f quant/palette/auto_float/$(DEPDIR)/test_runner-0002_auto_explicit_gamma.Po
@@ -57058,6 +57712,33 @@ distclean: distclean-am
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0036_map_fixed_p3_auto.Po
 	-rm -f quant/palette/merge_float/$(DEPDIR)/test_runner-0001_merge_contract.Po
 	-rm -f quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0001_linear_gamma.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0002_linear_linear.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0003_linear_oklab.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0004_linear_cielab.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0005_linear_din99d.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0006_smptec_gamma.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0007_smptec_linear.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0008_smptec_oklab.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0009_smptec_cielab.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0010_smptec_din99d.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0011_linear_center.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0012_linear_medoids.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0013_linear_heckbert.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0014_linear_auto.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0015_smptec_center.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0016_smptec_medoids.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0017_smptec_heckbert.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0018_smptec_auto.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0019_linear_byte.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0020_smptec_byte.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0021_linear_zero_snap.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0022_smptec_zero_snap.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0023_linear_8bit_preference.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0024_smptec_8bit_preference.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Po
 	-rm -f quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po
 	-rm -f quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po
 	-rm -f quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Po
@@ -59199,6 +59880,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-heckbert_test_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-map_float_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-map_precision_common.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
 	-rm -f quant/palette/auto_float/$(DEPDIR)/test_runner-0001_auto_default_gamma.Po
 	-rm -f quant/palette/auto_float/$(DEPDIR)/test_runner-0002_auto_explicit_gamma.Po
@@ -59384,6 +60066,33 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0036_map_fixed_p3_auto.Po
 	-rm -f quant/palette/merge_float/$(DEPDIR)/test_runner-0001_merge_contract.Po
 	-rm -f quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0001_linear_gamma.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0002_linear_linear.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0003_linear_oklab.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0004_linear_cielab.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0005_linear_din99d.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0006_smptec_gamma.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0007_smptec_linear.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0008_smptec_oklab.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0009_smptec_cielab.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0010_smptec_din99d.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0011_linear_center.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0012_linear_medoids.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0013_linear_heckbert.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0014_linear_auto.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0015_smptec_center.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0016_smptec_medoids.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0017_smptec_heckbert.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0018_smptec_auto.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0019_linear_byte.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0020_smptec_byte.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0021_linear_zero_snap.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0022_smptec_zero_snap.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0023_linear_8bit_preference.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0024_smptec_8bit_preference.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Po
+	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Po
 	-rm -f quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po
 	-rm -f quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po
 	-rm -f quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Po

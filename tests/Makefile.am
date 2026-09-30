@@ -993,6 +993,34 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0002_SCAN_CONTRACT \
     -DBUILD_TEST_0001_EXTENDED_LOOKUP \
     -DBUILD_FHEDT_TEST_COMMON \
+    -DBUILD_OUTPUT_FLOAT_TEST_COMMON \
+    -DBUILD_TEST_0001_LINEAR_GAMMA \
+    -DBUILD_TEST_0002_LINEAR_LINEAR \
+    -DBUILD_TEST_0003_LINEAR_OKLAB \
+    -DBUILD_TEST_0004_LINEAR_CIELAB \
+    -DBUILD_TEST_0005_LINEAR_DIN99D \
+    -DBUILD_TEST_0006_SMPTEC_GAMMA \
+    -DBUILD_TEST_0007_SMPTEC_LINEAR \
+    -DBUILD_TEST_0008_SMPTEC_OKLAB \
+    -DBUILD_TEST_0009_SMPTEC_CIELAB \
+    -DBUILD_TEST_0010_SMPTEC_DIN99D \
+    -DBUILD_TEST_0011_LINEAR_CENTER \
+    -DBUILD_TEST_0012_LINEAR_MEDOIDS \
+    -DBUILD_TEST_0013_LINEAR_HECKBERT \
+    -DBUILD_TEST_0014_LINEAR_AUTO \
+    -DBUILD_TEST_0015_SMPTEC_CENTER \
+    -DBUILD_TEST_0016_SMPTEC_MEDOIDS \
+    -DBUILD_TEST_0017_SMPTEC_HECKBERT \
+    -DBUILD_TEST_0018_SMPTEC_AUTO \
+    -DBUILD_TEST_0019_LINEAR_BYTE \
+    -DBUILD_TEST_0020_SMPTEC_BYTE \
+    -DBUILD_TEST_0021_LINEAR_ZERO_SNAP \
+    -DBUILD_TEST_0022_SMPTEC_ZERO_SNAP \
+    -DBUILD_TEST_0023_LINEAR_8BIT_PREFERENCE \
+    -DBUILD_TEST_0024_SMPTEC_8BIT_PREFERENCE \
+    -DBUILD_TEST_0025_LINEAR_FIXED_MAP \
+    -DBUILD_TEST_0026_SMPTEC_FIXED_MAP \
+    -DBUILD_TEST_0027_OUTPUT_REUSE \
     -DBUILD_FHEDT_BYTE_TEST_COMMON \
     -DBUILD_TEST_0001_Y_LABELS \
     -DBUILD_TEST_0002_Z_LABELS \
@@ -4432,6 +4460,34 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/merge_float/0002_scan_contract.c \
     processing/lookup/extended/0001_extended_lookup.c \
     processing/lookup/fhedt_test_common.c \
+    quant/palette/output_float_test_common.c \
+    quant/palette/output_float/0001_linear_gamma.c \
+    quant/palette/output_float/0002_linear_linear.c \
+    quant/palette/output_float/0003_linear_oklab.c \
+    quant/palette/output_float/0004_linear_cielab.c \
+    quant/palette/output_float/0005_linear_din99d.c \
+    quant/palette/output_float/0006_smptec_gamma.c \
+    quant/palette/output_float/0007_smptec_linear.c \
+    quant/palette/output_float/0008_smptec_oklab.c \
+    quant/palette/output_float/0009_smptec_cielab.c \
+    quant/palette/output_float/0010_smptec_din99d.c \
+    quant/palette/output_float/0011_linear_center.c \
+    quant/palette/output_float/0012_linear_medoids.c \
+    quant/palette/output_float/0013_linear_heckbert.c \
+    quant/palette/output_float/0014_linear_auto.c \
+    quant/palette/output_float/0015_smptec_center.c \
+    quant/palette/output_float/0016_smptec_medoids.c \
+    quant/palette/output_float/0017_smptec_heckbert.c \
+    quant/palette/output_float/0018_smptec_auto.c \
+    quant/palette/output_float/0019_linear_byte.c \
+    quant/palette/output_float/0020_smptec_byte.c \
+    quant/palette/output_float/0021_linear_zero_snap.c \
+    quant/palette/output_float/0022_smptec_zero_snap.c \
+    quant/palette/output_float/0023_linear_8bit_preference.c \
+    quant/palette/output_float/0024_smptec_8bit_preference.c \
+    quant/palette/output_float/0025_linear_fixed_map.c \
+    quant/palette/output_float/0026_smptec_fixed_map.c \
+    quant/palette/output_float/0027_output_reuse.c \
     processing/lookup/fhedt_byte_test_common.c \
     processing/lookup/fhedt_byte/0001_y_labels.c \
     processing/lookup/fhedt_byte/0002_z_labels.c \
