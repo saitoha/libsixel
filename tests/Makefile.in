@@ -2047,6 +2047,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/binning_float/0001_binning_contract.c \
 	quant/palette/solvers_float/0001_solver_contract.c \
 	quant/palette/merge_float/0001_merge_contract.c \
+	quant/palette/merge_float/0002_scan_contract.c \
 	processing/lookup/extended/0001_extended_lookup.c \
 	processing/lookup/fhedt_test_common.c \
 	processing/lookup/fhedt_weight_common.c \
@@ -4319,6 +4320,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/binning_float/test_runner-0001_binning_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/solvers_float/test_runner-0001_solver_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/merge_float/test_runner-0001_merge_contract.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/merge_float/test_runner-0002_scan_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/extended/test_runner-0001_extended_lookup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-fhedt_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-fhedt_weight_common.$(OBJEXT) \
@@ -7018,6 +7020,7 @@ am__depfiles_remade =  \
 	quant/palette/map_solver/$(DEPDIR)/test_runner-0035_map_invalid_binning.Po \
 	quant/palette/map_solver/$(DEPDIR)/test_runner-0036_map_fixed_p3_auto.Po \
 	quant/palette/merge_float/$(DEPDIR)/test_runner-0001_merge_contract.Po \
+	quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Po \
 	quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po \
 	quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po \
 	quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Po \
@@ -8510,6 +8513,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SAMPLING_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_BINNING_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_MERGE_CONTRACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_SCAN_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_EXTENDED_LOOKUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_FHEDT_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_FH_ENCLOSING_CELL \
@@ -11968,6 +11972,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/binning_float/0001_binning_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/solvers_float/0001_solver_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/merge_float/0001_merge_contract.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/merge_float/0002_scan_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/extended/0001_extended_lookup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight_common.c \
@@ -18516,6 +18521,9 @@ quant/palette/merge_float/$(DEPDIR)/$(am__dirstamp):
 quant/palette/merge_float/test_runner-0001_merge_contract.$(OBJEXT):  \
 	quant/palette/merge_float/$(am__dirstamp) \
 	quant/palette/merge_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/merge_float/test_runner-0002_scan_contract.$(OBJEXT):  \
+	quant/palette/merge_float/$(am__dirstamp) \
+	quant/palette/merge_float/$(DEPDIR)/$(am__dirstamp)
 processing/lookup/extended/$(am__dirstamp):
 	@$(MKDIR_P) processing/lookup/extended
 	@: >>processing/lookup/extended/$(am__dirstamp)
@@ -22162,6 +22170,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_solver/$(DEPDIR)/test_runner-0035_map_invalid_binning.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_solver/$(DEPDIR)/test_runner-0036_map_fixed_p3_auto.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/merge_float/$(DEPDIR)/test_runner-0001_merge_contract.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Po@am__quote@ # am--include-marker
@@ -48523,6 +48532,20 @@ quant/palette/merge_float/test_runner-0001_merge_contract.obj: quant/palette/mer
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/merge_float/test_runner-0001_merge_contract.obj `if test -f 'quant/palette/merge_float/0001_merge_contract.c'; then $(CYGPATH_W) 'quant/palette/merge_float/0001_merge_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/merge_float/0001_merge_contract.c'; fi`
 
+quant/palette/merge_float/test_runner-0002_scan_contract.o: quant/palette/merge_float/0002_scan_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/merge_float/test_runner-0002_scan_contract.o -MD -MP -MF quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Tpo -c -o quant/palette/merge_float/test_runner-0002_scan_contract.o `test -f 'quant/palette/merge_float/0002_scan_contract.c' || echo '$(srcdir)/'`quant/palette/merge_float/0002_scan_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Tpo quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/merge_float/0002_scan_contract.c' object='quant/palette/merge_float/test_runner-0002_scan_contract.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/merge_float/test_runner-0002_scan_contract.o `test -f 'quant/palette/merge_float/0002_scan_contract.c' || echo '$(srcdir)/'`quant/palette/merge_float/0002_scan_contract.c
+
+quant/palette/merge_float/test_runner-0002_scan_contract.obj: quant/palette/merge_float/0002_scan_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/merge_float/test_runner-0002_scan_contract.obj -MD -MP -MF quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Tpo -c -o quant/palette/merge_float/test_runner-0002_scan_contract.obj `if test -f 'quant/palette/merge_float/0002_scan_contract.c'; then $(CYGPATH_W) 'quant/palette/merge_float/0002_scan_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/merge_float/0002_scan_contract.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Tpo quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/merge_float/0002_scan_contract.c' object='quant/palette/merge_float/test_runner-0002_scan_contract.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/merge_float/test_runner-0002_scan_contract.obj `if test -f 'quant/palette/merge_float/0002_scan_contract.c'; then $(CYGPATH_W) 'quant/palette/merge_float/0002_scan_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/merge_float/0002_scan_contract.c'; fi`
+
 processing/lookup/extended/test_runner-0001_extended_lookup.o: processing/lookup/extended/0001_extended_lookup.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/extended/test_runner-0001_extended_lookup.o -MD -MP -MF processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Tpo -c -o processing/lookup/extended/test_runner-0001_extended_lookup.o `test -f 'processing/lookup/extended/0001_extended_lookup.c' || echo '$(srcdir)/'`processing/lookup/extended/0001_extended_lookup.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Tpo processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po
@@ -56744,6 +56767,7 @@ distclean: distclean-am
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0035_map_invalid_binning.Po
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0036_map_fixed_p3_auto.Po
 	-rm -f quant/palette/merge_float/$(DEPDIR)/test_runner-0001_merge_contract.Po
+	-rm -f quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Po
 	-rm -f quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po
 	-rm -f quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po
 	-rm -f quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Po
@@ -59058,6 +59082,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0035_map_invalid_binning.Po
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0036_map_fixed_p3_auto.Po
 	-rm -f quant/palette/merge_float/$(DEPDIR)/test_runner-0001_merge_contract.Po
+	-rm -f quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Po
 	-rm -f quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po
 	-rm -f quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po
 	-rm -f quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Po

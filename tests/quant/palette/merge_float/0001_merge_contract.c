@@ -89,6 +89,65 @@ ward_build(sixel_palette_t *palette, float *samples, unsigned int count,
     return SIXEL_FAILED(status) ? status : finish;
 }
 
+/* Soft-bin contributions partition each source population and moment.
+ * Reducing all bins to one cluster must therefore recover the source mean,
+ * even when intermediate populations are fractional or below one. */
+static int
+ward_fractional(sixel_palette_t *palette, int model, int space)
+{
+    float samples[12] = {
+        .125f, -.25f, 1.25f, .15625f, -.25f, 1.25f,
+        .1875f, -.25f, 1.25f, 1.125f, -.25f, 1.25f
+    };
+    double const expected[3] = { .3984375, -.25, 1.25 };
+    sixel_palette_generate_request_t request;
+    sixel_palette_build_attempt_t attempt;
+    sixel_palette_float32_entries_view_t view;
+    SIXELSTATUS status;
+    SIXELSTATUS finish;
+    int channel;
+
+    memset(&request, 0, sizeof(request));
+    memset(&attempt, 0, sizeof(attempt));
+    request.data = samples;
+    request.length = sizeof(samples);
+    request.pixelformat = ward_formats[space];
+    request.requested_colors = 1;
+    request.prefer_float32 = 1;
+    request.quantize_model = ward_models[model];
+    request.final_merge_mode = SIXEL_FINAL_MERGE_WARD;
+    request.lut_policy = SIXEL_LUT_POLICY_NONE;
+    sixel_palette_binning_state_init(&attempt.binning,
+        SIXEL_PALETTE_BINNING_SOFT, SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT);
+    sixel_set_kmeans_binbits_override(1, 4u);
+    status = sixel_palette_build_attempt_begin(palette, &attempt);
+    if (SIXEL_FAILED(status)) {
+        return 0;
+    }
+    status = sixel_palette_generate_extended(palette, &request);
+    finish = sixel_palette_build_attempt_finish(palette, &attempt);
+    memset(&view, 0, sizeof(view));
+    if (SIXEL_FAILED(status) || SIXEL_FAILED(finish) ||
+            attempt.binning.policy.effective != SIXEL_PALETTE_BINNING_SOFT ||
+            attempt.binning.policy.phase != SIXEL_PALETTE_POLICY_EXECUTED ||
+            SIXEL_FAILED(palette->vtbl->get_entries_float32(palette, &view)) ||
+            view.entries == NULL || view.entry_count != 1) {
+        return 0;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        /* Exact stored binary fractions define the reference. Soft-bin
+         * accumulation, affine double transforms and one float store get
+         * a 2e-6 absolute budget in these bounded native coordinates. */
+        if (!isfinite(view.entries[channel]) ||
+                fabs(view.entries[channel] - expected[channel]) > 2e-6) {
+            fprintf(stderr, "fractional channel %d: %.9g != %.9g\n",
+                channel, (double)view.entries[channel], expected[channel]);
+            return 0;
+        }
+    }
+    return 1;
+}
+
 static int
 ward_values(sixel_palette_t *palette, int model, int space, int metric)
 {
@@ -205,6 +264,116 @@ ward_common(sixel_allocator_t *allocator, int mode)
     }
     return ok && sums[0] == -1275 && sums[2] == 3060 &&
         sums[3] == 1530 && sums[5] == 1530;
+}
+
+static int
+ward_populations(sixel_allocator_t *allocator, int mode)
+{
+    double weights[4] = { .25, .75, .5, 0 };
+    double const centers[4] = { -2, -1, 3, 0 };
+    double sums[12];
+    double original[12];
+    double old_weights[4];
+    double expected_weights[2];
+    double expected_centers[2];
+    double scale;
+    int count;
+    int index;
+    int channel;
+    int repeat;
+    int target;
+
+    /* Pair costs for (-2,-1,3), populations (1/4,3/4,1/2), are
+     * 3/16, 25/6 and 24/5. The first pair merges to -5/4 with mass 1.
+     * Rounding either the inputs or the surviving mass 1/2 is wrong.
+     * Uniform scaling must preserve the pair and both centroids. */
+    for (repeat = 0; repeat < (mode == 3 ? 3 : 1); ++repeat) {
+        scale = repeat == 0 ? 1.0 : repeat == 1 ? .125 : 8.0;
+        weights[0] = .25 * scale;
+        weights[1] = .75 * scale;
+        weights[2] = .5 * scale;
+        weights[3] = 0;
+        expected_weights[0] = scale;
+        expected_weights[1] = .5 * scale;
+        expected_centers[0] = -1.25;
+        expected_centers[1] = 3;
+        target = mode == 1 ? 1 : 2;
+        for (index = 0; index < 4; ++index) {
+            sums[index * 3] = centers[index] * weights[index];
+            sums[index * 3 + 1] = -.25 * weights[index];
+            sums[index * 3 + 2] = 1.25 * weights[index];
+        }
+        if (mode == 1) {
+            expected_weights[0] = 1.5;
+            expected_centers[0] = 1.0 / 6.0;
+        }
+        if (mode == 2) {
+            /* Inactive interior slots must not erase a later live cluster
+             * when the active count already fits the requested palette. */
+            weights[1] = 0;
+            sums[3] = sums[4] = sums[5] = 0;
+            expected_weights[0] = .25;
+            expected_centers[0] = -2;
+        }
+        if (mode == 5) {
+            /* At positions (0,1,3), masses (4,4,1/8) select the last pair:
+             * cost 16/33 < 2. Rounding 1/8 up to one selects the first pair.
+             * The survivor is 0 and merged center is 35/33. */
+            weights[0] = weights[1] = 4;
+            weights[2] = .125;
+            for (index = 0; index < 3; ++index) {
+                sums[index * 3] = (index == 2 ? 3 : index) * weights[index];
+                sums[index * 3 + 1] = -.25 * weights[index];
+                sums[index * 3 + 2] = 1.25 * weights[index];
+            }
+            expected_weights[0] = 4;
+            expected_weights[1] = 4.125;
+            expected_centers[0] = 0;
+            expected_centers[1] = 35.0 / 33.0;
+        }
+        if (mode == 6) {
+            memset(weights, 0, sizeof(weights));
+            target = 0;
+        }
+        memcpy(original, sums, sizeof(sums));
+        memcpy(old_weights, weights, sizeof(weights));
+        ward_fail = mode == 4;
+        count = sixel_palette_merge_weighted(weights, sums, 3, 4, target,
+            SIXEL_FINAL_MERGE_WARD, 0, SIXEL_PIXELFORMAT_RGBFLOAT32, 1,
+            allocator);
+        if (mode == 4) {
+            return count < 0 && !ward_fail &&
+                memcmp(original, sums, sizeof(sums)) == 0 &&
+                memcmp(old_weights, weights, sizeof(weights)) == 0;
+        }
+        if (count != target) {
+            return 0;
+        }
+        for (index = 0; index < target; ++index) {
+            if (!isfinite(weights[index]) ||
+                    fabs(weights[index] - expected_weights[index]) > 1e-12) {
+                return 0;
+            }
+            for (channel = 0; channel < 3; ++channel) {
+                /* Double multiply/divide chains on bounded rational data:
+                 * 1e-12 absolute at the unscaled centroid is conservative
+                 * across FMA/excess precision, but detects count rounding. */
+                if (!isfinite(sums[index * 3 + channel]) ||
+                        fabs(sums[index * 3 + channel] / weights[index] -
+                            (channel == 0 ? expected_centers[index] :
+                             channel == 1 ? -.25 : 1.25)) > 1e-12) {
+                    return 0;
+                }
+            }
+        }
+        for (index = target; index < 4; ++index) {
+            if (weights[index] != 0 || sums[index * 3] != 0 ||
+                    sums[index * 3 + 1] != 0 || sums[index * 3 + 2] != 0) {
+                return 0;
+            }
+        }
+    }
+    return 1;
 }
 
 static int
@@ -448,7 +617,8 @@ test_palette_merge_float(int argc, char **argv)
     palette = NULL;
     object = NULL;
     ok = 0;
-    sixel_set_final_merge_target_factor_override(1, 1.5);
+    sixel_set_final_merge_target_factor_override(1,
+        strcmp(argv[1], "fractional") == 0 ? 3.0 : 1.5);
     sixel_set_final_merge_lloyd_iterations_override(1, (unsigned int)mode);
     sixel_set_kmeans_seed_override(1, 1u);
     sixel_set_kcenter_seed_override(1, 1u);
@@ -457,7 +627,11 @@ test_palette_merge_float(int argc, char **argv)
             NULL, NULL, NULL)) &&
             SIXEL_SUCCEEDED(sixel_palette_factory_new(allocator, &object))) {
         palette = object;
-        ok = strcmp(argv[1], "empty") == 0 ? ward_empty(palette)
+        ok = strcmp(argv[1], "populations") == 0
+            ? ward_populations(allocator, mode)
+            : strcmp(argv[1], "fractional") == 0
+            ? ward_fractional(palette, model, space)
+            : strcmp(argv[1], "empty") == 0 ? ward_empty(palette)
             : strcmp(argv[1], "unique") == 0 ? ward_unique(palette)
             : strcmp(argv[1], "failure") == 0
             ? ward_failure(palette, model)

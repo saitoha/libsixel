@@ -988,6 +988,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_SAMPLING_CONTRACT \
     -DBUILD_TEST_0001_BINNING_CONTRACT \
     -DBUILD_TEST_0001_MERGE_CONTRACT \
+    -DBUILD_TEST_0002_SCAN_CONTRACT \
     -DBUILD_TEST_0001_EXTENDED_LOOKUP \
     -DBUILD_FHEDT_TEST_COMMON \
     -DBUILD_TEST_0020_FH_ENCLOSING_CELL \
@@ -4415,6 +4416,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/binning_float/0001_binning_contract.c \
     quant/palette/solvers_float/0001_solver_contract.c \
     quant/palette/merge_float/0001_merge_contract.c \
+    quant/palette/merge_float/0002_scan_contract.c \
     processing/lookup/extended/0001_extended_lookup.c \
     processing/lookup/fhedt_test_common.c \
     processing/lookup/fhedt_weight_common.c \

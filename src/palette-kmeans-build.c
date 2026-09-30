@@ -1327,7 +1327,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     sixel_kmeans_softdist_mode softdist_mode;
     sixel_kmeans_feedback_mode feedback_mode;
     sixel_kmeans_prune_policy prune_policy;
-    unsigned long *merge_weights;
+    double *merge_weights;
     double *cluster_weights;
     double *accum;
     double *channel_sum;
@@ -2487,15 +2487,15 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                                                    "palette/merge",
                                                    "merge");
         /*
-         * Preserve fractional channel contributions while still sharing the
-         * final merge code path that expects 0-255 scaled sums.  We convert
-         * float samples into the 0-255 domain here and convert them back after
-         * the merge completed.
+         * Share Ward's nominal byte-scaled metric while retaining native
+         * fractional populations and signed moments. This affine coordinate
+         * change does not bound native samples to 0-255; convert back after
+         * reduction without replacing the populations by rounded counts.
          */
         merge_sums = (double *)sixel_allocator_malloc(
             allocator, (size_t)k * 3U * sizeof(double));
-        merge_weights = (unsigned long *)sixel_allocator_malloc(
-            allocator, (size_t)k * sizeof(unsigned long));
+        merge_weights = (double *)sixel_allocator_malloc(
+            allocator, (size_t)k * sizeof(double));
         if (merge_sums == NULL || merge_weights == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;
@@ -2503,18 +2503,24 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
         for (index = 0U; index < k; ++index) {
             cluster_weight = cluster_weights[index];
             if (cluster_weight <= 0.0) {
-                merge_weights[index] = 1UL;
+                merge_weights[index] = preserve_extended_rgb ? 0.0 : 1.0;
                 merge_sums[index * 3U + 0U] = 0.0;
                 merge_sums[index * 3U + 1U] = 0.0;
                 merge_sums[index * 3U + 2U] = 0.0;
                 continue;
             }
-            if (cluster_weight > (double)ULONG_MAX) {
-                merge_weights[index] = ULONG_MAX;
-            } else {
-                merge_weights[index] = (unsigned long)(cluster_weight + 0.5);
-                if (merge_weights[index] == 0UL) {
-                    merge_weights[index] = 1UL;
+            /* Soft bins carry fractional populations. Preserve them with
+             * native coordinates; retain legacy integer rounding only for
+             * the bounded compatibility route. */
+            merge_weights[index] = cluster_weight;
+            if (!preserve_extended_rgb) {
+                if (cluster_weight > (double)ULONG_MAX) {
+                    merge_weights[index] = (double)ULONG_MAX;
+                } else {
+                    merge_weights[index] = floor(cluster_weight + 0.5);
+                    if (merge_weights[index] < 1.0) {
+                        merge_weights[index] = 1.0;
+                    }
                 }
             }
             for (channel = 0U; channel < 3U; ++channel) {
@@ -2537,7 +2543,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                     = merge_component * (double)merge_weights[index];
             }
         }
-        cluster_total = sixel_palette_apply_merge(merge_weights,
+        cluster_total = sixel_palette_merge_weighted(merge_weights,
                                                   merge_sums,
                                                   3U,
                                                   (int)k,
@@ -2562,8 +2568,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             k = 1U;
         }
         for (index = 0U; index < k; ++index) {
-            cluster_weight = (double)merge_weights[index];
-            if (cluster_weight < 1.0) {
+            cluster_weight = merge_weights[index];
+            if (cluster_weight <= 0.0) {
                 cluster_weight = 1.0;
             }
             cluster_weights[index] = cluster_weight;

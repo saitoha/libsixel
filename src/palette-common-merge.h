@@ -23,7 +23,7 @@
 
 /*
  * Shared helpers for the palette final-merge pipeline.  The orchestrator and
- * both quantizer implementations rely on this module to decode runtime
+ * the quantizer implementations rely on this module to decode runtime
  * configuration, execute Ward refinement, and expose the oversplit heuristics.
  * Keeping the declarations here prevents palette.h from growing
  * k-means/Heckbert specific details while still making the services available
@@ -81,6 +81,21 @@ sixel_palette_apply_merge(unsigned long *weights,
                           int pixelformat,
                           int preserve_extended,
                           sixel_allocator_t *allocator);
+
+/* Same reduction with finite nonnegative double populations. Positive
+ * fractions, including results below one, are retained without rounding;
+ * zero marks an inactive cluster. Input sums use the supplied populations. */
+SIXEL_INTERNAL_API int
+sixel_palette_merge_weighted(double *populations,
+                             double *sums,
+                             unsigned int depth,
+                             int cluster_count,
+                             int target,
+                             int final_merge_mode,
+                             int use_reversible,
+                             int pixelformat,
+                             int preserve_extended,
+                             sixel_allocator_t *allocator);
 
 #ifdef __cplusplus
 }

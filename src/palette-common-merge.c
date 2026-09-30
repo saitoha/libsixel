@@ -660,12 +660,8 @@ sixel_final_merge_ward(sixel_final_merge_cluster_t *clusters,
         }
     }
     if (active <= desired) {
-        for (i = active; i < nclusters; ++i) {
-            clusters[i].r = 0.0;
-            clusters[i].g = 0.0;
-            clusters[i].b = 0.0;
-            clusters[i].count = 0.0;
-        }
+        /* Positive clusters need not occupy a contiguous prefix. The
+         * caller compacts them after either Ward implementation returns. */
         return;
     }
     while (active > desired) {
@@ -1153,8 +1149,9 @@ sixel_final_merge_target(unsigned int reqcolors, int final_merge_mode)
 }
 
 /* Merge weighted centers without changing their nominal metric scale. */
-int
-sixel_palette_apply_merge(unsigned long *weights,
+static int
+sixel_palette_merge_impl(unsigned long *weights,
+                          double *populations,
                           double *sums,
                           unsigned int depth,
                           int cluster_count,
@@ -1186,7 +1183,7 @@ sixel_palette_apply_merge(unsigned long *weights,
      * and fractional means. Wire quantization belongs to a separate cache,
      * not this weighted-mean operation or an implicit snap policy.
      */
-    if (weights == NULL || sums == NULL) {
+    if ((weights == NULL && populations == NULL) || sums == NULL) {
         return cluster_count;
     }
     if (cluster_count <= 0) {
@@ -1206,7 +1203,8 @@ sixel_palette_apply_merge(unsigned long *weights,
         return cluster_count;
     }
     for (index = 0; index < cluster_count; ++index) {
-        weight = (double)weights[index];
+        weight = populations != NULL
+            ? populations[index] : (double)weights[index];
         clusters[index].count = weight;
         if (weight <= 0.0) {
             clusters[index].r = 0.0;
@@ -1257,14 +1255,19 @@ sixel_palette_apply_merge(unsigned long *weights,
             continue;
         }
         weight = clusters[index].count;
-        if (weight < 1.0) {
-            weight = 1.0;
+        if (populations != NULL) {
+            populations[result] = weight;
+            used_weight = weight;
+        } else {
+            if (weight < 1.0) {
+                weight = 1.0;
+            }
+            weights[result] = (unsigned long)(weight + 0.5);
+            if (weights[result] == 0UL) {
+                weights[result] = 1UL;
+            }
+            used_weight = (double)weights[result];
         }
-        weights[result] = (unsigned long)(weight + 0.5);
-        if (weights[result] == 0UL) {
-            weights[result] = 1UL;
-        }
-        used_weight = (double)weights[result];
         component_r = clusters[index].r;
         component_g = clusters[index].g;
         component_b = clusters[index].b;
@@ -1289,16 +1292,21 @@ sixel_palette_apply_merge(unsigned long *weights,
         }
         ++result;
     }
-    if (result == 0 && cluster_count > 0) {
+    if (result == 0 && cluster_count > 0 && populations == NULL) {
         weight = clusters[0].count;
-        if (weight < 1.0) {
-            weight = 1.0;
+        if (populations != NULL) {
+            populations[0] = weight;
+            used_weight = weight;
+        } else {
+            if (weight < 1.0) {
+                weight = 1.0;
+            }
+            weights[0] = (unsigned long)(weight + 0.5);
+            if (weights[0] == 0UL) {
+                weights[0] = 1UL;
+            }
+            used_weight = (double)weights[0];
         }
-        weights[0] = (unsigned long)(weight + 0.5);
-        if (weights[0] == 0UL) {
-            weights[0] = 1UL;
-        }
-        used_weight = (double)weights[0];
         component_r = clusters[0].r;
         component_g = clusters[0].g;
         component_b = clusters[0].b;
@@ -1324,7 +1332,11 @@ sixel_palette_apply_merge(unsigned long *weights,
         result = 1;
     }
     for (index = result; index < cluster_count; ++index) {
-        weights[index] = 0UL;
+        if (populations != NULL) {
+            populations[index] = 0.0;
+        } else {
+            weights[index] = 0UL;
+        }
         for (plane = 0; plane < (int)depth; ++plane) {
             sums[(size_t)index * (size_t)depth + (size_t)plane] = 0.0;
         }
@@ -1332,6 +1344,45 @@ sixel_palette_apply_merge(unsigned long *weights,
     sixel_allocator_free(allocator, clusters);
 
     return result;
+}
+
+/* The integer adapter serves histogram builders and retains byte-path
+ * compatibility. Both adapters use the same pair selection and reduction. */
+int
+sixel_palette_apply_merge(unsigned long *weights,
+                          double *sums,
+                          unsigned int depth,
+                          int cluster_count,
+                          int target,
+                          int final_merge_mode,
+                          int use_reversible,
+                          int pixelformat,
+                          int preserve_extended,
+                          sixel_allocator_t *allocator)
+{
+    return sixel_palette_merge_impl(weights, NULL, sums, depth,
+        cluster_count, target, final_merge_mode, use_reversible,
+        pixelformat, preserve_extended, allocator);
+}
+
+/* Fractional populations are measures, not rounded pixel counts. In
+ * particular, a positive population below one must not become one on export
+ * or when forming the next Ward centroid. Zero remains an inactive slot. */
+int
+sixel_palette_merge_weighted(double *populations,
+                             double *sums,
+                             unsigned int depth,
+                             int cluster_count,
+                             int target,
+                             int final_merge_mode,
+                             int use_reversible,
+                             int pixelformat,
+                             int preserve_extended,
+                             sixel_allocator_t *allocator)
+{
+    return sixel_palette_merge_impl(NULL, populations, sums, depth,
+        cluster_count, target, final_merge_mode, use_reversible,
+        pixelformat, preserve_extended, allocator);
 }
 
 /* emacs Local Variables:      */
