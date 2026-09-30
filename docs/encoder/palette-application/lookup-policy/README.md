@@ -901,6 +901,8 @@ nearest-label Voronoi grid --> quantized pixel coordinate --> palette index
 
 The current resolutions are `R = 64`, `128`, or `256`; the default is `64`.
 
+Each pass preserves its input source labels until every output site has been evaluated, then publishes distances and labels together. After the first axis, a source has a nonzero carried cost: it can lose at its own coordinate but still win farther along the line. Overwriting that source label early would return the wrong palette entry even if the distance array remained correct. The byte implementation stages at most 256 integer labels on the active worker's stack; this adds no image-sized or grid-sized allocation.
+
 ### One-dimensional transform
 
 For one line of grid sites, let `f(q)` be zero at a palette seed and infinity elsewhere. A weighted squared-Euclidean distance transform computes:
@@ -2160,6 +2162,21 @@ The following focused tests cover the selected extended float lookup path. Range
 | LUTY-13 | `eytzinger`: sRGB/P3 wire output, retained native palette and actual consumer. | [tests/quant/palette/eytzinger_float/0001_eyt_gamma_srgb.t](../../../../tests/quant/palette/eytzinger_float/0001_eyt_gamma_srgb.t), [tests/quant/palette/eytzinger_float/0002_eyt_gamma_p3.t](../../../../tests/quant/palette/eytzinger_float/0002_eyt_gamma_p3.t), [tests/quant/palette/eytzinger_float/0003_eyt_linear_srgb.t](../../../../tests/quant/palette/eytzinger_float/0003_eyt_linear_srgb.t), [tests/quant/palette/eytzinger_float/0004_eyt_linear_p3.t](../../../../tests/quant/palette/eytzinger_float/0004_eyt_linear_p3.t), [tests/quant/palette/eytzinger_float/0005_eyt_oklab_srgb.t](../../../../tests/quant/palette/eytzinger_float/0005_eyt_oklab_srgb.t), [tests/quant/palette/eytzinger_float/0006_eyt_oklab_p3.t](../../../../tests/quant/palette/eytzinger_float/0006_eyt_oklab_p3.t), [tests/quant/palette/eytzinger_float/0007_eyt_cielab_srgb.t](../../../../tests/quant/palette/eytzinger_float/0007_eyt_cielab_srgb.t), [tests/quant/palette/eytzinger_float/0008_eyt_cielab_p3.t](../../../../tests/quant/palette/eytzinger_float/0008_eyt_cielab_p3.t), [tests/quant/palette/eytzinger_float/0009_eyt_din99d_srgb.t](../../../../tests/quant/palette/eytzinger_float/0009_eyt_din99d_srgb.t), [tests/quant/palette/eytzinger_float/0010_eyt_din99d_p3.t](../../../../tests/quant/palette/eytzinger_float/0010_eyt_din99d_p3.t) |
 | LUTY-14 | `eytzinger`: Byte fast-path eligibility. | [tests/quant/palette/eytzinger_float/0011_eyt_byte_eligibility.t](../../../../tests/quant/palette/eytzinger_float/0011_eyt_byte_eligibility.t) |
 | LUTY-15 | `eytzinger`: Worker-local FS bands, overlap and stable wire cache. | [tests/quant/palette/eytzinger_float/0012_eyt_bands_private.t](../../../../tests/quant/palette/eytzinger_float/0012_eyt_bands_private.t) |
+
+### FHEDT byte-grid coverage
+
+The grid witnesses enumerate every site against all nine independent integer seed coordinates. Integer weights and squared distances are exact and below `2^20`; unequal distances differ by at least one, and equal-distance labels are all accepted. The two-color carried-label witnesses have squared byte distances `256` versus `208`. The byte backend is called directly, with the signature publication performed by its policy adapter reproduced before cache access. The threaded witness requests two workers; compiler/TLS restrictions and thread-creation fallback still follow the production threading policy, so this is not an exhaustive scheduling or race proof. R64 keeps the automated cases small; these witnesses do not establish every possible palette, subvoxel approximation or resolution/feature combination.
+
+| ID | Contract | Evidence |
+| --- | --- | --- |
+| LUTB-01 | Y-axis propagation retains a source that loses at its own site. | [tests/processing/lookup/fhedt_byte/0001_y_labels.t](../../../../tests/processing/lookup/fhedt_byte/0001_y_labels.t) |
+| LUTB-02 | Z-axis propagation retains the corresponding carried label. | [tests/processing/lookup/fhedt_byte/0002_z_labels.t](../../../../tests/processing/lookup/fhedt_byte/0002_z_labels.t) |
+| LUTB-03 | Every R64 lattice site has a minimum-distance seed label under uniform weights. | [tests/processing/lookup/fhedt_byte/0003_grid.t](../../../../tests/processing/lookup/fhedt_byte/0003_grid.t) |
+| LUTB-04 | Every R64 lattice site has a minimum-distance seed label under backend squared-distance coefficients 7:3:1. | [tests/processing/lookup/fhedt_byte/0004_weighted_grid.t](../../../../tests/processing/lookup/fhedt_byte/0004_weighted_grid.t) |
+| LUTB-05 | Palette index 256 survives propagation, while duplicate seeds retain their last label. | [tests/processing/lookup/fhedt_byte/0005_u16_labels.t](../../../../tests/processing/lookup/fhedt_byte/0005_u16_labels.t) |
+| LUTB-06 | The independent R64 grid oracle also holds with two construction workers requested. | [tests/processing/lookup/fhedt_byte/0006_threaded_grid.t](../../../../tests/processing/lookup/fhedt_byte/0006_threaded_grid.t) |
+| LUTB-07 | Refinement preserves the strict winner in the carried-label witness. | [tests/processing/lookup/fhedt_byte/0007_refine_labels.t](../../../../tests/processing/lookup/fhedt_byte/0007_refine_labels.t) |
+| LUTB-08 | Cached lookup and same-object reprepare use the newly published labels. | [tests/processing/lookup/fhedt_byte/0008_cache_reprepare.t](../../../../tests/processing/lookup/fhedt_byte/0008_cache_reprepare.t) |
 
 ### FHEDT native float coverage
 

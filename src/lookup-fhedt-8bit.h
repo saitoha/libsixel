@@ -74,14 +74,14 @@ typedef struct sixel_lookup_fhedt_8bit {
     int parallel_dither_active;
 } sixel_lookup_fhedt_8bit_t;
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_fhedt_8bit_create(sixel_allocator_t *allocator,
                               sixel_lookup_fhedt_8bit_t **fhedt_out);
 
-void
+SIXEL_INTERNAL_API void
 sixel_lookup_fhedt_8bit_unref(sixel_lookup_fhedt_8bit_t *fhedt);
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_fhedt_8bit_configure(sixel_lookup_fhedt_8bit_t *fhedt,
                                  unsigned char const *palette,
                                  int ncolors,
@@ -101,11 +101,11 @@ sixel_lookup_fhedt_8bit_configure(sixel_lookup_fhedt_8bit_t *fhedt,
                                  int depth,
                                  int parallel_dither_active);
 
-int
+SIXEL_INTERNAL_API int
 sixel_lookup_fhedt_8bit_map(sixel_lookup_fhedt_8bit_t *fhedt,
                            unsigned char const *pixel);
 
-uint32_t
+SIXEL_INTERNAL_API uint32_t
 sixel_lookup_fhedt_8bit_signature(unsigned char const *palette,
                                  int ncolors,
                                  int resolution,
@@ -119,7 +119,7 @@ uint32_t
 sixel_lookup_fhedt_8bit_shared_signature(
     sixel_lookup_fhedt_shared_8bit_t const *shared);
 
-void
+SIXEL_INTERNAL_API void
 sixel_lookup_fhedt_8bit_shared_set_signature(
     sixel_lookup_fhedt_shared_8bit_t *shared,
     uint32_t signature);

@@ -683,6 +683,14 @@ int test_fh_lookup_0020(int argc, char **argv);
 int test_fh_lookup_0021(int argc, char **argv);
 int test_fh_lookup_0022(int argc, char **argv);
 int test_fh_lookup_0023(int argc, char **argv);
+int test_fh_byte_0001(int argc, char **argv);
+int test_fh_byte_0002(int argc, char **argv);
+int test_fh_byte_0003(int argc, char **argv);
+int test_fh_byte_0004(int argc, char **argv);
+int test_fh_byte_0005(int argc, char **argv);
+int test_fh_byte_0006(int argc, char **argv);
+int test_fh_byte_0007(int argc, char **argv);
+int test_fh_byte_0008(int argc, char **argv);
 int test_fh_weight_0001(int argc, char **argv);
 int test_fh_weight_0002(int argc, char **argv);
 int test_fh_weight_0003(int argc, char **argv);
@@ -3587,6 +3595,22 @@ static test_entry_t const test_entries[] = {
       test_fh_lookup_0022 },
     { "lookup/fhedt/0023_fh_instance_isolation",
       test_fh_lookup_0023 },
+    { "lookup/fhedt_byte/0001_y_labels",
+      test_fh_byte_0001 },
+    { "lookup/fhedt_byte/0002_z_labels",
+      test_fh_byte_0002 },
+    { "lookup/fhedt_byte/0003_grid",
+      test_fh_byte_0003 },
+    { "lookup/fhedt_byte/0004_weighted_grid",
+      test_fh_byte_0004 },
+    { "lookup/fhedt_byte/0005_u16_labels",
+      test_fh_byte_0005 },
+    { "lookup/fhedt_byte/0006_threaded_grid",
+      test_fh_byte_0006 },
+    { "lookup/fhedt_byte/0007_refine_labels",
+      test_fh_byte_0007 },
+    { "lookup/fhedt_byte/0008_cache_reprepare",
+      test_fh_byte_0008 },
     { "lookup/fhedt_weight/0001_cielab_default",
       test_fh_weight_0001 },
     { "lookup/fhedt_weight/0002_cielab_unweighted",

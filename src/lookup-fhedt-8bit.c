@@ -973,9 +973,11 @@ sixel_lookup_fhedt_edt1d_scalar_8bit(double *line_dist,
     double zbuf[257];
     int vbuf[256];
     double scratch[256];
+    int source_scratch[256];
     int k;
     int q;
     int i;
+    int idx;
     int hull_end;
     double s;
     double candidate;
@@ -1022,22 +1024,26 @@ sixel_lookup_fhedt_edt1d_scalar_8bit(double *line_dist,
     hull_end = k;
     k = 0;
     for (i = 0; i < length; ++i) {
-        int idx;
         while (k < hull_end && zbuf[k + 1] < (double)i) {
             ++k;
         }
         scratch[i] = line_dist[i];
+        source_scratch[i] = line_src[i];
         idx = vbuf[k];
         if (idx < 0 || idx >= length) {
             continue;
         }
         scratch[i] = line_dist[idx]
                    + weight * (double)((i - idx) * (i - idx));
-        line_src[i] = line_src[idx];
+        /* Later axes carry nonzero costs: a source can lose at its own
+         * site but win farther along the line. Preserve its input label
+         * until every output site has read it, just as for the distances. */
+        source_scratch[i] = line_src[idx];
     }
 
     for (i = 0; i < length; ++i) {
         line_dist[i] = scratch[i];
+        line_src[i] = source_scratch[i];
     }
 }
 

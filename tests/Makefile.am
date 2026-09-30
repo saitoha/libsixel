@@ -993,6 +993,15 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0002_SCAN_CONTRACT \
     -DBUILD_TEST_0001_EXTENDED_LOOKUP \
     -DBUILD_FHEDT_TEST_COMMON \
+    -DBUILD_FHEDT_BYTE_TEST_COMMON \
+    -DBUILD_TEST_0001_Y_LABELS \
+    -DBUILD_TEST_0002_Z_LABELS \
+    -DBUILD_TEST_0003_GRID \
+    -DBUILD_TEST_0004_WEIGHTED_GRID \
+    -DBUILD_TEST_0005_U16_LABELS \
+    -DBUILD_TEST_0006_THREADED_GRID \
+    -DBUILD_TEST_0007_REFINE_LABELS \
+    -DBUILD_TEST_0008_CACHE_REPREPARE \
     -DBUILD_TEST_0020_FH_ENCLOSING_CELL \
     -DBUILD_TEST_0021_FH_COLLISION_REFINE \
     -DBUILD_TEST_0022_FH_COLLISION_DIST2 \
@@ -4423,6 +4432,15 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/merge_float/0002_scan_contract.c \
     processing/lookup/extended/0001_extended_lookup.c \
     processing/lookup/fhedt_test_common.c \
+    processing/lookup/fhedt_byte_test_common.c \
+    processing/lookup/fhedt_byte/0001_y_labels.c \
+    processing/lookup/fhedt_byte/0002_z_labels.c \
+    processing/lookup/fhedt_byte/0003_grid.c \
+    processing/lookup/fhedt_byte/0004_weighted_grid.c \
+    processing/lookup/fhedt_byte/0005_u16_labels.c \
+    processing/lookup/fhedt_byte/0006_threaded_grid.c \
+    processing/lookup/fhedt_byte/0007_refine_labels.c \
+    processing/lookup/fhedt_byte/0008_cache_reprepare.c \
     processing/lookup/fhedt_weight_common.c \
     processing/lookup/fhedt_weight/0001_cielab_default.c \
     processing/lookup/fhedt_weight/0002_cielab_unweighted.c \
