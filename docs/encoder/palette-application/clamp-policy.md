@@ -95,7 +95,10 @@ The default threshold 1.01 retains a small correction margin. It is a compromise
 | DC-40 | Clearing temporal history removes prior correction before the next apply. | [tests/processing/dither/clamp/0040_temporal_reset.t](../../../tests/processing/dither/clamp/0040_temporal_reset.t) |
 | DC-41 | FS vertical taps propagate the limited residual in raster order. | [tests/processing/dither/clamp/0041_fs_vertical_residual.t](../../../tests/processing/dither/clamp/0041_fs_vertical_residual.t) |
 | DC-42 | FS reverses horizontal taps while propagating limited residuals in serpentine order. | [tests/processing/dither/clamp/0042_fs_serpentine_residual.t](../../../tests/processing/dither/clamp/0042_fs_serpentine_residual.t) |
-| DC-43 | Parallel soft-clamp bands match independently reconstructed bands including their overlap warm-up. | [tests/processing/dither/clamp/0043_parallel_overlap.t](../../../tests/processing/dither/clamp/0043_parallel_overlap.t) |
+| DC-43 | Native float soft-clamp FS bands match independent raster indexes after overlap warm-up, with a short final band and two/three workers. | [tests/processing/dither/clamp/0043_parallel_overlap.t](../../../tests/processing/dither/clamp/0043_parallel_overlap.t) |
+| DC-44 | FS with odd overlap preserves absolute-row serpentine parity while each worker rebuilds private limiter history. | [tests/processing/dither/clamp/0044_parallel_serpentine_overlap.t](../../../tests/processing/dither/clamp/0044_parallel_serpentine_overlap.t) |
+| DC-45 | FS with a requested two-row work band uses the effective six-row geometry for soft-clamp feedback. | [tests/processing/dither/clamp/0045_parallel_minimum_band.t](../../../tests/processing/dither/clamp/0045_parallel_minimum_band.t) |
+| DC-46 | FS with a requested seven-row work band rounds to twelve rows and excessive overlap is capped at six before soft-clamp application. | [tests/processing/dither/clamp/0046_parallel_overlap_cap.t](../../../tests/processing/dither/clamp/0046_parallel_overlap_cap.t) |
 
 ### Quality regression tests
 
@@ -104,5 +107,7 @@ The default threshold 1.01 retains a small correction margin. It is a compromise
 | DCQ-01 | Short and environment thresholds reach the consumer, produce identical SIXEL, and retain the fixture quality floor. | [tests/cli/options/regression/0168_clamp_threshold_image_regression.t](../../../tests/cli/options/regression/0168_clamp_threshold_image_regression.t) |
 
 ### Coverage boundary
+
+The parallel-band fixtures use an independent 50-digit FS recurrence with source-containing soft bounds, and verify that rounding each stored operation to binary32 produces the same indexes. Their minimum nearest-color squared-distance gap exceeds `0.0017`; exact index assertions do not require bit-identical intermediate floating calculations. The source and palette coordinates are binary-exact. Regenerate or verify the fixtures with `tools/generate_clamp_band_fixtures.py [--check]`. Each fixture differs from whole-frame serial rendering, zero overlap, omitted limiting and byte-projected palettes. These tests cover spatial work-band isolation; they do not establish temporal-history precision or all combinations of scan order and diffusion kernel. [Threading overview](../../threading/overview.md#work-band-seams-and-image-quality) owns the work-band/overlap behavior.
 
 The value tests establish analytic limiter behavior and per-kernel dispatch. Retained-color tests compare propagated and skipped residuals after byte-input promotion. Dataset scores are supplementary measurements, not substitutes for those contracts.
