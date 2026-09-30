@@ -571,6 +571,31 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0068_SRGB_LINEAR_EXTENDED_SOURCE \
     -DBUILD_SRGB_CONTRACT_COMMON \
     -DBUILD_MAP_FLOAT_COMMON \
+    -DBUILD_MAP_PRECISION_COMMON \
+    -DBUILD_TEST_0023_MAP_STATIC_TO_MULTIFRAME \
+    -DBUILD_TEST_0001_MAP_CMS_GAMMA \
+    -DBUILD_TEST_0002_MAP_CMS_LINEAR \
+    -DBUILD_TEST_0003_MAP_CMS_OKLAB \
+    -DBUILD_TEST_0004_MAP_CMS_CIELAB \
+    -DBUILD_TEST_0005_MAP_CMS_DIN99D \
+    -DBUILD_TEST_0006_MAP_CMS_AUTO \
+    -DBUILD_TEST_0007_MAP_CMS_FLOAT \
+    -DBUILD_TEST_0008_MAP_CMS_GAMMA_TARGET \
+    -DBUILD_TEST_0009_MAP_CMS_DISABLED_BYTE \
+    -DBUILD_TEST_0010_MAP_CMS_EXPLICIT_NARROWING \
+    -DBUILD_TEST_0011_MAP_UNTAGGED_BYTE \
+    -DBUILD_TEST_0012_MAP_CMS_AUTO_SOLVER \
+    -DBUILD_TEST_0013_MAP_CMS_CENTER \
+    -DBUILD_TEST_0014_MAP_CMS_MEDOIDS \
+    -DBUILD_TEST_0015_MAP_REUSE_BYTE_FIRST \
+    -DBUILD_TEST_0016_MAP_REUSE_FLOAT_FIRST \
+    -DBUILD_TEST_0017_MAP_CMS_EXPORT \
+    -DBUILD_TEST_0018_MAP_CMS_P3_CONTROL \
+    -DBUILD_TEST_0019_MAP_MULTIFRAME_BOUNDARY \
+    -DBUILD_TEST_0020_MAP_PROMOTE_FS \
+    -DBUILD_TEST_0021_MAP_ALLOCATION_NONE \
+    -DBUILD_TEST_0022_MAP_ALLOCATION_FS \
+    -DBUILD_TEST_0024_MAP_ALLOCATION_BORROWED \
     -DBUILD_TEST_0001_MAP_HECKBERT_GAMMA \
     -DBUILD_TEST_0002_MAP_HECKBERT_LINEAR \
     -DBUILD_TEST_0003_MAP_HECKBERT_OKLAB \
@@ -4428,6 +4453,31 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/lookup_float/0001_lookup_palette.c \
     quant/palette/srgb_contract_common.c \
     quant/palette/map_float_common.c \
+    quant/palette/map_precision_common.c \
+    quant/palette/map_precision/0023_map_static_to_multiframe.c \
+    quant/palette/map_precision/0001_map_cms_gamma.c \
+    quant/palette/map_precision/0002_map_cms_linear.c \
+    quant/palette/map_precision/0003_map_cms_oklab.c \
+    quant/palette/map_precision/0004_map_cms_cielab.c \
+    quant/palette/map_precision/0005_map_cms_din99d.c \
+    quant/palette/map_precision/0006_map_cms_auto.c \
+    quant/palette/map_precision/0007_map_cms_float.c \
+    quant/palette/map_precision/0008_map_cms_gamma_target.c \
+    quant/palette/map_precision/0009_map_cms_disabled_byte.c \
+    quant/palette/map_precision/0010_map_cms_explicit_narrowing.c \
+    quant/palette/map_precision/0011_map_untagged_byte.c \
+    quant/palette/map_precision/0012_map_cms_auto_solver.c \
+    quant/palette/map_precision/0013_map_cms_center.c \
+    quant/palette/map_precision/0014_map_cms_medoids.c \
+    quant/palette/map_precision/0015_map_reuse_byte_first.c \
+    quant/palette/map_precision/0016_map_reuse_float_first.c \
+    quant/palette/map_precision/0017_map_cms_export.c \
+    quant/palette/map_precision/0018_map_cms_p3_control.c \
+    quant/palette/map_precision/0019_map_multiframe_boundary.c \
+    quant/palette/map_precision/0020_map_promote_fs.c \
+    quant/palette/map_precision/0021_map_allocation_none.c \
+    quant/palette/map_precision/0022_map_allocation_fs.c \
+    quant/palette/map_precision/0024_map_allocation_borrowed.c \
     quant/palette/map_solver/0001_map_heckbert_gamma.c \
     quant/palette/map_solver/0002_map_heckbert_linear.c \
     quant/palette/map_solver/0003_map_heckbert_oklab.c \

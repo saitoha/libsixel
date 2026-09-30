@@ -473,6 +473,30 @@ int test_palette_sampling_float(int argc, char **argv);
 int test_palette_binning_float(int argc, char **argv);
 int test_palette_merge_float(int argc, char **argv);
 int test_extended_lookup(int argc, char **argv);
+int test_map_precision_0001(int argc, char **argv);
+int test_map_precision_0002(int argc, char **argv);
+int test_map_precision_0003(int argc, char **argv);
+int test_map_precision_0004(int argc, char **argv);
+int test_map_precision_0005(int argc, char **argv);
+int test_map_precision_0006(int argc, char **argv);
+int test_map_precision_0007(int argc, char **argv);
+int test_map_precision_0008(int argc, char **argv);
+int test_map_precision_0009(int argc, char **argv);
+int test_map_precision_0010(int argc, char **argv);
+int test_map_precision_0011(int argc, char **argv);
+int test_map_precision_0012(int argc, char **argv);
+int test_map_precision_0013(int argc, char **argv);
+int test_map_precision_0014(int argc, char **argv);
+int test_map_precision_0015(int argc, char **argv);
+int test_map_precision_0016(int argc, char **argv);
+int test_map_precision_0017(int argc, char **argv);
+int test_map_precision_0018(int argc, char **argv);
+int test_map_precision_0019(int argc, char **argv);
+int test_map_precision_0020(int argc, char **argv);
+int test_map_precision_0021(int argc, char **argv);
+int test_map_precision_0022(int argc, char **argv);
+int test_map_precision_0023(int argc, char **argv);
+int test_map_precision_0024(int argc, char **argv);
 int test_map_solver_0001(int argc, char **argv);
 int test_map_solver_0002(int argc, char **argv);
 int test_map_solver_0003(int argc, char **argv);
@@ -3058,6 +3082,54 @@ static test_entry_t const test_entries[] = {
     { "palette/binning_float/0001_binning_contract",
       test_palette_binning_float },
     { "lookup/extended/0001_extended_lookup", test_extended_lookup },
+    { "palette/map_precision/0001_map_cms_gamma",
+      test_map_precision_0001 },
+    { "palette/map_precision/0002_map_cms_linear",
+      test_map_precision_0002 },
+    { "palette/map_precision/0003_map_cms_oklab",
+      test_map_precision_0003 },
+    { "palette/map_precision/0004_map_cms_cielab",
+      test_map_precision_0004 },
+    { "palette/map_precision/0005_map_cms_din99d",
+      test_map_precision_0005 },
+    { "palette/map_precision/0006_map_cms_auto",
+      test_map_precision_0006 },
+    { "palette/map_precision/0007_map_cms_float",
+      test_map_precision_0007 },
+    { "palette/map_precision/0008_map_cms_gamma_target",
+      test_map_precision_0008 },
+    { "palette/map_precision/0009_map_cms_disabled_byte",
+      test_map_precision_0009 },
+    { "palette/map_precision/0010_map_cms_explicit_narrowing",
+      test_map_precision_0010 },
+    { "palette/map_precision/0011_map_untagged_byte",
+      test_map_precision_0011 },
+    { "palette/map_precision/0012_map_cms_auto_solver",
+      test_map_precision_0012 },
+    { "palette/map_precision/0013_map_cms_center",
+      test_map_precision_0013 },
+    { "palette/map_precision/0014_map_cms_medoids",
+      test_map_precision_0014 },
+    { "palette/map_precision/0015_map_reuse_byte_first",
+      test_map_precision_0015 },
+    { "palette/map_precision/0016_map_reuse_float_first",
+      test_map_precision_0016 },
+    { "palette/map_precision/0017_map_cms_export",
+      test_map_precision_0017 },
+    { "palette/map_precision/0018_map_cms_p3_control",
+      test_map_precision_0018 },
+    { "palette/map_precision/0019_map_multiframe_boundary",
+      test_map_precision_0019 },
+    { "palette/map_precision/0020_map_promote_fs",
+      test_map_precision_0020 },
+    { "palette/map_precision/0021_map_allocation_none",
+      test_map_precision_0021 },
+    { "palette/map_precision/0022_map_allocation_fs",
+      test_map_precision_0022 },
+    { "palette/map_precision/0023_map_static_to_multiframe",
+      test_map_precision_0023 },
+    { "palette/map_precision/0024_map_allocation_borrowed",
+      test_map_precision_0024 },
     { "palette/map_solver/0001_map_heckbert_gamma",
       test_map_solver_0001 },
     { "palette/map_solver/0002_map_heckbert_linear",

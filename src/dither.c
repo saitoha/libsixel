@@ -3996,7 +3996,7 @@ sixel_dither_apply_palette_with_mode(
     int palette_has_float;
     int float_channels;
     sixel_palette_t *palette;
-    int dest_owned;
+    int dest_owned = 0;
     int palette_entry_limit;
     unsigned char *transparent_mask = NULL;
     unsigned char const *preset_transparent_mask;
@@ -4247,7 +4247,9 @@ sixel_dither_apply_palette_with_mode(
         prefer_float_pipeline = 1;
     }
     if (dither->use_rgb101_palette != 0 &&
-            (!prefer_float_pipeline || !source_has_float ||
+            (!prefer_float_pipeline ||
+             (!source_has_float &&
+              pipeline_pixelformat != SIXEL_PIXELFORMAT_RGB888) ||
              !palette_has_float)) {
         sixel_helper_set_additional_message(
             "RGB101 output requires authoritative float lookup and palette.");
@@ -4313,8 +4315,10 @@ sixel_dither_apply_palette_with_mode(
             dither->clamp_promoted_rgb888 =
                 sixel_dither_clamp_requires_float(dither);
         } else {
-            /* A byte fallback would silently change the clamp contract. */
-            if (sixel_dither_clamp_requires_float(dither)) {
+            /* A byte fallback would lose native map precision even with
+             * hard/no diffusion; clamp headroom is a separate requirement. */
+            if (dither->use_rgb101_palette != 0 ||
+                    sixel_dither_clamp_requires_float(dither)) {
                 goto end;
             }
             prefer_float_pipeline = 0;
@@ -4723,6 +4727,15 @@ end:
                           status);
     }
     if (dither != NULL) {
+        /* Setup may fail after the index buffer was allocated, before any
+         * lookup ran. Never publish that unfinished buffer as a result.
+         * Pipeline-provided storage remains owned by the caller. */
+        if (SIXEL_FAILED(status) && dest != NULL) {
+            if (dest_owned) {
+                sixel_allocator_free(dither->allocator, dest);
+            }
+            dest = NULL;
+        }
         sixel_dither_interframe_finish_apply(dither,
                                            resolved_apply_mode,
                                            status);

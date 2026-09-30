@@ -4402,6 +4402,7 @@ typedef struct sixel_callback_context_for_mapfile {
     size_t gpu_palette_threshold;
     int prefer_float32;
     int preserve_float_palette;
+    int allow_float_palette;
 } sixel_callback_context_for_mapfile_t;
 
 static SIXELSTATUS
@@ -4479,6 +4480,17 @@ load_image_callback_for_palette(
 
     /* get callback context object from the private data */
     callback_context = (sixel_callback_context_for_mapfile_t *)data;
+
+    /* The map is an independent precision source. Inspect the loader's
+     * representation before workspace conversion can narrow it to bytes.
+     * This does not change the encoder's base preference or promote maps
+     * whose loader actually returned sufficient byte samples. */
+    if (callback_context->allow_float_palette &&
+            SIXEL_PIXELFORMAT_IS_FLOAT32(
+                sixel_frame_get_pixelformat(frame))) {
+        callback_context->prefer_float32 = 1;
+        callback_context->preserve_float_palette = 1;
+    }
 
     status = sixel_frame_set_pixelformat(
         frame,
@@ -6147,7 +6159,8 @@ static SIXELSTATUS
 sixel_prepare_specified_palette(
     sixel_dither_t  /* out */   **dither,
     sixel_encoder_t /* in */    *encoder,
-    int preserve_float)
+    int preserve_float,
+    int allow_float_palette)
 {
     SIXELSTATUS status;
     sixel_callback_context_for_mapfile_t callback_context;
@@ -6384,6 +6397,7 @@ palette_cleanup:
     callback_context.prefer_float32 =
         encoder->prefer_float32 || preserve_float;
     callback_context.preserve_float_palette = preserve_float;
+    callback_context.allow_float_palette = allow_float_palette;
 
     status = sixel_loader_new(&loader, encoder->allocator);
     if (SIXEL_FAILED(status)) {
@@ -7046,24 +7060,33 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
 }
 
 static int
-sixel_encoder_rgb101_frame(sixel_encoder_t const *encoder,
-                            sixel_frame_t *frame)
+sixel_encoder_rgb101_candidate(sixel_encoder_t const *encoder,
+                                sixel_frame_t *frame)
 {
     int format;
 
-    if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
-        return 1;
-    }
     format = sixel_frame_get_pixelformat(frame);
-    /* Never promote a byte-eligible job merely to enable this path. The
-     * planner's effective float storage also covers CMS-retained precision. */
+    /* Eligibility is separate from precision: an independently loaded map
+     * may need float even when this source has sufficient RGB888 samples. */
     return encoder->output_colorspace == SIXEL_COLORSPACE_GAMMA &&
-        (encoder->prefer_float32 || SIXEL_PIXELFORMAT_IS_FLOAT32(format)) &&
         (format == SIXEL_PIXELFORMAT_RGB888 ||
          SIXEL_PIXELFORMAT_IS_FLOAT32(format)) &&
         sixel_frame_get_multiframe(frame) == 0 &&
         !sixel_encoder_frame_preserves_alpha_key(frame) &&
         sixel_encoder_rgb101_options(encoder);
+}
+
+static int
+sixel_encoder_rgb101_frame(sixel_encoder_t const *encoder,
+                            sixel_frame_t *frame)
+{
+    if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+        return 1;
+    }
+    /* Never promote a byte-eligible job merely to enable this path. */
+    return (encoder->prefer_float32 || SIXEL_PIXELFORMAT_IS_FLOAT32(
+                sixel_frame_get_pixelformat(frame))) &&
+        sixel_encoder_rgb101_candidate(encoder, frame);
 }
 
 /* Reject unconnected P3 combinations before starting any output. The first
@@ -7249,7 +7272,8 @@ sixel_encoder_prepare_palette(
             status = SIXEL_OK;
         } else {
             status = sixel_prepare_specified_palette(dither, encoder,
-                sixel_encoder_rgb101_frame(encoder, frame));
+                sixel_encoder_rgb101_frame(encoder, frame),
+                sixel_encoder_rgb101_candidate(encoder, frame));
         }
         goto end;
     case SIXEL_COLOR_OPTION_BUILTIN:
@@ -7917,7 +7941,8 @@ end:
         cluster_frame = NULL;
     }
     if (SIXEL_SUCCEEDED(status) && *dither != NULL && !from_map_image &&
-            sixel_encoder_rgb101_frame(encoder, frame)) {
+            ((*dither)->use_rgb101_palette ||
+             sixel_encoder_rgb101_frame(encoder, frame))) {
         /* Generated and fixed palettes share the same finalization. Keep
          * order, duplicates and unused slots: the independent wire cache
          * and unrounded working palette must use identical indices. */
@@ -7942,7 +7967,7 @@ end:
         (*dither)->gpu_palette_threshold = encoder->gpu_palette_threshold;
         /* pass down the user's demand for an exact palette size */
         (*dither)->force_palette = encoder->force_palette;
-        if (cache_allowed
+        if (cache_allowed && !(*dither)->use_rgb101_palette
                 && fixed_palette_cache_candidate != 0
                 && dither_cache_hit == 0) {
             /*
@@ -8849,6 +8874,12 @@ sixel_encoder_encode_frame_internal(
         context.loop_no = sixel_frame_get_loop_no(frame);
         context.delay = sixel_frame_get_delay(frame);
         context.multiframe = sixel_frame_get_multiframe(frame);
+    }
+    /* Each static frame is a new input, including direct encode_frame()
+     * calls. Reload its map under the current loader/precision request;
+     * the fixed-palette cache is only reusable within an animation. */
+    if (!context.multiframe) {
+        sixel_encoder_clear_dither_cache(encoder);
     }
     if (encoder != NULL && encoder->logger != NULL) {
         sixel_timeline_logger_set_frame_context(encoder->logger,

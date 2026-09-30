@@ -2177,6 +2177,31 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/lookup_float/0001_lookup_palette.c \
 	quant/palette/srgb_contract_common.c \
 	quant/palette/map_float_common.c \
+	quant/palette/map_precision_common.c \
+	quant/palette/map_precision/0023_map_static_to_multiframe.c \
+	quant/palette/map_precision/0001_map_cms_gamma.c \
+	quant/palette/map_precision/0002_map_cms_linear.c \
+	quant/palette/map_precision/0003_map_cms_oklab.c \
+	quant/palette/map_precision/0004_map_cms_cielab.c \
+	quant/palette/map_precision/0005_map_cms_din99d.c \
+	quant/palette/map_precision/0006_map_cms_auto.c \
+	quant/palette/map_precision/0007_map_cms_float.c \
+	quant/palette/map_precision/0008_map_cms_gamma_target.c \
+	quant/palette/map_precision/0009_map_cms_disabled_byte.c \
+	quant/palette/map_precision/0010_map_cms_explicit_narrowing.c \
+	quant/palette/map_precision/0011_map_untagged_byte.c \
+	quant/palette/map_precision/0012_map_cms_auto_solver.c \
+	quant/palette/map_precision/0013_map_cms_center.c \
+	quant/palette/map_precision/0014_map_cms_medoids.c \
+	quant/palette/map_precision/0015_map_reuse_byte_first.c \
+	quant/palette/map_precision/0016_map_reuse_float_first.c \
+	quant/palette/map_precision/0017_map_cms_export.c \
+	quant/palette/map_precision/0018_map_cms_p3_control.c \
+	quant/palette/map_precision/0019_map_multiframe_boundary.c \
+	quant/palette/map_precision/0020_map_promote_fs.c \
+	quant/palette/map_precision/0021_map_allocation_none.c \
+	quant/palette/map_precision/0022_map_allocation_fs.c \
+	quant/palette/map_precision/0024_map_allocation_borrowed.c \
 	quant/palette/map_solver/0001_map_heckbert_gamma.c \
 	quant/palette/map_solver/0002_map_heckbert_linear.c \
 	quant/palette/map_solver/0003_map_heckbert_oklab.c \
@@ -4331,6 +4356,31 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/lookup_float/test_runner-0001_lookup_palette.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-srgb_contract_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-map_float_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-map_precision_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0001_map_cms_gamma.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0002_map_cms_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0003_map_cms_oklab.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0004_map_cms_cielab.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0005_map_cms_din99d.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0006_map_cms_auto.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0007_map_cms_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0008_map_cms_gamma_target.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0009_map_cms_disabled_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0010_map_cms_explicit_narrowing.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0011_map_untagged_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0012_map_cms_auto_solver.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0013_map_cms_center.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0014_map_cms_medoids.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0015_map_reuse_byte_first.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0016_map_reuse_float_first.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0017_map_cms_export.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0018_map_cms_p3_control.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0020_map_promote_fs.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0021_map_allocation_none.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0022_map_allocation_fs.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0024_map_allocation_borrowed.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_solver/test_runner-0001_map_heckbert_gamma.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_solver/test_runner-0002_map_heckbert_linear.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_solver/test_runner-0003_map_heckbert_oklab.$(OBJEXT) \
@@ -6507,6 +6557,7 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-auto_test_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-heckbert_test_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-map_float_common.Po \
+	quant/palette/$(DEPDIR)/test_runner-map_precision_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po \
 	quant/palette/auto_float/$(DEPDIR)/test_runner-0001_auto_default_gamma.Po \
 	quant/palette/auto_float/$(DEPDIR)/test_runner-0002_auto_explicit_gamma.Po \
@@ -6629,6 +6680,30 @@ am__depfiles_remade =  \
 	quant/palette/map_float/$(DEPDIR)/test_runner-0023_map_export_gamma.Po \
 	quant/palette/map_float/$(DEPDIR)/test_runner-0024_map_export_cielab.Po \
 	quant/palette/map_float/$(DEPDIR)/test_runner-0025_map_zero_snap.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0001_map_cms_gamma.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0002_map_cms_linear.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0003_map_cms_oklab.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0004_map_cms_cielab.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0005_map_cms_din99d.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0006_map_cms_auto.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0007_map_cms_float.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0008_map_cms_gamma_target.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0009_map_cms_disabled_byte.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0010_map_cms_explicit_narrowing.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0011_map_untagged_byte.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0012_map_cms_auto_solver.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0013_map_cms_center.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0014_map_cms_medoids.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0015_map_reuse_byte_first.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0016_map_reuse_float_first.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0017_map_cms_export.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0018_map_cms_p3_control.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0020_map_promote_fs.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0021_map_allocation_none.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0022_map_allocation_fs.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0024_map_allocation_borrowed.Po \
 	quant/palette/map_solver/$(DEPDIR)/test_runner-0001_map_heckbert_gamma.Po \
 	quant/palette/map_solver/$(DEPDIR)/test_runner-0002_map_heckbert_linear.Po \
 	quant/palette/map_solver/$(DEPDIR)/test_runner-0003_map_heckbert_oklab.Po \
@@ -7741,6 +7816,31 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0068_SRGB_LINEAR_EXTENDED_SOURCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_SRGB_CONTRACT_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_MAP_FLOAT_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_MAP_PRECISION_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_MAP_STATIC_TO_MULTIFRAME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_MAP_CMS_GAMMA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_MAP_CMS_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_MAP_CMS_OKLAB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_MAP_CMS_CIELAB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_MAP_CMS_DIN99D \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_MAP_CMS_AUTO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_MAP_CMS_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_MAP_CMS_GAMMA_TARGET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_MAP_CMS_DISABLED_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_MAP_CMS_EXPLICIT_NARROWING \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_MAP_UNTAGGED_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_MAP_CMS_AUTO_SOLVER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_MAP_CMS_CENTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_MAP_CMS_MEDOIDS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_MAP_REUSE_BYTE_FIRST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_MAP_REUSE_FLOAT_FIRST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_MAP_CMS_EXPORT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_MAP_CMS_P3_CONTROL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_MAP_MULTIFRAME_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_MAP_PROMOTE_FS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_MAP_ALLOCATION_NONE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_MAP_ALLOCATION_FS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_MAP_ALLOCATION_BORROWED \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_MAP_HECKBERT_GAMMA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_MAP_HECKBERT_LINEAR \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_MAP_HECKBERT_OKLAB \
@@ -11629,6 +11729,31 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/lookup_float/0001_lookup_palette.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/srgb_contract_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_float_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0023_map_static_to_multiframe.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0001_map_cms_gamma.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0002_map_cms_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0003_map_cms_oklab.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0004_map_cms_cielab.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0005_map_cms_din99d.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0006_map_cms_auto.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0007_map_cms_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0008_map_cms_gamma_target.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0009_map_cms_disabled_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0010_map_cms_explicit_narrowing.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0011_map_untagged_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0012_map_cms_auto_solver.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0013_map_cms_center.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0014_map_cms_medoids.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0015_map_reuse_byte_first.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0016_map_reuse_float_first.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0017_map_cms_export.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0018_map_cms_p3_control.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0019_map_multiframe_boundary.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0020_map_promote_fs.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0021_map_allocation_none.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0022_map_allocation_fs.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0024_map_allocation_borrowed.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_solver/0001_map_heckbert_gamma.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_solver/0002_map_heckbert_linear.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_solver/0003_map_heckbert_oklab.c \
@@ -18362,6 +18487,87 @@ quant/palette/test_runner-srgb_contract_common.$(OBJEXT):  \
 quant/palette/test_runner-map_float_common.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-map_precision_common.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/map_precision
+	@: >>quant/palette/map_precision/$(am__dirstamp)
+quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/map_precision/$(DEPDIR)
+	@: >>quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0001_map_cms_gamma.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0002_map_cms_linear.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0003_map_cms_oklab.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0004_map_cms_cielab.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0005_map_cms_din99d.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0006_map_cms_auto.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0007_map_cms_float.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0008_map_cms_gamma_target.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0009_map_cms_disabled_byte.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0010_map_cms_explicit_narrowing.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0011_map_untagged_byte.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0012_map_cms_auto_solver.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0013_map_cms_center.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0014_map_cms_medoids.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0015_map_reuse_byte_first.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0016_map_reuse_float_first.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0017_map_cms_export.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0018_map_cms_p3_control.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0020_map_promote_fs.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0021_map_allocation_none.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0022_map_allocation_fs.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_precision/test_runner-0024_map_allocation_borrowed.$(OBJEXT):  \
+	quant/palette/map_precision/$(am__dirstamp) \
+	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
 quant/palette/map_solver/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette/map_solver
 	@: >>quant/palette/map_solver/$(am__dirstamp)
@@ -18941,6 +19147,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/lookup_float/*.$(OBJEXT)
 	-rm -f quant/palette/mahalanobis_float/*.$(OBJEXT)
 	-rm -f quant/palette/map_float/*.$(OBJEXT)
+	-rm -f quant/palette/map_precision/*.$(OBJEXT)
 	-rm -f quant/palette/map_solver/*.$(OBJEXT)
 	-rm -f quant/palette/merge_float/*.$(OBJEXT)
 	-rm -f quant/palette/rgb101_diffusion/*.$(OBJEXT)
@@ -20921,6 +21128,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-auto_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-heckbert_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-map_float_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-map_precision_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_float/$(DEPDIR)/test_runner-0001_auto_default_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_float/$(DEPDIR)/test_runner-0002_auto_explicit_gamma.Po@am__quote@ # am--include-marker
@@ -21043,6 +21251,30 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_float/$(DEPDIR)/test_runner-0023_map_export_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_float/$(DEPDIR)/test_runner-0024_map_export_cielab.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_float/$(DEPDIR)/test_runner-0025_map_zero_snap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0001_map_cms_gamma.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0002_map_cms_linear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0003_map_cms_oklab.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0004_map_cms_cielab.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0005_map_cms_din99d.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0006_map_cms_auto.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0007_map_cms_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0008_map_cms_gamma_target.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0009_map_cms_disabled_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0010_map_cms_explicit_narrowing.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0011_map_untagged_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0012_map_cms_auto_solver.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0013_map_cms_center.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0014_map_cms_medoids.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0015_map_reuse_byte_first.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0016_map_reuse_float_first.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0017_map_cms_export.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0018_map_cms_p3_control.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0020_map_promote_fs.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0021_map_allocation_none.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0022_map_allocation_fs.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0024_map_allocation_borrowed.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_solver/$(DEPDIR)/test_runner-0001_map_heckbert_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_solver/$(DEPDIR)/test_runner-0002_map_heckbert_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_solver/$(DEPDIR)/test_runner-0003_map_heckbert_oklab.Po@am__quote@ # am--include-marker
@@ -49261,6 +49493,356 @@ quant/palette/test_runner-map_float_common.obj: quant/palette/map_float_common.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-map_float_common.obj `if test -f 'quant/palette/map_float_common.c'; then $(CYGPATH_W) 'quant/palette/map_float_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_float_common.c'; fi`
 
+quant/palette/test_runner-map_precision_common.o: quant/palette/map_precision_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-map_precision_common.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-map_precision_common.Tpo -c -o quant/palette/test_runner-map_precision_common.o `test -f 'quant/palette/map_precision_common.c' || echo '$(srcdir)/'`quant/palette/map_precision_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-map_precision_common.Tpo quant/palette/$(DEPDIR)/test_runner-map_precision_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision_common.c' object='quant/palette/test_runner-map_precision_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-map_precision_common.o `test -f 'quant/palette/map_precision_common.c' || echo '$(srcdir)/'`quant/palette/map_precision_common.c
+
+quant/palette/test_runner-map_precision_common.obj: quant/palette/map_precision_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-map_precision_common.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-map_precision_common.Tpo -c -o quant/palette/test_runner-map_precision_common.obj `if test -f 'quant/palette/map_precision_common.c'; then $(CYGPATH_W) 'quant/palette/map_precision_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-map_precision_common.Tpo quant/palette/$(DEPDIR)/test_runner-map_precision_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision_common.c' object='quant/palette/test_runner-map_precision_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-map_precision_common.obj `if test -f 'quant/palette/map_precision_common.c'; then $(CYGPATH_W) 'quant/palette/map_precision_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision_common.c'; fi`
+
+quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.o: quant/palette/map_precision/0023_map_static_to_multiframe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Tpo -c -o quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.o `test -f 'quant/palette/map_precision/0023_map_static_to_multiframe.c' || echo '$(srcdir)/'`quant/palette/map_precision/0023_map_static_to_multiframe.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0023_map_static_to_multiframe.c' object='quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.o `test -f 'quant/palette/map_precision/0023_map_static_to_multiframe.c' || echo '$(srcdir)/'`quant/palette/map_precision/0023_map_static_to_multiframe.c
+
+quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.obj: quant/palette/map_precision/0023_map_static_to_multiframe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Tpo -c -o quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.obj `if test -f 'quant/palette/map_precision/0023_map_static_to_multiframe.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0023_map_static_to_multiframe.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0023_map_static_to_multiframe.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0023_map_static_to_multiframe.c' object='quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.obj `if test -f 'quant/palette/map_precision/0023_map_static_to_multiframe.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0023_map_static_to_multiframe.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0023_map_static_to_multiframe.c'; fi`
+
+quant/palette/map_precision/test_runner-0001_map_cms_gamma.o: quant/palette/map_precision/0001_map_cms_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0001_map_cms_gamma.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0001_map_cms_gamma.Tpo -c -o quant/palette/map_precision/test_runner-0001_map_cms_gamma.o `test -f 'quant/palette/map_precision/0001_map_cms_gamma.c' || echo '$(srcdir)/'`quant/palette/map_precision/0001_map_cms_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0001_map_cms_gamma.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0001_map_cms_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0001_map_cms_gamma.c' object='quant/palette/map_precision/test_runner-0001_map_cms_gamma.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0001_map_cms_gamma.o `test -f 'quant/palette/map_precision/0001_map_cms_gamma.c' || echo '$(srcdir)/'`quant/palette/map_precision/0001_map_cms_gamma.c
+
+quant/palette/map_precision/test_runner-0001_map_cms_gamma.obj: quant/palette/map_precision/0001_map_cms_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0001_map_cms_gamma.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0001_map_cms_gamma.Tpo -c -o quant/palette/map_precision/test_runner-0001_map_cms_gamma.obj `if test -f 'quant/palette/map_precision/0001_map_cms_gamma.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0001_map_cms_gamma.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0001_map_cms_gamma.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0001_map_cms_gamma.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0001_map_cms_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0001_map_cms_gamma.c' object='quant/palette/map_precision/test_runner-0001_map_cms_gamma.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0001_map_cms_gamma.obj `if test -f 'quant/palette/map_precision/0001_map_cms_gamma.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0001_map_cms_gamma.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0001_map_cms_gamma.c'; fi`
+
+quant/palette/map_precision/test_runner-0002_map_cms_linear.o: quant/palette/map_precision/0002_map_cms_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0002_map_cms_linear.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0002_map_cms_linear.Tpo -c -o quant/palette/map_precision/test_runner-0002_map_cms_linear.o `test -f 'quant/palette/map_precision/0002_map_cms_linear.c' || echo '$(srcdir)/'`quant/palette/map_precision/0002_map_cms_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0002_map_cms_linear.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0002_map_cms_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0002_map_cms_linear.c' object='quant/palette/map_precision/test_runner-0002_map_cms_linear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0002_map_cms_linear.o `test -f 'quant/palette/map_precision/0002_map_cms_linear.c' || echo '$(srcdir)/'`quant/palette/map_precision/0002_map_cms_linear.c
+
+quant/palette/map_precision/test_runner-0002_map_cms_linear.obj: quant/palette/map_precision/0002_map_cms_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0002_map_cms_linear.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0002_map_cms_linear.Tpo -c -o quant/palette/map_precision/test_runner-0002_map_cms_linear.obj `if test -f 'quant/palette/map_precision/0002_map_cms_linear.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0002_map_cms_linear.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0002_map_cms_linear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0002_map_cms_linear.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0002_map_cms_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0002_map_cms_linear.c' object='quant/palette/map_precision/test_runner-0002_map_cms_linear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0002_map_cms_linear.obj `if test -f 'quant/palette/map_precision/0002_map_cms_linear.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0002_map_cms_linear.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0002_map_cms_linear.c'; fi`
+
+quant/palette/map_precision/test_runner-0003_map_cms_oklab.o: quant/palette/map_precision/0003_map_cms_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0003_map_cms_oklab.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0003_map_cms_oklab.Tpo -c -o quant/palette/map_precision/test_runner-0003_map_cms_oklab.o `test -f 'quant/palette/map_precision/0003_map_cms_oklab.c' || echo '$(srcdir)/'`quant/palette/map_precision/0003_map_cms_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0003_map_cms_oklab.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0003_map_cms_oklab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0003_map_cms_oklab.c' object='quant/palette/map_precision/test_runner-0003_map_cms_oklab.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0003_map_cms_oklab.o `test -f 'quant/palette/map_precision/0003_map_cms_oklab.c' || echo '$(srcdir)/'`quant/palette/map_precision/0003_map_cms_oklab.c
+
+quant/palette/map_precision/test_runner-0003_map_cms_oklab.obj: quant/palette/map_precision/0003_map_cms_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0003_map_cms_oklab.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0003_map_cms_oklab.Tpo -c -o quant/palette/map_precision/test_runner-0003_map_cms_oklab.obj `if test -f 'quant/palette/map_precision/0003_map_cms_oklab.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0003_map_cms_oklab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0003_map_cms_oklab.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0003_map_cms_oklab.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0003_map_cms_oklab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0003_map_cms_oklab.c' object='quant/palette/map_precision/test_runner-0003_map_cms_oklab.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0003_map_cms_oklab.obj `if test -f 'quant/palette/map_precision/0003_map_cms_oklab.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0003_map_cms_oklab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0003_map_cms_oklab.c'; fi`
+
+quant/palette/map_precision/test_runner-0004_map_cms_cielab.o: quant/palette/map_precision/0004_map_cms_cielab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0004_map_cms_cielab.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0004_map_cms_cielab.Tpo -c -o quant/palette/map_precision/test_runner-0004_map_cms_cielab.o `test -f 'quant/palette/map_precision/0004_map_cms_cielab.c' || echo '$(srcdir)/'`quant/palette/map_precision/0004_map_cms_cielab.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0004_map_cms_cielab.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0004_map_cms_cielab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0004_map_cms_cielab.c' object='quant/palette/map_precision/test_runner-0004_map_cms_cielab.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0004_map_cms_cielab.o `test -f 'quant/palette/map_precision/0004_map_cms_cielab.c' || echo '$(srcdir)/'`quant/palette/map_precision/0004_map_cms_cielab.c
+
+quant/palette/map_precision/test_runner-0004_map_cms_cielab.obj: quant/palette/map_precision/0004_map_cms_cielab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0004_map_cms_cielab.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0004_map_cms_cielab.Tpo -c -o quant/palette/map_precision/test_runner-0004_map_cms_cielab.obj `if test -f 'quant/palette/map_precision/0004_map_cms_cielab.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0004_map_cms_cielab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0004_map_cms_cielab.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0004_map_cms_cielab.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0004_map_cms_cielab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0004_map_cms_cielab.c' object='quant/palette/map_precision/test_runner-0004_map_cms_cielab.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0004_map_cms_cielab.obj `if test -f 'quant/palette/map_precision/0004_map_cms_cielab.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0004_map_cms_cielab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0004_map_cms_cielab.c'; fi`
+
+quant/palette/map_precision/test_runner-0005_map_cms_din99d.o: quant/palette/map_precision/0005_map_cms_din99d.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0005_map_cms_din99d.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0005_map_cms_din99d.Tpo -c -o quant/palette/map_precision/test_runner-0005_map_cms_din99d.o `test -f 'quant/palette/map_precision/0005_map_cms_din99d.c' || echo '$(srcdir)/'`quant/palette/map_precision/0005_map_cms_din99d.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0005_map_cms_din99d.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0005_map_cms_din99d.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0005_map_cms_din99d.c' object='quant/palette/map_precision/test_runner-0005_map_cms_din99d.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0005_map_cms_din99d.o `test -f 'quant/palette/map_precision/0005_map_cms_din99d.c' || echo '$(srcdir)/'`quant/palette/map_precision/0005_map_cms_din99d.c
+
+quant/palette/map_precision/test_runner-0005_map_cms_din99d.obj: quant/palette/map_precision/0005_map_cms_din99d.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0005_map_cms_din99d.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0005_map_cms_din99d.Tpo -c -o quant/palette/map_precision/test_runner-0005_map_cms_din99d.obj `if test -f 'quant/palette/map_precision/0005_map_cms_din99d.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0005_map_cms_din99d.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0005_map_cms_din99d.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0005_map_cms_din99d.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0005_map_cms_din99d.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0005_map_cms_din99d.c' object='quant/palette/map_precision/test_runner-0005_map_cms_din99d.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0005_map_cms_din99d.obj `if test -f 'quant/palette/map_precision/0005_map_cms_din99d.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0005_map_cms_din99d.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0005_map_cms_din99d.c'; fi`
+
+quant/palette/map_precision/test_runner-0006_map_cms_auto.o: quant/palette/map_precision/0006_map_cms_auto.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0006_map_cms_auto.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0006_map_cms_auto.Tpo -c -o quant/palette/map_precision/test_runner-0006_map_cms_auto.o `test -f 'quant/palette/map_precision/0006_map_cms_auto.c' || echo '$(srcdir)/'`quant/palette/map_precision/0006_map_cms_auto.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0006_map_cms_auto.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0006_map_cms_auto.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0006_map_cms_auto.c' object='quant/palette/map_precision/test_runner-0006_map_cms_auto.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0006_map_cms_auto.o `test -f 'quant/palette/map_precision/0006_map_cms_auto.c' || echo '$(srcdir)/'`quant/palette/map_precision/0006_map_cms_auto.c
+
+quant/palette/map_precision/test_runner-0006_map_cms_auto.obj: quant/palette/map_precision/0006_map_cms_auto.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0006_map_cms_auto.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0006_map_cms_auto.Tpo -c -o quant/palette/map_precision/test_runner-0006_map_cms_auto.obj `if test -f 'quant/palette/map_precision/0006_map_cms_auto.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0006_map_cms_auto.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0006_map_cms_auto.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0006_map_cms_auto.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0006_map_cms_auto.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0006_map_cms_auto.c' object='quant/palette/map_precision/test_runner-0006_map_cms_auto.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0006_map_cms_auto.obj `if test -f 'quant/palette/map_precision/0006_map_cms_auto.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0006_map_cms_auto.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0006_map_cms_auto.c'; fi`
+
+quant/palette/map_precision/test_runner-0007_map_cms_float.o: quant/palette/map_precision/0007_map_cms_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0007_map_cms_float.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0007_map_cms_float.Tpo -c -o quant/palette/map_precision/test_runner-0007_map_cms_float.o `test -f 'quant/palette/map_precision/0007_map_cms_float.c' || echo '$(srcdir)/'`quant/palette/map_precision/0007_map_cms_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0007_map_cms_float.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0007_map_cms_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0007_map_cms_float.c' object='quant/palette/map_precision/test_runner-0007_map_cms_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0007_map_cms_float.o `test -f 'quant/palette/map_precision/0007_map_cms_float.c' || echo '$(srcdir)/'`quant/palette/map_precision/0007_map_cms_float.c
+
+quant/palette/map_precision/test_runner-0007_map_cms_float.obj: quant/palette/map_precision/0007_map_cms_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0007_map_cms_float.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0007_map_cms_float.Tpo -c -o quant/palette/map_precision/test_runner-0007_map_cms_float.obj `if test -f 'quant/palette/map_precision/0007_map_cms_float.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0007_map_cms_float.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0007_map_cms_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0007_map_cms_float.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0007_map_cms_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0007_map_cms_float.c' object='quant/palette/map_precision/test_runner-0007_map_cms_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0007_map_cms_float.obj `if test -f 'quant/palette/map_precision/0007_map_cms_float.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0007_map_cms_float.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0007_map_cms_float.c'; fi`
+
+quant/palette/map_precision/test_runner-0008_map_cms_gamma_target.o: quant/palette/map_precision/0008_map_cms_gamma_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0008_map_cms_gamma_target.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0008_map_cms_gamma_target.Tpo -c -o quant/palette/map_precision/test_runner-0008_map_cms_gamma_target.o `test -f 'quant/palette/map_precision/0008_map_cms_gamma_target.c' || echo '$(srcdir)/'`quant/palette/map_precision/0008_map_cms_gamma_target.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0008_map_cms_gamma_target.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0008_map_cms_gamma_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0008_map_cms_gamma_target.c' object='quant/palette/map_precision/test_runner-0008_map_cms_gamma_target.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0008_map_cms_gamma_target.o `test -f 'quant/palette/map_precision/0008_map_cms_gamma_target.c' || echo '$(srcdir)/'`quant/palette/map_precision/0008_map_cms_gamma_target.c
+
+quant/palette/map_precision/test_runner-0008_map_cms_gamma_target.obj: quant/palette/map_precision/0008_map_cms_gamma_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0008_map_cms_gamma_target.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0008_map_cms_gamma_target.Tpo -c -o quant/palette/map_precision/test_runner-0008_map_cms_gamma_target.obj `if test -f 'quant/palette/map_precision/0008_map_cms_gamma_target.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0008_map_cms_gamma_target.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0008_map_cms_gamma_target.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0008_map_cms_gamma_target.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0008_map_cms_gamma_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0008_map_cms_gamma_target.c' object='quant/palette/map_precision/test_runner-0008_map_cms_gamma_target.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0008_map_cms_gamma_target.obj `if test -f 'quant/palette/map_precision/0008_map_cms_gamma_target.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0008_map_cms_gamma_target.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0008_map_cms_gamma_target.c'; fi`
+
+quant/palette/map_precision/test_runner-0009_map_cms_disabled_byte.o: quant/palette/map_precision/0009_map_cms_disabled_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0009_map_cms_disabled_byte.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0009_map_cms_disabled_byte.Tpo -c -o quant/palette/map_precision/test_runner-0009_map_cms_disabled_byte.o `test -f 'quant/palette/map_precision/0009_map_cms_disabled_byte.c' || echo '$(srcdir)/'`quant/palette/map_precision/0009_map_cms_disabled_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0009_map_cms_disabled_byte.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0009_map_cms_disabled_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0009_map_cms_disabled_byte.c' object='quant/palette/map_precision/test_runner-0009_map_cms_disabled_byte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0009_map_cms_disabled_byte.o `test -f 'quant/palette/map_precision/0009_map_cms_disabled_byte.c' || echo '$(srcdir)/'`quant/palette/map_precision/0009_map_cms_disabled_byte.c
+
+quant/palette/map_precision/test_runner-0009_map_cms_disabled_byte.obj: quant/palette/map_precision/0009_map_cms_disabled_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0009_map_cms_disabled_byte.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0009_map_cms_disabled_byte.Tpo -c -o quant/palette/map_precision/test_runner-0009_map_cms_disabled_byte.obj `if test -f 'quant/palette/map_precision/0009_map_cms_disabled_byte.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0009_map_cms_disabled_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0009_map_cms_disabled_byte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0009_map_cms_disabled_byte.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0009_map_cms_disabled_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0009_map_cms_disabled_byte.c' object='quant/palette/map_precision/test_runner-0009_map_cms_disabled_byte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0009_map_cms_disabled_byte.obj `if test -f 'quant/palette/map_precision/0009_map_cms_disabled_byte.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0009_map_cms_disabled_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0009_map_cms_disabled_byte.c'; fi`
+
+quant/palette/map_precision/test_runner-0010_map_cms_explicit_narrowing.o: quant/palette/map_precision/0010_map_cms_explicit_narrowing.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0010_map_cms_explicit_narrowing.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0010_map_cms_explicit_narrowing.Tpo -c -o quant/palette/map_precision/test_runner-0010_map_cms_explicit_narrowing.o `test -f 'quant/palette/map_precision/0010_map_cms_explicit_narrowing.c' || echo '$(srcdir)/'`quant/palette/map_precision/0010_map_cms_explicit_narrowing.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0010_map_cms_explicit_narrowing.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0010_map_cms_explicit_narrowing.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0010_map_cms_explicit_narrowing.c' object='quant/palette/map_precision/test_runner-0010_map_cms_explicit_narrowing.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0010_map_cms_explicit_narrowing.o `test -f 'quant/palette/map_precision/0010_map_cms_explicit_narrowing.c' || echo '$(srcdir)/'`quant/palette/map_precision/0010_map_cms_explicit_narrowing.c
+
+quant/palette/map_precision/test_runner-0010_map_cms_explicit_narrowing.obj: quant/palette/map_precision/0010_map_cms_explicit_narrowing.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0010_map_cms_explicit_narrowing.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0010_map_cms_explicit_narrowing.Tpo -c -o quant/palette/map_precision/test_runner-0010_map_cms_explicit_narrowing.obj `if test -f 'quant/palette/map_precision/0010_map_cms_explicit_narrowing.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0010_map_cms_explicit_narrowing.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0010_map_cms_explicit_narrowing.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0010_map_cms_explicit_narrowing.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0010_map_cms_explicit_narrowing.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0010_map_cms_explicit_narrowing.c' object='quant/palette/map_precision/test_runner-0010_map_cms_explicit_narrowing.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0010_map_cms_explicit_narrowing.obj `if test -f 'quant/palette/map_precision/0010_map_cms_explicit_narrowing.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0010_map_cms_explicit_narrowing.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0010_map_cms_explicit_narrowing.c'; fi`
+
+quant/palette/map_precision/test_runner-0011_map_untagged_byte.o: quant/palette/map_precision/0011_map_untagged_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0011_map_untagged_byte.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0011_map_untagged_byte.Tpo -c -o quant/palette/map_precision/test_runner-0011_map_untagged_byte.o `test -f 'quant/palette/map_precision/0011_map_untagged_byte.c' || echo '$(srcdir)/'`quant/palette/map_precision/0011_map_untagged_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0011_map_untagged_byte.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0011_map_untagged_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0011_map_untagged_byte.c' object='quant/palette/map_precision/test_runner-0011_map_untagged_byte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0011_map_untagged_byte.o `test -f 'quant/palette/map_precision/0011_map_untagged_byte.c' || echo '$(srcdir)/'`quant/palette/map_precision/0011_map_untagged_byte.c
+
+quant/palette/map_precision/test_runner-0011_map_untagged_byte.obj: quant/palette/map_precision/0011_map_untagged_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0011_map_untagged_byte.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0011_map_untagged_byte.Tpo -c -o quant/palette/map_precision/test_runner-0011_map_untagged_byte.obj `if test -f 'quant/palette/map_precision/0011_map_untagged_byte.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0011_map_untagged_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0011_map_untagged_byte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0011_map_untagged_byte.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0011_map_untagged_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0011_map_untagged_byte.c' object='quant/palette/map_precision/test_runner-0011_map_untagged_byte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0011_map_untagged_byte.obj `if test -f 'quant/palette/map_precision/0011_map_untagged_byte.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0011_map_untagged_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0011_map_untagged_byte.c'; fi`
+
+quant/palette/map_precision/test_runner-0012_map_cms_auto_solver.o: quant/palette/map_precision/0012_map_cms_auto_solver.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0012_map_cms_auto_solver.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0012_map_cms_auto_solver.Tpo -c -o quant/palette/map_precision/test_runner-0012_map_cms_auto_solver.o `test -f 'quant/palette/map_precision/0012_map_cms_auto_solver.c' || echo '$(srcdir)/'`quant/palette/map_precision/0012_map_cms_auto_solver.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0012_map_cms_auto_solver.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0012_map_cms_auto_solver.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0012_map_cms_auto_solver.c' object='quant/palette/map_precision/test_runner-0012_map_cms_auto_solver.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0012_map_cms_auto_solver.o `test -f 'quant/palette/map_precision/0012_map_cms_auto_solver.c' || echo '$(srcdir)/'`quant/palette/map_precision/0012_map_cms_auto_solver.c
+
+quant/palette/map_precision/test_runner-0012_map_cms_auto_solver.obj: quant/palette/map_precision/0012_map_cms_auto_solver.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0012_map_cms_auto_solver.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0012_map_cms_auto_solver.Tpo -c -o quant/palette/map_precision/test_runner-0012_map_cms_auto_solver.obj `if test -f 'quant/palette/map_precision/0012_map_cms_auto_solver.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0012_map_cms_auto_solver.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0012_map_cms_auto_solver.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0012_map_cms_auto_solver.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0012_map_cms_auto_solver.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0012_map_cms_auto_solver.c' object='quant/palette/map_precision/test_runner-0012_map_cms_auto_solver.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0012_map_cms_auto_solver.obj `if test -f 'quant/palette/map_precision/0012_map_cms_auto_solver.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0012_map_cms_auto_solver.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0012_map_cms_auto_solver.c'; fi`
+
+quant/palette/map_precision/test_runner-0013_map_cms_center.o: quant/palette/map_precision/0013_map_cms_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0013_map_cms_center.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0013_map_cms_center.Tpo -c -o quant/palette/map_precision/test_runner-0013_map_cms_center.o `test -f 'quant/palette/map_precision/0013_map_cms_center.c' || echo '$(srcdir)/'`quant/palette/map_precision/0013_map_cms_center.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0013_map_cms_center.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0013_map_cms_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0013_map_cms_center.c' object='quant/palette/map_precision/test_runner-0013_map_cms_center.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0013_map_cms_center.o `test -f 'quant/palette/map_precision/0013_map_cms_center.c' || echo '$(srcdir)/'`quant/palette/map_precision/0013_map_cms_center.c
+
+quant/palette/map_precision/test_runner-0013_map_cms_center.obj: quant/palette/map_precision/0013_map_cms_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0013_map_cms_center.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0013_map_cms_center.Tpo -c -o quant/palette/map_precision/test_runner-0013_map_cms_center.obj `if test -f 'quant/palette/map_precision/0013_map_cms_center.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0013_map_cms_center.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0013_map_cms_center.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0013_map_cms_center.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0013_map_cms_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0013_map_cms_center.c' object='quant/palette/map_precision/test_runner-0013_map_cms_center.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0013_map_cms_center.obj `if test -f 'quant/palette/map_precision/0013_map_cms_center.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0013_map_cms_center.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0013_map_cms_center.c'; fi`
+
+quant/palette/map_precision/test_runner-0014_map_cms_medoids.o: quant/palette/map_precision/0014_map_cms_medoids.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0014_map_cms_medoids.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0014_map_cms_medoids.Tpo -c -o quant/palette/map_precision/test_runner-0014_map_cms_medoids.o `test -f 'quant/palette/map_precision/0014_map_cms_medoids.c' || echo '$(srcdir)/'`quant/palette/map_precision/0014_map_cms_medoids.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0014_map_cms_medoids.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0014_map_cms_medoids.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0014_map_cms_medoids.c' object='quant/palette/map_precision/test_runner-0014_map_cms_medoids.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0014_map_cms_medoids.o `test -f 'quant/palette/map_precision/0014_map_cms_medoids.c' || echo '$(srcdir)/'`quant/palette/map_precision/0014_map_cms_medoids.c
+
+quant/palette/map_precision/test_runner-0014_map_cms_medoids.obj: quant/palette/map_precision/0014_map_cms_medoids.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0014_map_cms_medoids.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0014_map_cms_medoids.Tpo -c -o quant/palette/map_precision/test_runner-0014_map_cms_medoids.obj `if test -f 'quant/palette/map_precision/0014_map_cms_medoids.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0014_map_cms_medoids.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0014_map_cms_medoids.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0014_map_cms_medoids.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0014_map_cms_medoids.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0014_map_cms_medoids.c' object='quant/palette/map_precision/test_runner-0014_map_cms_medoids.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0014_map_cms_medoids.obj `if test -f 'quant/palette/map_precision/0014_map_cms_medoids.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0014_map_cms_medoids.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0014_map_cms_medoids.c'; fi`
+
+quant/palette/map_precision/test_runner-0015_map_reuse_byte_first.o: quant/palette/map_precision/0015_map_reuse_byte_first.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0015_map_reuse_byte_first.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0015_map_reuse_byte_first.Tpo -c -o quant/palette/map_precision/test_runner-0015_map_reuse_byte_first.o `test -f 'quant/palette/map_precision/0015_map_reuse_byte_first.c' || echo '$(srcdir)/'`quant/palette/map_precision/0015_map_reuse_byte_first.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0015_map_reuse_byte_first.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0015_map_reuse_byte_first.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0015_map_reuse_byte_first.c' object='quant/palette/map_precision/test_runner-0015_map_reuse_byte_first.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0015_map_reuse_byte_first.o `test -f 'quant/palette/map_precision/0015_map_reuse_byte_first.c' || echo '$(srcdir)/'`quant/palette/map_precision/0015_map_reuse_byte_first.c
+
+quant/palette/map_precision/test_runner-0015_map_reuse_byte_first.obj: quant/palette/map_precision/0015_map_reuse_byte_first.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0015_map_reuse_byte_first.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0015_map_reuse_byte_first.Tpo -c -o quant/palette/map_precision/test_runner-0015_map_reuse_byte_first.obj `if test -f 'quant/palette/map_precision/0015_map_reuse_byte_first.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0015_map_reuse_byte_first.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0015_map_reuse_byte_first.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0015_map_reuse_byte_first.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0015_map_reuse_byte_first.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0015_map_reuse_byte_first.c' object='quant/palette/map_precision/test_runner-0015_map_reuse_byte_first.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0015_map_reuse_byte_first.obj `if test -f 'quant/palette/map_precision/0015_map_reuse_byte_first.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0015_map_reuse_byte_first.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0015_map_reuse_byte_first.c'; fi`
+
+quant/palette/map_precision/test_runner-0016_map_reuse_float_first.o: quant/palette/map_precision/0016_map_reuse_float_first.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0016_map_reuse_float_first.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0016_map_reuse_float_first.Tpo -c -o quant/palette/map_precision/test_runner-0016_map_reuse_float_first.o `test -f 'quant/palette/map_precision/0016_map_reuse_float_first.c' || echo '$(srcdir)/'`quant/palette/map_precision/0016_map_reuse_float_first.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0016_map_reuse_float_first.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0016_map_reuse_float_first.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0016_map_reuse_float_first.c' object='quant/palette/map_precision/test_runner-0016_map_reuse_float_first.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0016_map_reuse_float_first.o `test -f 'quant/palette/map_precision/0016_map_reuse_float_first.c' || echo '$(srcdir)/'`quant/palette/map_precision/0016_map_reuse_float_first.c
+
+quant/palette/map_precision/test_runner-0016_map_reuse_float_first.obj: quant/palette/map_precision/0016_map_reuse_float_first.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0016_map_reuse_float_first.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0016_map_reuse_float_first.Tpo -c -o quant/palette/map_precision/test_runner-0016_map_reuse_float_first.obj `if test -f 'quant/palette/map_precision/0016_map_reuse_float_first.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0016_map_reuse_float_first.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0016_map_reuse_float_first.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0016_map_reuse_float_first.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0016_map_reuse_float_first.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0016_map_reuse_float_first.c' object='quant/palette/map_precision/test_runner-0016_map_reuse_float_first.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0016_map_reuse_float_first.obj `if test -f 'quant/palette/map_precision/0016_map_reuse_float_first.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0016_map_reuse_float_first.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0016_map_reuse_float_first.c'; fi`
+
+quant/palette/map_precision/test_runner-0017_map_cms_export.o: quant/palette/map_precision/0017_map_cms_export.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0017_map_cms_export.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0017_map_cms_export.Tpo -c -o quant/palette/map_precision/test_runner-0017_map_cms_export.o `test -f 'quant/palette/map_precision/0017_map_cms_export.c' || echo '$(srcdir)/'`quant/palette/map_precision/0017_map_cms_export.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0017_map_cms_export.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0017_map_cms_export.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0017_map_cms_export.c' object='quant/palette/map_precision/test_runner-0017_map_cms_export.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0017_map_cms_export.o `test -f 'quant/palette/map_precision/0017_map_cms_export.c' || echo '$(srcdir)/'`quant/palette/map_precision/0017_map_cms_export.c
+
+quant/palette/map_precision/test_runner-0017_map_cms_export.obj: quant/palette/map_precision/0017_map_cms_export.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0017_map_cms_export.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0017_map_cms_export.Tpo -c -o quant/palette/map_precision/test_runner-0017_map_cms_export.obj `if test -f 'quant/palette/map_precision/0017_map_cms_export.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0017_map_cms_export.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0017_map_cms_export.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0017_map_cms_export.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0017_map_cms_export.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0017_map_cms_export.c' object='quant/palette/map_precision/test_runner-0017_map_cms_export.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0017_map_cms_export.obj `if test -f 'quant/palette/map_precision/0017_map_cms_export.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0017_map_cms_export.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0017_map_cms_export.c'; fi`
+
+quant/palette/map_precision/test_runner-0018_map_cms_p3_control.o: quant/palette/map_precision/0018_map_cms_p3_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0018_map_cms_p3_control.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0018_map_cms_p3_control.Tpo -c -o quant/palette/map_precision/test_runner-0018_map_cms_p3_control.o `test -f 'quant/palette/map_precision/0018_map_cms_p3_control.c' || echo '$(srcdir)/'`quant/palette/map_precision/0018_map_cms_p3_control.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0018_map_cms_p3_control.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0018_map_cms_p3_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0018_map_cms_p3_control.c' object='quant/palette/map_precision/test_runner-0018_map_cms_p3_control.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0018_map_cms_p3_control.o `test -f 'quant/palette/map_precision/0018_map_cms_p3_control.c' || echo '$(srcdir)/'`quant/palette/map_precision/0018_map_cms_p3_control.c
+
+quant/palette/map_precision/test_runner-0018_map_cms_p3_control.obj: quant/palette/map_precision/0018_map_cms_p3_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0018_map_cms_p3_control.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0018_map_cms_p3_control.Tpo -c -o quant/palette/map_precision/test_runner-0018_map_cms_p3_control.obj `if test -f 'quant/palette/map_precision/0018_map_cms_p3_control.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0018_map_cms_p3_control.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0018_map_cms_p3_control.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0018_map_cms_p3_control.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0018_map_cms_p3_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0018_map_cms_p3_control.c' object='quant/palette/map_precision/test_runner-0018_map_cms_p3_control.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0018_map_cms_p3_control.obj `if test -f 'quant/palette/map_precision/0018_map_cms_p3_control.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0018_map_cms_p3_control.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0018_map_cms_p3_control.c'; fi`
+
+quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.o: quant/palette/map_precision/0019_map_multiframe_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Tpo -c -o quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.o `test -f 'quant/palette/map_precision/0019_map_multiframe_boundary.c' || echo '$(srcdir)/'`quant/palette/map_precision/0019_map_multiframe_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0019_map_multiframe_boundary.c' object='quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.o `test -f 'quant/palette/map_precision/0019_map_multiframe_boundary.c' || echo '$(srcdir)/'`quant/palette/map_precision/0019_map_multiframe_boundary.c
+
+quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.obj: quant/palette/map_precision/0019_map_multiframe_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Tpo -c -o quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.obj `if test -f 'quant/palette/map_precision/0019_map_multiframe_boundary.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0019_map_multiframe_boundary.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0019_map_multiframe_boundary.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0019_map_multiframe_boundary.c' object='quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.obj `if test -f 'quant/palette/map_precision/0019_map_multiframe_boundary.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0019_map_multiframe_boundary.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0019_map_multiframe_boundary.c'; fi`
+
+quant/palette/map_precision/test_runner-0020_map_promote_fs.o: quant/palette/map_precision/0020_map_promote_fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0020_map_promote_fs.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0020_map_promote_fs.Tpo -c -o quant/palette/map_precision/test_runner-0020_map_promote_fs.o `test -f 'quant/palette/map_precision/0020_map_promote_fs.c' || echo '$(srcdir)/'`quant/palette/map_precision/0020_map_promote_fs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0020_map_promote_fs.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0020_map_promote_fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0020_map_promote_fs.c' object='quant/palette/map_precision/test_runner-0020_map_promote_fs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0020_map_promote_fs.o `test -f 'quant/palette/map_precision/0020_map_promote_fs.c' || echo '$(srcdir)/'`quant/palette/map_precision/0020_map_promote_fs.c
+
+quant/palette/map_precision/test_runner-0020_map_promote_fs.obj: quant/palette/map_precision/0020_map_promote_fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0020_map_promote_fs.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0020_map_promote_fs.Tpo -c -o quant/palette/map_precision/test_runner-0020_map_promote_fs.obj `if test -f 'quant/palette/map_precision/0020_map_promote_fs.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0020_map_promote_fs.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0020_map_promote_fs.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0020_map_promote_fs.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0020_map_promote_fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0020_map_promote_fs.c' object='quant/palette/map_precision/test_runner-0020_map_promote_fs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0020_map_promote_fs.obj `if test -f 'quant/palette/map_precision/0020_map_promote_fs.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0020_map_promote_fs.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0020_map_promote_fs.c'; fi`
+
+quant/palette/map_precision/test_runner-0021_map_allocation_none.o: quant/palette/map_precision/0021_map_allocation_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0021_map_allocation_none.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0021_map_allocation_none.Tpo -c -o quant/palette/map_precision/test_runner-0021_map_allocation_none.o `test -f 'quant/palette/map_precision/0021_map_allocation_none.c' || echo '$(srcdir)/'`quant/palette/map_precision/0021_map_allocation_none.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0021_map_allocation_none.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0021_map_allocation_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0021_map_allocation_none.c' object='quant/palette/map_precision/test_runner-0021_map_allocation_none.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0021_map_allocation_none.o `test -f 'quant/palette/map_precision/0021_map_allocation_none.c' || echo '$(srcdir)/'`quant/palette/map_precision/0021_map_allocation_none.c
+
+quant/palette/map_precision/test_runner-0021_map_allocation_none.obj: quant/palette/map_precision/0021_map_allocation_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0021_map_allocation_none.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0021_map_allocation_none.Tpo -c -o quant/palette/map_precision/test_runner-0021_map_allocation_none.obj `if test -f 'quant/palette/map_precision/0021_map_allocation_none.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0021_map_allocation_none.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0021_map_allocation_none.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0021_map_allocation_none.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0021_map_allocation_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0021_map_allocation_none.c' object='quant/palette/map_precision/test_runner-0021_map_allocation_none.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0021_map_allocation_none.obj `if test -f 'quant/palette/map_precision/0021_map_allocation_none.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0021_map_allocation_none.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0021_map_allocation_none.c'; fi`
+
+quant/palette/map_precision/test_runner-0022_map_allocation_fs.o: quant/palette/map_precision/0022_map_allocation_fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0022_map_allocation_fs.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0022_map_allocation_fs.Tpo -c -o quant/palette/map_precision/test_runner-0022_map_allocation_fs.o `test -f 'quant/palette/map_precision/0022_map_allocation_fs.c' || echo '$(srcdir)/'`quant/palette/map_precision/0022_map_allocation_fs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0022_map_allocation_fs.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0022_map_allocation_fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0022_map_allocation_fs.c' object='quant/palette/map_precision/test_runner-0022_map_allocation_fs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0022_map_allocation_fs.o `test -f 'quant/palette/map_precision/0022_map_allocation_fs.c' || echo '$(srcdir)/'`quant/palette/map_precision/0022_map_allocation_fs.c
+
+quant/palette/map_precision/test_runner-0022_map_allocation_fs.obj: quant/palette/map_precision/0022_map_allocation_fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0022_map_allocation_fs.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0022_map_allocation_fs.Tpo -c -o quant/palette/map_precision/test_runner-0022_map_allocation_fs.obj `if test -f 'quant/palette/map_precision/0022_map_allocation_fs.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0022_map_allocation_fs.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0022_map_allocation_fs.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0022_map_allocation_fs.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0022_map_allocation_fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0022_map_allocation_fs.c' object='quant/palette/map_precision/test_runner-0022_map_allocation_fs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0022_map_allocation_fs.obj `if test -f 'quant/palette/map_precision/0022_map_allocation_fs.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0022_map_allocation_fs.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0022_map_allocation_fs.c'; fi`
+
+quant/palette/map_precision/test_runner-0024_map_allocation_borrowed.o: quant/palette/map_precision/0024_map_allocation_borrowed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0024_map_allocation_borrowed.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0024_map_allocation_borrowed.Tpo -c -o quant/palette/map_precision/test_runner-0024_map_allocation_borrowed.o `test -f 'quant/palette/map_precision/0024_map_allocation_borrowed.c' || echo '$(srcdir)/'`quant/palette/map_precision/0024_map_allocation_borrowed.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0024_map_allocation_borrowed.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0024_map_allocation_borrowed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0024_map_allocation_borrowed.c' object='quant/palette/map_precision/test_runner-0024_map_allocation_borrowed.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0024_map_allocation_borrowed.o `test -f 'quant/palette/map_precision/0024_map_allocation_borrowed.c' || echo '$(srcdir)/'`quant/palette/map_precision/0024_map_allocation_borrowed.c
+
+quant/palette/map_precision/test_runner-0024_map_allocation_borrowed.obj: quant/palette/map_precision/0024_map_allocation_borrowed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0024_map_allocation_borrowed.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0024_map_allocation_borrowed.Tpo -c -o quant/palette/map_precision/test_runner-0024_map_allocation_borrowed.obj `if test -f 'quant/palette/map_precision/0024_map_allocation_borrowed.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0024_map_allocation_borrowed.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0024_map_allocation_borrowed.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0024_map_allocation_borrowed.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0024_map_allocation_borrowed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0024_map_allocation_borrowed.c' object='quant/palette/map_precision/test_runner-0024_map_allocation_borrowed.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0024_map_allocation_borrowed.obj `if test -f 'quant/palette/map_precision/0024_map_allocation_borrowed.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0024_map_allocation_borrowed.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0024_map_allocation_borrowed.c'; fi`
+
 quant/palette/map_solver/test_runner-0001_map_heckbert_gamma.o: quant/palette/map_solver/0001_map_heckbert_gamma.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_solver/test_runner-0001_map_heckbert_gamma.o -MD -MP -MF quant/palette/map_solver/$(DEPDIR)/test_runner-0001_map_heckbert_gamma.Tpo -c -o quant/palette/map_solver/test_runner-0001_map_heckbert_gamma.o `test -f 'quant/palette/map_solver/0001_map_heckbert_gamma.c' || echo '$(srcdir)/'`quant/palette/map_solver/0001_map_heckbert_gamma.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_solver/$(DEPDIR)/test_runner-0001_map_heckbert_gamma.Tpo quant/palette/map_solver/$(DEPDIR)/test_runner-0001_map_heckbert_gamma.Po
@@ -51746,6 +52328,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/mahalanobis_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/map_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/map_float/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/map_precision/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/map_solver/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/map_solver/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/merge_float/$(DEPDIR)/$(am__dirstamp)
@@ -53740,6 +54324,7 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-auto_test_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-heckbert_test_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-map_float_common.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-map_precision_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
 	-rm -f quant/palette/auto_float/$(DEPDIR)/test_runner-0001_auto_default_gamma.Po
 	-rm -f quant/palette/auto_float/$(DEPDIR)/test_runner-0002_auto_explicit_gamma.Po
@@ -53862,6 +54447,30 @@ distclean: distclean-am
 	-rm -f quant/palette/map_float/$(DEPDIR)/test_runner-0023_map_export_gamma.Po
 	-rm -f quant/palette/map_float/$(DEPDIR)/test_runner-0024_map_export_cielab.Po
 	-rm -f quant/palette/map_float/$(DEPDIR)/test_runner-0025_map_zero_snap.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0001_map_cms_gamma.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0002_map_cms_linear.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0003_map_cms_oklab.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0004_map_cms_cielab.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0005_map_cms_din99d.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0006_map_cms_auto.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0007_map_cms_float.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0008_map_cms_gamma_target.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0009_map_cms_disabled_byte.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0010_map_cms_explicit_narrowing.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0011_map_untagged_byte.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0012_map_cms_auto_solver.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0013_map_cms_center.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0014_map_cms_medoids.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0015_map_reuse_byte_first.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0016_map_reuse_float_first.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0017_map_cms_export.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0018_map_cms_p3_control.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0020_map_promote_fs.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0021_map_allocation_none.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0022_map_allocation_fs.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0024_map_allocation_borrowed.Po
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0001_map_heckbert_gamma.Po
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0002_map_heckbert_linear.Po
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0003_map_heckbert_oklab.Po
@@ -55937,6 +56546,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-auto_test_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-heckbert_test_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-map_float_common.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-map_precision_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
 	-rm -f quant/palette/auto_float/$(DEPDIR)/test_runner-0001_auto_default_gamma.Po
 	-rm -f quant/palette/auto_float/$(DEPDIR)/test_runner-0002_auto_explicit_gamma.Po
@@ -56059,6 +56669,30 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/map_float/$(DEPDIR)/test_runner-0023_map_export_gamma.Po
 	-rm -f quant/palette/map_float/$(DEPDIR)/test_runner-0024_map_export_cielab.Po
 	-rm -f quant/palette/map_float/$(DEPDIR)/test_runner-0025_map_zero_snap.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0001_map_cms_gamma.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0002_map_cms_linear.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0003_map_cms_oklab.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0004_map_cms_cielab.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0005_map_cms_din99d.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0006_map_cms_auto.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0007_map_cms_float.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0008_map_cms_gamma_target.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0009_map_cms_disabled_byte.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0010_map_cms_explicit_narrowing.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0011_map_untagged_byte.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0012_map_cms_auto_solver.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0013_map_cms_center.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0014_map_cms_medoids.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0015_map_reuse_byte_first.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0016_map_reuse_float_first.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0017_map_cms_export.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0018_map_cms_p3_control.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0020_map_promote_fs.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0021_map_allocation_none.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0022_map_allocation_fs.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0024_map_allocation_borrowed.Po
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0001_map_heckbert_gamma.Po
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0002_map_heckbert_linear.Po
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0003_map_heckbert_oklab.Po

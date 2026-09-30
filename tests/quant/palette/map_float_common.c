@@ -52,6 +52,13 @@ static double const map_p3_red[5][3] = {
     { 0.58723742461, 0.400233055087, 0.323143851324 },
 };
 
+/* Share the independent primary oracle with map-only precision tests. */
+double const *
+test_map_p3_primary(int space)
+{
+    return space >= 0 && space < 5 ? map_p3_red[space] : NULL;
+}
+
 typedef struct map_capture {
     char data[8192];
     size_t size;

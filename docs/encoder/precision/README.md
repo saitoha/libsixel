@@ -30,6 +30,7 @@ precision and the effective working format.
 | Byte input, no applied CMS, gamma working coordinates, no independent float requirement | byte path | float path |
 | Float loader input, including CMS or high-depth source samples | retain float | retain float |
 | Working color-space conversion or Display P3 output | float as required | float |
+| Byte source with an image map retaining float samples, within the selected CPU float map path | retain source bytes; native palette and float application | float path |
 | Soft or open error-diffusion feedback | float dither buffer; byte loading and palette construction remain eligible | float dither buffer |
 | Resize | the resize policy controls its workspace; source float precision is retained | retain float work |
 
@@ -50,6 +51,8 @@ selections create a float32 palette-building view without necessarily
 promoting an otherwise gamma `rgb888` main path. Their matched `--precision`
 pairs compare the shared pipeline before and after the same float32 clustering
 stage, not two numeric representations of that stage.
+
+An [image map](../palette-construction/external-palettes.md#selected-ordinary-srgb-output) can independently require float palette application even when the source is byte-eligible. Its loader result is examined before workspace conversion, without rewriting the base precision preference. Static encoder reuse re-evaluates the map under current loader settings. As with clamp-driven promotion, an initial planner field `work=rgb888` alone does not describe the eventual lookup precision.
 
 [Dither clamp policy](../palette-application/clamp-policy.md) can promote the palette-application buffer separately from the planner's image representation. Its signed-headroom requirement does not promote the loader. A planner trace such as `work=rgb888` describes the image representation before that promotion. Check the palette-application lookup trace for the effective byte/float path and the clamp trace for `clamp_requested`, `clamp_effective`, and `clamp_threshold`.
 
