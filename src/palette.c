@@ -1627,6 +1627,7 @@ sixel_palette_generate_internal(
     unsigned int depth = 0U;
     int result_depth;
     int effective_quantize_model;
+    unsigned int snap_component;
     sixel_allocator_t *work_allocator;
 
     storage = NULL;
@@ -1659,7 +1660,10 @@ sixel_palette_generate_internal(
     context.method_for_rep = request->method_for_rep;
     context.quality_mode = request->quality_mode;
     context.force_palette = request->force_palette;
-    context.use_reversible = request->use_reversible;
+    /* Native once-only snapping is owned by the common post-merge boundary.
+     * Never let legacy histogram or solver hooks snap the source first. */
+    context.use_reversible = preserve_extended_rgb
+        ? 0 : request->use_reversible;
     context.preserve_extended_rgb = preserve_extended_rgb;
     context.quantize_model = request->quantize_model;
     context.final_merge_mode = request->final_merge_mode;
@@ -1759,6 +1763,22 @@ after_quantizer:
 
 success:
     if (SIXEL_SUCCEEDED(status) && preserve_extended_rgb) {
+        if (request->use_reversible) {
+            status = sixel_palette_snap_native(storage->entries_float32,
+                ncolors, request->pixelformat);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            /* Refresh only the compatibility view, never round the native
+             * result through bytes before working-space conversion. */
+            for (snap_component = 0; snap_component < ncolors * 3u;
+                    ++snap_component) {
+                storage->entries[snap_component] =
+                    sixel_pixelformat_float_channel_to_byte(
+                        request->pixelformat, (int)(snap_component % 3u),
+                        storage->entries_float32[snap_component]);
+            }
+        }
         status = sixel_palette_repair_native(palette, request, &ncolors,
             work_allocator);
         if (SIXEL_FAILED(status)) {
@@ -1927,7 +1947,10 @@ sixel_palette_generate_extended(
              request->quantize_model != SIXEL_QUANTIZE_MODEL_KCENTER &&
              request->quantize_model != SIXEL_QUANTIZE_MODEL_KMEDOIDS &&
              request->quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT) ||
-            request->use_reversible != 0 ||
+            (request->use_reversible &&
+             (sixel_palette_should_snap(
+                  SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE) ||
+              sixel_palette_cover_policy() != SIXEL_PALETTE_COVER_OFF)) ||
             (sixel_resolve_final_merge_mode(request->final_merge_mode) !=
                  SIXEL_FINAL_MERGE_NONE &&
              sixel_resolve_final_merge_mode(request->final_merge_mode) !=
@@ -1951,6 +1974,14 @@ SIXELSTATUS
 sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace,
                              int output_definition)
 {
+    return sixel_palette_prepare_output(palette, source_colorspace,
+        output_definition, SIXEL_COLORSPACE_GAMMA);
+}
+
+SIXELSTATUS
+sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
+                             int output_definition, int output_colorspace)
+{
     sixel_palette_storage_t *storage;
     sixel_color_def_t *srgb;
     sixel_color_def_t *p3;
@@ -1965,6 +1996,11 @@ sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace,
     unsigned int offset;
 
     if (palette == NULL ||
+            (output_colorspace != SIXEL_COLORSPACE_GAMMA &&
+             output_colorspace != SIXEL_COLORSPACE_LINEAR &&
+             output_colorspace != SIXEL_COLORSPACE_SMPTEC) ||
+            (output_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
+             output_colorspace != SIXEL_COLORSPACE_GAMMA) ||
             (output_definition != SIXEL_PALETTE_OUTPUT_LEGACY &&
              output_definition != SIXEL_PALETTE_OUTPUT_DISPLAY_P3) ||
             (source_colorspace != SIXEL_COLORSPACE_GAMMA &&
@@ -2005,16 +2041,15 @@ sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace,
         for (channel = 0U; channel < 3U; ++channel) {
             source[channel] = storage->entries_float32[offset + channel];
         }
-        if (!sixel_color_convert(gamma, source, source_colorspace,
-                                  SIXEL_COLORSPACE_GAMMA)) {
-            goto end;
-        }
         if (forward != NULL) {
-            if (!sixel_cxform_apply(forward, gamma, output)) {
+            if (!sixel_color_convert(gamma, source, source_colorspace,
+                    SIXEL_COLORSPACE_GAMMA) ||
+                    !sixel_cxform_apply(forward, gamma, output)) {
                 goto end;
             }
-        } else {
-            memcpy(output, gamma, sizeof(output));
+        } else if (!sixel_color_convert_output(output, source,
+                       source_colorspace, output_colorspace)) {
+            goto end;
         }
         /* Quantize only the serialized view. Snap policy owns changes to
          * the working palette; caching wire codes must not enable snapping

@@ -53,6 +53,12 @@ sixel_palette_snap_entries(unsigned char *entries,
                           unsigned int colors,
                           int pixelformat);
 
+/* Final-only sRGB targets; retain extended coordinates until blending.
+ * Failure leaves every entry unchanged. No byte compatibility view is read. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_snap_native(float *entries, unsigned int colors,
+                           int pixelformat);
+
 enum sixel_palette_snap_stage {
     SIXEL_PALETTE_SNAP_STAGE_FINAL_OUTPUT = 0,
     SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE,

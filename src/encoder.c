@@ -7074,7 +7074,11 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
               (cover_mode != SIXEL_PALETTE_COVER_MODE_SOFT &&
                cover_mode != SIXEL_PALETTE_COVER_MODE_HARD))) ||
             (encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE &&
-             encoder->snap_policy_approach_rate > 0.0) ||
+             encoder->snap_policy_approach_rate > 0.0 &&
+             (encoder->output_color_definition ==
+                  SIXEL_PALETTE_OUTPUT_DISPLAY_P3 ||
+              encoder->snap_policy_timing != SIXEL_PALETTE_SNAP_TIMING_ONCE ||
+              encoder->cover_policy != SIXEL_PALETTE_COVER_OFF)) ||
             encoder->gpu_policy != SIXEL_GPU_POLICY_OFF ||
             encoder->palette_type != SIXEL_PALETTETYPE_RGB ||
             (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT &&
@@ -7095,7 +7099,13 @@ sixel_encoder_rgb101_candidate(sixel_encoder_t const *encoder,
     format = sixel_frame_get_pixelformat(frame);
     /* Eligibility is separate from precision: an independently loaded map
      * may need float even when this source has sufficient RGB888 samples. */
-    return encoder->output_colorspace == SIXEL_COLORSPACE_GAMMA &&
+    /* Final snap construction is shared across legacy output definitions;
+     * only the wire cache applies -U. Otherwise -M would change with -U. */
+    return (encoder->output_colorspace == SIXEL_COLORSPACE_GAMMA ||
+            (encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE &&
+             encoder->snap_policy_approach_rate > 0.0 &&
+             (encoder->output_colorspace == SIXEL_COLORSPACE_LINEAR ||
+              encoder->output_colorspace == SIXEL_COLORSPACE_SMPTEC))) &&
         (format == SIXEL_PIXELFORMAT_RGB888 ||
          SIXEL_PIXELFORMAT_IS_FLOAT32(format)) &&
         sixel_frame_get_multiframe(frame) == 0 &&
@@ -7980,8 +7990,9 @@ end:
                 sixel_frame_get_height(frame), encoder->working_colorspace);
         }
         if (SIXEL_SUCCEEDED(status)) {
-            status = sixel_palette_prepare_rgb101((*dither)->palette,
-                encoder->working_colorspace, encoder->output_color_definition);
+            status = sixel_palette_prepare_output((*dither)->palette,
+                encoder->working_colorspace, encoder->output_color_definition,
+                encoder->output_colorspace);
         }
         sixel_dither_set_optimize_palette(*dither, 0);
     }

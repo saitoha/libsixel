@@ -17,7 +17,7 @@
 
 The parser also accepts `smptec` as an alias for `smpte-c`, folds letter case, and uses the shared [choice prefix-matching policy](../../cli/prefix-matching.md). Full names are preferable in durable commands. A repeated `-U` replaces the earlier value. `oklab`, `cielab`, and `din99d` are working/clustering choices, not accepted output choices. `-U` takes a required name, not a numeric gamma exponent or an ICC profile path.
 
-`-U` and `-_` are not generally mutually exclusive. The selected Display P3 path rejects active snap, including when CLI negotiation selects P3; the existing gamma, linear and SMPTE-C paths retain their snap behavior. The [snap/output boundary](../palette-construction/snap-policy/README.md#output-conversion-and-the-display-p3-boundary) explains why an earlier sRGB snap does not establish a P3 grid guarantee.
+`-U` and `-_` are not generally mutually exclusive. The selected Display P3 path rejects active snap, including when CLI negotiation selects P3; gamma, linear and SMPTE-C remain compatible with snap. The [snap/output boundary](../palette-construction/snap-policy/README.md#output-conversion-and-the-display-p3-boundary) explains why an earlier sRGB snap does not establish a P3 grid guarantee.
 
 ## Where the conversion happens
 
@@ -79,7 +79,7 @@ If a receiver instead treats that linear `21%` as an ordinary sRGB code value, t
 
 ### `smpte-c`: primary conversion and a power curve
 
-The current implementation first converts the working color to linear sRGB, applies the fixed `sixel_linear_srgb_to_smptec_matrix` in [`src/colorspace.c`](../../../src/colorspace.c), clamps the resulting channels to `[0, 1]`, and encodes each channel with the power `1/2.2`. Its inverse uses the power `2.2` and the inverse primary-conversion matrix.
+Output conversion first converts the working color to linear sRGB and applies the fixed `sixel_linear_srgb_to_smptec_matrix` in [`src/colorspace.c`](../../../src/colorspace.c), followed by a power `1/2.2` encoding. The legacy converter bounds intermediate values; the selected native final-snap path preserves signed extended values through the matrix and transfer function and clamps only the wire copy immediately before RGB101 rounding. The legacy inverse uses the power `2.2` and the inverse primary-conversion matrix.
 
 Consequently, `-Usmpte-c` can change channel balance as well as tone response. It is not an alternative spelling for `gamma`, a generic CRT correction, an HDR mode, or a destination ICC transform. The fixed matrix and curve describe libsixel's implementation; this option does not measure or calibrate a monitor, or establish that a particular DEC terminal expects these values.
 
@@ -118,6 +118,8 @@ Ward merge retains the same nominal channel scales and `channel_l` weights as th
 The same extended-palette/RGB101 preparation is selected for ordinary `-Ugamma` when a static opaque RGB job requires float through the source, an image map or explicit float precision, and the options match one of the four CPU solver families described above: any of the five clustering/working spaces, any sampling policy, the supported binning choices below and lookup policies above, none, the CPU spatial diffusion methods listed above (including `auto`), or the three positional methods, none or Ward merge, off or explicitly selected soft/hard cover, and disabled snap. It does not promote a job with byte-eligible source/map data and operations merely to select this algorithm. A float image map can require float palette application while the source image plan remains RGB888. Other settings retain their existing path. All four admitted solver families and AUTO also accept ordinary sRGB mapfile jobs under the same frame/precision conditions, as described in [selected float mapfile application](../palette-construction/external-palettes.md#selected-ordinary-srgb-output). The P3 and selected sRGB image-map builders both use the extended path.
 
 Palette generation retains extended coordinates. A separate destination copy is clamped and rounded to RGB101 once; preparing it does not change the working palette used for lookup and error diffusion. The writer emits the stored codes directly. Source color interpretation, working coordinates and destination RGB definition remain separate decisions. The `dither_contract` trace reports `rgb101=1` for this path and `rgb101=0` for legacy palette finalization.
+
+For gamma, linear and SMPTE-C output, [native final snap](../palette-construction/snap-policy/README.md#native-float-final-snap-for-srgb-output) is also supported with `timing=once` and cover off. The P3 active-snap restriction is unchanged.
 
 The selected lookup classes consume the authoritative float palette even when its byte projection happens to be black and white. The default `certlut` and explicit `auto` (resolved to `6bit`) remain distinct choices. Their distance geometry and focused integration tests are owned by [Lookup policy](../palette-application/lookup-policy/README.md#extended-float-coordinates).
 
@@ -221,7 +223,7 @@ percentage = (b * 100 + 127) / 255
 
 The float path rounds a clamped normalized channel directly with `floor(channel * 100 + 0.5)`. An exported 8-bit palette and a decoded SIXEL palette can therefore differ through their respective byte and percentage quantization steps. They are not generally byte-identical merely because both use the same `-U` value.
 
-For generated palettes with exact [snap policy](../palette-construction/snap-policy/README.md) enabled at `rate=1`, output finalization follows the `-U` conversion and puts the palette onto the reversible RGB percentage grid. This includes SMPTE-C output. It prevents the conversion from leaving the final palette off that grid; it does not remove clipping or make every earlier color conversion lossless.
+In legacy palette paths, generated palettes with exact [snap policy](../palette-construction/snap-policy/README.md) enabled at `rate=1` receive output finalization that follows the `-U` conversion and puts the palette onto the reversible RGB percentage grid. The native final-snap path instead retains the snapped working palette and converts only its wire copy directly to RGB101. Both cases include SMPTE-C output. It prevents the conversion from leaving the final palette off that grid; it does not remove clipping or make every earlier color conversion lossless.
 
 For `K` palette entries, this conversion is `O(K)` work and uses `O(K)` palette storage, rather than converting all `N` image pixels again. `-U` alone does not request a float32 image buffer. This cost model applies to the ordinary palette path; it is not a measured whole-program speed comparison. Different numeric color definitions can change serialized byte length even when index assignment is unchanged.
 

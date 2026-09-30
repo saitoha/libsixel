@@ -34,6 +34,8 @@
 #endif
 
 #include <stddef.h>
+#include <float.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -551,6 +553,144 @@ sixel_palette_snap_entries(unsigned char *entries,
         entries[index] = sixel_pixelformat_float_channel_to_byte(
             pixelformat, channel, entries_float32[index]);
     }
+}
+
+/* Native final snap keeps the continuous solver result until this boundary.
+ * Only the target lattice is bounded. Partial rates must blend from the
+ * original typed coordinates, including negative and above-nominal values.
+ * Stage into a small palette buffer so a later invalid color cannot publish
+ * half a palette. The caller refreshes the compatibility byte view. */
+SIXELSTATUS
+sixel_palette_snap_native(float *entries, unsigned int colors,
+                           int pixelformat)
+{
+    float result[SIXEL_PALETTE_MAX * 3];
+    double source[3];
+    double gamma[3];
+    double corners[3][2];
+    double candidate[3];
+    double target[3];
+    double best[3];
+    double weights[3];
+    double rate;
+    double tone;
+    double bounded;
+    double distance;
+    double delta;
+    double blended;
+    unsigned int color;
+    int counts[3];
+    int have_best;
+    int space;
+    int policy;
+    int channel;
+    int index;
+    int byte;
+    int c0;
+    int c1;
+    int c2;
+
+    if (entries == NULL || colors == 0 || colors > SIXEL_PALETTE_MAX ||
+            (pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 &&
+             pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
+             pixelformat != SIXEL_PIXELFORMAT_OKLABFLOAT32 &&
+             pixelformat != SIXEL_PIXELFORMAT_CIELABFLOAT32 &&
+             pixelformat != SIXEL_PIXELFORMAT_DIN99DFLOAT32)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (!sixel_palette_snap_is_enabled()) {
+        return SIXEL_OK;
+    }
+    if (sixel_palette_get_snap_timing() != SIXEL_PALETTE_SNAP_TIMING_ONCE) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    space = sixel_palette_determine_colorspace(pixelformat);
+    policy = sixel_palette_get_snap_policy();
+    rate = sixel_palette_get_snap_approach_rate();
+    weights[0] = weights[1] = weights[2] = 1.0;
+    if (space == SIXEL_COLORSPACE_OKLAB || space == SIXEL_COLORSPACE_CIELAB ||
+            space == SIXEL_COLORSPACE_DIN99D) {
+        weights[0] = sixel_palette_get_snap_channel_factor();
+        weights[1] = weights[2] = (1.0 - weights[0]) * 0.5;
+    }
+    for (color = 0; color < colors; ++color) {
+        for (channel = 0; channel < 3; ++channel) {
+            source[channel] = entries[color * 3u + channel];
+        }
+        if (!sixel_color_convert(gamma, source, space,
+                SIXEL_COLORSPACE_GAMMA)) {
+            return SIXEL_BAD_INPUT;
+        }
+        for (channel = 0; channel < 3; ++channel) {
+            if (policy == SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE) {
+                bounded = gamma[channel] < 0.0 ? 0.0 : gamma[channel];
+                bounded = bounded > 1.0 ? 1.0 : bounded;
+                byte = (int)(bounded * 255.0 + 0.5);
+                corners[channel][0] = sixel_safe_tones[byte] / 255.0;
+                corners[channel][1] = corners[channel][0];
+                continue;
+            }
+            corners[channel][0] = 0.0;
+            corners[channel][1] = 1.0;
+            for (index = 0; index < 256; ++index) {
+                tone = sixel_safe_tones[index] / 255.0;
+                if (tone <= gamma[channel]) {
+                    corners[channel][0] = tone;
+                }
+                if (tone >= gamma[channel]) {
+                    corners[channel][1] = tone;
+                    break;
+                }
+            }
+        }
+        for (channel = 0; channel < 3; ++channel) {
+            counts[channel] = corners[channel][0] == corners[channel][1]
+                ? 1 : 2;
+        }
+        have_best = 0;
+        memset(best, 0, sizeof(best));
+        for (c0 = 0; c0 < counts[0]; ++c0) {
+            for (c1 = 0; c1 < counts[1]; ++c1) {
+                for (c2 = 0; c2 < counts[2]; ++c2) {
+                    candidate[0] = corners[0][c0];
+                    candidate[1] = corners[1][c1];
+                    candidate[2] = corners[2][c2];
+                    if (!sixel_color_convert(target, candidate,
+                            SIXEL_COLORSPACE_GAMMA, space)) {
+                        return SIXEL_BAD_INPUT;
+                    }
+                    distance = 0.0;
+                    for (channel = 0; channel < 3; ++channel) {
+                        /* Compare squared distances after cancelling their
+                         * common source^2 term. Equal target components add
+                         * exactly zero, even beside a huge source component. */
+                        delta = target[channel] - best[channel];
+                        distance += weights[channel] * delta *
+                            (target[channel] + best[channel]
+                                - 2.0 * source[channel]);
+                    }
+                    if (!isfinite(distance)) {
+                        return SIXEL_BAD_INPUT;
+                    }
+                    if (!have_best || distance < 0.0) {
+                        have_best = 1;
+                        memcpy(best, target, sizeof(best));
+                    }
+                }
+            }
+        }
+        for (channel = 0; channel < 3; ++channel) {
+            /* Weighted endpoints avoid x + (target - x) losing the target
+             * to cancellation at rate=1 for very large finite coordinates. */
+            blended = (1.0 - rate) * source[channel] + rate * best[channel];
+            if (!isfinite(blended) || fabs(blended) > FLT_MAX) {
+                return SIXEL_BAD_INPUT;
+            }
+            result[color * 3u + channel] = (float)blended;
+        }
+    }
+    memcpy(entries, result, colors * 3u * sizeof(float));
+    return SIXEL_OK;
 }
 
 static SIXELSTATUS

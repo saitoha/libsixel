@@ -102,6 +102,12 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace,
                              int output_definition);
 
+/* Legacy output representations share palette construction. Select their
+ * wire transform only here, after any output-independent palette export. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
+                             int output_definition, int output_colorspace);
+
 /* Borrow immutable wire codes until the next palette initialization. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_get_rgb101(sixel_palette_t const *palette,

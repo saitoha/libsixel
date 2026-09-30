@@ -3287,6 +3287,42 @@ sixel_color_convert(double out[3], double const in[3],
     return 1;
 }
 
+int
+sixel_color_convert_output(double out[3], double const in[3],
+                           int source, int target)
+{
+    double linear[3];
+    double result[3];
+    double value;
+    int row;
+    int column;
+
+    if (target == SIXEL_COLORSPACE_GAMMA ||
+            target == SIXEL_COLORSPACE_LINEAR) {
+        return sixel_color_convert(out, in, source, target);
+    }
+    if (out == NULL || target != SIXEL_COLORSPACE_SMPTEC ||
+            !sixel_color_convert(linear, in, source,
+                SIXEL_COLORSPACE_LINEAR)) {
+        return 0;
+    }
+    for (row = 0; row < 3; ++row) {
+        value = 0;
+        for (column = 0; column < 3; ++column) {
+            value += sixel_linear_srgb_to_smptec_matrix[row][column]
+                * linear[column];
+        }
+        /* The primary matrix needs extended input: clipping an sRGB
+         * component before mixing would change the destination color. */
+        result[row] = copysign(pow(fabs(value), 1.0 / 2.2), value);
+    }
+    if (!sixel_color_triplet_finite(result)) {
+        return 0;
+    }
+    memcpy(out, result, sizeof(result));
+    return 1;
+}
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_color_convert_rgbf32(float *pixels, size_t count,
                            int source, int target)

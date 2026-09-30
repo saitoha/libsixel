@@ -52,6 +52,13 @@ SIXEL_INTERNAL_API int
 sixel_color_convert(double out[3], double const in[3],
                     int source, int target);
 
+/* Convert a working triplet to a legacy wire representation. SMPTE-C is
+ * output-only; it must not become a working geometry. Preserve extended
+ * values until the writer clamps them, with the same atomic/alias contract. */
+SIXEL_INTERNAL_API int
+sixel_color_convert_output(double out[3], double const in[3],
+                           int source, int target);
+
 /*
  * Convert a nonempty packed RGB float32 buffer in place without gamut
  * clipping. Validate every result before writing any pixels, so a rejected
