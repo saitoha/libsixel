@@ -5,7 +5,7 @@ int test_fh_weight_common(int argc, char **argv);
 int
 test_fh_weight_0025(int argc, char **argv)
 {
-    char *args[] = { "weight", "0", ".09/.01/.01", "grid", "0" };
+    char *args[] = { "weight", "0", "3e-200/1e-200/1e-200", "grid", "0" };
 
     (void)argc;
     (void)argv;

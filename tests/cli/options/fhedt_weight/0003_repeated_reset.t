@@ -17,7 +17,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     exit 0
 }
 case "${trace}" in
-    *LSXLUT1\|policy=fhedt\|precision=float32\|*weights=9/1/1*) true ;;
+    *LSXLUT1\|policy=fhedt\|precision=float32\|*weights=3/1/1*) true ;;
     *) false ;;
 esac || {
     echo "not ok 1 - repeated reset"

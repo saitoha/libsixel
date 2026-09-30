@@ -859,17 +859,19 @@ The matching sub-option is \fBresolution=VALUE\fP (short form \fBRVALUE\fP).
 .br
 SIXEL_LOOKUP_FHEDT_WEIGHTS (auto or L/A/B; default auto) chooses
 FHEDT channel ratios. The matching sub-option is \fBweights=VALUE\fP
-(short form \fBWVALUE\fP, for example \fBW9/1/1\fP or \fBWauto\fP).
-The auto ratios are 9/1/1 for CIELAB and OKLab, 4/1/1 for DIN99d,
+(short form \fBWVALUE\fP, for example \fBW3/1/1\fP or \fBWauto\fP).
+The auto ratios are 3/1/1 for CIELAB and OKLab, 2/1/1 for DIN99d,
 and 1/1/1 for RGB/linear RGB. Axes follow the working colorspace (-W):
 R/G/B in gamma or linear RGB, L/a/b in perceptual spaces.
 Explicit ratios are three positive finite
-numbers; 1/1/1 disables extra weighting. They multiply squared distances
-in nominal-range-normalized coordinates. A common scale has no effect.
+numbers; 1/1/1 disables extra weighting. They scale nominal-range-normalized
+coordinate differences before squaring. A common scale has no effect.
 Grid construction, refinement and exterior queries use the same metric.
 Nonuniform ratios require float32 lookup; the byte path retains equal
 weights. Ratios that underflow the normalized float32 coefficients are
 rejected. This changes lookup distance, not colorspace conversion.
+For a DCL foreign command, quote the whole argument to preserve its case:
+\fBimg2sixel "-~f:W4.5/1/0.75" input.png\fP.
 .br
 SIXEL_LOOKUP_FHEDT_REFINE (0 or 1; default 1) enables corner refinement
 for boundary cells.
@@ -2461,7 +2463,7 @@ choose FHEDT grid resolution (64, 128, or 256; default 64).
 .B SIXEL_LOOKUP_FHEDT_WEIGHTS
 .br
 choose FHEDT channel ratios (auto or L/A/B; default auto). The weights
-sub-option (for example W9/1/1 or Wauto) takes precedence.
+sub-option (for example W3/1/1 or Wauto) takes precedence.
 .TP
 .B SIXEL_LOOKUP_FHEDT_REFINE
 .br

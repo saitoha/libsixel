@@ -270,8 +270,8 @@ sixel_lookup_policy_fhedt_resolve_settings(
             settings->weights[2] == 0.0) {
         settings->weights[0] =
             request->pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32 ||
-            request->pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32 ? 9.0 :
-            request->pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32 ? 4.0 :
+            request->pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32 ? 3.0 :
+            request->pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32 ? 2.0 :
             1.0;
         settings->weights[1] = 1.0;
         settings->weights[2] = 1.0;
@@ -345,10 +345,11 @@ sixel_lookup_policy_fhedt_resolve_settings(
             0);
 }
 
-/* Ratios apply to squared distance after nominal range normalization.
- * Normalize their common scale before conversion to float, so 9/1/1 and
- * 90/10/10 have identical coefficients. Expanded bounds do not change the
- * metric: the backend accounts for their grid spacing exactly once. */
+/* Ratios scale nominal-range-normalized coordinates before squaring.
+ * Normalize their common scale first, so 3/1/1 and 3e200/1e200/1e200
+ * have identical coefficients without overflowing a raw ratio square.
+ * Expanded bounds do not change the metric: the backend accounts for
+ * their grid spacing exactly once. */
 static SIXELSTATUS
 sixel_lookup_policy_fhedt_metric(
     sixel_lookup_policy_prepare_request_t const *request,
@@ -357,6 +358,7 @@ sixel_lookup_policy_fhedt_metric(
 {
     double maximum;
     double range;
+    double scale;
     double coefficient;
     int component;
 
@@ -376,8 +378,8 @@ sixel_lookup_policy_fhedt_metric(
         if (range <= 0.0) {
             range = 1.0;
         }
-        coefficient = (settings->weights[component] / maximum) /
-            (range * range);
+        scale = settings->weights[component] / maximum;
+        coefficient = (scale * scale) / (range * range);
         /* A zero or subnormal coefficient would collapse a metric axis
          * on flush-to-zero CPUs. Reject it instead of changing geometry. */
         if (!(coefficient >= FLT_MIN && coefficient <= FLT_MAX)) {

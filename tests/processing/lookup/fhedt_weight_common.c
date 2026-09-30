@@ -102,8 +102,8 @@ test_fh_weight_common(int argc, char **argv)
     /* Sources and query lie on R64 lattice sites. Squared grid distances
      * are 18^2 against 10^2 before weighting. Default L emphasis divides
      * the former by 9 (CIELAB/OKLab) or 4 (DIN99d). Fractional L ratios
-     * 3.2/3.3 compare costs 324 against 320/330 before common scaling:
-     * margin >= 4 versus roundoff < 0.01 in those units. Expanded L
+     * 1.79/1.81 compare costs 324 against 320.41/327.61 before scaling:
+     * margin >= 3.59 versus roundoff < 0.01 in those units. Expanded L
      * uses six steps over twice the span.
      * A distant third seed expands the grid without changing the metric. */
     query[0] = span * 32.f / 63.f;
@@ -147,8 +147,8 @@ test_fh_weight_common(int argc, char **argv)
     }
     if (strcmp(argv[3], "opponent") == 0) {
         /* Equal L makes its coefficient irrelevant. In normalized grid
-         * units the two costs are w_a*18^2 and w_b*10^2. Swapping the
-         * fractional a/b weights (.25 versus 1) reverses the winner,
+         * units the two costs are (s_a*18)^2 and (s_b*10)^2. Swapping
+         * the fractional a/b scales (.5 versus 1) reverses the winner,
          * with a margin of at least 19 units. */
         query[2] = query[1];
         palette[2] = query[2];
@@ -181,7 +181,7 @@ test_fh_weight_common(int argc, char **argv)
          * without stealing its state or reusing a stale grid/cache. */
         for (pass = 0; pass < 3; ++pass) {
             if (!fh_weight_prepare(other, allocator, palette, space,
-                    pass % 2 ? "9/1/1" : "1/1/1", 0, count,
+                    pass % 2 ? "3/1/1" : "1/1/1", 0, count,
                     pass == 0 ? policy : NULL) ||
                     !fh_weight_map(other, query, pass % 2 ? 0 : 1) ||
                     !fh_weight_map(policy, query, expected)) {

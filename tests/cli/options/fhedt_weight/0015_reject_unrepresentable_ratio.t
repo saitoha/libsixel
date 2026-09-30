@@ -12,7 +12,7 @@ set -v
 
 unset SIXEL_LOOKUP_FHEDT_WEIGHTS
 set +e
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -Wc -~fhedt:weights=1/1e-100/1 "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" >/dev/null 2>&1
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -Wc -~fhedt:weights=1/1e-20/1 "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" >/dev/null 2>&1
 status=$?
 set -e
 test "${status}" -ne 0 || {

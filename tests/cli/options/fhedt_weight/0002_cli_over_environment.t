@@ -12,12 +12,12 @@ set -v
 
 unset SIXEL_LOOKUP_FHEDT_WEIGHTS
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 --env SIXEL_LOOKUP_FHEDT_WEIGHTS=1/1/1 -Wc -~fhedt:W9/1/1 "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 --env SIXEL_LOOKUP_FHEDT_WEIGHTS=1/1/1 -Wc -~fhedt:W3/1/1 "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
     echo "not ok 1 - FHEDT conversion failed"
     exit 0
 }
 case "${trace}" in
-    *LSXLUT1\|policy=fhedt\|precision=float32\|*weights=9/1/1*) true ;;
+    *LSXLUT1\|policy=fhedt\|precision=float32\|*weights=3/1/1*) true ;;
     *) false ;;
 esac || {
     echo "not ok 1 - cli over environment"
