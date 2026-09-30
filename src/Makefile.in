@@ -196,6 +196,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lookup-policy-mahalanobis.h $(srcdir)/factory.h \
 	$(srcdir)/palette-heckbert.c $(srcdir)/palette-heckbert.h \
 	$(srcdir)/palette-common-cover.c \
+	$(srcdir)/palette-cover-native.c \
 	$(srcdir)/palette-common-cover.h \
 	$(srcdir)/palette-common-merge.c \
 	$(srcdir)/palette-common-merge.h \
@@ -387,6 +388,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-vptree-float32.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-heckbert.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-common-cover.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-cover-native.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-common-merge.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-common-snap.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans.lo \
@@ -681,6 +683,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-palette-common-cover.Plo \
 	./$(DEPDIR)/libsixel_la-palette-common-merge.Plo \
 	./$(DEPDIR)/libsixel_la-palette-common-snap.Plo \
+	./$(DEPDIR)/libsixel_la-palette-cover-native.Plo \
 	./$(DEPDIR)/libsixel_la-palette-heckbert.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kcenter.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo \
@@ -1103,6 +1106,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-cover.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-cover-native.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-cover.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-merge.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-merge.h \
@@ -1727,6 +1731,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-cover.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-merge.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-snap.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-cover-native.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-heckbert.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kcenter.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo@am__quote@ # am--include-marker
@@ -1983,6 +1988,13 @@ libsixel_la-palette-common-cover.lo: palette-common-cover.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-common-cover.c' object='libsixel_la-palette-common-cover.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-common-cover.lo `test -f 'palette-common-cover.c' || echo '$(srcdir)/'`palette-common-cover.c
+
+libsixel_la-palette-cover-native.lo: palette-cover-native.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-cover-native.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-cover-native.Tpo -c -o libsixel_la-palette-cover-native.lo `test -f 'palette-cover-native.c' || echo '$(srcdir)/'`palette-cover-native.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-cover-native.Tpo $(DEPDIR)/libsixel_la-palette-cover-native.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-cover-native.c' object='libsixel_la-palette-cover-native.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-cover-native.lo `test -f 'palette-cover-native.c' || echo '$(srcdir)/'`palette-cover-native.c
 
 libsixel_la-palette-common-merge.lo: palette-common-merge.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-common-merge.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-common-merge.Tpo -c -o libsixel_la-palette-common-merge.lo `test -f 'palette-common-merge.c' || echo '$(srcdir)/'`palette-common-merge.c
@@ -3258,6 +3270,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-cover.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-snap.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-cover-native.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kcenter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo
@@ -3464,6 +3477,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-cover.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-snap.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-cover-native.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kcenter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo

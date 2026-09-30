@@ -6974,7 +6974,23 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
     sixel_palette_quantizer_selection_t selection;
     sixel_palette_policy_origin_t origin;
     int quantize_model;
+    int cover_mode;
+    int cover_mode_explicit;
 
+    /* Admission resolves this encoder's mode without consulting another
+     * encode operation's temporary cover override. Keep implicit soft on its
+     * existing path during migration: low-color repair can lose dark detail
+     * when distance-only funding merges frequently used palette entries. */
+    cover_mode = SIXEL_PALETTE_COVER_MODE_SOFT;
+    cover_mode_explicit = encoder->cover_policy_mode_override;
+    if (encoder->cover_policy_mode_override) {
+        cover_mode = encoder->cover_policy_mode;
+    } else {
+        cover_mode_explicit = sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_COVER_POLICY, NULL,
+            SIXEL_SUBOPTION_BINDING_ID_2(cover_policy_mode,
+                cover_policy_mode_override), &cover_mode);
+    }
     quantize_model = encoder->quantize_model;
     if (quantize_model == SIXEL_QUANTIZE_MODEL_AUTO) {
         /* Admission follows the same staged choice as palette construction:
@@ -7053,7 +7069,9 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
              sixel_resolve_final_merge_mode(encoder->final_merge_mode) !=
                  SIXEL_FINAL_MERGE_WARD) ||
             (encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
-             encoder->cover_policy != SIXEL_PALETTE_COVER_OFF) ||
+             encoder->cover_policy != SIXEL_PALETTE_COVER_OFF &&
+             (!cover_mode_explicit ||
+              cover_mode != SIXEL_PALETTE_COVER_MODE_SOFT)) ||
             (encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE &&
              encoder->snap_policy_approach_rate > 0.0) ||
             encoder->gpu_policy != SIXEL_GPU_POLICY_OFF ||
@@ -7114,8 +7132,8 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "eytzinger|fhedt "
             "-X/-W gamma|linear|oklab|cielab|din99d "
             "CPU spatial/positional dither (or -dnone/-dauto), "
-            "-Fnone|ward -_none -trgb, no cover "
-            "(-aoff for generated palettes), and normal SIXEL output.");
+            "-Fnone|ward -_none -trgb, off or explicit soft cover "
+            "for generated palettes, and normal SIXEL output.");
         return SIXEL_BAD_ARGUMENT;
     }
     return SIXEL_OK;

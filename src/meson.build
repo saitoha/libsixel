@@ -38,6 +38,7 @@ srcs = [
   'palette-heckbert.c',
   'palette-heckbert.h',
   'palette-common-cover.c',
+  'palette-cover-native.c',
   'palette-common-cover.h',
   'palette-common-merge.c',
   'palette-common-merge.h',

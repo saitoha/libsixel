@@ -1536,6 +1536,66 @@ sixel_palette_set_entries_float32(sixel_palette_t *palette,
     return SIXEL_OK;
 }
 
+/* Publish soft cover in both palette views only after the native repair and
+ * all required allocations have succeeded. The float view is authoritative. */
+static SIXELSTATUS
+sixel_palette_repair_native(sixel_palette_t *palette,
+                            sixel_palette_generate_request_t const *request,
+                            unsigned int *ncolors,
+                            sixel_allocator_t *work_allocator)
+{
+    sixel_palette_storage_t *storage;
+    SIXELSTATUS status;
+    float repaired[SIXEL_PALETTE_MAX * 3];
+    unsigned int repaired_count;
+    unsigned int index;
+    unsigned int channel;
+
+    if (sixel_palette_cover_budget(sixel_palette_cover_policy(),
+            *ncolors) == 0) {
+        return SIXEL_OK;
+    }
+    storage = SIXEL_PALETTE_STORAGE(palette);
+    if (storage->entries_float32 == NULL ||
+            sixel_palette_cover_mode() != SIXEL_PALETTE_COVER_MODE_SOFT) {
+        status = SIXEL_BAD_ARGUMENT;
+        return status;
+    }
+    memcpy(repaired, storage->entries_float32,
+        *ncolors * 3u * sizeof(float));
+    repaired_count = *ncolors;
+    status = sixel_palette_cover_float(repaired, &repaired_count,
+        request->data, request->length, request->pixelformat,
+        sixel_palette_cover_policy(), sixel_palette_cover_grow_enabled(),
+        work_allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    /* Reserve both views before publishing either. A failed allocation
+     * can grow capacity, but cannot leave mismatched palette contents. */
+    status = sixel_palette_resize_entries(palette, repaired_count, 3,
+        work_allocator);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_palette_resize_entries_float32(palette,
+            repaired_count, 3u * sizeof(float), work_allocator);
+    }
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    memcpy(storage->entries_float32, repaired,
+        repaired_count * 3u * sizeof(float));
+    for (index = 0; index < repaired_count; ++index) {
+        for (channel = 0; channel < 3; ++channel) {
+            storage->entries[index * 3u + channel] =
+                sixel_pixelformat_float_channel_to_byte(
+                    request->pixelformat, (int)channel,
+                    repaired[index * 3u + channel]);
+        }
+    }
+    *ncolors = repaired_count;
+    return SIXEL_OK;
+}
+
 /*
  * sixel_palette_generate builds the palette entries inside the provided
  * sixel_palette_t instance.  The dispatcher consults the quantizer engine
@@ -1698,13 +1758,17 @@ after_quantizer:
     status = SIXEL_OK;
 
 success:
+    if (SIXEL_SUCCEEDED(status) && preserve_extended_rgb) {
+        status = sixel_palette_repair_native(palette, request, &ncolors,
+            work_allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
     /*
-     * Covering repair runs after every solver.  Colors that sit on the edge of
-     * the gamut cannot be recovered by error diffusion when the palette does
-     * not enclose them -- the diffused error points out of the cube and the
-     * clamp discards it -- so a saturated UI element renders flat and wrong no
-     * matter how the solver was tuned.  Repair is a no-op when the palette
-     * already encloses the image.
+     * Legacy byte repair follows the same source-coverage objective. The
+     * nearest-entry threshold is a heuristic, not a convex-hull test; neither
+     * repair pass guarantees that every source color becomes reachable.
      */
     if (SIXEL_SUCCEEDED(status) && storage->entries != NULL
             && storage->entries_float32 == NULL) {

@@ -49,6 +49,7 @@ amalgamation_units = files(
   '../src/lookup-vptree-float32.c',
   '../src/palette-heckbert.c',
   '../src/palette-common-cover.c',
+  '../src/palette-cover-native.c',
   '../src/palette-common-merge.c',
   '../src/palette-common-snap.c',
   '../src/palette-kmeans.c',

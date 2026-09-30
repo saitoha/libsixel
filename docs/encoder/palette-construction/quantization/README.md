@@ -741,7 +741,7 @@ These observations check two-color native coordinates with a small binary32 erro
 | AQ-12 | Auto with soft binning resolves to native K-means. | [tests/quant/palette/auto_float/0012_auto_soft_kmeans.t](../../../../tests/quant/palette/auto_float/0012_auto_soft_kmeans.t) |
 | AQ-13 | Zero-rate snap remains inactive for auto. | [tests/quant/palette/auto_float/0013_auto_zero_snap.t](../../../../tests/quant/palette/auto_float/0013_auto_zero_snap.t) |
 | AQ-14 | Reusing one auto encoder resolves none/hard/none binning per frame. | [tests/quant/palette/auto_float/0014_auto_binning_reuse.t](../../../../tests/quant/palette/auto_float/0014_auto_binning_reuse.t) |
-| AQ-15 | P3 auto rejects active cover before writing output. | [tests/quant/palette/auto_float/0015_auto_reject_cover.t](../../../../tests/quant/palette/auto_float/0015_auto_reject_cover.t) |
+| AQ-15 | P3 auto rejects implicit cover before writing output. | [tests/quant/palette/auto_float/0015_auto_reject_implicit_cover.t](../../../../tests/quant/palette/auto_float/0015_auto_reject_implicit_cover.t) |
 | AQ-16 | P3 auto rejects active snap before writing output. | [tests/quant/palette/auto_float/0016_auto_reject_snap.t](../../../../tests/quant/palette/auto_float/0016_auto_reject_snap.t) |
 | AQ-17 | Distinct sub-byte colors keep requested FS active under auto. | [tests/quant/palette/auto_float/0017_auto_subbyte_diffusion.t](../../../../tests/quant/palette/auto_float/0017_auto_subbyte_diffusion.t) |
 | AQ-18 | Explicit auto binning retains native Heckbert selection. | [tests/quant/palette/auto_float/0018_auto_explicit_auto_binning.t](../../../../tests/quant/palette/auto_float/0018_auto_explicit_auto_binning.t) |

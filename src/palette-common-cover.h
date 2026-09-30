@@ -199,6 +199,16 @@ sixel_palette_cover_budget(int policy, unsigned int entry_count);
 SIXEL_INTERNAL_API int
 sixel_palette_cover_candidates_supported(int pixelformat);
 
+/* Repair a typed native palette in extended gamma RGB geometry. ENTRIES has
+ * room for SIXEL_PALETTE_MAX triples. DATA and ENTRIES share PIXELFORMAT.
+ * Failure leaves entries/count unchanged; untouched entries never round-trip.
+ * The caller publishes the compatibility byte view only after success. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_cover_float(float *entries, unsigned int *entry_count,
+                           float const *data, unsigned int length,
+                           int pixelformat, int policy, int grow,
+                           sixel_allocator_t *allocator);
+
 SIXEL_INTERNAL_API unsigned int
 sixel_palette_cover_collect_candidates(
     void const          /* in */  *data,

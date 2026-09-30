@@ -2120,6 +2120,7 @@ loader_helper_sources = files(
   'src/pixelformat.c',
   'src/palette.c',
   'src/palette-common-cover.c',
+  'src/palette-cover-native.c',
   'src/palette-common-cover.h',
   'src/palette-common-merge.c',
   'src/palette-common-snap.c',

@@ -474,6 +474,7 @@ int test_palette_space(int argc, char **argv);
 int test_palette_sampling_float(int argc, char **argv);
 int test_palette_binning_float(int argc, char **argv);
 int test_palette_merge_float(int argc, char **argv);
+int test_palette_cover_native(int argc, char **argv);
 int test_ward_scan_populations(int argc, char **argv);
 int test_extended_lookup(int argc, char **argv);
 int test_positional_0059(int argc, char **argv);
@@ -3495,7 +3496,7 @@ static test_entry_t const test_entries[] = {
       test_auto_native_0013 },
     { "palette/auto_float/0014_auto_binning_reuse",
       test_auto_native_0014 },
-    { "palette/auto_float/0015_auto_reject_cover",
+    { "palette/auto_float/0015_auto_reject_implicit_cover",
       test_auto_native_0015 },
     { "palette/auto_float/0016_auto_reject_snap",
       test_auto_native_0016 },
@@ -3890,6 +3891,8 @@ static test_entry_t const test_entries[] = {
     { "palette/lookup_float/0001_lookup_palette", test_lookup_palette },
     { "palette/merge_float/0002_scan_contract",
       test_ward_scan_populations },
+    { "palette/cover_float/0001_cover_contract",
+      test_palette_cover_native },
     { "palette/merge_float/0001_merge_contract",
       test_palette_merge_float },
     { "palette/solvers_float/0001_solver_contract",
