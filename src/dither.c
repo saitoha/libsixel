@@ -661,6 +661,10 @@ sixel_dither_prepare_lookup_policy(
         request.fhedt_refine = dither->lut_policy_fhedt_refine;
         request.fhedt_refine_override =
             dither->lut_policy_fhedt_refine_override;
+        memcpy(request.fhedt_weights, dither->lut_policy_fhedt_weights,
+               sizeof(request.fhedt_weights));
+        request.fhedt_weights_override =
+            dither->lut_policy_fhedt_weights_override;
         request.fhedt_shared = dither->lut_policy_fhedt_shared;
         request.fhedt_shared_override =
             dither->lut_policy_fhedt_shared_override;
@@ -2124,6 +2128,9 @@ sixel_dither_new(
     (*ppdither)->lut_policy_fhedt_resolution = 64;
     (*ppdither)->lut_policy_fhedt_refine_override = 0;
     (*ppdither)->lut_policy_fhedt_refine = 1;
+    (*ppdither)->lut_policy_fhedt_weights_override = 0;
+    memset((*ppdither)->lut_policy_fhedt_weights, 0,
+           sizeof((*ppdither)->lut_policy_fhedt_weights));
     (*ppdither)->lut_policy_fhedt_shared_override = 0;
     (*ppdither)->lut_policy_fhedt_shared = 1;
     (*ppdither)->lut_policy_fhedt_use_dist2_override = 0;

@@ -215,6 +215,8 @@ struct sixel_dither {
     int lut_policy_fhedt_resolution;
     int lut_policy_fhedt_refine_override;
     int lut_policy_fhedt_refine;
+    int lut_policy_fhedt_weights_override;
+    double lut_policy_fhedt_weights[3];
     int lut_policy_fhedt_shared_override;
     int lut_policy_fhedt_shared;
     int lut_policy_fhedt_use_dist2_override;

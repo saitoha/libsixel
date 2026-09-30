@@ -4437,6 +4437,11 @@ sixel_encoder_copy_lookup_options(sixel_encoder_t const *encoder,
     dither->lut_policy_fhedt_refine_override =
         encoder->lut_policy_fhedt_refine_override;
     dither->lut_policy_fhedt_refine = encoder->lut_policy_fhedt_refine;
+    dither->lut_policy_fhedt_weights_override =
+        encoder->lut_policy_fhedt_weights_override;
+    memcpy(dither->lut_policy_fhedt_weights,
+           encoder->lut_policy_fhedt_weights,
+           sizeof(dither->lut_policy_fhedt_weights));
     dither->lut_policy_fhedt_shared_override =
         encoder->lut_policy_fhedt_shared_override;
     dither->lut_policy_fhedt_shared = encoder->lut_policy_fhedt_shared;
@@ -8139,6 +8144,10 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     lookup_config.fhedt_refine = dither->lut_policy_fhedt_refine;
     lookup_config.fhedt_refine_override =
         dither->lut_policy_fhedt_refine_override;
+    memcpy(lookup_config.fhedt_weights, dither->lut_policy_fhedt_weights,
+           sizeof(lookup_config.fhedt_weights));
+    lookup_config.fhedt_weights_override =
+        dither->lut_policy_fhedt_weights_override;
     lookup_config.fhedt_shared = dither->lut_policy_fhedt_shared;
     lookup_config.fhedt_shared_override =
         dither->lut_policy_fhedt_shared_override;
@@ -9396,6 +9405,9 @@ sixel_encoder_new(
     (*ppencoder)->lut_policy_fhedt_resolution = 64;
     (*ppencoder)->lut_policy_fhedt_refine_override = 0;
     (*ppencoder)->lut_policy_fhedt_refine = 1;
+    (*ppencoder)->lut_policy_fhedt_weights_override = 0;
+    memset((*ppencoder)->lut_policy_fhedt_weights, 0,
+           sizeof((*ppencoder)->lut_policy_fhedt_weights));
     (*ppencoder)->lut_policy_fhedt_shared_override = 0;
     (*ppencoder)->lut_policy_fhedt_shared = 1;
     (*ppencoder)->lut_policy_fhedt_use_dist2_override = 0;
@@ -10504,6 +10516,8 @@ sixel_encoder_apply_lut_policy_argument(
     encoder->lut_policy_packing = SIXEL_LOOKUP_PACK_LINEAR;
     encoder->lut_policy_fhedt_resolution = 64;
     encoder->lut_policy_fhedt_refine = 1;
+    memset(encoder->lut_policy_fhedt_weights, 0,
+           sizeof(encoder->lut_policy_fhedt_weights));
     encoder->lut_policy_fhedt_shared = 1;
     encoder->lut_policy_fhedt_use_dist2 = 0;
     encoder->lut_policy_fhedt_use_cache = 0;

@@ -678,6 +678,33 @@ int test_fh_lookup_0020(int argc, char **argv);
 int test_fh_lookup_0021(int argc, char **argv);
 int test_fh_lookup_0022(int argc, char **argv);
 int test_fh_lookup_0023(int argc, char **argv);
+int test_fh_weight_0001(int argc, char **argv);
+int test_fh_weight_0002(int argc, char **argv);
+int test_fh_weight_0003(int argc, char **argv);
+int test_fh_weight_0004(int argc, char **argv);
+int test_fh_weight_0005(int argc, char **argv);
+int test_fh_weight_0006(int argc, char **argv);
+int test_fh_weight_0007(int argc, char **argv);
+int test_fh_weight_0008(int argc, char **argv);
+int test_fh_weight_0009(int argc, char **argv);
+int test_fh_weight_0010(int argc, char **argv);
+int test_fh_weight_0011(int argc, char **argv);
+int test_fh_weight_0012(int argc, char **argv);
+int test_fh_weight_0013(int argc, char **argv);
+int test_fh_weight_0014(int argc, char **argv);
+int test_fh_weight_0015(int argc, char **argv);
+int test_fh_weight_0016(int argc, char **argv);
+int test_fh_weight_0017(int argc, char **argv);
+int test_fh_weight_0018(int argc, char **argv);
+int test_fh_weight_0019(int argc, char **argv);
+int test_fh_weight_0020(int argc, char **argv);
+int test_fh_weight_0021(int argc, char **argv);
+int test_fh_weight_0022(int argc, char **argv);
+int test_fh_weight_0023(int argc, char **argv);
+int test_fh_weight_0024(int argc, char **argv);
+int test_fh_weight_0025(int argc, char **argv);
+int test_fh_weight_0026(int argc, char **argv);
+int test_fh_weight_0027(int argc, char **argv);
 
 int test_fh_lookup_0018(int argc, char **argv);
 int test_fh_lookup_0019(int argc, char **argv);
@@ -3553,6 +3580,60 @@ static test_entry_t const test_entries[] = {
       test_fh_lookup_0022 },
     { "lookup/fhedt/0023_fh_instance_isolation",
       test_fh_lookup_0023 },
+    { "lookup/fhedt_weight/0001_cielab_default",
+      test_fh_weight_0001 },
+    { "lookup/fhedt_weight/0002_cielab_unweighted",
+      test_fh_weight_0002 },
+    { "lookup/fhedt_weight/0003_din99d_default",
+      test_fh_weight_0003 },
+    { "lookup/fhedt_weight/0004_din99d_unweighted",
+      test_fh_weight_0004 },
+    { "lookup/fhedt_weight/0005_cielab_refine_weighted",
+      test_fh_weight_0005 },
+    { "lookup/fhedt_weight/0006_cielab_refine_unweighted",
+      test_fh_weight_0006 },
+    { "lookup/fhedt_weight/0007_din99d_refine_weighted",
+      test_fh_weight_0007 },
+    { "lookup/fhedt_weight/0008_din99d_refine_unweighted",
+      test_fh_weight_0008 },
+    { "lookup/fhedt_weight/0009_outside_weighted",
+      test_fh_weight_0009 },
+    { "lookup/fhedt_weight/0010_outside_unweighted",
+      test_fh_weight_0010 },
+    { "lookup/fhedt_weight/0011_expanded_weighted",
+      test_fh_weight_0011 },
+    { "lookup/fhedt_weight/0012_expanded_unweighted",
+      test_fh_weight_0012 },
+    { "lookup/fhedt_weight/0013_instance_metric_isolation",
+      test_fh_weight_0013 },
+    { "lookup/fhedt_weight/0014_rgb_weighted",
+      test_fh_weight_0014 },
+    { "lookup/fhedt_weight/0015_rgb_unweighted",
+      test_fh_weight_0015 },
+    { "lookup/fhedt_weight/0016_oklab_default",
+      test_fh_weight_0016 },
+    { "lookup/fhedt_weight/0017_oklab_unweighted",
+      test_fh_weight_0017 },
+    { "lookup/fhedt_weight/0018_oklab_explicit",
+      test_fh_weight_0018 },
+    { "lookup/fhedt_weight/0019_oklab_refine",
+      test_fh_weight_0019 },
+    { "lookup/fhedt_weight/0020_fractional_l_low",
+      test_fh_weight_0020 },
+    { "lookup/fhedt_weight/0021_fractional_l_high",
+      test_fh_weight_0021 },
+    { "lookup/fhedt_weight/0022_opponent_a",
+      test_fh_weight_0022 },
+    { "lookup/fhedt_weight/0023_opponent_b",
+      test_fh_weight_0023 },
+    { "lookup/fhedt_weight/0024_common_scale_large",
+      test_fh_weight_0024 },
+    { "lookup/fhedt_weight/0025_common_scale_small",
+      test_fh_weight_0025 },
+    { "lookup/fhedt_weight/0026_gamma_channel_ratio",
+      test_fh_weight_0026 },
+    { "lookup/fhedt_weight/0027_linear_channel_ratio",
+      test_fh_weight_0027 },
 
     { "lookup/fhedt/0018_fh_outside_extreme",
       test_fh_lookup_0018 },

@@ -181,6 +181,9 @@ sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
         config->fhedt_resolution_override;
     prepare_request.fhedt_refine = config->fhedt_refine;
     prepare_request.fhedt_refine_override = config->fhedt_refine_override;
+    memcpy(prepare_request.fhedt_weights, config->fhedt_weights,
+           sizeof(prepare_request.fhedt_weights));
+    prepare_request.fhedt_weights_override = config->fhedt_weights_override;
     prepare_request.fhedt_shared = config->fhedt_shared;
     prepare_request.fhedt_shared_override = config->fhedt_shared_override;
     prepare_request.fhedt_use_dist2 = config->fhedt_use_dist2;

@@ -853,6 +853,8 @@ typedef struct sixel_lookup_policy_prepare_request {
     int fhedt_resolution_override;
     int fhedt_refine;
     int fhedt_refine_override;
+    double fhedt_weights[3];
+    int fhedt_weights_override;
     int fhedt_shared;
     int fhedt_shared_override;
     int fhedt_use_dist2;

@@ -957,6 +957,17 @@
         SIXEL_SUBOPTION_OFFSET_NONE, override_, \
         SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
 
+#define SIXEL_REGISTRY_ENCODER_RATIO3( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, message_, \
+    field_, override_) \
+    SIXEL_REGISTRY_ENCODER_NUMBER( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, \
+        SIXEL_SUBOPTION_VALUE_RATIO3, 0.0, 0.0, 0, 0, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, message_, \
+        SIXEL_SUBOPTION_STORAGE_RATIO3, double[3], field_, \
+        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
+        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
+
 #define SIXEL_REGISTRY_ENCODER_INT_PAIR( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, message_, \
     field_, second_, override_) \
@@ -2530,6 +2541,13 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "refine", 'F', "SIXEL_LOOKUP_FHEDT_REFINE", NULL, NULL,
         lut_policy_fhedt_refine,
         lut_policy_fhedt_refine_override),
+    SIXEL_REGISTRY_ENCODER_RATIO3(
+        SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        g_lookup_values + SIXEL_LOOKUP_BASE_FHEDT,
+        "weights", 'W', "SIXEL_LOOKUP_FHEDT_WEIGHTS", NULL, NULL,
+        "FHEDT weights must be auto or three positive finite ratios L/A/B.",
+        lut_policy_fhedt_weights,
+        lut_policy_fhedt_weights_override),
     SIXEL_REGISTRY_ENCODER_CHOICE_ENV_PARSE_SIGNED_LONG(
         SIXEL_OPTION_SCHEMA_LUT_POLICY,
         g_lookup_values + SIXEL_LOOKUP_BASE_FHEDT,
@@ -4114,6 +4132,8 @@ sixel_option_registry_binding_kind_is_valid(
         return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_FLOAT;
     case SIXEL_SUBOPTION_VALUE_DOUBLE:
         return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_DOUBLE;
+    case SIXEL_SUBOPTION_VALUE_RATIO3:
+        return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_RATIO3;
     case SIXEL_SUBOPTION_VALUE_INT_PAIR:
         return key->binding.storage_kind ==
             SIXEL_SUBOPTION_STORAGE_INT_PAIR;

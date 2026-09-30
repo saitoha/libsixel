@@ -780,6 +780,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "        sub-option:\n"
         "          :resolution=64|128|256 (:Rvalue)\n"
         "          :refine=0|1 (:F0 or :F1)\n"
+        "          :weights=auto|L/A/B (:W9/1/1; default auto)\n"
+        "          auto -> Lab/OKLab 9/1/1, DIN99d 4/1/1, RGB 1/1/1\n"
+        "          RGB spaces use R/G/B; other spaces use L/a/b\n"
+        "          ratios weight squared normalized distances (float32)\n"
         "          :shared=0|1 (:S0 or :S1)\n"
         "          :dist2=0|1 (:D0 or :D1)\n"
         "          :cache=0|1 (:C0 or :C1)\n"
@@ -2246,6 +2250,11 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOOKUP_FHEDT_RESOLUTION",
         "choose FHEDT grid resolution (64, 128, or 256; default 64)."
+    },
+    {
+        "SIXEL_LOOKUP_FHEDT_WEIGHTS",
+        "set FHEDT channel ratios (auto or L/A/B; default auto).\n"
+        "The weights suboption (:W9/1/1 or :Wauto) overrides this setting."
     },
     {
         "SIXEL_LOOKUP_FHEDT_REFINE",

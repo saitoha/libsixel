@@ -2047,6 +2047,34 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/merge_float/0001_merge_contract.c \
 	processing/lookup/extended/0001_extended_lookup.c \
 	processing/lookup/fhedt_test_common.c \
+	processing/lookup/fhedt_weight_common.c \
+	processing/lookup/fhedt_weight/0001_cielab_default.c \
+	processing/lookup/fhedt_weight/0002_cielab_unweighted.c \
+	processing/lookup/fhedt_weight/0003_din99d_default.c \
+	processing/lookup/fhedt_weight/0004_din99d_unweighted.c \
+	processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c \
+	processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c \
+	processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c \
+	processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c \
+	processing/lookup/fhedt_weight/0009_outside_weighted.c \
+	processing/lookup/fhedt_weight/0010_outside_unweighted.c \
+	processing/lookup/fhedt_weight/0011_expanded_weighted.c \
+	processing/lookup/fhedt_weight/0012_expanded_unweighted.c \
+	processing/lookup/fhedt_weight/0013_instance_metric_isolation.c \
+	processing/lookup/fhedt_weight/0014_rgb_weighted.c \
+	processing/lookup/fhedt_weight/0015_rgb_unweighted.c \
+	processing/lookup/fhedt_weight/0016_oklab_default.c \
+	processing/lookup/fhedt_weight/0017_oklab_unweighted.c \
+	processing/lookup/fhedt_weight/0018_oklab_explicit.c \
+	processing/lookup/fhedt_weight/0019_oklab_refine.c \
+	processing/lookup/fhedt_weight/0020_fractional_l_low.c \
+	processing/lookup/fhedt_weight/0021_fractional_l_high.c \
+	processing/lookup/fhedt_weight/0022_opponent_a.c \
+	processing/lookup/fhedt_weight/0023_opponent_b.c \
+	processing/lookup/fhedt_weight/0024_common_scale_large.c \
+	processing/lookup/fhedt_weight/0025_common_scale_small.c \
+	processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c \
+	processing/lookup/fhedt_weight/0027_linear_channel_ratio.c \
 	processing/lookup/fhedt/0020_fh_enclosing_cell.c \
 	processing/lookup/fhedt/0021_fh_collision_refine.c \
 	processing/lookup/fhedt/0022_fh_collision_dist2.c \
@@ -4289,6 +4317,34 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/merge_float/test_runner-0001_merge_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/extended/test_runner-0001_extended_lookup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-fhedt_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-fhedt_weight_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0001_cielab_default.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0002_cielab_unweighted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0003_din99d_default.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0004_din99d_unweighted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0005_cielab_refine_weighted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0006_cielab_refine_unweighted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0007_din99d_refine_weighted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0008_din99d_refine_unweighted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0009_outside_weighted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0010_outside_unweighted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0011_expanded_weighted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0012_expanded_unweighted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0013_instance_metric_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0014_rgb_weighted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0015_rgb_unweighted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0016_oklab_default.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0017_oklab_unweighted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0018_oklab_explicit.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0019_oklab_refine.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0020_fractional_l_low.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0021_fractional_l_high.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0022_opponent_a.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0023_opponent_b.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0024_common_scale_large.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0025_common_scale_small.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0026_gamma_channel_ratio.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_weight/test_runner-0027_linear_channel_ratio.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0021_fh_collision_refine.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt/test_runner-0022_fh_collision_dist2.$(OBJEXT) \
@@ -6593,6 +6649,7 @@ am__depfiles_remade =  \
 	processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po \
 	processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po \
+	processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Po \
 	processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po \
 	processing/lookup/eytzinger/$(DEPDIR)/test_runner-0001_eyt_gamma_range.Po \
 	processing/lookup/eytzinger/$(DEPDIR)/test_runner-0002_eyt_linear_range.Po \
@@ -6655,6 +6712,33 @@ am__depfiles_remade =  \
 	processing/lookup/fhedt/$(DEPDIR)/test_runner-0021_fh_collision_refine.Po \
 	processing/lookup/fhedt/$(DEPDIR)/test_runner-0022_fh_collision_dist2.Po \
 	processing/lookup/fhedt/$(DEPDIR)/test_runner-0023_fh_instance_isolation.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0001_cielab_default.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0002_cielab_unweighted.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0003_din99d_default.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0004_din99d_unweighted.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0005_cielab_refine_weighted.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0006_cielab_refine_unweighted.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0007_din99d_refine_weighted.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0008_din99d_refine_unweighted.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0009_outside_weighted.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0010_outside_unweighted.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0011_expanded_weighted.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0012_expanded_unweighted.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0013_instance_metric_isolation.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0014_rgb_weighted.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0015_rgb_unweighted.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0016_oklab_default.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0017_oklab_unweighted.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0018_oklab_explicit.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0019_oklab_refine.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0020_fractional_l_low.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0021_fractional_l_high.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0022_opponent_a.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0023_opponent_b.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0024_common_scale_large.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0025_common_scale_small.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0026_gamma_channel_ratio.Po \
+	processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0027_linear_channel_ratio.Po \
 	processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0001_mah_gamma_range.Po \
 	processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0002_mah_linear_range.Po \
 	processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0003_mah_oklab_range.Po \
@@ -7613,6 +7697,34 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_FHEDT_WEIGHT_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CIELAB_DEFAULT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_CIELAB_UNWEIGHTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_DIN99D_DEFAULT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_DIN99D_UNWEIGHTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_CIELAB_REFINE_WEIGHTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_CIELAB_REFINE_UNWEIGHTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_DIN99D_REFINE_WEIGHTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_DIN99D_REFINE_UNWEIGHTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_OUTSIDE_WEIGHTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_OUTSIDE_UNWEIGHTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_EXPANDED_WEIGHTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_EXPANDED_UNWEIGHTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_INSTANCE_METRIC_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_RGB_WEIGHTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_RGB_UNWEIGHTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_OKLAB_DEFAULT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_OKLAB_UNWEIGHTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_OKLAB_EXPLICIT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_OKLAB_REFINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_FRACTIONAL_L_LOW \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_FRACTIONAL_L_HIGH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_OPPONENT_A \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_OPPONENT_B \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_COMMON_SCALE_LARGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_COMMON_SCALE_SMALL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_GAMMA_CHANNEL_RATIO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_LINEAR_CHANNEL_RATIO \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_BUILTIN_P3_RGB8 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_BUILTIN_P3_RGB16 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_BUILTIN_P3_RGBA8 \
@@ -11848,6 +11960,34 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/merge_float/0001_merge_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/extended/0001_extended_lookup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0001_cielab_default.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0002_cielab_unweighted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0003_din99d_default.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0004_din99d_unweighted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0009_outside_weighted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0010_outside_unweighted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0011_expanded_weighted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0012_expanded_unweighted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0013_instance_metric_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0014_rgb_weighted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0015_rgb_unweighted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0016_oklab_default.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0017_oklab_unweighted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0018_oklab_explicit.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0019_oklab_refine.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0020_fractional_l_low.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0021_fractional_l_high.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0022_opponent_a.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0023_opponent_b.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0024_common_scale_large.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0025_common_scale_small.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_weight/0027_linear_channel_ratio.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0020_fh_enclosing_cell.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0021_fh_collision_refine.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt/0022_fh_collision_dist2.c \
@@ -18367,6 +18507,96 @@ processing/lookup/extended/test_runner-0001_extended_lookup.$(OBJEXT):  \
 processing/lookup/test_runner-fhedt_test_common.$(OBJEXT):  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/test_runner-fhedt_weight_common.$(OBJEXT):  \
+	processing/lookup/$(am__dirstamp) \
+	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/$(am__dirstamp):
+	@$(MKDIR_P) processing/lookup/fhedt_weight
+	@: >>processing/lookup/fhedt_weight/$(am__dirstamp)
+processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/lookup/fhedt_weight/$(DEPDIR)
+	@: >>processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0001_cielab_default.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0002_cielab_unweighted.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0003_din99d_default.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0004_din99d_unweighted.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0005_cielab_refine_weighted.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0006_cielab_refine_unweighted.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0007_din99d_refine_weighted.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0008_din99d_refine_unweighted.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0009_outside_weighted.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0010_outside_unweighted.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0011_expanded_weighted.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0012_expanded_unweighted.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0013_instance_metric_isolation.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0014_rgb_weighted.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0015_rgb_unweighted.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0016_oklab_default.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0017_oklab_unweighted.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0018_oklab_explicit.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0019_oklab_refine.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0020_fractional_l_low.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0021_fractional_l_high.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0022_opponent_a.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0023_opponent_b.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0024_common_scale_large.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0025_common_scale_small.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0026_gamma_channel_ratio.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/fhedt_weight/test_runner-0027_linear_channel_ratio.$(OBJEXT):  \
+	processing/lookup/fhedt_weight/$(am__dirstamp) \
+	processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
 processing/lookup/fhedt/$(am__dirstamp):
 	@$(MKDIR_P) processing/lookup/fhedt
 	@: >>processing/lookup/fhedt/$(am__dirstamp)
@@ -19634,6 +19864,7 @@ mostlyclean-compile:
 	-rm -f processing/lookup/extended/*.$(OBJEXT)
 	-rm -f processing/lookup/eytzinger/*.$(OBJEXT)
 	-rm -f processing/lookup/fhedt/*.$(OBJEXT)
+	-rm -f processing/lookup/fhedt_weight/*.$(OBJEXT)
 	-rm -f processing/lookup/mahalanobis/*.$(OBJEXT)
 	-rm -f processing/planner/*.$(OBJEXT)
 	-rm -f processing/precision/*.$(OBJEXT)
@@ -21544,6 +21775,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/eytzinger/$(DEPDIR)/test_runner-0001_eyt_gamma_range.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/eytzinger/$(DEPDIR)/test_runner-0002_eyt_linear_range.Po@am__quote@ # am--include-marker
@@ -21606,6 +21838,33 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0021_fh_collision_refine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0022_fh_collision_dist2.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt/$(DEPDIR)/test_runner-0023_fh_instance_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0001_cielab_default.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0002_cielab_unweighted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0003_din99d_default.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0004_din99d_unweighted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0005_cielab_refine_weighted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0006_cielab_refine_unweighted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0007_din99d_refine_weighted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0008_din99d_refine_unweighted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0009_outside_weighted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0010_outside_unweighted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0011_expanded_weighted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0012_expanded_unweighted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0013_instance_metric_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0014_rgb_weighted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0015_rgb_unweighted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0016_oklab_default.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0017_oklab_unweighted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0018_oklab_explicit.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0019_oklab_refine.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0020_fractional_l_low.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0021_fractional_l_high.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0022_opponent_a.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0023_opponent_b.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0024_common_scale_large.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0025_common_scale_small.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0026_gamma_channel_ratio.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0027_linear_channel_ratio.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0001_mah_gamma_range.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0002_mah_linear_range.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0003_mah_oklab_range.Po@am__quote@ # am--include-marker
@@ -48240,6 +48499,398 @@ processing/lookup/test_runner-fhedt_test_common.obj: processing/lookup/fhedt_tes
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-fhedt_test_common.obj `if test -f 'processing/lookup/fhedt_test_common.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_test_common.c'; fi`
 
+processing/lookup/test_runner-fhedt_weight_common.o: processing/lookup/fhedt_weight_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-fhedt_weight_common.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Tpo -c -o processing/lookup/test_runner-fhedt_weight_common.o `test -f 'processing/lookup/fhedt_weight_common.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Tpo processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight_common.c' object='processing/lookup/test_runner-fhedt_weight_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-fhedt_weight_common.o `test -f 'processing/lookup/fhedt_weight_common.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight_common.c
+
+processing/lookup/test_runner-fhedt_weight_common.obj: processing/lookup/fhedt_weight_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-fhedt_weight_common.obj -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Tpo -c -o processing/lookup/test_runner-fhedt_weight_common.obj `if test -f 'processing/lookup/fhedt_weight_common.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Tpo processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight_common.c' object='processing/lookup/test_runner-fhedt_weight_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-fhedt_weight_common.obj `if test -f 'processing/lookup/fhedt_weight_common.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight_common.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0001_cielab_default.o: processing/lookup/fhedt_weight/0001_cielab_default.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0001_cielab_default.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0001_cielab_default.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0001_cielab_default.o `test -f 'processing/lookup/fhedt_weight/0001_cielab_default.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0001_cielab_default.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0001_cielab_default.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0001_cielab_default.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0001_cielab_default.c' object='processing/lookup/fhedt_weight/test_runner-0001_cielab_default.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0001_cielab_default.o `test -f 'processing/lookup/fhedt_weight/0001_cielab_default.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0001_cielab_default.c
+
+processing/lookup/fhedt_weight/test_runner-0001_cielab_default.obj: processing/lookup/fhedt_weight/0001_cielab_default.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0001_cielab_default.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0001_cielab_default.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0001_cielab_default.obj `if test -f 'processing/lookup/fhedt_weight/0001_cielab_default.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0001_cielab_default.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0001_cielab_default.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0001_cielab_default.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0001_cielab_default.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0001_cielab_default.c' object='processing/lookup/fhedt_weight/test_runner-0001_cielab_default.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0001_cielab_default.obj `if test -f 'processing/lookup/fhedt_weight/0001_cielab_default.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0001_cielab_default.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0001_cielab_default.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0002_cielab_unweighted.o: processing/lookup/fhedt_weight/0002_cielab_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0002_cielab_unweighted.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0002_cielab_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0002_cielab_unweighted.o `test -f 'processing/lookup/fhedt_weight/0002_cielab_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0002_cielab_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0002_cielab_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0002_cielab_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0002_cielab_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0002_cielab_unweighted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0002_cielab_unweighted.o `test -f 'processing/lookup/fhedt_weight/0002_cielab_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0002_cielab_unweighted.c
+
+processing/lookup/fhedt_weight/test_runner-0002_cielab_unweighted.obj: processing/lookup/fhedt_weight/0002_cielab_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0002_cielab_unweighted.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0002_cielab_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0002_cielab_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0002_cielab_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0002_cielab_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0002_cielab_unweighted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0002_cielab_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0002_cielab_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0002_cielab_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0002_cielab_unweighted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0002_cielab_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0002_cielab_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0002_cielab_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0002_cielab_unweighted.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0003_din99d_default.o: processing/lookup/fhedt_weight/0003_din99d_default.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0003_din99d_default.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0003_din99d_default.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0003_din99d_default.o `test -f 'processing/lookup/fhedt_weight/0003_din99d_default.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0003_din99d_default.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0003_din99d_default.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0003_din99d_default.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0003_din99d_default.c' object='processing/lookup/fhedt_weight/test_runner-0003_din99d_default.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0003_din99d_default.o `test -f 'processing/lookup/fhedt_weight/0003_din99d_default.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0003_din99d_default.c
+
+processing/lookup/fhedt_weight/test_runner-0003_din99d_default.obj: processing/lookup/fhedt_weight/0003_din99d_default.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0003_din99d_default.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0003_din99d_default.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0003_din99d_default.obj `if test -f 'processing/lookup/fhedt_weight/0003_din99d_default.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0003_din99d_default.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0003_din99d_default.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0003_din99d_default.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0003_din99d_default.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0003_din99d_default.c' object='processing/lookup/fhedt_weight/test_runner-0003_din99d_default.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0003_din99d_default.obj `if test -f 'processing/lookup/fhedt_weight/0003_din99d_default.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0003_din99d_default.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0003_din99d_default.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0004_din99d_unweighted.o: processing/lookup/fhedt_weight/0004_din99d_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0004_din99d_unweighted.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0004_din99d_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0004_din99d_unweighted.o `test -f 'processing/lookup/fhedt_weight/0004_din99d_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0004_din99d_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0004_din99d_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0004_din99d_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0004_din99d_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0004_din99d_unweighted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0004_din99d_unweighted.o `test -f 'processing/lookup/fhedt_weight/0004_din99d_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0004_din99d_unweighted.c
+
+processing/lookup/fhedt_weight/test_runner-0004_din99d_unweighted.obj: processing/lookup/fhedt_weight/0004_din99d_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0004_din99d_unweighted.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0004_din99d_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0004_din99d_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0004_din99d_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0004_din99d_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0004_din99d_unweighted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0004_din99d_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0004_din99d_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0004_din99d_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0004_din99d_unweighted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0004_din99d_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0004_din99d_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0004_din99d_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0004_din99d_unweighted.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0005_cielab_refine_weighted.o: processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0005_cielab_refine_weighted.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0005_cielab_refine_weighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0005_cielab_refine_weighted.o `test -f 'processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0005_cielab_refine_weighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0005_cielab_refine_weighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c' object='processing/lookup/fhedt_weight/test_runner-0005_cielab_refine_weighted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0005_cielab_refine_weighted.o `test -f 'processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c
+
+processing/lookup/fhedt_weight/test_runner-0005_cielab_refine_weighted.obj: processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0005_cielab_refine_weighted.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0005_cielab_refine_weighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0005_cielab_refine_weighted.obj `if test -f 'processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0005_cielab_refine_weighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0005_cielab_refine_weighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c' object='processing/lookup/fhedt_weight/test_runner-0005_cielab_refine_weighted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0005_cielab_refine_weighted.obj `if test -f 'processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0006_cielab_refine_unweighted.o: processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0006_cielab_refine_unweighted.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0006_cielab_refine_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0006_cielab_refine_unweighted.o `test -f 'processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0006_cielab_refine_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0006_cielab_refine_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0006_cielab_refine_unweighted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0006_cielab_refine_unweighted.o `test -f 'processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c
+
+processing/lookup/fhedt_weight/test_runner-0006_cielab_refine_unweighted.obj: processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0006_cielab_refine_unweighted.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0006_cielab_refine_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0006_cielab_refine_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0006_cielab_refine_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0006_cielab_refine_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0006_cielab_refine_unweighted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0006_cielab_refine_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0007_din99d_refine_weighted.o: processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0007_din99d_refine_weighted.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0007_din99d_refine_weighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0007_din99d_refine_weighted.o `test -f 'processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0007_din99d_refine_weighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0007_din99d_refine_weighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c' object='processing/lookup/fhedt_weight/test_runner-0007_din99d_refine_weighted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0007_din99d_refine_weighted.o `test -f 'processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c
+
+processing/lookup/fhedt_weight/test_runner-0007_din99d_refine_weighted.obj: processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0007_din99d_refine_weighted.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0007_din99d_refine_weighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0007_din99d_refine_weighted.obj `if test -f 'processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0007_din99d_refine_weighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0007_din99d_refine_weighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c' object='processing/lookup/fhedt_weight/test_runner-0007_din99d_refine_weighted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0007_din99d_refine_weighted.obj `if test -f 'processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0008_din99d_refine_unweighted.o: processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0008_din99d_refine_unweighted.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0008_din99d_refine_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0008_din99d_refine_unweighted.o `test -f 'processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0008_din99d_refine_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0008_din99d_refine_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0008_din99d_refine_unweighted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0008_din99d_refine_unweighted.o `test -f 'processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c
+
+processing/lookup/fhedt_weight/test_runner-0008_din99d_refine_unweighted.obj: processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0008_din99d_refine_unweighted.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0008_din99d_refine_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0008_din99d_refine_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0008_din99d_refine_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0008_din99d_refine_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0008_din99d_refine_unweighted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0008_din99d_refine_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0009_outside_weighted.o: processing/lookup/fhedt_weight/0009_outside_weighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0009_outside_weighted.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0009_outside_weighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0009_outside_weighted.o `test -f 'processing/lookup/fhedt_weight/0009_outside_weighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0009_outside_weighted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0009_outside_weighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0009_outside_weighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0009_outside_weighted.c' object='processing/lookup/fhedt_weight/test_runner-0009_outside_weighted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0009_outside_weighted.o `test -f 'processing/lookup/fhedt_weight/0009_outside_weighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0009_outside_weighted.c
+
+processing/lookup/fhedt_weight/test_runner-0009_outside_weighted.obj: processing/lookup/fhedt_weight/0009_outside_weighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0009_outside_weighted.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0009_outside_weighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0009_outside_weighted.obj `if test -f 'processing/lookup/fhedt_weight/0009_outside_weighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0009_outside_weighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0009_outside_weighted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0009_outside_weighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0009_outside_weighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0009_outside_weighted.c' object='processing/lookup/fhedt_weight/test_runner-0009_outside_weighted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0009_outside_weighted.obj `if test -f 'processing/lookup/fhedt_weight/0009_outside_weighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0009_outside_weighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0009_outside_weighted.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0010_outside_unweighted.o: processing/lookup/fhedt_weight/0010_outside_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0010_outside_unweighted.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0010_outside_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0010_outside_unweighted.o `test -f 'processing/lookup/fhedt_weight/0010_outside_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0010_outside_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0010_outside_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0010_outside_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0010_outside_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0010_outside_unweighted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0010_outside_unweighted.o `test -f 'processing/lookup/fhedt_weight/0010_outside_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0010_outside_unweighted.c
+
+processing/lookup/fhedt_weight/test_runner-0010_outside_unweighted.obj: processing/lookup/fhedt_weight/0010_outside_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0010_outside_unweighted.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0010_outside_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0010_outside_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0010_outside_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0010_outside_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0010_outside_unweighted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0010_outside_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0010_outside_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0010_outside_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0010_outside_unweighted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0010_outside_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0010_outside_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0010_outside_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0010_outside_unweighted.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0011_expanded_weighted.o: processing/lookup/fhedt_weight/0011_expanded_weighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0011_expanded_weighted.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0011_expanded_weighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0011_expanded_weighted.o `test -f 'processing/lookup/fhedt_weight/0011_expanded_weighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0011_expanded_weighted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0011_expanded_weighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0011_expanded_weighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0011_expanded_weighted.c' object='processing/lookup/fhedt_weight/test_runner-0011_expanded_weighted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0011_expanded_weighted.o `test -f 'processing/lookup/fhedt_weight/0011_expanded_weighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0011_expanded_weighted.c
+
+processing/lookup/fhedt_weight/test_runner-0011_expanded_weighted.obj: processing/lookup/fhedt_weight/0011_expanded_weighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0011_expanded_weighted.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0011_expanded_weighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0011_expanded_weighted.obj `if test -f 'processing/lookup/fhedt_weight/0011_expanded_weighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0011_expanded_weighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0011_expanded_weighted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0011_expanded_weighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0011_expanded_weighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0011_expanded_weighted.c' object='processing/lookup/fhedt_weight/test_runner-0011_expanded_weighted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0011_expanded_weighted.obj `if test -f 'processing/lookup/fhedt_weight/0011_expanded_weighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0011_expanded_weighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0011_expanded_weighted.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0012_expanded_unweighted.o: processing/lookup/fhedt_weight/0012_expanded_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0012_expanded_unweighted.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0012_expanded_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0012_expanded_unweighted.o `test -f 'processing/lookup/fhedt_weight/0012_expanded_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0012_expanded_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0012_expanded_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0012_expanded_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0012_expanded_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0012_expanded_unweighted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0012_expanded_unweighted.o `test -f 'processing/lookup/fhedt_weight/0012_expanded_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0012_expanded_unweighted.c
+
+processing/lookup/fhedt_weight/test_runner-0012_expanded_unweighted.obj: processing/lookup/fhedt_weight/0012_expanded_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0012_expanded_unweighted.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0012_expanded_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0012_expanded_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0012_expanded_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0012_expanded_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0012_expanded_unweighted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0012_expanded_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0012_expanded_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0012_expanded_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0012_expanded_unweighted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0012_expanded_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0012_expanded_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0012_expanded_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0012_expanded_unweighted.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0013_instance_metric_isolation.o: processing/lookup/fhedt_weight/0013_instance_metric_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0013_instance_metric_isolation.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0013_instance_metric_isolation.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0013_instance_metric_isolation.o `test -f 'processing/lookup/fhedt_weight/0013_instance_metric_isolation.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0013_instance_metric_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0013_instance_metric_isolation.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0013_instance_metric_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0013_instance_metric_isolation.c' object='processing/lookup/fhedt_weight/test_runner-0013_instance_metric_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0013_instance_metric_isolation.o `test -f 'processing/lookup/fhedt_weight/0013_instance_metric_isolation.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0013_instance_metric_isolation.c
+
+processing/lookup/fhedt_weight/test_runner-0013_instance_metric_isolation.obj: processing/lookup/fhedt_weight/0013_instance_metric_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0013_instance_metric_isolation.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0013_instance_metric_isolation.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0013_instance_metric_isolation.obj `if test -f 'processing/lookup/fhedt_weight/0013_instance_metric_isolation.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0013_instance_metric_isolation.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0013_instance_metric_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0013_instance_metric_isolation.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0013_instance_metric_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0013_instance_metric_isolation.c' object='processing/lookup/fhedt_weight/test_runner-0013_instance_metric_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0013_instance_metric_isolation.obj `if test -f 'processing/lookup/fhedt_weight/0013_instance_metric_isolation.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0013_instance_metric_isolation.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0013_instance_metric_isolation.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0014_rgb_weighted.o: processing/lookup/fhedt_weight/0014_rgb_weighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0014_rgb_weighted.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0014_rgb_weighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0014_rgb_weighted.o `test -f 'processing/lookup/fhedt_weight/0014_rgb_weighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0014_rgb_weighted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0014_rgb_weighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0014_rgb_weighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0014_rgb_weighted.c' object='processing/lookup/fhedt_weight/test_runner-0014_rgb_weighted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0014_rgb_weighted.o `test -f 'processing/lookup/fhedt_weight/0014_rgb_weighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0014_rgb_weighted.c
+
+processing/lookup/fhedt_weight/test_runner-0014_rgb_weighted.obj: processing/lookup/fhedt_weight/0014_rgb_weighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0014_rgb_weighted.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0014_rgb_weighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0014_rgb_weighted.obj `if test -f 'processing/lookup/fhedt_weight/0014_rgb_weighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0014_rgb_weighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0014_rgb_weighted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0014_rgb_weighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0014_rgb_weighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0014_rgb_weighted.c' object='processing/lookup/fhedt_weight/test_runner-0014_rgb_weighted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0014_rgb_weighted.obj `if test -f 'processing/lookup/fhedt_weight/0014_rgb_weighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0014_rgb_weighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0014_rgb_weighted.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0015_rgb_unweighted.o: processing/lookup/fhedt_weight/0015_rgb_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0015_rgb_unweighted.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0015_rgb_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0015_rgb_unweighted.o `test -f 'processing/lookup/fhedt_weight/0015_rgb_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0015_rgb_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0015_rgb_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0015_rgb_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0015_rgb_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0015_rgb_unweighted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0015_rgb_unweighted.o `test -f 'processing/lookup/fhedt_weight/0015_rgb_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0015_rgb_unweighted.c
+
+processing/lookup/fhedt_weight/test_runner-0015_rgb_unweighted.obj: processing/lookup/fhedt_weight/0015_rgb_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0015_rgb_unweighted.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0015_rgb_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0015_rgb_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0015_rgb_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0015_rgb_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0015_rgb_unweighted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0015_rgb_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0015_rgb_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0015_rgb_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0015_rgb_unweighted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0015_rgb_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0015_rgb_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0015_rgb_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0015_rgb_unweighted.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0016_oklab_default.o: processing/lookup/fhedt_weight/0016_oklab_default.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0016_oklab_default.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0016_oklab_default.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0016_oklab_default.o `test -f 'processing/lookup/fhedt_weight/0016_oklab_default.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0016_oklab_default.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0016_oklab_default.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0016_oklab_default.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0016_oklab_default.c' object='processing/lookup/fhedt_weight/test_runner-0016_oklab_default.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0016_oklab_default.o `test -f 'processing/lookup/fhedt_weight/0016_oklab_default.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0016_oklab_default.c
+
+processing/lookup/fhedt_weight/test_runner-0016_oklab_default.obj: processing/lookup/fhedt_weight/0016_oklab_default.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0016_oklab_default.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0016_oklab_default.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0016_oklab_default.obj `if test -f 'processing/lookup/fhedt_weight/0016_oklab_default.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0016_oklab_default.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0016_oklab_default.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0016_oklab_default.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0016_oklab_default.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0016_oklab_default.c' object='processing/lookup/fhedt_weight/test_runner-0016_oklab_default.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0016_oklab_default.obj `if test -f 'processing/lookup/fhedt_weight/0016_oklab_default.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0016_oklab_default.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0016_oklab_default.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0017_oklab_unweighted.o: processing/lookup/fhedt_weight/0017_oklab_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0017_oklab_unweighted.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0017_oklab_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0017_oklab_unweighted.o `test -f 'processing/lookup/fhedt_weight/0017_oklab_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0017_oklab_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0017_oklab_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0017_oklab_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0017_oklab_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0017_oklab_unweighted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0017_oklab_unweighted.o `test -f 'processing/lookup/fhedt_weight/0017_oklab_unweighted.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0017_oklab_unweighted.c
+
+processing/lookup/fhedt_weight/test_runner-0017_oklab_unweighted.obj: processing/lookup/fhedt_weight/0017_oklab_unweighted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0017_oklab_unweighted.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0017_oklab_unweighted.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0017_oklab_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0017_oklab_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0017_oklab_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0017_oklab_unweighted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0017_oklab_unweighted.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0017_oklab_unweighted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0017_oklab_unweighted.c' object='processing/lookup/fhedt_weight/test_runner-0017_oklab_unweighted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0017_oklab_unweighted.obj `if test -f 'processing/lookup/fhedt_weight/0017_oklab_unweighted.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0017_oklab_unweighted.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0017_oklab_unweighted.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0018_oklab_explicit.o: processing/lookup/fhedt_weight/0018_oklab_explicit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0018_oklab_explicit.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0018_oklab_explicit.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0018_oklab_explicit.o `test -f 'processing/lookup/fhedt_weight/0018_oklab_explicit.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0018_oklab_explicit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0018_oklab_explicit.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0018_oklab_explicit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0018_oklab_explicit.c' object='processing/lookup/fhedt_weight/test_runner-0018_oklab_explicit.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0018_oklab_explicit.o `test -f 'processing/lookup/fhedt_weight/0018_oklab_explicit.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0018_oklab_explicit.c
+
+processing/lookup/fhedt_weight/test_runner-0018_oklab_explicit.obj: processing/lookup/fhedt_weight/0018_oklab_explicit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0018_oklab_explicit.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0018_oklab_explicit.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0018_oklab_explicit.obj `if test -f 'processing/lookup/fhedt_weight/0018_oklab_explicit.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0018_oklab_explicit.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0018_oklab_explicit.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0018_oklab_explicit.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0018_oklab_explicit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0018_oklab_explicit.c' object='processing/lookup/fhedt_weight/test_runner-0018_oklab_explicit.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0018_oklab_explicit.obj `if test -f 'processing/lookup/fhedt_weight/0018_oklab_explicit.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0018_oklab_explicit.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0018_oklab_explicit.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0019_oklab_refine.o: processing/lookup/fhedt_weight/0019_oklab_refine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0019_oklab_refine.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0019_oklab_refine.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0019_oklab_refine.o `test -f 'processing/lookup/fhedt_weight/0019_oklab_refine.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0019_oklab_refine.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0019_oklab_refine.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0019_oklab_refine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0019_oklab_refine.c' object='processing/lookup/fhedt_weight/test_runner-0019_oklab_refine.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0019_oklab_refine.o `test -f 'processing/lookup/fhedt_weight/0019_oklab_refine.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0019_oklab_refine.c
+
+processing/lookup/fhedt_weight/test_runner-0019_oklab_refine.obj: processing/lookup/fhedt_weight/0019_oklab_refine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0019_oklab_refine.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0019_oklab_refine.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0019_oklab_refine.obj `if test -f 'processing/lookup/fhedt_weight/0019_oklab_refine.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0019_oklab_refine.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0019_oklab_refine.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0019_oklab_refine.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0019_oklab_refine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0019_oklab_refine.c' object='processing/lookup/fhedt_weight/test_runner-0019_oklab_refine.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0019_oklab_refine.obj `if test -f 'processing/lookup/fhedt_weight/0019_oklab_refine.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0019_oklab_refine.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0019_oklab_refine.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0020_fractional_l_low.o: processing/lookup/fhedt_weight/0020_fractional_l_low.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0020_fractional_l_low.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0020_fractional_l_low.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0020_fractional_l_low.o `test -f 'processing/lookup/fhedt_weight/0020_fractional_l_low.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0020_fractional_l_low.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0020_fractional_l_low.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0020_fractional_l_low.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0020_fractional_l_low.c' object='processing/lookup/fhedt_weight/test_runner-0020_fractional_l_low.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0020_fractional_l_low.o `test -f 'processing/lookup/fhedt_weight/0020_fractional_l_low.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0020_fractional_l_low.c
+
+processing/lookup/fhedt_weight/test_runner-0020_fractional_l_low.obj: processing/lookup/fhedt_weight/0020_fractional_l_low.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0020_fractional_l_low.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0020_fractional_l_low.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0020_fractional_l_low.obj `if test -f 'processing/lookup/fhedt_weight/0020_fractional_l_low.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0020_fractional_l_low.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0020_fractional_l_low.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0020_fractional_l_low.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0020_fractional_l_low.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0020_fractional_l_low.c' object='processing/lookup/fhedt_weight/test_runner-0020_fractional_l_low.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0020_fractional_l_low.obj `if test -f 'processing/lookup/fhedt_weight/0020_fractional_l_low.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0020_fractional_l_low.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0020_fractional_l_low.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0021_fractional_l_high.o: processing/lookup/fhedt_weight/0021_fractional_l_high.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0021_fractional_l_high.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0021_fractional_l_high.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0021_fractional_l_high.o `test -f 'processing/lookup/fhedt_weight/0021_fractional_l_high.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0021_fractional_l_high.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0021_fractional_l_high.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0021_fractional_l_high.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0021_fractional_l_high.c' object='processing/lookup/fhedt_weight/test_runner-0021_fractional_l_high.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0021_fractional_l_high.o `test -f 'processing/lookup/fhedt_weight/0021_fractional_l_high.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0021_fractional_l_high.c
+
+processing/lookup/fhedt_weight/test_runner-0021_fractional_l_high.obj: processing/lookup/fhedt_weight/0021_fractional_l_high.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0021_fractional_l_high.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0021_fractional_l_high.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0021_fractional_l_high.obj `if test -f 'processing/lookup/fhedt_weight/0021_fractional_l_high.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0021_fractional_l_high.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0021_fractional_l_high.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0021_fractional_l_high.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0021_fractional_l_high.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0021_fractional_l_high.c' object='processing/lookup/fhedt_weight/test_runner-0021_fractional_l_high.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0021_fractional_l_high.obj `if test -f 'processing/lookup/fhedt_weight/0021_fractional_l_high.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0021_fractional_l_high.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0021_fractional_l_high.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0022_opponent_a.o: processing/lookup/fhedt_weight/0022_opponent_a.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0022_opponent_a.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0022_opponent_a.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0022_opponent_a.o `test -f 'processing/lookup/fhedt_weight/0022_opponent_a.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0022_opponent_a.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0022_opponent_a.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0022_opponent_a.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0022_opponent_a.c' object='processing/lookup/fhedt_weight/test_runner-0022_opponent_a.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0022_opponent_a.o `test -f 'processing/lookup/fhedt_weight/0022_opponent_a.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0022_opponent_a.c
+
+processing/lookup/fhedt_weight/test_runner-0022_opponent_a.obj: processing/lookup/fhedt_weight/0022_opponent_a.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0022_opponent_a.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0022_opponent_a.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0022_opponent_a.obj `if test -f 'processing/lookup/fhedt_weight/0022_opponent_a.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0022_opponent_a.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0022_opponent_a.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0022_opponent_a.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0022_opponent_a.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0022_opponent_a.c' object='processing/lookup/fhedt_weight/test_runner-0022_opponent_a.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0022_opponent_a.obj `if test -f 'processing/lookup/fhedt_weight/0022_opponent_a.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0022_opponent_a.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0022_opponent_a.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0023_opponent_b.o: processing/lookup/fhedt_weight/0023_opponent_b.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0023_opponent_b.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0023_opponent_b.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0023_opponent_b.o `test -f 'processing/lookup/fhedt_weight/0023_opponent_b.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0023_opponent_b.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0023_opponent_b.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0023_opponent_b.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0023_opponent_b.c' object='processing/lookup/fhedt_weight/test_runner-0023_opponent_b.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0023_opponent_b.o `test -f 'processing/lookup/fhedt_weight/0023_opponent_b.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0023_opponent_b.c
+
+processing/lookup/fhedt_weight/test_runner-0023_opponent_b.obj: processing/lookup/fhedt_weight/0023_opponent_b.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0023_opponent_b.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0023_opponent_b.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0023_opponent_b.obj `if test -f 'processing/lookup/fhedt_weight/0023_opponent_b.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0023_opponent_b.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0023_opponent_b.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0023_opponent_b.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0023_opponent_b.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0023_opponent_b.c' object='processing/lookup/fhedt_weight/test_runner-0023_opponent_b.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0023_opponent_b.obj `if test -f 'processing/lookup/fhedt_weight/0023_opponent_b.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0023_opponent_b.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0023_opponent_b.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0024_common_scale_large.o: processing/lookup/fhedt_weight/0024_common_scale_large.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0024_common_scale_large.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0024_common_scale_large.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0024_common_scale_large.o `test -f 'processing/lookup/fhedt_weight/0024_common_scale_large.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0024_common_scale_large.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0024_common_scale_large.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0024_common_scale_large.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0024_common_scale_large.c' object='processing/lookup/fhedt_weight/test_runner-0024_common_scale_large.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0024_common_scale_large.o `test -f 'processing/lookup/fhedt_weight/0024_common_scale_large.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0024_common_scale_large.c
+
+processing/lookup/fhedt_weight/test_runner-0024_common_scale_large.obj: processing/lookup/fhedt_weight/0024_common_scale_large.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0024_common_scale_large.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0024_common_scale_large.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0024_common_scale_large.obj `if test -f 'processing/lookup/fhedt_weight/0024_common_scale_large.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0024_common_scale_large.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0024_common_scale_large.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0024_common_scale_large.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0024_common_scale_large.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0024_common_scale_large.c' object='processing/lookup/fhedt_weight/test_runner-0024_common_scale_large.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0024_common_scale_large.obj `if test -f 'processing/lookup/fhedt_weight/0024_common_scale_large.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0024_common_scale_large.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0024_common_scale_large.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0025_common_scale_small.o: processing/lookup/fhedt_weight/0025_common_scale_small.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0025_common_scale_small.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0025_common_scale_small.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0025_common_scale_small.o `test -f 'processing/lookup/fhedt_weight/0025_common_scale_small.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0025_common_scale_small.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0025_common_scale_small.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0025_common_scale_small.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0025_common_scale_small.c' object='processing/lookup/fhedt_weight/test_runner-0025_common_scale_small.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0025_common_scale_small.o `test -f 'processing/lookup/fhedt_weight/0025_common_scale_small.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0025_common_scale_small.c
+
+processing/lookup/fhedt_weight/test_runner-0025_common_scale_small.obj: processing/lookup/fhedt_weight/0025_common_scale_small.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0025_common_scale_small.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0025_common_scale_small.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0025_common_scale_small.obj `if test -f 'processing/lookup/fhedt_weight/0025_common_scale_small.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0025_common_scale_small.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0025_common_scale_small.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0025_common_scale_small.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0025_common_scale_small.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0025_common_scale_small.c' object='processing/lookup/fhedt_weight/test_runner-0025_common_scale_small.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0025_common_scale_small.obj `if test -f 'processing/lookup/fhedt_weight/0025_common_scale_small.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0025_common_scale_small.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0025_common_scale_small.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0026_gamma_channel_ratio.o: processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0026_gamma_channel_ratio.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0026_gamma_channel_ratio.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0026_gamma_channel_ratio.o `test -f 'processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0026_gamma_channel_ratio.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0026_gamma_channel_ratio.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c' object='processing/lookup/fhedt_weight/test_runner-0026_gamma_channel_ratio.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0026_gamma_channel_ratio.o `test -f 'processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c
+
+processing/lookup/fhedt_weight/test_runner-0026_gamma_channel_ratio.obj: processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0026_gamma_channel_ratio.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0026_gamma_channel_ratio.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0026_gamma_channel_ratio.obj `if test -f 'processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0026_gamma_channel_ratio.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0026_gamma_channel_ratio.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c' object='processing/lookup/fhedt_weight/test_runner-0026_gamma_channel_ratio.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0026_gamma_channel_ratio.obj `if test -f 'processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c'; fi`
+
+processing/lookup/fhedt_weight/test_runner-0027_linear_channel_ratio.o: processing/lookup/fhedt_weight/0027_linear_channel_ratio.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0027_linear_channel_ratio.o -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0027_linear_channel_ratio.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0027_linear_channel_ratio.o `test -f 'processing/lookup/fhedt_weight/0027_linear_channel_ratio.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0027_linear_channel_ratio.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0027_linear_channel_ratio.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0027_linear_channel_ratio.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0027_linear_channel_ratio.c' object='processing/lookup/fhedt_weight/test_runner-0027_linear_channel_ratio.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0027_linear_channel_ratio.o `test -f 'processing/lookup/fhedt_weight/0027_linear_channel_ratio.c' || echo '$(srcdir)/'`processing/lookup/fhedt_weight/0027_linear_channel_ratio.c
+
+processing/lookup/fhedt_weight/test_runner-0027_linear_channel_ratio.obj: processing/lookup/fhedt_weight/0027_linear_channel_ratio.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt_weight/test_runner-0027_linear_channel_ratio.obj -MD -MP -MF processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0027_linear_channel_ratio.Tpo -c -o processing/lookup/fhedt_weight/test_runner-0027_linear_channel_ratio.obj `if test -f 'processing/lookup/fhedt_weight/0027_linear_channel_ratio.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0027_linear_channel_ratio.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0027_linear_channel_ratio.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0027_linear_channel_ratio.Tpo processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0027_linear_channel_ratio.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/fhedt_weight/0027_linear_channel_ratio.c' object='processing/lookup/fhedt_weight/test_runner-0027_linear_channel_ratio.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/fhedt_weight/test_runner-0027_linear_channel_ratio.obj `if test -f 'processing/lookup/fhedt_weight/0027_linear_channel_ratio.c'; then $(CYGPATH_W) 'processing/lookup/fhedt_weight/0027_linear_channel_ratio.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/fhedt_weight/0027_linear_channel_ratio.c'; fi`
+
 processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.o: processing/lookup/fhedt/0020_fh_enclosing_cell.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.o -MD -MP -MF processing/lookup/fhedt/$(DEPDIR)/test_runner-0020_fh_enclosing_cell.Tpo -c -o processing/lookup/fhedt/test_runner-0020_fh_enclosing_cell.o `test -f 'processing/lookup/fhedt/0020_fh_enclosing_cell.c' || echo '$(srcdir)/'`processing/lookup/fhedt/0020_fh_enclosing_cell.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/fhedt/$(DEPDIR)/test_runner-0020_fh_enclosing_cell.Tpo processing/lookup/fhedt/$(DEPDIR)/test_runner-0020_fh_enclosing_cell.Po
@@ -53729,6 +54380,8 @@ distclean-generic:
 	-$(am__rm_f) processing/lookup/eytzinger/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/fhedt/$(am__dirstamp)
+	-$(am__rm_f) processing/lookup/fhedt_weight/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/lookup/fhedt_weight/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/mahalanobis/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/mahalanobis/$(am__dirstamp)
 	-$(am__rm_f) processing/planner/$(DEPDIR)/$(am__dirstamp)
@@ -55672,6 +56325,7 @@ distclean: distclean-am
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po
+	-rm -f processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Po
 	-rm -f processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0001_eyt_gamma_range.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0002_eyt_linear_range.Po
@@ -55734,6 +56388,33 @@ distclean: distclean-am
 	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0021_fh_collision_refine.Po
 	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0022_fh_collision_dist2.Po
 	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0023_fh_instance_isolation.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0001_cielab_default.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0002_cielab_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0003_din99d_default.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0004_din99d_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0005_cielab_refine_weighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0006_cielab_refine_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0007_din99d_refine_weighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0008_din99d_refine_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0009_outside_weighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0010_outside_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0011_expanded_weighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0012_expanded_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0013_instance_metric_isolation.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0014_rgb_weighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0015_rgb_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0016_oklab_default.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0017_oklab_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0018_oklab_explicit.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0019_oklab_refine.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0020_fractional_l_low.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0021_fractional_l_high.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0022_opponent_a.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0023_opponent_b.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0024_common_scale_large.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0025_common_scale_small.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0026_gamma_channel_ratio.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0027_linear_channel_ratio.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0001_mah_gamma_range.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0002_mah_linear_range.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0003_mah_oklab_range.Po
@@ -57956,6 +58637,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po
+	-rm -f processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Po
 	-rm -f processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0001_eyt_gamma_range.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0002_eyt_linear_range.Po
@@ -58018,6 +58700,33 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0021_fh_collision_refine.Po
 	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0022_fh_collision_dist2.Po
 	-rm -f processing/lookup/fhedt/$(DEPDIR)/test_runner-0023_fh_instance_isolation.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0001_cielab_default.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0002_cielab_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0003_din99d_default.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0004_din99d_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0005_cielab_refine_weighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0006_cielab_refine_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0007_din99d_refine_weighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0008_din99d_refine_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0009_outside_weighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0010_outside_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0011_expanded_weighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0012_expanded_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0013_instance_metric_isolation.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0014_rgb_weighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0015_rgb_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0016_oklab_default.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0017_oklab_unweighted.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0018_oklab_explicit.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0019_oklab_refine.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0020_fractional_l_low.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0021_fractional_l_high.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0022_opponent_a.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0023_opponent_b.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0024_common_scale_large.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0025_common_scale_small.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0026_gamma_channel_ratio.Po
+	-rm -f processing/lookup/fhedt_weight/$(DEPDIR)/test_runner-0027_linear_channel_ratio.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0001_mah_gamma_range.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0002_mah_linear_range.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0003_mah_oklab_range.Po

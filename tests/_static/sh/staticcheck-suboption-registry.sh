@@ -524,6 +524,7 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_ENCODER_FLOAT_RANGE" ||
         macro == "SIXEL_REGISTRY_ENCODER_INT" ||
         macro == "SIXEL_REGISTRY_ENCODER_INT_PAIR" ||
+        macro == "SIXEL_REGISTRY_ENCODER_RATIO3" ||
         macro == "SIXEL_REGISTRY_ENCODER_MIRROR_CHOICE" ||
         macro == "SIXEL_REGISTRY_ENCODER_MULTI_CHOICE" ||
         macro == "SIXEL_REGISTRY_ENCODER_SCALED_U8_ENV_CLAMP" ||

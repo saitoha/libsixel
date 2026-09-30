@@ -181,6 +181,34 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_FHEDT_WEIGHT_COMMON \
+    -DBUILD_TEST_0001_CIELAB_DEFAULT \
+    -DBUILD_TEST_0002_CIELAB_UNWEIGHTED \
+    -DBUILD_TEST_0003_DIN99D_DEFAULT \
+    -DBUILD_TEST_0004_DIN99D_UNWEIGHTED \
+    -DBUILD_TEST_0005_CIELAB_REFINE_WEIGHTED \
+    -DBUILD_TEST_0006_CIELAB_REFINE_UNWEIGHTED \
+    -DBUILD_TEST_0007_DIN99D_REFINE_WEIGHTED \
+    -DBUILD_TEST_0008_DIN99D_REFINE_UNWEIGHTED \
+    -DBUILD_TEST_0009_OUTSIDE_WEIGHTED \
+    -DBUILD_TEST_0010_OUTSIDE_UNWEIGHTED \
+    -DBUILD_TEST_0011_EXPANDED_WEIGHTED \
+    -DBUILD_TEST_0012_EXPANDED_UNWEIGHTED \
+    -DBUILD_TEST_0013_INSTANCE_METRIC_ISOLATION \
+    -DBUILD_TEST_0014_RGB_WEIGHTED \
+    -DBUILD_TEST_0015_RGB_UNWEIGHTED \
+    -DBUILD_TEST_0016_OKLAB_DEFAULT \
+    -DBUILD_TEST_0017_OKLAB_UNWEIGHTED \
+    -DBUILD_TEST_0018_OKLAB_EXPLICIT \
+    -DBUILD_TEST_0019_OKLAB_REFINE \
+    -DBUILD_TEST_0020_FRACTIONAL_L_LOW \
+    -DBUILD_TEST_0021_FRACTIONAL_L_HIGH \
+    -DBUILD_TEST_0022_OPPONENT_A \
+    -DBUILD_TEST_0023_OPPONENT_B \
+    -DBUILD_TEST_0024_COMMON_SCALE_LARGE \
+    -DBUILD_TEST_0025_COMMON_SCALE_SMALL \
+    -DBUILD_TEST_0026_GAMMA_CHANNEL_RATIO \
+    -DBUILD_TEST_0027_LINEAR_CHANNEL_RATIO \
     -DBUILD_TEST_0001_BUILTIN_P3_RGB8 \
     -DBUILD_TEST_0002_BUILTIN_P3_RGB16 \
     -DBUILD_TEST_0003_BUILTIN_P3_RGBA8 \
@@ -4385,6 +4413,34 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/merge_float/0001_merge_contract.c \
     processing/lookup/extended/0001_extended_lookup.c \
     processing/lookup/fhedt_test_common.c \
+    processing/lookup/fhedt_weight_common.c \
+    processing/lookup/fhedt_weight/0001_cielab_default.c \
+    processing/lookup/fhedt_weight/0002_cielab_unweighted.c \
+    processing/lookup/fhedt_weight/0003_din99d_default.c \
+    processing/lookup/fhedt_weight/0004_din99d_unweighted.c \
+    processing/lookup/fhedt_weight/0005_cielab_refine_weighted.c \
+    processing/lookup/fhedt_weight/0006_cielab_refine_unweighted.c \
+    processing/lookup/fhedt_weight/0007_din99d_refine_weighted.c \
+    processing/lookup/fhedt_weight/0008_din99d_refine_unweighted.c \
+    processing/lookup/fhedt_weight/0009_outside_weighted.c \
+    processing/lookup/fhedt_weight/0010_outside_unweighted.c \
+    processing/lookup/fhedt_weight/0011_expanded_weighted.c \
+    processing/lookup/fhedt_weight/0012_expanded_unweighted.c \
+    processing/lookup/fhedt_weight/0013_instance_metric_isolation.c \
+    processing/lookup/fhedt_weight/0014_rgb_weighted.c \
+    processing/lookup/fhedt_weight/0015_rgb_unweighted.c \
+    processing/lookup/fhedt_weight/0016_oklab_default.c \
+    processing/lookup/fhedt_weight/0017_oklab_unweighted.c \
+    processing/lookup/fhedt_weight/0018_oklab_explicit.c \
+    processing/lookup/fhedt_weight/0019_oklab_refine.c \
+    processing/lookup/fhedt_weight/0020_fractional_l_low.c \
+    processing/lookup/fhedt_weight/0021_fractional_l_high.c \
+    processing/lookup/fhedt_weight/0022_opponent_a.c \
+    processing/lookup/fhedt_weight/0023_opponent_b.c \
+    processing/lookup/fhedt_weight/0024_common_scale_large.c \
+    processing/lookup/fhedt_weight/0025_common_scale_small.c \
+    processing/lookup/fhedt_weight/0026_gamma_channel_ratio.c \
+    processing/lookup/fhedt_weight/0027_linear_channel_ratio.c \
     processing/lookup/fhedt/0020_fh_enclosing_cell.c \
     processing/lookup/fhedt/0021_fh_collision_refine.c \
     processing/lookup/fhedt/0022_fh_collision_dist2.c \

@@ -26,6 +26,7 @@
 #include "config.h"
 #endif
 
+#include <float.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -199,6 +200,7 @@ sixel_lookup_policy_fhedt_from_base_const(
 typedef struct sixel_lookup_policy_fhedt_settings {
     int resolution;
     int refine;
+    double weights[3];
     int shared;
     int use_dist2;
     int use_cache;
@@ -223,6 +225,7 @@ sixel_lookup_policy_fhedt_resolve_settings(
 
     settings->resolution = 64;
     settings->refine = 1;
+    memset(settings->weights, 0, sizeof(settings->weights));
     settings->shared = 1;
     settings->use_dist2 = 0;
     settings->use_cache = 0;
@@ -251,6 +254,28 @@ sixel_lookup_policy_fhedt_resolve_settings(
                 lut_policy_fhedt_refine,
                 lut_policy_fhedt_refine_override),
             1);
+    if (request->fhedt_weights_override != 0) {
+        memcpy(settings->weights, request->fhedt_weights,
+               sizeof(settings->weights));
+    } else {
+        (void)sixel_option_resolve_registered_ratio3_binding(
+            SIXEL_OPTION_SCHEMA_LUT_POLICY,
+            "fhedt",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                lut_policy_fhedt_weights,
+                lut_policy_fhedt_weights_override),
+            settings->weights);
+    }
+    if (settings->weights[0] == 0.0 && settings->weights[1] == 0.0 &&
+            settings->weights[2] == 0.0) {
+        settings->weights[0] =
+            request->pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32 ||
+            request->pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32 ? 9.0 :
+            request->pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32 ? 4.0 :
+            1.0;
+        settings->weights[1] = 1.0;
+        settings->weights[2] = 1.0;
+    }
     settings->shared = request->fhedt_shared_override != 0
         ? request->fhedt_shared
         : sixel_option_resolve_registered_boolean_binding(
@@ -320,11 +345,74 @@ sixel_lookup_policy_fhedt_resolve_settings(
             0);
 }
 
-/* Keep the environment contract observable before registry migration. */
+/* Ratios apply to squared distance after nominal range normalization.
+ * Normalize their common scale before conversion to float, so 9/1/1 and
+ * 90/10/10 have identical coefficients. Expanded bounds do not change the
+ * metric: the backend accounts for their grid spacing exactly once. */
+static SIXELSTATUS
+sixel_lookup_policy_fhedt_metric(
+    sixel_lookup_policy_prepare_request_t const *request,
+    sixel_lookup_policy_fhedt_settings_t const *settings,
+    float weights[3])
+{
+    double maximum;
+    double range;
+    double coefficient;
+    int component;
+
+    maximum = 0.0;
+    for (component = 0; component < 3; ++component) {
+        if (!(settings->weights[component] > 0.0 &&
+                settings->weights[component] <= DBL_MAX)) {
+            goto invalid;
+        }
+        if (settings->weights[component] > maximum) {
+            maximum = settings->weights[component];
+        }
+    }
+    for (component = 0; component < 3; ++component) {
+        range = sixel_pixelformat_float_channel_range(request->pixelformat,
+                                                      component);
+        if (range <= 0.0) {
+            range = 1.0;
+        }
+        coefficient = (settings->weights[component] / maximum) /
+            (range * range);
+        /* A zero or subnormal coefficient would collapse a metric axis
+         * on flush-to-zero CPUs. Reject it instead of changing geometry. */
+        if (!(coefficient >= FLT_MIN && coefficient <= FLT_MAX)) {
+            goto invalid;
+        }
+        weights[component] = (float)coefficient;
+    }
+    return SIXEL_OK;
+invalid:
+    sixel_helper_set_additional_message(
+        "FHEDT weights must yield positive normal float32 coefficients.");
+    return SIXEL_BAD_ARGUMENT;
+}
+
+static SIXELSTATUS
+sixel_lookup_policy_fhedt_byte_metric(
+    sixel_lookup_policy_fhedt_settings_t const *settings)
+{
+    if (!(settings->weights[0] > 0.0 &&
+            settings->weights[0] <= DBL_MAX) ||
+            settings->weights[0] != settings->weights[1] ||
+            settings->weights[0] != settings->weights[2]) {
+        sixel_helper_set_additional_message(
+            "Nonuniform FHEDT weights require --precision=float32.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return SIXEL_OK;
+}
+
+/* Report resolved values after CLI/environment precedence. */
 static void
 sixel_lookup_policy_fhedt_trace_settings(char const *precision,
                                          int resolution,
                                          int refine,
+                                         double const weights[3],
                                          int shared_flag,
                                          int use_dist2,
                                          int use_cache)
@@ -334,13 +422,14 @@ sixel_lookup_policy_fhedt_trace_settings(char const *precision,
     }
     fprintf(stderr,
             "LSXLUT1|policy=fhedt|precision=%s|resolution=%d|refine=%d|"
-            "shared=%d|dist2=%d|cache=%d\n",
+            "shared=%d|dist2=%d|cache=%d|weights=%.17g/%.17g/%.17g\n",
             precision,
             resolution,
             refine,
             shared_flag,
             use_dist2,
-            use_cache);
+            use_cache,
+            weights[0], weights[1], weights[2]);
 }
 
 static SIXELSTATUS
@@ -467,6 +556,7 @@ sixel_lookup_policy_fhedt_configure_8bit(
     sixel_lookup_policy_fhedt_trace_settings("8bit",
                                              resolution,
                                              refine,
+                                             settings.weights,
                                              shared_flag,
                                              use_dist2,
                                              use_cache);
@@ -514,10 +604,6 @@ sixel_lookup_policy_fhedt_configure_float32(
     sixel_lookup_policy_prepare_request_t const *request)
 {
     SIXELSTATUS status;
-    float base_weights[SIXEL_LOOKUP_POLICY_FHEDT_FLOAT_COMPONENTS];
-    float range;
-    float scale;
-    int component;
     int resolution;
     int refine;
     int shared_flag;
@@ -527,12 +613,6 @@ sixel_lookup_policy_fhedt_configure_float32(
     uint32_t signature;
 
     status = SIXEL_FALSE;
-    base_weights[0] = 0.0f;
-    base_weights[1] = 0.0f;
-    base_weights[2] = 0.0f;
-    range = 1.0f;
-    scale = 1.0f;
-    component = 0;
     resolution = 0;
     refine = 0;
     shared_flag = 0;
@@ -550,18 +630,11 @@ sixel_lookup_policy_fhedt_configure_float32(
     lut->depth = request->depth;
     lut->ncolors = request->reqcolor;
 
-    base_weights[0] = 1.0f;
-    base_weights[1] = 1.0f;
-    base_weights[2] = 1.0f;
-    for (component = 0; component < SIXEL_LOOKUP_POLICY_FHEDT_FLOAT_COMPONENTS;
-            ++component) {
-        range = sixel_pixelformat_float_channel_range(request->pixelformat,
-                                                      component);
-        if (range <= 0.0f) {
-            range = 1.0f;
-        }
-        scale = 1.0f / range;
-        lut->weights[component] = base_weights[component] * scale * scale;
+    sixel_lookup_policy_fhedt_resolve_settings(request, &settings);
+    status = sixel_lookup_policy_fhedt_metric(request, &settings,
+                                               lut->weights);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
     status = sixel_lookup_policy_fhedt_prepare_float_palette(
@@ -583,7 +656,6 @@ sixel_lookup_policy_fhedt_configure_float32(
         }
     }
 
-    sixel_lookup_policy_fhedt_resolve_settings(request, &settings);
     resolution = settings.resolution;
     refine = settings.refine;
     shared_flag = settings.shared;
@@ -592,6 +664,7 @@ sixel_lookup_policy_fhedt_configure_float32(
     sixel_lookup_policy_fhedt_trace_settings("float32",
                                              resolution,
                                              refine,
+                                             settings.weights,
                                              shared_flag,
                                              use_dist2,
                                              use_cache);
@@ -741,6 +814,7 @@ sixel_lookup_policy_fhedt_prepare_8bit(
     sixel_lookup_policy_prepare_request_t const *request)
 {
     SIXELSTATUS status;
+    sixel_lookup_policy_fhedt_settings_t settings;
     sixel_lookup_policy_fhedt_object_t *object;
     sixel_lookup_policy_interface_t *reuse_policy;
     sixel_lookup_policy_fhedt_object_t *reuse_object;
@@ -767,6 +841,11 @@ sixel_lookup_policy_fhedt_prepare_8bit(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    sixel_lookup_policy_fhedt_resolve_settings(request, &settings);
+    status = sixel_lookup_policy_fhedt_byte_metric(&settings);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     reuse_policy = request->reuse_policy;
     if (request->parallel_dither_active != 0
             /* Reuse slot NULL means ownership migration is unsafe. */
@@ -817,9 +896,11 @@ sixel_lookup_policy_fhedt_prepare_float32(
     sixel_lookup_policy_prepare_request_t const *request)
 {
     SIXELSTATUS status;
+    float weights[3];
     sixel_lookup_policy_fhedt_object_t *object;
     sixel_lookup_policy_interface_t *reuse_policy;
     sixel_lookup_policy_fhedt_object_t *reuse_object;
+    sixel_lookup_policy_fhedt_settings_t settings;
 
     status = SIXEL_FALSE;
     object = NULL;
@@ -844,6 +925,11 @@ sixel_lookup_policy_fhedt_prepare_float32(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    sixel_lookup_policy_fhedt_resolve_settings(request, &settings);
+    status = sixel_lookup_policy_fhedt_metric(request, &settings, weights);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     reuse_policy = request->reuse_policy;
     if (request->parallel_dither_active != 0
             /* Reuse slot NULL means ownership migration is unsafe. */
@@ -854,7 +940,11 @@ sixel_lookup_policy_fhedt_prepare_float32(
     if (reuse_policy != NULL
             && reuse_policy->vtbl == policy->vtbl) {
         reuse_object = sixel_lookup_policy_fhedt_from_base(reuse_policy);
-        if (reuse_object->prepared != 0) {
+        /* A shared grid prepared for the other metric cannot satisfy
+         * this request, even when its palette and resolution match. */
+        if (reuse_object->prepared != 0 &&
+                memcmp(reuse_object->state_float.weights, weights,
+                       sizeof(weights)) == 0) {
             sixel_lookup_policy_fhedt_reset_state(object);
             object->state_float = reuse_object->state_float;
             object->backend_initialized = reuse_object->backend_initialized;

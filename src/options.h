@@ -66,6 +66,7 @@ typedef enum sixel_suboption_value_kind {
     SIXEL_SUBOPTION_VALUE_FLOAT,
     SIXEL_SUBOPTION_VALUE_DOUBLE,
     SIXEL_SUBOPTION_VALUE_INT_PAIR,
+    SIXEL_SUBOPTION_VALUE_RATIO3,
     SIXEL_SUBOPTION_VALUE_SCALED_U8,
     SIXEL_SUBOPTION_VALUE_STRING,
     SIXEL_SUBOPTION_VALUE_STRUCTURED
@@ -105,6 +106,7 @@ typedef enum sixel_suboption_storage_kind {
     SIXEL_SUBOPTION_STORAGE_FLOAT,
     SIXEL_SUBOPTION_STORAGE_DOUBLE,
     SIXEL_SUBOPTION_STORAGE_INT_PAIR,
+    SIXEL_SUBOPTION_STORAGE_RATIO3,
     SIXEL_SUBOPTION_STORAGE_STRING
 } sixel_suboption_storage_kind_t;
 
@@ -303,6 +305,8 @@ typedef union sixel_suboption_value {
     size_t size_value;
     float float_value;
     double double_value;
+    /* Three positive ratios, or all zero for the explicit auto token. */
+    double ratio3[3];
     char const *string_value;
     struct {
         int first;
@@ -415,6 +419,13 @@ sixel_option_resolve_registered_string_binding(
     char const *base_name,
     char const *binding_identifier,
     char const **value);
+
+int
+sixel_option_resolve_registered_ratio3_binding(
+    sixel_option_schema_id_t option_id,
+    char const *base_name,
+    char const *binding_identifier,
+    double weights[3]);
 
 int
 sixel_option_resolve_registered_int_pair_binding(

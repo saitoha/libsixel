@@ -33,6 +33,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <float.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1866,6 +1867,37 @@ sixel_option_is_decimal_integer(char const *text)
     return has_digit && *cursor == '\0';
 }
 
+/* Positive ratios use slash separators so CLI colons keep delimiting keys.
+ * All-zero storage is reserved for the literal "auto", never numeric input. */
+static int
+sixel_option_parse_ratio3(char const *text, double weights[3])
+{
+    char const *cursor;
+    char *end;
+    double parsed;
+    int component;
+
+    cursor = text;
+    end = NULL;
+    parsed = 0.0;
+    if (strcmp(text, "auto") == 0) {
+        memset(weights, 0, 3 * sizeof(*weights));
+        return 1;
+    }
+    for (component = 0; component < 3; ++component) {
+        errno = 0;
+        parsed = strtod(cursor, &end);
+        if (end == cursor || errno == ERANGE ||
+                !(parsed > 0.0 && parsed <= DBL_MAX) ||
+                *end != (component == 2 ? '\0' : '/')) {
+            return 0;
+        }
+        weights[component] = parsed;
+        cursor = end + (component < 2);
+    }
+    return 1;
+}
+
 /*
  * Parse every non-enumerated suboption value through metadata in the
  * registry.  Callers may suppress diagnostics when probing environment
@@ -2166,6 +2198,9 @@ sixel_option_parse_typed_suboption_value(
             }
             value->int_value = (int)(scaled + 0.5);
         }
+        break;
+    case SIXEL_SUBOPTION_VALUE_RATIO3:
+        valid = sixel_option_parse_ratio3(text, value->ratio3);
         break;
     case SIXEL_SUBOPTION_VALUE_INT_PAIR:
         comma = strchr(text, ',');
@@ -2699,6 +2734,29 @@ sixel_option_resolve_registered_string_binding(
 }
 
 int
+sixel_option_resolve_registered_ratio3_binding(
+    sixel_option_schema_id_t option_id,
+    char const *base_name,
+    char const *binding_identifier,
+    double weights[3])
+{
+    sixel_suboption_value_t parsed;
+
+    memset(&parsed, 0, sizeof(parsed));
+    if (weights == NULL ||
+        !sixel_option_resolve_registered_binding_value(
+            option_id,
+            base_name,
+            binding_identifier,
+            SIXEL_SUBOPTION_VALUE_RATIO3,
+            &parsed)) {
+        return 0;
+    }
+    memcpy(weights, parsed.ratio3, sizeof(parsed.ratio3));
+    return 1;
+}
+
+int
 sixel_option_resolve_registered_int_pair_binding(
     sixel_option_schema_id_t option_id,
     char const *base_name,
@@ -2990,6 +3048,9 @@ sixel_option_store_suboption_value(
                &value->double_value,
                sizeof(value->double_value));
         break;
+    case SIXEL_SUBOPTION_STORAGE_RATIO3:
+        memcpy(target + offset, value->ratio3, sizeof(value->ratio3));
+        break;
     case SIXEL_SUBOPTION_STORAGE_INT_PAIR:
         if (key_def->binding.second_value_offset ==
             SIXEL_SUBOPTION_OFFSET_NONE) {
@@ -3068,6 +3129,9 @@ sixel_option_suboption_value_is_stored(
     case SIXEL_SUBOPTION_STORAGE_DOUBLE:
         memcpy(&stored_double, target + offset, sizeof(stored_double));
         return stored_double == value->double_value;
+    case SIXEL_SUBOPTION_STORAGE_RATIO3:
+        return memcmp(target + offset, value->ratio3,
+                      sizeof(value->ratio3)) == 0;
     case SIXEL_SUBOPTION_STORAGE_INT_PAIR:
         if (key_def->binding.second_value_offset ==
             SIXEL_SUBOPTION_OFFSET_NONE) {
@@ -3158,6 +3222,15 @@ sixel_option_emit_suboption_value(
         break;
     case SIXEL_SUBOPTION_VALUE_DOUBLE:
         fprintf(stderr, "%.17g", value->double_value);
+        break;
+    case SIXEL_SUBOPTION_VALUE_RATIO3:
+        if (value->ratio3[0] == 0.0 && value->ratio3[1] == 0.0 &&
+                value->ratio3[2] == 0.0) {
+            fputs("auto", stderr);
+        } else {
+            fprintf(stderr, "%.17g/%.17g/%.17g", value->ratio3[0],
+                    value->ratio3[1], value->ratio3[2]);
+        }
         break;
     case SIXEL_SUBOPTION_VALUE_INT_PAIR:
         fprintf(stderr,
