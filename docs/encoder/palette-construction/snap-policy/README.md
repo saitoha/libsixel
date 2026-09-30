@@ -149,6 +149,16 @@ The safe-tone table has 256 entries and fixed construction cost. A final byte-pa
 
 Snap quality is not monotonic. Exact snapping removes palette round-trip drift but perturbs solver output, and an intermediate `rate` can improve a one-generation metric while losing reversibility. A reproducible comparison should report palette fixed-point failures after encode/decode/re-encode, Delta E or MSE for channel perturbation, MS-SSIM for spatial impact, palette-build and end-to-end time, and exact SIXEL byte size. It should hold `-Q`, `-F`, `-a`, `-X`, precision, lookup, diffusion, and thread count fixed while sweeping policy, timing, rate, and palette size.
 
+## Output conversion and the Display P3 boundary
+
+An active snap means a policy other than `none` with an approach rate greater than zero. The [selected Display P3 path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path) currently rejects active snap before image output. `-_none` and a zero approach rate retain the unsnapped working palette. This is a restriction on the effective output definition, not on writing `-U` and `-_` in the same command: explicit `-Ugamma` still supports the existing snap path. Automatic output selection is subject to the same P3 restriction if negotiation selects Display P3.
+
+The existing target is the safe sRGB byte set defined above. Converting one of those palette entries to Display P3 does not generally place it on a P3 RGB101 grid point. The conversion changes the primary basis and applies transfer functions; it is not an independent scale factor for each encoded channel. Snapping earlier to the sRGB set therefore cannot guarantee that lookup and diffusion use the colors finally representable by a P3 receiver. Output-only RGB101 rounding remains necessary even with snap disabled, and must not rewrite the working palette.
+
+Supporting destination-aware snapping would require a separate target contract. A receiver's nominal percentage value `q/100` differs from the byte-decoder fixed point `floor((255*q + 50)/100)/255`; guaranteeing a stable byte round trip and matching the nominal destination color are distinct objectives. The present P3 path does not choose either as a working-palette snap target.
+
+For standard Display P3, mapping a destination grid candidate back into the working space can use inverse primary-matrix and transfer-function conversions. It does not inherently require an iterative inverse search. A final palette-only pass scales with the palette size, while early solver hooks repeat the conversions at their respective stages. Comparing nearby candidates in a perceptual space adds conversions and requires a defined distance metric; it does not by itself establish a global nearest-grid result. These observations do not establish a quality benefit or measured implementation cost. Destination-aware snap remains unimplemented; the current rejection should not be removed merely because an inverse transform is available.
+
 ## Measured snapshot
 
 The checked-in snapshot was produced on 2026-09-12 UTC from clean revision `85a2674e53a2d7b75c6944b5a87b04ee9ea182b1` on arm64 macOS with Apple clang, `-O3`, and one encoder thread. The main comparison uses the builtin loader with `SIXEL_LOADER_CMS_ENGINE=none`, `images/snake.png`, palette sizes 8 through 256, matched clustering and working spaces (`-X` equals `-W`), the float32 pipeline, full-frame sampling, hard binning, seeded K-means, no final merge, cover off, exact lookup, GPU off, and Floyd--Steinberg dithering with raster scan. Holding these controls fixed isolates snap behavior but does not describe every possible encoder configuration.
@@ -258,7 +268,7 @@ For neighboring stages, see [Palette Construction Pipeline](../pipeline/README.m
 
 ## Known contract violations
 
-The following are implementation defects, not alternative semantics for the options above. The selected extended float path avoids these old consumers by requiring K-means, disabled snap and merge, and no binning.
+The following are implementation defects, not alternative semantics for the options above. The selected extended float path still excludes active snap. Its admitted solvers, merge modes and binning policies are maintained in [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path); those restrictions must not be inferred from the older snap consumers below.
 
 | Location | Remaining defect |
 | --- | --- |

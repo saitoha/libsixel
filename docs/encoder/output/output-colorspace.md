@@ -17,6 +17,8 @@
 
 The parser also accepts `smptec` as an alias for `smpte-c`, folds letter case, and uses the shared [choice prefix-matching policy](../../cli/prefix-matching.md). Full names are preferable in durable commands. A repeated `-U` replaces the earlier value. `oklab`, `cielab`, and `din99d` are working/clustering choices, not accepted output choices. `-U` takes a required name, not a numeric gamma exponent or an ICC profile path.
 
+`-U` and `-_` are not generally mutually exclusive. The selected Display P3 path rejects active snap, including when CLI negotiation selects P3; the existing gamma, linear and SMPTE-C paths retain their snap behavior. The [snap/output boundary](../palette-construction/snap-policy/README.md#output-conversion-and-the-display-p3-boundary) explains why an earlier sRGB snap does not establish a P3 grid guarantee.
+
 ## Where the conversion happens
 
 For the legacy `gamma`, `linear` and `smpte-c` palette paths, the relevant data flow is:
