@@ -6985,9 +6985,9 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
         quantize_model = selection.effective;
     }
     /* These CPU spatial kernels consume the unrounded float palette and
-     * propagate residuals without byte projection. AUTO resolves to
-     * Atkinson or FS after the final palette count is known. Positional
-     * noise and temporal history still need separate integration checks. */
+     * propagate residuals without byte projection. Positional methods keep
+     * their coordinate bias in the same extended lookup space. AUTO resolves
+     * to Atkinson or FS; temporal history remains outside this path. */
     switch (encoder->method_for_diffuse) {
     case SIXEL_DIFFUSE_AUTO:
     case SIXEL_DIFFUSE_NONE:
@@ -7000,6 +7000,9 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
     case SIXEL_DIFFUSE_SIERRA2:
     case SIXEL_DIFFUSE_SIERRA3:
     case SIXEL_DIFFUSE_LSO2:
+    case SIXEL_DIFFUSE_A_DITHER:
+    case SIXEL_DIFFUSE_X_DITHER:
+    case SIXEL_DIFFUSE_BLUENOISE_DITHER:
         break;
     default:
         return 0;
@@ -7105,7 +7108,7 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "-~none|certlut|5bit|6bit|auto|vptree|rbc|mahalanobis|"
             "eytzinger|fhedt "
             "-X/-W gamma|linear|oklab|cielab|din99d "
-            "CPU spatial diffusion (or -dnone/-dauto), "
+            "CPU spatial/positional dither (or -dnone/-dauto), "
             "-Fnone|ward -_none -trgb, no cover "
             "(-aoff for generated palettes), and normal SIXEL output.");
         return SIXEL_BAD_ARGUMENT;

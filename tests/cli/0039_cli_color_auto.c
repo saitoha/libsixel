@@ -444,9 +444,9 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
         arguments[count++] = "-o-";
     }
     if (!baseline && color_auto_is(name, "encode-error")) {
-        /* Positional dithering remains outside the P3 pilot and fails after
-         * policy negotiation. All five working spaces are now supported. */
-        arguments[count++] = "-da_dither";
+        /* Temporal diffusion remains outside the P3 pilot and fails after
+         * policy negotiation, exercising restoration after encode failure. */
+        arguments[count++] = "-dinterframe";
     }
     if (!baseline && color_auto_is(name, "stdin")) {
         input = open(fixture, O_RDONLY);

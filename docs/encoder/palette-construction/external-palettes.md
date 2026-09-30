@@ -83,7 +83,7 @@ The [selected CPU float Display P3 path](../output/output-colorspace.md) accepts
 
 Existing image mapfiles keep their image-to-palette meaning. In the P3 path, a map image goes through its selected loader/CMS and the same extended float builder used for generated palettes. Its colors remain unrounded until the fixed-palette output boundary, so CMS-retained values outside sRGB survive all five working coordinate choices. This does not introduce an ordered PNG palette format or a PNG `-M` writer.
 
-The other selected-path restrictions still apply, including the supported lookup policies, [CPU spatial diffusion or none](../output/output-colorspace.md#display-p3-selected-cpu-float-path), and opaque static RGB source images. Explicit cover-policy options conflict with fixed palettes, so omit `-a` (including `-aoff`); fixed palettes bypass cover. For example:
+The other selected-path restrictions still apply, including the supported lookup policies, [CPU spatial/positional dithering or none](../output/output-colorspace.md#display-p3-selected-cpu-float-path), and opaque static RGB source images. Explicit cover-policy options conflict with fixed palettes, so omit `-a` (including `-aoff`); fixed palettes bypass cover. For example:
 
 ```sh
 img2sixel --threads=1 --gpu-policy=off --precision=auto \
@@ -94,7 +94,7 @@ img2sixel --threads=1 --gpu-policy=off --precision=auto \
 
 ## Selected ordinary sRGB output
 
-The same [selected opaque static CPU float path](../output/output-colorspace.md#selected-ordinary-srgb-float-path) accepts `-Ugamma -m` with AUTO or explicit Heckbert, K-means, K-center or K-medoids, supported lookup/spatial diffusion, none or Ward merge, and disabled snap (including zero approach rate). Cover is bypassed for fixed palettes; omit `-a`. Selection requires that the source, a loaded image map, or encoder processing needs float precision. An image map is an independent precision source: its loader representation is inspected before workspace conversion. Mapfile selection alone does not promote a job when both inputs and the requested operations are byte-eligible. Active snap, animation/alpha and the other pilot exclusions retain their existing ordinary-sRGB behavior.
+The same [selected opaque static CPU float path](../output/output-colorspace.md#selected-ordinary-srgb-float-path) accepts `-Ugamma -m` with AUTO or explicit Heckbert, K-means, K-center or K-medoids, supported lookup and spatial/positional dithering, none or Ward merge, and disabled snap (including zero approach rate). Cover is bypassed for fixed palettes; omit `-a`. Selection requires that the source, a loaded image map, or encoder processing needs float precision. An image map is an independent precision source: its loader representation is inspected before workspace conversion. Mapfile selection alone does not promote a job when both inputs and the requested operations are byte-eligible. Active snap, animation/alpha and the other pilot exclusions retain their existing ordinary-sRGB behavior.
 
 Structured ACT, JASC PAL, RIFF PAL and GPL entries remain sRGB8 and retain their order, duplicates and unused entries. For selected float application, import creates an authoritative float working palette even in gamma. Lookup and error diffusion use those unrounded coordinates; only a separate RGB101 output copy is rounded. The supplied entries are not snapped implicitly. `-M` captures the sRGB8 export before wire rounding. Byte-fast-path jobs keep the original allocation and representation behavior.
 

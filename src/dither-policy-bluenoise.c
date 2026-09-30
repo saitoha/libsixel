@@ -242,8 +242,12 @@ sixel_bluenoise_tri_noise(sixel_bluenoise_conf_t const *conf,
         channel_y = channel_offset_y[c];
     }
 
-    ix0 = x + conf->phase_x + channel_x;
-    iy0 = y + conf->phase_y + channel_y;
+    /* Reduce before adding the second tap: coordinates and signed phase
+     * offsets are periodic, not a reason to overflow a signed sum. */
+    ix0 = (int)(((unsigned int)x + (unsigned int)conf->phase_x +
+                 (unsigned int)channel_x) & (SIXEL_BN_W - 1u));
+    iy0 = (int)(((unsigned int)y + (unsigned int)conf->phase_y +
+                 (unsigned int)channel_y) & (SIXEL_BN_H - 1u));
     ix1 = ix0 + 13;
     iy1 = iy0 + 29;
     sample_u = (sixel_bn_mask(ix0, iy0) + 1.0f) * 0.5f;
@@ -538,7 +542,7 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
                     + (int)(sixel_dither_bluenoise_noise(
                                 &bluenoise_conf,
                                 x,
-                                y,
+                                absolute_y,
                                 d) * gradient_weight * 32.0f);
                 quantized[d] = (unsigned char)(
                     val < 0 ? 0 : val > 255 ? 255 : val);
@@ -704,14 +708,13 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
             }
 
             for (d = 0; d < context->depth; ++d) {
-                noise = sixel_dither_bluenoise_noise(&bluenoise_conf, x, y, d)
+                noise = sixel_dither_bluenoise_noise(&bluenoise_conf,
+                    x, absolute_y, d)
                     * gradient_weight;
                 val = context->pixels_float[pos * context->depth + d]
                     + noise * jitter_scale;
-                val = sixel_pixelformat_float_channel_clamp(
-                    context->pixelformat,
-                    d,
-                    val);
+                /* Positional bias has no error-feedback limiter. Keep
+                 * extended source coordinates and the unrounded query. */
                 lookup_pixel_float[d] = val;
             }
 

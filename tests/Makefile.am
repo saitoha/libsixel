@@ -572,6 +572,68 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_SRGB_CONTRACT_COMMON \
     -DBUILD_MAP_FLOAT_COMMON \
     -DBUILD_MAP_PRECISION_COMMON \
+    -DBUILD_POSITIONAL_TEST_COMMON \
+    -DBUILD_TEST_0059_A_BYTE_BAND \
+    -DBUILD_TEST_0060_X_BYTE_BAND \
+    -DBUILD_TEST_0061_BLUE_BYTE_BAND \
+    -DBUILD_TEST_0001_A_ZERO_GAMMA \
+    -DBUILD_TEST_0002_A_ZERO_LINEAR \
+    -DBUILD_TEST_0003_A_ZERO_OKLAB \
+    -DBUILD_TEST_0004_A_ZERO_CIELAB \
+    -DBUILD_TEST_0005_A_ZERO_DIN99D \
+    -DBUILD_TEST_0006_A_BIAS_GAMMA \
+    -DBUILD_TEST_0007_A_BIAS_LAB \
+    -DBUILD_TEST_0008_A_BYTE_SATURATION \
+    -DBUILD_TEST_0009_A_ABSOLUTE_BAND \
+    -DBUILD_TEST_0010_A_LARGE_COORDINATES \
+    -DBUILD_TEST_0011_A_REPREPARE \
+    -DBUILD_TEST_0012_X_ZERO_GAMMA \
+    -DBUILD_TEST_0013_X_ZERO_LINEAR \
+    -DBUILD_TEST_0014_X_ZERO_OKLAB \
+    -DBUILD_TEST_0015_X_ZERO_CIELAB \
+    -DBUILD_TEST_0016_X_ZERO_DIN99D \
+    -DBUILD_TEST_0017_X_BIAS_GAMMA \
+    -DBUILD_TEST_0018_X_BIAS_LAB \
+    -DBUILD_TEST_0019_X_BYTE_SATURATION \
+    -DBUILD_TEST_0020_X_ABSOLUTE_BAND \
+    -DBUILD_TEST_0021_X_LARGE_COORDINATES \
+    -DBUILD_TEST_0022_X_REPREPARE \
+    -DBUILD_TEST_0023_BLUE_ZERO_GAMMA \
+    -DBUILD_TEST_0024_BLUE_ZERO_LINEAR \
+    -DBUILD_TEST_0025_BLUE_ZERO_OKLAB \
+    -DBUILD_TEST_0026_BLUE_ZERO_CIELAB \
+    -DBUILD_TEST_0027_BLUE_ZERO_DIN99D \
+    -DBUILD_TEST_0028_BLUE_BIAS_GAMMA \
+    -DBUILD_TEST_0029_BLUE_BIAS_LAB \
+    -DBUILD_TEST_0030_BLUE_BYTE_SATURATION \
+    -DBUILD_TEST_0031_BLUE_ABSOLUTE_BAND \
+    -DBUILD_TEST_0032_BLUE_LARGE_COORDINATES \
+    -DBUILD_TEST_0033_BLUE_REPREPARE \
+    -DBUILD_TEST_0034_BLUE_GRADIENT_ENDPOINTS \
+    -DBUILD_TEST_0035_A_ENCODER_GAMMA \
+    -DBUILD_TEST_0036_A_ENCODER_LINEAR \
+    -DBUILD_TEST_0037_A_ENCODER_OKLAB \
+    -DBUILD_TEST_0038_A_ENCODER_CIELAB \
+    -DBUILD_TEST_0039_A_ENCODER_DIN99D \
+    -DBUILD_TEST_0040_A_ENCODER_P3 \
+    -DBUILD_TEST_0041_A_ENCODER_BYTE \
+    -DBUILD_TEST_0042_A_ENCODER_WORKERS \
+    -DBUILD_TEST_0043_X_ENCODER_GAMMA \
+    -DBUILD_TEST_0044_X_ENCODER_LINEAR \
+    -DBUILD_TEST_0045_X_ENCODER_OKLAB \
+    -DBUILD_TEST_0046_X_ENCODER_CIELAB \
+    -DBUILD_TEST_0047_X_ENCODER_DIN99D \
+    -DBUILD_TEST_0048_X_ENCODER_P3 \
+    -DBUILD_TEST_0049_X_ENCODER_BYTE \
+    -DBUILD_TEST_0050_X_ENCODER_WORKERS \
+    -DBUILD_TEST_0051_BLUE_ENCODER_GAMMA \
+    -DBUILD_TEST_0052_BLUE_ENCODER_LINEAR \
+    -DBUILD_TEST_0053_BLUE_ENCODER_OKLAB \
+    -DBUILD_TEST_0054_BLUE_ENCODER_CIELAB \
+    -DBUILD_TEST_0055_BLUE_ENCODER_DIN99D \
+    -DBUILD_TEST_0056_BLUE_ENCODER_P3 \
+    -DBUILD_TEST_0057_BLUE_ENCODER_BYTE \
+    -DBUILD_TEST_0058_BLUE_ENCODER_WORKERS \
     -DBUILD_TEST_0023_MAP_STATIC_TO_MULTIFRAME \
     -DBUILD_TEST_0001_MAP_CMS_GAMMA \
     -DBUILD_TEST_0002_MAP_CMS_LINEAR \
@@ -4454,6 +4516,69 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/srgb_contract_common.c \
     quant/palette/map_float_common.c \
     quant/palette/map_precision_common.c \
+    processing/dither/positional_test_common.c \
+    processing/dither/positional/precision/0059_a_byte_band.c \
+    processing/dither/positional/precision/0060_x_byte_band.c \
+    processing/dither/positional/precision/0061_blue_byte_band.c \
+    processing/dither/positional_reference.h \
+    processing/dither/positional/precision/0001_a_zero_gamma.c \
+    processing/dither/positional/precision/0002_a_zero_linear.c \
+    processing/dither/positional/precision/0003_a_zero_oklab.c \
+    processing/dither/positional/precision/0004_a_zero_cielab.c \
+    processing/dither/positional/precision/0005_a_zero_din99d.c \
+    processing/dither/positional/precision/0006_a_bias_gamma.c \
+    processing/dither/positional/precision/0007_a_bias_lab.c \
+    processing/dither/positional/precision/0008_a_byte_saturation.c \
+    processing/dither/positional/precision/0009_a_absolute_band.c \
+    processing/dither/positional/precision/0010_a_large_coordinates.c \
+    processing/dither/positional/precision/0011_a_reprepare.c \
+    processing/dither/positional/precision/0012_x_zero_gamma.c \
+    processing/dither/positional/precision/0013_x_zero_linear.c \
+    processing/dither/positional/precision/0014_x_zero_oklab.c \
+    processing/dither/positional/precision/0015_x_zero_cielab.c \
+    processing/dither/positional/precision/0016_x_zero_din99d.c \
+    processing/dither/positional/precision/0017_x_bias_gamma.c \
+    processing/dither/positional/precision/0018_x_bias_lab.c \
+    processing/dither/positional/precision/0019_x_byte_saturation.c \
+    processing/dither/positional/precision/0020_x_absolute_band.c \
+    processing/dither/positional/precision/0021_x_large_coordinates.c \
+    processing/dither/positional/precision/0022_x_reprepare.c \
+    processing/dither/positional/precision/0023_blue_zero_gamma.c \
+    processing/dither/positional/precision/0024_blue_zero_linear.c \
+    processing/dither/positional/precision/0025_blue_zero_oklab.c \
+    processing/dither/positional/precision/0026_blue_zero_cielab.c \
+    processing/dither/positional/precision/0027_blue_zero_din99d.c \
+    processing/dither/positional/precision/0028_blue_bias_gamma.c \
+    processing/dither/positional/precision/0029_blue_bias_lab.c \
+    processing/dither/positional/precision/0030_blue_byte_saturation.c \
+    processing/dither/positional/precision/0031_blue_absolute_band.c \
+    processing/dither/positional/precision/0032_blue_large_coordinates.c \
+    processing/dither/positional/precision/0033_blue_reprepare.c \
+    processing/dither/positional/precision/0034_blue_gradient_endpoints.c \
+    processing/dither/positional/precision/0035_a_encoder_gamma.c \
+    processing/dither/positional/precision/0036_a_encoder_linear.c \
+    processing/dither/positional/precision/0037_a_encoder_oklab.c \
+    processing/dither/positional/precision/0038_a_encoder_cielab.c \
+    processing/dither/positional/precision/0039_a_encoder_din99d.c \
+    processing/dither/positional/precision/0040_a_encoder_p3.c \
+    processing/dither/positional/precision/0041_a_encoder_byte.c \
+    processing/dither/positional/precision/0042_a_encoder_workers.c \
+    processing/dither/positional/precision/0043_x_encoder_gamma.c \
+    processing/dither/positional/precision/0044_x_encoder_linear.c \
+    processing/dither/positional/precision/0045_x_encoder_oklab.c \
+    processing/dither/positional/precision/0046_x_encoder_cielab.c \
+    processing/dither/positional/precision/0047_x_encoder_din99d.c \
+    processing/dither/positional/precision/0048_x_encoder_p3.c \
+    processing/dither/positional/precision/0049_x_encoder_byte.c \
+    processing/dither/positional/precision/0050_x_encoder_workers.c \
+    processing/dither/positional/precision/0051_blue_encoder_gamma.c \
+    processing/dither/positional/precision/0052_blue_encoder_linear.c \
+    processing/dither/positional/precision/0053_blue_encoder_oklab.c \
+    processing/dither/positional/precision/0054_blue_encoder_cielab.c \
+    processing/dither/positional/precision/0055_blue_encoder_din99d.c \
+    processing/dither/positional/precision/0056_blue_encoder_p3.c \
+    processing/dither/positional/precision/0057_blue_encoder_byte.c \
+    processing/dither/positional/precision/0058_blue_encoder_workers.c \
     quant/palette/map_precision/0023_map_static_to_multiframe.c \
     quant/palette/map_precision/0001_map_cms_gamma.c \
     quant/palette/map_precision/0002_map_cms_linear.c \

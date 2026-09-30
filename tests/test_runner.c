@@ -473,6 +473,67 @@ int test_palette_sampling_float(int argc, char **argv);
 int test_palette_binning_float(int argc, char **argv);
 int test_palette_merge_float(int argc, char **argv);
 int test_extended_lookup(int argc, char **argv);
+int test_positional_0059(int argc, char **argv);
+int test_positional_0060(int argc, char **argv);
+int test_positional_0061(int argc, char **argv);
+int test_positional_0001(int argc, char **argv);
+int test_positional_0002(int argc, char **argv);
+int test_positional_0003(int argc, char **argv);
+int test_positional_0004(int argc, char **argv);
+int test_positional_0005(int argc, char **argv);
+int test_positional_0006(int argc, char **argv);
+int test_positional_0007(int argc, char **argv);
+int test_positional_0008(int argc, char **argv);
+int test_positional_0009(int argc, char **argv);
+int test_positional_0010(int argc, char **argv);
+int test_positional_0011(int argc, char **argv);
+int test_positional_0012(int argc, char **argv);
+int test_positional_0013(int argc, char **argv);
+int test_positional_0014(int argc, char **argv);
+int test_positional_0015(int argc, char **argv);
+int test_positional_0016(int argc, char **argv);
+int test_positional_0017(int argc, char **argv);
+int test_positional_0018(int argc, char **argv);
+int test_positional_0019(int argc, char **argv);
+int test_positional_0020(int argc, char **argv);
+int test_positional_0021(int argc, char **argv);
+int test_positional_0022(int argc, char **argv);
+int test_positional_0023(int argc, char **argv);
+int test_positional_0024(int argc, char **argv);
+int test_positional_0025(int argc, char **argv);
+int test_positional_0026(int argc, char **argv);
+int test_positional_0027(int argc, char **argv);
+int test_positional_0028(int argc, char **argv);
+int test_positional_0029(int argc, char **argv);
+int test_positional_0030(int argc, char **argv);
+int test_positional_0031(int argc, char **argv);
+int test_positional_0032(int argc, char **argv);
+int test_positional_0033(int argc, char **argv);
+int test_positional_0034(int argc, char **argv);
+int test_positional_0035(int argc, char **argv);
+int test_positional_0036(int argc, char **argv);
+int test_positional_0037(int argc, char **argv);
+int test_positional_0038(int argc, char **argv);
+int test_positional_0039(int argc, char **argv);
+int test_positional_0040(int argc, char **argv);
+int test_positional_0041(int argc, char **argv);
+int test_positional_0042(int argc, char **argv);
+int test_positional_0043(int argc, char **argv);
+int test_positional_0044(int argc, char **argv);
+int test_positional_0045(int argc, char **argv);
+int test_positional_0046(int argc, char **argv);
+int test_positional_0047(int argc, char **argv);
+int test_positional_0048(int argc, char **argv);
+int test_positional_0049(int argc, char **argv);
+int test_positional_0050(int argc, char **argv);
+int test_positional_0051(int argc, char **argv);
+int test_positional_0052(int argc, char **argv);
+int test_positional_0053(int argc, char **argv);
+int test_positional_0054(int argc, char **argv);
+int test_positional_0055(int argc, char **argv);
+int test_positional_0056(int argc, char **argv);
+int test_positional_0057(int argc, char **argv);
+int test_positional_0058(int argc, char **argv);
 int test_map_precision_0001(int argc, char **argv);
 int test_map_precision_0002(int argc, char **argv);
 int test_map_precision_0003(int argc, char **argv);
@@ -3082,6 +3143,128 @@ static test_entry_t const test_entries[] = {
     { "palette/binning_float/0001_binning_contract",
       test_palette_binning_float },
     { "lookup/extended/0001_extended_lookup", test_extended_lookup },
+    {"dither/positional/precision/0059_a_byte_band",
+     test_positional_0059},
+    {"dither/positional/precision/0060_x_byte_band",
+     test_positional_0060},
+    {"dither/positional/precision/0061_blue_byte_band",
+     test_positional_0061},
+    {"dither/positional/precision/0001_a_zero_gamma",
+     test_positional_0001},
+    {"dither/positional/precision/0002_a_zero_linear",
+     test_positional_0002},
+    {"dither/positional/precision/0003_a_zero_oklab",
+     test_positional_0003},
+    {"dither/positional/precision/0004_a_zero_cielab",
+     test_positional_0004},
+    {"dither/positional/precision/0005_a_zero_din99d",
+     test_positional_0005},
+    {"dither/positional/precision/0006_a_bias_gamma",
+     test_positional_0006},
+    {"dither/positional/precision/0007_a_bias_lab",
+     test_positional_0007},
+    {"dither/positional/precision/0008_a_byte_saturation",
+     test_positional_0008},
+    {"dither/positional/precision/0009_a_absolute_band",
+     test_positional_0009},
+    {"dither/positional/precision/0010_a_large_coordinates",
+     test_positional_0010},
+    {"dither/positional/precision/0011_a_reprepare",
+     test_positional_0011},
+    {"dither/positional/precision/0012_x_zero_gamma",
+     test_positional_0012},
+    {"dither/positional/precision/0013_x_zero_linear",
+     test_positional_0013},
+    {"dither/positional/precision/0014_x_zero_oklab",
+     test_positional_0014},
+    {"dither/positional/precision/0015_x_zero_cielab",
+     test_positional_0015},
+    {"dither/positional/precision/0016_x_zero_din99d",
+     test_positional_0016},
+    {"dither/positional/precision/0017_x_bias_gamma",
+     test_positional_0017},
+    {"dither/positional/precision/0018_x_bias_lab",
+     test_positional_0018},
+    {"dither/positional/precision/0019_x_byte_saturation",
+     test_positional_0019},
+    {"dither/positional/precision/0020_x_absolute_band",
+     test_positional_0020},
+    {"dither/positional/precision/0021_x_large_coordinates",
+     test_positional_0021},
+    {"dither/positional/precision/0022_x_reprepare",
+     test_positional_0022},
+    {"dither/positional/precision/0023_blue_zero_gamma",
+     test_positional_0023},
+    {"dither/positional/precision/0024_blue_zero_linear",
+     test_positional_0024},
+    {"dither/positional/precision/0025_blue_zero_oklab",
+     test_positional_0025},
+    {"dither/positional/precision/0026_blue_zero_cielab",
+     test_positional_0026},
+    {"dither/positional/precision/0027_blue_zero_din99d",
+     test_positional_0027},
+    {"dither/positional/precision/0028_blue_bias_gamma",
+     test_positional_0028},
+    {"dither/positional/precision/0029_blue_bias_lab",
+     test_positional_0029},
+    {"dither/positional/precision/0030_blue_byte_saturation",
+     test_positional_0030},
+    {"dither/positional/precision/0031_blue_absolute_band",
+     test_positional_0031},
+    {"dither/positional/precision/0032_blue_large_coordinates",
+     test_positional_0032},
+    {"dither/positional/precision/0033_blue_reprepare",
+     test_positional_0033},
+    {"dither/positional/precision/0034_blue_gradient_endpoints",
+     test_positional_0034},
+    {"dither/positional/precision/0035_a_encoder_gamma",
+     test_positional_0035},
+    {"dither/positional/precision/0036_a_encoder_linear",
+     test_positional_0036},
+    {"dither/positional/precision/0037_a_encoder_oklab",
+     test_positional_0037},
+    {"dither/positional/precision/0038_a_encoder_cielab",
+     test_positional_0038},
+    {"dither/positional/precision/0039_a_encoder_din99d",
+     test_positional_0039},
+    {"dither/positional/precision/0040_a_encoder_p3",
+     test_positional_0040},
+    {"dither/positional/precision/0041_a_encoder_byte",
+     test_positional_0041},
+    {"dither/positional/precision/0042_a_encoder_workers",
+     test_positional_0042},
+    {"dither/positional/precision/0043_x_encoder_gamma",
+     test_positional_0043},
+    {"dither/positional/precision/0044_x_encoder_linear",
+     test_positional_0044},
+    {"dither/positional/precision/0045_x_encoder_oklab",
+     test_positional_0045},
+    {"dither/positional/precision/0046_x_encoder_cielab",
+     test_positional_0046},
+    {"dither/positional/precision/0047_x_encoder_din99d",
+     test_positional_0047},
+    {"dither/positional/precision/0048_x_encoder_p3",
+     test_positional_0048},
+    {"dither/positional/precision/0049_x_encoder_byte",
+     test_positional_0049},
+    {"dither/positional/precision/0050_x_encoder_workers",
+     test_positional_0050},
+    {"dither/positional/precision/0051_blue_encoder_gamma",
+     test_positional_0051},
+    {"dither/positional/precision/0052_blue_encoder_linear",
+     test_positional_0052},
+    {"dither/positional/precision/0053_blue_encoder_oklab",
+     test_positional_0053},
+    {"dither/positional/precision/0054_blue_encoder_cielab",
+     test_positional_0054},
+    {"dither/positional/precision/0055_blue_encoder_din99d",
+     test_positional_0055},
+    {"dither/positional/precision/0056_blue_encoder_p3",
+     test_positional_0056},
+    {"dither/positional/precision/0057_blue_encoder_byte",
+     test_positional_0057},
+    {"dither/positional/precision/0058_blue_encoder_workers",
+     test_positional_0058},
     { "palette/map_precision/0001_map_cms_gamma",
       test_map_precision_0001 },
     { "palette/map_precision/0002_map_cms_linear",

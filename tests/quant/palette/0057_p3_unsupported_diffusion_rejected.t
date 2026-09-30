@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify P3 rejects positional bluenoise before writing output.
+# Verify P3 rejects interframe before writing output.
 # Policy: docs/encoder/output/output-colorspace.md
 set -eux
 

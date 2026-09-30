@@ -78,7 +78,7 @@ test_palette_0054_p3_encoder(int argc, char **argv)
         value = NULL;
         if (strcmp(argv[1], "diffusion") == 0) {
             flag = 'd';
-            value = "bluenoise";
+            value = "interframe";
         } else if (strcmp(argv[1], "working") == 0) {
             flag = 'W';
             value = "gamma";

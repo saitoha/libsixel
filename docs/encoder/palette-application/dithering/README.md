@@ -379,6 +379,16 @@ spatial policies.
 quality comes with a size and CPU cost: 1.994x the `none` bytes and 1.13x the
 latency at `K=8`, then 1.321x and 1.07x at `K=256`.
 
+## Positional candidate precision
+
+The three positional methods (`a_dither`, `x_dither`, `bluenoise`) perturb a candidate before lookup without propagating residuals. The [feedback clamp policy](../clamp-policy.md) does not limit this bias. Their float32 kernels compute `candidate = source + strength * noise * (32/255)` in the current typed working coordinates, retaining negative, above-range and fractional values. This amplitude is unchanged across gamma, linear and Lab-family workspaces; it is not a perceptually normalized noise magnitude. Zero strength preserves the input coordinates numerically. The source buffer is not modified. Byte kernels retain truncation of `32 * strength * noise` toward zero followed by saturation to `0..255`.
+
+Noise uses absolute image coordinates, including the band origin. Raster/serpentine scan and parallel band subdivision do not restart its pattern. A/X residues and blue-noise phase wrapping are evaluated with defined unsigned modular arithmetic, so large coordinates do not invoke signed overflow. Blue-noise channel offsets, phase, strength and gradient attenuation retain their existing meanings. The [selected float palette path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path) admits these methods for ordinary sRGB and Display P3 output, retaining the native working palette separately from its rounded wire cache. Its other restrictions still apply.
+
+### Numeric validation
+
+Direct tests observe the candidate passed to lookup. A/X references use wider integer modular equations; blue-noise references freeze the sums of the two fixed texture taps, without using production noise or conversion helpers. The float budget is `2e-6 + 2e-7 * abs(expected)` working-coordinate units, starting from the exact stored source: the absolute term covers bias arithmetic and the relative term covers rounding when adding that bias to an extended source. Exact byte tests use strength `0.5`; nonzero blue-noise truncation boundaries have at least `1/255` byte-unit margin, while A/X residues use binary-exact factors. Encoder centroid tests allow `3e-5` working-coordinate units for independent transfer/matrix/opponent transforms and float stores. Their wire triples have more than `0.03` RGB101 unit of rounding margin. Parallel tests independently calculate nearest-color distances from the retained palette and coordinate formula; they require a distance gap above `1e-5` and assert actual two-worker application, six-row bands and two-row overlap. These are value/dispatch contracts, separate from perceptual image comparisons.
+
 ## `a_dither`: addition-based positional dither
 
 ```text
@@ -1049,3 +1059,89 @@ are under [`tests/quant/palette/usage/`](../../../../tests/quant/palette/usage/)
 
 For the full context, read [Encoding Pipeline](../../pipeline/README.md) and
 [Lookup Policy](../lookup-policy/README.md).
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+The positional migration is covered by the following focused value and dispatch tests. The broader method comparisons above are image-quality measurements, not substitutes for these arithmetic contracts.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| POS-01 | a zero gamma | [tests/processing/dither/positional/precision/0001_a_zero_gamma.t](../../../../tests/processing/dither/positional/precision/0001_a_zero_gamma.t) |
+| POS-02 | a zero linear | [tests/processing/dither/positional/precision/0002_a_zero_linear.t](../../../../tests/processing/dither/positional/precision/0002_a_zero_linear.t) |
+| POS-03 | a zero oklab | [tests/processing/dither/positional/precision/0003_a_zero_oklab.t](../../../../tests/processing/dither/positional/precision/0003_a_zero_oklab.t) |
+| POS-04 | a zero cielab | [tests/processing/dither/positional/precision/0004_a_zero_cielab.t](../../../../tests/processing/dither/positional/precision/0004_a_zero_cielab.t) |
+| POS-05 | a zero din99d | [tests/processing/dither/positional/precision/0005_a_zero_din99d.t](../../../../tests/processing/dither/positional/precision/0005_a_zero_din99d.t) |
+| POS-06 | a bias gamma | [tests/processing/dither/positional/precision/0006_a_bias_gamma.t](../../../../tests/processing/dither/positional/precision/0006_a_bias_gamma.t) |
+| POS-07 | a bias lab | [tests/processing/dither/positional/precision/0007_a_bias_lab.t](../../../../tests/processing/dither/positional/precision/0007_a_bias_lab.t) |
+| POS-08 | a byte saturation | [tests/processing/dither/positional/precision/0008_a_byte_saturation.t](../../../../tests/processing/dither/positional/precision/0008_a_byte_saturation.t) |
+| POS-09 | a absolute band | [tests/processing/dither/positional/precision/0009_a_absolute_band.t](../../../../tests/processing/dither/positional/precision/0009_a_absolute_band.t) |
+| POS-10 | a large coordinates | [tests/processing/dither/positional/precision/0010_a_large_coordinates.t](../../../../tests/processing/dither/positional/precision/0010_a_large_coordinates.t) |
+| POS-11 | a reprepare | [tests/processing/dither/positional/precision/0011_a_reprepare.t](../../../../tests/processing/dither/positional/precision/0011_a_reprepare.t) |
+| POS-12 | x zero gamma | [tests/processing/dither/positional/precision/0012_x_zero_gamma.t](../../../../tests/processing/dither/positional/precision/0012_x_zero_gamma.t) |
+| POS-13 | x zero linear | [tests/processing/dither/positional/precision/0013_x_zero_linear.t](../../../../tests/processing/dither/positional/precision/0013_x_zero_linear.t) |
+| POS-14 | x zero oklab | [tests/processing/dither/positional/precision/0014_x_zero_oklab.t](../../../../tests/processing/dither/positional/precision/0014_x_zero_oklab.t) |
+| POS-15 | x zero cielab | [tests/processing/dither/positional/precision/0015_x_zero_cielab.t](../../../../tests/processing/dither/positional/precision/0015_x_zero_cielab.t) |
+| POS-16 | x zero din99d | [tests/processing/dither/positional/precision/0016_x_zero_din99d.t](../../../../tests/processing/dither/positional/precision/0016_x_zero_din99d.t) |
+| POS-17 | x bias gamma | [tests/processing/dither/positional/precision/0017_x_bias_gamma.t](../../../../tests/processing/dither/positional/precision/0017_x_bias_gamma.t) |
+| POS-18 | x bias lab | [tests/processing/dither/positional/precision/0018_x_bias_lab.t](../../../../tests/processing/dither/positional/precision/0018_x_bias_lab.t) |
+| POS-19 | x byte saturation | [tests/processing/dither/positional/precision/0019_x_byte_saturation.t](../../../../tests/processing/dither/positional/precision/0019_x_byte_saturation.t) |
+| POS-20 | x absolute band | [tests/processing/dither/positional/precision/0020_x_absolute_band.t](../../../../tests/processing/dither/positional/precision/0020_x_absolute_band.t) |
+| POS-21 | x large coordinates | [tests/processing/dither/positional/precision/0021_x_large_coordinates.t](../../../../tests/processing/dither/positional/precision/0021_x_large_coordinates.t) |
+| POS-22 | x reprepare | [tests/processing/dither/positional/precision/0022_x_reprepare.t](../../../../tests/processing/dither/positional/precision/0022_x_reprepare.t) |
+| POS-23 | blue zero gamma | [tests/processing/dither/positional/precision/0023_blue_zero_gamma.t](../../../../tests/processing/dither/positional/precision/0023_blue_zero_gamma.t) |
+| POS-24 | blue zero linear | [tests/processing/dither/positional/precision/0024_blue_zero_linear.t](../../../../tests/processing/dither/positional/precision/0024_blue_zero_linear.t) |
+| POS-25 | blue zero oklab | [tests/processing/dither/positional/precision/0025_blue_zero_oklab.t](../../../../tests/processing/dither/positional/precision/0025_blue_zero_oklab.t) |
+| POS-26 | blue zero cielab | [tests/processing/dither/positional/precision/0026_blue_zero_cielab.t](../../../../tests/processing/dither/positional/precision/0026_blue_zero_cielab.t) |
+| POS-27 | blue zero din99d | [tests/processing/dither/positional/precision/0027_blue_zero_din99d.t](../../../../tests/processing/dither/positional/precision/0027_blue_zero_din99d.t) |
+| POS-28 | blue bias gamma | [tests/processing/dither/positional/precision/0028_blue_bias_gamma.t](../../../../tests/processing/dither/positional/precision/0028_blue_bias_gamma.t) |
+| POS-29 | blue bias lab | [tests/processing/dither/positional/precision/0029_blue_bias_lab.t](../../../../tests/processing/dither/positional/precision/0029_blue_bias_lab.t) |
+| POS-30 | blue byte saturation | [tests/processing/dither/positional/precision/0030_blue_byte_saturation.t](../../../../tests/processing/dither/positional/precision/0030_blue_byte_saturation.t) |
+| POS-31 | blue absolute band | [tests/processing/dither/positional/precision/0031_blue_absolute_band.t](../../../../tests/processing/dither/positional/precision/0031_blue_absolute_band.t) |
+| POS-32 | blue large coordinates | [tests/processing/dither/positional/precision/0032_blue_large_coordinates.t](../../../../tests/processing/dither/positional/precision/0032_blue_large_coordinates.t) |
+| POS-33 | blue reprepare | [tests/processing/dither/positional/precision/0033_blue_reprepare.t](../../../../tests/processing/dither/positional/precision/0033_blue_reprepare.t) |
+| POS-34 | blue gradient endpoints | [tests/processing/dither/positional/precision/0034_blue_gradient_endpoints.t](../../../../tests/processing/dither/positional/precision/0034_blue_gradient_endpoints.t) |
+| POS-35 | a encoder gamma | [tests/processing/dither/positional/precision/0035_a_encoder_gamma.t](../../../../tests/processing/dither/positional/precision/0035_a_encoder_gamma.t) |
+| POS-36 | a encoder linear | [tests/processing/dither/positional/precision/0036_a_encoder_linear.t](../../../../tests/processing/dither/positional/precision/0036_a_encoder_linear.t) |
+| POS-37 | a encoder oklab | [tests/processing/dither/positional/precision/0037_a_encoder_oklab.t](../../../../tests/processing/dither/positional/precision/0037_a_encoder_oklab.t) |
+| POS-38 | a encoder cielab | [tests/processing/dither/positional/precision/0038_a_encoder_cielab.t](../../../../tests/processing/dither/positional/precision/0038_a_encoder_cielab.t) |
+| POS-39 | a encoder din99d | [tests/processing/dither/positional/precision/0039_a_encoder_din99d.t](../../../../tests/processing/dither/positional/precision/0039_a_encoder_din99d.t) |
+| POS-40 | a encoder p3 | [tests/processing/dither/positional/precision/0040_a_encoder_p3.t](../../../../tests/processing/dither/positional/precision/0040_a_encoder_p3.t) |
+| POS-41 | a encoder byte | [tests/processing/dither/positional/precision/0041_a_encoder_byte.t](../../../../tests/processing/dither/positional/precision/0041_a_encoder_byte.t) |
+| POS-42 | a encoder workers | [tests/processing/dither/positional/precision/0042_a_encoder_workers.t](../../../../tests/processing/dither/positional/precision/0042_a_encoder_workers.t) |
+| POS-43 | x encoder gamma | [tests/processing/dither/positional/precision/0043_x_encoder_gamma.t](../../../../tests/processing/dither/positional/precision/0043_x_encoder_gamma.t) |
+| POS-44 | x encoder linear | [tests/processing/dither/positional/precision/0044_x_encoder_linear.t](../../../../tests/processing/dither/positional/precision/0044_x_encoder_linear.t) |
+| POS-45 | x encoder oklab | [tests/processing/dither/positional/precision/0045_x_encoder_oklab.t](../../../../tests/processing/dither/positional/precision/0045_x_encoder_oklab.t) |
+| POS-46 | x encoder cielab | [tests/processing/dither/positional/precision/0046_x_encoder_cielab.t](../../../../tests/processing/dither/positional/precision/0046_x_encoder_cielab.t) |
+| POS-47 | x encoder din99d | [tests/processing/dither/positional/precision/0047_x_encoder_din99d.t](../../../../tests/processing/dither/positional/precision/0047_x_encoder_din99d.t) |
+| POS-48 | x encoder p3 | [tests/processing/dither/positional/precision/0048_x_encoder_p3.t](../../../../tests/processing/dither/positional/precision/0048_x_encoder_p3.t) |
+| POS-49 | x encoder byte | [tests/processing/dither/positional/precision/0049_x_encoder_byte.t](../../../../tests/processing/dither/positional/precision/0049_x_encoder_byte.t) |
+| POS-50 | x encoder workers | [tests/processing/dither/positional/precision/0050_x_encoder_workers.t](../../../../tests/processing/dither/positional/precision/0050_x_encoder_workers.t) |
+| POS-51 | blue encoder gamma | [tests/processing/dither/positional/precision/0051_blue_encoder_gamma.t](../../../../tests/processing/dither/positional/precision/0051_blue_encoder_gamma.t) |
+| POS-52 | blue encoder linear | [tests/processing/dither/positional/precision/0052_blue_encoder_linear.t](../../../../tests/processing/dither/positional/precision/0052_blue_encoder_linear.t) |
+| POS-53 | blue encoder oklab | [tests/processing/dither/positional/precision/0053_blue_encoder_oklab.t](../../../../tests/processing/dither/positional/precision/0053_blue_encoder_oklab.t) |
+| POS-54 | blue encoder cielab | [tests/processing/dither/positional/precision/0054_blue_encoder_cielab.t](../../../../tests/processing/dither/positional/precision/0054_blue_encoder_cielab.t) |
+| POS-55 | blue encoder din99d | [tests/processing/dither/positional/precision/0055_blue_encoder_din99d.t](../../../../tests/processing/dither/positional/precision/0055_blue_encoder_din99d.t) |
+| POS-56 | blue encoder p3 | [tests/processing/dither/positional/precision/0056_blue_encoder_p3.t](../../../../tests/processing/dither/positional/precision/0056_blue_encoder_p3.t) |
+| POS-57 | blue encoder byte | [tests/processing/dither/positional/precision/0057_blue_encoder_byte.t](../../../../tests/processing/dither/positional/precision/0057_blue_encoder_byte.t) |
+| POS-58 | blue encoder workers | [tests/processing/dither/positional/precision/0058_blue_encoder_workers.t](../../../../tests/processing/dither/positional/precision/0058_blue_encoder_workers.t) |
+| POS-59 | a byte band | [tests/processing/dither/positional/precision/0059_a_byte_band.t](../../../../tests/processing/dither/positional/precision/0059_a_byte_band.t) |
+| POS-60 | x byte band | [tests/processing/dither/positional/precision/0060_x_byte_band.t](../../../../tests/processing/dither/positional/precision/0060_x_byte_band.t) |
+| POS-61 | blue byte band | [tests/processing/dither/positional/precision/0061_blue_byte_band.t](../../../../tests/processing/dither/positional/precision/0061_blue_byte_band.t) |
+
+### Quality regression tests
+
+The following 64x64 snake comparisons pin the admitted float path and verify actual positional dispatch, then evaluate MS-SSIM with explicit sRGB interpretation and linear float luminance. Their threshold follows the [shared quality policy](../../../quality/measurement-policy.md); exact candidate and palette arithmetic belongs to the behavioral contracts above.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| POSQ-1 | Native a positional quality | [tests/processing/dither/positional/precision/0062_a_native_quality.t](../../../../tests/processing/dither/positional/precision/0062_a_native_quality.t) |
+| POSQ-2 | Native x positional quality | [tests/processing/dither/positional/precision/0063_x_native_quality.t](../../../../tests/processing/dither/positional/precision/0063_x_native_quality.t) |
+| POSQ-3 | Native blue positional quality | [tests/processing/dither/positional/precision/0064_blue_native_quality.t](../../../../tests/processing/dither/positional/precision/0064_blue_native_quality.t) |
+
+### Coverage limits
+
+These tests cover opaque three-channel CPU candidates and the selected native float palette path. They do not establish temporal history, GPU, transparency, or every blue-noise phase/gradient combination. Byte controls protect the serial candidate rule; correcting absolute coordinates can change previously band-dependent byte output. The existing [quality measurements](#a_dither-addition-based-positional-dither) describe their recorded configurations and are not a new measurement of every migrated combination.

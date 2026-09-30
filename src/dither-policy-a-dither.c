@@ -128,8 +128,13 @@ sixel_dither_a_scanline_params_float32(int serpentine,
 static float
 sixel_dither_a_noise(int x, int y, int c, float strength)
 {
-    return (((((x + c * 67) + y * 236) * 119) & 255) / 128.0f
-            - 1.0f) * strength;
+    unsigned int phase;
+
+    /* Only the low bits define the pattern. Unsigned arithmetic preserves
+     * that modular definition even at large absolute image coordinates. */
+    phase = ((unsigned int)x + (unsigned int)c * 67u +
+             (unsigned int)y * 236u) * 119u;
+    return ((float)(phase & 255u) / 128.0f - 1.0f) * strength;
 }
 
 /*
@@ -303,7 +308,8 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
 
             for (d = 0; d < context->depth; ++d) {
                 val = source_pixel[d]
-                    + (int)(sixel_dither_a_noise(x, y, d, strength) * 32.0f);
+                    + (int)(sixel_dither_a_noise(
+                        x, absolute_y, d, strength) * 32.0f);
                 quantized[d] = (unsigned char)(
                     val < 0 ? 0 : val > 255 ? 255 : val);
             }
@@ -456,13 +462,11 @@ sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
             }
 
             for (d = 0; d < context->depth; ++d) {
-                noise = sixel_dither_a_noise(x, y, d, strength);
+                noise = sixel_dither_a_noise(x, absolute_y, d, strength);
                 val = context->pixels_float[pos * context->depth + d]
                     + noise * jitter_scale;
-                val = sixel_pixelformat_float_channel_clamp(
-                    context->pixelformat,
-                    d,
-                    val);
+                /* Positional bias has no error-feedback limiter. Keep
+                 * extended source coordinates and the unrounded query. */
                 lookup_pixel_float[d] = val;
             }
 
