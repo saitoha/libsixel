@@ -52,6 +52,23 @@ not. Redirects, proxies, and certificate trust configuration are
 backend-dependent. See \fB-k\fP for the certificate-verification bypass.
 
 
+.SS "OpenVMS DCL"
+When invoking this program as a DCL foreign command, preserve the case of
+option letters, compact suboption letters and case-sensitive values.
+The default DCL/C runtime argument processing lowercases unquoted
+arguments. Enclose arguments whose uppercase characters must be preserved
+in double quotes:
+.PP
+.nf
+img2sixel \(dq\-Wc\(dq \(dq\-Qk\(dq input.png
+.fi
+.PP
+This applies whether or not an argument contains a slash.
+Lowercase arguments do not require quoting solely to preserve their case;
+foreign-command invocation does not require every argument to be quoted.
+Use DCL double quotes, rather than POSIX-shell single quotes.
+
+
 .SH "COMMAND-LINE OPTIONS"
 \fIimg2sixel\fP has the following command-line options:
 .PP
@@ -870,8 +887,6 @@ Grid construction, refinement and exterior queries use the same metric.
 Nonuniform ratios require float32 lookup; the byte path retains equal
 weights. Ratios that underflow the normalized float32 coefficients are
 rejected. This changes lookup distance, not colorspace conversion.
-For a DCL foreign command, quote the whole argument to preserve its case:
-\fBimg2sixel "-~f:W4.5/1/0.75" input.png\fP.
 .br
 SIXEL_LOOKUP_FHEDT_REFINE (0 or 1; default 1) enables corner refinement
 for boundary cells.

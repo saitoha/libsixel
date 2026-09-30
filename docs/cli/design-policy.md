@@ -4,6 +4,8 @@
 
 This document defines the design policy for the command-line tools provided with libsixel. libsixel is principally a library project; these command-line programs are supporting tools distributed with it. The CLI-program layer includes the converters under `converters/` and specialized executable tools such as `lsqa` under `assessment/`; most detailed option contracts below concern `img2sixel` and `sixel2png`. A CLI is a public compatibility surface, not a thin test wrapper around the C library. Accepted spellings, defaults, precedence, operation order, diagnostics, output streams, and exit status are part of the interface contract.
 
+Unless explicitly labeled otherwise, CLI command examples throughout this documentation set use Unix-shell syntax; when running them under OpenVMS DCL, adapt the quoting to DCL syntax and use double quotes to preserve case as described in [Shell quoting and OpenVMS DCL](#shell-quoting-and-openvms-dcl).
+
 The policy begins with established command-line guidance, then identifies the constraints of the command-line tools provided with libsixel, explains the architecture selected from those inputs, and records why common alternatives were not selected. A new CLI decision is incomplete until both its rule and its rationale are documented.
 
 ## Baseline: established command-line guidance
@@ -95,6 +97,21 @@ Automatically accepting a likely typo feels convenient once but silently creates
 `lsqa` is a separate quality-assessment CLI rather than a third conversion direction. Program-level facilities may be reused across those executables, but inclusion in the CLI layer does not imply that every facility is enabled by every program. Each shared control must identify its actual consumers; aborttrace, for example, is currently installed by the two converters and not by `lsqa`.
 
 Input and output are explicit options where needed, while `-` represents standard input or standard output in documented file positions. The CLI also has typed pseudo targets such as `clipboard:` and `png:clipboard:` when a path position needs to name a non-filesystem transport. These are explicit sentinels rather than magic filename guessing, so scripts can determine which transport is requested from the command text.
+
+### Shell quoting and OpenVMS DCL
+
+The command shell and C runtime process an invocation before libsixel receives `argv`. Preserve the case of option letters, compact suboption letters and case-sensitive values through that boundary. Document platform-specific quoting in the converter manuals as general invocation guidance, rather than attaching it to one algorithm or suboption separator. Each manual must provide the rules and examples needed to invoke its tool without requiring readers to consult this design document.
+
+When invoking a C program as a foreign command from OpenVMS DCL, the default DCL/C runtime argument processing lowercases unquoted arguments. Double-quoted arguments preserve their case, as specified by the [VSI C argument-passing rules](https://docs.vmssoftware.com/vsi-c-user-s-guide-for-openvms-systems/). Unless the caller has configured case-preserving argument processing, quote each argument whose uppercase characters are significant. For example, with the converter names already defined as foreign commands:
+
+```text
+img2sixel "-Wc" "-Qk" input.png
+sixel2png "-D" -i input.six -o output.png
+```
+
+This applies to top-level options, compact suboptions and values, regardless of whether they contain `/`. A lowercase argument such as `-w300` does not require quoting solely to preserve its case. Foreign-command invocation does not itself require every argument to be quoted. DCL uses double quotes for this purpose; POSIX-shell single-quote examples are not interchangeable with DCL syntax.
+
+These are shell/runtime argument-passing rules, not a second libsixel option grammar. The converter manuals provide invocation examples for their respective tools. Host-independent parser tests do not exercise DCL quoting.
 
 ### Fixed pipeline order
 
