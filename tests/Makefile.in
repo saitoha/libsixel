@@ -777,7 +777,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	cli/0035_cli_lookup_policy_initial_prefixes.c \
 	cli/0036_cli_color_wire.c cli/0037_cli_color_parser.c \
 	cli/0038_cli_color_tty.c cli/0039_cli_color_auto.c \
-	cli/0040_cli_color_job.c processing/filter/0001_filter_clip.c \
+	cli/0040_cli_color_job.c cli/core/0033_stdin_interrupt.c \
+	processing/filter/0001_filter_clip.c \
 	processing/filter/0002_filter_sample.c \
 	processing/filter/0003_filter_resize.c \
 	processing/filter/0004_filter_colors.c \
@@ -938,6 +939,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/precision/0007_resize_preserve_float_source.c \
 	processing/precision/0008_explicit_float_preserve.c \
 	processing/chunk/0001_chunk_factory.c \
+	processing/chunk/0002_chunk_cancel_callback.c \
 	processing/timeline/0001_timeline_logger_factory.c \
 	processing/timeline/0002_timeline_parallel_encode_decode.c \
 	processing/timeline/0003_timeline_clock_origin.c \
@@ -3084,6 +3086,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0038_cli_color_tty.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0039_cli_color_auto.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0040_cli_color_job.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	cli/core/test_runner-0033_stdin_interrupt.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0001_filter_clip.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0002_filter_sample.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0003_filter_resize.$(OBJEXT) \
@@ -3239,6 +3242,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/precision/test_runner-0007_resize_preserve_float_source.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/precision/test_runner-0008_explicit_float_preserve.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/chunk/test_runner-0001_chunk_factory.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/chunk/test_runner-0002_chunk_cancel_callback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0001_timeline_logger_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0002_timeline_parallel_encode_decode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0003_timeline_clock_origin.$(OBJEXT) \
@@ -4793,6 +4797,7 @@ am__depfiles_remade =  \
 	cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po \
 	cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po \
 	cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po \
+	cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po \
 	diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po \
@@ -6198,6 +6203,7 @@ am__depfiles_remade =  \
 	processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po \
 	processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Po \
 	processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po \
+	processing/chunk/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Po \
 	processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po \
 	processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po \
 	processing/cms/$(DEPDIR)/test_runner-0003_icc_source_lifetime.Po \
@@ -8415,6 +8421,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_EXPLICIT_FLOAT_PRESERVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_BLACK_LOG1P_MODEL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CHUNK_FACTORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_CHUNK_CANCEL_CALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_TIMELINE_LOGGER_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_TIMELINE_PARALLEL_ENCODE_DECODE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_TIMELINE_CLOCK_ORIGIN \
@@ -8492,6 +8499,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_CLI_COLOR_TTY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_CLI_COLOR_AUTO \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_CLI_COLOR_JOB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_STDIN_INTERRUPT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_P3_PALETTE_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_P3_ENCODER_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_P3_MAPFILE_CONTRACT \
@@ -10685,6 +10693,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0038_cli_color_tty.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0039_cli_color_auto.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0040_cli_color_job.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    cli/core/0033_stdin_interrupt.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0001_filter_clip.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0002_filter_sample.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0003_filter_resize.c \
@@ -10846,6 +10855,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/precision/0007_resize_preserve_float_source.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/precision/0008_explicit_float_preserve.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/chunk/0001_chunk_factory.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/chunk/0002_chunk_cancel_callback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0001_timeline_logger_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0002_timeline_parallel_encode_decode.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0003_timeline_clock_origin.c \
@@ -14531,6 +14541,14 @@ cli/test_runner-0039_cli_color_auto.$(OBJEXT): cli/$(am__dirstamp) \
 	cli/$(DEPDIR)/$(am__dirstamp)
 cli/test_runner-0040_cli_color_job.$(OBJEXT): cli/$(am__dirstamp) \
 	cli/$(DEPDIR)/$(am__dirstamp)
+cli/core/$(am__dirstamp):
+	@$(MKDIR_P) cli/core
+	@: >>cli/core/$(am__dirstamp)
+cli/core/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) cli/core/$(DEPDIR)
+	@: >>cli/core/$(DEPDIR)/$(am__dirstamp)
+cli/core/test_runner-0033_stdin_interrupt.$(OBJEXT):  \
+	cli/core/$(am__dirstamp) cli/core/$(DEPDIR)/$(am__dirstamp)
 processing/filter/$(am__dirstamp):
 	@$(MKDIR_P) processing/filter
 	@: >>processing/filter/$(am__dirstamp)
@@ -15084,6 +15102,9 @@ processing/chunk/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) processing/chunk/$(DEPDIR)
 	@: >>processing/chunk/$(DEPDIR)/$(am__dirstamp)
 processing/chunk/test_runner-0001_chunk_factory.$(OBJEXT):  \
+	processing/chunk/$(am__dirstamp) \
+	processing/chunk/$(DEPDIR)/$(am__dirstamp)
+processing/chunk/test_runner-0002_chunk_cancel_callback.$(OBJEXT):  \
 	processing/chunk/$(am__dirstamp) \
 	processing/chunk/$(DEPDIR)/$(am__dirstamp)
 processing/timeline/$(am__dirstamp):
@@ -19811,6 +19832,7 @@ mostlyclean-compile:
 	-rm -f $(top_builddir)/src/*.$(OBJEXT)
 	-rm -f cli/*.$(OBJEXT)
 	-rm -f cli/aborttrace/*.$(OBJEXT)
+	-rm -f cli/core/*.$(OBJEXT)
 	-rm -f diagnostics/*.$(OBJEXT)
 	-rm -f diagnostics/icc/*.$(OBJEXT)
 	-rm -f diagnostics/probe/*.$(OBJEXT)
@@ -19919,6 +19941,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po@am__quote@ # am--include-marker
@@ -21324,6 +21347,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/chunk/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0003_icc_source_lifetime.Po@am__quote@ # am--include-marker
@@ -31237,6 +31261,20 @@ cli/test_runner-0040_cli_color_job.obj: cli/0040_cli_color_job.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0040_cli_color_job.obj `if test -f 'cli/0040_cli_color_job.c'; then $(CYGPATH_W) 'cli/0040_cli_color_job.c'; else $(CYGPATH_W) '$(srcdir)/cli/0040_cli_color_job.c'; fi`
 
+cli/core/test_runner-0033_stdin_interrupt.o: cli/core/0033_stdin_interrupt.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/core/test_runner-0033_stdin_interrupt.o -MD -MP -MF cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Tpo -c -o cli/core/test_runner-0033_stdin_interrupt.o `test -f 'cli/core/0033_stdin_interrupt.c' || echo '$(srcdir)/'`cli/core/0033_stdin_interrupt.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Tpo cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/core/0033_stdin_interrupt.c' object='cli/core/test_runner-0033_stdin_interrupt.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/core/test_runner-0033_stdin_interrupt.o `test -f 'cli/core/0033_stdin_interrupt.c' || echo '$(srcdir)/'`cli/core/0033_stdin_interrupt.c
+
+cli/core/test_runner-0033_stdin_interrupt.obj: cli/core/0033_stdin_interrupt.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/core/test_runner-0033_stdin_interrupt.obj -MD -MP -MF cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Tpo -c -o cli/core/test_runner-0033_stdin_interrupt.obj `if test -f 'cli/core/0033_stdin_interrupt.c'; then $(CYGPATH_W) 'cli/core/0033_stdin_interrupt.c'; else $(CYGPATH_W) '$(srcdir)/cli/core/0033_stdin_interrupt.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Tpo cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/core/0033_stdin_interrupt.c' object='cli/core/test_runner-0033_stdin_interrupt.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/core/test_runner-0033_stdin_interrupt.obj `if test -f 'cli/core/0033_stdin_interrupt.c'; then $(CYGPATH_W) 'cli/core/0033_stdin_interrupt.c'; else $(CYGPATH_W) '$(srcdir)/cli/core/0033_stdin_interrupt.c'; fi`
+
 processing/filter/test_runner-0001_filter_clip.o: processing/filter/0001_filter_clip.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0001_filter_clip.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Tpo -c -o processing/filter/test_runner-0001_filter_clip.o `test -f 'processing/filter/0001_filter_clip.c' || echo '$(srcdir)/'`processing/filter/0001_filter_clip.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Tpo processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
@@ -33406,6 +33444,20 @@ processing/chunk/test_runner-0001_chunk_factory.obj: processing/chunk/0001_chunk
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/chunk/0001_chunk_factory.c' object='processing/chunk/test_runner-0001_chunk_factory.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/chunk/test_runner-0001_chunk_factory.obj `if test -f 'processing/chunk/0001_chunk_factory.c'; then $(CYGPATH_W) 'processing/chunk/0001_chunk_factory.c'; else $(CYGPATH_W) '$(srcdir)/processing/chunk/0001_chunk_factory.c'; fi`
+
+processing/chunk/test_runner-0002_chunk_cancel_callback.o: processing/chunk/0002_chunk_cancel_callback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/chunk/test_runner-0002_chunk_cancel_callback.o -MD -MP -MF processing/chunk/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Tpo -c -o processing/chunk/test_runner-0002_chunk_cancel_callback.o `test -f 'processing/chunk/0002_chunk_cancel_callback.c' || echo '$(srcdir)/'`processing/chunk/0002_chunk_cancel_callback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/chunk/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Tpo processing/chunk/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/chunk/0002_chunk_cancel_callback.c' object='processing/chunk/test_runner-0002_chunk_cancel_callback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/chunk/test_runner-0002_chunk_cancel_callback.o `test -f 'processing/chunk/0002_chunk_cancel_callback.c' || echo '$(srcdir)/'`processing/chunk/0002_chunk_cancel_callback.c
+
+processing/chunk/test_runner-0002_chunk_cancel_callback.obj: processing/chunk/0002_chunk_cancel_callback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/chunk/test_runner-0002_chunk_cancel_callback.obj -MD -MP -MF processing/chunk/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Tpo -c -o processing/chunk/test_runner-0002_chunk_cancel_callback.obj `if test -f 'processing/chunk/0002_chunk_cancel_callback.c'; then $(CYGPATH_W) 'processing/chunk/0002_chunk_cancel_callback.c'; else $(CYGPATH_W) '$(srcdir)/processing/chunk/0002_chunk_cancel_callback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/chunk/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Tpo processing/chunk/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/chunk/0002_chunk_cancel_callback.c' object='processing/chunk/test_runner-0002_chunk_cancel_callback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/chunk/test_runner-0002_chunk_cancel_callback.obj `if test -f 'processing/chunk/0002_chunk_cancel_callback.c'; then $(CYGPATH_W) 'processing/chunk/0002_chunk_cancel_callback.c'; else $(CYGPATH_W) '$(srcdir)/processing/chunk/0002_chunk_cancel_callback.c'; fi`
 
 processing/timeline/test_runner-0001_timeline_logger_factory.o: processing/timeline/0001_timeline_logger_factory.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/timeline/test_runner-0001_timeline_logger_factory.o -MD -MP -MF processing/timeline/$(DEPDIR)/test_runner-0001_timeline_logger_factory.Tpo -c -o processing/timeline/test_runner-0001_timeline_logger_factory.o `test -f 'processing/timeline/0001_timeline_logger_factory.c' || echo '$(srcdir)/'`processing/timeline/0001_timeline_logger_factory.c
@@ -54274,6 +54326,8 @@ distclean-generic:
 	-$(am__rm_f) cli/$(am__dirstamp)
 	-$(am__rm_f) cli/aborttrace/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) cli/aborttrace/$(am__dirstamp)
+	-$(am__rm_f) cli/core/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) cli/core/$(am__dirstamp)
 	-$(am__rm_f) diagnostics/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) diagnostics/$(am__dirstamp)
 	-$(am__rm_f) diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
@@ -54469,6 +54523,7 @@ distclean: distclean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
+	-rm -f cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po
 	-rm -f diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po
@@ -55874,6 +55929,7 @@ distclean: distclean-am
 	-rm -f processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po
 	-rm -f processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Po
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
+	-rm -f processing/chunk/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0003_icc_source_lifetime.Po
@@ -56781,6 +56837,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
+	-rm -f cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po
 	-rm -f diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po
@@ -58186,6 +58243,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po
 	-rm -f processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Po
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
+	-rm -f processing/chunk/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0003_icc_source_lifetime.Po

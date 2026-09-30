@@ -83,10 +83,12 @@ sixel_chunk_create_from_factory(sixel_chunk_t **chunk_out,
 }
 
 static inline SIXELSTATUS
-sixel_chunk_create_from_source(sixel_chunk_t **chunk_out,
+sixel_chunk_create_from_source_cancel(sixel_chunk_t **chunk_out,
                                char const *filename,
                                int finsecure,
                                int const *cancel_flag,
+                               sixel_cancel_function cancel_function,
+                               void *cancel_context,
                                sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -118,14 +120,28 @@ sixel_chunk_create_from_source(sixel_chunk_t **chunk_out,
     request.filename = filename;
     request.finsecure = finsecure;
     request.cancel_flag = cancel_flag;
+    request.cancel_function = cancel_function;
+    request.cancel_context = cancel_context;
     status = chunk->vtbl->init_source(chunk, &request);
-    if (SIXEL_FAILED(status)) {
+    /* INTERRUPTED is not a failure bit, but its partial data is not input. */
+    if (status != SIXEL_OK) {
         chunk->vtbl->unref(chunk);
         return status;
     }
 
     *chunk_out = chunk;
     return SIXEL_OK;
+}
+
+static inline SIXELSTATUS
+sixel_chunk_create_from_source(sixel_chunk_t **chunk_out,
+                               char const *filename,
+                               int finsecure,
+                               int const *cancel_flag,
+                               sixel_allocator_t *allocator)
+{
+    return sixel_chunk_create_from_source_cancel(chunk_out, filename,
+               finsecure, cancel_flag, NULL, NULL, allocator);
 }
 
 static inline SIXELSTATUS

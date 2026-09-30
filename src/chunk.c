@@ -548,29 +548,54 @@ end:
 }
 
 
-/* get chunk date from specified local file path */
+/* Read a local source, polling both legacy and callback cancellation. */
 static SIXELSTATUS
 sixel_chunk_from_file(
-    char const      /* in */ *filename,
-    sixel_chunk_storage_t /* in */ *pchunk,
-    int const       /* in */ *cancel_flag
+    sixel_chunk_source_request_t const *request,
+    sixel_chunk_storage_t *pchunk
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int ret;
     int fd;
+    int is_console;
     FILE *f = NULL;
     size_t n;
     size_t const bucket_size = 4096;
+#if HAVE_UNISTD_H && HAVE_FCNTL_H && HAVE_SYS_SELECT_H \
+    && !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+    int saved_flags = -1;
+    ssize_t count;
+#endif
 
-    status = open_binary_file(&f, filename);
+    status = open_binary_file(&f, request->filename);
     if (SIXEL_FAILED(status) || f == NULL) {
         goto end;
     }
 
     fd = sixel_fileno(f);
+    is_console = sixel_fd_is_console(fd);
+#if HAVE_UNISTD_H && HAVE_FCNTL_H && HAVE_SYS_SELECT_H \
+    && !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+    if (is_console) {
+        saved_flags = fcntl(fd, F_GETFL);
+        if (saved_flags < 0 ||
+            fcntl(fd, F_SETFL, saved_flags | O_NONBLOCK) < 0) {
+            status = SIXEL_LIBC_ERROR | (errno & 0xff);
+            sixel_helper_set_additional_message(
+                "sixel_chunk_from_file: nonblocking terminal setup failed.");
+            goto end;
+        }
+    }
+#endif
 
     for (;;) {
+        if ((request->cancel_flag != NULL && *request->cancel_flag) ||
+            (request->cancel_function != NULL &&
+             request->cancel_function(request->cancel_context))) {
+            status = SIXEL_INTERRUPTED;
+            goto end;
+        }
         status = sixel_chunk_reserve_capacity(
             pchunk,
             bucket_size,
@@ -580,38 +605,62 @@ sixel_chunk_from_file(
             goto end;
         }
 
-        if (sixel_fd_is_console(fd)) {
-            for (;;) {
-                if (*cancel_flag) {
-                    status = SIXEL_INTERRUPTED;
-                    goto end;
-                }
-                ret = wait_file(fd, 10000);
-                if (ret < 0) {
-                    sixel_helper_set_additional_message(
-                        "sixel_chunk_from_file: wait_file() failed.");
-                    status = SIXEL_RUNTIME_ERROR;
-                    goto end;
-                }
-                if (ret == 0) {
-                    break;
-                }
+        if (is_console) {
+            ret = wait_file(fd, 10000);
+            if (ret > 0 || (ret < 0 && errno == EINTR)) {
+                continue;
+            }
+            if (ret < 0) {
+                sixel_helper_set_additional_message(
+                    "sixel_chunk_from_file: wait_file() failed.");
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
             }
         }
-        n = fread(pchunk->buffer + pchunk->size, 1, 4096, f);
+#if HAVE_UNISTD_H && HAVE_FCNTL_H && HAVE_SYS_SELECT_H \
+    && !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+        if (is_console) {
+            /* fread tries to fill its entire request after a short line.
+             * Use one nonblocking read so Ctrl-C can cancel even if it
+             * flushes the terminal input between select and read. */
+            count = read(fd, pchunk->buffer + pchunk->size, bucket_size);
+            if (count < 0 && (errno == EINTR || errno == EAGAIN ||
+                             errno == EWOULDBLOCK)) {
+                continue;
+            }
+            if (count < 0) {
+                status = SIXEL_LIBC_ERROR | (errno & 0xff);
+                sixel_helper_set_additional_message(
+                    "sixel_chunk_from_file: terminal read failed.");
+                goto end;
+            }
+            n = (size_t)count;
+        } else
+#endif
+        {
+            n = fread(pchunk->buffer + pchunk->size, 1, bucket_size, f);
+        }
         if (n == 0) {
             break;
         }
         pchunk->size += n;
     }
 
-    if (f != stdin) {
-        fclose(f);
-    }
-
     status = SIXEL_OK;
 
 end:
+#if HAVE_UNISTD_H && HAVE_FCNTL_H && HAVE_SYS_SELECT_H \
+    && !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+    /* stdin belongs to the caller; restore its shared file status flags. */
+    if (saved_flags >= 0 && fcntl(fd, F_SETFL, saved_flags) < 0) {
+        status = SIXEL_LIBC_ERROR | (errno & 0xff);
+        sixel_helper_set_additional_message(
+            "sixel_chunk_from_file: terminal flag restoration failed.");
+    }
+#endif
+    if (f != NULL && f != stdin) {
+        fclose(f);
+    }
     return status;
 }
 
@@ -1285,13 +1334,9 @@ sixel_chunk_vtbl_init_source(
 {
     SIXELSTATUS status;
     sixel_chunk_storage_t *storage;
-    int local_cancel_flag;
-    int const *cancel_flag;
 
     status = SIXEL_FALSE;
     storage = NULL;
-    local_cancel_flag = 0;
-    cancel_flag = NULL;
 
     if (chunk == NULL || request == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1316,21 +1361,14 @@ sixel_chunk_vtbl_init_source(
         }
     }
 
-    cancel_flag = request->cancel_flag;
-    if (cancel_flag == NULL) {
-        cancel_flag = &local_cancel_flag;
-    }
-
     if (request->filename != NULL && strstr(request->filename, "://")) {
         status = sixel_chunk_from_url(request->filename,
                                       storage,
                                       request->finsecure);
     } else {
-        status = sixel_chunk_from_file(request->filename,
-                                       storage,
-                                       cancel_flag);
+        status = sixel_chunk_from_file(request, storage);
     }
-    if (SIXEL_FAILED(status)) {
+    if (status != SIXEL_OK) {
         sixel_chunk_release_storage(storage);
         goto end;
     }

@@ -1448,10 +1448,12 @@ loader_load_source(sixel_loader_t *loader, char const *filename,
         pchunk->vtbl->ref(pchunk);
         status = SIXEL_OK;
     } else {
-        status = sixel_chunk_create_from_source(&pchunk,
+        status = sixel_chunk_create_from_source_cancel(&pchunk,
                                  filename,
                                  loader->finsecure,
                                  loader->cancel_flag,
+                                 loader->cancel_function,
+                                 loader->cancel_context,
                                  loader->allocator);
     }
     if (status != SIXEL_OK) {

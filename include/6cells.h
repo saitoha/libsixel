@@ -1013,6 +1013,8 @@ typedef struct sixel_chunk_source_request {
     char const *filename;
     int finsecure;
     int const *cancel_flag;
+    sixel_cancel_function cancel_function;
+    void *cancel_context;
 } sixel_chunk_source_request_t;
 
 typedef struct sixel_chunk_memory_request {

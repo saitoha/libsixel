@@ -242,6 +242,8 @@ The [CLI-program abort-trace policy](abort-trace/README.md) applies those rules 
 - Treat file overwriting, output creation, partial-output cleanup, and broken pipes as designed behaviors because filesystem and pipeline side effects remain observable after failure.
 - Keep help, version, and error exit statuses stable and scriptable because shell callers use status independently of human prose.
 
+With no input operand, `img2sixel` reads standard input until EOF. On POSIX terminals, Ctrl+C must remain effective after Enter or a partial input line; cancellation does not wait for a SIXEL ST terminator. The input reader restores the caller's file status flags when it stops.
+
 ### Pseudo targets
 
 The [clipboard guide](clipboard.md) gives converter commands, system/file backend selection, format negotiation boundaries, and platform-specific behavior.
@@ -299,6 +301,7 @@ Each automated contract has a stable ID and a corresponding static check or test
 | CLI-28 | Binding test coverage for loader `setopt` cases remains synchronized across the bindings that expose each case. | [tests/_static/sh/staticcheck-binding-loader-setopt-sync.sh](../../tests/_static/sh/staticcheck-binding-loader-setopt-sync.sh) |
 | CLI-29 | The Bash and Zsh completion files expose the same complete `img2sixel` top-level option set. | [tests/_static/sh/staticcheck-docs-bash-vs-zsh-completion.sh](../../tests/_static/sh/staticcheck-docs-bash-vs-zsh-completion.sh) |
 | CLI-30 | `sixel2png -H` and its manual expose the same top-level option declarations and argument shapes. | [tests/_static/sh/staticcheck-docs-sixel2png-help-vs-man.sh](../../tests/_static/sh/staticcheck-docs-sixel2png-help-vs-man.sh) |
+| CLI-31 | Ctrl+C stops POSIX terminal input after a consumed Enter without waiting for EOF or changing the terminal's mode or file status flags. | [tests/cli/core/0033_stdin_interrupt.t](../../tests/cli/core/0033_stdin_interrupt.t) |
 
 ### Coverage boundary
 

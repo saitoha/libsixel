@@ -604,6 +604,8 @@ struct chunk_source_request {
     char const *filename;
     int finsecure;
     int const *cancel_flag;
+    sixel_cancel_function cancel_function;
+    void *cancel_context;
 };
 
 struct chunk_memory_request {

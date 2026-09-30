@@ -899,6 +899,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0008_EXPLICIT_FLOAT_PRESERVE \
     -DBUILD_TEST_0013_BLACK_LOG1P_MODEL \
     -DBUILD_TEST_0001_CHUNK_FACTORY \
+    -DBUILD_TEST_0002_CHUNK_CANCEL_CALLBACK \
     -DBUILD_TEST_0001_TIMELINE_LOGGER_FACTORY \
     -DBUILD_TEST_0002_TIMELINE_PARALLEL_ENCODE_DECODE \
     -DBUILD_TEST_0003_TIMELINE_CLOCK_ORIGIN \
@@ -976,6 +977,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0038_CLI_COLOR_TTY \
     -DBUILD_TEST_0039_CLI_COLOR_AUTO \
     -DBUILD_TEST_0040_CLI_COLOR_JOB \
+    -DBUILD_TEST_0033_STDIN_INTERRUPT \
     -DBUILD_TEST_0051_P3_PALETTE_CONTRACT \
     -DBUILD_TEST_0054_P3_ENCODER_CONTRACT \
     -DBUILD_TEST_0055_P3_MAPFILE_CONTRACT \
@@ -3138,6 +3140,7 @@ test_runner_SOURCES = test_runner.c \
     cli/0038_cli_color_tty.c \
     cli/0039_cli_color_auto.c \
     cli/0040_cli_color_job.c \
+    cli/core/0033_stdin_interrupt.c \
     processing/filter/0001_filter_clip.c \
     processing/filter/0002_filter_sample.c \
     processing/filter/0003_filter_resize.c \
@@ -3299,6 +3302,7 @@ test_runner_SOURCES = test_runner.c \
     processing/precision/0007_resize_preserve_float_source.c \
     processing/precision/0008_explicit_float_preserve.c \
     processing/chunk/0001_chunk_factory.c \
+    processing/chunk/0002_chunk_cancel_callback.c \
     processing/timeline/0001_timeline_logger_factory.c \
     processing/timeline/0002_timeline_parallel_encode_decode.c \
     processing/timeline/0003_timeline_clock_origin.c \

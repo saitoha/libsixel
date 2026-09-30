@@ -357,6 +357,7 @@ int test_precision_0006(int argc, char **argv);
 int test_precision_0007(int argc, char **argv);
 int test_precision_0008(int argc, char **argv);
 int test_chunk_0001_chunk_factory(int argc, char **argv);
+int test_chunk_cancel_callback(int argc, char **argv);
 int test_timeline_0001_timeline_logger_factory(int argc, char **argv);
 int test_timeline_0002_timeline_parallel_encode_decode(int argc, char **argv);
 int test_timeline_0003_timeline_clock_origin(int argc, char **argv);
@@ -467,6 +468,7 @@ int test_cli_0037_color_parser(int argc, char **argv);
 int test_cli_0038_color_tty(int argc, char **argv);
 int test_cli_0039_color_auto(int argc, char **argv);
 int test_cli_0040_color_job(int argc, char **argv);
+int test_cli_stdin_interrupt(int argc, char **argv);
 int test_rgb101_spatial(int argc, char **argv);
 int test_palette_space(int argc, char **argv);
 int test_palette_sampling_float(int argc, char **argv);
@@ -2906,6 +2908,7 @@ static test_entry_t const test_entries[] = {
     { "precision/0007_resize_preserve_float_source", test_precision_0007 },
     { "precision/0008_explicit_float_preserve", test_precision_0008 },
     { "chunk/0001_chunk_factory", test_chunk_0001_chunk_factory },
+    { "chunk/0002_chunk_cancel_callback", test_chunk_cancel_callback },
     { "timeline/0001_timeline_logger_factory",
       test_timeline_0001_timeline_logger_factory },
     { "timeline/0002_timeline_parallel_encode_decode",
@@ -3166,6 +3169,7 @@ static test_entry_t const test_entries[] = {
     { "cli/0038_cli_color_tty", test_cli_0038_color_tty },
     { "cli/0039_cli_color_auto", test_cli_0039_color_auto },
     { "cli/0040_cli_color_job", test_cli_0040_color_job },
+    { "cli/core/0033_stdin_interrupt", test_cli_stdin_interrupt },
     { "palette/color_space/0001_space_contract", test_palette_space },
     { "palette/binning_float/0001_binning_contract",
       test_palette_binning_float },

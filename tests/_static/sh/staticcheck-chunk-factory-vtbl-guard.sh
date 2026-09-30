@@ -74,7 +74,7 @@ memory_report=$(mktemp "${TMPDIR:-/tmp}/libsixel-chunk-memory-guard-XXXXXX")
 trap 'rm -f "$source_report" "$memory_report"' EXIT HUP INT TERM
 failed=0
 
-if check_method "sixel_chunk_create_from_source" "init_source" \
+if check_method "sixel_chunk_create_from_source_cancel" "init_source" \
     "$source_report"; then
     echo "ok 1 - chunk source factory helper checks init_source vtbl"
 else
