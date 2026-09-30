@@ -263,6 +263,13 @@ sixel_palette_cover_budget(int policy, unsigned int entry_count)
         sixel_palette_cover_resolve_policy(policy, entry_count));
 }
 
+SIXEL_INTERNAL_API unsigned char const *
+sixel_palette_cover_fixed_anchor(unsigned int index)
+{
+    return index < SIXEL_PALETTE_COVER_ANCHOR_MAX
+        ? sixel_palette_cover_anchors[index] : NULL;
+}
+
 static unsigned int
 sixel_palette_cover_distance_sq(unsigned char const *a, unsigned char const *b)
 {

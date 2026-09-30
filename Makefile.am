@@ -47,6 +47,7 @@ DIST_SUBDIRS = \
 EXTRA_DIST = LICENSE build.md build-aux/depcomp \
     tools/generate_color_fixtures.py \
     tools/generate_palette_space_fixtures.py \
+    tools/generate_cover_anchor_fixtures.py \
 	mkdocs.yml \
 	m4/ax_count_cpus.m4 \
 	package.json.in.in \

@@ -120,7 +120,7 @@ The common telemetry fields `init`, `iterate`, `merge`, and `export` are account
 
 ### Final palette ordering
 
-Optional Ward final merge and supported Lloyd passes run inside the model-specific builders. Snap timing may add hooks inside solver iterations or merge iterations; when snap is enabled, the generated palette also receives its required final snap. The byte-palette path then applies cover repair in `palette.c`, after final snap. The selected native float path also applies explicitly selected soft cover there, with active snap excluded; see [cover policy](../palette-construction/cover-policy/README.md#soft-mode). This ordering means a cover replacement can introduce an entry outside the reversible snap set.
+Optional Ward final merge and supported Lloyd passes run inside the model-specific builders. Snap timing may add hooks inside solver iterations or merge iterations; when snap is enabled, the generated palette also receives its required final snap. The byte-palette path then applies cover repair in `palette.c`, after final snap. The selected native float path also applies explicitly selected soft or hard cover there, with active snap excluded; see [cover policy](../palette-construction/cover-policy/README.md#soft-mode). This ordering means a cover replacement can introduce an entry outside the reversible snap set.
 
 After the palette component returns, the encoder converts generated entries from clustering space `-X` to working space `-W`. If the transparency policy reserves a key, the encoder appends that key entry after the conversion and excludes it from ordinary nearest-color competition.
 

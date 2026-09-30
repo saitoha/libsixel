@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify native soft cover: environment hard rejected.
+# Verify native cover: environment hard grow.
 # Policy: docs/encoder/palette-construction/cover-policy/README.md
 set -eux
 
@@ -8,9 +8,9 @@ set -v
 
 SIXEL_PALETTE_COVER_MODE=hard SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/cover_float/0001_cover_contract wire 0 0 5 || {
-    echo "not ok 1 - environment hard rejected"
+    echo "not ok 1 - environment hard grow"
     exit 0
 }
 
-echo "ok 1 - environment hard rejected"
+echo "ok 1 - environment hard grow"
 exit 0

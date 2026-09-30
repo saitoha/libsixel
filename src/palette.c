@@ -1536,7 +1536,7 @@ sixel_palette_set_entries_float32(sixel_palette_t *palette,
     return SIXEL_OK;
 }
 
-/* Publish soft cover in both palette views only after the native repair and
+/* Publish cover in both palette views only after the native repair and
  * all required allocations have succeeded. The float view is authoritative. */
 static SIXELSTATUS
 sixel_palette_repair_native(sixel_palette_t *palette,
@@ -1556,8 +1556,7 @@ sixel_palette_repair_native(sixel_palette_t *palette,
         return SIXEL_OK;
     }
     storage = SIXEL_PALETTE_STORAGE(palette);
-    if (storage->entries_float32 == NULL ||
-            sixel_palette_cover_mode() != SIXEL_PALETTE_COVER_MODE_SOFT) {
+    if (storage->entries_float32 == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         return status;
     }
@@ -1566,7 +1565,8 @@ sixel_palette_repair_native(sixel_palette_t *palette,
     repaired_count = *ncolors;
     status = sixel_palette_cover_float(repaired, &repaired_count,
         request->data, request->length, request->pixelformat,
-        sixel_palette_cover_policy(), sixel_palette_cover_grow_enabled(),
+        sixel_palette_cover_policy(), sixel_palette_cover_mode(),
+        sixel_palette_cover_grow_enabled(),
         work_allocator);
     if (SIXEL_FAILED(status)) {
         return status;

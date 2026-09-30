@@ -7071,7 +7071,8 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
             (encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
              encoder->cover_policy != SIXEL_PALETTE_COVER_OFF &&
              (!cover_mode_explicit ||
-              cover_mode != SIXEL_PALETTE_COVER_MODE_SOFT)) ||
+              (cover_mode != SIXEL_PALETTE_COVER_MODE_SOFT &&
+               cover_mode != SIXEL_PALETTE_COVER_MODE_HARD))) ||
             (encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE &&
              encoder->snap_policy_approach_rate > 0.0) ||
             encoder->gpu_policy != SIXEL_GPU_POLICY_OFF ||
@@ -7132,7 +7133,7 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "eytzinger|fhedt "
             "-X/-W gamma|linear|oklab|cielab|din99d "
             "CPU spatial/positional dither (or -dnone/-dauto), "
-            "-Fnone|ward -_none -trgb, off or explicit soft cover "
+            "-Fnone|ward -_none -trgb, off or explicit soft/hard cover "
             "for generated palettes, and normal SIXEL output.");
         return SIXEL_BAD_ARGUMENT;
     }

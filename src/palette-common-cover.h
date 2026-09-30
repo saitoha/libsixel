@@ -145,6 +145,10 @@ sixel_palette_cover_resolve_policy(int policy, unsigned int entry_count);
 SIXEL_INTERNAL_API unsigned int
 sixel_palette_cover_budget(int policy, unsigned int entry_count);
 
+/* Fixed gamma-sRGB anchor in the shared corners/faces/edges order. */
+SIXEL_INTERNAL_API unsigned char const *
+sixel_palette_cover_fixed_anchor(unsigned int index);
+
 /*
  * Soft anchoring picks its anchors out of the image instead of constructing
  * them.  Two earlier shapes were measured and rejected:
@@ -167,8 +171,9 @@ sixel_palette_cover_budget(int policy, unsigned int entry_count);
  * So an anchor must be a color the image actually contains, in quantity.  The
  * candidates are the populous cells of a coarse histogram, ranked by how far
  * they sit from the finished palette, which is exactly the population that
- * error diffusion cannot reach.  Constructed colors never enter the palette,
- * so the artifact class cannot recur.
+ * error diffusion cannot reach. Empty box corners are not nominated by this
+ * candidate selection. This reduces that artifact mechanism but does not
+ * guarantee artifact-free palette application.
  */
 
 /* Histogram cell width for candidate mass, in bits per channel. */
@@ -201,12 +206,13 @@ sixel_palette_cover_candidates_supported(int pixelformat);
 
 /* Repair a typed native palette in extended gamma RGB geometry. ENTRIES has
  * room for SIXEL_PALETTE_MAX triples. DATA and ENTRIES share PIXELFORMAT.
+ * Hard mode only inspects ENTRIES; soft mode also reads source DATA.
  * Failure leaves entries/count unchanged; untouched entries never round-trip.
  * The caller publishes the compatibility byte view only after success. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_cover_float(float *entries, unsigned int *entry_count,
                            float const *data, unsigned int length,
-                           int pixelformat, int policy, int grow,
+                           int pixelformat, int policy, int mode, int grow,
                            sixel_allocator_t *allocator);
 
 SIXEL_INTERNAL_API unsigned int

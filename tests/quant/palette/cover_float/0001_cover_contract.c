@@ -10,6 +10,7 @@
 #include "src/palette.h"
 #include "src/palette-common-cover.h"
 #include "tests/data/color-numeric/palette-space.h"
+#include "tests/data/color-numeric/cover-anchors.h"
 
 static int const cover_native_formats[] = {
     SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
@@ -81,7 +82,8 @@ cover_native_midpoint(sixel_allocator_t *allocator, int space)
     count = 2;
     if (SIXEL_FAILED(sixel_palette_cover_float(entries, &count, samples,
             sizeof(samples), cover_native_formats[space],
-            SIXEL_PALETTE_COVER_CORNERS, 0, allocator)) || count != 2) {
+            SIXEL_PALETTE_COVER_CORNERS, SIXEL_PALETTE_COVER_MODE_SOFT,
+            0, allocator)) || count != 2) {
         return 0;
     }
     /* 2e-5 native units allow matrix/TRC inversion of rounded input near
@@ -190,7 +192,8 @@ cover_native_values(sixel_allocator_t *allocator, int mode, int space)
     memcpy(original, entries, sizeof(entries));
     memcpy(input_copy, samples, sizeof(samples));
     status = sixel_palette_cover_float(entries, &count, samples, length,
-        cover_native_formats[space], policy, grow, allocator);
+        cover_native_formats[space], policy,
+        SIXEL_PALETTE_COVER_MODE_SOFT, grow, allocator);
     if (memcmp(samples, input_copy, sizeof(samples)) != 0) {
         return 0;
     }
@@ -203,7 +206,8 @@ cover_native_values(sixel_allocator_t *allocator, int mode, int space)
         /* A failed selected repair must not poison the next operation. */
         samples[11] = .5f;
         status = sixel_palette_cover_float(entries, &count, samples, length,
-            cover_native_formats[space], policy, grow, allocator);
+            cover_native_formats[space], policy,
+            SIXEL_PALETTE_COVER_MODE_SOFT, grow, allocator);
     }
     if (SIXEL_FAILED(status)) {
         return 0;
@@ -267,6 +271,133 @@ cover_native_values(sixel_allocator_t *allocator, int mode, int space)
     return 1;
 }
 
+/* Fixed-anchor references come from independent Decimal forward equations.
+ * The 2e-5 native-unit budget includes input binary32 rounding and inverse
+ * matrix/TRC error. It rejects 128/255 -> 1/2 and native-space averaging. */
+static int
+cover_native_hard(sixel_allocator_t *allocator, int mode, int space)
+{
+    float entries[SIXEL_PALETTE_MAX * 3];
+    float original[SIXEL_PALETTE_MAX * 3];
+    float samples[3] = { NAN, NAN, NAN };
+    unsigned int count;
+    unsigned int previous;
+    unsigned int anchors;
+    unsigned int i;
+    unsigned int c;
+    int policy;
+    int grow;
+    SIXELSTATUS status;
+    double expected;
+
+    memset(entries, 0, sizeof(entries));
+    count = 2;
+    anchors = mode == 1 ? 14 : mode == 2 ? 26 : 8;
+    policy = mode == 1 ? SIXEL_PALETTE_COVER_FACES : mode == 2
+        ? SIXEL_PALETTE_COVER_EDGES : SIXEL_PALETTE_COVER_CORNERS;
+    grow = 1;
+    for (i = 0; i < 6; ++i) {
+        entries[i] = (float)color_palette_space[space].samples[i / 3][i % 3];
+    }
+    if (mode == 3) {
+        count = 26;
+        policy = SIXEL_PALETTE_COVER_EDGES;
+        for (i = 0; i < count * 3; ++i) {
+            entries[i] = (float)color_cover_anchors[space][i / 3][i % 3];
+        }
+    } else if (mode == 4) {
+        /* All nonblack corners exist. Only black needs funding; the closest
+         * pair is gamma grey 1/4 and 17/64, whose midpoint is 33/128. */
+        count = 9;
+        grow = 0;
+        for (i = 0; i < 7; ++i) {
+            for (c = 0; c < 3; ++c) {
+                entries[i * 3 + c] =
+                    (float)color_cover_anchors[space][i + 1][c];
+            }
+        }
+        for (i = 0; i < 6; ++i) {
+            entries[21 + i] =
+                (float)color_cover_anchors[space][26 + i / 3][i % 3];
+        }
+    } else if (mode == 5) {
+        count = 255;
+    } else if (mode == 6) {
+        /* Hard nomination must not inspect source pixels or allocate the
+         * soft histogram, even when the supplied samples contain NaNs. */
+        cover_native_fail = 1;
+    } else if (mode == 7) {
+        entries[0] = NAN;
+    } else if (mode == 8) {
+        /* A widely separated pair cannot fund any nominal RGB corner. */
+        grow = 0;
+        entries[0] = -10;
+        entries[3] = 10;
+    } else if (mode == 9) {
+        /* Black is already within reach. It must not consume a grow slot. */
+        entries[0] = entries[1] = entries[2] = .0625f;
+    }
+    previous = count;
+    memcpy(original, entries, sizeof(entries));
+    status = sixel_palette_cover_float(entries, &count, samples,
+        sizeof(samples), cover_native_formats[space], policy,
+        SIXEL_PALETTE_COVER_MODE_HARD, grow, allocator);
+    if (mode == 7) {
+        if (status != SIXEL_BAD_INPUT || count != previous ||
+                memcmp(entries, original, sizeof(entries)) != 0) {
+            return 0;
+        }
+        entries[0] = original[0] =
+            (float)color_palette_space[space].samples[0][0];
+        status = sixel_palette_cover_float(entries, &count, samples,
+            sizeof(samples), cover_native_formats[space], policy,
+            SIXEL_PALETTE_COVER_MODE_HARD, grow, allocator);
+    }
+    if (SIXEL_FAILED(status)) {
+        return 0;
+    }
+    if (mode == 3 || mode == 8) {
+        return count == previous &&
+            memcmp(entries, original, sizeof(entries)) == 0;
+    }
+    if (mode == 5) {
+        return count == 256;
+    }
+    if (mode == 6 && !cover_native_fail) {
+        return 0;
+    }
+    if (mode == 4) {
+        if (count != 9 || memcmp(entries, original, 21 * sizeof(float))) {
+            return 0;
+        }
+        for (i = 21; i < 27; ++i) {
+            expected = i < 24 ? color_cover_anchors[space][28][i % 3]
+                : color_cover_anchors[space][0][i % 3];
+            if (!isfinite(entries[i]) || fabs(entries[i] - expected) > 2e-5) {
+                return 0;
+            }
+        }
+        return 1;
+    }
+    if (count != previous + anchors - (mode == 9) ||
+            memcmp(entries, original, previous * 3 * sizeof(float))) {
+        return 0;
+    }
+    for (i = previous; i < count; ++i) {
+        for (c = 0; c < 3; ++c) {
+            expected = color_cover_anchors[space][i - previous +
+                (mode == 9)][c];
+            if (!isfinite(entries[i * 3 + c]) ||
+                    fabs(entries[i * 3 + c] - expected) > 2e-5) {
+                fprintf(stderr, "hard space=%d [%u,%u]=%.9g != %.9g\n",
+                    space, i, c, (double)entries[i * 3 + c], expected);
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
 typedef struct cover_native_capture {
     char data[4096];
     size_t size;
@@ -309,16 +440,19 @@ cover_native_wire(sixel_allocator_t *allocator, int model, int space, int mode)
     unsigned int n;
     int ok;
     int byte;
+    int hard;
     SIXELSTATUS status;
 
     encoder = NULL;
     output = NULL;
     frame = NULL;
     ok = 0;
-    byte = mode == 2;
+    byte = mode == 2 || mode == 9;
+    hard = mode == 3 || mode == 5 || mode >= 8;
     memset(&capture, 0, sizeof(capture));
     for (n = 0; n < 18; ++n) {
-        pixels[n] = n < 6 ? 0 : n < 12 ? .5f : 1.5f;
+        pixels[n] = hard ? (n < 9 ? -.25f : 1.5f)
+            : n < 6 ? 0 : n < 12 ? .5f : 1.5f;
         bytes[n] = n < 6 ? 0 : n < 12 ? 128 : 255;
     }
     if (SIXEL_FAILED(sixel_encoder_new(&encoder, allocator)) ||
@@ -336,8 +470,8 @@ cover_native_wire(sixel_allocator_t *allocator, int model, int space, int mode)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '.',
                 byte ? "8bit" : "auto")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'a',
-                mode == 3 ? "corners:Whard" :
                 mode == 5 || mode == 6 ? "corners:V1" :
+                hard ? "corners:Whard:V1" :
                 "corners:Wsoft:V1")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X',
                 cover_native_spaces[space])) ||
@@ -353,7 +487,7 @@ cover_native_wire(sixel_allocator_t *allocator, int model, int space, int mode)
                 SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
         goto end;
     }
-    if (mode == 7) {
+    if (mode == 7 || mode == 10) {
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "4")) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, '4',
                     "adaptive-grid"))) {
@@ -362,10 +496,6 @@ cover_native_wire(sixel_allocator_t *allocator, int model, int space, int mode)
     }
     cover_native_fail = mode == 4;
     status = sixel_encoder_encode_frame(encoder, frame, output);
-    if (mode == 3 || mode == 5) {
-        ok = status == SIXEL_BAD_ARGUMENT && capture.size == 0;
-        goto end;
-    }
     if (mode == 4) {
         if (status != SIXEL_BAD_ALLOCATION || cover_native_fail ||
                 capture.size != 0) {
@@ -386,13 +516,19 @@ cover_native_wire(sixel_allocator_t *allocator, int model, int space, int mode)
             diagnostic->pixelformat != cover_native_formats[space] ||
             SIXEL_FAILED(diagnostic->palette->vtbl->get_entries_float32(
                 diagnostic->palette, &view)) || view.entries == NULL ||
-            view.entry_count <= 2 || view.entry_count > 5) {
+            view.entry_count <= 2 || view.entry_count > (hard ? 10u : 5u)) {
         goto end;
     }
-    /* Grow must have reached the post-solver consumer. This fixture's three
-     * source colors cannot all lie within the reach threshold of two entries.
+    /* Grow must reach the post-solver consumer: soft adds a missing source
+     * color, while hard adds fixed anchors around two extended source colors.
      * The source value 1.5 also distinguishes a byte-clipped retry. */
     ok = strstr(capture.data, ";2;100;100;100") != NULL;
+    if (hard) {
+        /* sRGB red serialized into Display P3 is (92,20,14), with more than
+         * 0.001 encoded-channel margin from a percentage rounding tie. */
+        ok = ok && strstr(capture.data, mode == 3 || mode == 5
+            ? ";2;92;20;14" : ";2;100;0;0") != NULL;
+    }
     if (space == 0) {
         for (n = 0; n < view.entry_count; ++n) {
             if (view.entries[n * 3] == 1.5f) {
@@ -430,6 +566,8 @@ test_palette_cover_native(int argc, char **argv)
     ok = strcmp(argv[1], "wire") == 0
         ? cover_native_wire(allocator, atoi(argv[2]), atoi(argv[3]),
             atoi(argv[4]))
+        : strcmp(argv[1], "hard") == 0
+        ? cover_native_hard(allocator, atoi(argv[2]), atoi(argv[3]))
         : strcmp(argv[1], "midpoint") == 0
         ? cover_native_midpoint(allocator, atoi(argv[3]))
         : cover_native_values(allocator, atoi(argv[2]), atoi(argv[3]));

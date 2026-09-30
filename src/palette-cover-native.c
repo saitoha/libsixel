@@ -1,5 +1,28 @@
-/* SPDX-License-Identifier: MIT */
-/* Source-supported cover repair for the selected native float palette path. */
+/*
+ * SPDX-License-Identifier: MIT
+ *
+ * Copyright (c) 2026 libsixel developers. See `AUTHORS`.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+/* Extended RGB cover repair for the selected native float palette path. */
 #include "config.h"
 #include <float.h>
 #include <math.h>
@@ -62,7 +85,7 @@ sixel_cover_native_rgb(double rgb[3], float const *input, int space)
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_cover_float(float *entries, unsigned int *entry_count,
                            float const *data, unsigned int length,
-                           int pixelformat, int policy, int grow,
+                           int pixelformat, int policy, int mode, int grow,
                            sixel_allocator_t *allocator)
 {
     unsigned int const side = 1u << SIXEL_PALETTE_COVER_CANDIDATE_BITS;
@@ -82,6 +105,7 @@ sixel_palette_cover_float(float *entries, unsigned int *entry_count,
     double gap;
     double position;
     sixel_cover_native_cell_t *cells;
+    unsigned char const *anchor;
     SIXELSTATUS status;
     unsigned int count;
     unsigned int samples;
@@ -104,7 +128,9 @@ sixel_palette_cover_float(float *entries, unsigned int *entry_count,
             allocator == NULL || *entry_count == 0 ||
             *entry_count > SIXEL_PALETTE_MAX || length == 0 ||
             length % (3u * sizeof(float)) != 0 ||
-            !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+            !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ||
+            (mode != SIXEL_PALETTE_COVER_MODE_SOFT &&
+             mode != SIXEL_PALETTE_COVER_MODE_HARD)) {
         return SIXEL_BAD_ARGUMENT;
     }
     count = *entry_count;
@@ -118,6 +144,25 @@ sixel_palette_cover_float(float *entries, unsigned int *entry_count,
         if (!sixel_cover_native_rgb(palette[i], entries + i * 3u, space)) {
             return SIXEL_BAD_INPUT;
         }
+    }
+    cells = NULL;
+    status = SIXEL_BAD_INPUT;
+    found = 0;
+    if (mode == SIXEL_PALETTE_COVER_MODE_HARD) {
+        /* Hard anchors are the historical nominal sRGB lattice, even for
+         * P3 output. The face/edge coordinate is 128/255, not 1/2. Neither
+         * source extrema nor output primaries redefine this policy. Only
+         * candidate selection differs from soft; placement stays shared. */
+        for (i = 0; i < budget; ++i) {
+            anchor = sixel_palette_cover_fixed_anchor(i);
+            for (channel = 0; channel < 3; ++channel) {
+                rgb[channel] = anchor[channel] / 255.0;
+            }
+            if (sixel_cover_native_nearest(rgb, palette, count) > near_sq) {
+                memcpy(anchors[found++], rgb, sizeof(rgb));
+            }
+        }
+        goto place;
     }
     /* Only histogram addresses are bounded. Keep source coordinates intact,
      * including negative and above-one values supplied by loader CMS. */
@@ -197,6 +242,7 @@ sixel_palette_cover_float(float *entries, unsigned int *entry_count,
         }
         found++;
     }
+place:
     memset(changed, 0, sizeof(changed));
     for (i = 0; grow && i < found && count < SIXEL_PALETTE_MAX; ++i) {
         memcpy(palette[count], anchors[i], sizeof(palette[count]));
@@ -264,7 +310,16 @@ end:
     sixel_allocator_free(allocator, cells);
     if (SIXEL_FAILED(status)) {
         sixel_helper_set_additional_message(
-            "native soft cover: invalid color conversion.");
+            "native cover: invalid color conversion.");
     }
     return status;
 }
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */
