@@ -53,6 +53,7 @@ test_palette_0054_p3_encoder(int argc, char **argv)
     int phase;
     int result;
     int flag;
+    int palette_auto;
     char const *value;
 
     encoder = NULL;
@@ -63,17 +64,21 @@ test_palette_0054_p3_encoder(int argc, char **argv)
     if (argc != 2) {
         return EXIT_FAILURE;
     }
+    palette_auto = strcmp(argv[1], "palette-auto") == 0;
     if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
             SIXEL_FAILED(sixel_output_new(&output, p3_write, &capture, NULL))) {
         goto end;
     }
     for (index = 0; index < sizeof(options) / sizeof(options[0]); ++index) {
+        if (palette_auto && options[index].flag == 't') {
+            continue;
+        }
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, options[index].flag,
                 options[index].value))) {
             goto end;
         }
     }
-    if (strcmp(argv[1], "reuse") != 0) {
+    if (!palette_auto && strcmp(argv[1], "reuse") != 0) {
         flag = 0;
         value = NULL;
         if (strcmp(argv[1], "diffusion") == 0) {
@@ -103,6 +108,34 @@ test_palette_0054_p3_encoder(int argc, char **argv)
                 SIXEL_FAILED(sixel_frame_init_borrowed(frame, source, 1, 1,
                     SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, NULL, -1))) {
             goto end;
+        }
+        if (palette_auto) {
+            /* Default AUTO, explicit HLS rejection, then explicit AUTO on
+             * the same encoder/output. A failed request emits no bytes and
+             * must not poison the next job's RGB serialization. */
+            if (phase != 0 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
+                    't', phase == 1 ? "hls" : "auto"))) {
+                goto end;
+            }
+            status = sixel_encoder_encode_frame(encoder, frame, output);
+            if (phase == 1) {
+                if (status != SIXEL_BAD_ARGUMENT || capture.size != 0) {
+                    goto end;
+                }
+            } else {
+                if (SIXEL_FAILED(status) || strstr(capture.bytes,
+                        "#0;2;92;20;14") == NULL) {
+                    goto end;
+                }
+                if (phase == 0) {
+                    memcpy(first, capture.bytes, capture.size + 1U);
+                } else if (strcmp(first, capture.bytes) != 0) {
+                    goto end;
+                }
+            }
+            sixel_frame_unref(frame);
+            frame = NULL;
+            continue;
         }
         if (strcmp(argv[1], "working") == 0) {
             status = sixel_encoder_encode_frame(encoder, frame, output);

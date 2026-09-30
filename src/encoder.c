@@ -6974,9 +6974,15 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
     sixel_palette_quantizer_selection_t selection;
     sixel_palette_policy_origin_t origin;
     int quantize_model;
+    int palette_type;
     int cover_mode;
     int cover_mode_explicit;
 
+    /* AUTO emits RGB. Admission also runs before filename normalization
+     * and through frame/byte APIs, so resolve it without mutating the request.
+     * An explicit HLS request still needs a separate native output path. */
+    palette_type = encoder->palette_type == SIXEL_PALETTETYPE_AUTO
+        ? SIXEL_PALETTETYPE_RGB : encoder->palette_type;
     /* Admission resolves this encoder's mode without consulting another
      * encode operation's temporary cover override. Keep implicit soft on its
      * existing path during migration: low-color repair can lose dark detail
@@ -7080,7 +7086,7 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
               encoder->snap_policy_timing != SIXEL_PALETTE_SNAP_TIMING_ONCE ||
               encoder->cover_policy != SIXEL_PALETTE_COVER_OFF)) ||
             encoder->gpu_policy != SIXEL_GPU_POLICY_OFF ||
-            encoder->palette_type != SIXEL_PALETTETYPE_RGB ||
+            palette_type != SIXEL_PALETTETYPE_RGB ||
             (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT &&
              encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE) ||
             encoder->ormode != 0 || encoder->fdrcs != 0 ||
@@ -7143,7 +7149,7 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "eytzinger|fhedt "
             "-X/-W gamma|linear|oklab|cielab|din99d "
             "CPU spatial/positional dither (or -dnone/-dauto), "
-            "-Fnone|ward -_none -trgb, off or explicit soft/hard cover "
+            "-Fnone|ward -_none -tauto|rgb, off or explicit soft/hard cover "
             "for generated palettes, and normal SIXEL output.");
         return SIXEL_BAD_ARGUMENT;
     }
