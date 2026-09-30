@@ -51,6 +51,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
     tools/generate_clamp_band_fixtures.py \
     tools/generate_snap_native_fixtures.py \
     tools/generate_output_native_fixtures.py \
+    tools/generate_builtin_native_fixtures.py \
 	mkdocs.yml \
 	m4/ax_count_cpus.m4 \
 	package.json.in.in \

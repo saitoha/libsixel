@@ -7052,7 +7052,8 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
         return 0;
     }
     /* Generated palettes and image maps share the supported solver families;
-     * structured maps bypass construction but retain the working palette.
+     * structured maps and built-in tables skip construction but retain the
+     * working palette.
      * All five typed spaces use the extended common transform. SMPTE-C
      * remains an output-only legacy definition, not a working geometry.
      * A zero snap approach is identity and must choose the same precision
@@ -7075,6 +7076,7 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
              sixel_resolve_final_merge_mode(encoder->final_merge_mode) !=
                  SIXEL_FINAL_MERGE_WARD) ||
             (encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
+             encoder->color_option != SIXEL_COLOR_OPTION_BUILTIN &&
              encoder->cover_policy != SIXEL_PALETTE_COVER_OFF &&
              (!cover_mode_explicit ||
               (cover_mode != SIXEL_PALETTE_COVER_MODE_SOFT &&
@@ -7089,7 +7091,8 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
             encoder->gpu_policy != SIXEL_GPU_POLICY_OFF ||
             palette_type != SIXEL_PALETTETYPE_RGB ||
             (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT &&
-             encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE) ||
+             encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
+             encoder->color_option != SIXEL_COLOR_OPTION_BUILTIN) ||
             encoder->ormode != 0 || encoder->fdrcs != 0 ||
             encoder->fuse_macro != 0 || encoder->macro_number >= 0 ||
             encoder->sixdelta_enabled != 0 || encoder->output_is_png != 0 ||
@@ -7331,8 +7334,11 @@ sixel_encoder_prepare_palette(
             status = sixel_prepare_builtin_palette(dither,
                                                      encoder->builtin_palette);
             if (SIXEL_SUCCEEDED(status)) {
+                /* The table is sRGB8, like a structured map. Retain its
+                 * unrounded working view whenever this job needs native
+                 * float application; genuine byte jobs keep their path. */
                 status = sixel_encoder_import_srgb_palette(encoder, *dither,
-                                                           0);
+                    sixel_encoder_rgb101_frame(encoder, frame));
             }
         }
         goto end;

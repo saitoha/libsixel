@@ -683,6 +683,32 @@ int test_fh_lookup_0020(int argc, char **argv);
 int test_fh_lookup_0021(int argc, char **argv);
 int test_fh_lookup_0022(int argc, char **argv);
 int test_fh_lookup_0023(int argc, char **argv);
+int test_builtin_native_0001(int argc, char **argv);
+int test_builtin_native_0002(int argc, char **argv);
+int test_builtin_native_0003(int argc, char **argv);
+int test_builtin_native_0004(int argc, char **argv);
+int test_builtin_native_0005(int argc, char **argv);
+int test_builtin_native_0006(int argc, char **argv);
+int test_builtin_native_0007(int argc, char **argv);
+int test_builtin_native_0008(int argc, char **argv);
+int test_builtin_native_0009(int argc, char **argv);
+int test_builtin_native_0010(int argc, char **argv);
+int test_builtin_native_0011(int argc, char **argv);
+int test_builtin_native_0012(int argc, char **argv);
+int test_builtin_native_0013(int argc, char **argv);
+int test_builtin_native_0014(int argc, char **argv);
+int test_builtin_native_0015(int argc, char **argv);
+int test_builtin_native_0016(int argc, char **argv);
+int test_builtin_native_0017(int argc, char **argv);
+int test_builtin_native_0018(int argc, char **argv);
+int test_builtin_native_0019(int argc, char **argv);
+int test_builtin_native_0020(int argc, char **argv);
+int test_builtin_native_0021(int argc, char **argv);
+int test_builtin_native_0022(int argc, char **argv);
+int test_builtin_native_0023(int argc, char **argv);
+int test_builtin_native_0024(int argc, char **argv);
+int test_builtin_native_0025(int argc, char **argv);
+int test_builtin_native_0026(int argc, char **argv);
 int test_output_native_0001(int argc, char **argv);
 int test_output_native_0002(int argc, char **argv);
 int test_output_native_0003(int argc, char **argv);
@@ -3622,6 +3648,58 @@ static test_entry_t const test_entries[] = {
       test_fh_lookup_0022 },
     { "lookup/fhedt/0023_fh_instance_isolation",
       test_fh_lookup_0023 },
+    { "quant/palette/builtin_float/0001_srgb_gamma",
+      test_builtin_native_0001 },
+    { "quant/palette/builtin_float/0002_srgb_linear",
+      test_builtin_native_0002 },
+    { "quant/palette/builtin_float/0003_srgb_oklab",
+      test_builtin_native_0003 },
+    { "quant/palette/builtin_float/0004_srgb_cielab",
+      test_builtin_native_0004 },
+    { "quant/palette/builtin_float/0005_srgb_din99d",
+      test_builtin_native_0005 },
+    { "quant/palette/builtin_float/0006_p3_gamma",
+      test_builtin_native_0006 },
+    { "quant/palette/builtin_float/0007_p3_linear",
+      test_builtin_native_0007 },
+    { "quant/palette/builtin_float/0008_p3_oklab",
+      test_builtin_native_0008 },
+    { "quant/palette/builtin_float/0009_p3_cielab",
+      test_builtin_native_0009 },
+    { "quant/palette/builtin_float/0010_p3_din99d",
+      test_builtin_native_0010 },
+    { "quant/palette/builtin_float/0011_linear_output",
+      test_builtin_native_0011 },
+    { "quant/palette/builtin_float/0012_smptec_output",
+      test_builtin_native_0012 },
+    { "quant/palette/builtin_float/0013_gray2_fs",
+      test_builtin_native_0013 },
+    { "quant/palette/builtin_float/0014_gray2_p3_fs",
+      test_builtin_native_0014 },
+    { "quant/palette/builtin_float/0015_vt340_duplicates",
+      test_builtin_native_0015 },
+    { "quant/palette/builtin_float/0016_byte_eligible",
+      test_builtin_native_0016 },
+    { "quant/palette/builtin_float/0017_explicit_float",
+      test_builtin_native_0017 },
+    { "quant/palette/builtin_float/0018_zero_snap",
+      test_builtin_native_0018 },
+    { "quant/palette/builtin_float/0019_precision_reuse",
+      test_builtin_native_0019 },
+    { "quant/palette/builtin_float/0020_output_reuse",
+      test_builtin_native_0020 },
+    { "quant/palette/builtin_float/0021_table_reuse",
+      test_builtin_native_0021 },
+    { "quant/palette/builtin_float/0022_p3_snap_recovery",
+      test_builtin_native_0022 },
+    { "quant/palette/builtin_float/0023_multiframe_boundary",
+      test_builtin_native_0023 },
+    { "quant/palette/builtin_float/0024_p3_export",
+      test_builtin_native_0024 },
+    { "quant/palette/builtin_float/0025_positive_fs",
+      test_builtin_native_0025 },
+    { "quant/palette/builtin_float/0026_negative_fs",
+      test_builtin_native_0026 },
     { "quant/palette/output_float/0001_linear_gamma",
       test_output_native_0001 },
     { "quant/palette/output_float/0002_linear_linear",

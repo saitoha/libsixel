@@ -993,6 +993,33 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0002_SCAN_CONTRACT \
     -DBUILD_TEST_0001_EXTENDED_LOOKUP \
     -DBUILD_FHEDT_TEST_COMMON \
+    -DBUILD_BUILTIN_FLOAT_COMMON \
+    -DBUILD_TEST_0001_SRGB_GAMMA \
+    -DBUILD_TEST_0002_SRGB_LINEAR \
+    -DBUILD_TEST_0003_SRGB_OKLAB \
+    -DBUILD_TEST_0004_SRGB_CIELAB \
+    -DBUILD_TEST_0005_SRGB_DIN99D \
+    -DBUILD_TEST_0006_P3_GAMMA \
+    -DBUILD_TEST_0007_P3_LINEAR \
+    -DBUILD_TEST_0008_P3_OKLAB \
+    -DBUILD_TEST_0009_P3_CIELAB \
+    -DBUILD_TEST_0010_P3_DIN99D \
+    -DBUILD_TEST_0011_LINEAR_OUTPUT \
+    -DBUILD_TEST_0012_SMPTEC_OUTPUT \
+    -DBUILD_TEST_0013_GRAY2_FS \
+    -DBUILD_TEST_0014_GRAY2_P3_FS \
+    -DBUILD_TEST_0015_VT340_DUPLICATES \
+    -DBUILD_TEST_0016_BYTE_ELIGIBLE \
+    -DBUILD_TEST_0017_EXPLICIT_FLOAT \
+    -DBUILD_TEST_0018_ZERO_SNAP \
+    -DBUILD_TEST_0019_PRECISION_REUSE \
+    -DBUILD_TEST_0020_OUTPUT_REUSE \
+    -DBUILD_TEST_0021_TABLE_REUSE \
+    -DBUILD_TEST_0022_P3_SNAP_RECOVERY \
+    -DBUILD_TEST_0023_MULTIFRAME_BOUNDARY \
+    -DBUILD_TEST_0024_P3_EXPORT \
+    -DBUILD_TEST_0025_POSITIVE_FS \
+    -DBUILD_TEST_0026_NEGATIVE_FS \
     -DBUILD_OUTPUT_FLOAT_TEST_COMMON \
     -DBUILD_TEST_0001_LINEAR_GAMMA \
     -DBUILD_TEST_0002_LINEAR_LINEAR \
@@ -4460,6 +4487,33 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/merge_float/0002_scan_contract.c \
     processing/lookup/extended/0001_extended_lookup.c \
     processing/lookup/fhedt_test_common.c \
+    quant/palette/builtin_float_common.c \
+    quant/palette/builtin_float/0001_srgb_gamma.c \
+    quant/palette/builtin_float/0002_srgb_linear.c \
+    quant/palette/builtin_float/0003_srgb_oklab.c \
+    quant/palette/builtin_float/0004_srgb_cielab.c \
+    quant/palette/builtin_float/0005_srgb_din99d.c \
+    quant/palette/builtin_float/0006_p3_gamma.c \
+    quant/palette/builtin_float/0007_p3_linear.c \
+    quant/palette/builtin_float/0008_p3_oklab.c \
+    quant/palette/builtin_float/0009_p3_cielab.c \
+    quant/palette/builtin_float/0010_p3_din99d.c \
+    quant/palette/builtin_float/0011_linear_output.c \
+    quant/palette/builtin_float/0012_smptec_output.c \
+    quant/palette/builtin_float/0013_gray2_fs.c \
+    quant/palette/builtin_float/0014_gray2_p3_fs.c \
+    quant/palette/builtin_float/0015_vt340_duplicates.c \
+    quant/palette/builtin_float/0016_byte_eligible.c \
+    quant/palette/builtin_float/0017_explicit_float.c \
+    quant/palette/builtin_float/0018_zero_snap.c \
+    quant/palette/builtin_float/0019_precision_reuse.c \
+    quant/palette/builtin_float/0020_output_reuse.c \
+    quant/palette/builtin_float/0021_table_reuse.c \
+    quant/palette/builtin_float/0022_p3_snap_recovery.c \
+    quant/palette/builtin_float/0023_multiframe_boundary.c \
+    quant/palette/builtin_float/0024_p3_export.c \
+    quant/palette/builtin_float/0025_positive_fs.c \
+    quant/palette/builtin_float/0026_negative_fs.c \
     quant/palette/output_float_test_common.c \
     quant/palette/output_float/0001_linear_gamma.c \
     quant/palette/output_float/0002_linear_linear.c \
