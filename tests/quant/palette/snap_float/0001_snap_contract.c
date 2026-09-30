@@ -11,6 +11,7 @@
 #include "src/palette.h"
 #include "src/palette-common-snap.h"
 #include "tests/data/color-numeric/snap-native.h"
+#include "tests/data/color-numeric/cover-anchors.h"
 
 static int const native_snap_formats[] = {
     SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
@@ -296,13 +297,174 @@ end:
     return ok;
 }
 
+/* A constant source separates snap from repair without a solver oracle.
+ * Full/three-quarter snap moves it beyond the cover reach threshold. Soft
+ * must append the original source after snapping; hard appends eight fixed
+ * corners. A second snap or the reverse ordering fails independent values.
+ * The fixed-size variant starts with two negative grays: their snapped
+ * zeros fund a gamma midpoint plus the source cell mean (-0.24). */
+static int
+native_snap_cover(int model, int space, int policy, int mode)
+{
+    static struct { int flag; char const *value; } const options[] = {
+        { '=', "1" }, { 'p', "1" }, { 'F', "none" }, { '~', "none" },
+        { 'd', "none" }, { 't', "rgb" }, { '4', "full-frame" },
+        { '5', "none" }, { 'U', "gamma" }
+    };
+    static char const *const models[] = {
+        "kmeans:seed=1", "center:seed=1", "medoids:seed=1", "heckbert", "auto"
+    };
+    sixel_encoder_t *encoder;
+    sixel_output_t *output;
+    sixel_frame_t *frame;
+    sixel_dither_t *dither;
+    sixel_palette_float32_entries_view_t view;
+    native_snap_capture_t capture;
+    float pixels[12];
+    float saved[12];
+    unsigned char bytes[12];
+    unsigned char const *wire;
+    unsigned int count;
+    unsigned int n;
+    unsigned int channel;
+    double rate;
+    double expected;
+    int hard;
+    int merge;
+    int ok;
+    char snap[80];
+    SIXELSTATUS status;
+
+    encoder = NULL;
+    output = NULL;
+    frame = NULL;
+    ok = 0;
+    hard = mode == 2 || mode == 3;
+    merge = mode == 4;
+    rate = mode == 1 || mode == 3 || merge || mode == 5 ? 1 : .75;
+    memset(&capture, 0, sizeof(capture));
+    memset(bytes, 90, sizeof(bytes));
+    for (n = 0; n < 12; ++n) {
+        pixels[n] = merge ? (n < 6 ? -.25f : -.23f)
+            : (float)snap_native_fixture[0][space][0][n % 3];
+    }
+    memcpy(saved, pixels, sizeof(saved));
+    snprintf(snap, sizeof(snap), "%s:timing=%s:rate=%s",
+        policy == 1 ? "nearest" : "reversible",
+        mode == 8 ? "all" : "once", rate == 1 ? "1" : "0.75");
+    if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
+            SIXEL_FAILED(sixel_output_new(&output, native_snap_write,
+                &capture, NULL)) ||
+            SIXEL_FAILED(sixel_frame_new(&frame, NULL))) {
+        goto end;
+    }
+    for (n = 0; n < sizeof(options) / sizeof(options[0]); ++n) {
+        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, options[n].flag,
+                options[n].value))) {
+            goto end;
+        }
+    }
+    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Q', models[model])) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '_', snap)) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '.',
+                mode == 6 ? "8bit" : "float32")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'a',
+                mode == 7 ? "corners:V1" : merge ? "corners:Wsoft:V0" :
+                hard ? "corners:Whard:V1" : "corners:Wsoft:V1")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X',
+                native_snap_spaces[space])) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
+                native_snap_spaces[space])) ||
+            SIXEL_FAILED(sixel_frame_init_borrowed(frame,
+                mode == 6 ? (void *)bytes : (void *)pixels, 2, 2,
+                mode == 6 ? SIXEL_PIXELFORMAT_RGB888 :
+                native_snap_formats[space], NULL, -1))) {
+        goto end;
+    }
+    if (merge && SIXEL_FAILED(sixel_encoder_setopt(encoder, 'p', "2"))) {
+        goto end;
+    }
+    if (mode == 5 &&
+            (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "4")) ||
+             SIXEL_FAILED(sixel_encoder_setopt(encoder, '4',
+                 "adaptive-grid")))) {
+        goto end;
+    }
+    if (mode == 9) {
+        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "display-p3"))) {
+            goto end;
+        }
+        status = sixel_encoder_encode_frame(encoder, frame, output);
+        if (status != SIXEL_BAD_ARGUMENT || capture.size != 0 ||
+                SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma"))) {
+            goto end;
+        }
+    }
+    status = sixel_encoder_encode_frame(encoder, frame, output);
+    dither = (sixel_dither_t *)encoder->diagnostic_dither;
+    if (SIXEL_FAILED(status) || dither == NULL ||
+            memcmp(saved, pixels, sizeof(saved)) != 0) {
+        goto end;
+    }
+    if (mode >= 6 && mode <= 8) {
+        ok = !dither->use_rgb101_palette &&
+            (mode != 6 || dither->pixelformat == SIXEL_PIXELFORMAT_RGB888);
+        goto end;
+    }
+    if (!dither->use_rgb101_palette ||
+            SIXEL_FAILED(dither->palette->vtbl->get_entries_float32(
+                dither->palette, &view)) || view.entries == NULL ||
+            view.entry_count != (hard ? 9u : 2u) ||
+            SIXEL_FAILED(sixel_palette_get_rgb101(dither->palette,
+                &wire, &count)) || count != view.entry_count) {
+        goto end;
+    }
+    for (n = 0; n < count; ++n) {
+        for (channel = 0; channel < 3; ++channel) {
+            expected = merge ? (n == 0 ? 0 : -.24)
+                : n == 0 ? (1 - rate) *
+                    snap_native_fixture[0][space][0][channel] + rate *
+                    snap_native_fixture[0][space][policy][channel]
+                : hard ? color_cover_anchors[space][n - 1][channel]
+                : snap_native_fixture[0][space][0][channel];
+            /* Same 2e-5 typed-coordinate budget as the independent snap
+             * and cover oracles; wire anchors have no rounding ties. */
+            if (!isfinite(view.entries[n * 3u + channel]) ||
+                    fabs(view.entries[n * 3u + channel] - expected) > 2e-5) {
+                fprintf(stderr, "entry %u channel %u: %.9g expected %.12g\n",
+                    n, channel, (double)view.entries[n * 3u + channel],
+                    expected);
+                goto end;
+            }
+            if (n > 0 && wire[n * 3u + channel] != (merge ? 0 : hard
+                    ? (int)(100 * color_cover_anchors[0][n - 1][channel])
+                    : channel == 0 ? 0 : channel == 1 ? 100 : 38)) {
+                goto end;
+            }
+        }
+    }
+    ok = 1;
+end:
+    if (!ok) {
+        fprintf(stderr, "snap/cover %d %d %d %d: %s\n", model, space,
+            policy, mode, sixel_helper_get_additional_message());
+    }
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    return ok;
+}
+
 int
 test_native_snap(int argc, char **argv)
 {
     if (argc != 6) {
         return 1;
     }
-    return !(strcmp(argv[1], "encode") == 0
+    return !(strcmp(argv[1], "cover") == 0
+        ? native_snap_cover(atoi(argv[2]), atoi(argv[3]), atoi(argv[4]),
+            atoi(argv[5]))
+        : strcmp(argv[1], "encode") == 0
         ? native_snap_encode(atoi(argv[2]), atoi(argv[3]), atoi(argv[4]),
             atoi(argv[5]))
         : native_snap_values(atoi(argv[2]), atoi(argv[3]), atoi(argv[4]),

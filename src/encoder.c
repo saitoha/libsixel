@@ -7084,7 +7084,8 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
              (encoder->output_color_definition ==
                   SIXEL_PALETTE_OUTPUT_DISPLAY_P3 ||
               encoder->snap_policy_timing != SIXEL_PALETTE_SNAP_TIMING_ONCE ||
-              encoder->cover_policy != SIXEL_PALETTE_COVER_OFF)) ||
+              (encoder->cover_policy != SIXEL_PALETTE_COVER_OFF &&
+               encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT))) ||
             encoder->gpu_policy != SIXEL_GPU_POLICY_OFF ||
             palette_type != SIXEL_PALETTETYPE_RGB ||
             (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT &&

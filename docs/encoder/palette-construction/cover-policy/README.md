@@ -264,6 +264,8 @@ In hard mode, `edges` contains the previous fourteen anchors and adds the twelve
 
 `cover_mode` selects how anchors are nominated. The default is `soft`.
 
+For ordinary sRGB output, explicit native cover can also follow [native final snap](../snap-policy/README.md#native-float-final-snap-for-srgb-output). That reference owns the stage ordering, partial-rate and wire-cache interaction.
+
 ### Hard mode on native float palettes
 
 Hard mode uses the same fixed gamma-encoded sRGB anchor lattice for every clustering space and output definition. Corners use `0` and `1`; face and edge centers use `128/255`, preserving the byte policy's code value rather than substituting `0.5`. Display P3 output converts these sRGB anchors to P3 at serialization; it does not redefine them as P3 primaries. Hard cover therefore does not promise coverage of the entire P3 gamut. Extended source-derived palette entries remain eligible and are not clipped to the anchor cube.

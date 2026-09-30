@@ -1779,6 +1779,9 @@ success:
                         storage->entries_float32[snap_component]);
             }
         }
+        /* Cover follows final snap. Its new anchors and funded midpoints
+         * retain their coordinates; do not apply the snap rate again here
+         * or reconstruct the working palette from the RGB101 wire cache. */
         status = sixel_palette_repair_native(palette, request, &ncolors,
             work_allocator);
         if (SIXEL_FAILED(status)) {
@@ -1948,9 +1951,8 @@ sixel_palette_generate_extended(
              request->quantize_model != SIXEL_QUANTIZE_MODEL_KMEDOIDS &&
              request->quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT) ||
             (request->use_reversible &&
-             (sixel_palette_should_snap(
-                  SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE) ||
-              sixel_palette_cover_policy() != SIXEL_PALETTE_COVER_OFF)) ||
+             sixel_palette_should_snap(
+                 SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE)) ||
             (sixel_resolve_final_merge_mode(request->final_merge_mode) !=
                  SIXEL_FINAL_MERGE_NONE &&
              sixel_resolve_final_merge_mode(request->final_merge_mode) !=
