@@ -475,6 +475,7 @@ int test_palette_sampling_float(int argc, char **argv);
 int test_palette_binning_float(int argc, char **argv);
 int test_palette_merge_float(int argc, char **argv);
 int test_palette_cover_native(int argc, char **argv);
+int test_cover_mask(int argc, char **argv);
 int test_native_snap(int argc, char **argv);
 int test_ward_scan_populations(int argc, char **argv);
 int test_extended_lookup(int argc, char **argv);
@@ -4391,6 +4392,7 @@ static test_entry_t const test_entries[] = {
     { "palette/merge_float/0002_scan_contract",
       test_ward_scan_populations },
     { "palette/snap_float/0001_snap_contract", test_native_snap },
+    { "quant/palette/cover_mask/0001_cover_mask", test_cover_mask },
     { "palette/cover_float/0001_cover_contract",
       test_palette_cover_native },
     { "palette/merge_float/0001_merge_contract",

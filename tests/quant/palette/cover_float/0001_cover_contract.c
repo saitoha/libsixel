@@ -83,7 +83,7 @@ cover_native_midpoint(sixel_allocator_t *allocator, int space)
     if (SIXEL_FAILED(sixel_palette_cover_float(entries, &count, samples,
             sizeof(samples), cover_native_formats[space],
             SIXEL_PALETTE_COVER_CORNERS, SIXEL_PALETTE_COVER_MODE_SOFT,
-            0, allocator)) || count != 2) {
+            0, SIXEL_PALETTE_MAX, allocator)) || count != 2) {
         return 0;
     }
     /* 2e-5 native units allow matrix/TRC inversion of rounded input near
@@ -193,7 +193,7 @@ cover_native_values(sixel_allocator_t *allocator, int mode, int space)
     memcpy(input_copy, samples, sizeof(samples));
     status = sixel_palette_cover_float(entries, &count, samples, length,
         cover_native_formats[space], policy,
-        SIXEL_PALETTE_COVER_MODE_SOFT, grow, allocator);
+        SIXEL_PALETTE_COVER_MODE_SOFT, grow, SIXEL_PALETTE_MAX, allocator);
     if (memcmp(samples, input_copy, sizeof(samples)) != 0) {
         return 0;
     }
@@ -207,7 +207,7 @@ cover_native_values(sixel_allocator_t *allocator, int mode, int space)
         samples[11] = .5f;
         status = sixel_palette_cover_float(entries, &count, samples, length,
             cover_native_formats[space], policy,
-            SIXEL_PALETTE_COVER_MODE_SOFT, grow, allocator);
+            SIXEL_PALETTE_COVER_MODE_SOFT, grow, SIXEL_PALETTE_MAX, allocator);
     }
     if (SIXEL_FAILED(status)) {
         return 0;
@@ -341,7 +341,7 @@ cover_native_hard(sixel_allocator_t *allocator, int mode, int space)
     memcpy(original, entries, sizeof(entries));
     status = sixel_palette_cover_float(entries, &count, samples,
         sizeof(samples), cover_native_formats[space], policy,
-        SIXEL_PALETTE_COVER_MODE_HARD, grow, allocator);
+        SIXEL_PALETTE_COVER_MODE_HARD, grow, SIXEL_PALETTE_MAX, allocator);
     if (mode == 7) {
         if (status != SIXEL_BAD_INPUT || count != previous ||
                 memcmp(entries, original, sizeof(entries)) != 0) {
@@ -351,7 +351,7 @@ cover_native_hard(sixel_allocator_t *allocator, int mode, int space)
             (float)color_palette_space[space].samples[0][0];
         status = sixel_palette_cover_float(entries, &count, samples,
             sizeof(samples), cover_native_formats[space], policy,
-            SIXEL_PALETTE_COVER_MODE_HARD, grow, allocator);
+            SIXEL_PALETTE_COVER_MODE_HARD, grow, SIXEL_PALETTE_MAX, allocator);
     }
     if (SIXEL_FAILED(status)) {
         return 0;

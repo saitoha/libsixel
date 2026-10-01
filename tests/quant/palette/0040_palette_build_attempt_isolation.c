@@ -20,12 +20,13 @@
 static int
 attempt_matches(sixel_palette_build_attempt_t const *attempt,
                 sixel_palette_binning_policy_t binning,
-                int quantize_model)
+                int quantize_model, unsigned int reserved_colors)
 {
     return attempt != NULL &&
         attempt->binning.policy.requested == (int)binning &&
         attempt->binning.policy.phase == SIXEL_PALETTE_POLICY_UNRESOLVED &&
-        attempt->quantize_model == quantize_model;
+        attempt->quantize_model == quantize_model &&
+        attempt->reserved_colors == reserved_colors;
 }
 
 int
@@ -63,12 +64,14 @@ test_palette_0040_palette_build_attempt_isolation(int argc, char **argv)
         SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT);
     first_attempt.quantize_model = SIXEL_QUANTIZE_MODEL_KMEANS;
     first_attempt.quantizer_retry_count = 0U;
+    first_attempt.reserved_colors = 1U;
     sixel_palette_binning_state_init(
         &second_attempt.binning,
         SIXEL_PALETTE_BINNING_SOFT,
         SIXEL_PALETTE_POLICY_ORIGIN_AUTO);
     second_attempt.quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
     second_attempt.quantizer_retry_count = 0U;
+    second_attempt.reserved_colors = 0U;
 
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
@@ -105,7 +108,7 @@ test_palette_0040_palette_build_attempt_isolation(int argc, char **argv)
     if (SIXEL_FAILED(status) ||
             !attempt_matches(&result,
                              SIXEL_PALETTE_BINNING_SOFT,
-                             SIXEL_QUANTIZE_MODEL_AUTO)) {
+                             SIXEL_QUANTIZE_MODEL_AUTO, 0U)) {
         status = SIXEL_LOGIC_ERROR;
         goto cleanup;
     }
@@ -113,7 +116,7 @@ test_palette_0040_palette_build_attempt_isolation(int argc, char **argv)
     if (SIXEL_FAILED(status) ||
             !attempt_matches(&result,
                              SIXEL_PALETTE_BINNING_HARD,
-                             SIXEL_QUANTIZE_MODEL_KMEANS)) {
+                             SIXEL_QUANTIZE_MODEL_KMEANS, 1U)) {
         status = SIXEL_LOGIC_ERROR;
         goto cleanup;
     }

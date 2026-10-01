@@ -2048,6 +2048,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/solvers_float/0001_solver_contract.c \
 	quant/palette/merge_float/0001_merge_contract.c \
 	quant/palette/cover_float/0001_cover_contract.c \
+	quant/palette/cover_mask/0001_cover_mask.c \
 	quant/palette/snap_float/0001_snap_contract.c \
 	quant/palette/merge_float/0002_scan_contract.c \
 	processing/lookup/extended/0001_extended_lookup.c \
@@ -4496,6 +4497,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/solvers_float/test_runner-0001_solver_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/merge_float/test_runner-0001_merge_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cover_float/test_runner-0001_cover_contract.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cover_mask/test_runner-0001_cover_mask.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_float/test_runner-0001_snap_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/merge_float/test_runner-0002_scan_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/extended/test_runner-0001_extended_lookup.$(OBJEXT) \
@@ -7299,6 +7301,7 @@ am__depfiles_remade =  \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0026_negative_fs.Po \
 	quant/palette/color_space/$(DEPDIR)/test_runner-0001_space_contract.Po \
 	quant/palette/cover_float/$(DEPDIR)/test_runner-0001_cover_contract.Po \
+	quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Po \
 	quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0001_eyt_gamma_srgb.Po \
 	quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0002_eyt_gamma_p3.Po \
 	quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0003_eyt_linear_srgb.Po \
@@ -9039,6 +9042,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_BINNING_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_MERGE_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_COVER_CONTRACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_COVER_MASK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SNAP_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_SCAN_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_EXTENDED_LOOKUP \
@@ -12662,6 +12666,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/solvers_float/0001_solver_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/merge_float/0001_merge_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cover_float/0001_cover_contract.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cover_mask/0001_cover_mask.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_float/0001_snap_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/merge_float/0002_scan_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/extended/0001_extended_lookup.c \
@@ -19394,6 +19399,15 @@ quant/palette/cover_float/$(DEPDIR)/$(am__dirstamp):
 quant/palette/cover_float/test_runner-0001_cover_contract.$(OBJEXT):  \
 	quant/palette/cover_float/$(am__dirstamp) \
 	quant/palette/cover_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cover_mask/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/cover_mask
+	@: >>quant/palette/cover_mask/$(am__dirstamp)
+quant/palette/cover_mask/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/cover_mask/$(DEPDIR)
+	@: >>quant/palette/cover_mask/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cover_mask/test_runner-0001_cover_mask.$(OBJEXT):  \
+	quant/palette/cover_mask/$(am__dirstamp) \
+	quant/palette/cover_mask/$(DEPDIR)/$(am__dirstamp)
 quant/palette/snap_float/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette/snap_float
 	@: >>quant/palette/snap_float/$(am__dirstamp)
@@ -21354,6 +21368,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/builtin_float/*.$(OBJEXT)
 	-rm -f quant/palette/color_space/*.$(OBJEXT)
 	-rm -f quant/palette/cover_float/*.$(OBJEXT)
+	-rm -f quant/palette/cover_mask/*.$(OBJEXT)
 	-rm -f quant/palette/eytzinger_float/*.$(OBJEXT)
 	-rm -f quant/palette/fallback/*.$(OBJEXT)
 	-rm -f quant/palette/fhedt_float/*.$(OBJEXT)
@@ -23551,6 +23566,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0026_negative_fs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/color_space/$(DEPDIR)/test_runner-0001_space_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cover_float/$(DEPDIR)/test_runner-0001_cover_contract.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0001_eyt_gamma_srgb.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0002_eyt_gamma_p3.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0003_eyt_linear_srgb.Po@am__quote@ # am--include-marker
@@ -50173,6 +50189,20 @@ quant/palette/cover_float/test_runner-0001_cover_contract.obj: quant/palette/cov
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cover_float/test_runner-0001_cover_contract.obj `if test -f 'quant/palette/cover_float/0001_cover_contract.c'; then $(CYGPATH_W) 'quant/palette/cover_float/0001_cover_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cover_float/0001_cover_contract.c'; fi`
 
+quant/palette/cover_mask/test_runner-0001_cover_mask.o: quant/palette/cover_mask/0001_cover_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cover_mask/test_runner-0001_cover_mask.o -MD -MP -MF quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Tpo -c -o quant/palette/cover_mask/test_runner-0001_cover_mask.o `test -f 'quant/palette/cover_mask/0001_cover_mask.c' || echo '$(srcdir)/'`quant/palette/cover_mask/0001_cover_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Tpo quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cover_mask/0001_cover_mask.c' object='quant/palette/cover_mask/test_runner-0001_cover_mask.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cover_mask/test_runner-0001_cover_mask.o `test -f 'quant/palette/cover_mask/0001_cover_mask.c' || echo '$(srcdir)/'`quant/palette/cover_mask/0001_cover_mask.c
+
+quant/palette/cover_mask/test_runner-0001_cover_mask.obj: quant/palette/cover_mask/0001_cover_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cover_mask/test_runner-0001_cover_mask.obj -MD -MP -MF quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Tpo -c -o quant/palette/cover_mask/test_runner-0001_cover_mask.obj `if test -f 'quant/palette/cover_mask/0001_cover_mask.c'; then $(CYGPATH_W) 'quant/palette/cover_mask/0001_cover_mask.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cover_mask/0001_cover_mask.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Tpo quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cover_mask/0001_cover_mask.c' object='quant/palette/cover_mask/test_runner-0001_cover_mask.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cover_mask/test_runner-0001_cover_mask.obj `if test -f 'quant/palette/cover_mask/0001_cover_mask.c'; then $(CYGPATH_W) 'quant/palette/cover_mask/0001_cover_mask.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cover_mask/0001_cover_mask.c'; fi`
+
 quant/palette/snap_float/test_runner-0001_snap_contract.o: quant/palette/snap_float/0001_snap_contract.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_float/test_runner-0001_snap_contract.o -MD -MP -MF quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Tpo -c -o quant/palette/snap_float/test_runner-0001_snap_contract.o `test -f 'quant/palette/snap_float/0001_snap_contract.c' || echo '$(srcdir)/'`quant/palette/snap_float/0001_snap_contract.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Tpo quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Po
@@ -58568,6 +58598,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/color_space/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/cover_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/cover_float/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/cover_mask/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/cover_mask/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/eytzinger_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/eytzinger_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/fallback/$(DEPDIR)/$(am__dirstamp)
@@ -60791,6 +60823,7 @@ distclean: distclean-am
 	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0026_negative_fs.Po
 	-rm -f quant/palette/color_space/$(DEPDIR)/test_runner-0001_space_contract.Po
 	-rm -f quant/palette/cover_float/$(DEPDIR)/test_runner-0001_cover_contract.Po
+	-rm -f quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Po
 	-rm -f quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0001_eyt_gamma_srgb.Po
 	-rm -f quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0002_eyt_gamma_p3.Po
 	-rm -f quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0003_eyt_linear_srgb.Po
@@ -63281,6 +63314,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0026_negative_fs.Po
 	-rm -f quant/palette/color_space/$(DEPDIR)/test_runner-0001_space_contract.Po
 	-rm -f quant/palette/cover_float/$(DEPDIR)/test_runner-0001_cover_contract.Po
+	-rm -f quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Po
 	-rm -f quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0001_eyt_gamma_srgb.Po
 	-rm -f quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0002_eyt_gamma_p3.Po
 	-rm -f quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0003_eyt_linear_srgb.Po

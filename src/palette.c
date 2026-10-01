@@ -1246,7 +1246,8 @@ sixel_palette_build_attempt_begin(
     sixel_palette_storage_t *storage;
 
     storage = NULL;
-    if (palette == NULL || attempt == NULL) {
+    if (palette == NULL || attempt == NULL ||
+            attempt->reserved_colors >= SIXEL_PALETTE_MAX) {
         return SIXEL_BAD_ARGUMENT;
     }
     storage = SIXEL_PALETTE_STORAGE(palette);
@@ -1542,6 +1543,7 @@ static SIXELSTATUS
 sixel_palette_repair_native(sixel_palette_t *palette,
                             sixel_palette_generate_request_t const *request,
                             unsigned int *ncolors,
+                            unsigned int capacity,
                             sixel_allocator_t *work_allocator)
 {
     sixel_palette_storage_t *storage;
@@ -1567,6 +1569,7 @@ sixel_palette_repair_native(sixel_palette_t *palette,
         request->data, request->length, request->pixelformat,
         sixel_palette_cover_policy(), sixel_palette_cover_mode(),
         sixel_palette_cover_grow_enabled(),
+        capacity,
         work_allocator);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -1628,6 +1631,7 @@ sixel_palette_generate_internal(
     int result_depth;
     int effective_quantize_model;
     unsigned int snap_component;
+    unsigned int color_capacity;
     sixel_allocator_t *work_allocator;
 
     storage = NULL;
@@ -1671,6 +1675,12 @@ sixel_palette_generate_internal(
     context.attempt = storage->build_attempt_active != 0
         ? &storage->build_attempt
         : NULL;
+    /* Caller-owned slots are absent from every color calculation. This
+     * attempt-local capacity also bounds cover growth on the byte path. */
+    color_capacity = SIXEL_PALETTE_MAX;
+    if (context.attempt != NULL) {
+        color_capacity -= context.attempt->reserved_colors;
+    }
     storage->requested_colors = request->requested_colors;
     storage->build_context = &context;
 
@@ -1762,6 +1772,11 @@ after_quantizer:
     status = SIXEL_OK;
 
 success:
+    if (SIXEL_SUCCEEDED(status) && color_capacity < SIXEL_PALETTE_MAX &&
+            ncolors > color_capacity) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
     if (SIXEL_SUCCEEDED(status) && preserve_extended_rgb) {
         if (request->use_reversible) {
             status = sixel_palette_snap_native(storage->entries_float32,
@@ -1783,7 +1798,7 @@ success:
          * retain their coordinates; do not apply the snap rate again here
          * or reconstruct the working palette from the RGB101 wire cache. */
         status = sixel_palette_repair_native(palette, request, &ncolors,
-            work_allocator);
+            color_capacity, work_allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1833,11 +1848,11 @@ success:
                     work_allocator);
             }
             if (sixel_palette_cover_grow_enabled()
-                    && ncolors < (unsigned int)SIXEL_PALETTE_MAX) {
+                    && ncolors < color_capacity) {
                 unsigned int room;
                 unsigned int i;
 
-                room = (unsigned int)SIXEL_PALETTE_MAX - ncolors;
+                room = color_capacity - ncolors;
                 if (room > anchor_count) {
                     room = anchor_count;
                 }
@@ -1863,7 +1878,7 @@ success:
                                       anchors,
                                       anchor_count);
         } else if (sixel_palette_cover_grow_enabled()
-                && ncolors < (unsigned int)SIXEL_PALETTE_MAX) {
+                && ncolors < color_capacity) {
             /*
              * Growing spends no existing entry, so the anchors cost nothing in
              * quality -- but it hands back more colors than the caller asked
@@ -1875,7 +1890,7 @@ success:
             unsigned int room;
             unsigned int added;
 
-            room = (unsigned int)SIXEL_PALETTE_MAX - ncolors;
+            room = color_capacity - ncolors;
             if (room > SIXEL_PALETTE_COVER_ANCHOR_MAX) {
                 room = SIXEL_PALETTE_COVER_ANCHOR_MAX;
             }

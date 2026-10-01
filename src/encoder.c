@@ -7155,7 +7155,7 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
 
 /* Separate masks preserve RGB geometry. Generated palettes reserve a slot;
  * fixed tables keep every entry and carry the mask through body writing.
- * Packed alpha and generated cover growth still need their own handling. */
+ * Packed alpha still needs separate handling. */
 static int
 sixel_encoder_rgb101_alpha(sixel_encoder_t const *encoder,
                            sixel_frame_t const *frame)
@@ -7163,7 +7163,6 @@ sixel_encoder_rgb101_alpha(sixel_encoder_t const *encoder,
     return !sixel_encoder_frame_preserves_alpha_key(frame) ||
         (sixel_encoder_frame_has_transparent_mask(frame) &&
          ((encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
-           encoder->cover_policy == SIXEL_PALETTE_COVER_OFF &&
            encoder->reqcolors > 1) ||
           encoder->color_option == SIXEL_COLOR_OPTION_MAPFILE ||
           encoder->color_option == SIXEL_COLOR_OPTION_BUILTIN ||
@@ -7248,7 +7247,7 @@ sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
              !sixel_encoder_rgb101_alpha(encoder, frame))) {
         sixel_helper_set_additional_message(
             "display-p3 requires a static RGB frame; a separate alpha mask "
-            "requires a fixed palette or a generated palette with cover off "
+            "requires a fixed palette or a generated palette "
             "and at least 2 slots.");
         return SIXEL_BAD_INPUT;
     }
@@ -7581,6 +7580,10 @@ sixel_encoder_prepare_palette(
     if (reserve_alpha_key) {
         palette_reqcolors = encoder->reqcolors - 1;
     }
+    /* Cover repairs real colors before the omission key is appended. Carry
+     * its capacity separately from the quantizer's requested color count:
+     * opted-in growth may exceed that request, but not consume this slot. */
+    build_attempt.reserved_colors = reserve_alpha_key ? 1U : 0U;
     effective_method_for_largest = SIXEL_LARGE_NORM;
     if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
         /*

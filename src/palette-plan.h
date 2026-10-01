@@ -127,7 +127,7 @@ typedef struct sixel_palette_binning_state {
 } sixel_palette_binning_state_t;
 
 /*
- * Attempt-local output shared by the dither and palette components.  The
+ * Attempt-local state shared by the dither and palette components.  The
  * palette instance owns a copy while generate() is active, so solver retries
  * cannot publish through thread-local pointers to an encoder stack frame.
  */
@@ -135,6 +135,9 @@ typedef struct sixel_palette_build_attempt {
     sixel_palette_binning_state_t binning;
     int quantize_model;
     unsigned int quantizer_retry_count;
+    /* Slots appended by the caller after construction, outside RGB geometry.
+     * Zero preserves the ordinary 256-color growth ceiling. */
+    unsigned int reserved_colors;
 } sixel_palette_build_attempt_t;
 
 /* Per-frame palette policy state owned by the existing encode DAG context. */

@@ -322,7 +322,9 @@ With the default `cover_grow=0`, the requested palette size remains fixed. To pl
 
 Placement repeats for at most four sweeps because merging a pair can move an entry away from an anchor that an earlier check considered reached. A sweep that places nothing terminates immediately. Failure to find a cheap enough pair skips that anchor and continues with the remaining candidates.
 
-`cover_grow=1` first appends missing anchors while entries remain below the SIXEL encoder limit of 256. It may therefore return more entries than requested by `-p`, by at most the policy budget and never beyond 256. If only some anchors fit near the ceiling, the remaining anchors use the same merge-funded placement as fixed-size mode.
+`cover_grow=1` first appends missing anchors while entries remain below the caller's usable color capacity. This is 256 normally, or 255 when the encoder will append one omission slot after construction. It may therefore return more real colors than the quantizer request, by at most the policy budget, while the final palette including reserved slots never exceeds 256. The reservation is per build attempt, independent of `-p`; it does not change the anchor budget or distance metric. With `cover_grow=0`, repair retains the quantizer's actual entry count. If only some anchors fit near the ceiling, the remaining anchors use the same merge-funded placement as fixed-size mode.
+
+For the [selected native masked path](../../output/output-colorspace.md#separate-alpha-zero-masks), soft cover receives the same compact visible samples as the quantizer. The omission slot is appended only after cover and never participates in anchor nomination or closest-pair funding. Hard cover still uses its fixed anchors. A separate source mask is not passed into either cover algorithm.
 
 ## Cost model
 
@@ -508,3 +510,29 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 ### Coverage audit boundary
 
 The focused suite covers the core policy ladder, `auto` boundaries, explicit override precedence, hard and soft modes, fixed and growing palettes, every quantizer, each registered suboption consumer, and both option orders for all three fixed-palette conflicts. It does not yet directly test every top-level spelling (`faces`, `edges`, `all`, `0`, and `1`), invalid or empty top-level values, repeated-option last-wins behavior, excluded legacy float32 bypass and unsupported-byte-soft fallback, the top-level environment conflict with fixed palettes, or multi-frame state. The native value tests separately protect signed anchors in all five spaces, exact preservation of untouched entries, source population and distance rules, growth limits, failure recovery, solver dispatch and byte eligibility. They do not establish a universal quality improvement: repairing a coverage gap can trade error between image regions. Quality tests enforce a broad MS-SSIM floor on one small fixture but do not replace the missing reproducible cover-policy quality, speed, and size measurement suite described above.
+
+### Cover capacity and omission-slot contracts
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| CM-01 | Soft growth stops at 255 real colors and still places the extended anchor. | [tests/quant/palette/cover_mask/0001_soft_reserved_ceiling.t](../../../../tests/quant/palette/cover_mask/0001_soft_reserved_ceiling.t) |
+| CM-02 | Without a reservation, soft growth can use all 256 colors. | [tests/quant/palette/cover_mask/0002_soft_opaque_ceiling.t](../../../../tests/quant/palette/cover_mask/0002_soft_opaque_ceiling.t) |
+| CM-03 | Hard growth stops at 255 real colors and funds remaining corner anchors by merging. | [tests/quant/palette/cover_mask/0003_hard_reserved_ceiling.t](../../../../tests/quant/palette/cover_mask/0003_hard_reserved_ceiling.t) |
+| CM-04 | Without a reservation, hard growth can use all 256 colors. | [tests/quant/palette/cover_mask/0004_hard_opaque_ceiling.t](../../../../tests/quant/palette/cover_mask/0004_hard_opaque_ceiling.t) |
+| CM-05 | Soft repair without growth keeps its entry count and places the extended anchor. | [tests/quant/palette/cover_mask/0005_soft_fixed_size.t](../../../../tests/quant/palette/cover_mask/0005_soft_fixed_size.t) |
+| CM-06 | Hard repair without growth keeps its entry count and places all corners. | [tests/quant/palette/cover_mask/0006_hard_fixed_size.t](../../../../tests/quant/palette/cover_mask/0006_hard_fixed_size.t) |
+| CM-10 | Soft cover with a separate mask grows real colors and omits hidden pixels. | [tests/quant/palette/cover_mask/0010_soft_mask_grow.t](../../../../tests/quant/palette/cover_mask/0010_soft_mask_grow.t) |
+| CM-11 | Hard cover with a separate mask grows real colors and omits hidden pixels. | [tests/quant/palette/cover_mask/0011_hard_mask_grow.t](../../../../tests/quant/palette/cover_mask/0011_hard_mask_grow.t) |
+| CM-12 | Non-growing soft cover retains the real count plus one omission slot. | [tests/quant/palette/cover_mask/0012_soft_mask_fixed.t](../../../../tests/quant/palette/cover_mask/0012_soft_mask_fixed.t) |
+| CM-13 | Non-growing hard cover retains the real count plus one omission slot. | [tests/quant/palette/cover_mask/0013_hard_mask_fixed.t](../../../../tests/quant/palette/cover_mask/0013_hard_mask_fixed.t) |
+| CM-14 | P3 soft cover preserves separate-mask omissions. | [tests/quant/palette/cover_mask/0014_soft_mask_p3.t](../../../../tests/quant/palette/cover_mask/0014_soft_mask_p3.t) |
+| CM-15 | P3 hard cover emits the independently derived red anchor and preserves omissions. | [tests/quant/palette/cover_mask/0015_hard_mask_p3.t](../../../../tests/quant/palette/cover_mask/0015_hard_mask_p3.t) |
+| CM-16 | A generated masked palette reaches 255 real entries plus one reserved key. | [tests/quant/palette/cover_mask/0016_masked_boundary.t](../../../../tests/quant/palette/cover_mask/0016_masked_boundary.t) |
+| CM-17 | An opaque generated palette still reaches 256 real entries. | [tests/quant/palette/cover_mask/0017_opaque_boundary.t](../../../../tests/quant/palette/cover_mask/0017_opaque_boundary.t) |
+| CM-18 | Masked, opaque and masked reuse restore each build's capacity and output. | [tests/quant/palette/cover_mask/0018_masked_opaque_reuse.t](../../../../tests/quant/palette/cover_mask/0018_masked_opaque_reuse.t) |
+| CM-19 | All-hidden input can run hard cover while painting no pixels. | [tests/quant/palette/cover_mask/0019_all_hidden.t](../../../../tests/quant/palette/cover_mask/0019_all_hidden.t) |
+| CM-20 | Changing only hidden RGB leaves soft-cover output byte-identical. | [tests/quant/palette/cover_mask/0020_hidden_rgb_invariant.t](../../../../tests/quant/palette/cover_mask/0020_hidden_rgb_invariant.t) |
+| CM-21 | Legacy byte cover respects the same reserved-slot ceiling. | [tests/quant/palette/cover_mask/0021_byte_mask_boundary.t](../../../../tests/quant/palette/cover_mask/0021_byte_mask_boundary.t) |
+| CM-22 | A mask stays aligned across multiple bands with four requested workers. | [tests/quant/palette/cover_mask/0022_parallel_mask.t](../../../../tests/quant/palette/cover_mask/0022_parallel_mask.t) |
+
+Private-helper defensive cases in [the cover-mask suite](../../../../tests/quant/palette/cover_mask/) reject zero, excessive and already-overfull capacities without changing entries or count.

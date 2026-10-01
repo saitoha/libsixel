@@ -86,6 +86,7 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_cover_float(float *entries, unsigned int *entry_count,
                            float const *data, unsigned int length,
                            int pixelformat, int policy, int mode, int grow,
+                           unsigned int capacity,
                            sixel_allocator_t *allocator)
 {
     unsigned int const side = 1u << SIXEL_PALETTE_COVER_CANDIDATE_BITS;
@@ -126,7 +127,8 @@ sixel_palette_cover_float(float *entries, unsigned int *entry_count,
 
     if (entries == NULL || entry_count == NULL || data == NULL ||
             allocator == NULL || *entry_count == 0 ||
-            *entry_count > SIXEL_PALETTE_MAX || length == 0 ||
+            capacity == 0 || capacity > SIXEL_PALETTE_MAX ||
+            *entry_count > capacity || length == 0 ||
             length % (3u * sizeof(float)) != 0 ||
             !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ||
             (mode != SIXEL_PALETTE_COVER_MODE_SOFT &&
@@ -244,7 +246,7 @@ sixel_palette_cover_float(float *entries, unsigned int *entry_count,
     }
 place:
     memset(changed, 0, sizeof(changed));
-    for (i = 0; grow && i < found && count < SIXEL_PALETTE_MAX; ++i) {
+    for (i = 0; grow && i < found && count < capacity; ++i) {
         memcpy(palette[count], anchors[i], sizeof(palette[count]));
         changed[count++] = 1;
     }
