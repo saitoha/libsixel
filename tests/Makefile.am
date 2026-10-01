@@ -1014,6 +1014,42 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0028_SHORT_MASK_RETRY \
     -DBUILD_TEST_0029_ORMODE_RETRY \
     -DBUILD_TEST_0030_FULL256_PARALLEL \
+    -DBUILD_PACKED_ALPHA_COMMON \
+    -DBUILD_TEST_0001_LAYOUT_RGBA \
+    -DBUILD_TEST_0002_LAYOUT_ARGB \
+    -DBUILD_TEST_0003_LAYOUT_BGRA \
+    -DBUILD_TEST_0004_LAYOUT_ABGR \
+    -DBUILD_TEST_0005_LAYOUT_GA \
+    -DBUILD_TEST_0006_LAYOUT_AG \
+    -DBUILD_TEST_0007_BLACK_BACKGROUND \
+    -DBUILD_TEST_0008_ALPHA_DISABLED \
+    -DBUILD_TEST_0009_BINARY_BYTE_FAST \
+    -DBUILD_TEST_0010_FORCED_BINARY_FLOAT \
+    -DBUILD_TEST_0011_MASK_UNION \
+    -DBUILD_TEST_0012_SHORT_MASK_ATOMIC \
+    -DBUILD_TEST_0013_PIXEL_ALLOCATION_RETRY \
+    -DBUILD_TEST_0014_MASK_ALLOCATION_RETRY \
+    -DBUILD_TEST_0015_WIRE_GAMMA \
+    -DBUILD_TEST_0016_WIRE_LINEAR \
+    -DBUILD_TEST_0017_WIRE_OKLAB \
+    -DBUILD_TEST_0018_WIRE_CIELAB \
+    -DBUILD_TEST_0019_WIRE_DIN99D \
+    -DBUILD_TEST_0020_WIRE_P3 \
+    -DBUILD_TEST_0021_WIRE_BACKGROUND \
+    -DBUILD_TEST_0022_WIRE_CLEAR \
+    -DBUILD_TEST_0023_WIRE_BYTE_FAST \
+    -DBUILD_TEST_0024_WIRE_HARD_COVER \
+    -DBUILD_TEST_0025_WIRE_FIXED_PALETTE \
+    -DBUILD_TEST_0026_WIRE_CROP \
+    -DBUILD_TEST_0027_WIRE_RESIZE \
+    -DBUILD_TEST_0028_WIRE_ENCODER_REUSE \
+    -DBUILD_TEST_0029_WIRE_ALL_HIDDEN \
+    -DBUILD_TEST_0030_WIRE_SOFT_HIDDEN \
+    -DBUILD_TEST_0031_WIRE_ALPHA_DISABLED \
+    -DBUILD_TEST_0032_WIRE_FRACTIONAL_BYTE_REQUEST \
+    -DBUILD_TEST_0033_WIRE_FS_FEEDBACK \
+    -DBUILD_TEST_0034_WIRE_ALLOCATION_RETRY \
+    -DBUILD_TEST_0035_DISABLED_ALPHA_SIDE_MASK \
     -DBUILD_ALPHA_NATIVE_COMMON \
     -DBUILD_TEST_0001_SRGB_GAMMA \
     -DBUILD_TEST_0002_SRGB_LINEAR \
@@ -4618,6 +4654,42 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/fixed_mask/0028_short_mask_retry.c \
     quant/palette/fixed_mask/0029_ormode_retry.c \
     quant/palette/fixed_mask/0030_full256_parallel.c \
+    quant/palette/packed_alpha_common.c \
+    quant/palette/packed_alpha/0001_layout_rgba.c \
+    quant/palette/packed_alpha/0002_layout_argb.c \
+    quant/palette/packed_alpha/0003_layout_bgra.c \
+    quant/palette/packed_alpha/0004_layout_abgr.c \
+    quant/palette/packed_alpha/0005_layout_ga.c \
+    quant/palette/packed_alpha/0006_layout_ag.c \
+    quant/palette/packed_alpha/0007_black_background.c \
+    quant/palette/packed_alpha/0008_alpha_disabled.c \
+    quant/palette/packed_alpha/0009_binary_byte_fast.c \
+    quant/palette/packed_alpha/0010_forced_binary_float.c \
+    quant/palette/packed_alpha/0011_mask_union.c \
+    quant/palette/packed_alpha/0012_short_mask_atomic.c \
+    quant/palette/packed_alpha/0013_pixel_allocation_retry.c \
+    quant/palette/packed_alpha/0014_mask_allocation_retry.c \
+    quant/palette/packed_alpha/0015_wire_gamma.c \
+    quant/palette/packed_alpha/0016_wire_linear.c \
+    quant/palette/packed_alpha/0017_wire_oklab.c \
+    quant/palette/packed_alpha/0018_wire_cielab.c \
+    quant/palette/packed_alpha/0019_wire_din99d.c \
+    quant/palette/packed_alpha/0020_wire_p3.c \
+    quant/palette/packed_alpha/0021_wire_background.c \
+    quant/palette/packed_alpha/0022_wire_clear.c \
+    quant/palette/packed_alpha/0023_wire_byte_fast.c \
+    quant/palette/packed_alpha/0024_wire_hard_cover.c \
+    quant/palette/packed_alpha/0025_wire_fixed_palette.c \
+    quant/palette/packed_alpha/0026_wire_crop.c \
+    quant/palette/packed_alpha/0027_wire_resize.c \
+    quant/palette/packed_alpha/0028_wire_encoder_reuse.c \
+    quant/palette/packed_alpha/0029_wire_all_hidden.c \
+    quant/palette/packed_alpha/0030_wire_soft_hidden.c \
+    quant/palette/packed_alpha/0031_wire_alpha_disabled.c \
+    quant/palette/packed_alpha/0032_wire_fractional_byte_request.c \
+    quant/palette/packed_alpha/0033_wire_fs_feedback.c \
+    quant/palette/packed_alpha/0034_wire_allocation_retry.c \
+    quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c \
     quant/palette/alpha_native_common.c \
     quant/palette/alpha_float/0001_srgb_gamma.c \
     quant/palette/alpha_float/0002_srgb_linear.c \

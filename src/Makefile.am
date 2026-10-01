@@ -215,6 +215,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/frame.h \
                 $(srcdir)/frame-factory.h \
                 $(srcdir)/frame-private.h \
+                $(srcdir)/frame-normalize.h \
                 $(srcdir)/cpu.c \
                 $(srcdir)/cpu.h \
                 $(srcdir)/pixelformat.c \

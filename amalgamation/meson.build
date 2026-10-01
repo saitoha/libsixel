@@ -204,6 +204,7 @@ amalgamation_headers = files(
   '../src/lookup-vptree-8bit.h',
   '../src/lookup-vptree-float32.h',
   '../src/frame.h',
+  '../src/frame-normalize.h',
   '../src/scale.h',
   '../src/options.h',
   '../src/encoder.h',

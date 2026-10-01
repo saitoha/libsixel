@@ -724,6 +724,41 @@ int test_fixed_mask_0027(int argc, char **argv);
 int test_fixed_mask_0028(int argc, char **argv);
 int test_fixed_mask_0029(int argc, char **argv);
 int test_fixed_mask_0030(int argc, char **argv);
+int test_packed_0001(int argc, char **argv);
+int test_packed_0002(int argc, char **argv);
+int test_packed_0003(int argc, char **argv);
+int test_packed_0004(int argc, char **argv);
+int test_packed_0005(int argc, char **argv);
+int test_packed_0006(int argc, char **argv);
+int test_packed_0007(int argc, char **argv);
+int test_packed_0008(int argc, char **argv);
+int test_packed_0009(int argc, char **argv);
+int test_packed_0010(int argc, char **argv);
+int test_packed_0011(int argc, char **argv);
+int test_packed_0012(int argc, char **argv);
+int test_packed_0013(int argc, char **argv);
+int test_packed_0014(int argc, char **argv);
+int test_packed_0015(int argc, char **argv);
+int test_packed_0016(int argc, char **argv);
+int test_packed_0017(int argc, char **argv);
+int test_packed_0018(int argc, char **argv);
+int test_packed_0019(int argc, char **argv);
+int test_packed_0020(int argc, char **argv);
+int test_packed_0021(int argc, char **argv);
+int test_packed_0022(int argc, char **argv);
+int test_packed_0023(int argc, char **argv);
+int test_packed_0024(int argc, char **argv);
+int test_packed_0025(int argc, char **argv);
+int test_packed_0026(int argc, char **argv);
+int test_packed_0027(int argc, char **argv);
+int test_packed_0028(int argc, char **argv);
+int test_packed_0029(int argc, char **argv);
+int test_packed_0030(int argc, char **argv);
+int test_packed_0031(int argc, char **argv);
+int test_packed_0032(int argc, char **argv);
+int test_packed_0033(int argc, char **argv);
+int test_packed_0034(int argc, char **argv);
+int test_packed_0035(int argc, char **argv);
 int test_alpha_native_0001(int argc, char **argv);
 int test_alpha_native_0002(int argc, char **argv);
 int test_alpha_native_0003(int argc, char **argv);
@@ -3834,6 +3869,76 @@ static test_entry_t const test_entries[] = {
       test_fixed_mask_0029 },
     { "quant/palette/fixed_mask/0030_full256_parallel",
       test_fixed_mask_0030 },
+    { "quant/palette/packed_alpha/0001_layout_rgba",
+      test_packed_0001 },
+    { "quant/palette/packed_alpha/0002_layout_argb",
+      test_packed_0002 },
+    { "quant/palette/packed_alpha/0003_layout_bgra",
+      test_packed_0003 },
+    { "quant/palette/packed_alpha/0004_layout_abgr",
+      test_packed_0004 },
+    { "quant/palette/packed_alpha/0005_layout_ga",
+      test_packed_0005 },
+    { "quant/palette/packed_alpha/0006_layout_ag",
+      test_packed_0006 },
+    { "quant/palette/packed_alpha/0007_black_background",
+      test_packed_0007 },
+    { "quant/palette/packed_alpha/0008_alpha_disabled",
+      test_packed_0008 },
+    { "quant/palette/packed_alpha/0009_binary_byte_fast",
+      test_packed_0009 },
+    { "quant/palette/packed_alpha/0010_forced_binary_float",
+      test_packed_0010 },
+    { "quant/palette/packed_alpha/0011_mask_union",
+      test_packed_0011 },
+    { "quant/palette/packed_alpha/0012_short_mask_atomic",
+      test_packed_0012 },
+    { "quant/palette/packed_alpha/0013_pixel_allocation_retry",
+      test_packed_0013 },
+    { "quant/palette/packed_alpha/0014_mask_allocation_retry",
+      test_packed_0014 },
+    { "quant/palette/packed_alpha/0015_wire_gamma",
+      test_packed_0015 },
+    { "quant/palette/packed_alpha/0016_wire_linear",
+      test_packed_0016 },
+    { "quant/palette/packed_alpha/0017_wire_oklab",
+      test_packed_0017 },
+    { "quant/palette/packed_alpha/0018_wire_cielab",
+      test_packed_0018 },
+    { "quant/palette/packed_alpha/0019_wire_din99d",
+      test_packed_0019 },
+    { "quant/palette/packed_alpha/0020_wire_p3",
+      test_packed_0020 },
+    { "quant/palette/packed_alpha/0021_wire_background",
+      test_packed_0021 },
+    { "quant/palette/packed_alpha/0022_wire_clear",
+      test_packed_0022 },
+    { "quant/palette/packed_alpha/0023_wire_byte_fast",
+      test_packed_0023 },
+    { "quant/palette/packed_alpha/0024_wire_hard_cover",
+      test_packed_0024 },
+    { "quant/palette/packed_alpha/0025_wire_fixed_palette",
+      test_packed_0025 },
+    { "quant/palette/packed_alpha/0026_wire_crop",
+      test_packed_0026 },
+    { "quant/palette/packed_alpha/0027_wire_resize",
+      test_packed_0027 },
+    { "quant/palette/packed_alpha/0028_wire_encoder_reuse",
+      test_packed_0028 },
+    { "quant/palette/packed_alpha/0029_wire_all_hidden",
+      test_packed_0029 },
+    { "quant/palette/packed_alpha/0030_wire_soft_hidden",
+      test_packed_0030 },
+    { "quant/palette/packed_alpha/0031_wire_alpha_disabled",
+      test_packed_0031 },
+    { "quant/palette/packed_alpha/0032_wire_fractional_byte_request",
+      test_packed_0032 },
+    { "quant/palette/packed_alpha/0033_wire_fs_feedback",
+      test_packed_0033 },
+    { "quant/palette/packed_alpha/0034_wire_allocation_retry",
+      test_packed_0034 },
+    { "quant/palette/packed_alpha/0035_disabled_alpha_side_mask",
+      test_packed_0035 },
     { "quant/palette/alpha_float/0001_srgb_gamma",
       test_alpha_native_0001 },
     { "quant/palette/alpha_float/0002_srgb_linear",

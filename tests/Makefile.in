@@ -2084,6 +2084,42 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/fixed_mask/0028_short_mask_retry.c \
 	quant/palette/fixed_mask/0029_ormode_retry.c \
 	quant/palette/fixed_mask/0030_full256_parallel.c \
+	quant/palette/packed_alpha_common.c \
+	quant/palette/packed_alpha/0001_layout_rgba.c \
+	quant/palette/packed_alpha/0002_layout_argb.c \
+	quant/palette/packed_alpha/0003_layout_bgra.c \
+	quant/palette/packed_alpha/0004_layout_abgr.c \
+	quant/palette/packed_alpha/0005_layout_ga.c \
+	quant/palette/packed_alpha/0006_layout_ag.c \
+	quant/palette/packed_alpha/0007_black_background.c \
+	quant/palette/packed_alpha/0008_alpha_disabled.c \
+	quant/palette/packed_alpha/0009_binary_byte_fast.c \
+	quant/palette/packed_alpha/0010_forced_binary_float.c \
+	quant/palette/packed_alpha/0011_mask_union.c \
+	quant/palette/packed_alpha/0012_short_mask_atomic.c \
+	quant/palette/packed_alpha/0013_pixel_allocation_retry.c \
+	quant/palette/packed_alpha/0014_mask_allocation_retry.c \
+	quant/palette/packed_alpha/0015_wire_gamma.c \
+	quant/palette/packed_alpha/0016_wire_linear.c \
+	quant/palette/packed_alpha/0017_wire_oklab.c \
+	quant/palette/packed_alpha/0018_wire_cielab.c \
+	quant/palette/packed_alpha/0019_wire_din99d.c \
+	quant/palette/packed_alpha/0020_wire_p3.c \
+	quant/palette/packed_alpha/0021_wire_background.c \
+	quant/palette/packed_alpha/0022_wire_clear.c \
+	quant/palette/packed_alpha/0023_wire_byte_fast.c \
+	quant/palette/packed_alpha/0024_wire_hard_cover.c \
+	quant/palette/packed_alpha/0025_wire_fixed_palette.c \
+	quant/palette/packed_alpha/0026_wire_crop.c \
+	quant/palette/packed_alpha/0027_wire_resize.c \
+	quant/palette/packed_alpha/0028_wire_encoder_reuse.c \
+	quant/palette/packed_alpha/0029_wire_all_hidden.c \
+	quant/palette/packed_alpha/0030_wire_soft_hidden.c \
+	quant/palette/packed_alpha/0031_wire_alpha_disabled.c \
+	quant/palette/packed_alpha/0032_wire_fractional_byte_request.c \
+	quant/palette/packed_alpha/0033_wire_fs_feedback.c \
+	quant/palette/packed_alpha/0034_wire_allocation_retry.c \
+	quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c \
 	quant/palette/alpha_native_common.c \
 	quant/palette/alpha_float/0001_srgb_gamma.c \
 	quant/palette/alpha_float/0002_srgb_linear.c \
@@ -4533,6 +4569,42 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_mask/test_runner-0028_short_mask_retry.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_mask/test_runner-0029_ormode_retry.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_mask/test_runner-0030_full256_parallel.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-packed_alpha_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0001_layout_rgba.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0002_layout_argb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0003_layout_bgra.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0004_layout_abgr.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0005_layout_ga.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0006_layout_ag.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0007_black_background.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0008_alpha_disabled.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0009_binary_byte_fast.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0010_forced_binary_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0011_mask_union.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0012_short_mask_atomic.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0013_pixel_allocation_retry.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0014_mask_allocation_retry.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0015_wire_gamma.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0016_wire_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0017_wire_oklab.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0018_wire_cielab.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0019_wire_din99d.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0020_wire_p3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0021_wire_background.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0022_wire_clear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0023_wire_byte_fast.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0024_wire_hard_cover.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0025_wire_fixed_palette.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0026_wire_crop.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0027_wire_resize.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0028_wire_encoder_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0029_wire_all_hidden.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0030_wire_soft_hidden.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0031_wire_alpha_disabled.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0032_wire_fractional_byte_request.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0033_wire_fs_feedback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0034_wire_allocation_retry.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0035_disabled_alpha_side_mask.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-alpha_native_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/alpha_float/test_runner-0001_srgb_gamma.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/alpha_float/test_runner-0002_srgb_linear.$(OBJEXT) \
@@ -7214,6 +7286,7 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-map_precision_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-mono_float_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Po \
+	quant/palette/$(DEPDIR)/test_runner-packed_alpha_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po \
 	quant/palette/alpha_float/$(DEPDIR)/test_runner-0001_srgb_gamma.Po \
 	quant/palette/alpha_float/$(DEPDIR)/test_runner-0002_srgb_linear.Po \
@@ -7548,6 +7621,41 @@ am__depfiles_remade =  \
 	quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Po \
 	quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Po \
 	quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0001_layout_rgba.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0002_layout_argb.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0003_layout_bgra.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0004_layout_abgr.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0005_layout_ga.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0006_layout_ag.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0007_black_background.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0008_alpha_disabled.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0009_binary_byte_fast.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0010_forced_binary_float.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0011_mask_union.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0012_short_mask_atomic.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0013_pixel_allocation_retry.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0014_mask_allocation_retry.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0015_wire_gamma.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0016_wire_linear.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0017_wire_oklab.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0018_wire_cielab.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0019_wire_din99d.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0020_wire_p3.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0021_wire_background.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0022_wire_clear.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0023_wire_byte_fast.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0024_wire_hard_cover.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0025_wire_fixed_palette.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0026_wire_crop.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0027_wire_resize.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0028_wire_encoder_reuse.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0029_wire_all_hidden.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0030_wire_soft_hidden.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0031_wire_alpha_disabled.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0032_wire_fractional_byte_request.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0033_wire_fs_feedback.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0034_wire_allocation_retry.Po \
+	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0035_disabled_alpha_side_mask.Po \
 	quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po \
 	quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po \
 	quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Po \
@@ -9067,6 +9175,42 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_SHORT_MASK_RETRY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_ORMODE_RETRY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_FULL256_PARALLEL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PACKED_ALPHA_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LAYOUT_RGBA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_LAYOUT_ARGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_LAYOUT_BGRA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_LAYOUT_ABGR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_LAYOUT_GA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_LAYOUT_AG \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_BLACK_BACKGROUND \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_ALPHA_DISABLED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_BINARY_BYTE_FAST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_FORCED_BINARY_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_MASK_UNION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_SHORT_MASK_ATOMIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_PIXEL_ALLOCATION_RETRY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_MASK_ALLOCATION_RETRY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_WIRE_GAMMA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_WIRE_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_WIRE_OKLAB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_WIRE_CIELAB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_WIRE_DIN99D \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_WIRE_P3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_WIRE_BACKGROUND \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_WIRE_CLEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_WIRE_BYTE_FAST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_WIRE_HARD_COVER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_WIRE_FIXED_PALETTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_WIRE_CROP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_WIRE_RESIZE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_WIRE_ENCODER_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_WIRE_ALL_HIDDEN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_WIRE_SOFT_HIDDEN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_WIRE_ALPHA_DISABLED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_WIRE_FRACTIONAL_BYTE_REQUEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_WIRE_FS_FEEDBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_WIRE_ALLOCATION_RETRY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_DISABLED_ALPHA_SIDE_MASK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ALPHA_NATIVE_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SRGB_GAMMA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_SRGB_LINEAR \
@@ -12702,6 +12846,42 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_mask/0028_short_mask_retry.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_mask/0029_ormode_retry.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_mask/0030_full256_parallel.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0001_layout_rgba.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0002_layout_argb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0003_layout_bgra.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0004_layout_abgr.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0005_layout_ga.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0006_layout_ag.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0007_black_background.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0008_alpha_disabled.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0009_binary_byte_fast.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0010_forced_binary_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0011_mask_union.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0012_short_mask_atomic.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0013_pixel_allocation_retry.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0014_mask_allocation_retry.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0015_wire_gamma.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0016_wire_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0017_wire_oklab.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0018_wire_cielab.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0019_wire_din99d.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0020_wire_p3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0021_wire_background.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0022_wire_clear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0023_wire_byte_fast.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0024_wire_hard_cover.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0025_wire_fixed_palette.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0026_wire_crop.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0027_wire_resize.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0028_wire_encoder_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0029_wire_all_hidden.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0030_wire_soft_hidden.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0031_wire_alpha_disabled.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0032_wire_fractional_byte_request.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0033_wire_fs_feedback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0034_wire_allocation_retry.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/alpha_native_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/alpha_float/0001_srgb_gamma.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/alpha_float/0002_srgb_linear.c \
@@ -19531,6 +19711,120 @@ quant/palette/fixed_mask/test_runner-0029_ormode_retry.$(OBJEXT):  \
 quant/palette/fixed_mask/test_runner-0030_full256_parallel.$(OBJEXT):  \
 	quant/palette/fixed_mask/$(am__dirstamp) \
 	quant/palette/fixed_mask/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-packed_alpha_common.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/packed_alpha
+	@: >>quant/palette/packed_alpha/$(am__dirstamp)
+quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/packed_alpha/$(DEPDIR)
+	@: >>quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0001_layout_rgba.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0002_layout_argb.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0003_layout_bgra.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0004_layout_abgr.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0005_layout_ga.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0006_layout_ag.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0007_black_background.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0008_alpha_disabled.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0009_binary_byte_fast.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0010_forced_binary_float.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0011_mask_union.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0012_short_mask_atomic.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0013_pixel_allocation_retry.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0014_mask_allocation_retry.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0015_wire_gamma.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0016_wire_linear.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0017_wire_oklab.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0018_wire_cielab.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0019_wire_din99d.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0020_wire_p3.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0021_wire_background.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0022_wire_clear.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0023_wire_byte_fast.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0024_wire_hard_cover.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0025_wire_fixed_palette.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0026_wire_crop.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0027_wire_resize.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0028_wire_encoder_reuse.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0029_wire_all_hidden.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0030_wire_soft_hidden.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0031_wire_alpha_disabled.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0032_wire_fractional_byte_request.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0033_wire_fs_feedback.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0034_wire_allocation_retry.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+quant/palette/packed_alpha/test_runner-0035_disabled_alpha_side_mask.$(OBJEXT):  \
+	quant/palette/packed_alpha/$(am__dirstamp) \
+	quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-alpha_native_common.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
@@ -21382,6 +21676,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/merge_float/*.$(OBJEXT)
 	-rm -f quant/palette/mono_float/*.$(OBJEXT)
 	-rm -f quant/palette/output_float/*.$(OBJEXT)
+	-rm -f quant/palette/packed_alpha/*.$(OBJEXT)
 	-rm -f quant/palette/rgb101_diffusion/*.$(OBJEXT)
 	-rm -f quant/palette/sampling_float/*.$(OBJEXT)
 	-rm -f quant/palette/snap_float/*.$(OBJEXT)
@@ -23479,6 +23774,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-map_precision_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-mono_float_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-packed_alpha_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/alpha_float/$(DEPDIR)/test_runner-0001_srgb_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/alpha_float/$(DEPDIR)/test_runner-0002_srgb_linear.Po@am__quote@ # am--include-marker
@@ -23813,6 +24109,41 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0001_layout_rgba.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0002_layout_argb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0003_layout_bgra.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0004_layout_abgr.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0005_layout_ga.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0006_layout_ag.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0007_black_background.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0008_alpha_disabled.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0009_binary_byte_fast.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0010_forced_binary_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0011_mask_union.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0012_short_mask_atomic.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0013_pixel_allocation_retry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0014_mask_allocation_retry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0015_wire_gamma.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0016_wire_linear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0017_wire_oklab.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0018_wire_cielab.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0019_wire_din99d.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0020_wire_p3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0021_wire_background.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0022_wire_clear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0023_wire_byte_fast.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0024_wire_hard_cover.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0025_wire_fixed_palette.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0026_wire_crop.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0027_wire_resize.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0028_wire_encoder_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0029_wire_all_hidden.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0030_wire_soft_hidden.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0031_wire_alpha_disabled.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0032_wire_fractional_byte_request.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0033_wire_fs_feedback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0034_wire_allocation_retry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0035_disabled_alpha_side_mask.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Po@am__quote@ # am--include-marker
@@ -50693,6 +51024,510 @@ quant/palette/fixed_mask/test_runner-0030_full256_parallel.obj: quant/palette/fi
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_mask/test_runner-0030_full256_parallel.obj `if test -f 'quant/palette/fixed_mask/0030_full256_parallel.c'; then $(CYGPATH_W) 'quant/palette/fixed_mask/0030_full256_parallel.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_mask/0030_full256_parallel.c'; fi`
 
+quant/palette/test_runner-packed_alpha_common.o: quant/palette/packed_alpha_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-packed_alpha_common.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-packed_alpha_common.Tpo -c -o quant/palette/test_runner-packed_alpha_common.o `test -f 'quant/palette/packed_alpha_common.c' || echo '$(srcdir)/'`quant/palette/packed_alpha_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-packed_alpha_common.Tpo quant/palette/$(DEPDIR)/test_runner-packed_alpha_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha_common.c' object='quant/palette/test_runner-packed_alpha_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-packed_alpha_common.o `test -f 'quant/palette/packed_alpha_common.c' || echo '$(srcdir)/'`quant/palette/packed_alpha_common.c
+
+quant/palette/test_runner-packed_alpha_common.obj: quant/palette/packed_alpha_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-packed_alpha_common.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-packed_alpha_common.Tpo -c -o quant/palette/test_runner-packed_alpha_common.obj `if test -f 'quant/palette/packed_alpha_common.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-packed_alpha_common.Tpo quant/palette/$(DEPDIR)/test_runner-packed_alpha_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha_common.c' object='quant/palette/test_runner-packed_alpha_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-packed_alpha_common.obj `if test -f 'quant/palette/packed_alpha_common.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha_common.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0001_layout_rgba.o: quant/palette/packed_alpha/0001_layout_rgba.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0001_layout_rgba.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0001_layout_rgba.Tpo -c -o quant/palette/packed_alpha/test_runner-0001_layout_rgba.o `test -f 'quant/palette/packed_alpha/0001_layout_rgba.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0001_layout_rgba.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0001_layout_rgba.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0001_layout_rgba.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0001_layout_rgba.c' object='quant/palette/packed_alpha/test_runner-0001_layout_rgba.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0001_layout_rgba.o `test -f 'quant/palette/packed_alpha/0001_layout_rgba.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0001_layout_rgba.c
+
+quant/palette/packed_alpha/test_runner-0001_layout_rgba.obj: quant/palette/packed_alpha/0001_layout_rgba.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0001_layout_rgba.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0001_layout_rgba.Tpo -c -o quant/palette/packed_alpha/test_runner-0001_layout_rgba.obj `if test -f 'quant/palette/packed_alpha/0001_layout_rgba.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0001_layout_rgba.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0001_layout_rgba.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0001_layout_rgba.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0001_layout_rgba.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0001_layout_rgba.c' object='quant/palette/packed_alpha/test_runner-0001_layout_rgba.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0001_layout_rgba.obj `if test -f 'quant/palette/packed_alpha/0001_layout_rgba.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0001_layout_rgba.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0001_layout_rgba.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0002_layout_argb.o: quant/palette/packed_alpha/0002_layout_argb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0002_layout_argb.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0002_layout_argb.Tpo -c -o quant/palette/packed_alpha/test_runner-0002_layout_argb.o `test -f 'quant/palette/packed_alpha/0002_layout_argb.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0002_layout_argb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0002_layout_argb.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0002_layout_argb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0002_layout_argb.c' object='quant/palette/packed_alpha/test_runner-0002_layout_argb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0002_layout_argb.o `test -f 'quant/palette/packed_alpha/0002_layout_argb.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0002_layout_argb.c
+
+quant/palette/packed_alpha/test_runner-0002_layout_argb.obj: quant/palette/packed_alpha/0002_layout_argb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0002_layout_argb.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0002_layout_argb.Tpo -c -o quant/palette/packed_alpha/test_runner-0002_layout_argb.obj `if test -f 'quant/palette/packed_alpha/0002_layout_argb.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0002_layout_argb.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0002_layout_argb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0002_layout_argb.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0002_layout_argb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0002_layout_argb.c' object='quant/palette/packed_alpha/test_runner-0002_layout_argb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0002_layout_argb.obj `if test -f 'quant/palette/packed_alpha/0002_layout_argb.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0002_layout_argb.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0002_layout_argb.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0003_layout_bgra.o: quant/palette/packed_alpha/0003_layout_bgra.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0003_layout_bgra.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0003_layout_bgra.Tpo -c -o quant/palette/packed_alpha/test_runner-0003_layout_bgra.o `test -f 'quant/palette/packed_alpha/0003_layout_bgra.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0003_layout_bgra.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0003_layout_bgra.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0003_layout_bgra.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0003_layout_bgra.c' object='quant/palette/packed_alpha/test_runner-0003_layout_bgra.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0003_layout_bgra.o `test -f 'quant/palette/packed_alpha/0003_layout_bgra.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0003_layout_bgra.c
+
+quant/palette/packed_alpha/test_runner-0003_layout_bgra.obj: quant/palette/packed_alpha/0003_layout_bgra.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0003_layout_bgra.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0003_layout_bgra.Tpo -c -o quant/palette/packed_alpha/test_runner-0003_layout_bgra.obj `if test -f 'quant/palette/packed_alpha/0003_layout_bgra.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0003_layout_bgra.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0003_layout_bgra.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0003_layout_bgra.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0003_layout_bgra.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0003_layout_bgra.c' object='quant/palette/packed_alpha/test_runner-0003_layout_bgra.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0003_layout_bgra.obj `if test -f 'quant/palette/packed_alpha/0003_layout_bgra.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0003_layout_bgra.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0003_layout_bgra.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0004_layout_abgr.o: quant/palette/packed_alpha/0004_layout_abgr.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0004_layout_abgr.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0004_layout_abgr.Tpo -c -o quant/palette/packed_alpha/test_runner-0004_layout_abgr.o `test -f 'quant/palette/packed_alpha/0004_layout_abgr.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0004_layout_abgr.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0004_layout_abgr.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0004_layout_abgr.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0004_layout_abgr.c' object='quant/palette/packed_alpha/test_runner-0004_layout_abgr.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0004_layout_abgr.o `test -f 'quant/palette/packed_alpha/0004_layout_abgr.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0004_layout_abgr.c
+
+quant/palette/packed_alpha/test_runner-0004_layout_abgr.obj: quant/palette/packed_alpha/0004_layout_abgr.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0004_layout_abgr.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0004_layout_abgr.Tpo -c -o quant/palette/packed_alpha/test_runner-0004_layout_abgr.obj `if test -f 'quant/palette/packed_alpha/0004_layout_abgr.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0004_layout_abgr.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0004_layout_abgr.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0004_layout_abgr.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0004_layout_abgr.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0004_layout_abgr.c' object='quant/palette/packed_alpha/test_runner-0004_layout_abgr.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0004_layout_abgr.obj `if test -f 'quant/palette/packed_alpha/0004_layout_abgr.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0004_layout_abgr.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0004_layout_abgr.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0005_layout_ga.o: quant/palette/packed_alpha/0005_layout_ga.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0005_layout_ga.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0005_layout_ga.Tpo -c -o quant/palette/packed_alpha/test_runner-0005_layout_ga.o `test -f 'quant/palette/packed_alpha/0005_layout_ga.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0005_layout_ga.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0005_layout_ga.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0005_layout_ga.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0005_layout_ga.c' object='quant/palette/packed_alpha/test_runner-0005_layout_ga.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0005_layout_ga.o `test -f 'quant/palette/packed_alpha/0005_layout_ga.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0005_layout_ga.c
+
+quant/palette/packed_alpha/test_runner-0005_layout_ga.obj: quant/palette/packed_alpha/0005_layout_ga.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0005_layout_ga.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0005_layout_ga.Tpo -c -o quant/palette/packed_alpha/test_runner-0005_layout_ga.obj `if test -f 'quant/palette/packed_alpha/0005_layout_ga.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0005_layout_ga.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0005_layout_ga.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0005_layout_ga.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0005_layout_ga.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0005_layout_ga.c' object='quant/palette/packed_alpha/test_runner-0005_layout_ga.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0005_layout_ga.obj `if test -f 'quant/palette/packed_alpha/0005_layout_ga.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0005_layout_ga.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0005_layout_ga.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0006_layout_ag.o: quant/palette/packed_alpha/0006_layout_ag.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0006_layout_ag.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0006_layout_ag.Tpo -c -o quant/palette/packed_alpha/test_runner-0006_layout_ag.o `test -f 'quant/palette/packed_alpha/0006_layout_ag.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0006_layout_ag.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0006_layout_ag.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0006_layout_ag.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0006_layout_ag.c' object='quant/palette/packed_alpha/test_runner-0006_layout_ag.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0006_layout_ag.o `test -f 'quant/palette/packed_alpha/0006_layout_ag.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0006_layout_ag.c
+
+quant/palette/packed_alpha/test_runner-0006_layout_ag.obj: quant/palette/packed_alpha/0006_layout_ag.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0006_layout_ag.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0006_layout_ag.Tpo -c -o quant/palette/packed_alpha/test_runner-0006_layout_ag.obj `if test -f 'quant/palette/packed_alpha/0006_layout_ag.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0006_layout_ag.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0006_layout_ag.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0006_layout_ag.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0006_layout_ag.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0006_layout_ag.c' object='quant/palette/packed_alpha/test_runner-0006_layout_ag.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0006_layout_ag.obj `if test -f 'quant/palette/packed_alpha/0006_layout_ag.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0006_layout_ag.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0006_layout_ag.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0007_black_background.o: quant/palette/packed_alpha/0007_black_background.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0007_black_background.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0007_black_background.Tpo -c -o quant/palette/packed_alpha/test_runner-0007_black_background.o `test -f 'quant/palette/packed_alpha/0007_black_background.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0007_black_background.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0007_black_background.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0007_black_background.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0007_black_background.c' object='quant/palette/packed_alpha/test_runner-0007_black_background.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0007_black_background.o `test -f 'quant/palette/packed_alpha/0007_black_background.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0007_black_background.c
+
+quant/palette/packed_alpha/test_runner-0007_black_background.obj: quant/palette/packed_alpha/0007_black_background.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0007_black_background.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0007_black_background.Tpo -c -o quant/palette/packed_alpha/test_runner-0007_black_background.obj `if test -f 'quant/palette/packed_alpha/0007_black_background.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0007_black_background.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0007_black_background.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0007_black_background.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0007_black_background.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0007_black_background.c' object='quant/palette/packed_alpha/test_runner-0007_black_background.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0007_black_background.obj `if test -f 'quant/palette/packed_alpha/0007_black_background.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0007_black_background.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0007_black_background.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0008_alpha_disabled.o: quant/palette/packed_alpha/0008_alpha_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0008_alpha_disabled.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0008_alpha_disabled.Tpo -c -o quant/palette/packed_alpha/test_runner-0008_alpha_disabled.o `test -f 'quant/palette/packed_alpha/0008_alpha_disabled.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0008_alpha_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0008_alpha_disabled.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0008_alpha_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0008_alpha_disabled.c' object='quant/palette/packed_alpha/test_runner-0008_alpha_disabled.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0008_alpha_disabled.o `test -f 'quant/palette/packed_alpha/0008_alpha_disabled.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0008_alpha_disabled.c
+
+quant/palette/packed_alpha/test_runner-0008_alpha_disabled.obj: quant/palette/packed_alpha/0008_alpha_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0008_alpha_disabled.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0008_alpha_disabled.Tpo -c -o quant/palette/packed_alpha/test_runner-0008_alpha_disabled.obj `if test -f 'quant/palette/packed_alpha/0008_alpha_disabled.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0008_alpha_disabled.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0008_alpha_disabled.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0008_alpha_disabled.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0008_alpha_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0008_alpha_disabled.c' object='quant/palette/packed_alpha/test_runner-0008_alpha_disabled.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0008_alpha_disabled.obj `if test -f 'quant/palette/packed_alpha/0008_alpha_disabled.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0008_alpha_disabled.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0008_alpha_disabled.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0009_binary_byte_fast.o: quant/palette/packed_alpha/0009_binary_byte_fast.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0009_binary_byte_fast.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0009_binary_byte_fast.Tpo -c -o quant/palette/packed_alpha/test_runner-0009_binary_byte_fast.o `test -f 'quant/palette/packed_alpha/0009_binary_byte_fast.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0009_binary_byte_fast.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0009_binary_byte_fast.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0009_binary_byte_fast.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0009_binary_byte_fast.c' object='quant/palette/packed_alpha/test_runner-0009_binary_byte_fast.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0009_binary_byte_fast.o `test -f 'quant/palette/packed_alpha/0009_binary_byte_fast.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0009_binary_byte_fast.c
+
+quant/palette/packed_alpha/test_runner-0009_binary_byte_fast.obj: quant/palette/packed_alpha/0009_binary_byte_fast.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0009_binary_byte_fast.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0009_binary_byte_fast.Tpo -c -o quant/palette/packed_alpha/test_runner-0009_binary_byte_fast.obj `if test -f 'quant/palette/packed_alpha/0009_binary_byte_fast.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0009_binary_byte_fast.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0009_binary_byte_fast.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0009_binary_byte_fast.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0009_binary_byte_fast.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0009_binary_byte_fast.c' object='quant/palette/packed_alpha/test_runner-0009_binary_byte_fast.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0009_binary_byte_fast.obj `if test -f 'quant/palette/packed_alpha/0009_binary_byte_fast.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0009_binary_byte_fast.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0009_binary_byte_fast.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0010_forced_binary_float.o: quant/palette/packed_alpha/0010_forced_binary_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0010_forced_binary_float.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0010_forced_binary_float.Tpo -c -o quant/palette/packed_alpha/test_runner-0010_forced_binary_float.o `test -f 'quant/palette/packed_alpha/0010_forced_binary_float.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0010_forced_binary_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0010_forced_binary_float.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0010_forced_binary_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0010_forced_binary_float.c' object='quant/palette/packed_alpha/test_runner-0010_forced_binary_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0010_forced_binary_float.o `test -f 'quant/palette/packed_alpha/0010_forced_binary_float.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0010_forced_binary_float.c
+
+quant/palette/packed_alpha/test_runner-0010_forced_binary_float.obj: quant/palette/packed_alpha/0010_forced_binary_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0010_forced_binary_float.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0010_forced_binary_float.Tpo -c -o quant/palette/packed_alpha/test_runner-0010_forced_binary_float.obj `if test -f 'quant/palette/packed_alpha/0010_forced_binary_float.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0010_forced_binary_float.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0010_forced_binary_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0010_forced_binary_float.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0010_forced_binary_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0010_forced_binary_float.c' object='quant/palette/packed_alpha/test_runner-0010_forced_binary_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0010_forced_binary_float.obj `if test -f 'quant/palette/packed_alpha/0010_forced_binary_float.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0010_forced_binary_float.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0010_forced_binary_float.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0011_mask_union.o: quant/palette/packed_alpha/0011_mask_union.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0011_mask_union.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0011_mask_union.Tpo -c -o quant/palette/packed_alpha/test_runner-0011_mask_union.o `test -f 'quant/palette/packed_alpha/0011_mask_union.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0011_mask_union.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0011_mask_union.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0011_mask_union.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0011_mask_union.c' object='quant/palette/packed_alpha/test_runner-0011_mask_union.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0011_mask_union.o `test -f 'quant/palette/packed_alpha/0011_mask_union.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0011_mask_union.c
+
+quant/palette/packed_alpha/test_runner-0011_mask_union.obj: quant/palette/packed_alpha/0011_mask_union.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0011_mask_union.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0011_mask_union.Tpo -c -o quant/palette/packed_alpha/test_runner-0011_mask_union.obj `if test -f 'quant/palette/packed_alpha/0011_mask_union.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0011_mask_union.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0011_mask_union.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0011_mask_union.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0011_mask_union.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0011_mask_union.c' object='quant/palette/packed_alpha/test_runner-0011_mask_union.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0011_mask_union.obj `if test -f 'quant/palette/packed_alpha/0011_mask_union.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0011_mask_union.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0011_mask_union.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0012_short_mask_atomic.o: quant/palette/packed_alpha/0012_short_mask_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0012_short_mask_atomic.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0012_short_mask_atomic.Tpo -c -o quant/palette/packed_alpha/test_runner-0012_short_mask_atomic.o `test -f 'quant/palette/packed_alpha/0012_short_mask_atomic.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0012_short_mask_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0012_short_mask_atomic.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0012_short_mask_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0012_short_mask_atomic.c' object='quant/palette/packed_alpha/test_runner-0012_short_mask_atomic.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0012_short_mask_atomic.o `test -f 'quant/palette/packed_alpha/0012_short_mask_atomic.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0012_short_mask_atomic.c
+
+quant/palette/packed_alpha/test_runner-0012_short_mask_atomic.obj: quant/palette/packed_alpha/0012_short_mask_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0012_short_mask_atomic.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0012_short_mask_atomic.Tpo -c -o quant/palette/packed_alpha/test_runner-0012_short_mask_atomic.obj `if test -f 'quant/palette/packed_alpha/0012_short_mask_atomic.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0012_short_mask_atomic.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0012_short_mask_atomic.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0012_short_mask_atomic.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0012_short_mask_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0012_short_mask_atomic.c' object='quant/palette/packed_alpha/test_runner-0012_short_mask_atomic.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0012_short_mask_atomic.obj `if test -f 'quant/palette/packed_alpha/0012_short_mask_atomic.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0012_short_mask_atomic.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0012_short_mask_atomic.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0013_pixel_allocation_retry.o: quant/palette/packed_alpha/0013_pixel_allocation_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0013_pixel_allocation_retry.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0013_pixel_allocation_retry.Tpo -c -o quant/palette/packed_alpha/test_runner-0013_pixel_allocation_retry.o `test -f 'quant/palette/packed_alpha/0013_pixel_allocation_retry.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0013_pixel_allocation_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0013_pixel_allocation_retry.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0013_pixel_allocation_retry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0013_pixel_allocation_retry.c' object='quant/palette/packed_alpha/test_runner-0013_pixel_allocation_retry.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0013_pixel_allocation_retry.o `test -f 'quant/palette/packed_alpha/0013_pixel_allocation_retry.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0013_pixel_allocation_retry.c
+
+quant/palette/packed_alpha/test_runner-0013_pixel_allocation_retry.obj: quant/palette/packed_alpha/0013_pixel_allocation_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0013_pixel_allocation_retry.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0013_pixel_allocation_retry.Tpo -c -o quant/palette/packed_alpha/test_runner-0013_pixel_allocation_retry.obj `if test -f 'quant/palette/packed_alpha/0013_pixel_allocation_retry.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0013_pixel_allocation_retry.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0013_pixel_allocation_retry.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0013_pixel_allocation_retry.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0013_pixel_allocation_retry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0013_pixel_allocation_retry.c' object='quant/palette/packed_alpha/test_runner-0013_pixel_allocation_retry.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0013_pixel_allocation_retry.obj `if test -f 'quant/palette/packed_alpha/0013_pixel_allocation_retry.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0013_pixel_allocation_retry.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0013_pixel_allocation_retry.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0014_mask_allocation_retry.o: quant/palette/packed_alpha/0014_mask_allocation_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0014_mask_allocation_retry.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0014_mask_allocation_retry.Tpo -c -o quant/palette/packed_alpha/test_runner-0014_mask_allocation_retry.o `test -f 'quant/palette/packed_alpha/0014_mask_allocation_retry.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0014_mask_allocation_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0014_mask_allocation_retry.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0014_mask_allocation_retry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0014_mask_allocation_retry.c' object='quant/palette/packed_alpha/test_runner-0014_mask_allocation_retry.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0014_mask_allocation_retry.o `test -f 'quant/palette/packed_alpha/0014_mask_allocation_retry.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0014_mask_allocation_retry.c
+
+quant/palette/packed_alpha/test_runner-0014_mask_allocation_retry.obj: quant/palette/packed_alpha/0014_mask_allocation_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0014_mask_allocation_retry.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0014_mask_allocation_retry.Tpo -c -o quant/palette/packed_alpha/test_runner-0014_mask_allocation_retry.obj `if test -f 'quant/palette/packed_alpha/0014_mask_allocation_retry.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0014_mask_allocation_retry.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0014_mask_allocation_retry.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0014_mask_allocation_retry.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0014_mask_allocation_retry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0014_mask_allocation_retry.c' object='quant/palette/packed_alpha/test_runner-0014_mask_allocation_retry.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0014_mask_allocation_retry.obj `if test -f 'quant/palette/packed_alpha/0014_mask_allocation_retry.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0014_mask_allocation_retry.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0014_mask_allocation_retry.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0015_wire_gamma.o: quant/palette/packed_alpha/0015_wire_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0015_wire_gamma.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0015_wire_gamma.Tpo -c -o quant/palette/packed_alpha/test_runner-0015_wire_gamma.o `test -f 'quant/palette/packed_alpha/0015_wire_gamma.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0015_wire_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0015_wire_gamma.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0015_wire_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0015_wire_gamma.c' object='quant/palette/packed_alpha/test_runner-0015_wire_gamma.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0015_wire_gamma.o `test -f 'quant/palette/packed_alpha/0015_wire_gamma.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0015_wire_gamma.c
+
+quant/palette/packed_alpha/test_runner-0015_wire_gamma.obj: quant/palette/packed_alpha/0015_wire_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0015_wire_gamma.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0015_wire_gamma.Tpo -c -o quant/palette/packed_alpha/test_runner-0015_wire_gamma.obj `if test -f 'quant/palette/packed_alpha/0015_wire_gamma.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0015_wire_gamma.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0015_wire_gamma.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0015_wire_gamma.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0015_wire_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0015_wire_gamma.c' object='quant/palette/packed_alpha/test_runner-0015_wire_gamma.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0015_wire_gamma.obj `if test -f 'quant/palette/packed_alpha/0015_wire_gamma.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0015_wire_gamma.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0015_wire_gamma.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0016_wire_linear.o: quant/palette/packed_alpha/0016_wire_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0016_wire_linear.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0016_wire_linear.Tpo -c -o quant/palette/packed_alpha/test_runner-0016_wire_linear.o `test -f 'quant/palette/packed_alpha/0016_wire_linear.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0016_wire_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0016_wire_linear.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0016_wire_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0016_wire_linear.c' object='quant/palette/packed_alpha/test_runner-0016_wire_linear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0016_wire_linear.o `test -f 'quant/palette/packed_alpha/0016_wire_linear.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0016_wire_linear.c
+
+quant/palette/packed_alpha/test_runner-0016_wire_linear.obj: quant/palette/packed_alpha/0016_wire_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0016_wire_linear.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0016_wire_linear.Tpo -c -o quant/palette/packed_alpha/test_runner-0016_wire_linear.obj `if test -f 'quant/palette/packed_alpha/0016_wire_linear.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0016_wire_linear.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0016_wire_linear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0016_wire_linear.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0016_wire_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0016_wire_linear.c' object='quant/palette/packed_alpha/test_runner-0016_wire_linear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0016_wire_linear.obj `if test -f 'quant/palette/packed_alpha/0016_wire_linear.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0016_wire_linear.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0016_wire_linear.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0017_wire_oklab.o: quant/palette/packed_alpha/0017_wire_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0017_wire_oklab.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0017_wire_oklab.Tpo -c -o quant/palette/packed_alpha/test_runner-0017_wire_oklab.o `test -f 'quant/palette/packed_alpha/0017_wire_oklab.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0017_wire_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0017_wire_oklab.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0017_wire_oklab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0017_wire_oklab.c' object='quant/palette/packed_alpha/test_runner-0017_wire_oklab.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0017_wire_oklab.o `test -f 'quant/palette/packed_alpha/0017_wire_oklab.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0017_wire_oklab.c
+
+quant/palette/packed_alpha/test_runner-0017_wire_oklab.obj: quant/palette/packed_alpha/0017_wire_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0017_wire_oklab.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0017_wire_oklab.Tpo -c -o quant/palette/packed_alpha/test_runner-0017_wire_oklab.obj `if test -f 'quant/palette/packed_alpha/0017_wire_oklab.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0017_wire_oklab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0017_wire_oklab.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0017_wire_oklab.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0017_wire_oklab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0017_wire_oklab.c' object='quant/palette/packed_alpha/test_runner-0017_wire_oklab.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0017_wire_oklab.obj `if test -f 'quant/palette/packed_alpha/0017_wire_oklab.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0017_wire_oklab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0017_wire_oklab.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0018_wire_cielab.o: quant/palette/packed_alpha/0018_wire_cielab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0018_wire_cielab.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0018_wire_cielab.Tpo -c -o quant/palette/packed_alpha/test_runner-0018_wire_cielab.o `test -f 'quant/palette/packed_alpha/0018_wire_cielab.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0018_wire_cielab.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0018_wire_cielab.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0018_wire_cielab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0018_wire_cielab.c' object='quant/palette/packed_alpha/test_runner-0018_wire_cielab.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0018_wire_cielab.o `test -f 'quant/palette/packed_alpha/0018_wire_cielab.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0018_wire_cielab.c
+
+quant/palette/packed_alpha/test_runner-0018_wire_cielab.obj: quant/palette/packed_alpha/0018_wire_cielab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0018_wire_cielab.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0018_wire_cielab.Tpo -c -o quant/palette/packed_alpha/test_runner-0018_wire_cielab.obj `if test -f 'quant/palette/packed_alpha/0018_wire_cielab.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0018_wire_cielab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0018_wire_cielab.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0018_wire_cielab.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0018_wire_cielab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0018_wire_cielab.c' object='quant/palette/packed_alpha/test_runner-0018_wire_cielab.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0018_wire_cielab.obj `if test -f 'quant/palette/packed_alpha/0018_wire_cielab.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0018_wire_cielab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0018_wire_cielab.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0019_wire_din99d.o: quant/palette/packed_alpha/0019_wire_din99d.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0019_wire_din99d.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0019_wire_din99d.Tpo -c -o quant/palette/packed_alpha/test_runner-0019_wire_din99d.o `test -f 'quant/palette/packed_alpha/0019_wire_din99d.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0019_wire_din99d.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0019_wire_din99d.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0019_wire_din99d.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0019_wire_din99d.c' object='quant/palette/packed_alpha/test_runner-0019_wire_din99d.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0019_wire_din99d.o `test -f 'quant/palette/packed_alpha/0019_wire_din99d.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0019_wire_din99d.c
+
+quant/palette/packed_alpha/test_runner-0019_wire_din99d.obj: quant/palette/packed_alpha/0019_wire_din99d.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0019_wire_din99d.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0019_wire_din99d.Tpo -c -o quant/palette/packed_alpha/test_runner-0019_wire_din99d.obj `if test -f 'quant/palette/packed_alpha/0019_wire_din99d.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0019_wire_din99d.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0019_wire_din99d.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0019_wire_din99d.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0019_wire_din99d.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0019_wire_din99d.c' object='quant/palette/packed_alpha/test_runner-0019_wire_din99d.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0019_wire_din99d.obj `if test -f 'quant/palette/packed_alpha/0019_wire_din99d.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0019_wire_din99d.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0019_wire_din99d.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0020_wire_p3.o: quant/palette/packed_alpha/0020_wire_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0020_wire_p3.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0020_wire_p3.Tpo -c -o quant/palette/packed_alpha/test_runner-0020_wire_p3.o `test -f 'quant/palette/packed_alpha/0020_wire_p3.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0020_wire_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0020_wire_p3.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0020_wire_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0020_wire_p3.c' object='quant/palette/packed_alpha/test_runner-0020_wire_p3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0020_wire_p3.o `test -f 'quant/palette/packed_alpha/0020_wire_p3.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0020_wire_p3.c
+
+quant/palette/packed_alpha/test_runner-0020_wire_p3.obj: quant/palette/packed_alpha/0020_wire_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0020_wire_p3.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0020_wire_p3.Tpo -c -o quant/palette/packed_alpha/test_runner-0020_wire_p3.obj `if test -f 'quant/palette/packed_alpha/0020_wire_p3.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0020_wire_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0020_wire_p3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0020_wire_p3.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0020_wire_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0020_wire_p3.c' object='quant/palette/packed_alpha/test_runner-0020_wire_p3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0020_wire_p3.obj `if test -f 'quant/palette/packed_alpha/0020_wire_p3.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0020_wire_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0020_wire_p3.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0021_wire_background.o: quant/palette/packed_alpha/0021_wire_background.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0021_wire_background.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0021_wire_background.Tpo -c -o quant/palette/packed_alpha/test_runner-0021_wire_background.o `test -f 'quant/palette/packed_alpha/0021_wire_background.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0021_wire_background.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0021_wire_background.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0021_wire_background.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0021_wire_background.c' object='quant/palette/packed_alpha/test_runner-0021_wire_background.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0021_wire_background.o `test -f 'quant/palette/packed_alpha/0021_wire_background.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0021_wire_background.c
+
+quant/palette/packed_alpha/test_runner-0021_wire_background.obj: quant/palette/packed_alpha/0021_wire_background.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0021_wire_background.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0021_wire_background.Tpo -c -o quant/palette/packed_alpha/test_runner-0021_wire_background.obj `if test -f 'quant/palette/packed_alpha/0021_wire_background.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0021_wire_background.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0021_wire_background.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0021_wire_background.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0021_wire_background.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0021_wire_background.c' object='quant/palette/packed_alpha/test_runner-0021_wire_background.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0021_wire_background.obj `if test -f 'quant/palette/packed_alpha/0021_wire_background.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0021_wire_background.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0021_wire_background.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0022_wire_clear.o: quant/palette/packed_alpha/0022_wire_clear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0022_wire_clear.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0022_wire_clear.Tpo -c -o quant/palette/packed_alpha/test_runner-0022_wire_clear.o `test -f 'quant/palette/packed_alpha/0022_wire_clear.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0022_wire_clear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0022_wire_clear.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0022_wire_clear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0022_wire_clear.c' object='quant/palette/packed_alpha/test_runner-0022_wire_clear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0022_wire_clear.o `test -f 'quant/palette/packed_alpha/0022_wire_clear.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0022_wire_clear.c
+
+quant/palette/packed_alpha/test_runner-0022_wire_clear.obj: quant/palette/packed_alpha/0022_wire_clear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0022_wire_clear.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0022_wire_clear.Tpo -c -o quant/palette/packed_alpha/test_runner-0022_wire_clear.obj `if test -f 'quant/palette/packed_alpha/0022_wire_clear.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0022_wire_clear.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0022_wire_clear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0022_wire_clear.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0022_wire_clear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0022_wire_clear.c' object='quant/palette/packed_alpha/test_runner-0022_wire_clear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0022_wire_clear.obj `if test -f 'quant/palette/packed_alpha/0022_wire_clear.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0022_wire_clear.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0022_wire_clear.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0023_wire_byte_fast.o: quant/palette/packed_alpha/0023_wire_byte_fast.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0023_wire_byte_fast.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0023_wire_byte_fast.Tpo -c -o quant/palette/packed_alpha/test_runner-0023_wire_byte_fast.o `test -f 'quant/palette/packed_alpha/0023_wire_byte_fast.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0023_wire_byte_fast.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0023_wire_byte_fast.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0023_wire_byte_fast.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0023_wire_byte_fast.c' object='quant/palette/packed_alpha/test_runner-0023_wire_byte_fast.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0023_wire_byte_fast.o `test -f 'quant/palette/packed_alpha/0023_wire_byte_fast.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0023_wire_byte_fast.c
+
+quant/palette/packed_alpha/test_runner-0023_wire_byte_fast.obj: quant/palette/packed_alpha/0023_wire_byte_fast.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0023_wire_byte_fast.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0023_wire_byte_fast.Tpo -c -o quant/palette/packed_alpha/test_runner-0023_wire_byte_fast.obj `if test -f 'quant/palette/packed_alpha/0023_wire_byte_fast.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0023_wire_byte_fast.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0023_wire_byte_fast.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0023_wire_byte_fast.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0023_wire_byte_fast.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0023_wire_byte_fast.c' object='quant/palette/packed_alpha/test_runner-0023_wire_byte_fast.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0023_wire_byte_fast.obj `if test -f 'quant/palette/packed_alpha/0023_wire_byte_fast.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0023_wire_byte_fast.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0023_wire_byte_fast.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0024_wire_hard_cover.o: quant/palette/packed_alpha/0024_wire_hard_cover.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0024_wire_hard_cover.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0024_wire_hard_cover.Tpo -c -o quant/palette/packed_alpha/test_runner-0024_wire_hard_cover.o `test -f 'quant/palette/packed_alpha/0024_wire_hard_cover.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0024_wire_hard_cover.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0024_wire_hard_cover.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0024_wire_hard_cover.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0024_wire_hard_cover.c' object='quant/palette/packed_alpha/test_runner-0024_wire_hard_cover.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0024_wire_hard_cover.o `test -f 'quant/palette/packed_alpha/0024_wire_hard_cover.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0024_wire_hard_cover.c
+
+quant/palette/packed_alpha/test_runner-0024_wire_hard_cover.obj: quant/palette/packed_alpha/0024_wire_hard_cover.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0024_wire_hard_cover.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0024_wire_hard_cover.Tpo -c -o quant/palette/packed_alpha/test_runner-0024_wire_hard_cover.obj `if test -f 'quant/palette/packed_alpha/0024_wire_hard_cover.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0024_wire_hard_cover.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0024_wire_hard_cover.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0024_wire_hard_cover.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0024_wire_hard_cover.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0024_wire_hard_cover.c' object='quant/palette/packed_alpha/test_runner-0024_wire_hard_cover.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0024_wire_hard_cover.obj `if test -f 'quant/palette/packed_alpha/0024_wire_hard_cover.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0024_wire_hard_cover.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0024_wire_hard_cover.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0025_wire_fixed_palette.o: quant/palette/packed_alpha/0025_wire_fixed_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0025_wire_fixed_palette.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0025_wire_fixed_palette.Tpo -c -o quant/palette/packed_alpha/test_runner-0025_wire_fixed_palette.o `test -f 'quant/palette/packed_alpha/0025_wire_fixed_palette.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0025_wire_fixed_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0025_wire_fixed_palette.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0025_wire_fixed_palette.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0025_wire_fixed_palette.c' object='quant/palette/packed_alpha/test_runner-0025_wire_fixed_palette.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0025_wire_fixed_palette.o `test -f 'quant/palette/packed_alpha/0025_wire_fixed_palette.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0025_wire_fixed_palette.c
+
+quant/palette/packed_alpha/test_runner-0025_wire_fixed_palette.obj: quant/palette/packed_alpha/0025_wire_fixed_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0025_wire_fixed_palette.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0025_wire_fixed_palette.Tpo -c -o quant/palette/packed_alpha/test_runner-0025_wire_fixed_palette.obj `if test -f 'quant/palette/packed_alpha/0025_wire_fixed_palette.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0025_wire_fixed_palette.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0025_wire_fixed_palette.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0025_wire_fixed_palette.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0025_wire_fixed_palette.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0025_wire_fixed_palette.c' object='quant/palette/packed_alpha/test_runner-0025_wire_fixed_palette.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0025_wire_fixed_palette.obj `if test -f 'quant/palette/packed_alpha/0025_wire_fixed_palette.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0025_wire_fixed_palette.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0025_wire_fixed_palette.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0026_wire_crop.o: quant/palette/packed_alpha/0026_wire_crop.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0026_wire_crop.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0026_wire_crop.Tpo -c -o quant/palette/packed_alpha/test_runner-0026_wire_crop.o `test -f 'quant/palette/packed_alpha/0026_wire_crop.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0026_wire_crop.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0026_wire_crop.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0026_wire_crop.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0026_wire_crop.c' object='quant/palette/packed_alpha/test_runner-0026_wire_crop.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0026_wire_crop.o `test -f 'quant/palette/packed_alpha/0026_wire_crop.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0026_wire_crop.c
+
+quant/palette/packed_alpha/test_runner-0026_wire_crop.obj: quant/palette/packed_alpha/0026_wire_crop.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0026_wire_crop.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0026_wire_crop.Tpo -c -o quant/palette/packed_alpha/test_runner-0026_wire_crop.obj `if test -f 'quant/palette/packed_alpha/0026_wire_crop.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0026_wire_crop.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0026_wire_crop.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0026_wire_crop.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0026_wire_crop.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0026_wire_crop.c' object='quant/palette/packed_alpha/test_runner-0026_wire_crop.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0026_wire_crop.obj `if test -f 'quant/palette/packed_alpha/0026_wire_crop.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0026_wire_crop.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0026_wire_crop.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0027_wire_resize.o: quant/palette/packed_alpha/0027_wire_resize.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0027_wire_resize.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0027_wire_resize.Tpo -c -o quant/palette/packed_alpha/test_runner-0027_wire_resize.o `test -f 'quant/palette/packed_alpha/0027_wire_resize.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0027_wire_resize.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0027_wire_resize.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0027_wire_resize.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0027_wire_resize.c' object='quant/palette/packed_alpha/test_runner-0027_wire_resize.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0027_wire_resize.o `test -f 'quant/palette/packed_alpha/0027_wire_resize.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0027_wire_resize.c
+
+quant/palette/packed_alpha/test_runner-0027_wire_resize.obj: quant/palette/packed_alpha/0027_wire_resize.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0027_wire_resize.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0027_wire_resize.Tpo -c -o quant/palette/packed_alpha/test_runner-0027_wire_resize.obj `if test -f 'quant/palette/packed_alpha/0027_wire_resize.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0027_wire_resize.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0027_wire_resize.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0027_wire_resize.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0027_wire_resize.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0027_wire_resize.c' object='quant/palette/packed_alpha/test_runner-0027_wire_resize.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0027_wire_resize.obj `if test -f 'quant/palette/packed_alpha/0027_wire_resize.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0027_wire_resize.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0027_wire_resize.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0028_wire_encoder_reuse.o: quant/palette/packed_alpha/0028_wire_encoder_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0028_wire_encoder_reuse.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0028_wire_encoder_reuse.Tpo -c -o quant/palette/packed_alpha/test_runner-0028_wire_encoder_reuse.o `test -f 'quant/palette/packed_alpha/0028_wire_encoder_reuse.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0028_wire_encoder_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0028_wire_encoder_reuse.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0028_wire_encoder_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0028_wire_encoder_reuse.c' object='quant/palette/packed_alpha/test_runner-0028_wire_encoder_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0028_wire_encoder_reuse.o `test -f 'quant/palette/packed_alpha/0028_wire_encoder_reuse.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0028_wire_encoder_reuse.c
+
+quant/palette/packed_alpha/test_runner-0028_wire_encoder_reuse.obj: quant/palette/packed_alpha/0028_wire_encoder_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0028_wire_encoder_reuse.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0028_wire_encoder_reuse.Tpo -c -o quant/palette/packed_alpha/test_runner-0028_wire_encoder_reuse.obj `if test -f 'quant/palette/packed_alpha/0028_wire_encoder_reuse.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0028_wire_encoder_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0028_wire_encoder_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0028_wire_encoder_reuse.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0028_wire_encoder_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0028_wire_encoder_reuse.c' object='quant/palette/packed_alpha/test_runner-0028_wire_encoder_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0028_wire_encoder_reuse.obj `if test -f 'quant/palette/packed_alpha/0028_wire_encoder_reuse.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0028_wire_encoder_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0028_wire_encoder_reuse.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0029_wire_all_hidden.o: quant/palette/packed_alpha/0029_wire_all_hidden.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0029_wire_all_hidden.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0029_wire_all_hidden.Tpo -c -o quant/palette/packed_alpha/test_runner-0029_wire_all_hidden.o `test -f 'quant/palette/packed_alpha/0029_wire_all_hidden.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0029_wire_all_hidden.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0029_wire_all_hidden.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0029_wire_all_hidden.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0029_wire_all_hidden.c' object='quant/palette/packed_alpha/test_runner-0029_wire_all_hidden.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0029_wire_all_hidden.o `test -f 'quant/palette/packed_alpha/0029_wire_all_hidden.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0029_wire_all_hidden.c
+
+quant/palette/packed_alpha/test_runner-0029_wire_all_hidden.obj: quant/palette/packed_alpha/0029_wire_all_hidden.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0029_wire_all_hidden.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0029_wire_all_hidden.Tpo -c -o quant/palette/packed_alpha/test_runner-0029_wire_all_hidden.obj `if test -f 'quant/palette/packed_alpha/0029_wire_all_hidden.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0029_wire_all_hidden.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0029_wire_all_hidden.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0029_wire_all_hidden.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0029_wire_all_hidden.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0029_wire_all_hidden.c' object='quant/palette/packed_alpha/test_runner-0029_wire_all_hidden.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0029_wire_all_hidden.obj `if test -f 'quant/palette/packed_alpha/0029_wire_all_hidden.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0029_wire_all_hidden.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0029_wire_all_hidden.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0030_wire_soft_hidden.o: quant/palette/packed_alpha/0030_wire_soft_hidden.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0030_wire_soft_hidden.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0030_wire_soft_hidden.Tpo -c -o quant/palette/packed_alpha/test_runner-0030_wire_soft_hidden.o `test -f 'quant/palette/packed_alpha/0030_wire_soft_hidden.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0030_wire_soft_hidden.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0030_wire_soft_hidden.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0030_wire_soft_hidden.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0030_wire_soft_hidden.c' object='quant/palette/packed_alpha/test_runner-0030_wire_soft_hidden.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0030_wire_soft_hidden.o `test -f 'quant/palette/packed_alpha/0030_wire_soft_hidden.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0030_wire_soft_hidden.c
+
+quant/palette/packed_alpha/test_runner-0030_wire_soft_hidden.obj: quant/palette/packed_alpha/0030_wire_soft_hidden.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0030_wire_soft_hidden.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0030_wire_soft_hidden.Tpo -c -o quant/palette/packed_alpha/test_runner-0030_wire_soft_hidden.obj `if test -f 'quant/palette/packed_alpha/0030_wire_soft_hidden.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0030_wire_soft_hidden.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0030_wire_soft_hidden.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0030_wire_soft_hidden.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0030_wire_soft_hidden.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0030_wire_soft_hidden.c' object='quant/palette/packed_alpha/test_runner-0030_wire_soft_hidden.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0030_wire_soft_hidden.obj `if test -f 'quant/palette/packed_alpha/0030_wire_soft_hidden.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0030_wire_soft_hidden.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0030_wire_soft_hidden.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0031_wire_alpha_disabled.o: quant/palette/packed_alpha/0031_wire_alpha_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0031_wire_alpha_disabled.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0031_wire_alpha_disabled.Tpo -c -o quant/palette/packed_alpha/test_runner-0031_wire_alpha_disabled.o `test -f 'quant/palette/packed_alpha/0031_wire_alpha_disabled.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0031_wire_alpha_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0031_wire_alpha_disabled.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0031_wire_alpha_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0031_wire_alpha_disabled.c' object='quant/palette/packed_alpha/test_runner-0031_wire_alpha_disabled.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0031_wire_alpha_disabled.o `test -f 'quant/palette/packed_alpha/0031_wire_alpha_disabled.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0031_wire_alpha_disabled.c
+
+quant/palette/packed_alpha/test_runner-0031_wire_alpha_disabled.obj: quant/palette/packed_alpha/0031_wire_alpha_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0031_wire_alpha_disabled.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0031_wire_alpha_disabled.Tpo -c -o quant/palette/packed_alpha/test_runner-0031_wire_alpha_disabled.obj `if test -f 'quant/palette/packed_alpha/0031_wire_alpha_disabled.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0031_wire_alpha_disabled.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0031_wire_alpha_disabled.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0031_wire_alpha_disabled.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0031_wire_alpha_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0031_wire_alpha_disabled.c' object='quant/palette/packed_alpha/test_runner-0031_wire_alpha_disabled.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0031_wire_alpha_disabled.obj `if test -f 'quant/palette/packed_alpha/0031_wire_alpha_disabled.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0031_wire_alpha_disabled.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0031_wire_alpha_disabled.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0032_wire_fractional_byte_request.o: quant/palette/packed_alpha/0032_wire_fractional_byte_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0032_wire_fractional_byte_request.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0032_wire_fractional_byte_request.Tpo -c -o quant/palette/packed_alpha/test_runner-0032_wire_fractional_byte_request.o `test -f 'quant/palette/packed_alpha/0032_wire_fractional_byte_request.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0032_wire_fractional_byte_request.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0032_wire_fractional_byte_request.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0032_wire_fractional_byte_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0032_wire_fractional_byte_request.c' object='quant/palette/packed_alpha/test_runner-0032_wire_fractional_byte_request.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0032_wire_fractional_byte_request.o `test -f 'quant/palette/packed_alpha/0032_wire_fractional_byte_request.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0032_wire_fractional_byte_request.c
+
+quant/palette/packed_alpha/test_runner-0032_wire_fractional_byte_request.obj: quant/palette/packed_alpha/0032_wire_fractional_byte_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0032_wire_fractional_byte_request.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0032_wire_fractional_byte_request.Tpo -c -o quant/palette/packed_alpha/test_runner-0032_wire_fractional_byte_request.obj `if test -f 'quant/palette/packed_alpha/0032_wire_fractional_byte_request.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0032_wire_fractional_byte_request.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0032_wire_fractional_byte_request.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0032_wire_fractional_byte_request.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0032_wire_fractional_byte_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0032_wire_fractional_byte_request.c' object='quant/palette/packed_alpha/test_runner-0032_wire_fractional_byte_request.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0032_wire_fractional_byte_request.obj `if test -f 'quant/palette/packed_alpha/0032_wire_fractional_byte_request.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0032_wire_fractional_byte_request.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0032_wire_fractional_byte_request.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0033_wire_fs_feedback.o: quant/palette/packed_alpha/0033_wire_fs_feedback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0033_wire_fs_feedback.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0033_wire_fs_feedback.Tpo -c -o quant/palette/packed_alpha/test_runner-0033_wire_fs_feedback.o `test -f 'quant/palette/packed_alpha/0033_wire_fs_feedback.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0033_wire_fs_feedback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0033_wire_fs_feedback.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0033_wire_fs_feedback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0033_wire_fs_feedback.c' object='quant/palette/packed_alpha/test_runner-0033_wire_fs_feedback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0033_wire_fs_feedback.o `test -f 'quant/palette/packed_alpha/0033_wire_fs_feedback.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0033_wire_fs_feedback.c
+
+quant/palette/packed_alpha/test_runner-0033_wire_fs_feedback.obj: quant/palette/packed_alpha/0033_wire_fs_feedback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0033_wire_fs_feedback.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0033_wire_fs_feedback.Tpo -c -o quant/palette/packed_alpha/test_runner-0033_wire_fs_feedback.obj `if test -f 'quant/palette/packed_alpha/0033_wire_fs_feedback.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0033_wire_fs_feedback.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0033_wire_fs_feedback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0033_wire_fs_feedback.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0033_wire_fs_feedback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0033_wire_fs_feedback.c' object='quant/palette/packed_alpha/test_runner-0033_wire_fs_feedback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0033_wire_fs_feedback.obj `if test -f 'quant/palette/packed_alpha/0033_wire_fs_feedback.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0033_wire_fs_feedback.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0033_wire_fs_feedback.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0034_wire_allocation_retry.o: quant/palette/packed_alpha/0034_wire_allocation_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0034_wire_allocation_retry.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0034_wire_allocation_retry.Tpo -c -o quant/palette/packed_alpha/test_runner-0034_wire_allocation_retry.o `test -f 'quant/palette/packed_alpha/0034_wire_allocation_retry.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0034_wire_allocation_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0034_wire_allocation_retry.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0034_wire_allocation_retry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0034_wire_allocation_retry.c' object='quant/palette/packed_alpha/test_runner-0034_wire_allocation_retry.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0034_wire_allocation_retry.o `test -f 'quant/palette/packed_alpha/0034_wire_allocation_retry.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0034_wire_allocation_retry.c
+
+quant/palette/packed_alpha/test_runner-0034_wire_allocation_retry.obj: quant/palette/packed_alpha/0034_wire_allocation_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0034_wire_allocation_retry.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0034_wire_allocation_retry.Tpo -c -o quant/palette/packed_alpha/test_runner-0034_wire_allocation_retry.obj `if test -f 'quant/palette/packed_alpha/0034_wire_allocation_retry.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0034_wire_allocation_retry.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0034_wire_allocation_retry.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0034_wire_allocation_retry.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0034_wire_allocation_retry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0034_wire_allocation_retry.c' object='quant/palette/packed_alpha/test_runner-0034_wire_allocation_retry.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0034_wire_allocation_retry.obj `if test -f 'quant/palette/packed_alpha/0034_wire_allocation_retry.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0034_wire_allocation_retry.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0034_wire_allocation_retry.c'; fi`
+
+quant/palette/packed_alpha/test_runner-0035_disabled_alpha_side_mask.o: quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0035_disabled_alpha_side_mask.o -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0035_disabled_alpha_side_mask.Tpo -c -o quant/palette/packed_alpha/test_runner-0035_disabled_alpha_side_mask.o `test -f 'quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0035_disabled_alpha_side_mask.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0035_disabled_alpha_side_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c' object='quant/palette/packed_alpha/test_runner-0035_disabled_alpha_side_mask.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0035_disabled_alpha_side_mask.o `test -f 'quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c' || echo '$(srcdir)/'`quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c
+
+quant/palette/packed_alpha/test_runner-0035_disabled_alpha_side_mask.obj: quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/packed_alpha/test_runner-0035_disabled_alpha_side_mask.obj -MD -MP -MF quant/palette/packed_alpha/$(DEPDIR)/test_runner-0035_disabled_alpha_side_mask.Tpo -c -o quant/palette/packed_alpha/test_runner-0035_disabled_alpha_side_mask.obj `if test -f 'quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/packed_alpha/$(DEPDIR)/test_runner-0035_disabled_alpha_side_mask.Tpo quant/palette/packed_alpha/$(DEPDIR)/test_runner-0035_disabled_alpha_side_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c' object='quant/palette/packed_alpha/test_runner-0035_disabled_alpha_side_mask.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/packed_alpha/test_runner-0035_disabled_alpha_side_mask.obj `if test -f 'quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c'; then $(CYGPATH_W) 'quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/packed_alpha/0035_disabled_alpha_side_mask.c'; fi`
+
 quant/palette/test_runner-alpha_native_common.o: quant/palette/alpha_native_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-alpha_native_common.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-alpha_native_common.Tpo -c -o quant/palette/test_runner-alpha_native_common.o `test -f 'quant/palette/alpha_native_common.c' || echo '$(srcdir)/'`quant/palette/alpha_native_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-alpha_native_common.Tpo quant/palette/$(DEPDIR)/test_runner-alpha_native_common.Po
@@ -58626,6 +59461,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/mono_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/output_float/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/packed_alpha/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/rgb101_diffusion/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/rgb101_diffusion/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/sampling_float/$(DEPDIR)/$(am__dirstamp)
@@ -60736,6 +61573,7 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-map_precision_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-mono_float_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-packed_alpha_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
 	-rm -f quant/palette/alpha_float/$(DEPDIR)/test_runner-0001_srgb_gamma.Po
 	-rm -f quant/palette/alpha_float/$(DEPDIR)/test_runner-0002_srgb_linear.Po
@@ -61070,6 +61908,41 @@ distclean: distclean-am
 	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Po
 	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Po
 	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0001_layout_rgba.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0002_layout_argb.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0003_layout_bgra.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0004_layout_abgr.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0005_layout_ga.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0006_layout_ag.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0007_black_background.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0008_alpha_disabled.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0009_binary_byte_fast.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0010_forced_binary_float.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0011_mask_union.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0012_short_mask_atomic.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0013_pixel_allocation_retry.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0014_mask_allocation_retry.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0015_wire_gamma.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0016_wire_linear.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0017_wire_oklab.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0018_wire_cielab.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0019_wire_din99d.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0020_wire_p3.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0021_wire_background.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0022_wire_clear.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0023_wire_byte_fast.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0024_wire_hard_cover.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0025_wire_fixed_palette.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0026_wire_crop.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0027_wire_resize.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0028_wire_encoder_reuse.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0029_wire_all_hidden.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0030_wire_soft_hidden.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0031_wire_alpha_disabled.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0032_wire_fractional_byte_request.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0033_wire_fs_feedback.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0034_wire_allocation_retry.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0035_disabled_alpha_side_mask.Po
 	-rm -f quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po
 	-rm -f quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po
 	-rm -f quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Po
@@ -63227,6 +64100,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-map_precision_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-mono_float_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-packed_alpha_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po
 	-rm -f quant/palette/alpha_float/$(DEPDIR)/test_runner-0001_srgb_gamma.Po
 	-rm -f quant/palette/alpha_float/$(DEPDIR)/test_runner-0002_srgb_linear.Po
@@ -63561,6 +64435,41 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Po
 	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Po
 	-rm -f quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0001_layout_rgba.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0002_layout_argb.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0003_layout_bgra.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0004_layout_abgr.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0005_layout_ga.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0006_layout_ag.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0007_black_background.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0008_alpha_disabled.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0009_binary_byte_fast.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0010_forced_binary_float.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0011_mask_union.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0012_short_mask_atomic.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0013_pixel_allocation_retry.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0014_mask_allocation_retry.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0015_wire_gamma.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0016_wire_linear.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0017_wire_oklab.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0018_wire_cielab.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0019_wire_din99d.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0020_wire_p3.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0021_wire_background.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0022_wire_clear.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0023_wire_byte_fast.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0024_wire_hard_cover.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0025_wire_fixed_palette.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0026_wire_crop.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0027_wire_resize.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0028_wire_encoder_reuse.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0029_wire_all_hidden.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0030_wire_soft_hidden.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0031_wire_alpha_disabled.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0032_wire_fractional_byte_request.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0033_wire_fs_feedback.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0034_wire_allocation_retry.Po
+	-rm -f quant/palette/packed_alpha/$(DEPDIR)/test_runner-0035_disabled_alpha_side_mask.Po
 	-rm -f quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po
 	-rm -f quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po
 	-rm -f quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Po

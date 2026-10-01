@@ -92,6 +92,7 @@
 #include "tty.h"
 #include "encoder.h"
 #include "frame.h"
+#include "frame-normalize.h"
 #include "frame-factory.h"
 #include "encoder-core.h"
 #include "output-factory.h"
@@ -7155,13 +7156,15 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
 
 /* Separate masks preserve RGB geometry. Generated palettes reserve a slot;
  * fixed tables keep every entry and carry the mask through body writing.
- * Packed alpha still needs separate handling. */
+ * Packed alpha is separated before planner and palette work. */
 static int
 sixel_encoder_rgb101_alpha(sixel_encoder_t const *encoder,
-                           sixel_frame_t const *frame)
+                           sixel_frame_t *frame)
 {
     return !sixel_encoder_frame_preserves_alpha_key(frame) ||
-        (sixel_encoder_frame_has_transparent_mask(frame) &&
+        ((sixel_encoder_frame_has_transparent_mask(frame) ||
+          sixel_encoder_pixelformat_has_alpha(
+              sixel_frame_get_pixelformat(frame))) &&
          ((encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
            encoder->reqcolors > 1) ||
           encoder->color_option == SIXEL_COLOR_OPTION_MAPFILE ||
@@ -7243,11 +7246,14 @@ sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
             (sixel_frame_get_multiframe(frame) != 0 ||
              (sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGB888 &&
               !SIXEL_PIXELFORMAT_IS_FLOAT32(
-                  sixel_frame_get_pixelformat(frame))) ||
+                  sixel_frame_get_pixelformat(frame)) &&
+              !(sixel_encoder_pixelformat_has_alpha(
+                    sixel_frame_get_pixelformat(frame)) &&
+                sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_GAMMA)) ||
              !sixel_encoder_rgb101_alpha(encoder, frame))) {
         sixel_helper_set_additional_message(
-            "display-p3 requires a static RGB frame; a separate alpha mask "
-            "requires a fixed palette or a generated palette "
+            "display-p3 requires a static RGB or packed-alpha frame; "
+            "preserved alpha requires a fixed or generated palette "
             "and at least 2 slots.");
         return SIXEL_BAD_INPUT;
     }
@@ -7282,7 +7288,8 @@ sixel_encoder_visible_palette_pixels(sixel_frame_t *frame,
         return SIXEL_BAD_INPUT;
     }
     depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
-    if (depth != (int)(3U * sizeof(float))) {
+    if (depth != (int)(3U * sizeof(float)) &&
+            sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGB888) {
         return SIXEL_BAD_INPUT;
     }
     visible = 0U;
@@ -7736,7 +7743,13 @@ sixel_encoder_prepare_palette(
         status = SIXEL_BAD_INTEGER_OVERFLOW;
         goto end;
     }
-    if (reserve_alpha_key && (*dither)->use_rgb101_palette) {
+    /* Native construction and newly separated byte input share visible-only
+     * candidates. Do not change excluded legacy/default or animation paths. */
+    if (reserve_alpha_key &&
+            sixel_encoder_frame_has_transparent_mask(palette_frame) &&
+            ((*dither)->use_rgb101_palette ||
+             (palette_pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+              sixel_encoder_rgb101_candidate(encoder, palette_frame)))) {
         status = sixel_encoder_visible_palette_pixels(palette_frame,
             encoder->allocator, &visible_pixels, &palette_width);
         if (SIXEL_FAILED(status)) {
@@ -9125,6 +9138,33 @@ sixel_encoder_encode_frame_internal(
     planner = context.planner;
     if (planner != NULL) {
         sixel_encoding_planner_reset_for_frame(planner);
+    }
+
+    /* Resolve packed storage before sampling, geometry or P3 application.
+     * Keep unsupported modes on their existing path. Alpha metadata, rather
+     * than the output clear/keep request, owns source interpretation. The
+     * frame helper promotes fractional arithmetic even under a byte request;
+     * exact byte jobs keep RGB888 and their byte palette/application path. */
+    if (!context.multiframe &&
+            sixel_encoder_pixelformat_has_alpha(
+                sixel_frame_get_pixelformat(context.frame)) &&
+            sixel_frame_get_colorspace(context.frame) ==
+                SIXEL_COLORSPACE_GAMMA &&
+            sixel_encoder_rgb101_options(encoder) &&
+            sixel_encoder_rgb101_alpha(encoder, context.frame)) {
+        status = sixel_frame_unpack_alpha(context.frame, encoder->bgcolor,
+            encoder->prefer_float32 ||
+            encoder->output_color_definition ==
+                SIXEL_PALETTE_OUTPUT_DISPLAY_P3 ||
+            encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            encoder->clustering_colorspace != SIXEL_COLORSPACE_GAMMA);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+    status = sixel_encoder_validate_p3_frame(encoder, context.frame);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     status = sixel_encoder_promote_pal8_transparent_for_geometry(

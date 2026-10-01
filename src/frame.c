@@ -42,6 +42,7 @@
 #endif  /* HAVE_INTTYPES_H */
 
 #include "frame-private.h"
+#include "frame-normalize.h"
 #include "pixelformat.h"
 #include "colorspace.h"
 #include "compat_stub.h"
@@ -716,6 +717,151 @@ invalid:
     sixel_allocator_free(frame->allocator, mask);
     return SIXEL_BAD_INPUT;
 }
+
+/* Packed inputs have byte coordinates, but resolving fractional coverage is
+ * arithmetic, not a byte-storage operation. Publish both new planes together
+ * so the encoder can plan float work without losing holes or borrowing data
+ * that a later conversion frees. Loader-resolved RGB never enters here. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_unpack_alpha(sixel_frame_t *frame,
+                          unsigned char const *background,
+                          int require_float)
+{
+    unsigned char const *source;
+    void *pixels;
+    unsigned char *mask;
+    size_t count;
+    size_t i;
+    int offsets[3];
+    int alpha_offset;
+    int depth;
+    int channel;
+    int interpret;
+    int fractional;
+    int hidden;
+    unsigned int alpha;
+    unsigned int bg[3];
+    double value;
+
+    if (frame == NULL || frame->pixels.u8ptr == NULL ||
+            frame->colorspace != SIXEL_COLORSPACE_GAMMA ||
+            frame->alpha != NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    depth = sixel_helper_compute_depth(frame->pixelformat);
+    offsets[0] = 0;
+    offsets[1] = 1;
+    offsets[2] = 2;
+    alpha_offset = 3;
+    switch (frame->pixelformat) {
+    case SIXEL_PIXELFORMAT_RGBA8888:
+        break;
+    case SIXEL_PIXELFORMAT_ARGB8888:
+        offsets[0] = 1;
+        offsets[1] = 2;
+        offsets[2] = 3;
+        alpha_offset = 0;
+        break;
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        offsets[0] = 2;
+        offsets[2] = 0;
+        break;
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        offsets[0] = 3;
+        offsets[1] = 2;
+        offsets[2] = 1;
+        alpha_offset = 0;
+        break;
+    case SIXEL_PIXELFORMAT_GA88:
+        offsets[1] = offsets[2] = 0;
+        alpha_offset = 1;
+        break;
+    case SIXEL_PIXELFORMAT_AG88:
+        offsets[0] = offsets[1] = offsets[2] = 1;
+        alpha_offset = 0;
+        break;
+    default:
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (frame->width <= 0 || frame->height <= 0 ||
+            (size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        return SIXEL_BAD_INPUT;
+    }
+    count = (size_t)frame->width * (size_t)frame->height;
+    if (count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    if ((frame->transparent_mask == NULL) !=
+            (frame->transparent_mask_size == 0u) ||
+            (frame->transparent_mask != NULL &&
+             frame->transparent_mask_size < count)) {
+        return SIXEL_BAD_INPUT;
+    }
+    interpret = frame->alpha_zero_is_transparent != 0;
+    fractional = 0;
+    source = frame->pixels.u8ptr;
+    for (i = 0; interpret && i < count; ++i) {
+        alpha = source[i * (size_t)depth + alpha_offset];
+        if (alpha > 0u && alpha < 255u &&
+                (frame->transparent_mask == NULL ||
+                 frame->transparent_mask[i] == 0u)) {
+            fractional = 1;
+            break;
+        }
+    }
+    require_float = require_float || fractional;
+    for (channel = 0; channel < 3; ++channel) {
+        bg[channel] = background == NULL ? 0u : background[channel];
+    }
+    if (depth == 2) {
+        /* Match the packed gray compatibility contract before expansion. */
+        bg[0] = (299u * bg[0] + 587u * bg[1] + 114u * bg[2] + 500u)
+            / 1000u;
+        bg[1] = bg[2] = bg[0];
+    }
+    pixels = sixel_allocator_malloc(frame->allocator,
+        count * 3u * (require_float ? sizeof(float) : 1u));
+    mask = interpret || frame->transparent_mask != NULL
+        ? sixel_allocator_malloc(frame->allocator, count) : NULL;
+    if (pixels == NULL ||
+            ((interpret || frame->transparent_mask != NULL) && mask == NULL)) {
+        sixel_allocator_free(frame->allocator, pixels);
+        sixel_allocator_free(frame->allocator, mask);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    for (i = 0; i < count; ++i) {
+        alpha = source[i * (size_t)depth + alpha_offset];
+        hidden = (interpret && alpha == 0u) ||
+            (frame->transparent_mask != NULL &&
+             frame->transparent_mask[i] != 0u);
+        if (mask != NULL) {
+            mask[i] = (unsigned char)hidden;
+        }
+        for (channel = 0; channel < 3; ++channel) {
+            value = source[i * (size_t)depth + offsets[channel]];
+            if (interpret && !hidden && alpha < 255u) {
+                value = (value * alpha + bg[channel] * (255u - alpha))
+                    / 255.0;
+            }
+            if (require_float) {
+                ((float *)pixels)[i * 3u + channel] = (float)(value / 255.0);
+            } else {
+                ((unsigned char *)pixels)[i * 3u + channel] =
+                    (unsigned char)value;
+            }
+        }
+    }
+    sixel_frame_release_owned_pixels(frame);
+    frame->pixels.u8ptr = pixels;
+    frame->owns_pixels = 1;
+    sixel_allocator_free(frame->allocator, frame->transparent_mask);
+    frame->transparent_mask = mask;
+    frame->transparent_mask_size = mask != NULL ? count : 0u;
+    sixel_frame_apply_pixelformat(frame, require_float
+        ? SIXEL_PIXELFORMAT_RGBFLOAT32 : SIXEL_PIXELFORMAT_RGB888);
+    return SIXEL_OK;
+}
+
 
 static SIXELSTATUS
 sixel_frame_vtbl_resize(sixel_frame_interface_t *frame,
