@@ -993,6 +993,41 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0002_SCAN_CONTRACT \
     -DBUILD_TEST_0001_EXTENDED_LOOKUP \
     -DBUILD_FHEDT_TEST_COMMON \
+    -DBUILD_ALPHA_NATIVE_COMMON \
+    -DBUILD_TEST_0001_SRGB_GAMMA \
+    -DBUILD_TEST_0002_SRGB_LINEAR \
+    -DBUILD_TEST_0003_SRGB_OKLAB \
+    -DBUILD_TEST_0004_SRGB_CIELAB \
+    -DBUILD_TEST_0005_SRGB_DIN99D \
+    -DBUILD_TEST_0006_P3_GAMMA \
+    -DBUILD_TEST_0007_P3_LINEAR \
+    -DBUILD_TEST_0008_P3_OKLAB \
+    -DBUILD_TEST_0009_P3_CIELAB \
+    -DBUILD_TEST_0010_P3_DIN99D \
+    -DBUILD_TEST_0011_KCENTER \
+    -DBUILD_TEST_0012_KMEDOIDS \
+    -DBUILD_TEST_0013_HECKBERT \
+    -DBUILD_TEST_0014_ALL_TRANSPARENT \
+    -DBUILD_TEST_0015_SINGLE_VISIBLE \
+    -DBUILD_TEST_0016_BYTE_ELIGIBLE \
+    -DBUILD_TEST_0017_FORCED_FLOAT \
+    -DBUILD_TEST_0018_FLOAT_OVER_BYTE_REQUEST \
+    -DBUILD_TEST_0019_CLEAR_MASK \
+    -DBUILD_TEST_0020_MASK_REUSE \
+    -DBUILD_TEST_0021_HIDDEN_INVARIANCE \
+    -DBUILD_TEST_0022_FS_FEEDBACK \
+    -DBUILD_TEST_0023_FHEDT_MASK \
+    -DBUILD_TEST_0024_FHEDT_RESERVED \
+    -DBUILD_TEST_0025_BACKGROUND_KEY \
+    -DBUILD_TEST_0026_ZERO_MASK \
+    -DBUILD_TEST_0027_EXACT_BINNING \
+    -DBUILD_TEST_0028_HARD_BINNING \
+    -DBUILD_TEST_0029_SOFT_BINNING \
+    -DBUILD_TEST_0030_VPTREE_RESERVED \
+    -DBUILD_TEST_0031_EYTZINGER_RESERVED \
+    -DBUILD_TEST_0032_SCAN_RESERVED \
+    -DBUILD_TEST_0033_CROSS_SPACE \
+    -DBUILD_TEST_0034_ALLOCATION_RETRY \
     -DBUILD_MONO_FLOAT_COMMON \
     -DBUILD_TEST_0001_GAMMA \
     -DBUILD_TEST_0002_LINEAR \
@@ -4530,6 +4565,41 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/merge_float/0002_scan_contract.c \
     processing/lookup/extended/0001_extended_lookup.c \
     processing/lookup/fhedt_test_common.c \
+    quant/palette/alpha_native_common.c \
+    quant/palette/alpha_float/0001_srgb_gamma.c \
+    quant/palette/alpha_float/0002_srgb_linear.c \
+    quant/palette/alpha_float/0003_srgb_oklab.c \
+    quant/palette/alpha_float/0004_srgb_cielab.c \
+    quant/palette/alpha_float/0005_srgb_din99d.c \
+    quant/palette/alpha_float/0006_p3_gamma.c \
+    quant/palette/alpha_float/0007_p3_linear.c \
+    quant/palette/alpha_float/0008_p3_oklab.c \
+    quant/palette/alpha_float/0009_p3_cielab.c \
+    quant/palette/alpha_float/0010_p3_din99d.c \
+    quant/palette/alpha_float/0011_kcenter.c \
+    quant/palette/alpha_float/0012_kmedoids.c \
+    quant/palette/alpha_float/0013_heckbert.c \
+    quant/palette/alpha_float/0014_all_transparent.c \
+    quant/palette/alpha_float/0015_single_visible.c \
+    quant/palette/alpha_float/0016_byte_eligible.c \
+    quant/palette/alpha_float/0017_forced_float.c \
+    quant/palette/alpha_float/0018_float_over_byte_request.c \
+    quant/palette/alpha_float/0019_clear_mask.c \
+    quant/palette/alpha_float/0020_mask_reuse.c \
+    quant/palette/alpha_float/0021_hidden_invariance.c \
+    quant/palette/alpha_float/0022_fs_feedback.c \
+    quant/palette/alpha_float/0023_fhedt_mask.c \
+    quant/palette/alpha_float/0024_fhedt_reserved.c \
+    quant/palette/alpha_float/0025_background_key.c \
+    quant/palette/alpha_float/0026_zero_mask.c \
+    quant/palette/alpha_float/0027_exact_binning.c \
+    quant/palette/alpha_float/0028_hard_binning.c \
+    quant/palette/alpha_float/0029_soft_binning.c \
+    quant/palette/alpha_float/0030_vptree_reserved.c \
+    quant/palette/alpha_float/0031_eytzinger_reserved.c \
+    quant/palette/alpha_float/0032_scan_reserved.c \
+    quant/palette/alpha_float/0033_cross_space.c \
+    quant/palette/alpha_float/0034_allocation_retry.c \
     quant/palette/mono_float_common.c \
     quant/palette/mono_float/0001_gamma.c \
     quant/palette/mono_float/0002_linear.c \

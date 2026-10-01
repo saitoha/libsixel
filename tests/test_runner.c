@@ -693,6 +693,40 @@ int test_mono_lookup_0007(int argc, char **argv);
 int test_mono_lookup_0008(int argc, char **argv);
 int test_mono_lookup_0009(int argc, char **argv);
 int test_mono_lookup_0010(int argc, char **argv);
+int test_alpha_native_0001(int argc, char **argv);
+int test_alpha_native_0002(int argc, char **argv);
+int test_alpha_native_0003(int argc, char **argv);
+int test_alpha_native_0004(int argc, char **argv);
+int test_alpha_native_0005(int argc, char **argv);
+int test_alpha_native_0006(int argc, char **argv);
+int test_alpha_native_0007(int argc, char **argv);
+int test_alpha_native_0008(int argc, char **argv);
+int test_alpha_native_0009(int argc, char **argv);
+int test_alpha_native_0010(int argc, char **argv);
+int test_alpha_native_0011(int argc, char **argv);
+int test_alpha_native_0012(int argc, char **argv);
+int test_alpha_native_0013(int argc, char **argv);
+int test_alpha_native_0014(int argc, char **argv);
+int test_alpha_native_0015(int argc, char **argv);
+int test_alpha_native_0016(int argc, char **argv);
+int test_alpha_native_0017(int argc, char **argv);
+int test_alpha_native_0018(int argc, char **argv);
+int test_alpha_native_0019(int argc, char **argv);
+int test_alpha_native_0020(int argc, char **argv);
+int test_alpha_native_0021(int argc, char **argv);
+int test_alpha_native_0022(int argc, char **argv);
+int test_alpha_native_0023(int argc, char **argv);
+int test_alpha_native_0024(int argc, char **argv);
+int test_alpha_native_0025(int argc, char **argv);
+int test_alpha_native_0026(int argc, char **argv);
+int test_alpha_native_0027(int argc, char **argv);
+int test_alpha_native_0028(int argc, char **argv);
+int test_alpha_native_0029(int argc, char **argv);
+int test_alpha_native_0030(int argc, char **argv);
+int test_alpha_native_0031(int argc, char **argv);
+int test_alpha_native_0032(int argc, char **argv);
+int test_alpha_native_0033(int argc, char **argv);
+int test_alpha_native_0034(int argc, char **argv);
 int test_mono_native_0001(int argc, char **argv);
 int test_mono_native_0002(int argc, char **argv);
 int test_mono_native_0003(int argc, char **argv);
@@ -3709,6 +3743,74 @@ static test_entry_t const test_entries[] = {
       test_mono_lookup_0009 },
     { "lookup/mono_float/0010_encoder_fs",
       test_mono_lookup_0010 },
+    { "quant/palette/alpha_float/0001_srgb_gamma",
+      test_alpha_native_0001 },
+    { "quant/palette/alpha_float/0002_srgb_linear",
+      test_alpha_native_0002 },
+    { "quant/palette/alpha_float/0003_srgb_oklab",
+      test_alpha_native_0003 },
+    { "quant/palette/alpha_float/0004_srgb_cielab",
+      test_alpha_native_0004 },
+    { "quant/palette/alpha_float/0005_srgb_din99d",
+      test_alpha_native_0005 },
+    { "quant/palette/alpha_float/0006_p3_gamma",
+      test_alpha_native_0006 },
+    { "quant/palette/alpha_float/0007_p3_linear",
+      test_alpha_native_0007 },
+    { "quant/palette/alpha_float/0008_p3_oklab",
+      test_alpha_native_0008 },
+    { "quant/palette/alpha_float/0009_p3_cielab",
+      test_alpha_native_0009 },
+    { "quant/palette/alpha_float/0010_p3_din99d",
+      test_alpha_native_0010 },
+    { "quant/palette/alpha_float/0011_kcenter",
+      test_alpha_native_0011 },
+    { "quant/palette/alpha_float/0012_kmedoids",
+      test_alpha_native_0012 },
+    { "quant/palette/alpha_float/0013_heckbert",
+      test_alpha_native_0013 },
+    { "quant/palette/alpha_float/0014_all_transparent",
+      test_alpha_native_0014 },
+    { "quant/palette/alpha_float/0015_single_visible",
+      test_alpha_native_0015 },
+    { "quant/palette/alpha_float/0016_byte_eligible",
+      test_alpha_native_0016 },
+    { "quant/palette/alpha_float/0017_forced_float",
+      test_alpha_native_0017 },
+    { "quant/palette/alpha_float/0018_float_over_byte_request",
+      test_alpha_native_0018 },
+    { "quant/palette/alpha_float/0019_clear_mask",
+      test_alpha_native_0019 },
+    { "quant/palette/alpha_float/0020_mask_reuse",
+      test_alpha_native_0020 },
+    { "quant/palette/alpha_float/0021_hidden_invariance",
+      test_alpha_native_0021 },
+    { "quant/palette/alpha_float/0022_fs_feedback",
+      test_alpha_native_0022 },
+    { "quant/palette/alpha_float/0023_fhedt_mask",
+      test_alpha_native_0023 },
+    { "quant/palette/alpha_float/0024_fhedt_reserved",
+      test_alpha_native_0024 },
+    { "quant/palette/alpha_float/0025_background_key",
+      test_alpha_native_0025 },
+    { "quant/palette/alpha_float/0026_zero_mask",
+      test_alpha_native_0026 },
+    { "quant/palette/alpha_float/0027_exact_binning",
+      test_alpha_native_0027 },
+    { "quant/palette/alpha_float/0028_hard_binning",
+      test_alpha_native_0028 },
+    { "quant/palette/alpha_float/0029_soft_binning",
+      test_alpha_native_0029 },
+    { "quant/palette/alpha_float/0030_vptree_reserved",
+      test_alpha_native_0030 },
+    { "quant/palette/alpha_float/0031_eytzinger_reserved",
+      test_alpha_native_0031 },
+    { "quant/palette/alpha_float/0032_scan_reserved",
+      test_alpha_native_0032 },
+    { "quant/palette/alpha_float/0033_cross_space",
+      test_alpha_native_0033 },
+    { "quant/palette/alpha_float/0034_allocation_retry",
+      test_alpha_native_0034 },
     { "quant/palette/mono_float/0001_gamma",
       test_mono_native_0001 },
     { "quant/palette/mono_float/0002_linear",

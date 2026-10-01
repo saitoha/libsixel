@@ -6718,6 +6718,11 @@ sixel_encoder_attach_alpha_keycolor(sixel_encoder_t *encoder,
     sixel_palette_entries_request_t entries_request;
     sixel_palette_entries_view_t entries_view;
     sixel_palette_float32_entries_request_t float32_request;
+    sixel_palette_float32_entries_view_t float_view;
+    float native_entries[SIXEL_PALETTE_MAX * 3];
+    double key_source[3];
+    double key_work[3];
+    unsigned int channel;
 
     status = SIXEL_FALSE;
     expanded = NULL;
@@ -6732,7 +6737,9 @@ sixel_encoder_attach_alpha_keycolor(sixel_encoder_t *encoder,
         dither->palette->vtbl == NULL ||
         dither->palette->vtbl->get_entries == NULL ||
         dither->palette->vtbl->init_entries == NULL ||
-        dither->palette->vtbl->init_entries_float32 == NULL) {
+        dither->palette->vtbl->init_entries_float32 == NULL ||
+        (dither->use_rgb101_palette != 0 &&
+         dither->palette->vtbl->get_entries_float32 == NULL)) {
         return SIXEL_BAD_ARGUMENT;
     }
     status = dither->palette->vtbl->get_entries(dither->palette,
@@ -6767,6 +6774,35 @@ sixel_encoder_attach_alpha_keycolor(sixel_encoder_t *encoder,
         expanded[key_index * 3U + 2U] = 0U;
     }
 
+    if (dither->use_rgb101_palette != 0) {
+        status = dither->palette->vtbl->get_entries_float32(
+            dither->palette, &float_view);
+        if (SIXEL_FAILED(status) || float_view.entries == NULL ||
+                float_view.entry_count != base_colors ||
+                float_view.depth != (int)(3U * sizeof(float))) {
+            sixel_allocator_free(dither->allocator, expanded);
+            return SIXEL_BAD_INPUT;
+        }
+        /* init_entries invalidates the old float view. Preserve its typed
+         * coordinates before appending the omitted slot; rebuilding from
+         * compatibility bytes would lose both gamut and sub-byte precision.
+         * Only the key's background hint starts in independent sRGB bytes. */
+        memcpy(native_entries, float_view.entries,
+            (size_t)base_colors * 3U * sizeof(float));
+        for (channel = 0U; channel < 3U; ++channel) {
+            key_source[channel] = expanded[key_index * 3U + channel] / 255.0;
+        }
+        if (!sixel_color_convert(key_work, key_source,
+                SIXEL_COLORSPACE_GAMMA, encoder->working_colorspace)) {
+            sixel_allocator_free(dither->allocator, expanded);
+            return SIXEL_BAD_INPUT;
+        }
+        for (channel = 0U; channel < 3U; ++channel) {
+            native_entries[key_index * 3U + channel] =
+                (float)key_work[channel];
+        }
+    }
+
     entries_request.entries = expanded;
     entries_request.colors = base_colors + 1U;
     entries_request.depth = 3;
@@ -6780,8 +6816,16 @@ sixel_encoder_attach_alpha_keycolor(sixel_encoder_t *encoder,
     float32_request.entries = NULL;
     float32_request.colors = 0U;
     float32_request.depth = 0;
-    (void)dither->palette->vtbl->init_entries_float32(dither->palette,
-                                                      &float32_request);
+    if (dither->use_rgb101_palette != 0) {
+        float32_request.entries = native_entries;
+        float32_request.colors = base_colors + 1U;
+        float32_request.depth = (int)(3U * sizeof(float));
+    }
+    status = dither->palette->vtbl->init_entries_float32(dither->palette,
+                                                       &float32_request);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     dither->ncolors = (int)(base_colors + 1U);
     dither->keycolor = (int)key_index;
     /*
@@ -7102,6 +7146,20 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
              encoder->palette_output == NULL));
 }
 
+/* Separate masks preserve RGB geometry and can keep a native palette.
+ * Packed alpha, fixed palettes and cover growth need their own slot/budget
+ * handling; do not admit them merely by removing the old alpha guard. */
+static int
+sixel_encoder_rgb101_alpha(sixel_encoder_t const *encoder,
+                           sixel_frame_t const *frame)
+{
+    return !sixel_encoder_frame_preserves_alpha_key(frame) ||
+        (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
+         encoder->cover_policy == SIXEL_PALETTE_COVER_OFF &&
+         encoder->reqcolors > 1 &&
+         sixel_encoder_frame_has_transparent_mask(frame));
+}
+
 static int
 sixel_encoder_rgb101_candidate(sixel_encoder_t const *encoder,
                                 sixel_frame_t *frame)
@@ -7121,7 +7179,7 @@ sixel_encoder_rgb101_candidate(sixel_encoder_t const *encoder,
         (format == SIXEL_PIXELFORMAT_RGB888 ||
          SIXEL_PIXELFORMAT_IS_FLOAT32(format)) &&
         sixel_frame_get_multiframe(frame) == 0 &&
-        !sixel_encoder_frame_preserves_alpha_key(frame) &&
+        sixel_encoder_rgb101_alpha(encoder, frame) &&
         sixel_encoder_rgb101_options(encoder);
 }
 
@@ -7138,8 +7196,8 @@ sixel_encoder_rgb101_frame(sixel_encoder_t const *encoder,
         sixel_encoder_rgb101_candidate(encoder, frame);
 }
 
-/* Reject unconnected P3 combinations before starting any output. The first
- * path owns four CPU solver families, native lookup and opaque RGB frames.
+/* Reject unconnected P3 combinations before starting any output. This CPU
+ * path owns native lookup and RGB frames with optional separated masks.
  * Its output definition never changes the meaning of frame coordinates. */
 static SIXELSTATUS
 sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
@@ -7177,11 +7235,74 @@ sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
              (sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGB888 &&
               !SIXEL_PIXELFORMAT_IS_FLOAT32(
                   sixel_frame_get_pixelformat(frame))) ||
-             sixel_encoder_frame_preserves_alpha_key(frame))) {
+             !sixel_encoder_rgb101_alpha(encoder, frame))) {
         sixel_helper_set_additional_message(
-            "display-p3 requires an opaque static RGB frame.");
+            "display-p3 requires a static RGB frame; a separate alpha mask "
+            "requires a generated palette, cover off and at least 2 slots.");
         return SIXEL_BAD_INPUT;
     }
+    return SIXEL_OK;
+}
+
+/* Compact only construction samples, never the image used by dithering.
+ * A hidden RGB value must not influence clusters or consume a color slot.
+ * Empty coverage uses one deterministic black candidate; every output pixel
+ * will still map to the separately reserved omission key. */
+static SIXELSTATUS
+sixel_encoder_visible_palette_pixels(sixel_frame_t *frame,
+                                      sixel_allocator_t *allocator,
+                                      unsigned char **pixels_out,
+                                      int *count_out)
+{
+    sixel_frame_transparency_t transparency;
+    unsigned char const *source;
+    unsigned char *pixels;
+    size_t total;
+    size_t visible;
+    size_t index;
+    size_t offset;
+    int depth;
+    SIXELSTATUS status;
+
+    *pixels_out = NULL;
+    *count_out = 0;
+    status = sixel_encoder_frame_get_transparency(frame, &transparency);
+    if (SIXEL_FAILED(status) ||
+            !sixel_encoder_frame_get_transparent_mask_pixels(frame, &total)) {
+        return SIXEL_BAD_INPUT;
+    }
+    depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
+    if (depth != (int)(3U * sizeof(float))) {
+        return SIXEL_BAD_INPUT;
+    }
+    visible = 0U;
+    for (index = 0U; index < total; ++index) {
+        visible += transparency.transparent_mask[index] == 0U;
+    }
+    if (visible == 0U) {
+        visible = 1U;
+    }
+    if (visible > INT_MAX || visible > UINT_MAX / (unsigned int)depth) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixels = sixel_allocator_malloc(allocator, visible * (size_t)depth);
+    if (pixels == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    source = sixel_frame_get_pixels(frame);
+    offset = 0U;
+    for (index = 0U; index < total; ++index) {
+        if (transparency.transparent_mask[index] == 0U) {
+            memcpy(pixels + offset, source + index * (size_t)depth,
+                (size_t)depth);
+            offset += (size_t)depth;
+        }
+    }
+    if (offset == 0U) {
+        memset(pixels, 0, (size_t)depth);
+    }
+    *pixels_out = pixels;
+    *count_out = (int)visible;
     return SIXEL_OK;
 }
 
@@ -7203,6 +7324,7 @@ sixel_encoder_prepare_palette(
     sixel_frame_t *palette_frame;
     sixel_frame_t *cluster_frame;
     unsigned char *palette_pixels;
+    unsigned char *visible_pixels;
     int palette_pixelformat;
     int palette_target_pixelformat;
     int clustering_colorspace;
@@ -7238,6 +7360,7 @@ sixel_encoder_prepare_palette(
     palette_frame = frame;
     cluster_frame = NULL;
     palette_pixels = NULL;
+    visible_pixels = NULL;
     palette_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     palette_target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     clustering_colorspace = SIXEL_COLORSPACE_GAMMA;
@@ -7522,7 +7645,7 @@ sixel_encoder_prepare_palette(
      * including CMS output when the base preference is auto or 8bit. */
     prefer_float32 = encoder->prefer_float32 ||
         SIXEL_PIXELFORMAT_IS_FLOAT32(sixel_frame_get_pixelformat(frame));
-    if (reserve_alpha_key) {
+    if (reserve_alpha_key && !(*dither)->use_rgb101_palette) {
         clustering_colorspace = sixel_frame_get_colorspace(frame);
         palette_target_pixelformat = sixel_frame_get_pixelformat(frame);
     } else {
@@ -7531,7 +7654,7 @@ sixel_encoder_prepare_palette(
                                                      prefer_float32);
     }
 
-    if (!reserve_alpha_key &&
+    if ((!reserve_alpha_key || (*dither)->use_rgb101_palette) &&
         (sixel_frame_get_pixelformat(frame) != palette_target_pixelformat
             || sixel_frame_get_colorspace(frame)
                 != clustering_colorspace)) {
@@ -7590,6 +7713,24 @@ sixel_encoder_prepare_palette(
 
     palette_pixels = sixel_frame_get_pixels(palette_frame);
     palette_pixelformat = sixel_frame_get_pixelformat(palette_frame);
+    /* Finish fallible sample preparation before installing temporary
+     * quantizer overrides. Allocation failure must not leave them active. */
+    palette_width = sixel_frame_get_width(palette_frame);
+    palette_height = sixel_frame_get_height(palette_frame);
+    if (palette_width <= 0 || palette_height <= 0 ||
+            (size_t)palette_width > SIZE_MAX / (size_t)palette_height) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    if (reserve_alpha_key && (*dither)->use_rgb101_palette) {
+        status = sixel_encoder_visible_palette_pixels(palette_frame,
+            encoder->allocator, &visible_pixels, &palette_width);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        palette_pixels = visible_pixels;
+        palette_height = 1;
+    }
     quantize_override_lock_acquired =
         sixel_encoder_quantize_override_lock_acquire();
     sixel_set_kmeans_init_type_override(
@@ -7802,13 +7943,6 @@ sixel_encoder_prepare_palette(
     sixel_set_kcenter_prune_mass_override(
         encoder->quantize_model_kcenter_prune_mass_override,
         encoder->quantize_model_kcenter_prune_mass);
-    palette_width = sixel_frame_get_width(palette_frame);
-    palette_height = sixel_frame_get_height(palette_frame);
-    if (palette_width <= 0 || palette_height <= 0 ||
-            (size_t)palette_width > SIZE_MAX / (size_t)palette_height) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto end;
-    }
     source_point_count =
         (size_t)palette_width * (size_t)palette_height;
     if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
@@ -7992,6 +8126,7 @@ sixel_encoder_prepare_palette(
     }
 
 end:
+    sixel_allocator_free(encoder->allocator, visible_pixels);
     if (quantize_override_lock_acquired != 0) {
         sixel_encoder_quantize_override_lock_release(
             quantize_override_lock_acquired);
@@ -8187,6 +8322,13 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     lookup_config.depth = entries_view.depth;
     lookup_config.float_depth = float32_view.depth;
     lookup_config.ncolors = (int)entries_view.entry_count;
+    /* Prepared lookup tables must exclude the same omission-only slot as
+     * dither's direct resolver. A black key must never win a visible query. */
+    if (dither->keycolor_reserved &&
+            dither->keycolor == lookup_config.ncolors - 1 &&
+            lookup_config.ncolors > 1) {
+        --lookup_config.ncolors;
+    }
     lookup_config.lut_policy = policy;
     lookup_config.lut_policy_override = dither->lut_policy_override;
     lookup_config.lut_policy_packing = dither->lut_policy_packing;

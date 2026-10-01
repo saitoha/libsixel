@@ -48,6 +48,8 @@ When `composite` cannot resolve any source, the loader must not expose hidden RG
 
 ## Loader and encoder boundary
 
+The selected native float encoder path preserves RGB precision alongside a separate alpha-zero mask. Its generated-palette eligibility, reserved-slot handling and exact output contract are documented under [Separate alpha-zero masks](../../encoder/output/output-colorspace.md#separate-alpha-zero-masks); this does not add a per-pixel alpha channel to SIXEL.
+
 The loader owns alpha normalization. If it composites onto a background, the resulting frame is opaque and must not carry an alpha-zero mask. If it preserves alpha zero, it records that state in the frame's transparent index or per-pixel mask.
 
 The encoder trusts that frame state. It reserves a key color only when the frame still contains transparency, then selects `P2` from the requested policy. It must not discard a loader-provided mask merely because the policy is `composite`: such a mask means that background resolution failed and the loader intentionally used the `keep` fallback.

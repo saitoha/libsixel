@@ -85,7 +85,7 @@ Consequently, `-Usmpte-c` can change channel balance as well as tone response. I
 
 ## `display-p3`: selected CPU float path
 
-The selected P3 path supports opaque static RGB input, automatic or explicit float precision, independent clustering and working coordinates chosen from gamma, linear, Oklab, CIELAB and DIN99d, CPU K-means, K-center, K-medoids or Heckbert (including the existing `auto` resolver) with any sampling policy and the solver-specific binning choices below, `none`, `certlut`, `5bit`, `6bit`, `auto`, `vptree`, `rbc`, `mahalanobis`, `eytzinger` or `fhedt` lookup, and no dithering or CPU spatial error diffusion (`fs`, `atkinson`, `jajuni`, `stucki`, `burkes`, `sierra:variant=1`, `sierra:variant=2`, `sierra:variant=3`, or `lso2`), or [CPU positional dithering](../palette-application/dithering/README.md#positional-candidate-precision) (`a_dither`, `x_dither`, `bluenoise`). `auto` retains the existing palette-count selection of Atkinson or FS. Ward merge and [explicit soft or hard cover](../palette-construction/cover-policy/README.md#hard-mode-on-native-float-palettes) are supported; implicit active cover and active snap are excluded. A zero snap approach rate is an identity and selects the same path as `-_none`. It emits normal RGB SIXEL, or retains the palette-free foreground mask selected by `-e`. K-means feedback is disabled. The selected path also accepts [built-in `-b` tables](../palette-construction/fixed-palettes.md#native-float-application-and-display-p3) and fixed palettes through `-m` with all four admitted solver families and AUTO; their interpretation and image-map construction are specified in [External palette input and output](../palette-construction/external-palettes.md#display-p3-output). Other combinations fail before SIXEL output starts. `-M` exports sRGB8 rather than unmarked P3 values, clipping colors outside sRGB. Interframe dithering, GPU, high-color, HLS, DRCS, macros, delta encoding, animation and alpha-bearing frames are outside this selected path.
+The selected P3 path supports static RGB input, including the separated masks described below, automatic or explicit float precision, independent clustering and working coordinates chosen from gamma, linear, Oklab, CIELAB and DIN99d, CPU K-means, K-center, K-medoids or Heckbert (including the existing `auto` resolver) with any sampling policy and the solver-specific binning choices below, `none`, `certlut`, `5bit`, `6bit`, `auto`, `vptree`, `rbc`, `mahalanobis`, `eytzinger` or `fhedt` lookup, and no dithering or CPU spatial error diffusion (`fs`, `atkinson`, `jajuni`, `stucki`, `burkes`, `sierra:variant=1`, `sierra:variant=2`, `sierra:variant=3`, or `lso2`), or [CPU positional dithering](../palette-application/dithering/README.md#positional-candidate-precision) (`a_dither`, `x_dither`, `bluenoise`). `auto` retains the existing palette-count selection of Atkinson or FS. Ward merge and [explicit soft or hard cover](../palette-construction/cover-policy/README.md#hard-mode-on-native-float-palettes) are supported; implicit active cover and active snap are excluded. A zero snap approach rate is an identity and selects the same path as `-_none`. It emits normal RGB SIXEL, or retains the palette-free foreground mask selected by `-e`. K-means feedback is disabled. The selected path also accepts [built-in `-b` tables](../palette-construction/fixed-palettes.md#native-float-application-and-display-p3) and fixed palettes through `-m` with all four admitted solver families and AUTO; their interpretation and image-map construction are specified in [External palette input and output](../palette-construction/external-palettes.md#display-p3-output). Other combinations fail before SIXEL output starts. `-M` exports sRGB8 rather than unmarked P3 values, clipping colors outside sRGB. Interframe dithering, GPU, high-color, HLS, DRCS, macros, delta encoding, animation and packed alpha-bearing frames are outside this selected path.
 
 The default palette type and explicit `-tauto` resolve to RGB before capability validation, including the direct frame API; `-trgb` is not required. An explicit `-thls` remains unsupported on this selected path. This is an implementation boundary, not an inherent limitation of Display P3: HLS output would require its own connected serialization/rounding path and an agreed receiver interpretation of the reconstructed RGB values.
 
@@ -134,6 +134,14 @@ For generated palettes, the selected float path accepts all three sampling polic
 Whether an adaptive palette is built synchronously or on a worker, an already-float source remains float even when base precision is `auto` or `8bit`. A byte-eligible gamma job retains its byte path. Thread-creation failure rebuilds from the same owned sample synchronously. Other worker failures fall back to the preprocessed full frame only for `auto`; an explicitly requested adaptive policy reports the error without starting SIXEL output. The fallback rebuild retains the same precision and separate RGB101 output boundary. Automatic fallback may change the palette because its sample source changes; it does not promise identical colors to adaptive sampling.
 
 The direct sampling tests check exact membership after cropping and bit-preserving copies in each of the five float formats. Whole-encoder tests check independently derived centroids and RGB101 values across synchronous and worker execution, automatic selection, retained source precision and injected failures. These tiny fixtures exercise palette construction and output, not meaningful error diffusion; the spatial tests below and external multi-image comparisons cover that separately.
+
+### Separate alpha-zero masks
+
+The selected native path also accepts static RGB888 or typed float RGB frames with a complete, separate alpha-zero mask when using a generated palette, `-aoff`, and at least two requested palette slots. P3 output and explicit float requests require float application; an otherwise byte-eligible ordinary-sRGB job retains its byte path. Packed RGBA/gray-alpha input, masked fixed palettes, cover repair with a mask, and animation remain outside this extension. Loader-side fractional-alpha composition remains governed by [Alpha policy](../../loader/alpha-policy/README.md).
+
+Palette construction compacts only visible samples after conversion to the requested clustering coordinates. Hidden RGB values neither affect representatives nor consume color slots. All-transparent input uses one finite black candidate and still omits every image pixel. The compact construction buffer contains three floats per visible sample (one dummy sample for empty coverage); the image and its mask retain their original geometry for lookup and spatial error diffusion.
+
+One palette slot is reserved for omission. Appending it preserves the authoritative working float entries; only the reserved entry is derived from the independent sRGB background hint. Exhaustive and prepared lookup tables exclude that slot from visible nearest-color queries. Output conversion then caches RGB101 values without replacing the working palette. `clear` emits P2=0 and `keep` emits P2=1 while both leave masked pixels unpainted; a background hint cannot make them visible. A present mask with no set bits may still reserve its slot. Each new encode rebuilds the native palette, avoiding stale mask/key state when one encoder alternates masked and opaque input.
 
 ### Binning and extended coordinates
 
@@ -283,6 +291,47 @@ Likewise, `-U` does not configure decoder interpretation, embed an output ICC pr
 ## Test coverage
 
 <!-- test-coverage: enforced -->
+
+### Separate-mask native palette contracts
+
+These tests use independent working coordinates and RGB101 values plus a small painted-index parser. The FS case requires nonzero error propagation. They establish static frame/value/mask behavior, not image-score quality, loader-specific alpha extraction, or exhaustive parallel-band coverage.
+
+| ID | Observation | Owning test |
+| --- | --- | --- |
+| AN-01 | gamma working entries and sRGB wire colors retain extended precision. | [tests/quant/palette/alpha_float/0001_srgb_gamma.t](../../../tests/quant/palette/alpha_float/0001_srgb_gamma.t) |
+| AN-02 | linear working entries and sRGB wire colors retain extended precision. | [tests/quant/palette/alpha_float/0002_srgb_linear.t](../../../tests/quant/palette/alpha_float/0002_srgb_linear.t) |
+| AN-03 | oklab working entries and sRGB wire colors retain extended precision. | [tests/quant/palette/alpha_float/0003_srgb_oklab.t](../../../tests/quant/palette/alpha_float/0003_srgb_oklab.t) |
+| AN-04 | cielab working entries and sRGB wire colors retain extended precision. | [tests/quant/palette/alpha_float/0004_srgb_cielab.t](../../../tests/quant/palette/alpha_float/0004_srgb_cielab.t) |
+| AN-05 | din99d working entries and sRGB wire colors retain extended precision. | [tests/quant/palette/alpha_float/0005_srgb_din99d.t](../../../tests/quant/palette/alpha_float/0005_srgb_din99d.t) |
+| AN-06 | gamma working entries retain precision while P3 wire colors use the independent oracle. | [tests/quant/palette/alpha_float/0006_p3_gamma.t](../../../tests/quant/palette/alpha_float/0006_p3_gamma.t) |
+| AN-07 | linear working entries retain precision while P3 wire colors use the independent oracle. | [tests/quant/palette/alpha_float/0007_p3_linear.t](../../../tests/quant/palette/alpha_float/0007_p3_linear.t) |
+| AN-08 | oklab working entries retain precision while P3 wire colors use the independent oracle. | [tests/quant/palette/alpha_float/0008_p3_oklab.t](../../../tests/quant/palette/alpha_float/0008_p3_oklab.t) |
+| AN-09 | cielab working entries retain precision while P3 wire colors use the independent oracle. | [tests/quant/palette/alpha_float/0009_p3_cielab.t](../../../tests/quant/palette/alpha_float/0009_p3_cielab.t) |
+| AN-10 | din99d working entries retain precision while P3 wire colors use the independent oracle. | [tests/quant/palette/alpha_float/0010_p3_din99d.t](../../../tests/quant/palette/alpha_float/0010_p3_din99d.t) |
+| AN-11 | K-center excludes hidden samples and retains native representatives. | [tests/quant/palette/alpha_float/0011_kcenter.t](../../../tests/quant/palette/alpha_float/0011_kcenter.t) |
+| AN-12 | K-medoids excludes hidden samples and retains native representatives. | [tests/quant/palette/alpha_float/0012_kmedoids.t](../../../tests/quant/palette/alpha_float/0012_kmedoids.t) |
+| AN-13 | Heckbert excludes hidden samples and retains native representatives. | [tests/quant/palette/alpha_float/0013_heckbert.t](../../../tests/quant/palette/alpha_float/0013_heckbert.t) |
+| AN-14 | An entirely omitted frame has a finite deterministic dummy palette. | [tests/quant/palette/alpha_float/0014_all_transparent.t](../../../tests/quant/palette/alpha_float/0014_all_transparent.t) |
+| AN-15 | One visible color retains its coordinates beside the reserved omission slot. | [tests/quant/palette/alpha_float/0015_single_visible.t](../../../tests/quant/palette/alpha_float/0015_single_visible.t) |
+| AN-16 | A genuine byte job keeps the byte path and its omitted pixel. | [tests/quant/palette/alpha_float/0016_byte_eligible.t](../../../tests/quant/palette/alpha_float/0016_byte_eligible.t) |
+| AN-17 | An explicit float request promotes byte input without losing mask geometry. | [tests/quant/palette/alpha_float/0017_forced_float.t](../../../tests/quant/palette/alpha_float/0017_forced_float.t) |
+| AN-18 | Retained float input takes precedence over an 8bit preference. | [tests/quant/palette/alpha_float/0018_float_over_byte_request.t](../../../tests/quant/palette/alpha_float/0018_float_over_byte_request.t) |
+| AN-19 | Clear emits P2=0 and the exact painted indexes. | [tests/quant/palette/alpha_float/0019_clear_mask.t](../../../tests/quant/palette/alpha_float/0019_clear_mask.t) |
+| AN-20 | Masked, opaque, then masked jobs on one encoder keep separate slot state. | [tests/quant/palette/alpha_float/0020_mask_reuse.t](../../../tests/quant/palette/alpha_float/0020_mask_reuse.t) |
+| AN-21 | Changing only hidden RGB leaves visible palette values and indexes unchanged. | [tests/quant/palette/alpha_float/0021_hidden_invariance.t](../../../tests/quant/palette/alpha_float/0021_hidden_invariance.t) |
+| AN-22 | Nonzero FS feedback crosses the midpoint while a third pixel remains omitted. | [tests/quant/palette/alpha_float/0022_fs_feedback.t](../../../tests/quant/palette/alpha_float/0022_fs_feedback.t) |
+| AN-23 | The prepared FHEDT path preserves the visible colors and omission mask. | [tests/quant/palette/alpha_float/0023_fhedt_mask.t](../../../tests/quant/palette/alpha_float/0023_fhedt_mask.t) |
+| AN-24 | A black visible query cannot select the reserved key in prepared FHEDT. | [tests/quant/palette/alpha_float/0024_fhedt_reserved.t](../../../tests/quant/palette/alpha_float/0024_fhedt_reserved.t) |
+| AN-25 | An sRGB red background hint affects only the reserved working entry. | [tests/quant/palette/alpha_float/0025_background_key.t](../../../tests/quant/palette/alpha_float/0025_background_key.t) |
+| AN-26 | A present all-zero mask reserves a slot without omitting any image pixel. | [tests/quant/palette/alpha_float/0026_zero_mask.t](../../../tests/quant/palette/alpha_float/0026_zero_mask.t) |
+| AN-27 | Exact binning consumes only visible native samples. | [tests/quant/palette/alpha_float/0027_exact_binning.t](../../../tests/quant/palette/alpha_float/0027_exact_binning.t) |
+| AN-28 | Hard binning consumes only visible native samples. | [tests/quant/palette/alpha_float/0028_hard_binning.t](../../../tests/quant/palette/alpha_float/0028_hard_binning.t) |
+| AN-29 | Soft binning consumes only visible native samples. | [tests/quant/palette/alpha_float/0029_soft_binning.t](../../../tests/quant/palette/alpha_float/0029_soft_binning.t) |
+| AN-30 | A black visible query cannot select the reserved key in prepared VP-tree. | [tests/quant/palette/alpha_float/0030_vptree_reserved.t](../../../tests/quant/palette/alpha_float/0030_vptree_reserved.t) |
+| AN-31 | A black visible query cannot select the reserved key in prepared Eytzinger. | [tests/quant/palette/alpha_float/0031_eytzinger_reserved.t](../../../tests/quant/palette/alpha_float/0031_eytzinger_reserved.t) |
+| AN-32 | Exhaustive lookup excludes the same omission-only slot. | [tests/quant/palette/alpha_float/0032_scan_reserved.t](../../../tests/quant/palette/alpha_float/0032_scan_reserved.t) |
+| AN-33 | Linear clustering converts back to native CIELAB without byte reconstruction. | [tests/quant/palette/alpha_float/0033_cross_space.t](../../../tests/quant/palette/alpha_float/0033_cross_space.t) |
+
 
 ### Behavioral contract tests
 
@@ -711,6 +760,8 @@ The independent fixture generator in `tools/generate_palette_space_fixtures.py` 
 
 
 ### Defensive and malformed-input tests
+
+The [separate-mask palette suite](../../../tests/quant/palette/alpha_float) also injects a one-shot allocation failure before visible-sample construction. It checks that no image bytes are emitted, a caller's quantizer override is unchanged, and the same encoder and frame succeed on retry.
 
 The [automatic CLI cases](../../../tests/cli/color/session) also reject malformed timeout numbers and keys. The controller boundary cases in the same category compile the actual controller with isolated dependency calls, deterministically cancelling during restoration writes or final terminal release while preserving original encoder errors and preventing another image. These are control-flow observations; real process-signal tests are identified above. The [TTY transport tests](../../../tests/cli/color/tty) separately cover absolute deadlines, backpressure, framing, stale bytes, identity/foreground changes and exact state restoration.
 
