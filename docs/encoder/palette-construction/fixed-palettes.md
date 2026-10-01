@@ -69,12 +69,22 @@ The [selected opaque static CPU path](../output/output-colorspace.md#selected-or
 
 Table order, duplicate colors and unused entries are retained. `-M` exports the supplied sRGB8 values before wire conversion. A source or operation that needs float selects native application; an otherwise byte-eligible ordinary gamma job keeps its byte path. Changing the output, source precision or built-in table on one encoder recomputes the corresponding working/wire state. Palette construction is still bypassed, and an explicit cover option still conflicts with `-b`.
 
-The other selected-path limits still apply. Snap must be disabled or have zero rate; ordinary output with active snap retains its existing accepted no-op path, and Display P3 with active snap is rejected before output. Alpha/animation, GPU, nonstandard output modes and the distinct `-e` foreground-mask mode are outside this extension. A native gray1 palette emits ordinary black/white color definitions and maps pixels using the configured working geometry; it does not acquire the receiver-dependent foreground-mask semantics of `-e`.
+The other selected-path limits still apply. Snap must be disabled or have zero rate; ordinary output with active snap retains its existing accepted no-op path, and Display P3 with active snap is rejected before output. Alpha/animation, GPU and nonstandard output modes remain outside this built-in-table extension. The distinct `-e` foreground-mask path is described below. A native gray1 palette emits ordinary black/white color definitions and maps pixels using the configured working geometry; it does not acquire the receiver-dependent foreground-mask semantics of `-e`.
 
 ```sh
 img2sixel --precision=float32 -b xterm256 -W oklab -d fs image.png
 img2sixel -b xterm16 -U display-p3 -d fs image.png
 ```
+
+## Native monochrome application
+
+The selected static CPU float path also prepares `-e` and `-e -i` endpoints in the requested gamma, linear, Oklab, CIELAB or DIN99d working coordinates. Black and white start as sRGB colors; opponent-space black is not an all-zero encoded byte triple, and opponent-space white is not an all-255 triple. Retained float coordinates feed lookup and spatial/positional diffusion without reconstruction through working-space bytes. A matching typed float source retains negative and above-one samples through application, subject to the separately selected [diffusion clamp policy](../palette-application/clamp-policy.md).
+
+The foreground-mask convention is unchanged: entry zero is a mapping candidate and is omitted, entry one paints the receiver's foreground, and neither palette definitions nor color selections are sent. `-i` reverses the assumed black/white endpoints; it does not change which index is omitted. `-A` still controls the DCS clear/keep request. A completely omitted or completely painted image retains the same convention. This differs from an appended alpha key, which is excluded from nearest-color selection.
+
+Gamma, linear, SMPTE-C and Display P3 output definitions are accepted on this selected path, but none can set the actual foreground color of a palette-free mask. Changing only `-U` does not redefine the working black/white endpoints or the sRGB8 `-M` export. Use ordinary indexed output when the receiver must receive explicit RGB colors. This mode remains unsuitable for verifying physical wide-gamut display output by itself.
+
+Genuinely byte-eligible gamma jobs keep their established path. Explicit float requests and already-float sources select native preparation under the same selected-path limits as built-in tables. Reusing an encoder re-evaluates precision, output definition and inversion. Automatic lookup retains its existing selector; explicit lookup remains explicit. Alpha-bearing source frames, animation, GPU and the other excluded modes retain their previous boundary. Fixed-palette snap remains bypassed, and the shared P3 admission check still rejects an active snap request; zero rate is inactive.
 
 ## Implementation
 
@@ -127,6 +137,44 @@ The typed-entry and wire fixtures come from independent Decimal transfer/matrix 
 | FP-30 | Preserve a negative source and propagate its FS residual across the gray1 decision boundary. | [tests/quant/palette/builtin_float/0026_negative_fs.t](../../../tests/quant/palette/builtin_float/0026_negative_fs.t) |
 | FP-31 | Define independently expected P3 red/green colors through the CLI with default palette type and no explicit cover option. | [tests/quant/palette/builtin_float/0027_p3_cli.t](../../../tests/quant/palette/builtin_float/0027_p3_cli.t) |
 | FP-32 | Export the exact xterm16 sRGB8 table after CIELAB application and P3 wire preparation. | [tests/quant/palette/builtin_float/0028_p3_export_cielab.t](../../../tests/quant/palette/builtin_float/0028_p3_export_cielab.t) |
+
+### Native monochrome contracts
+
+The tests reuse the independently derived gray1 endpoints from the built-in fixture above, with the same conversion/storage error budget. Interior samples lie at one quarter and three quarters between those endpoints, away from nearest-color ties. FS witnesses state their two-pixel arithmetic in the common probe; omitted feedback changes the next mask bit, and premature source clipping changes the extended-input witnesses. A small independent parser checks painted bits and the DCS request without assuming the decoder's default foreground palette. These assertions establish coordinate, index and wire behavior; they do not establish what color a particular terminal paints.
+
+| ID | Observation | Owning test |
+| --- | --- | --- |
+| FM-01 | Retain typed black/white endpoints and independently expected foreground bits in gamma. | [tests/quant/palette/mono_float/0001_gamma.t](../../../tests/quant/palette/mono_float/0001_gamma.t) |
+| FM-02 | Retain typed black/white endpoints and independently expected foreground bits in linear. | [tests/quant/palette/mono_float/0002_linear.t](../../../tests/quant/palette/mono_float/0002_linear.t) |
+| FM-03 | Retain typed black/white endpoints and independently expected foreground bits in Oklab. | [tests/quant/palette/mono_float/0003_oklab.t](../../../tests/quant/palette/mono_float/0003_oklab.t) |
+| FM-04 | Retain typed black/white endpoints and independently expected foreground bits in CIELAB. | [tests/quant/palette/mono_float/0004_cielab.t](../../../tests/quant/palette/mono_float/0004_cielab.t) |
+| FM-05 | Retain typed black/white endpoints and independently expected foreground bits in DIN99d. | [tests/quant/palette/mono_float/0005_din99d.t](../../../tests/quant/palette/mono_float/0005_din99d.t) |
+| FM-06 | Reverse endpoint order and foreground bits in gamma. | [tests/quant/palette/mono_float/0006_inverted_gamma.t](../../../tests/quant/palette/mono_float/0006_inverted_gamma.t) |
+| FM-07 | Reverse endpoint order and foreground bits in linear. | [tests/quant/palette/mono_float/0007_inverted_linear.t](../../../tests/quant/palette/mono_float/0007_inverted_linear.t) |
+| FM-08 | Reverse endpoint order and foreground bits in Oklab. | [tests/quant/palette/mono_float/0008_inverted_oklab.t](../../../tests/quant/palette/mono_float/0008_inverted_oklab.t) |
+| FM-09 | Reverse endpoint order and foreground bits in CIELAB. | [tests/quant/palette/mono_float/0009_inverted_cielab.t](../../../tests/quant/palette/mono_float/0009_inverted_cielab.t) |
+| FM-10 | Reverse endpoint order and foreground bits in DIN99d. | [tests/quant/palette/mono_float/0010_inverted_din99d.t](../../../tests/quant/palette/mono_float/0010_inverted_din99d.t) |
+| FM-11 | Propagate nonzero FS feedback into the next foreground decision. | [tests/quant/palette/mono_float/0011_fs_feedback.t](../../../tests/quant/palette/mono_float/0011_fs_feedback.t) |
+| FM-12 | Propagate FS feedback with inverted mapping polarity. | [tests/quant/palette/mono_float/0012_inverted_fs.t](../../../tests/quant/palette/mono_float/0012_inverted_fs.t) |
+| FM-13 | Retain above-one input and its FS residual across the next decision boundary. | [tests/quant/palette/mono_float/0013_positive_fs.t](../../../tests/quant/palette/mono_float/0013_positive_fs.t) |
+| FM-14 | Retain negative input and its FS residual across the next decision boundary. | [tests/quant/palette/mono_float/0014_negative_fs.t](../../../tests/quant/palette/mono_float/0014_negative_fs.t) |
+| FM-15 | Accept P3 while retaining CIELAB endpoints and palette-free mask output. | [tests/quant/palette/mono_float/0015_p3_mask.t](../../../tests/quant/palette/mono_float/0015_p3_mask.t) |
+| FM-16 | Keep CIELAB endpoints and mask semantics with linear output. | [tests/quant/palette/mono_float/0016_linear_output.t](../../../tests/quant/palette/mono_float/0016_linear_output.t) |
+| FM-17 | Keep CIELAB endpoints and mask semantics with SMPTE-C output. | [tests/quant/palette/mono_float/0017_smptec_output.t](../../../tests/quant/palette/mono_float/0017_smptec_output.t) |
+| FM-18 | Preserve genuinely byte-eligible monochrome application. | [tests/quant/palette/mono_float/0018_byte_eligible.t](../../../tests/quant/palette/mono_float/0018_byte_eligible.t) |
+| FM-19 | Honor explicit float preparation with byte input. | [tests/quant/palette/mono_float/0019_explicit_float.t](../../../tests/quant/palette/mono_float/0019_explicit_float.t) |
+| FM-20 | Re-evaluate native/byte/native preparation on one encoder. | [tests/quant/palette/mono_float/0020_precision_reuse.t](../../../tests/quant/palette/mono_float/0020_precision_reuse.t) |
+| FM-21 | Re-evaluate byte gamma/native P3/byte gamma preparation on one encoder. | [tests/quant/palette/mono_float/0021_output_reuse.t](../../../tests/quant/palette/mono_float/0021_output_reuse.t) |
+| FM-22 | Apply an inversion change on the same encoder without stale endpoints. | [tests/quant/palette/mono_float/0022_inversion_reuse.t](../../../tests/quant/palette/mono_float/0022_inversion_reuse.t) |
+| FM-23 | Emit the clear request while preserving the independently expected mask. | [tests/quant/palette/mono_float/0023_clear_mask.t](../../../tests/quant/palette/mono_float/0023_clear_mask.t) |
+| FM-24 | Accept zero-rate snap as inactive in P3 monochrome output. | [tests/quant/palette/mono_float/0024_p3_zero_snap.t](../../../tests/quant/palette/mono_float/0024_p3_zero_snap.t) |
+| FM-25 | Reject P3 active snap before output and recover after disabling it. | [tests/quant/palette/mono_float/0025_p3_snap_recovery.t](../../../tests/quant/palette/mono_float/0025_p3_snap_recovery.t) |
+| FM-26 | Keep multiframe outside native admission and restore native static application. | [tests/quant/palette/mono_float/0026_multiframe_boundary.t](../../../tests/quant/palette/mono_float/0026_multiframe_boundary.t) |
+| FM-27 | Export the exact inverted sRGB8 endpoints after CIELAB application. | [tests/quant/palette/mono_float/0027_cielab_export.t](../../../tests/quant/palette/mono_float/0027_cielab_export.t) |
+| FM-28 | Preserve the automatic gamma lookup selector and expected mask. | [tests/quant/palette/mono_float/0028_auto_gamma.t](../../../tests/quant/palette/mono_float/0028_auto_gamma.t) |
+| FM-29 | Use correctly typed endpoints with automatic CIELAB lookup. | [tests/quant/palette/mono_float/0029_auto_cielab.t](../../../tests/quant/palette/mono_float/0029_auto_cielab.t) |
+| FM-30 | Preserve a fully omitted mask without emitting palette commands. | [tests/quant/palette/mono_float/0030_empty_mask.t](../../../tests/quant/palette/mono_float/0030_empty_mask.t) |
+| FM-31 | Preserve a fully painted mask without emitting palette commands. | [tests/quant/palette/mono_float/0031_full_mask.t](../../../tests/quant/palette/mono_float/0031_full_mask.t) |
 
 ### Coverage boundary
 

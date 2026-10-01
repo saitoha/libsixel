@@ -7052,8 +7052,8 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
         return 0;
     }
     /* Generated palettes and image maps share the supported solver families;
-     * structured maps and built-in tables skip construction but retain the
-     * working palette.
+     * structured maps, built-in tables and monochrome endpoints skip
+     * construction but retain the working palette.
      * All five typed spaces use the extended common transform. SMPTE-C
      * remains an output-only legacy definition, not a working geometry.
      * A zero snap approach is identity and must choose the same precision
@@ -7077,6 +7077,7 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
                  SIXEL_FINAL_MERGE_WARD) ||
             (encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
              encoder->color_option != SIXEL_COLOR_OPTION_BUILTIN &&
+             encoder->color_option != SIXEL_COLOR_OPTION_MONOCHROME &&
              encoder->cover_policy != SIXEL_PALETTE_COVER_OFF &&
              (!cover_mode_explicit ||
               (cover_mode != SIXEL_PALETTE_COVER_MODE_SOFT &&
@@ -7092,7 +7093,8 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
             palette_type != SIXEL_PALETTETYPE_RGB ||
             (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT &&
              encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
-             encoder->color_option != SIXEL_COLOR_OPTION_BUILTIN) ||
+             encoder->color_option != SIXEL_COLOR_OPTION_BUILTIN &&
+             encoder->color_option != SIXEL_COLOR_OPTION_MONOCHROME) ||
             encoder->ormode != 0 || encoder->fdrcs != 0 ||
             encoder->fuse_macro != 0 || encoder->macro_number >= 0 ||
             encoder->sixdelta_enabled != 0 || encoder->output_is_png != 0 ||
@@ -7308,6 +7310,15 @@ sixel_encoder_prepare_palette(
             status = SIXEL_OK;
         } else {
             status = sixel_prepare_monochrome_palette(dither, encoder->finvert);
+            if (SIXEL_SUCCEEDED(status) &&
+                    sixel_encoder_rgb101_frame(encoder, frame)) {
+                /* Black/white are sRGB endpoints, not encoded opponent
+                 * coordinates. Preserve the unreserved entry-zero key:
+                 * it selects the foreground-mask writer, even though
+                 * application now uses a native float working palette. */
+                status = sixel_encoder_import_srgb_palette(encoder,
+                    *dither, 1);
+            }
         }
         goto end;
     case SIXEL_COLOR_OPTION_MAPFILE:

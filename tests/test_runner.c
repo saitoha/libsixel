@@ -683,6 +683,37 @@ int test_fh_lookup_0020(int argc, char **argv);
 int test_fh_lookup_0021(int argc, char **argv);
 int test_fh_lookup_0022(int argc, char **argv);
 int test_fh_lookup_0023(int argc, char **argv);
+int test_mono_native_0001(int argc, char **argv);
+int test_mono_native_0002(int argc, char **argv);
+int test_mono_native_0003(int argc, char **argv);
+int test_mono_native_0004(int argc, char **argv);
+int test_mono_native_0005(int argc, char **argv);
+int test_mono_native_0006(int argc, char **argv);
+int test_mono_native_0007(int argc, char **argv);
+int test_mono_native_0008(int argc, char **argv);
+int test_mono_native_0009(int argc, char **argv);
+int test_mono_native_0010(int argc, char **argv);
+int test_mono_native_0011(int argc, char **argv);
+int test_mono_native_0012(int argc, char **argv);
+int test_mono_native_0013(int argc, char **argv);
+int test_mono_native_0014(int argc, char **argv);
+int test_mono_native_0015(int argc, char **argv);
+int test_mono_native_0016(int argc, char **argv);
+int test_mono_native_0017(int argc, char **argv);
+int test_mono_native_0018(int argc, char **argv);
+int test_mono_native_0019(int argc, char **argv);
+int test_mono_native_0020(int argc, char **argv);
+int test_mono_native_0021(int argc, char **argv);
+int test_mono_native_0022(int argc, char **argv);
+int test_mono_native_0023(int argc, char **argv);
+int test_mono_native_0024(int argc, char **argv);
+int test_mono_native_0025(int argc, char **argv);
+int test_mono_native_0026(int argc, char **argv);
+int test_mono_native_0027(int argc, char **argv);
+int test_mono_native_0028(int argc, char **argv);
+int test_mono_native_0029(int argc, char **argv);
+int test_mono_native_0030(int argc, char **argv);
+int test_mono_native_0031(int argc, char **argv);
 int test_builtin_native_0001(int argc, char **argv);
 int test_builtin_native_0002(int argc, char **argv);
 int test_builtin_native_0003(int argc, char **argv);
@@ -3648,6 +3679,68 @@ static test_entry_t const test_entries[] = {
       test_fh_lookup_0022 },
     { "lookup/fhedt/0023_fh_instance_isolation",
       test_fh_lookup_0023 },
+    { "quant/palette/mono_float/0001_gamma",
+      test_mono_native_0001 },
+    { "quant/palette/mono_float/0002_linear",
+      test_mono_native_0002 },
+    { "quant/palette/mono_float/0003_oklab",
+      test_mono_native_0003 },
+    { "quant/palette/mono_float/0004_cielab",
+      test_mono_native_0004 },
+    { "quant/palette/mono_float/0005_din99d",
+      test_mono_native_0005 },
+    { "quant/palette/mono_float/0006_inverted_gamma",
+      test_mono_native_0006 },
+    { "quant/palette/mono_float/0007_inverted_linear",
+      test_mono_native_0007 },
+    { "quant/palette/mono_float/0008_inverted_oklab",
+      test_mono_native_0008 },
+    { "quant/palette/mono_float/0009_inverted_cielab",
+      test_mono_native_0009 },
+    { "quant/palette/mono_float/0010_inverted_din99d",
+      test_mono_native_0010 },
+    { "quant/palette/mono_float/0011_fs_feedback",
+      test_mono_native_0011 },
+    { "quant/palette/mono_float/0012_inverted_fs",
+      test_mono_native_0012 },
+    { "quant/palette/mono_float/0013_positive_fs",
+      test_mono_native_0013 },
+    { "quant/palette/mono_float/0014_negative_fs",
+      test_mono_native_0014 },
+    { "quant/palette/mono_float/0015_p3_mask",
+      test_mono_native_0015 },
+    { "quant/palette/mono_float/0016_linear_output",
+      test_mono_native_0016 },
+    { "quant/palette/mono_float/0017_smptec_output",
+      test_mono_native_0017 },
+    { "quant/palette/mono_float/0018_byte_eligible",
+      test_mono_native_0018 },
+    { "quant/palette/mono_float/0019_explicit_float",
+      test_mono_native_0019 },
+    { "quant/palette/mono_float/0020_precision_reuse",
+      test_mono_native_0020 },
+    { "quant/palette/mono_float/0021_output_reuse",
+      test_mono_native_0021 },
+    { "quant/palette/mono_float/0022_inversion_reuse",
+      test_mono_native_0022 },
+    { "quant/palette/mono_float/0023_clear_mask",
+      test_mono_native_0023 },
+    { "quant/palette/mono_float/0024_p3_zero_snap",
+      test_mono_native_0024 },
+    { "quant/palette/mono_float/0025_p3_snap_recovery",
+      test_mono_native_0025 },
+    { "quant/palette/mono_float/0026_multiframe_boundary",
+      test_mono_native_0026 },
+    { "quant/palette/mono_float/0027_cielab_export",
+      test_mono_native_0027 },
+    { "quant/palette/mono_float/0028_auto_gamma",
+      test_mono_native_0028 },
+    { "quant/palette/mono_float/0029_auto_cielab",
+      test_mono_native_0029 },
+    { "quant/palette/mono_float/0030_empty_mask",
+      test_mono_native_0030 },
+    { "quant/palette/mono_float/0031_full_mask",
+      test_mono_native_0031 },
     { "quant/palette/builtin_float/0001_srgb_gamma",
       test_builtin_native_0001 },
     { "quant/palette/builtin_float/0002_srgb_linear",

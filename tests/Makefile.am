@@ -993,6 +993,38 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0002_SCAN_CONTRACT \
     -DBUILD_TEST_0001_EXTENDED_LOOKUP \
     -DBUILD_FHEDT_TEST_COMMON \
+    -DBUILD_MONO_FLOAT_COMMON \
+    -DBUILD_TEST_0001_GAMMA \
+    -DBUILD_TEST_0002_LINEAR \
+    -DBUILD_TEST_0003_OKLAB \
+    -DBUILD_TEST_0004_CIELAB \
+    -DBUILD_TEST_0005_DIN99D \
+    -DBUILD_TEST_0006_INVERTED_GAMMA \
+    -DBUILD_TEST_0007_INVERTED_LINEAR \
+    -DBUILD_TEST_0008_INVERTED_OKLAB \
+    -DBUILD_TEST_0009_INVERTED_CIELAB \
+    -DBUILD_TEST_0010_INVERTED_DIN99D \
+    -DBUILD_TEST_0011_FS_FEEDBACK \
+    -DBUILD_TEST_0012_INVERTED_FS \
+    -DBUILD_TEST_0013_POSITIVE_FS \
+    -DBUILD_TEST_0014_NEGATIVE_FS \
+    -DBUILD_TEST_0015_P3_MASK \
+    -DBUILD_TEST_0016_LINEAR_OUTPUT \
+    -DBUILD_TEST_0017_SMPTEC_OUTPUT \
+    -DBUILD_TEST_0018_BYTE_ELIGIBLE \
+    -DBUILD_TEST_0019_EXPLICIT_FLOAT \
+    -DBUILD_TEST_0020_PRECISION_REUSE \
+    -DBUILD_TEST_0021_OUTPUT_REUSE \
+    -DBUILD_TEST_0022_INVERSION_REUSE \
+    -DBUILD_TEST_0023_CLEAR_MASK \
+    -DBUILD_TEST_0024_P3_ZERO_SNAP \
+    -DBUILD_TEST_0025_P3_SNAP_RECOVERY \
+    -DBUILD_TEST_0026_MULTIFRAME_BOUNDARY \
+    -DBUILD_TEST_0027_CIELAB_EXPORT \
+    -DBUILD_TEST_0028_AUTO_GAMMA \
+    -DBUILD_TEST_0029_AUTO_CIELAB \
+    -DBUILD_TEST_0030_EMPTY_MASK \
+    -DBUILD_TEST_0031_FULL_MASK \
     -DBUILD_BUILTIN_FLOAT_COMMON \
     -DBUILD_TEST_0001_SRGB_GAMMA \
     -DBUILD_TEST_0002_SRGB_LINEAR \
@@ -4487,6 +4519,38 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/merge_float/0002_scan_contract.c \
     processing/lookup/extended/0001_extended_lookup.c \
     processing/lookup/fhedt_test_common.c \
+    quant/palette/mono_float_common.c \
+    quant/palette/mono_float/0001_gamma.c \
+    quant/palette/mono_float/0002_linear.c \
+    quant/palette/mono_float/0003_oklab.c \
+    quant/palette/mono_float/0004_cielab.c \
+    quant/palette/mono_float/0005_din99d.c \
+    quant/palette/mono_float/0006_inverted_gamma.c \
+    quant/palette/mono_float/0007_inverted_linear.c \
+    quant/palette/mono_float/0008_inverted_oklab.c \
+    quant/palette/mono_float/0009_inverted_cielab.c \
+    quant/palette/mono_float/0010_inverted_din99d.c \
+    quant/palette/mono_float/0011_fs_feedback.c \
+    quant/palette/mono_float/0012_inverted_fs.c \
+    quant/palette/mono_float/0013_positive_fs.c \
+    quant/palette/mono_float/0014_negative_fs.c \
+    quant/palette/mono_float/0015_p3_mask.c \
+    quant/palette/mono_float/0016_linear_output.c \
+    quant/palette/mono_float/0017_smptec_output.c \
+    quant/palette/mono_float/0018_byte_eligible.c \
+    quant/palette/mono_float/0019_explicit_float.c \
+    quant/palette/mono_float/0020_precision_reuse.c \
+    quant/palette/mono_float/0021_output_reuse.c \
+    quant/palette/mono_float/0022_inversion_reuse.c \
+    quant/palette/mono_float/0023_clear_mask.c \
+    quant/palette/mono_float/0024_p3_zero_snap.c \
+    quant/palette/mono_float/0025_p3_snap_recovery.c \
+    quant/palette/mono_float/0026_multiframe_boundary.c \
+    quant/palette/mono_float/0027_cielab_export.c \
+    quant/palette/mono_float/0028_auto_gamma.c \
+    quant/palette/mono_float/0029_auto_cielab.c \
+    quant/palette/mono_float/0030_empty_mask.c \
+    quant/palette/mono_float/0031_full_mask.c \
     quant/palette/builtin_float_common.c \
     quant/palette/builtin_float/0001_srgb_gamma.c \
     quant/palette/builtin_float/0002_srgb_linear.c \
