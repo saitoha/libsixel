@@ -683,6 +683,16 @@ int test_fh_lookup_0020(int argc, char **argv);
 int test_fh_lookup_0021(int argc, char **argv);
 int test_fh_lookup_0022(int argc, char **argv);
 int test_fh_lookup_0023(int argc, char **argv);
+int test_mono_lookup_0001(int argc, char **argv);
+int test_mono_lookup_0002(int argc, char **argv);
+int test_mono_lookup_0003(int argc, char **argv);
+int test_mono_lookup_0004(int argc, char **argv);
+int test_mono_lookup_0005(int argc, char **argv);
+int test_mono_lookup_0006(int argc, char **argv);
+int test_mono_lookup_0007(int argc, char **argv);
+int test_mono_lookup_0008(int argc, char **argv);
+int test_mono_lookup_0009(int argc, char **argv);
+int test_mono_lookup_0010(int argc, char **argv);
 int test_mono_native_0001(int argc, char **argv);
 int test_mono_native_0002(int argc, char **argv);
 int test_mono_native_0003(int argc, char **argv);
@@ -3679,6 +3689,26 @@ static test_entry_t const test_entries[] = {
       test_fh_lookup_0022 },
     { "lookup/fhedt/0023_fh_instance_isolation",
       test_fh_lookup_0023 },
+    { "lookup/mono_float/0001_dark_values",
+      test_mono_lookup_0001 },
+    { "lookup/mono_float/0002_light_values",
+      test_mono_lookup_0002 },
+    { "lookup/mono_float/0003_padded_stride",
+      test_mono_lookup_0003 },
+    { "lookup/mono_float/0004_byte_palette",
+      test_mono_lookup_0004 },
+    { "lookup/mono_float/0005_reprepare_isolation",
+      test_mono_lookup_0005 },
+    { "lookup/mono_float/0006_extended_sum",
+      test_mono_lookup_0006 },
+    { "lookup/mono_float/0007_byte_compatibility",
+      test_mono_lookup_0007 },
+    { "lookup/mono_float/0008_encoder_dark",
+      test_mono_lookup_0008 },
+    { "lookup/mono_float/0009_encoder_light",
+      test_mono_lookup_0009 },
+    { "lookup/mono_float/0010_encoder_fs",
+      test_mono_lookup_0010 },
     { "quant/palette/mono_float/0001_gamma",
       test_mono_native_0001 },
     { "quant/palette/mono_float/0002_linear",

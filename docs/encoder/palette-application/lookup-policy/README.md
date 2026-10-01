@@ -320,6 +320,10 @@ entry and preserves the first-index tie rule.
 
 When lookup selection is automatic, a completed palette containing exactly black then white, or white then black, activates an internal monochrome threshold policy. An explicit `none` request is honored before this automatic specialization and therefore selects the exhaustive implementation even for that canonical two-entry shape.
 
+The float monochrome classes consume float samples in the same coordinates as the prepared palette. They copy the midpoint `m = (c[0] + c[1]) / 2` and direction `v = c[1] - c[0]`, then choose entry one only when `dot(x - m, v) > 0`; a tie keeps entry zero. This is unweighted two-entry nearest-color lookup, independent of black/white ordering. Palette padding is respected. A request without a float palette uses the byte palette values as coordinates, matching the direct float scan's fallback; it does not assume a normalized `0..1` scale. Midpoint, direction and query arithmetic use double so finite float excursions do not overflow solely through binary32 accumulation. The copied state belongs to each prepared object and is immutable during queries.
+
+The byte monochrome classes retain their historical threshold `sum(channels) >= 128 * color_count` (with reversed polarity for light background); that legacy threshold is not the two-entry Euclidean midpoint. The float correction does not change this byte compatibility behavior. On the selected extended float path, the specialization remains bypassed as described under [`auto`](#policy-auto).
+
 ### Cost
 
 For palette size `K`:
@@ -2045,6 +2049,23 @@ of this interface, see [Dithering](../dithering/README.md).
 ## Test coverage
 
 <!-- test-coverage: enforced -->
+
+### Float monochrome specialization
+
+These value tests exercise the named component and the legacy encoder consumer separately from the selected native-palette path. Literal RGB decisions and independently calculated two-pixel FS feedback protect sample representation and mask semantics; factory existence or an in-range index alone is insufficient.
+
+| ID | Observation | Owning test |
+| --- | --- | --- |
+| ML-01 | Float dark-background queries preserve fractional RGB decisions and first-entry ties. | [tests/processing/lookup/mono_float/0001_dark_values.t](../../../../tests/processing/lookup/mono_float/0001_dark_values.t) |
+| ML-02 | Float light-background queries reverse black/white ordering without changing the first-entry tie rule. | [tests/processing/lookup/mono_float/0002_light_values.t](../../../../tests/processing/lookup/mono_float/0002_light_values.t) |
+| ML-03 | Float palette stride skips padding between the two entries. | [tests/processing/lookup/mono_float/0003_padded_stride.t](../../../../tests/processing/lookup/mono_float/0003_padded_stride.t) |
+| ML-04 | Float queries without a float palette use byte-coordinate endpoints. | [tests/processing/lookup/mono_float/0004_byte_palette.t](../../../../tests/processing/lookup/mono_float/0004_byte_palette.t) |
+| ML-05 | Repreparing one object replaces its decision plane without changing another instance. | [tests/processing/lookup/mono_float/0005_reprepare_isolation.t](../../../../tests/processing/lookup/mono_float/0005_reprepare_isolation.t) |
+| ML-06 | Double query accumulation preserves extended finite samples whose float sums overflow. | [tests/processing/lookup/mono_float/0006_extended_sum.t](../../../../tests/processing/lookup/mono_float/0006_extended_sum.t) |
+| ML-07 | The existing byte monochrome threshold remains unchanged. | [tests/processing/lookup/mono_float/0007_byte_compatibility.t](../../../../tests/processing/lookup/mono_float/0007_byte_compatibility.t) |
+| ML-08 | The legacy encoder auto path maps two float gray samples to the expected palette-free dark-background mask. | [tests/processing/lookup/mono_float/0008_encoder_dark.t](../../../../tests/processing/lookup/mono_float/0008_encoder_dark.t) |
+| ML-09 | The legacy encoder auto path maps the same samples to the reversed light-background mask. | [tests/processing/lookup/mono_float/0009_encoder_light.t](../../../../tests/processing/lookup/mono_float/0009_encoder_light.t) |
+| ML-10 | Nonzero FS feedback changes the second legacy-auto float decision across the midpoint. | [tests/processing/lookup/mono_float/0010_encoder_fs.t](../../../../tests/processing/lookup/mono_float/0010_encoder_fs.t) |
 
 ### FHEDT weighting contracts
 

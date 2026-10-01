@@ -49,6 +49,8 @@ typedef struct sixel_lookup_policy_mono_darkbg_object {
     sixel_allocator_t *allocator;
     int depth;
     int reqcolor;
+    double midpoint[3];
+    double direction[3];
 } sixel_lookup_policy_mono_darkbg_object_t;
 
 static sixel_lookup_policy_mono_darkbg_object_t *
@@ -126,6 +128,48 @@ sixel_lookup_policy_mono_darkbg_prepare(
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+sixel_lookup_policy_mono_darkbg_prepare_float32(
+    sixel_lookup_policy_interface_t *policy,
+    sixel_lookup_policy_prepare_request_t const *request)
+{
+    sixel_lookup_policy_mono_darkbg_object_t *object;
+    double first;
+    double second;
+    int stride;
+    int n;
+
+    object = NULL;
+    if (policy == NULL || request == NULL || request->palette == NULL
+            || request->depth <= 0 || request->depth > 3
+            || request->reqcolor != 2) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    object = sixel_lookup_policy_mono_darkbg_from_base(policy);
+    object->depth = request->depth;
+    object->reqcolor = request->reqcolor;
+
+    /* A float query uses the prepared coordinate scale, which need not be
+     * byte RGB. Copy the two-entry decision plane so reprepare and shared
+     * read-only queries never borrow mutable palette state. The byte class
+     * retains its legacy threshold; only the float callback uses this. */
+    stride = request->float_depth / (int)sizeof(float);
+    for (n = 0; n < object->depth; ++n) {
+        if (request->palette_float != NULL && stride >= object->depth) {
+            first = request->palette_float[n];
+            second = request->palette_float[stride + n];
+        } else {
+            first = request->palette[n];
+            second = request->palette[object->depth + n];
+        }
+        object->midpoint[n] = (first + second) * .5;
+        object->direction[n] = second - first;
+    }
+
+    return SIXEL_OK;
+}
+
 static int
 sixel_lookup_policy_mono_darkbg_map_pixel(
     sixel_lookup_policy_interface_t const *policy,
@@ -154,6 +198,33 @@ sixel_lookup_policy_mono_darkbg_map_pixel(
     return distant >= 128 * object->reqcolor ? 1 : 0;
 }
 
+static int
+sixel_lookup_policy_mono_darkbg_map_float32(
+    sixel_lookup_policy_interface_t const *policy,
+    unsigned char const *pixel)
+{
+    sixel_lookup_policy_mono_darkbg_object_t const *object;
+    float const *values;
+    double projection;
+    int n;
+
+    if (policy == NULL || pixel == NULL) {
+        return 0;
+    }
+    object = sixel_lookup_policy_mono_darkbg_from_base_const(policy);
+    values = (float const *)(void const *)pixel;
+    projection = 0;
+    /* Difference of squared distances, factored around the midpoint.
+     * Double intermediates retain finite float excursions; reading the
+     * first bytes of a float instead produces representation-dependent
+     * noise. A tie keeps palette entry zero, as in exhaustive lookup. */
+    for (n = 0; n < object->depth; ++n) {
+        projection += ((double)values[n] - object->midpoint[n]) *
+            object->direction[n];
+    }
+    return projection > 0 ? 1 : 0;
+}
+
 static sixel_lookup_policy_vtbl_t
     g_sixel_lookup_policy_mono_darkbg_8bit_vtbl = {
     sixel_lookup_policy_mono_darkbg_ref,
@@ -166,8 +237,8 @@ static sixel_lookup_policy_vtbl_t
     g_sixel_lookup_policy_mono_darkbg_float32_vtbl = {
     sixel_lookup_policy_mono_darkbg_ref,
     sixel_lookup_policy_mono_darkbg_unref,
-    sixel_lookup_policy_mono_darkbg_prepare,
-    sixel_lookup_policy_mono_darkbg_map_pixel,
+    sixel_lookup_policy_mono_darkbg_prepare_float32,
+    sixel_lookup_policy_mono_darkbg_map_float32,
 };
 
 SIXELSTATUS

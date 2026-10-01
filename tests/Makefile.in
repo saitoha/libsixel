@@ -2139,6 +2139,17 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/output_float/0025_linear_fixed_map.c \
 	quant/palette/output_float/0026_smptec_fixed_map.c \
 	quant/palette/output_float/0027_output_reuse.c \
+	processing/lookup/mono_lookup_common.c \
+	processing/lookup/mono_float/0001_dark_values.c \
+	processing/lookup/mono_float/0002_light_values.c \
+	processing/lookup/mono_float/0003_padded_stride.c \
+	processing/lookup/mono_float/0004_byte_palette.c \
+	processing/lookup/mono_float/0005_reprepare_isolation.c \
+	processing/lookup/mono_float/0006_extended_sum.c \
+	processing/lookup/mono_float/0007_byte_compatibility.c \
+	processing/lookup/mono_float/0008_encoder_dark.c \
+	processing/lookup/mono_float/0009_encoder_light.c \
+	processing/lookup/mono_float/0010_encoder_fs.c \
 	processing/lookup/fhedt_byte_test_common.c \
 	processing/lookup/fhedt_byte/0001_y_labels.c \
 	processing/lookup/fhedt_byte/0002_z_labels.c \
@@ -4510,6 +4521,17 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0025_linear_fixed_map.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0026_smptec_fixed_map.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/output_float/test_runner-0027_output_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-mono_lookup_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/mono_float/test_runner-0001_dark_values.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/mono_float/test_runner-0002_light_values.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/mono_float/test_runner-0003_padded_stride.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/mono_float/test_runner-0004_byte_palette.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/mono_float/test_runner-0005_reprepare_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/mono_float/test_runner-0006_extended_sum.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/mono_float/test_runner-0007_byte_compatibility.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/mono_float/test_runner-0008_encoder_dark.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/mono_float/test_runner-0009_encoder_light.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/mono_float/test_runner-0010_encoder_fs.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-fhedt_byte_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_byte/test_runner-0001_y_labels.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/fhedt_byte/test_runner-0002_z_labels.$(OBJEXT) \
@@ -6855,6 +6877,7 @@ am__depfiles_remade =  \
 	processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po \
 	processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po \
 	processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Po \
+	processing/lookup/$(DEPDIR)/test_runner-mono_lookup_common.Po \
 	processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po \
 	processing/lookup/eytzinger/$(DEPDIR)/test_runner-0001_eyt_gamma_range.Po \
 	processing/lookup/eytzinger/$(DEPDIR)/test_runner-0002_eyt_linear_range.Po \
@@ -6982,6 +7005,16 @@ am__depfiles_remade =  \
 	processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0028_mah_oklab_oracle_small.Po \
 	processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0029_mah_cielab_oracle_small.Po \
 	processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0030_mah_din99d_oracle_small.Po \
+	processing/lookup/mono_float/$(DEPDIR)/test_runner-0001_dark_values.Po \
+	processing/lookup/mono_float/$(DEPDIR)/test_runner-0002_light_values.Po \
+	processing/lookup/mono_float/$(DEPDIR)/test_runner-0003_padded_stride.Po \
+	processing/lookup/mono_float/$(DEPDIR)/test_runner-0004_byte_palette.Po \
+	processing/lookup/mono_float/$(DEPDIR)/test_runner-0005_reprepare_isolation.Po \
+	processing/lookup/mono_float/$(DEPDIR)/test_runner-0006_extended_sum.Po \
+	processing/lookup/mono_float/$(DEPDIR)/test_runner-0007_byte_compatibility.Po \
+	processing/lookup/mono_float/$(DEPDIR)/test_runner-0008_encoder_dark.Po \
+	processing/lookup/mono_float/$(DEPDIR)/test_runner-0009_encoder_light.Po \
+	processing/lookup/mono_float/$(DEPDIR)/test_runner-0010_encoder_fs.Po \
 	processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Po \
 	processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po \
 	processing/precision/$(DEPDIR)/test_runner-0001_byte_request_float_source.Po \
@@ -8899,6 +8932,17 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_LINEAR_FIXED_MAP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_SMPTEC_FIXED_MAP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_OUTPUT_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_MONO_LOOKUP_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DARK_VALUES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_LIGHT_VALUES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_PADDED_STRIDE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_BYTE_PALETTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_REPREPARE_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_EXTENDED_SUM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_BYTE_COMPATIBILITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_ENCODER_DARK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_ENCODER_LIGHT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_ENCODER_FS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_FHEDT_BYTE_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_Y_LABELS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_Z_LABELS \
@@ -12456,6 +12500,17 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0025_linear_fixed_map.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0026_smptec_fixed_map.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/output_float/0027_output_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/mono_lookup_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/mono_float/0001_dark_values.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/mono_float/0002_light_values.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/mono_float/0003_padded_stride.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/mono_float/0004_byte_palette.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/mono_float/0005_reprepare_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/mono_float/0006_extended_sum.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/mono_float/0007_byte_compatibility.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/mono_float/0008_encoder_dark.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/mono_float/0009_encoder_light.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/mono_float/0010_encoder_fs.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_byte_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_byte/0001_y_labels.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_byte/0002_z_labels.c \
@@ -19323,6 +19378,45 @@ quant/palette/output_float/test_runner-0026_smptec_fixed_map.$(OBJEXT):  \
 quant/palette/output_float/test_runner-0027_output_reuse.$(OBJEXT):  \
 	quant/palette/output_float/$(am__dirstamp) \
 	quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/test_runner-mono_lookup_common.$(OBJEXT):  \
+	processing/lookup/$(am__dirstamp) \
+	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/mono_float/$(am__dirstamp):
+	@$(MKDIR_P) processing/lookup/mono_float
+	@: >>processing/lookup/mono_float/$(am__dirstamp)
+processing/lookup/mono_float/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/lookup/mono_float/$(DEPDIR)
+	@: >>processing/lookup/mono_float/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/mono_float/test_runner-0001_dark_values.$(OBJEXT):  \
+	processing/lookup/mono_float/$(am__dirstamp) \
+	processing/lookup/mono_float/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/mono_float/test_runner-0002_light_values.$(OBJEXT):  \
+	processing/lookup/mono_float/$(am__dirstamp) \
+	processing/lookup/mono_float/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/mono_float/test_runner-0003_padded_stride.$(OBJEXT):  \
+	processing/lookup/mono_float/$(am__dirstamp) \
+	processing/lookup/mono_float/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/mono_float/test_runner-0004_byte_palette.$(OBJEXT):  \
+	processing/lookup/mono_float/$(am__dirstamp) \
+	processing/lookup/mono_float/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/mono_float/test_runner-0005_reprepare_isolation.$(OBJEXT):  \
+	processing/lookup/mono_float/$(am__dirstamp) \
+	processing/lookup/mono_float/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/mono_float/test_runner-0006_extended_sum.$(OBJEXT):  \
+	processing/lookup/mono_float/$(am__dirstamp) \
+	processing/lookup/mono_float/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/mono_float/test_runner-0007_byte_compatibility.$(OBJEXT):  \
+	processing/lookup/mono_float/$(am__dirstamp) \
+	processing/lookup/mono_float/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/mono_float/test_runner-0008_encoder_dark.$(OBJEXT):  \
+	processing/lookup/mono_float/$(am__dirstamp) \
+	processing/lookup/mono_float/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/mono_float/test_runner-0009_encoder_light.$(OBJEXT):  \
+	processing/lookup/mono_float/$(am__dirstamp) \
+	processing/lookup/mono_float/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/mono_float/test_runner-0010_encoder_fs.$(OBJEXT):  \
+	processing/lookup/mono_float/$(am__dirstamp) \
+	processing/lookup/mono_float/$(DEPDIR)/$(am__dirstamp)
 processing/lookup/test_runner-fhedt_byte_test_common.$(OBJEXT):  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
@@ -20717,6 +20811,7 @@ mostlyclean-compile:
 	-rm -f processing/lookup/fhedt_byte/*.$(OBJEXT)
 	-rm -f processing/lookup/fhedt_weight/*.$(OBJEXT)
 	-rm -f processing/lookup/mahalanobis/*.$(OBJEXT)
+	-rm -f processing/lookup/mono_float/*.$(OBJEXT)
 	-rm -f processing/planner/*.$(OBJEXT)
 	-rm -f processing/precision/*.$(OBJEXT)
 	-rm -f processing/scale/*.$(OBJEXT)
@@ -22635,6 +22730,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-mono_lookup_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/eytzinger/$(DEPDIR)/test_runner-0001_eyt_gamma_range.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/eytzinger/$(DEPDIR)/test_runner-0002_eyt_linear_range.Po@am__quote@ # am--include-marker
@@ -22762,6 +22858,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0028_mah_oklab_oracle_small.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0029_mah_cielab_oracle_small.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0030_mah_din99d_oracle_small.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mono_float/$(DEPDIR)/test_runner-0001_dark_values.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mono_float/$(DEPDIR)/test_runner-0002_light_values.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mono_float/$(DEPDIR)/test_runner-0003_padded_stride.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mono_float/$(DEPDIR)/test_runner-0004_byte_palette.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mono_float/$(DEPDIR)/test_runner-0005_reprepare_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mono_float/$(DEPDIR)/test_runner-0006_extended_sum.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mono_float/$(DEPDIR)/test_runner-0007_byte_compatibility.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mono_float/$(DEPDIR)/test_runner-0008_encoder_dark.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mono_float/$(DEPDIR)/test_runner-0009_encoder_light.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mono_float/$(DEPDIR)/test_runner-0010_encoder_fs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/precision/$(DEPDIR)/test_runner-0001_byte_request_float_source.Po@am__quote@ # am--include-marker
@@ -50744,6 +50850,160 @@ quant/palette/output_float/test_runner-0027_output_reuse.obj: quant/palette/outp
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/output_float/test_runner-0027_output_reuse.obj `if test -f 'quant/palette/output_float/0027_output_reuse.c'; then $(CYGPATH_W) 'quant/palette/output_float/0027_output_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/output_float/0027_output_reuse.c'; fi`
 
+processing/lookup/test_runner-mono_lookup_common.o: processing/lookup/mono_lookup_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-mono_lookup_common.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-mono_lookup_common.Tpo -c -o processing/lookup/test_runner-mono_lookup_common.o `test -f 'processing/lookup/mono_lookup_common.c' || echo '$(srcdir)/'`processing/lookup/mono_lookup_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-mono_lookup_common.Tpo processing/lookup/$(DEPDIR)/test_runner-mono_lookup_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_lookup_common.c' object='processing/lookup/test_runner-mono_lookup_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-mono_lookup_common.o `test -f 'processing/lookup/mono_lookup_common.c' || echo '$(srcdir)/'`processing/lookup/mono_lookup_common.c
+
+processing/lookup/test_runner-mono_lookup_common.obj: processing/lookup/mono_lookup_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-mono_lookup_common.obj -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-mono_lookup_common.Tpo -c -o processing/lookup/test_runner-mono_lookup_common.obj `if test -f 'processing/lookup/mono_lookup_common.c'; then $(CYGPATH_W) 'processing/lookup/mono_lookup_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_lookup_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-mono_lookup_common.Tpo processing/lookup/$(DEPDIR)/test_runner-mono_lookup_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_lookup_common.c' object='processing/lookup/test_runner-mono_lookup_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-mono_lookup_common.obj `if test -f 'processing/lookup/mono_lookup_common.c'; then $(CYGPATH_W) 'processing/lookup/mono_lookup_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_lookup_common.c'; fi`
+
+processing/lookup/mono_float/test_runner-0001_dark_values.o: processing/lookup/mono_float/0001_dark_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0001_dark_values.o -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0001_dark_values.Tpo -c -o processing/lookup/mono_float/test_runner-0001_dark_values.o `test -f 'processing/lookup/mono_float/0001_dark_values.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0001_dark_values.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0001_dark_values.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0001_dark_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0001_dark_values.c' object='processing/lookup/mono_float/test_runner-0001_dark_values.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0001_dark_values.o `test -f 'processing/lookup/mono_float/0001_dark_values.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0001_dark_values.c
+
+processing/lookup/mono_float/test_runner-0001_dark_values.obj: processing/lookup/mono_float/0001_dark_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0001_dark_values.obj -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0001_dark_values.Tpo -c -o processing/lookup/mono_float/test_runner-0001_dark_values.obj `if test -f 'processing/lookup/mono_float/0001_dark_values.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0001_dark_values.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0001_dark_values.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0001_dark_values.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0001_dark_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0001_dark_values.c' object='processing/lookup/mono_float/test_runner-0001_dark_values.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0001_dark_values.obj `if test -f 'processing/lookup/mono_float/0001_dark_values.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0001_dark_values.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0001_dark_values.c'; fi`
+
+processing/lookup/mono_float/test_runner-0002_light_values.o: processing/lookup/mono_float/0002_light_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0002_light_values.o -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0002_light_values.Tpo -c -o processing/lookup/mono_float/test_runner-0002_light_values.o `test -f 'processing/lookup/mono_float/0002_light_values.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0002_light_values.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0002_light_values.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0002_light_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0002_light_values.c' object='processing/lookup/mono_float/test_runner-0002_light_values.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0002_light_values.o `test -f 'processing/lookup/mono_float/0002_light_values.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0002_light_values.c
+
+processing/lookup/mono_float/test_runner-0002_light_values.obj: processing/lookup/mono_float/0002_light_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0002_light_values.obj -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0002_light_values.Tpo -c -o processing/lookup/mono_float/test_runner-0002_light_values.obj `if test -f 'processing/lookup/mono_float/0002_light_values.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0002_light_values.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0002_light_values.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0002_light_values.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0002_light_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0002_light_values.c' object='processing/lookup/mono_float/test_runner-0002_light_values.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0002_light_values.obj `if test -f 'processing/lookup/mono_float/0002_light_values.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0002_light_values.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0002_light_values.c'; fi`
+
+processing/lookup/mono_float/test_runner-0003_padded_stride.o: processing/lookup/mono_float/0003_padded_stride.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0003_padded_stride.o -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0003_padded_stride.Tpo -c -o processing/lookup/mono_float/test_runner-0003_padded_stride.o `test -f 'processing/lookup/mono_float/0003_padded_stride.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0003_padded_stride.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0003_padded_stride.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0003_padded_stride.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0003_padded_stride.c' object='processing/lookup/mono_float/test_runner-0003_padded_stride.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0003_padded_stride.o `test -f 'processing/lookup/mono_float/0003_padded_stride.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0003_padded_stride.c
+
+processing/lookup/mono_float/test_runner-0003_padded_stride.obj: processing/lookup/mono_float/0003_padded_stride.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0003_padded_stride.obj -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0003_padded_stride.Tpo -c -o processing/lookup/mono_float/test_runner-0003_padded_stride.obj `if test -f 'processing/lookup/mono_float/0003_padded_stride.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0003_padded_stride.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0003_padded_stride.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0003_padded_stride.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0003_padded_stride.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0003_padded_stride.c' object='processing/lookup/mono_float/test_runner-0003_padded_stride.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0003_padded_stride.obj `if test -f 'processing/lookup/mono_float/0003_padded_stride.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0003_padded_stride.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0003_padded_stride.c'; fi`
+
+processing/lookup/mono_float/test_runner-0004_byte_palette.o: processing/lookup/mono_float/0004_byte_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0004_byte_palette.o -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0004_byte_palette.Tpo -c -o processing/lookup/mono_float/test_runner-0004_byte_palette.o `test -f 'processing/lookup/mono_float/0004_byte_palette.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0004_byte_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0004_byte_palette.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0004_byte_palette.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0004_byte_palette.c' object='processing/lookup/mono_float/test_runner-0004_byte_palette.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0004_byte_palette.o `test -f 'processing/lookup/mono_float/0004_byte_palette.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0004_byte_palette.c
+
+processing/lookup/mono_float/test_runner-0004_byte_palette.obj: processing/lookup/mono_float/0004_byte_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0004_byte_palette.obj -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0004_byte_palette.Tpo -c -o processing/lookup/mono_float/test_runner-0004_byte_palette.obj `if test -f 'processing/lookup/mono_float/0004_byte_palette.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0004_byte_palette.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0004_byte_palette.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0004_byte_palette.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0004_byte_palette.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0004_byte_palette.c' object='processing/lookup/mono_float/test_runner-0004_byte_palette.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0004_byte_palette.obj `if test -f 'processing/lookup/mono_float/0004_byte_palette.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0004_byte_palette.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0004_byte_palette.c'; fi`
+
+processing/lookup/mono_float/test_runner-0005_reprepare_isolation.o: processing/lookup/mono_float/0005_reprepare_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0005_reprepare_isolation.o -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0005_reprepare_isolation.Tpo -c -o processing/lookup/mono_float/test_runner-0005_reprepare_isolation.o `test -f 'processing/lookup/mono_float/0005_reprepare_isolation.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0005_reprepare_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0005_reprepare_isolation.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0005_reprepare_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0005_reprepare_isolation.c' object='processing/lookup/mono_float/test_runner-0005_reprepare_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0005_reprepare_isolation.o `test -f 'processing/lookup/mono_float/0005_reprepare_isolation.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0005_reprepare_isolation.c
+
+processing/lookup/mono_float/test_runner-0005_reprepare_isolation.obj: processing/lookup/mono_float/0005_reprepare_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0005_reprepare_isolation.obj -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0005_reprepare_isolation.Tpo -c -o processing/lookup/mono_float/test_runner-0005_reprepare_isolation.obj `if test -f 'processing/lookup/mono_float/0005_reprepare_isolation.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0005_reprepare_isolation.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0005_reprepare_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0005_reprepare_isolation.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0005_reprepare_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0005_reprepare_isolation.c' object='processing/lookup/mono_float/test_runner-0005_reprepare_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0005_reprepare_isolation.obj `if test -f 'processing/lookup/mono_float/0005_reprepare_isolation.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0005_reprepare_isolation.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0005_reprepare_isolation.c'; fi`
+
+processing/lookup/mono_float/test_runner-0006_extended_sum.o: processing/lookup/mono_float/0006_extended_sum.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0006_extended_sum.o -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0006_extended_sum.Tpo -c -o processing/lookup/mono_float/test_runner-0006_extended_sum.o `test -f 'processing/lookup/mono_float/0006_extended_sum.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0006_extended_sum.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0006_extended_sum.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0006_extended_sum.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0006_extended_sum.c' object='processing/lookup/mono_float/test_runner-0006_extended_sum.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0006_extended_sum.o `test -f 'processing/lookup/mono_float/0006_extended_sum.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0006_extended_sum.c
+
+processing/lookup/mono_float/test_runner-0006_extended_sum.obj: processing/lookup/mono_float/0006_extended_sum.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0006_extended_sum.obj -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0006_extended_sum.Tpo -c -o processing/lookup/mono_float/test_runner-0006_extended_sum.obj `if test -f 'processing/lookup/mono_float/0006_extended_sum.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0006_extended_sum.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0006_extended_sum.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0006_extended_sum.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0006_extended_sum.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0006_extended_sum.c' object='processing/lookup/mono_float/test_runner-0006_extended_sum.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0006_extended_sum.obj `if test -f 'processing/lookup/mono_float/0006_extended_sum.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0006_extended_sum.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0006_extended_sum.c'; fi`
+
+processing/lookup/mono_float/test_runner-0007_byte_compatibility.o: processing/lookup/mono_float/0007_byte_compatibility.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0007_byte_compatibility.o -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0007_byte_compatibility.Tpo -c -o processing/lookup/mono_float/test_runner-0007_byte_compatibility.o `test -f 'processing/lookup/mono_float/0007_byte_compatibility.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0007_byte_compatibility.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0007_byte_compatibility.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0007_byte_compatibility.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0007_byte_compatibility.c' object='processing/lookup/mono_float/test_runner-0007_byte_compatibility.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0007_byte_compatibility.o `test -f 'processing/lookup/mono_float/0007_byte_compatibility.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0007_byte_compatibility.c
+
+processing/lookup/mono_float/test_runner-0007_byte_compatibility.obj: processing/lookup/mono_float/0007_byte_compatibility.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0007_byte_compatibility.obj -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0007_byte_compatibility.Tpo -c -o processing/lookup/mono_float/test_runner-0007_byte_compatibility.obj `if test -f 'processing/lookup/mono_float/0007_byte_compatibility.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0007_byte_compatibility.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0007_byte_compatibility.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0007_byte_compatibility.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0007_byte_compatibility.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0007_byte_compatibility.c' object='processing/lookup/mono_float/test_runner-0007_byte_compatibility.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0007_byte_compatibility.obj `if test -f 'processing/lookup/mono_float/0007_byte_compatibility.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0007_byte_compatibility.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0007_byte_compatibility.c'; fi`
+
+processing/lookup/mono_float/test_runner-0008_encoder_dark.o: processing/lookup/mono_float/0008_encoder_dark.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0008_encoder_dark.o -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0008_encoder_dark.Tpo -c -o processing/lookup/mono_float/test_runner-0008_encoder_dark.o `test -f 'processing/lookup/mono_float/0008_encoder_dark.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0008_encoder_dark.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0008_encoder_dark.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0008_encoder_dark.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0008_encoder_dark.c' object='processing/lookup/mono_float/test_runner-0008_encoder_dark.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0008_encoder_dark.o `test -f 'processing/lookup/mono_float/0008_encoder_dark.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0008_encoder_dark.c
+
+processing/lookup/mono_float/test_runner-0008_encoder_dark.obj: processing/lookup/mono_float/0008_encoder_dark.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0008_encoder_dark.obj -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0008_encoder_dark.Tpo -c -o processing/lookup/mono_float/test_runner-0008_encoder_dark.obj `if test -f 'processing/lookup/mono_float/0008_encoder_dark.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0008_encoder_dark.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0008_encoder_dark.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0008_encoder_dark.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0008_encoder_dark.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0008_encoder_dark.c' object='processing/lookup/mono_float/test_runner-0008_encoder_dark.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0008_encoder_dark.obj `if test -f 'processing/lookup/mono_float/0008_encoder_dark.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0008_encoder_dark.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0008_encoder_dark.c'; fi`
+
+processing/lookup/mono_float/test_runner-0009_encoder_light.o: processing/lookup/mono_float/0009_encoder_light.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0009_encoder_light.o -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0009_encoder_light.Tpo -c -o processing/lookup/mono_float/test_runner-0009_encoder_light.o `test -f 'processing/lookup/mono_float/0009_encoder_light.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0009_encoder_light.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0009_encoder_light.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0009_encoder_light.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0009_encoder_light.c' object='processing/lookup/mono_float/test_runner-0009_encoder_light.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0009_encoder_light.o `test -f 'processing/lookup/mono_float/0009_encoder_light.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0009_encoder_light.c
+
+processing/lookup/mono_float/test_runner-0009_encoder_light.obj: processing/lookup/mono_float/0009_encoder_light.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0009_encoder_light.obj -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0009_encoder_light.Tpo -c -o processing/lookup/mono_float/test_runner-0009_encoder_light.obj `if test -f 'processing/lookup/mono_float/0009_encoder_light.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0009_encoder_light.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0009_encoder_light.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0009_encoder_light.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0009_encoder_light.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0009_encoder_light.c' object='processing/lookup/mono_float/test_runner-0009_encoder_light.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0009_encoder_light.obj `if test -f 'processing/lookup/mono_float/0009_encoder_light.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0009_encoder_light.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0009_encoder_light.c'; fi`
+
+processing/lookup/mono_float/test_runner-0010_encoder_fs.o: processing/lookup/mono_float/0010_encoder_fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0010_encoder_fs.o -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0010_encoder_fs.Tpo -c -o processing/lookup/mono_float/test_runner-0010_encoder_fs.o `test -f 'processing/lookup/mono_float/0010_encoder_fs.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0010_encoder_fs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0010_encoder_fs.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0010_encoder_fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0010_encoder_fs.c' object='processing/lookup/mono_float/test_runner-0010_encoder_fs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0010_encoder_fs.o `test -f 'processing/lookup/mono_float/0010_encoder_fs.c' || echo '$(srcdir)/'`processing/lookup/mono_float/0010_encoder_fs.c
+
+processing/lookup/mono_float/test_runner-0010_encoder_fs.obj: processing/lookup/mono_float/0010_encoder_fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/mono_float/test_runner-0010_encoder_fs.obj -MD -MP -MF processing/lookup/mono_float/$(DEPDIR)/test_runner-0010_encoder_fs.Tpo -c -o processing/lookup/mono_float/test_runner-0010_encoder_fs.obj `if test -f 'processing/lookup/mono_float/0010_encoder_fs.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0010_encoder_fs.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0010_encoder_fs.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/mono_float/$(DEPDIR)/test_runner-0010_encoder_fs.Tpo processing/lookup/mono_float/$(DEPDIR)/test_runner-0010_encoder_fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/mono_float/0010_encoder_fs.c' object='processing/lookup/mono_float/test_runner-0010_encoder_fs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/mono_float/test_runner-0010_encoder_fs.obj `if test -f 'processing/lookup/mono_float/0010_encoder_fs.c'; then $(CYGPATH_W) 'processing/lookup/mono_float/0010_encoder_fs.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/mono_float/0010_encoder_fs.c'; fi`
+
 processing/lookup/test_runner-fhedt_byte_test_common.o: processing/lookup/fhedt_byte_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-fhedt_byte_test_common.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Tpo -c -o processing/lookup/test_runner-fhedt_byte_test_common.o `test -f 'processing/lookup/fhedt_byte_test_common.c' || echo '$(srcdir)/'`processing/lookup/fhedt_byte_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Tpo processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po
@@ -56759,6 +57019,8 @@ distclean-generic:
 	-$(am__rm_f) processing/lookup/fhedt_weight/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/mahalanobis/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/mahalanobis/$(am__dirstamp)
+	-$(am__rm_f) processing/lookup/mono_float/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/lookup/mono_float/$(am__dirstamp)
 	-$(am__rm_f) processing/planner/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/planner/$(am__dirstamp)
 	-$(am__rm_f) processing/precision/$(DEPDIR)/$(am__dirstamp)
@@ -58714,6 +58976,7 @@ distclean: distclean-am
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Po
+	-rm -f processing/lookup/$(DEPDIR)/test_runner-mono_lookup_common.Po
 	-rm -f processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0001_eyt_gamma_range.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0002_eyt_linear_range.Po
@@ -58841,6 +59104,16 @@ distclean: distclean-am
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0028_mah_oklab_oracle_small.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0029_mah_cielab_oracle_small.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0030_mah_din99d_oracle_small.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0001_dark_values.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0002_light_values.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0003_padded_stride.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0004_byte_palette.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0005_reprepare_isolation.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0006_extended_sum.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0007_byte_compatibility.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0008_encoder_dark.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0009_encoder_light.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0010_encoder_fs.Po
 	-rm -f processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Po
 	-rm -f processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po
 	-rm -f processing/precision/$(DEPDIR)/test_runner-0001_byte_request_float_source.Po
@@ -61127,6 +61400,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Po
+	-rm -f processing/lookup/$(DEPDIR)/test_runner-mono_lookup_common.Po
 	-rm -f processing/lookup/extended/$(DEPDIR)/test_runner-0001_extended_lookup.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0001_eyt_gamma_range.Po
 	-rm -f processing/lookup/eytzinger/$(DEPDIR)/test_runner-0002_eyt_linear_range.Po
@@ -61254,6 +61528,16 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0028_mah_oklab_oracle_small.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0029_mah_cielab_oracle_small.Po
 	-rm -f processing/lookup/mahalanobis/$(DEPDIR)/test_runner-0030_mah_din99d_oracle_small.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0001_dark_values.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0002_light_values.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0003_padded_stride.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0004_byte_palette.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0005_reprepare_isolation.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0006_extended_sum.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0007_byte_compatibility.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0008_encoder_dark.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0009_encoder_light.Po
+	-rm -f processing/lookup/mono_float/$(DEPDIR)/test_runner-0010_encoder_fs.Po
 	-rm -f processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Po
 	-rm -f processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po
 	-rm -f processing/precision/$(DEPDIR)/test_runner-0001_byte_request_float_source.Po

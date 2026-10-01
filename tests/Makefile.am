@@ -1080,6 +1080,17 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0025_LINEAR_FIXED_MAP \
     -DBUILD_TEST_0026_SMPTEC_FIXED_MAP \
     -DBUILD_TEST_0027_OUTPUT_REUSE \
+    -DBUILD_MONO_LOOKUP_COMMON \
+    -DBUILD_TEST_0001_DARK_VALUES \
+    -DBUILD_TEST_0002_LIGHT_VALUES \
+    -DBUILD_TEST_0003_PADDED_STRIDE \
+    -DBUILD_TEST_0004_BYTE_PALETTE \
+    -DBUILD_TEST_0005_REPREPARE_ISOLATION \
+    -DBUILD_TEST_0006_EXTENDED_SUM \
+    -DBUILD_TEST_0007_BYTE_COMPATIBILITY \
+    -DBUILD_TEST_0008_ENCODER_DARK \
+    -DBUILD_TEST_0009_ENCODER_LIGHT \
+    -DBUILD_TEST_0010_ENCODER_FS \
     -DBUILD_FHEDT_BYTE_TEST_COMMON \
     -DBUILD_TEST_0001_Y_LABELS \
     -DBUILD_TEST_0002_Z_LABELS \
@@ -4606,6 +4617,17 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/output_float/0025_linear_fixed_map.c \
     quant/palette/output_float/0026_smptec_fixed_map.c \
     quant/palette/output_float/0027_output_reuse.c \
+    processing/lookup/mono_lookup_common.c \
+    processing/lookup/mono_float/0001_dark_values.c \
+    processing/lookup/mono_float/0002_light_values.c \
+    processing/lookup/mono_float/0003_padded_stride.c \
+    processing/lookup/mono_float/0004_byte_palette.c \
+    processing/lookup/mono_float/0005_reprepare_isolation.c \
+    processing/lookup/mono_float/0006_extended_sum.c \
+    processing/lookup/mono_float/0007_byte_compatibility.c \
+    processing/lookup/mono_float/0008_encoder_dark.c \
+    processing/lookup/mono_float/0009_encoder_light.c \
+    processing/lookup/mono_float/0010_encoder_fs.c \
     processing/lookup/fhedt_byte_test_common.c \
     processing/lookup/fhedt_byte/0001_y_labels.c \
     processing/lookup/fhedt_byte/0002_z_labels.c \
