@@ -140,8 +140,9 @@ mn_values(sixel_dither_t *dither, int space, int invert)
     return 1;
 }
 
-int
-test_mono_native(int space, int output_kind, int invert, int mode)
+static int
+test_mono_native_run(int space, int output_kind, int invert, int mode,
+                      int animated)
 {
     static struct { int flag; char const *value; } const options[] = {
         { '=', "1" }, { '~', "none" }, { 'd', "none" },
@@ -203,13 +204,17 @@ test_mono_native(int space, int output_kind, int invert, int mode)
                 '~', "auto")))) {
         goto end;
     }
+    if (animated) {
+        passes = mode == 8 ? 2 : 3;
+        encoder->fstatic = 1;
+        encoder->fignore_delay = 1;
+    }
     for (pass = 0; pass < passes; ++pass) {
         selected_invert = mode == 8 ? pass : invert;
         selected_output = mode == 7 ? (pass == 1 ? 1 : 0) : output_kind;
         byte_input = mode == 4 || mode == 5 || mode == 7 ||
             (mode == 6 && pass == 1);
-        byte_work = (byte_input && mode != 5 && selected_output != 1) ||
-            (mode == 12 && pass == 0);
+        byte_work = byte_input && mode != 5 && selected_output != 1;
         expected[0] = 0;
         expected[1] = 1;
         for (i = 0; i < 2; ++i) {
@@ -243,7 +248,7 @@ test_mono_native(int space, int output_kind, int invert, int mode)
         expected[1] ^= selected_invert;
         memcpy(saved, source, sizeof(saved));
         memset(&capture, 0, sizeof(capture));
-        if ((selected_invert &&
+        if ((selected_invert && (!animated || pass == 0 || mode == 8) &&
              SIXEL_FAILED(sixel_encoder_setopt(encoder, 'i', NULL))) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
                     mn_outputs[selected_output])) ||
@@ -254,8 +259,10 @@ test_mono_native(int space, int output_kind, int invert, int mode)
                         : mn_formats[space], NULL, -1))) {
             goto end;
         }
-        if (mode == 12 && pass == 0) {
+        if (animated || (mode == 12 && pass == 0)) {
             sixel_frame_set_multiframe(frame, 1);
+            sixel_frame_set_frame_no(frame, pass % 2);
+            sixel_frame_set_loop_count(frame, pass / 2);
         }
         if (mode == 11) {
             if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '_', "nearest")) ||
@@ -294,4 +301,16 @@ end:
     sixel_output_unref(output);
     sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_mono_native(int space, int output_kind, int invert, int mode)
+{
+    return test_mono_native_run(space, output_kind, invert, mode, 0);
+}
+
+int
+test_mono_animation(int space, int output_kind, int invert, int mode)
+{
+    return test_mono_native_run(space, output_kind, invert, mode, 1);
 }

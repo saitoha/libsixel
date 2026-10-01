@@ -2084,6 +2084,32 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/fixed_mask/0028_short_mask_retry.c \
 	quant/palette/fixed_mask/0029_ormode_retry.c \
 	quant/palette/fixed_mask/0030_full256_parallel.c \
+	quant/palette/fixed_animation/0001_builtin_gamma.c \
+	quant/palette/fixed_animation/0002_builtin_cielab.c \
+	quant/palette/fixed_animation/0003_builtin_p3.c \
+	quant/palette/fixed_animation/0004_builtin_precision.c \
+	quant/palette/fixed_animation/0005_builtin_output.c \
+	quant/palette/fixed_animation/0006_builtin_workspace.c \
+	quant/palette/fixed_animation/0007_builtin_selection.c \
+	quant/palette/fixed_animation/0008_builtin_fs.c \
+	quant/palette/fixed_animation/0009_mono_oklab.c \
+	quant/palette/fixed_animation/0010_mono_p3.c \
+	quant/palette/fixed_animation/0011_mono_invert.c \
+	quant/palette/fixed_animation/0012_mono_precision.c \
+	quant/palette/fixed_animation/0013_stdin_native.c \
+	quant/palette/fixed_animation/0014_stdin_precision.c \
+	quant/palette/fixed_animation/0015_map_workspace.c \
+	quant/palette/fixed_animation/0016_map_output.c \
+	quant/palette/fixed_animation/0017_image_precision.c \
+	quant/palette/fixed_animation/0018_image_workspace.c \
+	quant/palette/fixed_animation/0019_image_p3.c \
+	quant/palette/fixed_animation/0020_mask_full_table.c \
+	quant/palette/fixed_animation/0021_mask_presence.c \
+	quant/palette/fixed_animation/0022_mask_mono.c \
+	quant/palette/fixed_animation/0023_mask_map.c \
+	quant/palette/fixed_animation/0024_map_precision_request.c \
+	quant/palette/fixed_animation/0025_libpng_pipeline.c \
+	quant/palette/fixed_animation/0026_prepared_lookup_reuse.c \
 	quant/palette/animation_native_common.c \
 	quant/palette/animation_native/0001_gamma_values.c \
 	quant/palette/animation_native/0002_linear_values.c \
@@ -2203,7 +2229,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/mono_float/0023_clear_mask.c \
 	quant/palette/mono_float/0024_p3_zero_snap.c \
 	quant/palette/mono_float/0025_p3_snap_recovery.c \
-	quant/palette/mono_float/0026_multiframe_boundary.c \
+	quant/palette/mono_float/0026_multiframe_native.c \
 	quant/palette/mono_float/0027_cielab_export.c \
 	quant/palette/mono_float/0028_auto_gamma.c \
 	quant/palette/mono_float/0029_auto_cielab.c \
@@ -2232,7 +2258,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/builtin_float/0020_output_reuse.c \
 	quant/palette/builtin_float/0021_table_reuse.c \
 	quant/palette/builtin_float/0022_p3_snap_recovery.c \
-	quant/palette/builtin_float/0023_multiframe_boundary.c \
+	quant/palette/builtin_float/0023_multiframe_native.c \
 	quant/palette/builtin_float/0024_p3_export.c \
 	quant/palette/builtin_float/0025_positive_fs.c \
 	quant/palette/builtin_float/0026_negative_fs.c \
@@ -2506,7 +2532,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/dither/positional/precision/0056_blue_encoder_p3.c \
 	processing/dither/positional/precision/0057_blue_encoder_byte.c \
 	processing/dither/positional/precision/0058_blue_encoder_workers.c \
-	quant/palette/map_precision/0023_map_static_to_multiframe.c \
+	quant/palette/map_precision/0023_map_static_to_animation.c \
 	quant/palette/map_precision/0001_map_cms_gamma.c \
 	quant/palette/map_precision/0002_map_cms_linear.c \
 	quant/palette/map_precision/0003_map_cms_oklab.c \
@@ -2525,7 +2551,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/map_precision/0016_map_reuse_float_first.c \
 	quant/palette/map_precision/0017_map_cms_export.c \
 	quant/palette/map_precision/0018_map_cms_p3_control.c \
-	quant/palette/map_precision/0019_map_multiframe_boundary.c \
+	quant/palette/map_precision/0019_map_multiframe_native.c \
 	quant/palette/map_precision/0020_map_promote_fs.c \
 	quant/palette/map_precision/0021_map_allocation_none.c \
 	quant/palette/map_precision/0022_map_allocation_fs.c \
@@ -4591,6 +4617,32 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_mask/test_runner-0028_short_mask_retry.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_mask/test_runner-0029_ormode_retry.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_mask/test_runner-0030_full256_parallel.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0001_builtin_gamma.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0002_builtin_cielab.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0003_builtin_p3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0004_builtin_precision.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0005_builtin_output.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0006_builtin_workspace.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0007_builtin_selection.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0008_builtin_fs.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0009_mono_oklab.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0010_mono_p3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0011_mono_invert.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0012_mono_precision.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0013_stdin_native.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0014_stdin_precision.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0015_map_workspace.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0016_map_output.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0017_image_precision.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0018_image_workspace.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0019_image_p3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0020_mask_full_table.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0021_mask_presence.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0022_mask_mono.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0023_mask_map.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0024_map_precision_request.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0025_libpng_pipeline.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_animation/test_runner-0026_prepared_lookup_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-animation_native_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0001_gamma_values.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0002_linear_values.$(OBJEXT) \
@@ -4710,7 +4762,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0023_clear_mask.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0024_p3_zero_snap.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0025_p3_snap_recovery.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0026_multiframe_boundary.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0026_multiframe_native.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0027_cielab_export.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0028_auto_gamma.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0029_auto_cielab.$(OBJEXT) \
@@ -4739,7 +4791,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0020_output_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0021_table_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0023_multiframe_boundary.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0023_multiframe_native.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0024_p3_export.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0025_positive_fs.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0026_negative_fs.$(OBJEXT) \
@@ -5012,7 +5064,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0056_blue_encoder_p3.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0057_blue_encoder_byte.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0058_blue_encoder_workers.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0023_map_static_to_animation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0001_map_cms_gamma.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0002_map_cms_linear.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0003_map_cms_oklab.$(OBJEXT) \
@@ -5031,7 +5083,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0016_map_reuse_float_first.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0017_map_cms_export.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0018_map_cms_p3_control.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0019_map_multiframe_native.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0020_map_promote_fs.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0021_map_allocation_none.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_precision/test_runner-0022_map_allocation_fs.$(OBJEXT) \
@@ -7434,7 +7486,7 @@ am__depfiles_remade =  \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0020_output_reuse.Po \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0021_table_reuse.Po \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_recovery.Po \
-	quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_boundary.Po \
+	quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_native.Po \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0024_p3_export.Po \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0025_positive_fs.Po \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0026_negative_fs.Po \
@@ -7467,6 +7519,32 @@ am__depfiles_remade =  \
 	quant/palette/fhedt_float/$(DEPDIR)/test_runner-0010_fh_din99d_p3.Po \
 	quant/palette/fhedt_float/$(DEPDIR)/test_runner-0011_fh_byte_eligibility.Po \
 	quant/palette/fhedt_float/$(DEPDIR)/test_runner-0012_fh_bands_private.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0001_builtin_gamma.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0002_builtin_cielab.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0003_builtin_p3.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0004_builtin_precision.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0005_builtin_output.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0006_builtin_workspace.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0007_builtin_selection.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0008_builtin_fs.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0009_mono_oklab.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0010_mono_p3.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0011_mono_invert.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0012_mono_precision.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0013_stdin_native.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0014_stdin_precision.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0015_map_workspace.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0016_map_output.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0017_image_precision.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0018_image_workspace.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0019_image_p3.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0020_mask_full_table.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0021_mask_presence.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0022_mask_mono.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0023_mask_map.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0024_map_precision_request.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0025_libpng_pipeline.Po \
+	quant/palette/fixed_animation/$(DEPDIR)/test_runner-0026_prepared_lookup_reuse.Po \
 	quant/palette/fixed_mask/$(DEPDIR)/test_runner-0001_srgb_gamma.Po \
 	quant/palette/fixed_mask/$(DEPDIR)/test_runner-0002_srgb_linear.Po \
 	quant/palette/fixed_mask/$(DEPDIR)/test_runner-0003_srgb_oklab.Po \
@@ -7585,11 +7663,11 @@ am__depfiles_remade =  \
 	quant/palette/map_precision/$(DEPDIR)/test_runner-0016_map_reuse_float_first.Po \
 	quant/palette/map_precision/$(DEPDIR)/test_runner-0017_map_cms_export.Po \
 	quant/palette/map_precision/$(DEPDIR)/test_runner-0018_map_cms_p3_control.Po \
-	quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_native.Po \
 	quant/palette/map_precision/$(DEPDIR)/test_runner-0020_map_promote_fs.Po \
 	quant/palette/map_precision/$(DEPDIR)/test_runner-0021_map_allocation_none.Po \
 	quant/palette/map_precision/$(DEPDIR)/test_runner-0022_map_allocation_fs.Po \
-	quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Po \
+	quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_animation.Po \
 	quant/palette/map_precision/$(DEPDIR)/test_runner-0024_map_allocation_borrowed.Po \
 	quant/palette/map_solver/$(DEPDIR)/test_runner-0001_map_heckbert_gamma.Po \
 	quant/palette/map_solver/$(DEPDIR)/test_runner-0002_map_heckbert_linear.Po \
@@ -7654,7 +7732,7 @@ am__depfiles_remade =  \
 	quant/palette/mono_float/$(DEPDIR)/test_runner-0023_clear_mask.Po \
 	quant/palette/mono_float/$(DEPDIR)/test_runner-0024_p3_zero_snap.Po \
 	quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_recovery.Po \
-	quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_boundary.Po \
+	quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_native.Po \
 	quant/palette/mono_float/$(DEPDIR)/test_runner-0027_cielab_export.Po \
 	quant/palette/mono_float/$(DEPDIR)/test_runner-0028_auto_gamma.Po \
 	quant/palette/mono_float/$(DEPDIR)/test_runner-0029_auto_cielab.Po \
@@ -8889,7 +8967,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0056_BLUE_ENCODER_P3 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_BLUE_ENCODER_BYTE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_BLUE_ENCODER_WORKERS \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_MAP_STATIC_TO_MULTIFRAME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_MAP_STATIC_TO_ANIMATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_MAP_CMS_GAMMA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_MAP_CMS_LINEAR \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_MAP_CMS_OKLAB \
@@ -8908,7 +8986,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_MAP_REUSE_FLOAT_FIRST \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_MAP_CMS_EXPORT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_MAP_CMS_P3_CONTROL \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_MAP_MULTIFRAME_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_MAP_MULTIFRAME_NATIVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_MAP_PROMOTE_FS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_MAP_ALLOCATION_NONE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_MAP_ALLOCATION_FS \
@@ -9241,6 +9319,32 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_SHORT_MASK_RETRY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_ORMODE_RETRY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_FULL256_PARALLEL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_BUILTIN_GAMMA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_BUILTIN_CIELAB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_BUILTIN_PRECISION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_BUILTIN_OUTPUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_BUILTIN_WORKSPACE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_BUILTIN_SELECTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_BUILTIN_FS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_MONO_OKLAB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_MONO_P3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_MONO_INVERT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_MONO_PRECISION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_STDIN_NATIVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_STDIN_PRECISION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_MAP_WORKSPACE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_MAP_OUTPUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_IMAGE_PRECISION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_IMAGE_WORKSPACE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_IMAGE_P3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_MASK_FULL_TABLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_MASK_PRESENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_MASK_MONO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_MASK_MAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_MAP_PRECISION_REQUEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_LIBPNG_PIPELINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_BUILTIN_P3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_PREPARED_LOOKUP_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ANIMATION_NATIVE_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GAMMA_VALUES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_LINEAR_VALUES \
@@ -9360,7 +9464,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_CLEAR_MASK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_P3_ZERO_SNAP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_P3_SNAP_RECOVERY \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_MULTIFRAME_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_MULTIFRAME_NATIVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_CIELAB_EXPORT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_AUTO_GAMMA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_AUTO_CIELAB \
@@ -9389,7 +9493,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_OUTPUT_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_TABLE_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_P3_SNAP_RECOVERY \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_MULTIFRAME_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_MULTIFRAME_NATIVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_P3_EXPORT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_POSITIVE_FS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_NEGATIVE_FS \
@@ -12934,6 +13038,32 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_mask/0028_short_mask_retry.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_mask/0029_ormode_retry.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_mask/0030_full256_parallel.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0001_builtin_gamma.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0002_builtin_cielab.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0003_builtin_p3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0004_builtin_precision.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0005_builtin_output.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0006_builtin_workspace.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0007_builtin_selection.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0008_builtin_fs.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0009_mono_oklab.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0010_mono_p3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0011_mono_invert.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0012_mono_precision.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0013_stdin_native.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0014_stdin_precision.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0015_map_workspace.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0016_map_output.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0017_image_precision.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0018_image_workspace.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0019_image_p3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0020_mask_full_table.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0021_mask_presence.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0022_mask_mono.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0023_mask_map.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0024_map_precision_request.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0025_libpng_pipeline.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_animation/0026_prepared_lookup_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0001_gamma_values.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0002_linear_values.c \
@@ -13053,7 +13183,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0023_clear_mask.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0024_p3_zero_snap.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0025_p3_snap_recovery.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0026_multiframe_boundary.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0026_multiframe_native.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0027_cielab_export.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0028_auto_gamma.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0029_auto_cielab.c \
@@ -13082,7 +13212,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0020_output_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0021_table_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0022_p3_snap_recovery.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0023_multiframe_boundary.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0023_multiframe_native.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0024_p3_export.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0025_positive_fs.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0026_negative_fs.c \
@@ -13356,7 +13486,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0056_blue_encoder_p3.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0057_blue_encoder_byte.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0058_blue_encoder_workers.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0023_map_static_to_multiframe.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0023_map_static_to_animation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0001_map_cms_gamma.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0002_map_cms_linear.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0003_map_cms_oklab.c \
@@ -13375,7 +13505,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0016_map_reuse_float_first.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0017_map_cms_export.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0018_map_cms_p3_control.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0019_map_multiframe_boundary.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0019_map_multiframe_native.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0020_map_promote_fs.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0021_map_allocation_none.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision/0022_map_allocation_fs.c \
@@ -19821,6 +19951,90 @@ quant/palette/fixed_mask/test_runner-0029_ormode_retry.$(OBJEXT):  \
 quant/palette/fixed_mask/test_runner-0030_full256_parallel.$(OBJEXT):  \
 	quant/palette/fixed_mask/$(am__dirstamp) \
 	quant/palette/fixed_mask/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/fixed_animation
+	@: >>quant/palette/fixed_animation/$(am__dirstamp)
+quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/fixed_animation/$(DEPDIR)
+	@: >>quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0001_builtin_gamma.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0002_builtin_cielab.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0003_builtin_p3.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0004_builtin_precision.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0005_builtin_output.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0006_builtin_workspace.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0007_builtin_selection.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0008_builtin_fs.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0009_mono_oklab.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0010_mono_p3.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0011_mono_invert.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0012_mono_precision.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0013_stdin_native.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0014_stdin_precision.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0015_map_workspace.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0016_map_output.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0017_image_precision.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0018_image_workspace.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0019_image_p3.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0020_mask_full_table.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0021_mask_presence.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0022_mask_mono.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0023_mask_map.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0024_map_precision_request.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0025_libpng_pipeline.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fixed_animation/test_runner-0026_prepared_lookup_reuse.$(OBJEXT):  \
+	quant/palette/fixed_animation/$(am__dirstamp) \
+	quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-animation_native_common.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
@@ -20202,7 +20416,7 @@ quant/palette/mono_float/test_runner-0024_p3_zero_snap.$(OBJEXT):  \
 quant/palette/mono_float/test_runner-0025_p3_snap_recovery.$(OBJEXT):  \
 	quant/palette/mono_float/$(am__dirstamp) \
 	quant/palette/mono_float/$(DEPDIR)/$(am__dirstamp)
-quant/palette/mono_float/test_runner-0026_multiframe_boundary.$(OBJEXT):  \
+quant/palette/mono_float/test_runner-0026_multiframe_native.$(OBJEXT):  \
 	quant/palette/mono_float/$(am__dirstamp) \
 	quant/palette/mono_float/$(DEPDIR)/$(am__dirstamp)
 quant/palette/mono_float/test_runner-0027_cielab_export.$(OBJEXT):  \
@@ -20295,7 +20509,7 @@ quant/palette/builtin_float/test_runner-0021_table_reuse.$(OBJEXT):  \
 quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.$(OBJEXT):  \
 	quant/palette/builtin_float/$(am__dirstamp) \
 	quant/palette/builtin_float/$(DEPDIR)/$(am__dirstamp)
-quant/palette/builtin_float/test_runner-0023_multiframe_boundary.$(OBJEXT):  \
+quant/palette/builtin_float/test_runner-0023_multiframe_native.$(OBJEXT):  \
 	quant/palette/builtin_float/$(am__dirstamp) \
 	quant/palette/builtin_float/$(DEPDIR)/$(am__dirstamp)
 quant/palette/builtin_float/test_runner-0024_p3_export.$(OBJEXT):  \
@@ -21192,7 +21406,7 @@ quant/palette/map_precision/$(am__dirstamp):
 quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette/map_precision/$(DEPDIR)
 	@: >>quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
-quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.$(OBJEXT):  \
+quant/palette/map_precision/test_runner-0023_map_static_to_animation.$(OBJEXT):  \
 	quant/palette/map_precision/$(am__dirstamp) \
 	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
 quant/palette/map_precision/test_runner-0001_map_cms_gamma.$(OBJEXT):  \
@@ -21249,7 +21463,7 @@ quant/palette/map_precision/test_runner-0017_map_cms_export.$(OBJEXT):  \
 quant/palette/map_precision/test_runner-0018_map_cms_p3_control.$(OBJEXT):  \
 	quant/palette/map_precision/$(am__dirstamp) \
 	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
-quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.$(OBJEXT):  \
+quant/palette/map_precision/test_runner-0019_map_multiframe_native.$(OBJEXT):  \
 	quant/palette/map_precision/$(am__dirstamp) \
 	quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)
 quant/palette/map_precision/test_runner-0020_map_promote_fs.$(OBJEXT):  \
@@ -21849,6 +22063,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/eytzinger_float/*.$(OBJEXT)
 	-rm -f quant/palette/fallback/*.$(OBJEXT)
 	-rm -f quant/palette/fhedt_float/*.$(OBJEXT)
+	-rm -f quant/palette/fixed_animation/*.$(OBJEXT)
 	-rm -f quant/palette/fixed_mask/*.$(OBJEXT)
 	-rm -f quant/palette/heckbert_float/*.$(OBJEXT)
 	-rm -f quant/palette/lookup_float/*.$(OBJEXT)
@@ -24061,7 +24276,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0020_output_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0021_table_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_recovery.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_boundary.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_native.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0024_p3_export.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0025_positive_fs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0026_negative_fs.Po@am__quote@ # am--include-marker
@@ -24094,6 +24309,32 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fhedt_float/$(DEPDIR)/test_runner-0010_fh_din99d_p3.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fhedt_float/$(DEPDIR)/test_runner-0011_fh_byte_eligibility.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fhedt_float/$(DEPDIR)/test_runner-0012_fh_bands_private.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0001_builtin_gamma.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0002_builtin_cielab.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0003_builtin_p3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0004_builtin_precision.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0005_builtin_output.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0006_builtin_workspace.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0007_builtin_selection.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0008_builtin_fs.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0009_mono_oklab.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0010_mono_p3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0011_mono_invert.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0012_mono_precision.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0013_stdin_native.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0014_stdin_precision.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0015_map_workspace.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0016_map_output.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0017_image_precision.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0018_image_workspace.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0019_image_p3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0020_mask_full_table.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0021_mask_presence.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0022_mask_mono.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0023_mask_map.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0024_map_precision_request.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0025_libpng_pipeline.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_animation/$(DEPDIR)/test_runner-0026_prepared_lookup_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_mask/$(DEPDIR)/test_runner-0001_srgb_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_mask/$(DEPDIR)/test_runner-0002_srgb_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_mask/$(DEPDIR)/test_runner-0003_srgb_oklab.Po@am__quote@ # am--include-marker
@@ -24212,11 +24453,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0016_map_reuse_float_first.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0017_map_cms_export.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0018_map_cms_p3_control.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_native.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0020_map_promote_fs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0021_map_allocation_none.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0022_map_allocation_fs.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_animation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_precision/$(DEPDIR)/test_runner-0024_map_allocation_borrowed.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_solver/$(DEPDIR)/test_runner-0001_map_heckbert_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_solver/$(DEPDIR)/test_runner-0002_map_heckbert_linear.Po@am__quote@ # am--include-marker
@@ -24281,7 +24522,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0023_clear_mask.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0024_p3_zero_snap.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_recovery.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_boundary.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_native.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0027_cielab_export.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0028_auto_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0029_auto_cielab.Po@am__quote@ # am--include-marker
@@ -51229,6 +51470,370 @@ quant/palette/fixed_mask/test_runner-0030_full256_parallel.obj: quant/palette/fi
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_mask/test_runner-0030_full256_parallel.obj `if test -f 'quant/palette/fixed_mask/0030_full256_parallel.c'; then $(CYGPATH_W) 'quant/palette/fixed_mask/0030_full256_parallel.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_mask/0030_full256_parallel.c'; fi`
 
+quant/palette/fixed_animation/test_runner-0001_builtin_gamma.o: quant/palette/fixed_animation/0001_builtin_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0001_builtin_gamma.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0001_builtin_gamma.Tpo -c -o quant/palette/fixed_animation/test_runner-0001_builtin_gamma.o `test -f 'quant/palette/fixed_animation/0001_builtin_gamma.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0001_builtin_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0001_builtin_gamma.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0001_builtin_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0001_builtin_gamma.c' object='quant/palette/fixed_animation/test_runner-0001_builtin_gamma.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0001_builtin_gamma.o `test -f 'quant/palette/fixed_animation/0001_builtin_gamma.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0001_builtin_gamma.c
+
+quant/palette/fixed_animation/test_runner-0001_builtin_gamma.obj: quant/palette/fixed_animation/0001_builtin_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0001_builtin_gamma.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0001_builtin_gamma.Tpo -c -o quant/palette/fixed_animation/test_runner-0001_builtin_gamma.obj `if test -f 'quant/palette/fixed_animation/0001_builtin_gamma.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0001_builtin_gamma.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0001_builtin_gamma.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0001_builtin_gamma.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0001_builtin_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0001_builtin_gamma.c' object='quant/palette/fixed_animation/test_runner-0001_builtin_gamma.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0001_builtin_gamma.obj `if test -f 'quant/palette/fixed_animation/0001_builtin_gamma.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0001_builtin_gamma.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0001_builtin_gamma.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0002_builtin_cielab.o: quant/palette/fixed_animation/0002_builtin_cielab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0002_builtin_cielab.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0002_builtin_cielab.Tpo -c -o quant/palette/fixed_animation/test_runner-0002_builtin_cielab.o `test -f 'quant/palette/fixed_animation/0002_builtin_cielab.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0002_builtin_cielab.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0002_builtin_cielab.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0002_builtin_cielab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0002_builtin_cielab.c' object='quant/palette/fixed_animation/test_runner-0002_builtin_cielab.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0002_builtin_cielab.o `test -f 'quant/palette/fixed_animation/0002_builtin_cielab.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0002_builtin_cielab.c
+
+quant/palette/fixed_animation/test_runner-0002_builtin_cielab.obj: quant/palette/fixed_animation/0002_builtin_cielab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0002_builtin_cielab.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0002_builtin_cielab.Tpo -c -o quant/palette/fixed_animation/test_runner-0002_builtin_cielab.obj `if test -f 'quant/palette/fixed_animation/0002_builtin_cielab.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0002_builtin_cielab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0002_builtin_cielab.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0002_builtin_cielab.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0002_builtin_cielab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0002_builtin_cielab.c' object='quant/palette/fixed_animation/test_runner-0002_builtin_cielab.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0002_builtin_cielab.obj `if test -f 'quant/palette/fixed_animation/0002_builtin_cielab.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0002_builtin_cielab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0002_builtin_cielab.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0003_builtin_p3.o: quant/palette/fixed_animation/0003_builtin_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0003_builtin_p3.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0003_builtin_p3.Tpo -c -o quant/palette/fixed_animation/test_runner-0003_builtin_p3.o `test -f 'quant/palette/fixed_animation/0003_builtin_p3.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0003_builtin_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0003_builtin_p3.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0003_builtin_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0003_builtin_p3.c' object='quant/palette/fixed_animation/test_runner-0003_builtin_p3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0003_builtin_p3.o `test -f 'quant/palette/fixed_animation/0003_builtin_p3.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0003_builtin_p3.c
+
+quant/palette/fixed_animation/test_runner-0003_builtin_p3.obj: quant/palette/fixed_animation/0003_builtin_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0003_builtin_p3.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0003_builtin_p3.Tpo -c -o quant/palette/fixed_animation/test_runner-0003_builtin_p3.obj `if test -f 'quant/palette/fixed_animation/0003_builtin_p3.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0003_builtin_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0003_builtin_p3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0003_builtin_p3.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0003_builtin_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0003_builtin_p3.c' object='quant/palette/fixed_animation/test_runner-0003_builtin_p3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0003_builtin_p3.obj `if test -f 'quant/palette/fixed_animation/0003_builtin_p3.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0003_builtin_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0003_builtin_p3.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0004_builtin_precision.o: quant/palette/fixed_animation/0004_builtin_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0004_builtin_precision.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0004_builtin_precision.Tpo -c -o quant/palette/fixed_animation/test_runner-0004_builtin_precision.o `test -f 'quant/palette/fixed_animation/0004_builtin_precision.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0004_builtin_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0004_builtin_precision.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0004_builtin_precision.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0004_builtin_precision.c' object='quant/palette/fixed_animation/test_runner-0004_builtin_precision.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0004_builtin_precision.o `test -f 'quant/palette/fixed_animation/0004_builtin_precision.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0004_builtin_precision.c
+
+quant/palette/fixed_animation/test_runner-0004_builtin_precision.obj: quant/palette/fixed_animation/0004_builtin_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0004_builtin_precision.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0004_builtin_precision.Tpo -c -o quant/palette/fixed_animation/test_runner-0004_builtin_precision.obj `if test -f 'quant/palette/fixed_animation/0004_builtin_precision.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0004_builtin_precision.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0004_builtin_precision.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0004_builtin_precision.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0004_builtin_precision.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0004_builtin_precision.c' object='quant/palette/fixed_animation/test_runner-0004_builtin_precision.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0004_builtin_precision.obj `if test -f 'quant/palette/fixed_animation/0004_builtin_precision.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0004_builtin_precision.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0004_builtin_precision.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0005_builtin_output.o: quant/palette/fixed_animation/0005_builtin_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0005_builtin_output.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0005_builtin_output.Tpo -c -o quant/palette/fixed_animation/test_runner-0005_builtin_output.o `test -f 'quant/palette/fixed_animation/0005_builtin_output.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0005_builtin_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0005_builtin_output.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0005_builtin_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0005_builtin_output.c' object='quant/palette/fixed_animation/test_runner-0005_builtin_output.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0005_builtin_output.o `test -f 'quant/palette/fixed_animation/0005_builtin_output.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0005_builtin_output.c
+
+quant/palette/fixed_animation/test_runner-0005_builtin_output.obj: quant/palette/fixed_animation/0005_builtin_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0005_builtin_output.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0005_builtin_output.Tpo -c -o quant/palette/fixed_animation/test_runner-0005_builtin_output.obj `if test -f 'quant/palette/fixed_animation/0005_builtin_output.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0005_builtin_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0005_builtin_output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0005_builtin_output.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0005_builtin_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0005_builtin_output.c' object='quant/palette/fixed_animation/test_runner-0005_builtin_output.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0005_builtin_output.obj `if test -f 'quant/palette/fixed_animation/0005_builtin_output.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0005_builtin_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0005_builtin_output.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0006_builtin_workspace.o: quant/palette/fixed_animation/0006_builtin_workspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0006_builtin_workspace.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0006_builtin_workspace.Tpo -c -o quant/palette/fixed_animation/test_runner-0006_builtin_workspace.o `test -f 'quant/palette/fixed_animation/0006_builtin_workspace.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0006_builtin_workspace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0006_builtin_workspace.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0006_builtin_workspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0006_builtin_workspace.c' object='quant/palette/fixed_animation/test_runner-0006_builtin_workspace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0006_builtin_workspace.o `test -f 'quant/palette/fixed_animation/0006_builtin_workspace.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0006_builtin_workspace.c
+
+quant/palette/fixed_animation/test_runner-0006_builtin_workspace.obj: quant/palette/fixed_animation/0006_builtin_workspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0006_builtin_workspace.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0006_builtin_workspace.Tpo -c -o quant/palette/fixed_animation/test_runner-0006_builtin_workspace.obj `if test -f 'quant/palette/fixed_animation/0006_builtin_workspace.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0006_builtin_workspace.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0006_builtin_workspace.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0006_builtin_workspace.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0006_builtin_workspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0006_builtin_workspace.c' object='quant/palette/fixed_animation/test_runner-0006_builtin_workspace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0006_builtin_workspace.obj `if test -f 'quant/palette/fixed_animation/0006_builtin_workspace.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0006_builtin_workspace.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0006_builtin_workspace.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0007_builtin_selection.o: quant/palette/fixed_animation/0007_builtin_selection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0007_builtin_selection.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0007_builtin_selection.Tpo -c -o quant/palette/fixed_animation/test_runner-0007_builtin_selection.o `test -f 'quant/palette/fixed_animation/0007_builtin_selection.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0007_builtin_selection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0007_builtin_selection.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0007_builtin_selection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0007_builtin_selection.c' object='quant/palette/fixed_animation/test_runner-0007_builtin_selection.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0007_builtin_selection.o `test -f 'quant/palette/fixed_animation/0007_builtin_selection.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0007_builtin_selection.c
+
+quant/palette/fixed_animation/test_runner-0007_builtin_selection.obj: quant/palette/fixed_animation/0007_builtin_selection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0007_builtin_selection.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0007_builtin_selection.Tpo -c -o quant/palette/fixed_animation/test_runner-0007_builtin_selection.obj `if test -f 'quant/palette/fixed_animation/0007_builtin_selection.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0007_builtin_selection.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0007_builtin_selection.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0007_builtin_selection.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0007_builtin_selection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0007_builtin_selection.c' object='quant/palette/fixed_animation/test_runner-0007_builtin_selection.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0007_builtin_selection.obj `if test -f 'quant/palette/fixed_animation/0007_builtin_selection.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0007_builtin_selection.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0007_builtin_selection.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0008_builtin_fs.o: quant/palette/fixed_animation/0008_builtin_fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0008_builtin_fs.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0008_builtin_fs.Tpo -c -o quant/palette/fixed_animation/test_runner-0008_builtin_fs.o `test -f 'quant/palette/fixed_animation/0008_builtin_fs.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0008_builtin_fs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0008_builtin_fs.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0008_builtin_fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0008_builtin_fs.c' object='quant/palette/fixed_animation/test_runner-0008_builtin_fs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0008_builtin_fs.o `test -f 'quant/palette/fixed_animation/0008_builtin_fs.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0008_builtin_fs.c
+
+quant/palette/fixed_animation/test_runner-0008_builtin_fs.obj: quant/palette/fixed_animation/0008_builtin_fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0008_builtin_fs.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0008_builtin_fs.Tpo -c -o quant/palette/fixed_animation/test_runner-0008_builtin_fs.obj `if test -f 'quant/palette/fixed_animation/0008_builtin_fs.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0008_builtin_fs.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0008_builtin_fs.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0008_builtin_fs.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0008_builtin_fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0008_builtin_fs.c' object='quant/palette/fixed_animation/test_runner-0008_builtin_fs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0008_builtin_fs.obj `if test -f 'quant/palette/fixed_animation/0008_builtin_fs.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0008_builtin_fs.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0008_builtin_fs.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0009_mono_oklab.o: quant/palette/fixed_animation/0009_mono_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0009_mono_oklab.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0009_mono_oklab.Tpo -c -o quant/palette/fixed_animation/test_runner-0009_mono_oklab.o `test -f 'quant/palette/fixed_animation/0009_mono_oklab.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0009_mono_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0009_mono_oklab.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0009_mono_oklab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0009_mono_oklab.c' object='quant/palette/fixed_animation/test_runner-0009_mono_oklab.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0009_mono_oklab.o `test -f 'quant/palette/fixed_animation/0009_mono_oklab.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0009_mono_oklab.c
+
+quant/palette/fixed_animation/test_runner-0009_mono_oklab.obj: quant/palette/fixed_animation/0009_mono_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0009_mono_oklab.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0009_mono_oklab.Tpo -c -o quant/palette/fixed_animation/test_runner-0009_mono_oklab.obj `if test -f 'quant/palette/fixed_animation/0009_mono_oklab.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0009_mono_oklab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0009_mono_oklab.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0009_mono_oklab.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0009_mono_oklab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0009_mono_oklab.c' object='quant/palette/fixed_animation/test_runner-0009_mono_oklab.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0009_mono_oklab.obj `if test -f 'quant/palette/fixed_animation/0009_mono_oklab.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0009_mono_oklab.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0009_mono_oklab.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0010_mono_p3.o: quant/palette/fixed_animation/0010_mono_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0010_mono_p3.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0010_mono_p3.Tpo -c -o quant/palette/fixed_animation/test_runner-0010_mono_p3.o `test -f 'quant/palette/fixed_animation/0010_mono_p3.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0010_mono_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0010_mono_p3.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0010_mono_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0010_mono_p3.c' object='quant/palette/fixed_animation/test_runner-0010_mono_p3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0010_mono_p3.o `test -f 'quant/palette/fixed_animation/0010_mono_p3.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0010_mono_p3.c
+
+quant/palette/fixed_animation/test_runner-0010_mono_p3.obj: quant/palette/fixed_animation/0010_mono_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0010_mono_p3.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0010_mono_p3.Tpo -c -o quant/palette/fixed_animation/test_runner-0010_mono_p3.obj `if test -f 'quant/palette/fixed_animation/0010_mono_p3.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0010_mono_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0010_mono_p3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0010_mono_p3.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0010_mono_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0010_mono_p3.c' object='quant/palette/fixed_animation/test_runner-0010_mono_p3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0010_mono_p3.obj `if test -f 'quant/palette/fixed_animation/0010_mono_p3.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0010_mono_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0010_mono_p3.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0011_mono_invert.o: quant/palette/fixed_animation/0011_mono_invert.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0011_mono_invert.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0011_mono_invert.Tpo -c -o quant/palette/fixed_animation/test_runner-0011_mono_invert.o `test -f 'quant/palette/fixed_animation/0011_mono_invert.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0011_mono_invert.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0011_mono_invert.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0011_mono_invert.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0011_mono_invert.c' object='quant/palette/fixed_animation/test_runner-0011_mono_invert.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0011_mono_invert.o `test -f 'quant/palette/fixed_animation/0011_mono_invert.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0011_mono_invert.c
+
+quant/palette/fixed_animation/test_runner-0011_mono_invert.obj: quant/palette/fixed_animation/0011_mono_invert.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0011_mono_invert.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0011_mono_invert.Tpo -c -o quant/palette/fixed_animation/test_runner-0011_mono_invert.obj `if test -f 'quant/palette/fixed_animation/0011_mono_invert.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0011_mono_invert.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0011_mono_invert.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0011_mono_invert.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0011_mono_invert.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0011_mono_invert.c' object='quant/palette/fixed_animation/test_runner-0011_mono_invert.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0011_mono_invert.obj `if test -f 'quant/palette/fixed_animation/0011_mono_invert.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0011_mono_invert.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0011_mono_invert.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0012_mono_precision.o: quant/palette/fixed_animation/0012_mono_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0012_mono_precision.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0012_mono_precision.Tpo -c -o quant/palette/fixed_animation/test_runner-0012_mono_precision.o `test -f 'quant/palette/fixed_animation/0012_mono_precision.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0012_mono_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0012_mono_precision.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0012_mono_precision.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0012_mono_precision.c' object='quant/palette/fixed_animation/test_runner-0012_mono_precision.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0012_mono_precision.o `test -f 'quant/palette/fixed_animation/0012_mono_precision.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0012_mono_precision.c
+
+quant/palette/fixed_animation/test_runner-0012_mono_precision.obj: quant/palette/fixed_animation/0012_mono_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0012_mono_precision.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0012_mono_precision.Tpo -c -o quant/palette/fixed_animation/test_runner-0012_mono_precision.obj `if test -f 'quant/palette/fixed_animation/0012_mono_precision.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0012_mono_precision.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0012_mono_precision.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0012_mono_precision.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0012_mono_precision.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0012_mono_precision.c' object='quant/palette/fixed_animation/test_runner-0012_mono_precision.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0012_mono_precision.obj `if test -f 'quant/palette/fixed_animation/0012_mono_precision.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0012_mono_precision.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0012_mono_precision.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0013_stdin_native.o: quant/palette/fixed_animation/0013_stdin_native.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0013_stdin_native.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0013_stdin_native.Tpo -c -o quant/palette/fixed_animation/test_runner-0013_stdin_native.o `test -f 'quant/palette/fixed_animation/0013_stdin_native.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0013_stdin_native.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0013_stdin_native.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0013_stdin_native.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0013_stdin_native.c' object='quant/palette/fixed_animation/test_runner-0013_stdin_native.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0013_stdin_native.o `test -f 'quant/palette/fixed_animation/0013_stdin_native.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0013_stdin_native.c
+
+quant/palette/fixed_animation/test_runner-0013_stdin_native.obj: quant/palette/fixed_animation/0013_stdin_native.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0013_stdin_native.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0013_stdin_native.Tpo -c -o quant/palette/fixed_animation/test_runner-0013_stdin_native.obj `if test -f 'quant/palette/fixed_animation/0013_stdin_native.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0013_stdin_native.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0013_stdin_native.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0013_stdin_native.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0013_stdin_native.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0013_stdin_native.c' object='quant/palette/fixed_animation/test_runner-0013_stdin_native.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0013_stdin_native.obj `if test -f 'quant/palette/fixed_animation/0013_stdin_native.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0013_stdin_native.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0013_stdin_native.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0014_stdin_precision.o: quant/palette/fixed_animation/0014_stdin_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0014_stdin_precision.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0014_stdin_precision.Tpo -c -o quant/palette/fixed_animation/test_runner-0014_stdin_precision.o `test -f 'quant/palette/fixed_animation/0014_stdin_precision.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0014_stdin_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0014_stdin_precision.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0014_stdin_precision.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0014_stdin_precision.c' object='quant/palette/fixed_animation/test_runner-0014_stdin_precision.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0014_stdin_precision.o `test -f 'quant/palette/fixed_animation/0014_stdin_precision.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0014_stdin_precision.c
+
+quant/palette/fixed_animation/test_runner-0014_stdin_precision.obj: quant/palette/fixed_animation/0014_stdin_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0014_stdin_precision.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0014_stdin_precision.Tpo -c -o quant/palette/fixed_animation/test_runner-0014_stdin_precision.obj `if test -f 'quant/palette/fixed_animation/0014_stdin_precision.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0014_stdin_precision.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0014_stdin_precision.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0014_stdin_precision.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0014_stdin_precision.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0014_stdin_precision.c' object='quant/palette/fixed_animation/test_runner-0014_stdin_precision.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0014_stdin_precision.obj `if test -f 'quant/palette/fixed_animation/0014_stdin_precision.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0014_stdin_precision.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0014_stdin_precision.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0015_map_workspace.o: quant/palette/fixed_animation/0015_map_workspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0015_map_workspace.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0015_map_workspace.Tpo -c -o quant/palette/fixed_animation/test_runner-0015_map_workspace.o `test -f 'quant/palette/fixed_animation/0015_map_workspace.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0015_map_workspace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0015_map_workspace.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0015_map_workspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0015_map_workspace.c' object='quant/palette/fixed_animation/test_runner-0015_map_workspace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0015_map_workspace.o `test -f 'quant/palette/fixed_animation/0015_map_workspace.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0015_map_workspace.c
+
+quant/palette/fixed_animation/test_runner-0015_map_workspace.obj: quant/palette/fixed_animation/0015_map_workspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0015_map_workspace.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0015_map_workspace.Tpo -c -o quant/palette/fixed_animation/test_runner-0015_map_workspace.obj `if test -f 'quant/palette/fixed_animation/0015_map_workspace.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0015_map_workspace.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0015_map_workspace.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0015_map_workspace.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0015_map_workspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0015_map_workspace.c' object='quant/palette/fixed_animation/test_runner-0015_map_workspace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0015_map_workspace.obj `if test -f 'quant/palette/fixed_animation/0015_map_workspace.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0015_map_workspace.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0015_map_workspace.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0016_map_output.o: quant/palette/fixed_animation/0016_map_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0016_map_output.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0016_map_output.Tpo -c -o quant/palette/fixed_animation/test_runner-0016_map_output.o `test -f 'quant/palette/fixed_animation/0016_map_output.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0016_map_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0016_map_output.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0016_map_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0016_map_output.c' object='quant/palette/fixed_animation/test_runner-0016_map_output.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0016_map_output.o `test -f 'quant/palette/fixed_animation/0016_map_output.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0016_map_output.c
+
+quant/palette/fixed_animation/test_runner-0016_map_output.obj: quant/palette/fixed_animation/0016_map_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0016_map_output.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0016_map_output.Tpo -c -o quant/palette/fixed_animation/test_runner-0016_map_output.obj `if test -f 'quant/palette/fixed_animation/0016_map_output.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0016_map_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0016_map_output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0016_map_output.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0016_map_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0016_map_output.c' object='quant/palette/fixed_animation/test_runner-0016_map_output.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0016_map_output.obj `if test -f 'quant/palette/fixed_animation/0016_map_output.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0016_map_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0016_map_output.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0017_image_precision.o: quant/palette/fixed_animation/0017_image_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0017_image_precision.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0017_image_precision.Tpo -c -o quant/palette/fixed_animation/test_runner-0017_image_precision.o `test -f 'quant/palette/fixed_animation/0017_image_precision.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0017_image_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0017_image_precision.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0017_image_precision.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0017_image_precision.c' object='quant/palette/fixed_animation/test_runner-0017_image_precision.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0017_image_precision.o `test -f 'quant/palette/fixed_animation/0017_image_precision.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0017_image_precision.c
+
+quant/palette/fixed_animation/test_runner-0017_image_precision.obj: quant/palette/fixed_animation/0017_image_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0017_image_precision.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0017_image_precision.Tpo -c -o quant/palette/fixed_animation/test_runner-0017_image_precision.obj `if test -f 'quant/palette/fixed_animation/0017_image_precision.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0017_image_precision.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0017_image_precision.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0017_image_precision.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0017_image_precision.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0017_image_precision.c' object='quant/palette/fixed_animation/test_runner-0017_image_precision.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0017_image_precision.obj `if test -f 'quant/palette/fixed_animation/0017_image_precision.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0017_image_precision.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0017_image_precision.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0018_image_workspace.o: quant/palette/fixed_animation/0018_image_workspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0018_image_workspace.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0018_image_workspace.Tpo -c -o quant/palette/fixed_animation/test_runner-0018_image_workspace.o `test -f 'quant/palette/fixed_animation/0018_image_workspace.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0018_image_workspace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0018_image_workspace.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0018_image_workspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0018_image_workspace.c' object='quant/palette/fixed_animation/test_runner-0018_image_workspace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0018_image_workspace.o `test -f 'quant/palette/fixed_animation/0018_image_workspace.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0018_image_workspace.c
+
+quant/palette/fixed_animation/test_runner-0018_image_workspace.obj: quant/palette/fixed_animation/0018_image_workspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0018_image_workspace.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0018_image_workspace.Tpo -c -o quant/palette/fixed_animation/test_runner-0018_image_workspace.obj `if test -f 'quant/palette/fixed_animation/0018_image_workspace.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0018_image_workspace.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0018_image_workspace.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0018_image_workspace.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0018_image_workspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0018_image_workspace.c' object='quant/palette/fixed_animation/test_runner-0018_image_workspace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0018_image_workspace.obj `if test -f 'quant/palette/fixed_animation/0018_image_workspace.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0018_image_workspace.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0018_image_workspace.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0019_image_p3.o: quant/palette/fixed_animation/0019_image_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0019_image_p3.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0019_image_p3.Tpo -c -o quant/palette/fixed_animation/test_runner-0019_image_p3.o `test -f 'quant/palette/fixed_animation/0019_image_p3.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0019_image_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0019_image_p3.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0019_image_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0019_image_p3.c' object='quant/palette/fixed_animation/test_runner-0019_image_p3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0019_image_p3.o `test -f 'quant/palette/fixed_animation/0019_image_p3.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0019_image_p3.c
+
+quant/palette/fixed_animation/test_runner-0019_image_p3.obj: quant/palette/fixed_animation/0019_image_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0019_image_p3.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0019_image_p3.Tpo -c -o quant/palette/fixed_animation/test_runner-0019_image_p3.obj `if test -f 'quant/palette/fixed_animation/0019_image_p3.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0019_image_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0019_image_p3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0019_image_p3.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0019_image_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0019_image_p3.c' object='quant/palette/fixed_animation/test_runner-0019_image_p3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0019_image_p3.obj `if test -f 'quant/palette/fixed_animation/0019_image_p3.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0019_image_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0019_image_p3.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0020_mask_full_table.o: quant/palette/fixed_animation/0020_mask_full_table.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0020_mask_full_table.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0020_mask_full_table.Tpo -c -o quant/palette/fixed_animation/test_runner-0020_mask_full_table.o `test -f 'quant/palette/fixed_animation/0020_mask_full_table.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0020_mask_full_table.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0020_mask_full_table.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0020_mask_full_table.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0020_mask_full_table.c' object='quant/palette/fixed_animation/test_runner-0020_mask_full_table.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0020_mask_full_table.o `test -f 'quant/palette/fixed_animation/0020_mask_full_table.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0020_mask_full_table.c
+
+quant/palette/fixed_animation/test_runner-0020_mask_full_table.obj: quant/palette/fixed_animation/0020_mask_full_table.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0020_mask_full_table.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0020_mask_full_table.Tpo -c -o quant/palette/fixed_animation/test_runner-0020_mask_full_table.obj `if test -f 'quant/palette/fixed_animation/0020_mask_full_table.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0020_mask_full_table.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0020_mask_full_table.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0020_mask_full_table.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0020_mask_full_table.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0020_mask_full_table.c' object='quant/palette/fixed_animation/test_runner-0020_mask_full_table.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0020_mask_full_table.obj `if test -f 'quant/palette/fixed_animation/0020_mask_full_table.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0020_mask_full_table.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0020_mask_full_table.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0021_mask_presence.o: quant/palette/fixed_animation/0021_mask_presence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0021_mask_presence.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0021_mask_presence.Tpo -c -o quant/palette/fixed_animation/test_runner-0021_mask_presence.o `test -f 'quant/palette/fixed_animation/0021_mask_presence.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0021_mask_presence.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0021_mask_presence.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0021_mask_presence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0021_mask_presence.c' object='quant/palette/fixed_animation/test_runner-0021_mask_presence.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0021_mask_presence.o `test -f 'quant/palette/fixed_animation/0021_mask_presence.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0021_mask_presence.c
+
+quant/palette/fixed_animation/test_runner-0021_mask_presence.obj: quant/palette/fixed_animation/0021_mask_presence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0021_mask_presence.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0021_mask_presence.Tpo -c -o quant/palette/fixed_animation/test_runner-0021_mask_presence.obj `if test -f 'quant/palette/fixed_animation/0021_mask_presence.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0021_mask_presence.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0021_mask_presence.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0021_mask_presence.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0021_mask_presence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0021_mask_presence.c' object='quant/palette/fixed_animation/test_runner-0021_mask_presence.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0021_mask_presence.obj `if test -f 'quant/palette/fixed_animation/0021_mask_presence.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0021_mask_presence.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0021_mask_presence.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0022_mask_mono.o: quant/palette/fixed_animation/0022_mask_mono.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0022_mask_mono.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0022_mask_mono.Tpo -c -o quant/palette/fixed_animation/test_runner-0022_mask_mono.o `test -f 'quant/palette/fixed_animation/0022_mask_mono.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0022_mask_mono.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0022_mask_mono.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0022_mask_mono.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0022_mask_mono.c' object='quant/palette/fixed_animation/test_runner-0022_mask_mono.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0022_mask_mono.o `test -f 'quant/palette/fixed_animation/0022_mask_mono.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0022_mask_mono.c
+
+quant/palette/fixed_animation/test_runner-0022_mask_mono.obj: quant/palette/fixed_animation/0022_mask_mono.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0022_mask_mono.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0022_mask_mono.Tpo -c -o quant/palette/fixed_animation/test_runner-0022_mask_mono.obj `if test -f 'quant/palette/fixed_animation/0022_mask_mono.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0022_mask_mono.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0022_mask_mono.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0022_mask_mono.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0022_mask_mono.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0022_mask_mono.c' object='quant/palette/fixed_animation/test_runner-0022_mask_mono.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0022_mask_mono.obj `if test -f 'quant/palette/fixed_animation/0022_mask_mono.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0022_mask_mono.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0022_mask_mono.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0023_mask_map.o: quant/palette/fixed_animation/0023_mask_map.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0023_mask_map.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0023_mask_map.Tpo -c -o quant/palette/fixed_animation/test_runner-0023_mask_map.o `test -f 'quant/palette/fixed_animation/0023_mask_map.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0023_mask_map.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0023_mask_map.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0023_mask_map.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0023_mask_map.c' object='quant/palette/fixed_animation/test_runner-0023_mask_map.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0023_mask_map.o `test -f 'quant/palette/fixed_animation/0023_mask_map.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0023_mask_map.c
+
+quant/palette/fixed_animation/test_runner-0023_mask_map.obj: quant/palette/fixed_animation/0023_mask_map.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0023_mask_map.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0023_mask_map.Tpo -c -o quant/palette/fixed_animation/test_runner-0023_mask_map.obj `if test -f 'quant/palette/fixed_animation/0023_mask_map.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0023_mask_map.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0023_mask_map.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0023_mask_map.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0023_mask_map.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0023_mask_map.c' object='quant/palette/fixed_animation/test_runner-0023_mask_map.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0023_mask_map.obj `if test -f 'quant/palette/fixed_animation/0023_mask_map.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0023_mask_map.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0023_mask_map.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0024_map_precision_request.o: quant/palette/fixed_animation/0024_map_precision_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0024_map_precision_request.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0024_map_precision_request.Tpo -c -o quant/palette/fixed_animation/test_runner-0024_map_precision_request.o `test -f 'quant/palette/fixed_animation/0024_map_precision_request.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0024_map_precision_request.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0024_map_precision_request.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0024_map_precision_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0024_map_precision_request.c' object='quant/palette/fixed_animation/test_runner-0024_map_precision_request.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0024_map_precision_request.o `test -f 'quant/palette/fixed_animation/0024_map_precision_request.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0024_map_precision_request.c
+
+quant/palette/fixed_animation/test_runner-0024_map_precision_request.obj: quant/palette/fixed_animation/0024_map_precision_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0024_map_precision_request.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0024_map_precision_request.Tpo -c -o quant/palette/fixed_animation/test_runner-0024_map_precision_request.obj `if test -f 'quant/palette/fixed_animation/0024_map_precision_request.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0024_map_precision_request.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0024_map_precision_request.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0024_map_precision_request.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0024_map_precision_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0024_map_precision_request.c' object='quant/palette/fixed_animation/test_runner-0024_map_precision_request.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0024_map_precision_request.obj `if test -f 'quant/palette/fixed_animation/0024_map_precision_request.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0024_map_precision_request.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0024_map_precision_request.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0025_libpng_pipeline.o: quant/palette/fixed_animation/0025_libpng_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0025_libpng_pipeline.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0025_libpng_pipeline.Tpo -c -o quant/palette/fixed_animation/test_runner-0025_libpng_pipeline.o `test -f 'quant/palette/fixed_animation/0025_libpng_pipeline.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0025_libpng_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0025_libpng_pipeline.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0025_libpng_pipeline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0025_libpng_pipeline.c' object='quant/palette/fixed_animation/test_runner-0025_libpng_pipeline.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0025_libpng_pipeline.o `test -f 'quant/palette/fixed_animation/0025_libpng_pipeline.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0025_libpng_pipeline.c
+
+quant/palette/fixed_animation/test_runner-0025_libpng_pipeline.obj: quant/palette/fixed_animation/0025_libpng_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0025_libpng_pipeline.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0025_libpng_pipeline.Tpo -c -o quant/palette/fixed_animation/test_runner-0025_libpng_pipeline.obj `if test -f 'quant/palette/fixed_animation/0025_libpng_pipeline.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0025_libpng_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0025_libpng_pipeline.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0025_libpng_pipeline.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0025_libpng_pipeline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0025_libpng_pipeline.c' object='quant/palette/fixed_animation/test_runner-0025_libpng_pipeline.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0025_libpng_pipeline.obj `if test -f 'quant/palette/fixed_animation/0025_libpng_pipeline.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0025_libpng_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0025_libpng_pipeline.c'; fi`
+
+quant/palette/fixed_animation/test_runner-0026_prepared_lookup_reuse.o: quant/palette/fixed_animation/0026_prepared_lookup_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0026_prepared_lookup_reuse.o -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0026_prepared_lookup_reuse.Tpo -c -o quant/palette/fixed_animation/test_runner-0026_prepared_lookup_reuse.o `test -f 'quant/palette/fixed_animation/0026_prepared_lookup_reuse.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0026_prepared_lookup_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0026_prepared_lookup_reuse.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0026_prepared_lookup_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0026_prepared_lookup_reuse.c' object='quant/palette/fixed_animation/test_runner-0026_prepared_lookup_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0026_prepared_lookup_reuse.o `test -f 'quant/palette/fixed_animation/0026_prepared_lookup_reuse.c' || echo '$(srcdir)/'`quant/palette/fixed_animation/0026_prepared_lookup_reuse.c
+
+quant/palette/fixed_animation/test_runner-0026_prepared_lookup_reuse.obj: quant/palette/fixed_animation/0026_prepared_lookup_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fixed_animation/test_runner-0026_prepared_lookup_reuse.obj -MD -MP -MF quant/palette/fixed_animation/$(DEPDIR)/test_runner-0026_prepared_lookup_reuse.Tpo -c -o quant/palette/fixed_animation/test_runner-0026_prepared_lookup_reuse.obj `if test -f 'quant/palette/fixed_animation/0026_prepared_lookup_reuse.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0026_prepared_lookup_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0026_prepared_lookup_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fixed_animation/$(DEPDIR)/test_runner-0026_prepared_lookup_reuse.Tpo quant/palette/fixed_animation/$(DEPDIR)/test_runner-0026_prepared_lookup_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fixed_animation/0026_prepared_lookup_reuse.c' object='quant/palette/fixed_animation/test_runner-0026_prepared_lookup_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_animation/test_runner-0026_prepared_lookup_reuse.obj `if test -f 'quant/palette/fixed_animation/0026_prepared_lookup_reuse.c'; then $(CYGPATH_W) 'quant/palette/fixed_animation/0026_prepared_lookup_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_animation/0026_prepared_lookup_reuse.c'; fi`
+
 quant/palette/test_runner-animation_native_common.o: quant/palette/animation_native_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-animation_native_common.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-animation_native_common.Tpo -c -o quant/palette/test_runner-animation_native_common.o `test -f 'quant/palette/animation_native_common.c' || echo '$(srcdir)/'`quant/palette/animation_native_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-animation_native_common.Tpo quant/palette/$(DEPDIR)/test_runner-animation_native_common.Po
@@ -52895,19 +53500,19 @@ quant/palette/mono_float/test_runner-0025_p3_snap_recovery.obj: quant/palette/mo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/mono_float/test_runner-0025_p3_snap_recovery.obj `if test -f 'quant/palette/mono_float/0025_p3_snap_recovery.c'; then $(CYGPATH_W) 'quant/palette/mono_float/0025_p3_snap_recovery.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/mono_float/0025_p3_snap_recovery.c'; fi`
 
-quant/palette/mono_float/test_runner-0026_multiframe_boundary.o: quant/palette/mono_float/0026_multiframe_boundary.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/mono_float/test_runner-0026_multiframe_boundary.o -MD -MP -MF quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_boundary.Tpo -c -o quant/palette/mono_float/test_runner-0026_multiframe_boundary.o `test -f 'quant/palette/mono_float/0026_multiframe_boundary.c' || echo '$(srcdir)/'`quant/palette/mono_float/0026_multiframe_boundary.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_boundary.Tpo quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_boundary.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/mono_float/0026_multiframe_boundary.c' object='quant/palette/mono_float/test_runner-0026_multiframe_boundary.o' libtool=no @AMDEPBACKSLASH@
+quant/palette/mono_float/test_runner-0026_multiframe_native.o: quant/palette/mono_float/0026_multiframe_native.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/mono_float/test_runner-0026_multiframe_native.o -MD -MP -MF quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_native.Tpo -c -o quant/palette/mono_float/test_runner-0026_multiframe_native.o `test -f 'quant/palette/mono_float/0026_multiframe_native.c' || echo '$(srcdir)/'`quant/palette/mono_float/0026_multiframe_native.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_native.Tpo quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_native.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/mono_float/0026_multiframe_native.c' object='quant/palette/mono_float/test_runner-0026_multiframe_native.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/mono_float/test_runner-0026_multiframe_boundary.o `test -f 'quant/palette/mono_float/0026_multiframe_boundary.c' || echo '$(srcdir)/'`quant/palette/mono_float/0026_multiframe_boundary.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/mono_float/test_runner-0026_multiframe_native.o `test -f 'quant/palette/mono_float/0026_multiframe_native.c' || echo '$(srcdir)/'`quant/palette/mono_float/0026_multiframe_native.c
 
-quant/palette/mono_float/test_runner-0026_multiframe_boundary.obj: quant/palette/mono_float/0026_multiframe_boundary.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/mono_float/test_runner-0026_multiframe_boundary.obj -MD -MP -MF quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_boundary.Tpo -c -o quant/palette/mono_float/test_runner-0026_multiframe_boundary.obj `if test -f 'quant/palette/mono_float/0026_multiframe_boundary.c'; then $(CYGPATH_W) 'quant/palette/mono_float/0026_multiframe_boundary.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/mono_float/0026_multiframe_boundary.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_boundary.Tpo quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_boundary.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/mono_float/0026_multiframe_boundary.c' object='quant/palette/mono_float/test_runner-0026_multiframe_boundary.obj' libtool=no @AMDEPBACKSLASH@
+quant/palette/mono_float/test_runner-0026_multiframe_native.obj: quant/palette/mono_float/0026_multiframe_native.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/mono_float/test_runner-0026_multiframe_native.obj -MD -MP -MF quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_native.Tpo -c -o quant/palette/mono_float/test_runner-0026_multiframe_native.obj `if test -f 'quant/palette/mono_float/0026_multiframe_native.c'; then $(CYGPATH_W) 'quant/palette/mono_float/0026_multiframe_native.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/mono_float/0026_multiframe_native.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_native.Tpo quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_native.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/mono_float/0026_multiframe_native.c' object='quant/palette/mono_float/test_runner-0026_multiframe_native.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/mono_float/test_runner-0026_multiframe_boundary.obj `if test -f 'quant/palette/mono_float/0026_multiframe_boundary.c'; then $(CYGPATH_W) 'quant/palette/mono_float/0026_multiframe_boundary.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/mono_float/0026_multiframe_boundary.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/mono_float/test_runner-0026_multiframe_native.obj `if test -f 'quant/palette/mono_float/0026_multiframe_native.c'; then $(CYGPATH_W) 'quant/palette/mono_float/0026_multiframe_native.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/mono_float/0026_multiframe_native.c'; fi`
 
 quant/palette/mono_float/test_runner-0027_cielab_export.o: quant/palette/mono_float/0027_cielab_export.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/mono_float/test_runner-0027_cielab_export.o -MD -MP -MF quant/palette/mono_float/$(DEPDIR)/test_runner-0027_cielab_export.Tpo -c -o quant/palette/mono_float/test_runner-0027_cielab_export.o `test -f 'quant/palette/mono_float/0027_cielab_export.c' || echo '$(srcdir)/'`quant/palette/mono_float/0027_cielab_export.c
@@ -53301,19 +53906,19 @@ quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.obj: quant/palette
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.obj `if test -f 'quant/palette/builtin_float/0022_p3_snap_recovery.c'; then $(CYGPATH_W) 'quant/palette/builtin_float/0022_p3_snap_recovery.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/builtin_float/0022_p3_snap_recovery.c'; fi`
 
-quant/palette/builtin_float/test_runner-0023_multiframe_boundary.o: quant/palette/builtin_float/0023_multiframe_boundary.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/builtin_float/test_runner-0023_multiframe_boundary.o -MD -MP -MF quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_boundary.Tpo -c -o quant/palette/builtin_float/test_runner-0023_multiframe_boundary.o `test -f 'quant/palette/builtin_float/0023_multiframe_boundary.c' || echo '$(srcdir)/'`quant/palette/builtin_float/0023_multiframe_boundary.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_boundary.Tpo quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_boundary.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/builtin_float/0023_multiframe_boundary.c' object='quant/palette/builtin_float/test_runner-0023_multiframe_boundary.o' libtool=no @AMDEPBACKSLASH@
+quant/palette/builtin_float/test_runner-0023_multiframe_native.o: quant/palette/builtin_float/0023_multiframe_native.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/builtin_float/test_runner-0023_multiframe_native.o -MD -MP -MF quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_native.Tpo -c -o quant/palette/builtin_float/test_runner-0023_multiframe_native.o `test -f 'quant/palette/builtin_float/0023_multiframe_native.c' || echo '$(srcdir)/'`quant/palette/builtin_float/0023_multiframe_native.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_native.Tpo quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_native.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/builtin_float/0023_multiframe_native.c' object='quant/palette/builtin_float/test_runner-0023_multiframe_native.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/builtin_float/test_runner-0023_multiframe_boundary.o `test -f 'quant/palette/builtin_float/0023_multiframe_boundary.c' || echo '$(srcdir)/'`quant/palette/builtin_float/0023_multiframe_boundary.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/builtin_float/test_runner-0023_multiframe_native.o `test -f 'quant/palette/builtin_float/0023_multiframe_native.c' || echo '$(srcdir)/'`quant/palette/builtin_float/0023_multiframe_native.c
 
-quant/palette/builtin_float/test_runner-0023_multiframe_boundary.obj: quant/palette/builtin_float/0023_multiframe_boundary.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/builtin_float/test_runner-0023_multiframe_boundary.obj -MD -MP -MF quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_boundary.Tpo -c -o quant/palette/builtin_float/test_runner-0023_multiframe_boundary.obj `if test -f 'quant/palette/builtin_float/0023_multiframe_boundary.c'; then $(CYGPATH_W) 'quant/palette/builtin_float/0023_multiframe_boundary.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/builtin_float/0023_multiframe_boundary.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_boundary.Tpo quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_boundary.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/builtin_float/0023_multiframe_boundary.c' object='quant/palette/builtin_float/test_runner-0023_multiframe_boundary.obj' libtool=no @AMDEPBACKSLASH@
+quant/palette/builtin_float/test_runner-0023_multiframe_native.obj: quant/palette/builtin_float/0023_multiframe_native.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/builtin_float/test_runner-0023_multiframe_native.obj -MD -MP -MF quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_native.Tpo -c -o quant/palette/builtin_float/test_runner-0023_multiframe_native.obj `if test -f 'quant/palette/builtin_float/0023_multiframe_native.c'; then $(CYGPATH_W) 'quant/palette/builtin_float/0023_multiframe_native.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/builtin_float/0023_multiframe_native.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_native.Tpo quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_native.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/builtin_float/0023_multiframe_native.c' object='quant/palette/builtin_float/test_runner-0023_multiframe_native.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/builtin_float/test_runner-0023_multiframe_boundary.obj `if test -f 'quant/palette/builtin_float/0023_multiframe_boundary.c'; then $(CYGPATH_W) 'quant/palette/builtin_float/0023_multiframe_boundary.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/builtin_float/0023_multiframe_boundary.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/builtin_float/test_runner-0023_multiframe_native.obj `if test -f 'quant/palette/builtin_float/0023_multiframe_native.c'; then $(CYGPATH_W) 'quant/palette/builtin_float/0023_multiframe_native.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/builtin_float/0023_multiframe_native.c'; fi`
 
 quant/palette/builtin_float/test_runner-0024_p3_export.o: quant/palette/builtin_float/0024_p3_export.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/builtin_float/test_runner-0024_p3_export.o -MD -MP -MF quant/palette/builtin_float/$(DEPDIR)/test_runner-0024_p3_export.Tpo -c -o quant/palette/builtin_float/test_runner-0024_p3_export.o `test -f 'quant/palette/builtin_float/0024_p3_export.c' || echo '$(srcdir)/'`quant/palette/builtin_float/0024_p3_export.c
@@ -57123,19 +57728,19 @@ processing/dither/positional/precision/test_runner-0058_blue_encoder_workers.obj
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0058_blue_encoder_workers.obj `if test -f 'processing/dither/positional/precision/0058_blue_encoder_workers.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0058_blue_encoder_workers.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0058_blue_encoder_workers.c'; fi`
 
-quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.o: quant/palette/map_precision/0023_map_static_to_multiframe.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Tpo -c -o quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.o `test -f 'quant/palette/map_precision/0023_map_static_to_multiframe.c' || echo '$(srcdir)/'`quant/palette/map_precision/0023_map_static_to_multiframe.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0023_map_static_to_multiframe.c' object='quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.o' libtool=no @AMDEPBACKSLASH@
+quant/palette/map_precision/test_runner-0023_map_static_to_animation.o: quant/palette/map_precision/0023_map_static_to_animation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0023_map_static_to_animation.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_animation.Tpo -c -o quant/palette/map_precision/test_runner-0023_map_static_to_animation.o `test -f 'quant/palette/map_precision/0023_map_static_to_animation.c' || echo '$(srcdir)/'`quant/palette/map_precision/0023_map_static_to_animation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_animation.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_animation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0023_map_static_to_animation.c' object='quant/palette/map_precision/test_runner-0023_map_static_to_animation.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.o `test -f 'quant/palette/map_precision/0023_map_static_to_multiframe.c' || echo '$(srcdir)/'`quant/palette/map_precision/0023_map_static_to_multiframe.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0023_map_static_to_animation.o `test -f 'quant/palette/map_precision/0023_map_static_to_animation.c' || echo '$(srcdir)/'`quant/palette/map_precision/0023_map_static_to_animation.c
 
-quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.obj: quant/palette/map_precision/0023_map_static_to_multiframe.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Tpo -c -o quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.obj `if test -f 'quant/palette/map_precision/0023_map_static_to_multiframe.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0023_map_static_to_multiframe.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0023_map_static_to_multiframe.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0023_map_static_to_multiframe.c' object='quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.obj' libtool=no @AMDEPBACKSLASH@
+quant/palette/map_precision/test_runner-0023_map_static_to_animation.obj: quant/palette/map_precision/0023_map_static_to_animation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0023_map_static_to_animation.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_animation.Tpo -c -o quant/palette/map_precision/test_runner-0023_map_static_to_animation.obj `if test -f 'quant/palette/map_precision/0023_map_static_to_animation.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0023_map_static_to_animation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0023_map_static_to_animation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_animation.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_animation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0023_map_static_to_animation.c' object='quant/palette/map_precision/test_runner-0023_map_static_to_animation.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0023_map_static_to_multiframe.obj `if test -f 'quant/palette/map_precision/0023_map_static_to_multiframe.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0023_map_static_to_multiframe.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0023_map_static_to_multiframe.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0023_map_static_to_animation.obj `if test -f 'quant/palette/map_precision/0023_map_static_to_animation.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0023_map_static_to_animation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0023_map_static_to_animation.c'; fi`
 
 quant/palette/map_precision/test_runner-0001_map_cms_gamma.o: quant/palette/map_precision/0001_map_cms_gamma.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0001_map_cms_gamma.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0001_map_cms_gamma.Tpo -c -o quant/palette/map_precision/test_runner-0001_map_cms_gamma.o `test -f 'quant/palette/map_precision/0001_map_cms_gamma.c' || echo '$(srcdir)/'`quant/palette/map_precision/0001_map_cms_gamma.c
@@ -57389,19 +57994,19 @@ quant/palette/map_precision/test_runner-0018_map_cms_p3_control.obj: quant/palet
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0018_map_cms_p3_control.obj `if test -f 'quant/palette/map_precision/0018_map_cms_p3_control.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0018_map_cms_p3_control.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0018_map_cms_p3_control.c'; fi`
 
-quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.o: quant/palette/map_precision/0019_map_multiframe_boundary.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Tpo -c -o quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.o `test -f 'quant/palette/map_precision/0019_map_multiframe_boundary.c' || echo '$(srcdir)/'`quant/palette/map_precision/0019_map_multiframe_boundary.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0019_map_multiframe_boundary.c' object='quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.o' libtool=no @AMDEPBACKSLASH@
+quant/palette/map_precision/test_runner-0019_map_multiframe_native.o: quant/palette/map_precision/0019_map_multiframe_native.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0019_map_multiframe_native.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_native.Tpo -c -o quant/palette/map_precision/test_runner-0019_map_multiframe_native.o `test -f 'quant/palette/map_precision/0019_map_multiframe_native.c' || echo '$(srcdir)/'`quant/palette/map_precision/0019_map_multiframe_native.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_native.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_native.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0019_map_multiframe_native.c' object='quant/palette/map_precision/test_runner-0019_map_multiframe_native.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.o `test -f 'quant/palette/map_precision/0019_map_multiframe_boundary.c' || echo '$(srcdir)/'`quant/palette/map_precision/0019_map_multiframe_boundary.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0019_map_multiframe_native.o `test -f 'quant/palette/map_precision/0019_map_multiframe_native.c' || echo '$(srcdir)/'`quant/palette/map_precision/0019_map_multiframe_native.c
 
-quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.obj: quant/palette/map_precision/0019_map_multiframe_boundary.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Tpo -c -o quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.obj `if test -f 'quant/palette/map_precision/0019_map_multiframe_boundary.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0019_map_multiframe_boundary.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0019_map_multiframe_boundary.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0019_map_multiframe_boundary.c' object='quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.obj' libtool=no @AMDEPBACKSLASH@
+quant/palette/map_precision/test_runner-0019_map_multiframe_native.obj: quant/palette/map_precision/0019_map_multiframe_native.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0019_map_multiframe_native.obj -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_native.Tpo -c -o quant/palette/map_precision/test_runner-0019_map_multiframe_native.obj `if test -f 'quant/palette/map_precision/0019_map_multiframe_native.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0019_map_multiframe_native.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0019_map_multiframe_native.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_native.Tpo quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_native.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_precision/0019_map_multiframe_native.c' object='quant/palette/map_precision/test_runner-0019_map_multiframe_native.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0019_map_multiframe_boundary.obj `if test -f 'quant/palette/map_precision/0019_map_multiframe_boundary.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0019_map_multiframe_boundary.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0019_map_multiframe_boundary.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_precision/test_runner-0019_map_multiframe_native.obj `if test -f 'quant/palette/map_precision/0019_map_multiframe_native.c'; then $(CYGPATH_W) 'quant/palette/map_precision/0019_map_multiframe_native.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_precision/0019_map_multiframe_native.c'; fi`
 
 quant/palette/map_precision/test_runner-0020_map_promote_fs.o: quant/palette/map_precision/0020_map_promote_fs.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_precision/test_runner-0020_map_promote_fs.o -MD -MP -MF quant/palette/map_precision/$(DEPDIR)/test_runner-0020_map_promote_fs.Tpo -c -o quant/palette/map_precision/test_runner-0020_map_promote_fs.o `test -f 'quant/palette/map_precision/0020_map_promote_fs.c' || echo '$(srcdir)/'`quant/palette/map_precision/0020_map_promote_fs.c
@@ -59956,6 +60561,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/fallback/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/fhedt_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/fhedt_float/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/fixed_animation/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/fixed_animation/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/fixed_mask/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/fixed_mask/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/heckbert_float/$(DEPDIR)/$(am__dirstamp)
@@ -62192,7 +62799,7 @@ distclean: distclean-am
 	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0020_output_reuse.Po
 	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0021_table_reuse.Po
 	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_recovery.Po
-	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_boundary.Po
+	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_native.Po
 	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0024_p3_export.Po
 	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0025_positive_fs.Po
 	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0026_negative_fs.Po
@@ -62225,6 +62832,32 @@ distclean: distclean-am
 	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0010_fh_din99d_p3.Po
 	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0011_fh_byte_eligibility.Po
 	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0012_fh_bands_private.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0001_builtin_gamma.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0002_builtin_cielab.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0003_builtin_p3.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0004_builtin_precision.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0005_builtin_output.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0006_builtin_workspace.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0007_builtin_selection.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0008_builtin_fs.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0009_mono_oklab.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0010_mono_p3.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0011_mono_invert.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0012_mono_precision.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0013_stdin_native.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0014_stdin_precision.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0015_map_workspace.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0016_map_output.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0017_image_precision.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0018_image_workspace.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0019_image_p3.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0020_mask_full_table.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0021_mask_presence.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0022_mask_mono.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0023_mask_map.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0024_map_precision_request.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0025_libpng_pipeline.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0026_prepared_lookup_reuse.Po
 	-rm -f quant/palette/fixed_mask/$(DEPDIR)/test_runner-0001_srgb_gamma.Po
 	-rm -f quant/palette/fixed_mask/$(DEPDIR)/test_runner-0002_srgb_linear.Po
 	-rm -f quant/palette/fixed_mask/$(DEPDIR)/test_runner-0003_srgb_oklab.Po
@@ -62343,11 +62976,11 @@ distclean: distclean-am
 	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0016_map_reuse_float_first.Po
 	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0017_map_cms_export.Po
 	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0018_map_cms_p3_control.Po
-	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_native.Po
 	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0020_map_promote_fs.Po
 	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0021_map_allocation_none.Po
 	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0022_map_allocation_fs.Po
-	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_animation.Po
 	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0024_map_allocation_borrowed.Po
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0001_map_heckbert_gamma.Po
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0002_map_heckbert_linear.Po
@@ -62412,7 +63045,7 @@ distclean: distclean-am
 	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0023_clear_mask.Po
 	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0024_p3_zero_snap.Po
 	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_recovery.Po
-	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_boundary.Po
+	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_native.Po
 	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0027_cielab_export.Po
 	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0028_auto_gamma.Po
 	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0029_auto_cielab.Po
@@ -64741,7 +65374,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0020_output_reuse.Po
 	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0021_table_reuse.Po
 	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_recovery.Po
-	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_boundary.Po
+	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_native.Po
 	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0024_p3_export.Po
 	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0025_positive_fs.Po
 	-rm -f quant/palette/builtin_float/$(DEPDIR)/test_runner-0026_negative_fs.Po
@@ -64774,6 +65407,32 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0010_fh_din99d_p3.Po
 	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0011_fh_byte_eligibility.Po
 	-rm -f quant/palette/fhedt_float/$(DEPDIR)/test_runner-0012_fh_bands_private.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0001_builtin_gamma.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0002_builtin_cielab.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0003_builtin_p3.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0004_builtin_precision.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0005_builtin_output.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0006_builtin_workspace.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0007_builtin_selection.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0008_builtin_fs.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0009_mono_oklab.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0010_mono_p3.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0011_mono_invert.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0012_mono_precision.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0013_stdin_native.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0014_stdin_precision.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0015_map_workspace.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0016_map_output.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0017_image_precision.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0018_image_workspace.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0019_image_p3.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0020_mask_full_table.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0021_mask_presence.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0022_mask_mono.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0023_mask_map.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0024_map_precision_request.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0025_libpng_pipeline.Po
+	-rm -f quant/palette/fixed_animation/$(DEPDIR)/test_runner-0026_prepared_lookup_reuse.Po
 	-rm -f quant/palette/fixed_mask/$(DEPDIR)/test_runner-0001_srgb_gamma.Po
 	-rm -f quant/palette/fixed_mask/$(DEPDIR)/test_runner-0002_srgb_linear.Po
 	-rm -f quant/palette/fixed_mask/$(DEPDIR)/test_runner-0003_srgb_oklab.Po
@@ -64892,11 +65551,11 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0016_map_reuse_float_first.Po
 	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0017_map_cms_export.Po
 	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0018_map_cms_p3_control.Po
-	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_boundary.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0019_map_multiframe_native.Po
 	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0020_map_promote_fs.Po
 	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0021_map_allocation_none.Po
 	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0022_map_allocation_fs.Po
-	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_multiframe.Po
+	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0023_map_static_to_animation.Po
 	-rm -f quant/palette/map_precision/$(DEPDIR)/test_runner-0024_map_allocation_borrowed.Po
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0001_map_heckbert_gamma.Po
 	-rm -f quant/palette/map_solver/$(DEPDIR)/test_runner-0002_map_heckbert_linear.Po
@@ -64961,7 +65620,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0023_clear_mask.Po
 	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0024_p3_zero_snap.Po
 	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_recovery.Po
-	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_boundary.Po
+	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_native.Po
 	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0027_cielab_export.Po
 	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0028_auto_gamma.Po
 	-rm -f quant/palette/mono_float/$(DEPDIR)/test_runner-0029_auto_cielab.Po

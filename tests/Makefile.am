@@ -662,7 +662,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0056_BLUE_ENCODER_P3 \
     -DBUILD_TEST_0057_BLUE_ENCODER_BYTE \
     -DBUILD_TEST_0058_BLUE_ENCODER_WORKERS \
-    -DBUILD_TEST_0023_MAP_STATIC_TO_MULTIFRAME \
+    -DBUILD_TEST_0023_MAP_STATIC_TO_ANIMATION \
     -DBUILD_TEST_0001_MAP_CMS_GAMMA \
     -DBUILD_TEST_0002_MAP_CMS_LINEAR \
     -DBUILD_TEST_0003_MAP_CMS_OKLAB \
@@ -681,7 +681,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0016_MAP_REUSE_FLOAT_FIRST \
     -DBUILD_TEST_0017_MAP_CMS_EXPORT \
     -DBUILD_TEST_0018_MAP_CMS_P3_CONTROL \
-    -DBUILD_TEST_0019_MAP_MULTIFRAME_BOUNDARY \
+    -DBUILD_TEST_0019_MAP_MULTIFRAME_NATIVE \
     -DBUILD_TEST_0020_MAP_PROMOTE_FS \
     -DBUILD_TEST_0021_MAP_ALLOCATION_NONE \
     -DBUILD_TEST_0022_MAP_ALLOCATION_FS \
@@ -1014,6 +1014,32 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0028_SHORT_MASK_RETRY \
     -DBUILD_TEST_0029_ORMODE_RETRY \
     -DBUILD_TEST_0030_FULL256_PARALLEL \
+    -DBUILD_TEST_0001_BUILTIN_GAMMA \
+    -DBUILD_TEST_0002_BUILTIN_CIELAB \
+    -DBUILD_TEST_0004_BUILTIN_PRECISION \
+    -DBUILD_TEST_0005_BUILTIN_OUTPUT \
+    -DBUILD_TEST_0006_BUILTIN_WORKSPACE \
+    -DBUILD_TEST_0007_BUILTIN_SELECTION \
+    -DBUILD_TEST_0008_BUILTIN_FS \
+    -DBUILD_TEST_0009_MONO_OKLAB \
+    -DBUILD_TEST_0010_MONO_P3 \
+    -DBUILD_TEST_0011_MONO_INVERT \
+    -DBUILD_TEST_0012_MONO_PRECISION \
+    -DBUILD_TEST_0013_STDIN_NATIVE \
+    -DBUILD_TEST_0014_STDIN_PRECISION \
+    -DBUILD_TEST_0015_MAP_WORKSPACE \
+    -DBUILD_TEST_0016_MAP_OUTPUT \
+    -DBUILD_TEST_0017_IMAGE_PRECISION \
+    -DBUILD_TEST_0018_IMAGE_WORKSPACE \
+    -DBUILD_TEST_0019_IMAGE_P3 \
+    -DBUILD_TEST_0020_MASK_FULL_TABLE \
+    -DBUILD_TEST_0021_MASK_PRESENCE \
+    -DBUILD_TEST_0022_MASK_MONO \
+    -DBUILD_TEST_0023_MASK_MAP \
+    -DBUILD_TEST_0024_MAP_PRECISION_REQUEST \
+    -DBUILD_TEST_0025_LIBPNG_PIPELINE \
+    -DBUILD_TEST_0003_BUILTIN_P3 \
+    -DBUILD_TEST_0026_PREPARED_LOOKUP_REUSE \
     -DBUILD_ANIMATION_NATIVE_COMMON \
     -DBUILD_TEST_0001_GAMMA_VALUES \
     -DBUILD_TEST_0002_LINEAR_VALUES \
@@ -1133,7 +1159,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0023_CLEAR_MASK \
     -DBUILD_TEST_0024_P3_ZERO_SNAP \
     -DBUILD_TEST_0025_P3_SNAP_RECOVERY \
-    -DBUILD_TEST_0026_MULTIFRAME_BOUNDARY \
+    -DBUILD_TEST_0026_MULTIFRAME_NATIVE \
     -DBUILD_TEST_0027_CIELAB_EXPORT \
     -DBUILD_TEST_0028_AUTO_GAMMA \
     -DBUILD_TEST_0029_AUTO_CIELAB \
@@ -1162,7 +1188,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0020_OUTPUT_REUSE \
     -DBUILD_TEST_0021_TABLE_REUSE \
     -DBUILD_TEST_0022_P3_SNAP_RECOVERY \
-    -DBUILD_TEST_0023_MULTIFRAME_BOUNDARY \
+    -DBUILD_TEST_0023_MULTIFRAME_NATIVE \
     -DBUILD_TEST_0024_P3_EXPORT \
     -DBUILD_TEST_0025_POSITIVE_FS \
     -DBUILD_TEST_0026_NEGATIVE_FS \
@@ -4676,6 +4702,32 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/fixed_mask/0028_short_mask_retry.c \
     quant/palette/fixed_mask/0029_ormode_retry.c \
     quant/palette/fixed_mask/0030_full256_parallel.c \
+    quant/palette/fixed_animation/0001_builtin_gamma.c \
+    quant/palette/fixed_animation/0002_builtin_cielab.c \
+    quant/palette/fixed_animation/0003_builtin_p3.c \
+    quant/palette/fixed_animation/0004_builtin_precision.c \
+    quant/palette/fixed_animation/0005_builtin_output.c \
+    quant/palette/fixed_animation/0006_builtin_workspace.c \
+    quant/palette/fixed_animation/0007_builtin_selection.c \
+    quant/palette/fixed_animation/0008_builtin_fs.c \
+    quant/palette/fixed_animation/0009_mono_oklab.c \
+    quant/palette/fixed_animation/0010_mono_p3.c \
+    quant/palette/fixed_animation/0011_mono_invert.c \
+    quant/palette/fixed_animation/0012_mono_precision.c \
+    quant/palette/fixed_animation/0013_stdin_native.c \
+    quant/palette/fixed_animation/0014_stdin_precision.c \
+    quant/palette/fixed_animation/0015_map_workspace.c \
+    quant/palette/fixed_animation/0016_map_output.c \
+    quant/palette/fixed_animation/0017_image_precision.c \
+    quant/palette/fixed_animation/0018_image_workspace.c \
+    quant/palette/fixed_animation/0019_image_p3.c \
+    quant/palette/fixed_animation/0020_mask_full_table.c \
+    quant/palette/fixed_animation/0021_mask_presence.c \
+    quant/palette/fixed_animation/0022_mask_mono.c \
+    quant/palette/fixed_animation/0023_mask_map.c \
+    quant/palette/fixed_animation/0024_map_precision_request.c \
+    quant/palette/fixed_animation/0025_libpng_pipeline.c \
+    quant/palette/fixed_animation/0026_prepared_lookup_reuse.c \
     quant/palette/animation_native_common.c \
     quant/palette/animation_native/0001_gamma_values.c \
     quant/palette/animation_native/0002_linear_values.c \
@@ -4795,7 +4847,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/mono_float/0023_clear_mask.c \
     quant/palette/mono_float/0024_p3_zero_snap.c \
     quant/palette/mono_float/0025_p3_snap_recovery.c \
-    quant/palette/mono_float/0026_multiframe_boundary.c \
+    quant/palette/mono_float/0026_multiframe_native.c \
     quant/palette/mono_float/0027_cielab_export.c \
     quant/palette/mono_float/0028_auto_gamma.c \
     quant/palette/mono_float/0029_auto_cielab.c \
@@ -4824,7 +4876,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/builtin_float/0020_output_reuse.c \
     quant/palette/builtin_float/0021_table_reuse.c \
     quant/palette/builtin_float/0022_p3_snap_recovery.c \
-    quant/palette/builtin_float/0023_multiframe_boundary.c \
+    quant/palette/builtin_float/0023_multiframe_native.c \
     quant/palette/builtin_float/0024_p3_export.c \
     quant/palette/builtin_float/0025_positive_fs.c \
     quant/palette/builtin_float/0026_negative_fs.c \
@@ -5098,7 +5150,7 @@ test_runner_SOURCES = test_runner.c \
     processing/dither/positional/precision/0056_blue_encoder_p3.c \
     processing/dither/positional/precision/0057_blue_encoder_byte.c \
     processing/dither/positional/precision/0058_blue_encoder_workers.c \
-    quant/palette/map_precision/0023_map_static_to_multiframe.c \
+    quant/palette/map_precision/0023_map_static_to_animation.c \
     quant/palette/map_precision/0001_map_cms_gamma.c \
     quant/palette/map_precision/0002_map_cms_linear.c \
     quant/palette/map_precision/0003_map_cms_oklab.c \
@@ -5117,7 +5169,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/map_precision/0016_map_reuse_float_first.c \
     quant/palette/map_precision/0017_map_cms_export.c \
     quant/palette/map_precision/0018_map_cms_p3_control.c \
-    quant/palette/map_precision/0019_map_multiframe_boundary.c \
+    quant/palette/map_precision/0019_map_multiframe_native.c \
     quant/palette/map_precision/0020_map_promote_fs.c \
     quant/palette/map_precision/0021_map_allocation_none.c \
     quant/palette/map_precision/0022_map_allocation_fs.c \

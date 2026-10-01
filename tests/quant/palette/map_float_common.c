@@ -79,10 +79,10 @@ map_write(char *data, int size, void *context)
     return size;
 }
 
-int
-test_map_solver(int mode, int space, char const *path,
+static int
+test_map_solver_run(int mode, int space, char const *path,
                 char const *quantizer, char const *binning,
-                int output_p3, int solver)
+                int output_p3, int solver, int animated)
 {
     static struct { int flag; char const *value; } const options[] = {
         { '=', "1" }, { 'X', "linear" },
@@ -174,9 +174,27 @@ test_map_solver(int mode, int space, char const *path,
         goto end;
     }
     requested_model = encoder->quantize_model;
+    if (animated) {
+        passes = 3;
+        encoder->fstatic = 1;
+        encoder->fignore_delay = 1;
+    }
     for (pass = 0; pass < passes; ++pass) {
-        byte_input = mode == 2 || mode == 3 || (mode == 4 && pass == 1);
-        byte_work = byte_input && mode != 3;
+        if (mode == 11) {
+            space = pass == 1 ? 3 : 0;
+            if (SIXEL_FAILED(sixel_encoder_setopt(encoder,
+                    'W', spaces[space]))) {
+                goto end;
+            }
+        }
+        if (mode == 12 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
+                '.', pass == 1 ? "float32" : "8bit"))) {
+            goto end;
+        }
+        byte_input = mode == 2 || mode == 3 || mode == 12 ||
+            (mode == 4 && pass == 1) || (mode == 13 && pass != 1);
+        byte_work = byte_input && mode != 3 &&
+            !(mode == 12 && pass == 1);
         p3 = output_p3 || (mode == 5 && pass == 1);
         if (mode == 9) {
             /* Resolve AUTO afresh after changing binning on one encoder. */
@@ -203,6 +221,11 @@ test_map_solver(int mode, int space, char const *path,
                         : image ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
                                 : SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
             goto end;
+        }
+        if (animated) {
+            sixel_frame_set_multiframe(frame, 1);
+            sixel_frame_set_frame_no(frame, pass % 2);
+            sixel_frame_set_loop_count(frame, pass / 2);
         }
         if (mode == 10) {
             /* Unsupported image-map binning must fail before output. */
@@ -326,6 +349,22 @@ end:
     sixel_output_unref(output);
     sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_map_solver(int mode, int space, char const *path,
+                char const *quantizer, char const *binning,
+                int output_p3, int solver)
+{
+    return test_map_solver_run(mode, space, path, quantizer, binning,
+        output_p3, solver, 0);
+}
+
+int
+test_structured_animation(int mode, int space, char const *path)
+{
+    return test_map_solver_run(mode, space, path, "kmeans:seed=1", "none", 0,
+        SIXEL_QUANTIZE_MODEL_KMEANS, 1);
 }
 
 int

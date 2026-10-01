@@ -363,6 +363,12 @@ struct sixel_encoder {
     sixel_cancel_function cancel_function;
     void *cancel_context;
     void *dither_cache;
+    /* Immutable fixed source, separate from frame application state. */
+    void *fixed_palette_source;
+    int fixed_palette_colorspace;
+    int fixed_palette_working;
+    int fixed_palette_output;
+    int fixed_palette_definition;
     void *diagnostic_dither;
     unsigned short drcs_charset_no;
     int drcs_mmv;

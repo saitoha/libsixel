@@ -4301,12 +4301,14 @@ end:
 static void
 sixel_encoder_clear_dither_cache(sixel_encoder_t *encoder)
 {
-    if (encoder == NULL || encoder->dither_cache == NULL) {
+    if (encoder == NULL) {
         return;
     }
 
     sixel_dither_unref((sixel_dither_t *)encoder->dither_cache);
     encoder->dither_cache = NULL;
+    sixel_dither_unref((sixel_dither_t *)encoder->fixed_palette_source);
+    encoder->fixed_palette_source = NULL;
 }
 
 static int
@@ -6113,7 +6115,7 @@ sixel_encoder_palette_job_wait(sixel_palette_async_job_t *job,
 
 /* Structured palette files and built-in tables contain sRGB8 entries,
  * independent of -W.
- * Convert once at the parser boundary and keep float coordinates alongside
+ * Convert the application copy and keep float coordinates alongside
  * the byte compatibility view. An ordinary gamma job needs no extra
  * allocation; selected float jobs need an authoritative working view. */
 static SIXELSTATUS
@@ -6162,7 +6164,8 @@ sixel_prepare_specified_palette(
     sixel_dither_t  /* out */   **dither,
     sixel_encoder_t /* in */    *encoder,
     int preserve_float,
-    int allow_float_palette)
+    int allow_float_palette,
+    int *palette_colorspace)
 {
     SIXELSTATUS status;
     sixel_callback_context_for_mapfile_t callback_context;
@@ -6208,6 +6211,7 @@ sixel_prepare_specified_palette(
     treat_as_image = 0;
     path_has_extension = 0;
     mapfile_message[0] = '\0';
+    *palette_colorspace = SIXEL_COLORSPACE_GAMMA;
 
     if (dither == NULL || encoder == NULL || encoder->mapfile == NULL) {
         sixel_helper_set_additional_message(
@@ -6372,12 +6376,6 @@ palette_cleanup:
             stream = NULL;
         }
         if (SIXEL_SUCCEEDED(status)) {
-            status = sixel_encoder_import_srgb_palette(encoder, *dither,
-                                                       preserve_float);
-            if (SIXEL_FAILED(status)) {
-                sixel_dither_unref(*dither);
-                *dither = NULL;
-            }
             return status;
         }
         if (!treat_as_image) {
@@ -6532,6 +6530,7 @@ end_loader:
     }
 
     *dither = callback_context.dither;
+    *palette_colorspace = encoder->working_colorspace;
 
     sixel_encoder_log_stage(encoder,
                             NULL,
@@ -7161,23 +7160,12 @@ sixel_encoder_rgb101_alpha(sixel_encoder_t const *encoder,
           encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME));
 }
 
-/* Generated palettes are frame-local. Fixed animation palettes retain their
- * legacy cache contract until source precision and cache reuse are migrated. */
-static int
-sixel_encoder_rgb101_animation(sixel_encoder_t const *encoder,
-                               sixel_frame_t *frame)
-{
-    return sixel_frame_get_multiframe(frame) == 0 ||
-        encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT;
-}
-
 /* Resolve packed storage only within the admitted frame/palette scope. */
 static int
 sixel_encoder_unpack_alpha_candidate(sixel_encoder_t const *encoder,
                                       sixel_frame_t *frame)
 {
-    return sixel_encoder_rgb101_animation(encoder, frame) &&
-        sixel_encoder_pixelformat_has_alpha(
+    return sixel_encoder_pixelformat_has_alpha(
             sixel_frame_get_pixelformat(frame)) &&
         sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_GAMMA &&
         sixel_encoder_rgb101_options(encoder) &&
@@ -7202,7 +7190,6 @@ sixel_encoder_rgb101_candidate(sixel_encoder_t const *encoder,
             encoder->output_colorspace == SIXEL_COLORSPACE_SMPTEC) &&
         (format == SIXEL_PIXELFORMAT_RGB888 ||
          SIXEL_PIXELFORMAT_IS_FLOAT32(format)) &&
-        sixel_encoder_rgb101_animation(encoder, frame) &&
         sixel_encoder_rgb101_alpha(encoder, frame) &&
         sixel_encoder_rgb101_options(encoder);
 }
@@ -7255,8 +7242,7 @@ sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
         return status;
     }
     if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
-            (!sixel_encoder_rgb101_animation(encoder, frame) ||
-             (sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGB888 &&
+            ((sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGB888 &&
               !SIXEL_PIXELFORMAT_IS_FLOAT32(
                   sixel_frame_get_pixelformat(frame)) &&
               !(sixel_encoder_pixelformat_has_alpha(
@@ -7265,10 +7251,75 @@ sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
              !sixel_encoder_rgb101_alpha(encoder, frame))) {
         sixel_helper_set_additional_message(
             "display-p3 requires RGB or packed-alpha frames; "
-            "animation requires generated palettes. Preserved alpha "
+            "preserved alpha "
             "requires a fixed palette or at least 2 generated slots.");
         return SIXEL_BAD_INPUT;
     }
+    return SIXEL_OK;
+}
+
+/* A fixed animation source is chosen once, before output transforms or
+ * palette optimization. Derive each selected frame from this immutable
+ * source, never from the previous frame's rounded or converted palette.
+ * Image-map floats remain authoritative even for a byte source frame. */
+static SIXELSTATUS
+sixel_encoder_copy_fixed_palette(sixel_encoder_t *encoder,
+                                  sixel_dither_t *source,
+                                  int source_colorspace,
+                                  int native,
+                                  sixel_dither_t **result)
+{
+    SIXELSTATUS status;
+    sixel_palette_entries_view_t bytes;
+    sixel_palette_float32_entries_view_t floats;
+    sixel_palette_float32_entries_request_t request;
+    sixel_dither_t *copy;
+
+    copy = NULL;
+    status = source->palette->vtbl->get_entries(source->palette, &bytes);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = source->palette->vtbl->get_entries_float32(source->palette,
+                                                       &floats);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_dither_new(&copy, source->ncolors, encoder->allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    sixel_dither_set_palette(copy, bytes.entries);
+    copy->origcolors = source->origcolors;
+    copy->quantize_model = source->quantize_model;
+    copy->palette_snap_exact = source->palette_snap_exact;
+    copy->optimized = source->optimized;
+    copy->bodyonly = source->bodyonly;
+    copy->keycolor = source->keycolor;
+    copy->keycolor_reserved = source->keycolor_reserved;
+    copy->use_rgb101_palette = native;
+    if (floats.entries != NULL) {
+        memset(&request, 0, sizeof(request));
+        request.entries = floats.entries;
+        request.colors = floats.entry_count;
+        request.depth = floats.depth;
+        status = copy->palette->vtbl->init_entries_float32(copy->palette,
+                                                           &request);
+        if (SIXEL_SUCCEEDED(status)) {
+            status = sixel_encoder_convert_palette_colorspace(copy->palette,
+                source_colorspace, encoder->working_colorspace, native);
+        }
+    } else if (source_colorspace == SIXEL_COLORSPACE_GAMMA) {
+        status = sixel_encoder_import_srgb_palette(encoder, copy, native);
+    } else {
+        status = sixel_encoder_convert_palette_colorspace(copy->palette,
+            source_colorspace, encoder->working_colorspace, native);
+    }
+    if (SIXEL_FAILED(status)) {
+        sixel_dither_unref(copy);
+        return status;
+    }
+    *result = copy;
     return SIXEL_OK;
 }
 
@@ -7373,6 +7424,9 @@ sixel_encoder_prepare_palette(
     int effective_lut_policy_override;
     int fixed_palette_cache_candidate;
     int dither_cache_hit;
+    int fixed_colorspace;
+    int fixed_native;
+    sixel_dither_t *fixed_source;
     int palette_width;
     int palette_height;
     size_t source_point_count;
@@ -7384,8 +7438,7 @@ sixel_encoder_prepare_palette(
     sixel_palette_policy_resolution_t quantizer_attempt;
 
     target_logger = logger;
-    cache_allowed = allow_cache != 0 &&
-        !sixel_encoder_rgb101_frame(encoder, frame);
+    cache_allowed = allow_cache != 0;
     palette_frame = frame;
     cluster_frame = NULL;
     palette_pixels = NULL;
@@ -7409,6 +7462,9 @@ sixel_encoder_prepare_palette(
     effective_lut_policy_override = 0;
     fixed_palette_cache_candidate = 0;
     dither_cache_hit = 0;
+    fixed_colorspace = SIXEL_COLORSPACE_GAMMA;
+    fixed_native = 0;
+    fixed_source = NULL;
     palette_width = 0;
     palette_height = 0;
     source_point_count = 0u;
@@ -7454,52 +7510,80 @@ sixel_encoder_prepare_palette(
         }
         goto end;
     case SIXEL_COLOR_OPTION_MONOCHROME:
-        fixed_palette_cache_candidate = 1;
-        if (cache_allowed && encoder->dither_cache) {
-            *dither = encoder->dither_cache;
-            sixel_dither_ref(*dither);
-            dither_cache_hit = 1;
-            status = SIXEL_OK;
-        } else {
-            status = sixel_prepare_monochrome_palette(dither, encoder->finvert);
-            if (SIXEL_SUCCEEDED(status) &&
-                    sixel_encoder_rgb101_frame(encoder, frame)) {
-                /* Black/white are sRGB endpoints, not encoded opponent
-                 * coordinates. Preserve the unreserved entry-zero key:
-                 * it selects the foreground-mask writer, even though
-                 * application now uses a native float working palette. */
-                status = sixel_encoder_import_srgb_palette(encoder,
-                    *dither, 1);
-            }
-        }
-        goto end;
     case SIXEL_COLOR_OPTION_MAPFILE:
-        fixed_palette_cache_candidate = 1;
-        if (cache_allowed && encoder->dither_cache) {
-            *dither = encoder->dither_cache;
-            sixel_dither_ref(*dither);
-            dither_cache_hit = 1;
-            status = SIXEL_OK;
-        } else {
-            status = sixel_prepare_specified_palette(dither, encoder,
-                sixel_encoder_rgb101_frame(encoder, frame),
-                sixel_encoder_rgb101_candidate(encoder, frame));
-        }
-        goto end;
     case SIXEL_COLOR_OPTION_BUILTIN:
         fixed_palette_cache_candidate = 1;
-        if (cache_allowed && encoder->dither_cache) {
+        if (cache_allowed && encoder->fixed_palette_source != NULL) {
+            fixed_source = encoder->fixed_palette_source;
+            fixed_colorspace = encoder->fixed_palette_colorspace;
+            sixel_dither_ref(fixed_source);
+            status = SIXEL_OK;
+            fixed_native = sixel_encoder_rgb101_frame(encoder, frame) ||
+                (sixel_encoder_rgb101_candidate(encoder, frame) &&
+                 fixed_source->use_rgb101_palette);
+            /* Reuse the application and its prepared lookup for unchanged
+             * frames. Rebuilding a large FHEDT table per frame would defeat
+             * the fixed-palette cache even though the source is read once.
+             * A representation change must start from the source instead. */
+            if (encoder->dither_cache != NULL &&
+                    ((sixel_dither_t *)encoder->dither_cache)
+                        ->use_rgb101_palette == fixed_native &&
+                    encoder->fixed_palette_working ==
+                        encoder->working_colorspace &&
+                    encoder->fixed_palette_output ==
+                        encoder->output_colorspace &&
+                    encoder->fixed_palette_definition ==
+                        encoder->output_color_definition) {
+                *dither = encoder->dither_cache;
+                sixel_dither_ref(*dither);
+                dither_cache_hit = 1;
+                goto end;
+            }
+        } else if (cache_allowed && encoder->dither_cache != NULL &&
+                !sixel_encoder_rgb101_candidate(encoder, frame)) {
+            /* Excluded legacy paths retain their existing stateful dither. */
             *dither = encoder->dither_cache;
             sixel_dither_ref(*dither);
             dither_cache_hit = 1;
             status = SIXEL_OK;
+            goto end;
+        } else if (encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME) {
+            status = sixel_prepare_monochrome_palette(&fixed_source,
+                                                       encoder->finvert);
+        } else if (encoder->color_option == SIXEL_COLOR_OPTION_BUILTIN) {
+            status = sixel_prepare_builtin_palette(&fixed_source,
+                                                   encoder->builtin_palette);
         } else {
-            status = sixel_prepare_builtin_palette(dither,
-                                                     encoder->builtin_palette);
-            if (SIXEL_SUCCEEDED(status)) {
-                /* The table is sRGB8, like a structured map. Retain its
-                 * unrounded working view whenever this job needs native
-                 * float application; genuine byte jobs keep their path. */
+            status = sixel_prepare_specified_palette(&fixed_source, encoder,
+                sixel_encoder_rgb101_frame(encoder, frame),
+                sixel_encoder_rgb101_candidate(encoder, frame),
+                &fixed_colorspace);
+        }
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        if (sixel_encoder_rgb101_candidate(encoder, frame) ||
+                encoder->fixed_palette_source != NULL) {
+            if (cache_allowed && sixel_frame_get_multiframe(frame) &&
+                    encoder->fixed_palette_source == NULL) {
+                /* A new source cannot reuse an older static application,
+                 * including after a failed allocation and frame retry. */
+                sixel_dither_unref((sixel_dither_t *)encoder->dither_cache);
+                encoder->dither_cache = NULL;
+                encoder->fixed_palette_source = fixed_source;
+                encoder->fixed_palette_colorspace = fixed_colorspace;
+                sixel_dither_ref(fixed_source);
+            }
+            fixed_native = sixel_encoder_rgb101_frame(encoder, frame) ||
+                (sixel_encoder_rgb101_candidate(encoder, frame) &&
+                 fixed_source->use_rgb101_palette);
+            status = sixel_encoder_copy_fixed_palette(encoder, fixed_source,
+                fixed_colorspace, fixed_native, dither);
+        } else {
+            *dither = fixed_source;
+            sixel_dither_ref(*dither);
+            if (fixed_colorspace == SIXEL_COLORSPACE_GAMMA &&
+                    encoder->color_option != SIXEL_COLOR_OPTION_MONOCHROME) {
                 status = sixel_encoder_import_srgb_palette(encoder, *dither,
                     sixel_encoder_rgb101_frame(encoder, frame));
             }
@@ -8162,6 +8246,7 @@ sixel_encoder_prepare_palette(
     }
 
 end:
+    sixel_dither_unref(fixed_source);
     sixel_allocator_free(encoder->allocator, visible_pixels);
     if (quantize_override_lock_acquired != 0) {
         sixel_encoder_quantize_override_lock_release(
@@ -8200,16 +8285,16 @@ end:
         (*dither)->gpu_palette_threshold = encoder->gpu_palette_threshold;
         /* pass down the user's demand for an exact palette size */
         (*dither)->force_palette = encoder->force_palette;
-        if (cache_allowed && !(*dither)->use_rgb101_palette
-                && fixed_palette_cache_candidate != 0
+        if (cache_allowed && fixed_palette_cache_candidate != 0
                 && dither_cache_hit == 0) {
-            /*
-             * Fixed palette sources are invariant across animation frames.
-             * Cache the parsed dither object so stdin mapfiles are consumed
-             * only once while later frames still observe the same palette.
-             */
-            sixel_encoder_clear_dither_cache(encoder);
+            /* The immutable source has a separate lifetime. Retain the
+             * current application for legacy state and diagnostics only. */
+            sixel_dither_unref((sixel_dither_t *)encoder->dither_cache);
             encoder->dither_cache = *dither;
+            encoder->fixed_palette_working = encoder->working_colorspace;
+            encoder->fixed_palette_output = encoder->output_colorspace;
+            encoder->fixed_palette_definition =
+                encoder->output_color_definition;
             sixel_dither_ref(*dither);
         }
     }
@@ -9753,6 +9838,11 @@ sixel_encoder_new(
     (*ppencoder)->cancel_function       = NULL;
     (*ppencoder)->cancel_context        = NULL;
     (*ppencoder)->dither_cache          = NULL;
+    (*ppencoder)->fixed_palette_source  = NULL;
+    (*ppencoder)->fixed_palette_colorspace = SIXEL_COLORSPACE_GAMMA;
+    (*ppencoder)->fixed_palette_working = SIXEL_COLORSPACE_GAMMA;
+    (*ppencoder)->fixed_palette_output = SIXEL_COLORSPACE_GAMMA;
+    (*ppencoder)->fixed_palette_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
     (*ppencoder)->diagnostic_dither     = NULL;
     (*ppencoder)->drcs_charset_no       = 1u;
     (*ppencoder)->drcs_mmv              = 2;
@@ -10022,7 +10112,7 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
         sixel_allocator_free(allocator, encoder->palette_output);
         sixel_allocator_free(allocator, encoder->loader_order);
         sixel_allocator_free(allocator, encoder->bgcolor);
-        sixel_dither_unref(encoder->dither_cache);
+        sixel_encoder_clear_dither_cache(encoder);
         sixel_dither_unref((sixel_dither_t *)encoder->diagnostic_dither);
         if (encoder->outfd
             && encoder->outfd != STDOUT_FILENO
@@ -11649,6 +11739,7 @@ sixel_encoder_apply_mapfile_option(
     if (encoder->mapfile != NULL) {
         sixel_allocator_free(encoder->allocator, encoder->mapfile);
     }
+    sixel_encoder_clear_dither_cache(encoder);
     encoder->mapfile = mapfile_copy;
     encoder->color_option = SIXEL_COLOR_OPTION_MAPFILE;
     return status;
@@ -12221,6 +12312,7 @@ sixel_encoder_setopt(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        sixel_encoder_clear_dither_cache(encoder);
         encoder->color_option = SIXEL_COLOR_OPTION_MONOCHROME;
         break;
     case SIXEL_OPTFLAG_HIGH_COLOR:  /* I */
@@ -12251,6 +12343,7 @@ sixel_encoder_setopt(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        sixel_encoder_clear_dither_cache(encoder);
         encoder->builtin_palette = match_value;
         encoder->color_option = SIXEL_COLOR_OPTION_BUILTIN;
         break;
@@ -12551,6 +12644,9 @@ sixel_encoder_setopt(
         encoder->finsecure = 1;
         break;
     case SIXEL_OPTFLAG_INVERT:  /* i */
+        if (encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME) {
+            sixel_encoder_clear_dither_cache(encoder);
+        }
         encoder->finvert = 1;
         break;
     case SIXEL_OPTFLAG_USE_MACRO:  /* u */

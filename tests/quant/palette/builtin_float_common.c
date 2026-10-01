@@ -101,8 +101,9 @@ bi_values(sixel_dither_t *dither, bi_capture_t *capture,
     return 1;
 }
 
-int
-test_builtin_native(int space, int output_kind, int table, int mode)
+static int
+test_builtin_native_run(int space, int output_kind, int table, int mode,
+                         int animated)
 {
     static struct { int flag; char const *value; } const options[] = {
         { '=', "1" }, { '~', "none" }, { 'd', "none" },
@@ -112,6 +113,7 @@ test_builtin_native(int space, int output_kind, int table, int mode)
     sixel_output_t *output;
     sixel_frame_t *frame;
     sixel_dither_t *dither;
+    sixel_dither_t *retained;
     bi_capture_t capture;
     float source[6];
     float saved[6];
@@ -134,6 +136,7 @@ test_builtin_native(int space, int output_kind, int table, int mode)
     int j;
     int ok;
 
+    retained = NULL;
     encoder = NULL;
     output = NULL;
     frame = NULL;
@@ -159,19 +162,34 @@ test_builtin_native(int space, int output_kind, int table, int mode)
                 '.', "float32"))) ||
             (mode == 3 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 '_', "nearest:rate=0"))) ||
-            (mode >= 10 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
+            ((mode >= 10 && mode <= 12) && SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 'd', "fs"))) ||
             (mode == 9 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 'M', "pal:-")))) {
         goto end;
     }
+    if (mode == 14 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
+            '~', "vptree"))) {
+        goto end;
+    }
+    if (animated) {
+        passes = 3;
+        encoder->fstatic = 1;
+        encoder->fignore_delay = 1;
+    }
     for (pass = 0; pass < passes; ++pass) {
+        if (mode == 13) {
+            space = pass == 1 ? 4 : 0;
+            if (SIXEL_FAILED(sixel_encoder_setopt(encoder,
+                    'W', bi_spaces[space]))) {
+                goto end;
+            }
+        }
         selected_table = mode == 6 ? pass : table;
         selected_output = mode == 5 ? (pass == 1 ? 0 : 1) : output_kind;
         byte_input = mode == 1 || mode == 2 || mode == 5 ||
             (mode == 4 && pass == 1);
-        byte_work = (byte_input && mode != 2 && selected_output != 1) ||
-            (mode == 8 && pass == 0);
+        byte_work = byte_input && mode != 2 && selected_output != 1;
         expected[0] = selected_table == 0 ? 9 : 1;
         expected[1] = selected_table == 0 ? 8 : 0;
         for (i = 0; i < 2; ++i) {
@@ -182,7 +200,7 @@ test_builtin_native(int space, int output_kind, int table, int mode)
                     .entries[space][expected[i]][j];
             }
         }
-        if (mode >= 10) {
+        if ((mode >= 10 && mode <= 12)) {
             /* Gray2: .2 -> 1/3, then .22 - (2/15)*7/16 < 1/6.
              * Gray1 positive: 1.125 -> 1, then .45 + .125*7/16 > .5.
              * Gray1 negative: -.125 -> 0, then .55 - .125*7/16 < .5.
@@ -197,8 +215,9 @@ test_builtin_native(int space, int output_kind, int table, int mode)
         }
         memcpy(saved, source, sizeof(saved));
         memset(&capture, 0, sizeof(capture));
-        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'b',
-                bi_tables[selected_table])) ||
+        if (((!animated || pass == 0 || mode == 6) &&
+                SIXEL_FAILED(sixel_encoder_setopt(encoder, 'b',
+                    bi_tables[selected_table]))) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
                     bi_outputs[selected_output])) ||
                 SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
@@ -208,8 +227,10 @@ test_builtin_native(int space, int output_kind, int table, int mode)
                         : bi_formats[space], NULL, -1))) {
             goto end;
         }
-        if (mode == 8 && pass == 0) {
+        if (animated || (mode == 8 && pass == 0)) {
             sixel_frame_set_multiframe(frame, 1);
+            sixel_frame_set_frame_no(frame, pass % 2);
+            sixel_frame_set_loop_count(frame, pass / 2);
         }
         if (mode == 7) {
             if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '_', "nearest")) ||
@@ -222,6 +243,18 @@ test_builtin_native(int space, int output_kind, int table, int mode)
         }
         status = sixel_encoder_encode_frame(encoder, frame, output);
         dither = (sixel_dither_t *)encoder->diagnostic_dither;
+        if (mode == 14) {
+            /* Keep a reference so allocator address reuse cannot mimic a
+             * cache hit. This object owns the prepared lookup reuse input. */
+            if (pass == 0 && dither != NULL) {
+                retained = dither;
+                sixel_dither_ref(retained);
+            }
+            if (retained == NULL || retained != dither ||
+                    dither->lookup_policy == NULL) {
+                goto end;
+            }
+        }
         if (SIXEL_FAILED(status) || dither == NULL ||
                 memcmp(saved, source, sizeof(saved)) != 0 ||
                 dither->use_rgb101_palette != !byte_work ||
@@ -273,6 +306,19 @@ end:
     free(palette);
     sixel_frame_unref(frame);
     sixel_output_unref(output);
+    sixel_dither_unref(retained);
     sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_builtin_native(int space, int output_kind, int table, int mode)
+{
+    return test_builtin_native_run(space, output_kind, table, mode, 0);
+}
+
+int
+test_builtin_animation(int space, int output_kind, int table, int mode)
+{
+    return test_builtin_native_run(space, output_kind, table, mode, 1);
 }

@@ -130,8 +130,8 @@ fm_painted(char const *stream, int *result, int width, int height)
     return 1;
 }
 
-int
-test_fixed_mask(int space, int mode, char const *path)
+static int
+test_fixed_mask_run(int space, int mode, char const *path, int animated)
 {
     static struct { int flag; char const *value; } const options[] = {
         { '=', "1" }, { '~', "none" }, { 'd', "none" },
@@ -252,6 +252,11 @@ test_fixed_mask(int space, int mode, char const *path)
     }
     encoder->transparent_offset_left = offset_x;
     encoder->transparent_offset_top = offset_y;
+    if (animated) {
+        passes = 3;
+        encoder->fstatic = 1;
+        encoder->fignore_delay = 1;
+    }
     for (pass = 0; pass < passes; ++pass) {
         memset(&capture, 0, sizeof(capture));
         memset(&transparency, 0, sizeof(transparency));
@@ -295,6 +300,11 @@ test_fixed_mask(int space, int mode, char const *path)
                     height, byte_input ? SIXEL_PIXELFORMAT_RGB888 :
                     fm_formats[space], NULL, -1))) {
             goto end;
+        }
+        if (animated) {
+            sixel_frame_set_multiframe(frame, 1);
+            sixel_frame_set_frame_no(frame, pass % 2);
+            sixel_frame_set_loop_count(frame, pass / 2);
         }
         frame_if = sixel_frame_as_interface(frame);
         if (!masked) {
@@ -483,4 +493,16 @@ end:
     sixel_output_unref(output);
     sixel_dither_unref(dither);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_fixed_mask(int space, int mode, char const *path)
+{
+    return test_fixed_mask_run(space, mode, path, 0);
+}
+
+int
+test_fixed_mask_animation(int space, int mode, char const *path)
+{
+    return test_fixed_mask_run(space, mode, path, 1);
 }

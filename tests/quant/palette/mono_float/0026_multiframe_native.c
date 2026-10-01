@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Verify native monochrome: multiframe boundary. */
+/* Verify native monochrome: multiframe native. */
 int test_mono_native(int space, int output, int invert, int mode);
 
 int

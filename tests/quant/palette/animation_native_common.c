@@ -252,9 +252,10 @@ end:
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-int
-test_animation_loader(char const *input, char const *path,
-                       char const *loader, char const *threads, int p3)
+static int
+test_animation_loader_run(char const *input, char const *path,
+                           char const *loader, char const *threads, int p3,
+                           int fixed)
 {
     static struct { int flag; char const *value; } const options[] = {
         { '~', "none" }, { 'd', "fs" }, { 'W', "linear" },
@@ -271,6 +272,15 @@ test_animation_loader(char const *input, char const *path,
     static unsigned char const expected[2][2][3] = {
         { { 255, 0, 0 }, { 186, 0, 189 } },
         { { 235, 51, 36 }, { 171, 36, 181 } }
+    };
+    /* Xterm16 entries 9 and 5 win in linear RGB. At the second sample,
+     * squared distance to purple is about .162, versus .208 to gray128
+     * and .500 to bright magenta. No diffusion is used in this control.
+     * Independent xy/transfer equations give P3 RGB101 (46,8,48) for
+     * purple; final percent-to-byte rounding gives (117,20,122). */
+    static unsigned char const fixed_expected[2][2][3] = {
+        { { 255, 0, 0 }, { 128, 0, 128 } },
+        { { 235, 51, 36 }, { 117, 20, 122 } }
     };
     sixel_encoder_t *encoder;
     af_capture_t capture;
@@ -297,12 +307,18 @@ test_animation_loader(char const *input, char const *path,
         goto cleanup;
     }
     for (i = 0; i < (int)(sizeof(options) / sizeof(options[0])); ++i) {
+        if (fixed && (options[i].flag == 'p' || options[i].flag == 'a')) {
+            continue;
+        }
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 options[i].flag, options[i].value))) {
             goto cleanup;
         }
     }
-    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', threads)) ||
+    if ((fixed && (SIXEL_FAILED(sixel_encoder_setopt(encoder,
+                    'b', "xterm16")) ||
+                SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd', "none")))) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', threads)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'L', loader)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
                 p3 ? "display-p3" : "gamma")) ||
@@ -338,7 +354,8 @@ test_animation_loader(char const *input, char const *path,
             }
             for (c = 0; c < 3; ++c) {
                 if (palette[decoded[i] * 3 + c] !=
-                        expected[p3][frames % 2][c]) {
+                        (fixed ? fixed_expected[p3][frames % 2][c] :
+                         expected[p3][frames % 2][c])) {
                     fprintf(stderr, "frame=%d pixel=%d channel=%d got=%d\n",
                         frames, i, c, palette[decoded[i] * 3 + c]);
                     goto cleanup;
@@ -365,4 +382,18 @@ cleanup:
     free(palette);
     sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_animation_loader(char const *input, char const *path,
+                       char const *loader, char const *threads, int p3)
+{
+    return test_animation_loader_run(input, path, loader, threads, p3, 0);
+}
+
+int
+test_fixed_animation_loader(char const *input, char const *path)
+{
+    return test_animation_loader_run(input, path, "libpng:cms_engine=none!",
+        "4", 1, 1);
 }

@@ -741,6 +741,32 @@ int test_anim_native_0014(int argc, char **argv);
 int test_anim_native_0015(int argc, char **argv);
 int test_anim_native_0016(int argc, char **argv);
 int test_anim_native_0017(int argc, char **argv);
+int test_fixed_animation_0001(int argc, char **argv);
+int test_fixed_animation_0002(int argc, char **argv);
+int test_fixed_animation_0003(int argc, char **argv);
+int test_fixed_animation_0004(int argc, char **argv);
+int test_fixed_animation_0005(int argc, char **argv);
+int test_fixed_animation_0006(int argc, char **argv);
+int test_fixed_animation_0007(int argc, char **argv);
+int test_fixed_animation_0008(int argc, char **argv);
+int test_fixed_animation_0009(int argc, char **argv);
+int test_fixed_animation_0010(int argc, char **argv);
+int test_fixed_animation_0011(int argc, char **argv);
+int test_fixed_animation_0012(int argc, char **argv);
+int test_fixed_animation_0013(int argc, char **argv);
+int test_fixed_animation_0014(int argc, char **argv);
+int test_fixed_animation_0015(int argc, char **argv);
+int test_fixed_animation_0016(int argc, char **argv);
+int test_fixed_animation_0017(int argc, char **argv);
+int test_fixed_animation_0018(int argc, char **argv);
+int test_fixed_animation_0019(int argc, char **argv);
+int test_fixed_animation_0020(int argc, char **argv);
+int test_fixed_animation_0021(int argc, char **argv);
+int test_fixed_animation_0022(int argc, char **argv);
+int test_fixed_animation_0023(int argc, char **argv);
+int test_fixed_animation_0024(int argc, char **argv);
+int test_fixed_animation_0025(int argc, char **argv);
+int test_fixed_animation_0026(int argc, char **argv);
 int test_anim_native_0018(int argc, char **argv);
 int test_anim_native_0019(int argc, char **argv);
 int test_anim_native_0020(int argc, char **argv);
@@ -3558,7 +3584,7 @@ static test_entry_t const test_entries[] = {
       test_map_precision_0017 },
     { "palette/map_precision/0018_map_cms_p3_control",
       test_map_precision_0018 },
-    { "palette/map_precision/0019_map_multiframe_boundary",
+    { "palette/map_precision/0019_map_multiframe_native",
       test_map_precision_0019 },
     { "palette/map_precision/0020_map_promote_fs",
       test_map_precision_0020 },
@@ -3566,7 +3592,7 @@ static test_entry_t const test_entries[] = {
       test_map_precision_0021 },
     { "palette/map_precision/0022_map_allocation_fs",
       test_map_precision_0022 },
-    { "palette/map_precision/0023_map_static_to_multiframe",
+    { "palette/map_precision/0023_map_static_to_animation",
       test_map_precision_0023 },
     { "palette/map_precision/0024_map_allocation_borrowed",
       test_map_precision_0024 },
@@ -3924,6 +3950,34 @@ static test_entry_t const test_entries[] = {
       test_anim_native_0016 },
     { "quant/palette/animation_native/0017_rgb_handoff_plan",
       test_anim_native_0017 },
+    { "quant/palette/fixed_animation/0001_builtin_gamma", test_fixed_animation_0001 },
+    { "quant/palette/fixed_animation/0002_builtin_cielab", test_fixed_animation_0002 },
+    { "quant/palette/fixed_animation/0003_builtin_p3", test_fixed_animation_0003 },
+    { "quant/palette/fixed_animation/0004_builtin_precision", test_fixed_animation_0004 },
+    { "quant/palette/fixed_animation/0005_builtin_output", test_fixed_animation_0005 },
+    { "quant/palette/fixed_animation/0006_builtin_workspace", test_fixed_animation_0006 },
+    { "quant/palette/fixed_animation/0007_builtin_selection", test_fixed_animation_0007 },
+    { "quant/palette/fixed_animation/0008_builtin_fs", test_fixed_animation_0008 },
+    { "quant/palette/fixed_animation/0009_mono_oklab", test_fixed_animation_0009 },
+    { "quant/palette/fixed_animation/0010_mono_p3", test_fixed_animation_0010 },
+    { "quant/palette/fixed_animation/0011_mono_invert", test_fixed_animation_0011 },
+    { "quant/palette/fixed_animation/0012_mono_precision", test_fixed_animation_0012 },
+    { "quant/palette/fixed_animation/0013_stdin_native", test_fixed_animation_0013 },
+    { "quant/palette/fixed_animation/0014_stdin_precision", test_fixed_animation_0014 },
+    { "quant/palette/fixed_animation/0015_map_workspace", test_fixed_animation_0015 },
+    { "quant/palette/fixed_animation/0016_map_output", test_fixed_animation_0016 },
+    { "quant/palette/fixed_animation/0017_image_precision", test_fixed_animation_0017 },
+    { "quant/palette/fixed_animation/0018_image_workspace", test_fixed_animation_0018 },
+    { "quant/palette/fixed_animation/0019_image_p3", test_fixed_animation_0019 },
+    { "quant/palette/fixed_animation/0020_mask_full_table", test_fixed_animation_0020 },
+    { "quant/palette/fixed_animation/0021_mask_presence", test_fixed_animation_0021 },
+    { "quant/palette/fixed_animation/0022_mask_mono", test_fixed_animation_0022 },
+    { "quant/palette/fixed_animation/0023_mask_map", test_fixed_animation_0023 },
+    { "quant/palette/fixed_animation/0024_map_precision_request", test_fixed_animation_0024 },
+    { "quant/palette/fixed_animation/0025_libpng_pipeline",
+      test_fixed_animation_0025 },
+    { "quant/palette/fixed_animation/0026_prepared_lookup_reuse",
+      test_fixed_animation_0026 },
     { "quant/palette/animation_native/0018_libpng_serial",
       test_anim_native_0018 },
     { "quant/palette/animation_native/0019_libpng_pipeline_p3",
@@ -4120,7 +4174,7 @@ static test_entry_t const test_entries[] = {
       test_mono_native_0024 },
     { "quant/palette/mono_float/0025_p3_snap_recovery",
       test_mono_native_0025 },
-    { "quant/palette/mono_float/0026_multiframe_boundary",
+    { "quant/palette/mono_float/0026_multiframe_native",
       test_mono_native_0026 },
     { "quant/palette/mono_float/0027_cielab_export",
       test_mono_native_0027 },
@@ -4176,7 +4230,7 @@ static test_entry_t const test_entries[] = {
       test_builtin_native_0021 },
     { "quant/palette/builtin_float/0022_p3_snap_recovery",
       test_builtin_native_0022 },
-    { "quant/palette/builtin_float/0023_multiframe_boundary",
+    { "quant/palette/builtin_float/0023_multiframe_native",
       test_builtin_native_0023 },
     { "quant/palette/builtin_float/0024_p3_export",
       test_builtin_native_0024 },

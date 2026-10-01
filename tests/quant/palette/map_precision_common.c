@@ -31,10 +31,10 @@ map_precision_write(char *data, int size, void *context)
     return size;
 }
 
-int
-test_map_precision(int mode, int space, char const *precision,
+static int
+test_map_precision_run(int mode, int space, char const *precision,
                    char const *quantizer, char const *loader,
-                   char const *path)
+                   char const *path, int animated)
 {
     static struct { int flag; char const *value; } const options[] = {
         { '=', "1" }, { 'X', "linear" }, { 'F', "none" },
@@ -105,8 +105,21 @@ test_map_precision(int mode, int space, char const *precision,
     requested_float = encoder->prefer_float32;
     requested_model = encoder->quantize_model;
     passes = mode == 2 || mode == 3 ? 3 : mode == 8 ? 2 : 1;
+    if (animated) {
+        passes = 3;
+        encoder->fstatic = 1;
+        encoder->fignore_delay = 1;
+    }
     for (pass = 0; pass < passes; ++pass) {
-        native = mode != 1 && mode != 6 && (mode != 8 || pass == 0);
+        native = mode != 1;
+        if (mode == 9) {
+            space = pass == 1 ? 4 : 0;
+            expected = test_map_p3_primary(space);
+            if (SIXEL_FAILED(sixel_encoder_setopt(encoder,
+                    'W', spaces[space]))) {
+                goto end;
+            }
+        }
         if (mode == 2 || mode == 3) {
             native = mode == 2 ? pass == 1 : pass != 1;
             /* Keep the same map path and encoder. Only loader work changes. */
@@ -121,11 +134,13 @@ test_map_precision(int mode, int space, char const *precision,
                     1, 1, SIXEL_PIXELFORMAT_RGB888, NULL, -1))) {
             goto end;
         }
-        if (mode == 6 || (mode == 8 && pass == 1)) {
+        if (animated || mode == 6 || (mode == 8 && pass == 1)) {
             sixel_frame_set_multiframe(frame, 1);
+            sixel_frame_set_frame_no(frame, pass % 2);
+            sixel_frame_set_loop_count(frame, pass / 2);
         }
         if (SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame,
-                output)) || encoder->prefer_float32 != requested_float ||
+                output)) || (mode != 9 && encoder->prefer_float32 != requested_float) ||
                 encoder->quantize_model != requested_model) {
             goto end;
         }
@@ -319,4 +334,21 @@ end:
     sixel_dither_unref(dither);
     sixel_allocator_unref(allocator);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_map_precision(int mode, int space, char const *precision,
+                   char const *quantizer, char const *loader,
+                   char const *path)
+{
+    return test_map_precision_run(mode, space, precision, quantizer, loader,
+        path, 0);
+}
+
+int
+test_map_animation(int mode, int space, char const *path)
+{
+    return test_map_precision_run(mode, space, "auto", "kmeans:seed=1",
+        "builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!",
+        path, 1);
 }

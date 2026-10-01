@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Verify built-in native palette: multiframe boundary. */
+/* Verify built-in native palette: multiframe native. */
 int test_builtin_native(int space, int output, int table, int mode);
 
 int
