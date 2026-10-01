@@ -693,6 +693,36 @@ int test_mono_lookup_0007(int argc, char **argv);
 int test_mono_lookup_0008(int argc, char **argv);
 int test_mono_lookup_0009(int argc, char **argv);
 int test_mono_lookup_0010(int argc, char **argv);
+int test_fixed_mask_0001(int argc, char **argv);
+int test_fixed_mask_0002(int argc, char **argv);
+int test_fixed_mask_0003(int argc, char **argv);
+int test_fixed_mask_0004(int argc, char **argv);
+int test_fixed_mask_0005(int argc, char **argv);
+int test_fixed_mask_0006(int argc, char **argv);
+int test_fixed_mask_0007(int argc, char **argv);
+int test_fixed_mask_0008(int argc, char **argv);
+int test_fixed_mask_0009(int argc, char **argv);
+int test_fixed_mask_0010(int argc, char **argv);
+int test_fixed_mask_0011(int argc, char **argv);
+int test_fixed_mask_0012(int argc, char **argv);
+int test_fixed_mask_0013(int argc, char **argv);
+int test_fixed_mask_0014(int argc, char **argv);
+int test_fixed_mask_0015(int argc, char **argv);
+int test_fixed_mask_0016(int argc, char **argv);
+int test_fixed_mask_0017(int argc, char **argv);
+int test_fixed_mask_0018(int argc, char **argv);
+int test_fixed_mask_0019(int argc, char **argv);
+int test_fixed_mask_0020(int argc, char **argv);
+int test_fixed_mask_0021(int argc, char **argv);
+int test_fixed_mask_0022(int argc, char **argv);
+int test_fixed_mask_0023(int argc, char **argv);
+int test_fixed_mask_0024(int argc, char **argv);
+int test_fixed_mask_0025(int argc, char **argv);
+int test_fixed_mask_0026(int argc, char **argv);
+int test_fixed_mask_0027(int argc, char **argv);
+int test_fixed_mask_0028(int argc, char **argv);
+int test_fixed_mask_0029(int argc, char **argv);
+int test_fixed_mask_0030(int argc, char **argv);
 int test_alpha_native_0001(int argc, char **argv);
 int test_alpha_native_0002(int argc, char **argv);
 int test_alpha_native_0003(int argc, char **argv);
@@ -3743,6 +3773,66 @@ static test_entry_t const test_entries[] = {
       test_mono_lookup_0009 },
     { "lookup/mono_float/0010_encoder_fs",
       test_mono_lookup_0010 },
+    { "quant/palette/fixed_mask/0001_srgb_gamma",
+      test_fixed_mask_0001 },
+    { "quant/palette/fixed_mask/0002_srgb_linear",
+      test_fixed_mask_0002 },
+    { "quant/palette/fixed_mask/0003_srgb_oklab",
+      test_fixed_mask_0003 },
+    { "quant/palette/fixed_mask/0004_srgb_cielab",
+      test_fixed_mask_0004 },
+    { "quant/palette/fixed_mask/0005_srgb_din99d",
+      test_fixed_mask_0005 },
+    { "quant/palette/fixed_mask/0006_p3_gamma",
+      test_fixed_mask_0006 },
+    { "quant/palette/fixed_mask/0007_p3_linear",
+      test_fixed_mask_0007 },
+    { "quant/palette/fixed_mask/0008_p3_oklab",
+      test_fixed_mask_0008 },
+    { "quant/palette/fixed_mask/0009_p3_cielab",
+      test_fixed_mask_0009 },
+    { "quant/palette/fixed_mask/0010_p3_din99d",
+      test_fixed_mask_0010 },
+    { "quant/palette/fixed_mask/0011_full256",
+      test_fixed_mask_0011 },
+    { "quant/palette/fixed_mask/0012_fs_feedback",
+      test_fixed_mask_0012 },
+    { "quant/palette/fixed_mask/0013_fhedt",
+      test_fixed_mask_0013 },
+    { "quant/palette/fixed_mask/0014_parallel_bands",
+      test_fixed_mask_0014 },
+    { "quant/palette/fixed_mask/0015_offset_bands",
+      test_fixed_mask_0015 },
+    { "quant/palette/fixed_mask/0016_masked_opaque_reuse",
+      test_fixed_mask_0016 },
+    { "quant/palette/fixed_mask/0017_all_hidden",
+      test_fixed_mask_0017 },
+    { "quant/palette/fixed_mask/0018_empty_mask",
+      test_fixed_mask_0018 },
+    { "quant/palette/fixed_mask/0019_clear_mask",
+      test_fixed_mask_0019 },
+    { "quant/palette/fixed_mask/0020_byte_control",
+      test_fixed_mask_0020 },
+    { "quant/palette/fixed_mask/0021_forced_float",
+      test_fixed_mask_0021 },
+    { "quant/palette/fixed_mask/0022_map_srgb",
+      test_fixed_mask_0022 },
+    { "quant/palette/fixed_mask/0023_map_p3",
+      test_fixed_mask_0023 },
+    { "quant/palette/fixed_mask/0024_mono",
+      test_fixed_mask_0024 },
+    { "quant/palette/fixed_mask/0025_inverted_mono",
+      test_fixed_mask_0025 },
+    { "quant/palette/fixed_mask/0026_wide_image_map",
+      test_fixed_mask_0026 },
+    { "quant/palette/fixed_mask/0027_byte_wide_map",
+      test_fixed_mask_0027 },
+    { "quant/palette/fixed_mask/0028_short_mask_retry",
+      test_fixed_mask_0028 },
+    { "quant/palette/fixed_mask/0029_ormode_retry",
+      test_fixed_mask_0029 },
+    { "quant/palette/fixed_mask/0030_full256_parallel",
+      test_fixed_mask_0030 },
     { "quant/palette/alpha_float/0001_srgb_gamma",
       test_alpha_native_0001 },
     { "quant/palette/alpha_float/0002_srgb_linear",

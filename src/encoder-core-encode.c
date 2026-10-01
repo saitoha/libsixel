@@ -251,7 +251,8 @@ static SIXELSTATUS sixel_band_classify_row(sixel_encode_work_t *work,
                                            int ncolors,
                                            int keycolor,
                                            unsigned char *palstate,
-                                           int encode_policy);
+                                           int encode_policy,
+                                           unsigned char const *mask);
 static SIXELSTATUS sixel_band_compose(sixel_encode_work_t *work,
                                       sixel_band_state_t *state,
                                       sixel_output_t *output,
@@ -808,6 +809,7 @@ sixel_parallel_worker_prepare(sixel_parallel_worker_state_t *state,
     state->output->encode_policy = ctx->output->encode_policy;
     state->output->ormode = ctx->output->ormode;
     state->output->keycolor_reserved = ctx->output->keycolor_reserved;
+    state->output->transparent_mask = ctx->output->transparent_mask;
 
     state->initialized = 1;
     state->index = (-1);
@@ -1570,7 +1572,8 @@ sixel_parallel_worker_main(sixel_thread_pool_job_t job,
                                          ctx->ncolors,
                                          ctx->keycolor,
                                          ctx->palstate,
-                                         ctx->encode_policy);
+                                         ctx->encode_policy,
+                                         state->output->transparent_mask);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
@@ -2758,7 +2761,7 @@ sixel_encode_header(int width, int height, int keycolor, sixel_output_t *output)
          * It therefore needs P2=1 even when the source image has no keycolor.
          */
         p[1] = 1;
-    } else if (keycolor >= 0) {
+    } else if (keycolor >= 0 || output->transparent_mask != NULL) {
         if (output->transparent_policy ==
                 SIXEL_ALPHA_POLICY_COMPOSITE ||
             output->transparent_policy ==
@@ -3375,7 +3378,8 @@ sixel_band_classify_row(sixel_encode_work_t *work,
                         int ncolors,
                         int keycolor,
                         unsigned char *palstate,
-                        int encode_policy)
+                        int encode_policy,
+                        unsigned char const *mask)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int row_bit;
@@ -3455,6 +3459,13 @@ sixel_band_classify_row(sixel_encode_work_t *work,
                 " (source_y * width > INT_MAX - x)");
             status = SIXEL_BAD_INTEGER_OVERFLOW;
             goto end;
+        }
+        /* Mask coordinates follow the source, including when the wire image
+         * has transparent margins or workers consume later six-line bands.
+         * Disabling fill prevents the size optimization painting the holes. */
+        if (mask != NULL && mask[check_integer_overflow + x] != 0) {
+            state->fillable = 0;
+            continue;
         }
         pix = pixels[check_integer_overflow + x];
         if (pix >= 0 && pix < ncolors && pix != keycolor) {
@@ -3870,7 +3881,8 @@ sixel_encode_body(
                                              ncolors,
                                              keycolor,
                                              palstate,
-                                             output->encode_policy);
+                                             output->encode_policy,
+                                             output->transparent_mask);
             if (SIXEL_FAILED(status)) {
                 goto cleanup;
             }
@@ -4567,6 +4579,7 @@ sixel_encode_dither(
     output_rgb101 = NULL;
     output_rgb101_count = 0U;
     use_rgb101_palette = dither->use_rgb101_palette != 0;
+    output->transparent_mask = NULL;
 
     /*
      * Preserve the effective geometry for the post-encode contract trace.
@@ -4610,6 +4623,19 @@ sixel_encode_dither(
         goto end;
     }
     pixel_count = (size_t)width * (size_t)height;
+    if (dither->keycolor < 0 && dither->pipeline_transparent_mask != NULL) {
+        if (output->ormode ||
+                dither->pipeline_transparent_mask_size < pixel_count) {
+            sixel_helper_set_additional_message(
+                "separate output mask requires normal output and full size.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        /* Palette application may clear its pipeline hints. Retain the
+         * frame-owned view until all band workers have finished, then clear
+         * it on both success and failure before output reuse. */
+        output->transparent_mask = dither->pipeline_transparent_mask;
+    }
     palette_float_pixelformat =
         sixel_palette_float_pixelformat_for_colorspace(
             palette_source_colorspace);
@@ -5052,6 +5078,7 @@ end:
         sixel_allocator_free(dither->allocator, palette_entries_float32);
     }
     sixel_allocator_free(dither->allocator, paletted_pixels);
+    output->transparent_mask = NULL;
 
     return status;
 }

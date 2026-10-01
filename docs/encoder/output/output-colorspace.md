@@ -137,11 +137,15 @@ The direct sampling tests check exact membership after cropping and bit-preservi
 
 ### Separate alpha-zero masks
 
-The selected native path also accepts static RGB888 or typed float RGB frames with a complete, separate alpha-zero mask when using a generated palette, `-aoff`, and at least two requested palette slots. P3 output and explicit float requests require float application; an otherwise byte-eligible ordinary-sRGB job retains its byte path. Packed RGBA/gray-alpha input, masked fixed palettes, cover repair with a mask, and animation remain outside this extension. Loader-side fractional-alpha composition remains governed by [Alpha policy](../../loader/alpha-policy/README.md).
+The selected native path also accepts static RGB888 or typed float RGB frames with a complete, separate alpha-zero mask when using a generated palette, `-aoff`, and at least two requested palette slots. P3 output and explicit float requests require float application; an otherwise byte-eligible ordinary-sRGB job retains its byte path. Packed RGBA/gray-alpha input, generated cover repair with a mask, and animation remain outside this extension. Loader-side fractional-alpha composition remains governed by [Alpha policy](../../loader/alpha-policy/README.md).
 
 Palette construction compacts only visible samples after conversion to the requested clustering coordinates. Hidden RGB values neither affect representatives nor consume color slots. All-transparent input uses one finite black candidate and still omits every image pixel. The compact construction buffer contains three floats per visible sample (one dummy sample for empty coverage); the image and its mask retain their original geometry for lookup and spatial error diffusion.
 
 One palette slot is reserved for omission. Appending it preserves the authoritative working float entries; only the reserved entry is derived from the independent sRGB background hint. Exhaustive and prepared lookup tables exclude that slot from visible nearest-color queries. Output conversion then caches RGB101 values without replacing the working palette. `clear` emits P2=0 and `keep` emits P2=1 while both leave masked pixels unpainted; a background hint cannot make them visible. A present mask with no set bits may still reserve its slot. Each new encode rebuilds the native palette, avoiding stale mask/key state when one encoder alternates masked and opaque input.
+
+Fixed `-m` and `-b` palettes accept the same separated-mask storage on the selected native path. They retain every original entry and its order, including all 256 colors when present. No alpha slot is appended or excluded from lookup. Palette application skips masked samples using a temporary placeholder index, and the normal SIXEL writer independently omits those positions using the borrowed source mask. Thus visible pixels can still select entry zero and entry 255. The mask stays in source coordinates across serial/parallel six-line bands and transparent output margins, and is cleared from the output context before reuse. Size-oriented fill optimization cannot paint through its holes. An all-transparent image retains the fixed palette while painting nothing. Native `-e`/`-e -i` also accept separate masks: source holes are omitted in addition to the mode's existing non-painted entry zero. Their foreground convention is unchanged; see [fixed palettes](../palette-construction/fixed-palettes.md#native-monochrome-application).
+
+Fixed palette selection does not itself promote byte input. This extension covers masked fixed palettes when the source, image map or processing already selects native float application; the legacy byte fixed-palette transparency path is not migrated here. Fixed palettes bypass cover, so omit explicit `-a` options as described in [external palettes](../palette-construction/external-palettes.md).
 
 ### Binning and extended coordinates
 
@@ -759,7 +763,40 @@ The independent fixture generator in `tools/generate_palette_space_fixtures.py` 
 | OC-402 | The frame API accepts default AUTO, rejects explicit HLS before writing, and accepts explicit AUTO afterward on the same encoder/output. | [tests/quant/palette/0079_p3_palette_auto_recovery.t](../../../tests/quant/palette/0079_p3_palette_auto_recovery.t) |
 
 
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| OC-432 | Retain xterm16 entries and independently expected sRGB codes with source holes in gamma coordinates. | [tests/quant/palette/fixed_mask/0001_srgb_gamma.t](../../../tests/quant/palette/fixed_mask/0001_srgb_gamma.t) |
+| OC-433 | Retain xterm16 entries and independently expected sRGB codes with source holes in linear coordinates. | [tests/quant/palette/fixed_mask/0002_srgb_linear.t](../../../tests/quant/palette/fixed_mask/0002_srgb_linear.t) |
+| OC-434 | Retain xterm16 entries and independently expected sRGB codes with source holes in Oklab coordinates. | [tests/quant/palette/fixed_mask/0003_srgb_oklab.t](../../../tests/quant/palette/fixed_mask/0003_srgb_oklab.t) |
+| OC-435 | Retain xterm16 entries and independently expected sRGB codes with source holes in CIELAB coordinates. | [tests/quant/palette/fixed_mask/0004_srgb_cielab.t](../../../tests/quant/palette/fixed_mask/0004_srgb_cielab.t) |
+| OC-436 | Retain xterm16 entries and independently expected sRGB codes with source holes in DIN99d coordinates. | [tests/quant/palette/fixed_mask/0005_srgb_din99d.t](../../../tests/quant/palette/fixed_mask/0005_srgb_din99d.t) |
+| OC-437 | Retain xterm16 entries and independently expected P3 codes with source holes in gamma coordinates. | [tests/quant/palette/fixed_mask/0006_p3_gamma.t](../../../tests/quant/palette/fixed_mask/0006_p3_gamma.t) |
+| OC-438 | Retain xterm16 entries and independently expected P3 codes with source holes in linear coordinates. | [tests/quant/palette/fixed_mask/0007_p3_linear.t](../../../tests/quant/palette/fixed_mask/0007_p3_linear.t) |
+| OC-439 | Retain xterm16 entries and independently expected P3 codes with source holes in Oklab coordinates. | [tests/quant/palette/fixed_mask/0008_p3_oklab.t](../../../tests/quant/palette/fixed_mask/0008_p3_oklab.t) |
+| OC-440 | Retain xterm16 entries and independently expected P3 codes with source holes in CIELAB coordinates. | [tests/quant/palette/fixed_mask/0009_p3_cielab.t](../../../tests/quant/palette/fixed_mask/0009_p3_cielab.t) |
+| OC-441 | Retain xterm16 entries and independently expected P3 codes with source holes in DIN99d coordinates. | [tests/quant/palette/fixed_mask/0010_p3_din99d.t](../../../tests/quant/palette/fixed_mask/0010_p3_din99d.t) |
+| OC-442 | All 256 fixed colors remain selectable while masked positions are unpainted. | [tests/quant/palette/fixed_mask/0011_full256.t](../../../tests/quant/palette/fixed_mask/0011_full256.t) |
+| OC-443 | Nonzero FS feedback crosses visible pixels and stops at a source-mask fence. | [tests/quant/palette/fixed_mask/0012_fs_feedback.t](../../../tests/quant/palette/fixed_mask/0012_fs_feedback.t) |
+| OC-444 | Prepared FHEDT lookup keeps visible palette zero selectable independently of holes. | [tests/quant/palette/fixed_mask/0013_fhedt.t](../../../tests/quant/palette/fixed_mask/0013_fhedt.t) |
+| OC-445 | Actual parallel body workers retain absolute source-mask rows across SIXEL bands. | [tests/quant/palette/fixed_mask/0014_parallel_bands.t](../../../tests/quant/palette/fixed_mask/0014_parallel_bands.t) |
+| OC-446 | Parallel writing retains source-mask coordinates with transparent left/top margins. | [tests/quant/palette/fixed_mask/0015_offset_bands.t](../../../tests/quant/palette/fixed_mask/0015_offset_bands.t) |
+| OC-447 | One encoder/output alternates masked, opaque and masked native frames without stale state. | [tests/quant/palette/fixed_mask/0016_masked_opaque_reuse.t](../../../tests/quant/palette/fixed_mask/0016_masked_opaque_reuse.t) |
+| OC-448 | All-transparent input retains the fixed table and paints no pixels. | [tests/quant/palette/fixed_mask/0017_all_hidden.t](../../../tests/quant/palette/fixed_mask/0017_all_hidden.t) |
+| OC-449 | A complete all-zero mask retains every entry without omitting visible pixels. | [tests/quant/palette/fixed_mask/0018_empty_mask.t](../../../tests/quant/palette/fixed_mask/0018_empty_mask.t) |
+| OC-450 | Clear policy emits explicit P2=0 while omitting source-mask pixels. | [tests/quant/palette/fixed_mask/0019_clear_mask.t](../../../tests/quant/palette/fixed_mask/0019_clear_mask.t) |
+| OC-451 | An opaque byte-eligible fixed palette retains its byte path and painted indexes. | [tests/quant/palette/fixed_mask/0020_byte_control.t](../../../tests/quant/palette/fixed_mask/0020_byte_control.t) |
+| OC-452 | Explicit float precision retains separate-mask omission on byte RGB input. | [tests/quant/palette/fixed_mask/0021_forced_float.t](../../../tests/quant/palette/fixed_mask/0021_forced_float.t) |
+| OC-453 | A structured sRGB map retains duplicate entries and source holes. | [tests/quant/palette/fixed_mask/0022_map_srgb.t](../../../tests/quant/palette/fixed_mask/0022_map_srgb.t) |
+| OC-454 | A structured sRGB map retains its entries while emitting independent P3 codes and holes. | [tests/quant/palette/fixed_mask/0023_map_p3.t](../../../tests/quant/palette/fixed_mask/0023_map_p3.t) |
+| OC-455 | Native monochrome omits source holes in addition to its non-painted index zero. | [tests/quant/palette/fixed_mask/0024_mono.t](../../../tests/quant/palette/fixed_mask/0024_mono.t) |
+| OC-456 | Inverted native monochrome retains the same combined omission convention. | [tests/quant/palette/fixed_mask/0025_inverted_mono.t](../../../tests/quant/palette/fixed_mask/0025_inverted_mono.t) |
+| OC-457 | A P3 image map retains out-of-sRGB native entries while omitting source holes. | [tests/quant/palette/fixed_mask/0026_wide_image_map.t](../../../tests/quant/palette/fixed_mask/0026_wide_image_map.t) |
+| OC-458 | A float image map promotes byte-source application and retains source holes. | [tests/quant/palette/fixed_mask/0027_byte_wide_map.t](../../../tests/quant/palette/fixed_mask/0027_byte_wide_map.t) |
+| OC-459 | Parallel writing keeps all 256 fixed colors while omitting source-mask positions. | [tests/quant/palette/fixed_mask/0030_full256_parallel.t](../../../tests/quant/palette/fixed_mask/0030_full256_parallel.t) |
+
 ### Defensive and malformed-input tests
+
+The [fixed-mask suite](../../../tests/quant/palette/fixed_mask) also checks incomplete mask extents and unsupported OR output at the private mask boundary, followed by successful masked and opaque reuse of the same handles.
 
 The [separate-mask palette suite](../../../tests/quant/palette/alpha_float) also injects a one-shot allocation failure before visible-sample construction. It checks that no image bytes are emitted, a caller's quantizer override is unchanged, and the same encoder and frame succeed on retry.
 

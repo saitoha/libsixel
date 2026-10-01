@@ -87,6 +87,10 @@ struct sixel_output {
      * for the latter, so this flag turns it off.
      */
     int keycolor_reserved;
+    /* Borrowed for one normal encode only, in source pixel coordinates.
+     * Fixed palettes can occupy all 256 indexes, so omitted pixels must not
+     * steal a real color. Workers read this immutable frame-owned view. */
+    unsigned char const *transparent_mask;
     int transparent_offset_left;
     int transparent_offset_top;
     long long last_frame_time_usec;

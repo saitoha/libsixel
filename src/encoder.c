@@ -2664,8 +2664,11 @@ sixel_encoder_bind_transparent_mask(
      * The dither object owns only a borrowed mask pointer, so encoder-owned
      * storage keeps the synthetic accumulation mask alive for the encode call.
      */
-    if (frame == NULL || dither->keycolor < 0
-            || dither->keycolor >= SIXEL_PALETTE_MAX) {
+    if (frame == NULL || (dither->keycolor < 0 &&
+            !(dither->use_rgb101_palette &&
+              (encoder->color_option == SIXEL_COLOR_OPTION_MAPFILE ||
+               encoder->color_option == SIXEL_COLOR_OPTION_BUILTIN))) ||
+            dither->keycolor >= SIXEL_PALETTE_MAX) {
         return SIXEL_OK;
     }
     status = sixel_encoder_frame_get_pixels_view(frame, &view);
@@ -2722,7 +2725,11 @@ sixel_encoder_bind_transparent_mask(
                 dither,
                 transparency.transparent_mask,
                 pixel_count,
-                dither->keycolor);
+                /* Fixed palettes have no spare slot. Masked samples receive
+                 * a placeholder; the body writer omits them by source mask,
+                 * while visible samples can still select every palette entry.
+                 */
+                dither->keycolor < 0 ? 0 : dither->keycolor);
         }
         return SIXEL_OK;
     }
@@ -7146,18 +7153,21 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
              encoder->palette_output == NULL));
 }
 
-/* Separate masks preserve RGB geometry and can keep a native palette.
- * Packed alpha, fixed palettes and cover growth need their own slot/budget
- * handling; do not admit them merely by removing the old alpha guard. */
+/* Separate masks preserve RGB geometry. Generated palettes reserve a slot;
+ * fixed tables keep every entry and carry the mask through body writing.
+ * Packed alpha and generated cover growth still need their own handling. */
 static int
 sixel_encoder_rgb101_alpha(sixel_encoder_t const *encoder,
                            sixel_frame_t const *frame)
 {
     return !sixel_encoder_frame_preserves_alpha_key(frame) ||
-        (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
-         encoder->cover_policy == SIXEL_PALETTE_COVER_OFF &&
-         encoder->reqcolors > 1 &&
-         sixel_encoder_frame_has_transparent_mask(frame));
+        (sixel_encoder_frame_has_transparent_mask(frame) &&
+         ((encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
+           encoder->cover_policy == SIXEL_PALETTE_COVER_OFF &&
+           encoder->reqcolors > 1) ||
+          encoder->color_option == SIXEL_COLOR_OPTION_MAPFILE ||
+          encoder->color_option == SIXEL_COLOR_OPTION_BUILTIN ||
+          encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME));
 }
 
 static int
@@ -7238,7 +7248,8 @@ sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
              !sixel_encoder_rgb101_alpha(encoder, frame))) {
         sixel_helper_set_additional_message(
             "display-p3 requires a static RGB frame; a separate alpha mask "
-            "requires a generated palette, cover off and at least 2 slots.");
+            "requires a fixed palette or a generated palette with cover off "
+            "and at least 2 slots.");
         return SIXEL_BAD_INPUT;
     }
     return SIXEL_OK;

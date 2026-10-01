@@ -154,6 +154,7 @@ sixel_encoder_core_init_defaults(sixel_output_t *output,
     output->ormode = 0;
     output->transparent_policy = SIXEL_ALPHA_POLICY_COMPOSITE;
     output->keycolor_reserved = 0;
+    output->transparent_mask = NULL;
     output->transparent_offset_left = 0;
     output->transparent_offset_top = 0;
     output->last_frame_time_usec = 0;

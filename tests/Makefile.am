@@ -993,6 +993,26 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0002_SCAN_CONTRACT \
     -DBUILD_TEST_0001_EXTENDED_LOOKUP \
     -DBUILD_FHEDT_TEST_COMMON \
+    -DBUILD_TEST_0023_MAP_P3 \
+    -DBUILD_FIXED_MASK_COMMON \
+    -DBUILD_TEST_0011_FULL256 \
+    -DBUILD_TEST_0012_FS_FEEDBACK \
+    -DBUILD_TEST_0013_FHEDT \
+    -DBUILD_TEST_0014_PARALLEL_BANDS \
+    -DBUILD_TEST_0015_OFFSET_BANDS \
+    -DBUILD_TEST_0016_MASKED_OPAQUE_REUSE \
+    -DBUILD_TEST_0017_ALL_HIDDEN \
+    -DBUILD_TEST_0018_EMPTY_MASK \
+    -DBUILD_TEST_0020_BYTE_CONTROL \
+    -DBUILD_TEST_0021_FORCED_FLOAT \
+    -DBUILD_TEST_0022_MAP_SRGB \
+    -DBUILD_TEST_0024_MONO \
+    -DBUILD_TEST_0025_INVERTED_MONO \
+    -DBUILD_TEST_0026_WIDE_IMAGE_MAP \
+    -DBUILD_TEST_0027_BYTE_WIDE_MAP \
+    -DBUILD_TEST_0028_SHORT_MASK_RETRY \
+    -DBUILD_TEST_0029_ORMODE_RETRY \
+    -DBUILD_TEST_0030_FULL256_PARALLEL \
     -DBUILD_ALPHA_NATIVE_COMMON \
     -DBUILD_TEST_0001_SRGB_GAMMA \
     -DBUILD_TEST_0002_SRGB_LINEAR \
@@ -4565,6 +4585,37 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/merge_float/0002_scan_contract.c \
     processing/lookup/extended/0001_extended_lookup.c \
     processing/lookup/fhedt_test_common.c \
+    quant/palette/fixed_mask_common.c \
+    quant/palette/fixed_mask/0001_srgb_gamma.c \
+    quant/palette/fixed_mask/0002_srgb_linear.c \
+    quant/palette/fixed_mask/0003_srgb_oklab.c \
+    quant/palette/fixed_mask/0004_srgb_cielab.c \
+    quant/palette/fixed_mask/0005_srgb_din99d.c \
+    quant/palette/fixed_mask/0006_p3_gamma.c \
+    quant/palette/fixed_mask/0007_p3_linear.c \
+    quant/palette/fixed_mask/0008_p3_oklab.c \
+    quant/palette/fixed_mask/0009_p3_cielab.c \
+    quant/palette/fixed_mask/0010_p3_din99d.c \
+    quant/palette/fixed_mask/0011_full256.c \
+    quant/palette/fixed_mask/0012_fs_feedback.c \
+    quant/palette/fixed_mask/0013_fhedt.c \
+    quant/palette/fixed_mask/0014_parallel_bands.c \
+    quant/palette/fixed_mask/0015_offset_bands.c \
+    quant/palette/fixed_mask/0016_masked_opaque_reuse.c \
+    quant/palette/fixed_mask/0017_all_hidden.c \
+    quant/palette/fixed_mask/0018_empty_mask.c \
+    quant/palette/fixed_mask/0019_clear_mask.c \
+    quant/palette/fixed_mask/0020_byte_control.c \
+    quant/palette/fixed_mask/0021_forced_float.c \
+    quant/palette/fixed_mask/0022_map_srgb.c \
+    quant/palette/fixed_mask/0023_map_p3.c \
+    quant/palette/fixed_mask/0024_mono.c \
+    quant/palette/fixed_mask/0025_inverted_mono.c \
+    quant/palette/fixed_mask/0026_wide_image_map.c \
+    quant/palette/fixed_mask/0027_byte_wide_map.c \
+    quant/palette/fixed_mask/0028_short_mask_retry.c \
+    quant/palette/fixed_mask/0029_ormode_retry.c \
+    quant/palette/fixed_mask/0030_full256_parallel.c \
     quant/palette/alpha_native_common.c \
     quant/palette/alpha_float/0001_srgb_gamma.c \
     quant/palette/alpha_float/0002_srgb_linear.c \
