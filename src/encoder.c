@@ -5271,17 +5271,6 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         return status;
     }
 
-    if (context->encoder->dither_cache != NULL) {
-        /*
-         * LUT preparation may update the cached dither object in place.  Drop
-         * the old cache reference before storing the post-LUT reference so a
-         * fixed palette cache hit does not accumulate one reference per frame.
-         */
-        sixel_encoder_clear_dither_cache(context->encoder);
-        context->encoder->dither_cache = context->dither;
-        sixel_dither_ref(context->dither);
-    }
-
     if (context->encoder->fdrcs) {
         status = sixel_encoder_ensure_cell_size(context->encoder);
         if (SIXEL_FAILED(status)) {
@@ -7172,6 +7161,29 @@ sixel_encoder_rgb101_alpha(sixel_encoder_t const *encoder,
           encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME));
 }
 
+/* Generated palettes are frame-local. Fixed animation palettes retain their
+ * legacy cache contract until source precision and cache reuse are migrated. */
+static int
+sixel_encoder_rgb101_animation(sixel_encoder_t const *encoder,
+                               sixel_frame_t *frame)
+{
+    return sixel_frame_get_multiframe(frame) == 0 ||
+        encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT;
+}
+
+/* Resolve packed storage only within the admitted frame/palette scope. */
+static int
+sixel_encoder_unpack_alpha_candidate(sixel_encoder_t const *encoder,
+                                      sixel_frame_t *frame)
+{
+    return sixel_encoder_rgb101_animation(encoder, frame) &&
+        sixel_encoder_pixelformat_has_alpha(
+            sixel_frame_get_pixelformat(frame)) &&
+        sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_GAMMA &&
+        sixel_encoder_rgb101_options(encoder) &&
+        sixel_encoder_rgb101_alpha(encoder, frame);
+}
+
 static int
 sixel_encoder_rgb101_candidate(sixel_encoder_t const *encoder,
                                 sixel_frame_t *frame)
@@ -7190,7 +7202,7 @@ sixel_encoder_rgb101_candidate(sixel_encoder_t const *encoder,
             encoder->output_colorspace == SIXEL_COLORSPACE_SMPTEC) &&
         (format == SIXEL_PIXELFORMAT_RGB888 ||
          SIXEL_PIXELFORMAT_IS_FLOAT32(format)) &&
-        sixel_frame_get_multiframe(frame) == 0 &&
+        sixel_encoder_rgb101_animation(encoder, frame) &&
         sixel_encoder_rgb101_alpha(encoder, frame) &&
         sixel_encoder_rgb101_options(encoder);
 }
@@ -7243,7 +7255,7 @@ sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
         return status;
     }
     if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
-            (sixel_frame_get_multiframe(frame) != 0 ||
+            (!sixel_encoder_rgb101_animation(encoder, frame) ||
              (sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGB888 &&
               !SIXEL_PIXELFORMAT_IS_FLOAT32(
                   sixel_frame_get_pixelformat(frame)) &&
@@ -7252,9 +7264,9 @@ sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
                 sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_GAMMA)) ||
              !sixel_encoder_rgb101_alpha(encoder, frame))) {
         sixel_helper_set_additional_message(
-            "display-p3 requires a static RGB or packed-alpha frame; "
-            "preserved alpha requires a fixed or generated palette "
-            "and at least 2 slots.");
+            "display-p3 requires RGB or packed-alpha frames; "
+            "animation requires generated palettes. Preserved alpha "
+            "requires a fixed palette or at least 2 generated slots.");
         return SIXEL_BAD_INPUT;
     }
     return SIXEL_OK;
@@ -7498,6 +7510,12 @@ sixel_encoder_prepare_palette(
         break;
     }
 
+    /* This frame constructs its own palette. Never install it in a cache
+     * left by an earlier fixed-palette frame, or retain that stale pointer. */
+    if (!from_map_image) {
+        sixel_encoder_clear_dither_cache(encoder);
+    }
+
     if (sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE) {
         if (!sixel_frame_get_palette(frame)) {
             status = SIXEL_LOGIC_ERROR;
@@ -7512,9 +7530,6 @@ sixel_encoder_prepare_palette(
         sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
         if (sixel_frame_get_transparent(frame) != (-1)) {
             sixel_dither_set_transparent(*dither, sixel_frame_get_transparent(frame));
-        }
-        if (*dither && cache_allowed && encoder->dither_cache) {
-            sixel_dither_unref(encoder->dither_cache);
         }
         goto end;
     }
@@ -7538,17 +7553,11 @@ sixel_encoder_prepare_palette(
             status = SIXEL_LOGIC_ERROR;
             goto end;
         }
-        if (*dither && cache_allowed && encoder->dither_cache) {
-            sixel_dither_unref(encoder->dither_cache);
-        }
         sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
         status = SIXEL_OK;
         goto end;
     }
 
-    if (cache_allowed && encoder->dither_cache) {
-        sixel_dither_unref(encoder->dither_cache);
-    }
     if (palette_state->quantizer.phase !=
             SIXEL_PALETTE_POLICY_UNRESOLVED ||
             palette_state->binning.policy.phase !=
@@ -7744,7 +7753,7 @@ sixel_encoder_prepare_palette(
         goto end;
     }
     /* Native construction and newly separated byte input share visible-only
-     * candidates. Do not change excluded legacy/default or animation paths. */
+     * candidates. Do not change excluded implicit-default or fixed-animation paths. */
     if (reserve_alpha_key &&
             sixel_encoder_frame_has_transparent_mask(palette_frame) &&
             ((*dither)->use_rgb101_palette ||
@@ -9145,13 +9154,7 @@ sixel_encoder_encode_frame_internal(
      * than the output clear/keep request, owns source interpretation. The
      * frame helper promotes fractional arithmetic even under a byte request;
      * exact byte jobs keep RGB888 and their byte palette/application path. */
-    if (!context.multiframe &&
-            sixel_encoder_pixelformat_has_alpha(
-                sixel_frame_get_pixelformat(context.frame)) &&
-            sixel_frame_get_colorspace(context.frame) ==
-                SIXEL_COLORSPACE_GAMMA &&
-            sixel_encoder_rgb101_options(encoder) &&
-            sixel_encoder_rgb101_alpha(encoder, context.frame)) {
+    if (sixel_encoder_unpack_alpha_candidate(encoder, context.frame)) {
         status = sixel_frame_unpack_alpha(context.frame, encoder->bgcolor,
             encoder->prefer_float32 ||
             encoder->output_color_definition ==

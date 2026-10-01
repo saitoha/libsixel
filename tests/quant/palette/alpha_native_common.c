@@ -134,8 +134,8 @@ an_indexes(char const *stream, int result[4])
     return 1;
 }
 
-int
-test_alpha_native(int space, int mode)
+static int
+test_alpha_native_run(int space, int mode, int animated)
 {
     static struct { int flag; char const *value; } const options[] = {
         { '=', "1" }, { '~', "none" }, { 'd', "none" },
@@ -239,6 +239,13 @@ test_alpha_native(int space, int mode)
                 mode == 20 ? "exact" : mode == 21 ? "hard" : "soft")))) {
         goto end;
     }
+    if (animated) {
+        /* Metadata still denotes an animation. Suppress terminal scrolling
+         * in this callback-only test; actual loader tests cover playback. */
+        encoder->fstatic = 1;
+        encoder->fignore_delay = 1;
+        passes = 3;
+    }
     for (pass = 0; pass < passes; ++pass) {
         memset(&capture, 0, sizeof(capture));
         memset(&transparency, 0, sizeof(transparency));
@@ -316,9 +323,20 @@ test_alpha_native(int space, int mode)
             }
             sixel_set_kmeans_seed_override(0, 0U);
         }
+        if (animated) {
+            sixel_frame_set_multiframe(frame, 1);
+            sixel_frame_set_frame_no(frame, pass % 2);
+            sixel_frame_set_loop_count(frame, pass / 2);
+        }
         if (SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, output))) {
             fprintf(stderr, "alpha encode failed: %s\n",
                 sixel_helper_get_additional_message());
+            goto end;
+        }
+        if (animated && (encoder->dither_cache != NULL ||
+                sixel_frame_get_multiframe(frame) != 1 ||
+                sixel_frame_get_frame_no(frame) != pass % 2 ||
+                sixel_frame_get_loop_no(frame) != pass / 2)) {
             goto end;
         }
         dither = (sixel_dither_t *)encoder->diagnostic_dither;
@@ -446,4 +464,16 @@ end:
     sixel_encoder_unref(encoder);
     sixel_allocator_unref(allocator);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_alpha_native(int space, int mode)
+{
+    return test_alpha_native_run(space, mode, 0);
+}
+
+int
+test_alpha_native_animation(int space, int mode)
+{
+    return test_alpha_native_run(space, mode, 1);
 }

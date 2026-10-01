@@ -318,8 +318,8 @@ pa_decode(char const *stream, int width, int result[8], int rgb[256][3])
     return 1;
 }
 
-int
-test_packed_wire(int space, int mode)
+static int
+test_packed_wire_run(int space, int mode, int animated)
 {
     static char const *const spaces[] = {
         "gamma", "linear", "oklab", "cielab", "din99d"
@@ -430,7 +430,21 @@ test_packed_wire(int space, int mode)
                 'd', "fs")))) {
         goto end;
     }
+    if (animated) {
+        /* Metadata still denotes an animation. Suppress terminal scrolling
+         * in this callback-only test; actual loader tests cover playback. */
+        encoder->fstatic = 1;
+        encoder->fignore_delay = 1;
+        passes = 3;
+    }
     for (pass = 0; pass < passes; ++pass) {
+        if (animated && mode == 8) {
+            width = pass == 1 ? 4 : 8;
+            if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'w',
+                    width == 4 ? "4" : "8"))) {
+                goto end;
+            }
+        }
         memcpy(source_rgb, pa_rgb, sizeof(source_rgb));
         memcpy(alpha, pa_alpha, sizeof(alpha));
         interpret = mode != 12 && !(mode == 9 && pass == 1);
@@ -474,7 +488,18 @@ test_packed_wire(int space, int mode)
                 goto end;
             }
         }
+        if (animated) {
+            sixel_frame_set_multiframe(frame, 1);
+            sixel_frame_set_frame_no(frame, pass % 2);
+            sixel_frame_set_loop_count(frame, pass / 2);
+        }
         if (SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, output))) {
+            goto end;
+        }
+        if (animated && (encoder->dither_cache != NULL ||
+                sixel_frame_get_multiframe(frame) != 1 ||
+                sixel_frame_get_frame_no(frame) != pass % 2 ||
+                sixel_frame_get_loop_no(frame) != pass / 2)) {
             goto end;
         }
         dither = (sixel_dither_t *)encoder->diagnostic_dither;
@@ -517,7 +542,8 @@ test_packed_wire(int space, int mode)
             goto end;
         }
         for (i = 0; i < width; ++i) {
-            source_x = mode == 7 ? i + 1 : mode == 8 ? i / 2 : i;
+            source_x = mode == 7 ? i + 1 :
+                mode == 8 && width == 8 ? i / 2 : i;
             hidden = interpret && (source_x == 0 || mode == 10);
             if (hidden ? painted[i] != -1 : painted[i] < 0) {
                 goto end;
@@ -564,4 +590,16 @@ end:
     sixel_encoder_unref(encoder);
     sixel_allocator_unref(allocator);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_packed_wire(int space, int mode)
+{
+    return test_packed_wire_run(space, mode, 0);
+}
+
+int
+test_packed_wire_animation(int space, int mode)
+{
+    return test_packed_wire_run(space, mode, 1);
 }

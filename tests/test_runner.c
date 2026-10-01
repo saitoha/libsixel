@@ -724,6 +724,27 @@ int test_fixed_mask_0027(int argc, char **argv);
 int test_fixed_mask_0028(int argc, char **argv);
 int test_fixed_mask_0029(int argc, char **argv);
 int test_fixed_mask_0030(int argc, char **argv);
+int test_anim_native_0001(int argc, char **argv);
+int test_anim_native_0002(int argc, char **argv);
+int test_anim_native_0003(int argc, char **argv);
+int test_anim_native_0004(int argc, char **argv);
+int test_anim_native_0005(int argc, char **argv);
+int test_anim_native_0006(int argc, char **argv);
+int test_anim_native_0007(int argc, char **argv);
+int test_anim_native_0008(int argc, char **argv);
+int test_anim_native_0009(int argc, char **argv);
+int test_anim_native_0010(int argc, char **argv);
+int test_anim_native_0011(int argc, char **argv);
+int test_anim_native_0012(int argc, char **argv);
+int test_anim_native_0013(int argc, char **argv);
+int test_anim_native_0014(int argc, char **argv);
+int test_anim_native_0015(int argc, char **argv);
+int test_anim_native_0016(int argc, char **argv);
+int test_anim_native_0017(int argc, char **argv);
+int test_anim_native_0018(int argc, char **argv);
+int test_anim_native_0019(int argc, char **argv);
+int test_anim_native_0020(int argc, char **argv);
+int test_anim_native_0021(int argc, char **argv);
 int test_packed_0001(int argc, char **argv);
 int test_packed_0002(int argc, char **argv);
 int test_packed_0003(int argc, char **argv);
@@ -3869,6 +3890,48 @@ static test_entry_t const test_entries[] = {
       test_fixed_mask_0029 },
     { "quant/palette/fixed_mask/0030_full256_parallel",
       test_fixed_mask_0030 },
+    { "quant/palette/animation_native/0001_gamma_values",
+      test_anim_native_0001 },
+    { "quant/palette/animation_native/0002_linear_values",
+      test_anim_native_0002 },
+    { "quant/palette/animation_native/0003_oklab_values",
+      test_anim_native_0003 },
+    { "quant/palette/animation_native/0004_cielab_values",
+      test_anim_native_0004 },
+    { "quant/palette/animation_native/0005_din99d_values",
+      test_anim_native_0005 },
+    { "quant/palette/animation_native/0006_p3_values",
+      test_anim_native_0006 },
+    { "quant/palette/animation_native/0007_mask_presence",
+      test_anim_native_0007 },
+    { "quant/palette/animation_native/0008_hidden_values",
+      test_anim_native_0008 },
+    { "quant/palette/animation_native/0009_empty_coverage",
+      test_anim_native_0009 },
+    { "quant/palette/animation_native/0010_packed_interpretation",
+      test_anim_native_0010 },
+    { "quant/palette/animation_native/0011_packed_byte_fast",
+      test_anim_native_0011 },
+    { "quant/palette/animation_native/0012_packed_p3",
+      test_anim_native_0012 },
+    { "quant/palette/animation_native/0013_fs_feedback",
+      test_anim_native_0013 },
+    { "quant/palette/animation_native/0014_fixed_cache_transition",
+      test_anim_native_0014 },
+    { "quant/palette/animation_native/0015_fs_soft_feedback",
+      test_anim_native_0015 },
+    { "quant/palette/animation_native/0016_packed_handoff_plan",
+      test_anim_native_0016 },
+    { "quant/palette/animation_native/0017_rgb_handoff_plan",
+      test_anim_native_0017 },
+    { "quant/palette/animation_native/0018_libpng_serial",
+      test_anim_native_0018 },
+    { "quant/palette/animation_native/0019_libpng_pipeline_p3",
+      test_anim_native_0019 },
+    { "quant/palette/animation_native/0020_builtin_pipeline",
+      test_anim_native_0020 },
+    { "quant/palette/animation_native/0021_geometry_change",
+      test_anim_native_0021 },
     { "quant/palette/packed_alpha/0001_layout_rgba",
       test_packed_0001 },
     { "quant/palette/packed_alpha/0002_layout_argb",

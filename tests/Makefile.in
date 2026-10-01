@@ -2084,6 +2084,28 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/fixed_mask/0028_short_mask_retry.c \
 	quant/palette/fixed_mask/0029_ormode_retry.c \
 	quant/palette/fixed_mask/0030_full256_parallel.c \
+	quant/palette/animation_native_common.c \
+	quant/palette/animation_native/0001_gamma_values.c \
+	quant/palette/animation_native/0002_linear_values.c \
+	quant/palette/animation_native/0003_oklab_values.c \
+	quant/palette/animation_native/0004_cielab_values.c \
+	quant/palette/animation_native/0005_din99d_values.c \
+	quant/palette/animation_native/0006_p3_values.c \
+	quant/palette/animation_native/0007_mask_presence.c \
+	quant/palette/animation_native/0008_hidden_values.c \
+	quant/palette/animation_native/0009_empty_coverage.c \
+	quant/palette/animation_native/0010_packed_interpretation.c \
+	quant/palette/animation_native/0011_packed_byte_fast.c \
+	quant/palette/animation_native/0012_packed_p3.c \
+	quant/palette/animation_native/0013_fs_feedback.c \
+	quant/palette/animation_native/0014_fixed_cache_transition.c \
+	quant/palette/animation_native/0015_fs_soft_feedback.c \
+	quant/palette/animation_native/0016_packed_handoff_plan.c \
+	quant/palette/animation_native/0017_rgb_handoff_plan.c \
+	quant/palette/animation_native/0018_libpng_serial.c \
+	quant/palette/animation_native/0019_libpng_pipeline_p3.c \
+	quant/palette/animation_native/0020_builtin_pipeline.c \
+	quant/palette/animation_native/0021_geometry_change.c \
 	quant/palette/packed_alpha_common.c \
 	quant/palette/packed_alpha/0001_layout_rgba.c \
 	quant/palette/packed_alpha/0002_layout_argb.c \
@@ -4569,6 +4591,28 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_mask/test_runner-0028_short_mask_retry.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_mask/test_runner-0029_ormode_retry.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fixed_mask/test_runner-0030_full256_parallel.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-animation_native_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0001_gamma_values.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0002_linear_values.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0003_oklab_values.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0004_cielab_values.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0005_din99d_values.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0006_p3_values.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0007_mask_presence.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0008_hidden_values.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0009_empty_coverage.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0010_packed_interpretation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0011_packed_byte_fast.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0012_packed_p3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0013_fs_feedback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0014_fixed_cache_transition.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0015_fs_soft_feedback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0016_packed_handoff_plan.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0017_rgb_handoff_plan.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0018_libpng_serial.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0019_libpng_pipeline_p3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0020_builtin_pipeline.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/animation_native/test_runner-0021_geometry_change.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-packed_alpha_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0001_layout_rgba.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/packed_alpha/test_runner-0002_layout_argb.$(OBJEXT) \
@@ -7278,6 +7322,7 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po \
 	quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po \
 	quant/palette/$(DEPDIR)/test_runner-alpha_native_common.Po \
+	quant/palette/$(DEPDIR)/test_runner-animation_native_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-auto_test_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-builtin_float_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-fixed_mask_common.Po \
@@ -7322,6 +7367,27 @@ am__depfiles_remade =  \
 	quant/palette/alpha_float/$(DEPDIR)/test_runner-0032_scan_reserved.Po \
 	quant/palette/alpha_float/$(DEPDIR)/test_runner-0033_cross_space.Po \
 	quant/palette/alpha_float/$(DEPDIR)/test_runner-0034_allocation_retry.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0001_gamma_values.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0002_linear_values.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0003_oklab_values.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0004_cielab_values.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0005_din99d_values.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0006_p3_values.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0007_mask_presence.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0008_hidden_values.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0009_empty_coverage.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0010_packed_interpretation.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0011_packed_byte_fast.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0012_packed_p3.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0013_fs_feedback.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0014_fixed_cache_transition.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0015_fs_soft_feedback.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0016_packed_handoff_plan.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0017_rgb_handoff_plan.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0018_libpng_serial.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0019_libpng_pipeline_p3.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0020_builtin_pipeline.Po \
+	quant/palette/animation_native/$(DEPDIR)/test_runner-0021_geometry_change.Po \
 	quant/palette/auto_float/$(DEPDIR)/test_runner-0001_auto_default_gamma.Po \
 	quant/palette/auto_float/$(DEPDIR)/test_runner-0002_auto_explicit_gamma.Po \
 	quant/palette/auto_float/$(DEPDIR)/test_runner-0003_auto_default_p3.Po \
@@ -9175,6 +9241,28 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_SHORT_MASK_RETRY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_ORMODE_RETRY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_FULL256_PARALLEL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ANIMATION_NATIVE_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GAMMA_VALUES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_LINEAR_VALUES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_OKLAB_VALUES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_CIELAB_VALUES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_DIN99D_VALUES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_P3_VALUES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_MASK_PRESENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_HIDDEN_VALUES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_EMPTY_COVERAGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_PACKED_INTERPRETATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_PACKED_BYTE_FAST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_PACKED_P3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_FS_FEEDBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_FIXED_CACHE_TRANSITION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_FS_SOFT_FEEDBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_PACKED_HANDOFF_PLAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_RGB_HANDOFF_PLAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_LIBPNG_SERIAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_LIBPNG_PIPELINE_P3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_BUILTIN_PIPELINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_GEOMETRY_CHANGE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PACKED_ALPHA_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LAYOUT_RGBA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_LAYOUT_ARGB \
@@ -12846,6 +12934,28 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_mask/0028_short_mask_retry.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_mask/0029_ormode_retry.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fixed_mask/0030_full256_parallel.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0001_gamma_values.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0002_linear_values.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0003_oklab_values.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0004_cielab_values.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0005_din99d_values.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0006_p3_values.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0007_mask_presence.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0008_hidden_values.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0009_empty_coverage.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0010_packed_interpretation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0011_packed_byte_fast.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0012_packed_p3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0013_fs_feedback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0014_fixed_cache_transition.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0015_fs_soft_feedback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0016_packed_handoff_plan.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0017_rgb_handoff_plan.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0018_libpng_serial.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0019_libpng_pipeline_p3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0020_builtin_pipeline.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/animation_native/0021_geometry_change.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0001_layout_rgba.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/packed_alpha/0002_layout_argb.c \
@@ -19711,6 +19821,78 @@ quant/palette/fixed_mask/test_runner-0029_ormode_retry.$(OBJEXT):  \
 quant/palette/fixed_mask/test_runner-0030_full256_parallel.$(OBJEXT):  \
 	quant/palette/fixed_mask/$(am__dirstamp) \
 	quant/palette/fixed_mask/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-animation_native_common.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/animation_native
+	@: >>quant/palette/animation_native/$(am__dirstamp)
+quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/animation_native/$(DEPDIR)
+	@: >>quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0001_gamma_values.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0002_linear_values.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0003_oklab_values.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0004_cielab_values.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0005_din99d_values.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0006_p3_values.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0007_mask_presence.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0008_hidden_values.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0009_empty_coverage.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0010_packed_interpretation.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0011_packed_byte_fast.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0012_packed_p3.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0013_fs_feedback.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0014_fixed_cache_transition.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0015_fs_soft_feedback.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0016_packed_handoff_plan.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0017_rgb_handoff_plan.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0018_libpng_serial.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0019_libpng_pipeline_p3.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0020_builtin_pipeline.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/animation_native/test_runner-0021_geometry_change.$(OBJEXT):  \
+	quant/palette/animation_native/$(am__dirstamp) \
+	quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-packed_alpha_common.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
@@ -21657,6 +21839,7 @@ mostlyclean-compile:
 	-rm -f processing/timeline/*.$(OBJEXT)
 	-rm -f quant/palette/*.$(OBJEXT)
 	-rm -f quant/palette/alpha_float/*.$(OBJEXT)
+	-rm -f quant/palette/animation_native/*.$(OBJEXT)
 	-rm -f quant/palette/auto_float/*.$(OBJEXT)
 	-rm -f quant/palette/binning_float/*.$(OBJEXT)
 	-rm -f quant/palette/builtin_float/*.$(OBJEXT)
@@ -23766,6 +23949,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-alpha_native_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-animation_native_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-auto_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-builtin_float_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-fixed_mask_common.Po@am__quote@ # am--include-marker
@@ -23810,6 +23994,27 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/alpha_float/$(DEPDIR)/test_runner-0032_scan_reserved.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/alpha_float/$(DEPDIR)/test_runner-0033_cross_space.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/alpha_float/$(DEPDIR)/test_runner-0034_allocation_retry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0001_gamma_values.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0002_linear_values.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0003_oklab_values.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0004_cielab_values.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0005_din99d_values.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0006_p3_values.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0007_mask_presence.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0008_hidden_values.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0009_empty_coverage.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0010_packed_interpretation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0011_packed_byte_fast.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0012_packed_p3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0013_fs_feedback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0014_fixed_cache_transition.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0015_fs_soft_feedback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0016_packed_handoff_plan.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0017_rgb_handoff_plan.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0018_libpng_serial.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0019_libpng_pipeline_p3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0020_builtin_pipeline.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/animation_native/$(DEPDIR)/test_runner-0021_geometry_change.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_float/$(DEPDIR)/test_runner-0001_auto_default_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_float/$(DEPDIR)/test_runner-0002_auto_explicit_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_float/$(DEPDIR)/test_runner-0003_auto_default_p3.Po@am__quote@ # am--include-marker
@@ -51024,6 +51229,314 @@ quant/palette/fixed_mask/test_runner-0030_full256_parallel.obj: quant/palette/fi
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fixed_mask/test_runner-0030_full256_parallel.obj `if test -f 'quant/palette/fixed_mask/0030_full256_parallel.c'; then $(CYGPATH_W) 'quant/palette/fixed_mask/0030_full256_parallel.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fixed_mask/0030_full256_parallel.c'; fi`
 
+quant/palette/test_runner-animation_native_common.o: quant/palette/animation_native_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-animation_native_common.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-animation_native_common.Tpo -c -o quant/palette/test_runner-animation_native_common.o `test -f 'quant/palette/animation_native_common.c' || echo '$(srcdir)/'`quant/palette/animation_native_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-animation_native_common.Tpo quant/palette/$(DEPDIR)/test_runner-animation_native_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native_common.c' object='quant/palette/test_runner-animation_native_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-animation_native_common.o `test -f 'quant/palette/animation_native_common.c' || echo '$(srcdir)/'`quant/palette/animation_native_common.c
+
+quant/palette/test_runner-animation_native_common.obj: quant/palette/animation_native_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-animation_native_common.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-animation_native_common.Tpo -c -o quant/palette/test_runner-animation_native_common.obj `if test -f 'quant/palette/animation_native_common.c'; then $(CYGPATH_W) 'quant/palette/animation_native_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-animation_native_common.Tpo quant/palette/$(DEPDIR)/test_runner-animation_native_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native_common.c' object='quant/palette/test_runner-animation_native_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-animation_native_common.obj `if test -f 'quant/palette/animation_native_common.c'; then $(CYGPATH_W) 'quant/palette/animation_native_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native_common.c'; fi`
+
+quant/palette/animation_native/test_runner-0001_gamma_values.o: quant/palette/animation_native/0001_gamma_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0001_gamma_values.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0001_gamma_values.Tpo -c -o quant/palette/animation_native/test_runner-0001_gamma_values.o `test -f 'quant/palette/animation_native/0001_gamma_values.c' || echo '$(srcdir)/'`quant/palette/animation_native/0001_gamma_values.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0001_gamma_values.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0001_gamma_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0001_gamma_values.c' object='quant/palette/animation_native/test_runner-0001_gamma_values.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0001_gamma_values.o `test -f 'quant/palette/animation_native/0001_gamma_values.c' || echo '$(srcdir)/'`quant/palette/animation_native/0001_gamma_values.c
+
+quant/palette/animation_native/test_runner-0001_gamma_values.obj: quant/palette/animation_native/0001_gamma_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0001_gamma_values.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0001_gamma_values.Tpo -c -o quant/palette/animation_native/test_runner-0001_gamma_values.obj `if test -f 'quant/palette/animation_native/0001_gamma_values.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0001_gamma_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0001_gamma_values.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0001_gamma_values.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0001_gamma_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0001_gamma_values.c' object='quant/palette/animation_native/test_runner-0001_gamma_values.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0001_gamma_values.obj `if test -f 'quant/palette/animation_native/0001_gamma_values.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0001_gamma_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0001_gamma_values.c'; fi`
+
+quant/palette/animation_native/test_runner-0002_linear_values.o: quant/palette/animation_native/0002_linear_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0002_linear_values.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0002_linear_values.Tpo -c -o quant/palette/animation_native/test_runner-0002_linear_values.o `test -f 'quant/palette/animation_native/0002_linear_values.c' || echo '$(srcdir)/'`quant/palette/animation_native/0002_linear_values.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0002_linear_values.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0002_linear_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0002_linear_values.c' object='quant/palette/animation_native/test_runner-0002_linear_values.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0002_linear_values.o `test -f 'quant/palette/animation_native/0002_linear_values.c' || echo '$(srcdir)/'`quant/palette/animation_native/0002_linear_values.c
+
+quant/palette/animation_native/test_runner-0002_linear_values.obj: quant/palette/animation_native/0002_linear_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0002_linear_values.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0002_linear_values.Tpo -c -o quant/palette/animation_native/test_runner-0002_linear_values.obj `if test -f 'quant/palette/animation_native/0002_linear_values.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0002_linear_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0002_linear_values.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0002_linear_values.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0002_linear_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0002_linear_values.c' object='quant/palette/animation_native/test_runner-0002_linear_values.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0002_linear_values.obj `if test -f 'quant/palette/animation_native/0002_linear_values.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0002_linear_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0002_linear_values.c'; fi`
+
+quant/palette/animation_native/test_runner-0003_oklab_values.o: quant/palette/animation_native/0003_oklab_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0003_oklab_values.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0003_oklab_values.Tpo -c -o quant/palette/animation_native/test_runner-0003_oklab_values.o `test -f 'quant/palette/animation_native/0003_oklab_values.c' || echo '$(srcdir)/'`quant/palette/animation_native/0003_oklab_values.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0003_oklab_values.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0003_oklab_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0003_oklab_values.c' object='quant/palette/animation_native/test_runner-0003_oklab_values.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0003_oklab_values.o `test -f 'quant/palette/animation_native/0003_oklab_values.c' || echo '$(srcdir)/'`quant/palette/animation_native/0003_oklab_values.c
+
+quant/palette/animation_native/test_runner-0003_oklab_values.obj: quant/palette/animation_native/0003_oklab_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0003_oklab_values.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0003_oklab_values.Tpo -c -o quant/palette/animation_native/test_runner-0003_oklab_values.obj `if test -f 'quant/palette/animation_native/0003_oklab_values.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0003_oklab_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0003_oklab_values.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0003_oklab_values.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0003_oklab_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0003_oklab_values.c' object='quant/palette/animation_native/test_runner-0003_oklab_values.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0003_oklab_values.obj `if test -f 'quant/palette/animation_native/0003_oklab_values.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0003_oklab_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0003_oklab_values.c'; fi`
+
+quant/palette/animation_native/test_runner-0004_cielab_values.o: quant/palette/animation_native/0004_cielab_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0004_cielab_values.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0004_cielab_values.Tpo -c -o quant/palette/animation_native/test_runner-0004_cielab_values.o `test -f 'quant/palette/animation_native/0004_cielab_values.c' || echo '$(srcdir)/'`quant/palette/animation_native/0004_cielab_values.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0004_cielab_values.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0004_cielab_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0004_cielab_values.c' object='quant/palette/animation_native/test_runner-0004_cielab_values.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0004_cielab_values.o `test -f 'quant/palette/animation_native/0004_cielab_values.c' || echo '$(srcdir)/'`quant/palette/animation_native/0004_cielab_values.c
+
+quant/palette/animation_native/test_runner-0004_cielab_values.obj: quant/palette/animation_native/0004_cielab_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0004_cielab_values.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0004_cielab_values.Tpo -c -o quant/palette/animation_native/test_runner-0004_cielab_values.obj `if test -f 'quant/palette/animation_native/0004_cielab_values.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0004_cielab_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0004_cielab_values.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0004_cielab_values.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0004_cielab_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0004_cielab_values.c' object='quant/palette/animation_native/test_runner-0004_cielab_values.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0004_cielab_values.obj `if test -f 'quant/palette/animation_native/0004_cielab_values.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0004_cielab_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0004_cielab_values.c'; fi`
+
+quant/palette/animation_native/test_runner-0005_din99d_values.o: quant/palette/animation_native/0005_din99d_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0005_din99d_values.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0005_din99d_values.Tpo -c -o quant/palette/animation_native/test_runner-0005_din99d_values.o `test -f 'quant/palette/animation_native/0005_din99d_values.c' || echo '$(srcdir)/'`quant/palette/animation_native/0005_din99d_values.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0005_din99d_values.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0005_din99d_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0005_din99d_values.c' object='quant/palette/animation_native/test_runner-0005_din99d_values.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0005_din99d_values.o `test -f 'quant/palette/animation_native/0005_din99d_values.c' || echo '$(srcdir)/'`quant/palette/animation_native/0005_din99d_values.c
+
+quant/palette/animation_native/test_runner-0005_din99d_values.obj: quant/palette/animation_native/0005_din99d_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0005_din99d_values.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0005_din99d_values.Tpo -c -o quant/palette/animation_native/test_runner-0005_din99d_values.obj `if test -f 'quant/palette/animation_native/0005_din99d_values.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0005_din99d_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0005_din99d_values.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0005_din99d_values.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0005_din99d_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0005_din99d_values.c' object='quant/palette/animation_native/test_runner-0005_din99d_values.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0005_din99d_values.obj `if test -f 'quant/palette/animation_native/0005_din99d_values.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0005_din99d_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0005_din99d_values.c'; fi`
+
+quant/palette/animation_native/test_runner-0006_p3_values.o: quant/palette/animation_native/0006_p3_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0006_p3_values.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0006_p3_values.Tpo -c -o quant/palette/animation_native/test_runner-0006_p3_values.o `test -f 'quant/palette/animation_native/0006_p3_values.c' || echo '$(srcdir)/'`quant/palette/animation_native/0006_p3_values.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0006_p3_values.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0006_p3_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0006_p3_values.c' object='quant/palette/animation_native/test_runner-0006_p3_values.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0006_p3_values.o `test -f 'quant/palette/animation_native/0006_p3_values.c' || echo '$(srcdir)/'`quant/palette/animation_native/0006_p3_values.c
+
+quant/palette/animation_native/test_runner-0006_p3_values.obj: quant/palette/animation_native/0006_p3_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0006_p3_values.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0006_p3_values.Tpo -c -o quant/palette/animation_native/test_runner-0006_p3_values.obj `if test -f 'quant/palette/animation_native/0006_p3_values.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0006_p3_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0006_p3_values.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0006_p3_values.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0006_p3_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0006_p3_values.c' object='quant/palette/animation_native/test_runner-0006_p3_values.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0006_p3_values.obj `if test -f 'quant/palette/animation_native/0006_p3_values.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0006_p3_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0006_p3_values.c'; fi`
+
+quant/palette/animation_native/test_runner-0007_mask_presence.o: quant/palette/animation_native/0007_mask_presence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0007_mask_presence.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0007_mask_presence.Tpo -c -o quant/palette/animation_native/test_runner-0007_mask_presence.o `test -f 'quant/palette/animation_native/0007_mask_presence.c' || echo '$(srcdir)/'`quant/palette/animation_native/0007_mask_presence.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0007_mask_presence.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0007_mask_presence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0007_mask_presence.c' object='quant/palette/animation_native/test_runner-0007_mask_presence.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0007_mask_presence.o `test -f 'quant/palette/animation_native/0007_mask_presence.c' || echo '$(srcdir)/'`quant/palette/animation_native/0007_mask_presence.c
+
+quant/palette/animation_native/test_runner-0007_mask_presence.obj: quant/palette/animation_native/0007_mask_presence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0007_mask_presence.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0007_mask_presence.Tpo -c -o quant/palette/animation_native/test_runner-0007_mask_presence.obj `if test -f 'quant/palette/animation_native/0007_mask_presence.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0007_mask_presence.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0007_mask_presence.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0007_mask_presence.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0007_mask_presence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0007_mask_presence.c' object='quant/palette/animation_native/test_runner-0007_mask_presence.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0007_mask_presence.obj `if test -f 'quant/palette/animation_native/0007_mask_presence.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0007_mask_presence.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0007_mask_presence.c'; fi`
+
+quant/palette/animation_native/test_runner-0008_hidden_values.o: quant/palette/animation_native/0008_hidden_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0008_hidden_values.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0008_hidden_values.Tpo -c -o quant/palette/animation_native/test_runner-0008_hidden_values.o `test -f 'quant/palette/animation_native/0008_hidden_values.c' || echo '$(srcdir)/'`quant/palette/animation_native/0008_hidden_values.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0008_hidden_values.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0008_hidden_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0008_hidden_values.c' object='quant/palette/animation_native/test_runner-0008_hidden_values.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0008_hidden_values.o `test -f 'quant/palette/animation_native/0008_hidden_values.c' || echo '$(srcdir)/'`quant/palette/animation_native/0008_hidden_values.c
+
+quant/palette/animation_native/test_runner-0008_hidden_values.obj: quant/palette/animation_native/0008_hidden_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0008_hidden_values.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0008_hidden_values.Tpo -c -o quant/palette/animation_native/test_runner-0008_hidden_values.obj `if test -f 'quant/palette/animation_native/0008_hidden_values.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0008_hidden_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0008_hidden_values.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0008_hidden_values.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0008_hidden_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0008_hidden_values.c' object='quant/palette/animation_native/test_runner-0008_hidden_values.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0008_hidden_values.obj `if test -f 'quant/palette/animation_native/0008_hidden_values.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0008_hidden_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0008_hidden_values.c'; fi`
+
+quant/palette/animation_native/test_runner-0009_empty_coverage.o: quant/palette/animation_native/0009_empty_coverage.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0009_empty_coverage.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0009_empty_coverage.Tpo -c -o quant/palette/animation_native/test_runner-0009_empty_coverage.o `test -f 'quant/palette/animation_native/0009_empty_coverage.c' || echo '$(srcdir)/'`quant/palette/animation_native/0009_empty_coverage.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0009_empty_coverage.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0009_empty_coverage.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0009_empty_coverage.c' object='quant/palette/animation_native/test_runner-0009_empty_coverage.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0009_empty_coverage.o `test -f 'quant/palette/animation_native/0009_empty_coverage.c' || echo '$(srcdir)/'`quant/palette/animation_native/0009_empty_coverage.c
+
+quant/palette/animation_native/test_runner-0009_empty_coverage.obj: quant/palette/animation_native/0009_empty_coverage.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0009_empty_coverage.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0009_empty_coverage.Tpo -c -o quant/palette/animation_native/test_runner-0009_empty_coverage.obj `if test -f 'quant/palette/animation_native/0009_empty_coverage.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0009_empty_coverage.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0009_empty_coverage.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0009_empty_coverage.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0009_empty_coverage.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0009_empty_coverage.c' object='quant/palette/animation_native/test_runner-0009_empty_coverage.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0009_empty_coverage.obj `if test -f 'quant/palette/animation_native/0009_empty_coverage.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0009_empty_coverage.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0009_empty_coverage.c'; fi`
+
+quant/palette/animation_native/test_runner-0010_packed_interpretation.o: quant/palette/animation_native/0010_packed_interpretation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0010_packed_interpretation.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0010_packed_interpretation.Tpo -c -o quant/palette/animation_native/test_runner-0010_packed_interpretation.o `test -f 'quant/palette/animation_native/0010_packed_interpretation.c' || echo '$(srcdir)/'`quant/palette/animation_native/0010_packed_interpretation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0010_packed_interpretation.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0010_packed_interpretation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0010_packed_interpretation.c' object='quant/palette/animation_native/test_runner-0010_packed_interpretation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0010_packed_interpretation.o `test -f 'quant/palette/animation_native/0010_packed_interpretation.c' || echo '$(srcdir)/'`quant/palette/animation_native/0010_packed_interpretation.c
+
+quant/palette/animation_native/test_runner-0010_packed_interpretation.obj: quant/palette/animation_native/0010_packed_interpretation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0010_packed_interpretation.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0010_packed_interpretation.Tpo -c -o quant/palette/animation_native/test_runner-0010_packed_interpretation.obj `if test -f 'quant/palette/animation_native/0010_packed_interpretation.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0010_packed_interpretation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0010_packed_interpretation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0010_packed_interpretation.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0010_packed_interpretation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0010_packed_interpretation.c' object='quant/palette/animation_native/test_runner-0010_packed_interpretation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0010_packed_interpretation.obj `if test -f 'quant/palette/animation_native/0010_packed_interpretation.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0010_packed_interpretation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0010_packed_interpretation.c'; fi`
+
+quant/palette/animation_native/test_runner-0011_packed_byte_fast.o: quant/palette/animation_native/0011_packed_byte_fast.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0011_packed_byte_fast.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0011_packed_byte_fast.Tpo -c -o quant/palette/animation_native/test_runner-0011_packed_byte_fast.o `test -f 'quant/palette/animation_native/0011_packed_byte_fast.c' || echo '$(srcdir)/'`quant/palette/animation_native/0011_packed_byte_fast.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0011_packed_byte_fast.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0011_packed_byte_fast.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0011_packed_byte_fast.c' object='quant/palette/animation_native/test_runner-0011_packed_byte_fast.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0011_packed_byte_fast.o `test -f 'quant/palette/animation_native/0011_packed_byte_fast.c' || echo '$(srcdir)/'`quant/palette/animation_native/0011_packed_byte_fast.c
+
+quant/palette/animation_native/test_runner-0011_packed_byte_fast.obj: quant/palette/animation_native/0011_packed_byte_fast.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0011_packed_byte_fast.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0011_packed_byte_fast.Tpo -c -o quant/palette/animation_native/test_runner-0011_packed_byte_fast.obj `if test -f 'quant/palette/animation_native/0011_packed_byte_fast.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0011_packed_byte_fast.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0011_packed_byte_fast.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0011_packed_byte_fast.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0011_packed_byte_fast.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0011_packed_byte_fast.c' object='quant/palette/animation_native/test_runner-0011_packed_byte_fast.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0011_packed_byte_fast.obj `if test -f 'quant/palette/animation_native/0011_packed_byte_fast.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0011_packed_byte_fast.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0011_packed_byte_fast.c'; fi`
+
+quant/palette/animation_native/test_runner-0012_packed_p3.o: quant/palette/animation_native/0012_packed_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0012_packed_p3.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0012_packed_p3.Tpo -c -o quant/palette/animation_native/test_runner-0012_packed_p3.o `test -f 'quant/palette/animation_native/0012_packed_p3.c' || echo '$(srcdir)/'`quant/palette/animation_native/0012_packed_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0012_packed_p3.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0012_packed_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0012_packed_p3.c' object='quant/palette/animation_native/test_runner-0012_packed_p3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0012_packed_p3.o `test -f 'quant/palette/animation_native/0012_packed_p3.c' || echo '$(srcdir)/'`quant/palette/animation_native/0012_packed_p3.c
+
+quant/palette/animation_native/test_runner-0012_packed_p3.obj: quant/palette/animation_native/0012_packed_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0012_packed_p3.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0012_packed_p3.Tpo -c -o quant/palette/animation_native/test_runner-0012_packed_p3.obj `if test -f 'quant/palette/animation_native/0012_packed_p3.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0012_packed_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0012_packed_p3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0012_packed_p3.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0012_packed_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0012_packed_p3.c' object='quant/palette/animation_native/test_runner-0012_packed_p3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0012_packed_p3.obj `if test -f 'quant/palette/animation_native/0012_packed_p3.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0012_packed_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0012_packed_p3.c'; fi`
+
+quant/palette/animation_native/test_runner-0013_fs_feedback.o: quant/palette/animation_native/0013_fs_feedback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0013_fs_feedback.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0013_fs_feedback.Tpo -c -o quant/palette/animation_native/test_runner-0013_fs_feedback.o `test -f 'quant/palette/animation_native/0013_fs_feedback.c' || echo '$(srcdir)/'`quant/palette/animation_native/0013_fs_feedback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0013_fs_feedback.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0013_fs_feedback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0013_fs_feedback.c' object='quant/palette/animation_native/test_runner-0013_fs_feedback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0013_fs_feedback.o `test -f 'quant/palette/animation_native/0013_fs_feedback.c' || echo '$(srcdir)/'`quant/palette/animation_native/0013_fs_feedback.c
+
+quant/palette/animation_native/test_runner-0013_fs_feedback.obj: quant/palette/animation_native/0013_fs_feedback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0013_fs_feedback.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0013_fs_feedback.Tpo -c -o quant/palette/animation_native/test_runner-0013_fs_feedback.obj `if test -f 'quant/palette/animation_native/0013_fs_feedback.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0013_fs_feedback.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0013_fs_feedback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0013_fs_feedback.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0013_fs_feedback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0013_fs_feedback.c' object='quant/palette/animation_native/test_runner-0013_fs_feedback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0013_fs_feedback.obj `if test -f 'quant/palette/animation_native/0013_fs_feedback.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0013_fs_feedback.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0013_fs_feedback.c'; fi`
+
+quant/palette/animation_native/test_runner-0014_fixed_cache_transition.o: quant/palette/animation_native/0014_fixed_cache_transition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0014_fixed_cache_transition.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0014_fixed_cache_transition.Tpo -c -o quant/palette/animation_native/test_runner-0014_fixed_cache_transition.o `test -f 'quant/palette/animation_native/0014_fixed_cache_transition.c' || echo '$(srcdir)/'`quant/palette/animation_native/0014_fixed_cache_transition.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0014_fixed_cache_transition.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0014_fixed_cache_transition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0014_fixed_cache_transition.c' object='quant/palette/animation_native/test_runner-0014_fixed_cache_transition.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0014_fixed_cache_transition.o `test -f 'quant/palette/animation_native/0014_fixed_cache_transition.c' || echo '$(srcdir)/'`quant/palette/animation_native/0014_fixed_cache_transition.c
+
+quant/palette/animation_native/test_runner-0014_fixed_cache_transition.obj: quant/palette/animation_native/0014_fixed_cache_transition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0014_fixed_cache_transition.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0014_fixed_cache_transition.Tpo -c -o quant/palette/animation_native/test_runner-0014_fixed_cache_transition.obj `if test -f 'quant/palette/animation_native/0014_fixed_cache_transition.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0014_fixed_cache_transition.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0014_fixed_cache_transition.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0014_fixed_cache_transition.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0014_fixed_cache_transition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0014_fixed_cache_transition.c' object='quant/palette/animation_native/test_runner-0014_fixed_cache_transition.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0014_fixed_cache_transition.obj `if test -f 'quant/palette/animation_native/0014_fixed_cache_transition.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0014_fixed_cache_transition.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0014_fixed_cache_transition.c'; fi`
+
+quant/palette/animation_native/test_runner-0015_fs_soft_feedback.o: quant/palette/animation_native/0015_fs_soft_feedback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0015_fs_soft_feedback.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0015_fs_soft_feedback.Tpo -c -o quant/palette/animation_native/test_runner-0015_fs_soft_feedback.o `test -f 'quant/palette/animation_native/0015_fs_soft_feedback.c' || echo '$(srcdir)/'`quant/palette/animation_native/0015_fs_soft_feedback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0015_fs_soft_feedback.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0015_fs_soft_feedback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0015_fs_soft_feedback.c' object='quant/palette/animation_native/test_runner-0015_fs_soft_feedback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0015_fs_soft_feedback.o `test -f 'quant/palette/animation_native/0015_fs_soft_feedback.c' || echo '$(srcdir)/'`quant/palette/animation_native/0015_fs_soft_feedback.c
+
+quant/palette/animation_native/test_runner-0015_fs_soft_feedback.obj: quant/palette/animation_native/0015_fs_soft_feedback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0015_fs_soft_feedback.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0015_fs_soft_feedback.Tpo -c -o quant/palette/animation_native/test_runner-0015_fs_soft_feedback.obj `if test -f 'quant/palette/animation_native/0015_fs_soft_feedback.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0015_fs_soft_feedback.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0015_fs_soft_feedback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0015_fs_soft_feedback.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0015_fs_soft_feedback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0015_fs_soft_feedback.c' object='quant/palette/animation_native/test_runner-0015_fs_soft_feedback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0015_fs_soft_feedback.obj `if test -f 'quant/palette/animation_native/0015_fs_soft_feedback.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0015_fs_soft_feedback.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0015_fs_soft_feedback.c'; fi`
+
+quant/palette/animation_native/test_runner-0016_packed_handoff_plan.o: quant/palette/animation_native/0016_packed_handoff_plan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0016_packed_handoff_plan.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0016_packed_handoff_plan.Tpo -c -o quant/palette/animation_native/test_runner-0016_packed_handoff_plan.o `test -f 'quant/palette/animation_native/0016_packed_handoff_plan.c' || echo '$(srcdir)/'`quant/palette/animation_native/0016_packed_handoff_plan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0016_packed_handoff_plan.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0016_packed_handoff_plan.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0016_packed_handoff_plan.c' object='quant/palette/animation_native/test_runner-0016_packed_handoff_plan.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0016_packed_handoff_plan.o `test -f 'quant/palette/animation_native/0016_packed_handoff_plan.c' || echo '$(srcdir)/'`quant/palette/animation_native/0016_packed_handoff_plan.c
+
+quant/palette/animation_native/test_runner-0016_packed_handoff_plan.obj: quant/palette/animation_native/0016_packed_handoff_plan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0016_packed_handoff_plan.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0016_packed_handoff_plan.Tpo -c -o quant/palette/animation_native/test_runner-0016_packed_handoff_plan.obj `if test -f 'quant/palette/animation_native/0016_packed_handoff_plan.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0016_packed_handoff_plan.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0016_packed_handoff_plan.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0016_packed_handoff_plan.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0016_packed_handoff_plan.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0016_packed_handoff_plan.c' object='quant/palette/animation_native/test_runner-0016_packed_handoff_plan.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0016_packed_handoff_plan.obj `if test -f 'quant/palette/animation_native/0016_packed_handoff_plan.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0016_packed_handoff_plan.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0016_packed_handoff_plan.c'; fi`
+
+quant/palette/animation_native/test_runner-0017_rgb_handoff_plan.o: quant/palette/animation_native/0017_rgb_handoff_plan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0017_rgb_handoff_plan.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0017_rgb_handoff_plan.Tpo -c -o quant/palette/animation_native/test_runner-0017_rgb_handoff_plan.o `test -f 'quant/palette/animation_native/0017_rgb_handoff_plan.c' || echo '$(srcdir)/'`quant/palette/animation_native/0017_rgb_handoff_plan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0017_rgb_handoff_plan.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0017_rgb_handoff_plan.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0017_rgb_handoff_plan.c' object='quant/palette/animation_native/test_runner-0017_rgb_handoff_plan.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0017_rgb_handoff_plan.o `test -f 'quant/palette/animation_native/0017_rgb_handoff_plan.c' || echo '$(srcdir)/'`quant/palette/animation_native/0017_rgb_handoff_plan.c
+
+quant/palette/animation_native/test_runner-0017_rgb_handoff_plan.obj: quant/palette/animation_native/0017_rgb_handoff_plan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0017_rgb_handoff_plan.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0017_rgb_handoff_plan.Tpo -c -o quant/palette/animation_native/test_runner-0017_rgb_handoff_plan.obj `if test -f 'quant/palette/animation_native/0017_rgb_handoff_plan.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0017_rgb_handoff_plan.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0017_rgb_handoff_plan.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0017_rgb_handoff_plan.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0017_rgb_handoff_plan.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0017_rgb_handoff_plan.c' object='quant/palette/animation_native/test_runner-0017_rgb_handoff_plan.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0017_rgb_handoff_plan.obj `if test -f 'quant/palette/animation_native/0017_rgb_handoff_plan.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0017_rgb_handoff_plan.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0017_rgb_handoff_plan.c'; fi`
+
+quant/palette/animation_native/test_runner-0018_libpng_serial.o: quant/palette/animation_native/0018_libpng_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0018_libpng_serial.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0018_libpng_serial.Tpo -c -o quant/palette/animation_native/test_runner-0018_libpng_serial.o `test -f 'quant/palette/animation_native/0018_libpng_serial.c' || echo '$(srcdir)/'`quant/palette/animation_native/0018_libpng_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0018_libpng_serial.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0018_libpng_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0018_libpng_serial.c' object='quant/palette/animation_native/test_runner-0018_libpng_serial.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0018_libpng_serial.o `test -f 'quant/palette/animation_native/0018_libpng_serial.c' || echo '$(srcdir)/'`quant/palette/animation_native/0018_libpng_serial.c
+
+quant/palette/animation_native/test_runner-0018_libpng_serial.obj: quant/palette/animation_native/0018_libpng_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0018_libpng_serial.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0018_libpng_serial.Tpo -c -o quant/palette/animation_native/test_runner-0018_libpng_serial.obj `if test -f 'quant/palette/animation_native/0018_libpng_serial.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0018_libpng_serial.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0018_libpng_serial.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0018_libpng_serial.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0018_libpng_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0018_libpng_serial.c' object='quant/palette/animation_native/test_runner-0018_libpng_serial.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0018_libpng_serial.obj `if test -f 'quant/palette/animation_native/0018_libpng_serial.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0018_libpng_serial.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0018_libpng_serial.c'; fi`
+
+quant/palette/animation_native/test_runner-0019_libpng_pipeline_p3.o: quant/palette/animation_native/0019_libpng_pipeline_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0019_libpng_pipeline_p3.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0019_libpng_pipeline_p3.Tpo -c -o quant/palette/animation_native/test_runner-0019_libpng_pipeline_p3.o `test -f 'quant/palette/animation_native/0019_libpng_pipeline_p3.c' || echo '$(srcdir)/'`quant/palette/animation_native/0019_libpng_pipeline_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0019_libpng_pipeline_p3.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0019_libpng_pipeline_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0019_libpng_pipeline_p3.c' object='quant/palette/animation_native/test_runner-0019_libpng_pipeline_p3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0019_libpng_pipeline_p3.o `test -f 'quant/palette/animation_native/0019_libpng_pipeline_p3.c' || echo '$(srcdir)/'`quant/palette/animation_native/0019_libpng_pipeline_p3.c
+
+quant/palette/animation_native/test_runner-0019_libpng_pipeline_p3.obj: quant/palette/animation_native/0019_libpng_pipeline_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0019_libpng_pipeline_p3.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0019_libpng_pipeline_p3.Tpo -c -o quant/palette/animation_native/test_runner-0019_libpng_pipeline_p3.obj `if test -f 'quant/palette/animation_native/0019_libpng_pipeline_p3.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0019_libpng_pipeline_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0019_libpng_pipeline_p3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0019_libpng_pipeline_p3.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0019_libpng_pipeline_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0019_libpng_pipeline_p3.c' object='quant/palette/animation_native/test_runner-0019_libpng_pipeline_p3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0019_libpng_pipeline_p3.obj `if test -f 'quant/palette/animation_native/0019_libpng_pipeline_p3.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0019_libpng_pipeline_p3.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0019_libpng_pipeline_p3.c'; fi`
+
+quant/palette/animation_native/test_runner-0020_builtin_pipeline.o: quant/palette/animation_native/0020_builtin_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0020_builtin_pipeline.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0020_builtin_pipeline.Tpo -c -o quant/palette/animation_native/test_runner-0020_builtin_pipeline.o `test -f 'quant/palette/animation_native/0020_builtin_pipeline.c' || echo '$(srcdir)/'`quant/palette/animation_native/0020_builtin_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0020_builtin_pipeline.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0020_builtin_pipeline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0020_builtin_pipeline.c' object='quant/palette/animation_native/test_runner-0020_builtin_pipeline.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0020_builtin_pipeline.o `test -f 'quant/palette/animation_native/0020_builtin_pipeline.c' || echo '$(srcdir)/'`quant/palette/animation_native/0020_builtin_pipeline.c
+
+quant/palette/animation_native/test_runner-0020_builtin_pipeline.obj: quant/palette/animation_native/0020_builtin_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0020_builtin_pipeline.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0020_builtin_pipeline.Tpo -c -o quant/palette/animation_native/test_runner-0020_builtin_pipeline.obj `if test -f 'quant/palette/animation_native/0020_builtin_pipeline.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0020_builtin_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0020_builtin_pipeline.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0020_builtin_pipeline.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0020_builtin_pipeline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0020_builtin_pipeline.c' object='quant/palette/animation_native/test_runner-0020_builtin_pipeline.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0020_builtin_pipeline.obj `if test -f 'quant/palette/animation_native/0020_builtin_pipeline.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0020_builtin_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0020_builtin_pipeline.c'; fi`
+
+quant/palette/animation_native/test_runner-0021_geometry_change.o: quant/palette/animation_native/0021_geometry_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0021_geometry_change.o -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0021_geometry_change.Tpo -c -o quant/palette/animation_native/test_runner-0021_geometry_change.o `test -f 'quant/palette/animation_native/0021_geometry_change.c' || echo '$(srcdir)/'`quant/palette/animation_native/0021_geometry_change.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0021_geometry_change.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0021_geometry_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0021_geometry_change.c' object='quant/palette/animation_native/test_runner-0021_geometry_change.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0021_geometry_change.o `test -f 'quant/palette/animation_native/0021_geometry_change.c' || echo '$(srcdir)/'`quant/palette/animation_native/0021_geometry_change.c
+
+quant/palette/animation_native/test_runner-0021_geometry_change.obj: quant/palette/animation_native/0021_geometry_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/animation_native/test_runner-0021_geometry_change.obj -MD -MP -MF quant/palette/animation_native/$(DEPDIR)/test_runner-0021_geometry_change.Tpo -c -o quant/palette/animation_native/test_runner-0021_geometry_change.obj `if test -f 'quant/palette/animation_native/0021_geometry_change.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0021_geometry_change.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0021_geometry_change.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/animation_native/$(DEPDIR)/test_runner-0021_geometry_change.Tpo quant/palette/animation_native/$(DEPDIR)/test_runner-0021_geometry_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/animation_native/0021_geometry_change.c' object='quant/palette/animation_native/test_runner-0021_geometry_change.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/animation_native/test_runner-0021_geometry_change.obj `if test -f 'quant/palette/animation_native/0021_geometry_change.c'; then $(CYGPATH_W) 'quant/palette/animation_native/0021_geometry_change.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/animation_native/0021_geometry_change.c'; fi`
+
 quant/palette/test_runner-packed_alpha_common.o: quant/palette/packed_alpha_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-packed_alpha_common.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-packed_alpha_common.Tpo -c -o quant/palette/test_runner-packed_alpha_common.o `test -f 'quant/palette/packed_alpha_common.c' || echo '$(srcdir)/'`quant/palette/packed_alpha_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-packed_alpha_common.Tpo quant/palette/$(DEPDIR)/test_runner-packed_alpha_common.Po
@@ -59423,6 +59936,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/alpha_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/alpha_float/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/animation_native/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/auto_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/auto_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/binning_float/$(DEPDIR)/$(am__dirstamp)
@@ -61565,6 +62080,7 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-alpha_native_common.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-animation_native_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-auto_test_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-builtin_float_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-fixed_mask_common.Po
@@ -61609,6 +62125,27 @@ distclean: distclean-am
 	-rm -f quant/palette/alpha_float/$(DEPDIR)/test_runner-0032_scan_reserved.Po
 	-rm -f quant/palette/alpha_float/$(DEPDIR)/test_runner-0033_cross_space.Po
 	-rm -f quant/palette/alpha_float/$(DEPDIR)/test_runner-0034_allocation_retry.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0001_gamma_values.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0002_linear_values.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0003_oklab_values.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0004_cielab_values.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0005_din99d_values.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0006_p3_values.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0007_mask_presence.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0008_hidden_values.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0009_empty_coverage.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0010_packed_interpretation.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0011_packed_byte_fast.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0012_packed_p3.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0013_fs_feedback.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0014_fixed_cache_transition.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0015_fs_soft_feedback.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0016_packed_handoff_plan.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0017_rgb_handoff_plan.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0018_libpng_serial.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0019_libpng_pipeline_p3.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0020_builtin_pipeline.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0021_geometry_change.Po
 	-rm -f quant/palette/auto_float/$(DEPDIR)/test_runner-0001_auto_default_gamma.Po
 	-rm -f quant/palette/auto_float/$(DEPDIR)/test_runner-0002_auto_explicit_gamma.Po
 	-rm -f quant/palette/auto_float/$(DEPDIR)/test_runner-0003_auto_default_p3.Po
@@ -64092,6 +64629,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-alpha_native_common.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-animation_native_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-auto_test_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-builtin_float_common.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-fixed_mask_common.Po
@@ -64136,6 +64674,27 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/alpha_float/$(DEPDIR)/test_runner-0032_scan_reserved.Po
 	-rm -f quant/palette/alpha_float/$(DEPDIR)/test_runner-0033_cross_space.Po
 	-rm -f quant/palette/alpha_float/$(DEPDIR)/test_runner-0034_allocation_retry.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0001_gamma_values.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0002_linear_values.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0003_oklab_values.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0004_cielab_values.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0005_din99d_values.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0006_p3_values.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0007_mask_presence.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0008_hidden_values.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0009_empty_coverage.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0010_packed_interpretation.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0011_packed_byte_fast.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0012_packed_p3.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0013_fs_feedback.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0014_fixed_cache_transition.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0015_fs_soft_feedback.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0016_packed_handoff_plan.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0017_rgb_handoff_plan.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0018_libpng_serial.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0019_libpng_pipeline_p3.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0020_builtin_pipeline.Po
+	-rm -f quant/palette/animation_native/$(DEPDIR)/test_runner-0021_geometry_change.Po
 	-rm -f quant/palette/auto_float/$(DEPDIR)/test_runner-0001_auto_default_gamma.Po
 	-rm -f quant/palette/auto_float/$(DEPDIR)/test_runner-0002_auto_explicit_gamma.Po
 	-rm -f quant/palette/auto_float/$(DEPDIR)/test_runner-0003_auto_default_p3.Po

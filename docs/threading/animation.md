@@ -66,10 +66,7 @@ Any future parallel-frame design must define ownership of temporal state and
 commit it in display order; computing later frames against speculative or
 stale state would change the algorithm.
 
-Frame ownership also matters. The handoff can retain a shareable frame by
-reference, or clone it when later preprocessing could conflict with loader
-reuse. Performance changes must preserve that lifetime contract as well as
-visual ordering.
+Frame ownership also matters. The handoff can retain a shareable frame by reference, or clone it when later preprocessing could conflict with loader reuse. Performance changes must preserve that lifetime contract as well as visual ordering. Packed-alpha separation also counts as preprocessing that mutates storage, even if no explicit float precision, crop, resize or workspace conversion requested a copy. The existing planner marks packed-to-RGB normalization as a colorspace operation, so handoff already requires a copy; see the [generated animation contract](../encoder/output/output-colorspace.md#generated-palettes-in-animation).
 
 ## Future budget-coordinator requirements
 

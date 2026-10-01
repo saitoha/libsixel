@@ -1014,6 +1014,28 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0028_SHORT_MASK_RETRY \
     -DBUILD_TEST_0029_ORMODE_RETRY \
     -DBUILD_TEST_0030_FULL256_PARALLEL \
+    -DBUILD_ANIMATION_NATIVE_COMMON \
+    -DBUILD_TEST_0001_GAMMA_VALUES \
+    -DBUILD_TEST_0002_LINEAR_VALUES \
+    -DBUILD_TEST_0003_OKLAB_VALUES \
+    -DBUILD_TEST_0004_CIELAB_VALUES \
+    -DBUILD_TEST_0005_DIN99D_VALUES \
+    -DBUILD_TEST_0006_P3_VALUES \
+    -DBUILD_TEST_0007_MASK_PRESENCE \
+    -DBUILD_TEST_0008_HIDDEN_VALUES \
+    -DBUILD_TEST_0009_EMPTY_COVERAGE \
+    -DBUILD_TEST_0010_PACKED_INTERPRETATION \
+    -DBUILD_TEST_0011_PACKED_BYTE_FAST \
+    -DBUILD_TEST_0012_PACKED_P3 \
+    -DBUILD_TEST_0013_FS_FEEDBACK \
+    -DBUILD_TEST_0014_FIXED_CACHE_TRANSITION \
+    -DBUILD_TEST_0015_FS_SOFT_FEEDBACK \
+    -DBUILD_TEST_0016_PACKED_HANDOFF_PLAN \
+    -DBUILD_TEST_0017_RGB_HANDOFF_PLAN \
+    -DBUILD_TEST_0018_LIBPNG_SERIAL \
+    -DBUILD_TEST_0019_LIBPNG_PIPELINE_P3 \
+    -DBUILD_TEST_0020_BUILTIN_PIPELINE \
+    -DBUILD_TEST_0021_GEOMETRY_CHANGE \
     -DBUILD_PACKED_ALPHA_COMMON \
     -DBUILD_TEST_0001_LAYOUT_RGBA \
     -DBUILD_TEST_0002_LAYOUT_ARGB \
@@ -4654,6 +4676,28 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/fixed_mask/0028_short_mask_retry.c \
     quant/palette/fixed_mask/0029_ormode_retry.c \
     quant/palette/fixed_mask/0030_full256_parallel.c \
+    quant/palette/animation_native_common.c \
+    quant/palette/animation_native/0001_gamma_values.c \
+    quant/palette/animation_native/0002_linear_values.c \
+    quant/palette/animation_native/0003_oklab_values.c \
+    quant/palette/animation_native/0004_cielab_values.c \
+    quant/palette/animation_native/0005_din99d_values.c \
+    quant/palette/animation_native/0006_p3_values.c \
+    quant/palette/animation_native/0007_mask_presence.c \
+    quant/palette/animation_native/0008_hidden_values.c \
+    quant/palette/animation_native/0009_empty_coverage.c \
+    quant/palette/animation_native/0010_packed_interpretation.c \
+    quant/palette/animation_native/0011_packed_byte_fast.c \
+    quant/palette/animation_native/0012_packed_p3.c \
+    quant/palette/animation_native/0013_fs_feedback.c \
+    quant/palette/animation_native/0014_fixed_cache_transition.c \
+    quant/palette/animation_native/0015_fs_soft_feedback.c \
+    quant/palette/animation_native/0016_packed_handoff_plan.c \
+    quant/palette/animation_native/0017_rgb_handoff_plan.c \
+    quant/palette/animation_native/0018_libpng_serial.c \
+    quant/palette/animation_native/0019_libpng_pipeline_p3.c \
+    quant/palette/animation_native/0020_builtin_pipeline.c \
+    quant/palette/animation_native/0021_geometry_change.c \
     quant/palette/packed_alpha_common.c \
     quant/palette/packed_alpha/0001_layout_rgba.c \
     quant/palette/packed_alpha/0002_layout_argb.c \
