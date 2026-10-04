@@ -136,7 +136,7 @@ sixel_palette_cover_float(float *entries, unsigned int *entry_count,
         return SIXEL_BAD_ARGUMENT;
     }
     count = *entry_count;
-    budget = sixel_palette_cover_budget(policy, count);
+    budget = sixel_palette_cover_float_budget(policy, count);
     if (budget == 0) {
         return SIXEL_OK;
     }

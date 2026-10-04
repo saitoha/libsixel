@@ -374,6 +374,9 @@ The corresponding environments are \fBSIXEL_PALETTE_FINAL_MERGE\fP,
 configure palette anchoring independently of the quantizer.
 \fIPOLICY\fP accepts \fBauto\fP, \fBoff\fP, \fBcorners\fP,
 \fBfaces\fP, \fBedges\fP, or \fBall\fP.
+\fBauto\fP disables repair for float palettes; byte palettes select by
+actual palette size. Mode or growth suboptions alone do not enable float
+AUTO repair; select an explicit anchor budget to enable it.
 .br
 Supported suboptions:
 .br

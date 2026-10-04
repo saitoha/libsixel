@@ -213,7 +213,7 @@ cover_native_values(sixel_allocator_t *allocator, int mode, int space)
         return 0;
     }
     if (mode == 1 || mode == 3 || mode == 9 || mode == 10 || mode == 11 ||
-            mode == 12) {
+            mode == 12 || mode == 13) {
         return count == old_count &&
             memcmp(entries, original, sizeof(entries)) == 0;
     }
@@ -250,7 +250,7 @@ cover_native_values(sixel_allocator_t *allocator, int mode, int space)
             entries[8] == 0 && entries[9] == 0 && entries[10] == 1 &&
             entries[11] == 0;
     }
-    if (mode == 6 || mode == 13) {
+    if (mode == 6) {
         return count == old_count + 1 &&
             memcmp(entries, original, old_count * 3 * sizeof(float)) == 0 &&
             entries[old_count * 3] == -.25f &&

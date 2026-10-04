@@ -767,6 +767,15 @@ int test_fixed_animation_0023(int argc, char **argv);
 int test_fixed_animation_0024(int argc, char **argv);
 int test_fixed_animation_0025(int argc, char **argv);
 int test_fixed_animation_0026(int argc, char **argv);
+int test_auto_cover_0001(int argc, char **argv);
+int test_auto_cover_0002(int argc, char **argv);
+int test_auto_cover_0003(int argc, char **argv);
+int test_auto_cover_0004(int argc, char **argv);
+int test_auto_cover_0005(int argc, char **argv);
+int test_auto_cover_0006(int argc, char **argv);
+int test_auto_cover_0007(int argc, char **argv);
+int test_auto_cover_0008(int argc, char **argv);
+int test_auto_cover_0009(int argc, char **argv);
 int test_anim_native_0018(int argc, char **argv);
 int test_anim_native_0019(int argc, char **argv);
 int test_anim_native_0020(int argc, char **argv);
@@ -3978,6 +3987,24 @@ static test_entry_t const test_entries[] = {
       test_fixed_animation_0025 },
     { "quant/palette/fixed_animation/0026_prepared_lookup_reuse",
       test_fixed_animation_0026 },
+    { "quant/palette/auto_cover_float/0001_byte_corners_boundary",
+      test_auto_cover_0001 },
+    { "quant/palette/auto_cover_float/0002_byte_faces_boundary",
+      test_auto_cover_0002 },
+    { "quant/palette/auto_cover_float/0003_byte_edges_boundary",
+      test_auto_cover_0003 },
+    { "quant/palette/auto_cover_float/0004_reserved_capacity",
+      test_auto_cover_0004 },
+    { "quant/palette/auto_cover_float/0005_hard_grow_noop",
+      test_auto_cover_0005 },
+    { "quant/palette/auto_cover_float/0006_linear_noop",
+      test_auto_cover_0006 },
+    { "quant/palette/auto_cover_float/0007_explicit_transition",
+      test_auto_cover_0007 },
+    { "quant/palette/auto_cover_float/0008_encoder_soft_wire",
+      test_auto_cover_0008 },
+    { "quant/palette/auto_cover_float/0009_encoder_hard_wire",
+      test_auto_cover_0009 },
     { "quant/palette/animation_native/0018_libpng_serial",
       test_anim_native_0018 },
     { "quant/palette/animation_native/0019_libpng_pipeline_p3",

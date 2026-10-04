@@ -1553,7 +1553,7 @@ sixel_palette_repair_native(sixel_palette_t *palette,
     unsigned int index;
     unsigned int channel;
 
-    if (sixel_palette_cover_budget(sixel_palette_cover_policy(),
+    if (sixel_palette_cover_float_budget(sixel_palette_cover_policy(),
             *ncolors) == 0) {
         return SIXEL_OK;
     }

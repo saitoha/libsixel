@@ -75,14 +75,14 @@ extern "C" {
  * Under hard these name points of the RGB cube.  Under soft the geometry is
  * gone -- anchors come from the image -- so the same names are a BUDGET: how
  * many anchors may be bought, 8, 14 or 26.  The spelling, the ordering and the
- * auto ladder are shared, so a configuration means the same amount of effort
- * in either mode.
+ * explicit budgets are shared between modes. Byte AUTO uses a size ladder;
+ * native float AUTO disables repair independently of mode and growth.
  */
 #define SIXEL_PALETTE_COVER_OFF     0  /* no anchoring */
 #define SIXEL_PALETTE_COVER_CORNERS 1  /* 8 cube corners  / 8 anchors  */
 #define SIXEL_PALETTE_COVER_FACES   2  /* + 6 face centres / 14 anchors */
 #define SIXEL_PALETTE_COVER_EDGES   3  /* + 12 edge mids   / 26 anchors */
-#define SIXEL_PALETTE_COVER_AUTO    4  /* choose by palette size */
+#define SIXEL_PALETTE_COVER_AUTO    4  /* resolve for palette representation */
 
 #define SIXEL_PALETTE_COVER_ANCHOR_MAX 26u
 
@@ -144,6 +144,11 @@ sixel_palette_cover_resolve_policy(int policy, unsigned int entry_count);
 
 SIXEL_INTERNAL_API unsigned int
 sixel_palette_cover_budget(int policy, unsigned int entry_count);
+
+/* Float AUTO is off; explicit budgets retain their byte-path meaning. Use
+ * this before copying/converting entries or allocating repair workspace. */
+SIXEL_INTERNAL_API unsigned int
+sixel_palette_cover_float_budget(int policy, unsigned int entry_count);
 
 /* Fixed gamma-sRGB anchor in the shared corners/faces/edges order. */
 SIXEL_INTERNAL_API unsigned char const *

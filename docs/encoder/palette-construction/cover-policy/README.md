@@ -26,7 +26,7 @@ Cover repair therefore changes the palette consumed by lookup and dithering, but
 
 The fixed-palette selectors `-m`, `-b`, and `-e` bypass palette construction and therefore have no cover-repair stage. Combining any of them with an explicit `--cover-policy` or `-a`, including `off`, is rejected while arguments are applied instead of silently ignoring the cover request. A top-level `SIXEL_PALETTE_COVER` environment override has the same conflict; omit the cover policy when supplying one of these fixed palettes.
 
-Explicit soft or hard mode also runs on the [selected native float32 palette path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path), for ordinary sRGB and Display P3 output. Select `--cover-policy=auto:cover_mode=soft` (short form `-aauto:Wsoft`), `-aauto:Whard`, another cover budget with an explicit mode, or `SIXEL_PALETTE_COVER_MODE=soft|hard` to admit active cover to this path. Implicit soft mode, including plain `-aauto`, retains the existing path; `-aoff` continues to admit native encoding independently of mode. This migration boundary avoids silently changing low-color defaults, where closest-pair funding can merge heavily used dark entries and lose visible detail. It does not change the cover algorithm or the meaning of the selected mode. This path retains extended coordinates through cover repair in all five supported clustering spaces. Other legacy float palette paths still bypass cover repair. If a byte palette was produced from an input format that the byte candidate reader cannot inspect, soft mode falls back to hard anchors. The native path reports conversion or allocation failure instead of retrying hard cover or a byte solver.
+Explicit soft or hard mode also admits the [selected native float32 palette path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path), for ordinary sRGB and Display P3 output. Select `-acorners:Wsoft`, `-afaces:Whard`, another explicit cover budget and mode, or `SIXEL_PALETTE_COVER_MODE=soft|hard` with an explicit budget to run cover repair on this path. Native float `auto` resolves to `off`, including `-aauto:Wsoft`, `-aauto:Whard`, and `auto` with growth enabled. Changing mode or growth alone does not enable repair. Implicit soft mode, including plain `-aauto`, retains the existing palette-path selection; `-aoff` continues to admit native encoding independently of mode. The AUTO budget change does not widen that migration boundary, which avoids silently changing low-color defaults where palette generation can lose visible detail. Explicit repair retains extended coordinates in all five supported clustering spaces. Other legacy float palette paths still bypass cover repair. If a byte palette was produced from an input format that the byte candidate reader cannot inspect, soft mode falls back to hard anchors. The native path reports conversion or allocation failure instead of retrying hard cover or a byte solver.
 
 ## Why palette coverage matters
 
@@ -227,13 +227,15 @@ The default is `auto`.
 | `faces` | corners plus 6 face centers, 14 total | up to 14 image-derived anchors | Adds partners for colors with one channel pinned at a gamut boundary. |
 | `edges` | previous set plus 12 edge midpoints, 26 total | up to 26 image-derived anchors | Largest implemented coverage rung. |
 | `all` | same as `edges` | same as `edges` | Exact alias of `edges`; it does not request a denser lattice. |
-| `auto` | selected from actual palette size | selected from actual palette size | Resolves through the size ladder below. |
+| `auto` | 0 for float; size-dependent for byte | 0 for float; size-dependent for byte | Resolves according to the palette representation below. |
 
 The registry also accepts `0` as a compatibility spelling for `off` and `1` as a compatibility spelling for `auto`. New configurations should use the named values.
 
 ### `auto`
 
-`auto` resolves after the quantizer has reported the actual palette entry count, before optional cover growth:
+`auto` disables cover repair on native float palettes at every color count, in both soft and hard mode and with either growth setting. It preserves the authoritative float entries and count without cover-specific conversion, candidate allocation, or compatibility-view publication. Explicit `corners`, `faces`, and `edges` remain available for images that benefit from repair. Multi-image comparisons found losses from low-count anchor funding and little or no benefit at larger counts; AUTO therefore keeps repair off rather than paying that cost without a demonstrated improvement. This is a deterministic policy, not a per-image benchmark.
+
+Byte palettes retain the following ladder, resolved after the quantizer reports the actual entry count and before optional cover growth:
 
 | Actual entries | Effective policy | Maximum anchors |
 | ---: | --- | ---: |
@@ -406,7 +408,7 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| CP-01 | Hard anchor rungs, `auto` thresholds, explicit-policy preservation, environment/override precedence, fixed-size and growing placement, soft content support, and post-quantizer repair across every solver remain stable. | [tests/quant/palette/0005_cover_anchor.c](../../../../tests/quant/palette/0005_cover_anchor.c) |
+| CP-01 | Hard anchor rungs, byte `auto` thresholds, explicit-policy preservation, environment/override precedence, fixed-size and growing placement, soft content support, and post-quantizer repair across every solver remain stable. | [tests/quant/palette/0005_cover_anchor.c](../../../../tests/quant/palette/0005_cover_anchor.c) |
 | CP-02 | The top-level `corners` CLI and `SIXEL_PALETTE_COVER` environment forms produce equivalent output. | [tests/cli/options/migration/0018_cover_policy_environment_cli_equivalence.t](../../../../tests/cli/options/migration/0018_cover_policy_environment_cli_equivalence.t) |
 | CP-03 | `cover_grow=1` has equivalent short-suboption and environment behavior, reaches the cover consumer, and preserves the image-quality floor. | [tests/cli/options/regression/0025_cover_policy_grow_image_regression.t](../../../../tests/cli/options/regression/0025_cover_policy_grow_image_regression.t) |
 | CP-04 | `cover_mode=hard` has equivalent short-suboption and environment behavior, reaches the cover consumer, and preserves the image-quality floor. | [tests/cli/options/regression/0026_cover_policy_mode_image_regression.t](../../../../tests/cli/options/regression/0026_cover_policy_mode_image_regression.t) |
@@ -458,7 +460,7 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 | CP-50 | Native hard cover: P3 fixed-anchor output. | [tests/quant/palette/cover_float/0040_hard_p3_grow.t](../../../../tests/quant/palette/cover_float/0040_hard_p3_grow.t) |
 | CP-51 | Native soft cover: encoder allocation recovery. | [tests/quant/palette/cover_float/0041_encoder_allocation_recovery.t](../../../../tests/quant/palette/cover_float/0041_encoder_allocation_recovery.t) |
 | CP-52 | Native soft cover: auto small noop. | [tests/quant/palette/cover_float/0042_auto_small_noop.t](../../../../tests/quant/palette/cover_float/0042_auto_small_noop.t) |
-| CP-53 | Native soft cover: auto enabled. | [tests/quant/palette/cover_float/0043_auto_enabled.t](../../../../tests/quant/palette/cover_float/0043_auto_enabled.t) |
+| CP-53 | Native soft AUTO remains off with growth enabled at 32 colors. | [tests/quant/palette/cover_float/0043_auto_grow_noop.t](../../../../tests/quant/palette/cover_float/0043_auto_grow_noop.t) |
 | CP-54 | Native soft cover: environment hard p3 grow. | [tests/quant/palette/cover_float/0044_environment_hard_grow.t](../../../../tests/quant/palette/cover_float/0044_environment_hard_grow.t) |
 | CP-55 | Native soft cover: explicit soft overrides env. | [tests/quant/palette/cover_float/0045_explicit_soft_overrides_env.t](../../../../tests/quant/palette/cover_float/0045_explicit_soft_overrides_env.t) |
 | CP-56 | Native soft cover: environment soft grow. | [tests/quant/palette/cover_float/0046_environment_soft_grow.t](../../../../tests/quant/palette/cover_float/0046_environment_soft_grow.t) |
@@ -506,10 +508,19 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 | CP-98 | Native cover: hard din99d wire. | [tests/quant/palette/cover_float/0088_hard_din99d_wire.t](../../../../tests/quant/palette/cover_float/0088_hard_din99d_wire.t) |
 | CP-99 | Native hard cover uses the asynchronous palette worker. | [tests/quant/palette/cover_float/0089_hard_worker_grow.t](../../../../tests/quant/palette/cover_float/0089_hard_worker_grow.t) |
 | CP-100 | Explicit hard mode overrides a soft environment mode. | [tests/quant/palette/cover_float/0090_hard_overrides_soft_environment.t](../../../../tests/quant/palette/cover_float/0090_hard_overrides_soft_environment.t) |
+| CP-101 | 32 colors retain exact float entries without histogram allocation. | [tests/quant/palette/auto_cover_float/0001_byte_corners_boundary.t](../../../../tests/quant/palette/auto_cover_float/0001_byte_corners_boundary.t) |
+| CP-102 | 64 colors do not inherit the byte faces budget. | [tests/quant/palette/auto_cover_float/0002_byte_faces_boundary.t](../../../../tests/quant/palette/auto_cover_float/0002_byte_faces_boundary.t) |
+| CP-103 | 256 colors do not inherit the byte edges budget. | [tests/quant/palette/auto_cover_float/0003_byte_edges_boundary.t](../../../../tests/quant/palette/auto_cover_float/0003_byte_edges_boundary.t) |
+| CP-104 | AUTO growth preserves the reserved slot and 255 entries. | [tests/quant/palette/auto_cover_float/0004_reserved_capacity.t](../../../../tests/quant/palette/auto_cover_float/0004_reserved_capacity.t) |
+| CP-105 | Hard mode and growth do not enable AUTO repair. | [tests/quant/palette/auto_cover_float/0005_hard_grow_noop.t](../../../../tests/quant/palette/auto_cover_float/0005_hard_grow_noop.t) |
+| CP-106 | AUTO preserves typed linear coordinates without a round trip. | [tests/quant/palette/auto_cover_float/0006_linear_noop.t](../../../../tests/quant/palette/auto_cover_float/0006_linear_noop.t) |
+| CP-107 | Explicit corners still grow between two AUTO calls. | [tests/quant/palette/auto_cover_float/0007_explicit_transition.t](../../../../tests/quant/palette/auto_cover_float/0007_explicit_transition.t) |
+| CP-108 | Encoder soft AUTO preserves 32 native colors and RGB101 output. | [tests/quant/palette/auto_cover_float/0008_encoder_soft_wire.t](../../../../tests/quant/palette/auto_cover_float/0008_encoder_soft_wire.t) |
+| CP-109 | Encoder hard AUTO preserves 32 native colors and RGB101 output. | [tests/quant/palette/auto_cover_float/0009_encoder_hard_wire.t](../../../../tests/quant/palette/auto_cover_float/0009_encoder_hard_wire.t) |
 
 ### Coverage audit boundary
 
-The focused suite covers the core policy ladder, `auto` boundaries, explicit override precedence, hard and soft modes, fixed and growing palettes, every quantizer, each registered suboption consumer, and both option orders for all three fixed-palette conflicts. It does not yet directly test every top-level spelling (`faces`, `edges`, `all`, `0`, and `1`), invalid or empty top-level values, repeated-option last-wins behavior, excluded legacy float32 bypass and unsupported-byte-soft fallback, the top-level environment conflict with fixed palettes, or multi-frame state. The native value tests separately protect signed anchors in all five spaces, exact preservation of untouched entries, source population and distance rules, growth limits, failure recovery, solver dispatch and byte eligibility. They do not establish a universal quality improvement: repairing a coverage gap can trade error between image regions. Quality tests enforce a broad MS-SSIM floor on one small fixture but do not replace the missing reproducible cover-policy quality, speed, and size measurement suite described above.
+The focused suite covers the byte policy ladder, native float AUTO no-op at its former size boundaries, explicit override precedence, hard and soft modes, fixed and growing palettes, every quantizer, each registered suboption consumer, and both option orders for all three fixed-palette conflicts. It does not yet directly test every top-level spelling (`faces`, `edges`, `all`, `0`, and `1`), invalid or empty top-level values, repeated-option last-wins behavior, excluded legacy float32 bypass and unsupported-byte-soft fallback, the top-level environment conflict with fixed palettes, or multi-frame state. The native value tests separately protect signed anchors in all five spaces, exact preservation of untouched entries, source population and distance rules, growth limits, failure recovery, solver dispatch and byte eligibility. They do not establish a universal quality improvement: repairing a coverage gap can trade error between image regions. Quality tests enforce a broad MS-SSIM floor on one small fixture but do not replace the missing reproducible cover-policy quality, speed, and size measurement suite described above.
 
 ### Cover capacity and omission-slot contracts
 

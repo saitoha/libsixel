@@ -224,7 +224,8 @@ sixel_palette_cover_resolve_policy(int policy, unsigned int entry_count)
         return policy;
     }
     /*
-     * Below 32 colors the anchors would claim a quarter of the palette, and an
+     * This ladder applies to byte palettes. Below 32 colors the anchors
+     * would claim a quarter of the palette, and an
      * image rendered in that few colors has bigger problems than an
      * unreachable region.
      */
@@ -261,6 +262,18 @@ sixel_palette_cover_budget(int policy, unsigned int entry_count)
 {
     return sixel_palette_cover_anchor_count(
         sixel_palette_cover_resolve_policy(policy, entry_count));
+}
+
+SIXEL_INTERNAL_API unsigned int
+sixel_palette_cover_float_budget(int policy, unsigned int entry_count)
+{
+    /* Photo comparisons do not justify automatic native-float repair:
+     * low-count funding can lose detail, while larger palettes rarely gain.
+     * Mode and growth only refine an explicitly enabled anchor budget. */
+    if (policy == SIXEL_PALETTE_COVER_AUTO) {
+        return 0u;
+    }
+    return sixel_palette_cover_budget(policy, entry_count);
 }
 
 SIXEL_INTERNAL_API unsigned char const *

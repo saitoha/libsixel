@@ -1041,6 +1041,16 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0003_BUILTIN_P3 \
     -DBUILD_TEST_0026_PREPARED_LOOKUP_REUSE \
     -DBUILD_ANIMATION_NATIVE_COMMON \
+    -DBUILD_AUTO_COVER_FLOAT_COMMON \
+    -DBUILD_TEST_0001_BYTE_CORNERS_BOUNDARY \
+    -DBUILD_TEST_0002_BYTE_FACES_BOUNDARY \
+    -DBUILD_TEST_0003_BYTE_EDGES_BOUNDARY \
+    -DBUILD_TEST_0004_RESERVED_CAPACITY \
+    -DBUILD_TEST_0005_HARD_GROW_NOOP \
+    -DBUILD_TEST_0006_LINEAR_NOOP \
+    -DBUILD_TEST_0007_EXPLICIT_TRANSITION \
+    -DBUILD_TEST_0008_ENCODER_SOFT_WIRE \
+    -DBUILD_TEST_0009_ENCODER_HARD_WIRE \
     -DBUILD_TEST_0001_GAMMA_VALUES \
     -DBUILD_TEST_0002_LINEAR_VALUES \
     -DBUILD_TEST_0003_OKLAB_VALUES \
@@ -4729,6 +4739,16 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/fixed_animation/0025_libpng_pipeline.c \
     quant/palette/fixed_animation/0026_prepared_lookup_reuse.c \
     quant/palette/animation_native_common.c \
+    quant/palette/auto_cover_float_common.c \
+    quant/palette/auto_cover_float/0001_byte_corners_boundary.c \
+    quant/palette/auto_cover_float/0002_byte_faces_boundary.c \
+    quant/palette/auto_cover_float/0003_byte_edges_boundary.c \
+    quant/palette/auto_cover_float/0004_reserved_capacity.c \
+    quant/palette/auto_cover_float/0005_hard_grow_noop.c \
+    quant/palette/auto_cover_float/0006_linear_noop.c \
+    quant/palette/auto_cover_float/0007_explicit_transition.c \
+    quant/palette/auto_cover_float/0008_encoder_soft_wire.c \
+    quant/palette/auto_cover_float/0009_encoder_hard_wire.c \
     quant/palette/animation_native/0001_gamma_values.c \
     quant/palette/animation_native/0002_linear_values.c \
     quant/palette/animation_native/0003_oklab_values.c \
