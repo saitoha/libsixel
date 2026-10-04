@@ -81,6 +81,7 @@ test_encoder_core_0003_encoder_core_ormode_body_tail_band(int argc,
                                       2,
                                       3,
                                       palette,
+                                      NULL,
                                       4,
                                       (-1),
                                       output);

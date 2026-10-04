@@ -168,6 +168,14 @@ The encoder emits palette definitions and then visits the palette-index bit plan
 
 In particular, do not infer normal `P2=1` transparency from a zero SIXEL mask in a `P2=5` stream. The libsixel image decoder's opaque index-zero behavior and a terminal's existing framebuffer behavior are different observation boundaries. The offset regression checks geometry and padding bytes, not visual transparency on hardware. Resolve source transparency to the intended background before encoding when an opaque standalone image is required; see [alpha policy](../../../loader/alpha-policy/README.md) and [background policy](../../../loader/background-policy.md).
 
+## Native float palettes
+
+Opaque OR output supports the [selected CPU native float palette path](../output-colorspace.md#selected-ordinary-srgb-float-path), including Display P3. Palette construction and application retain the same extended working coordinates as ordinary SIXEL. The serial and threaded OR writers consume the separate RGB101 output view; they do not substitute the compatibility byte palette for the working float palette or repeat the output color transform. Byte-eligible jobs and legacy OR serialization keep their existing byte contract. Generated palettes, builtin tables and mapfiles share this boundary.
+
+Two distinct working centers can round to the same RGB101 triple. Their lookup indices remain distinct until the OR bit planes are serialized; equal wire colors do not authorize an earlier palette collapse. OR index zero is still a real color, and zero-valued offset padding resolves to that entry in libsixel's decoder. Offsets retain the existing serial fallback even when more workers are requested.
+
+The native OR path requires an opaque frame. Preserved alpha-zero masks and the palette-free `-e` convention are outside this path because `P2=5` cannot also express the ordinary omission/foreground convention. Display P3 rejects those combinations before image bytes are emitted; ordinary output choices retain their existing legacy handling. A later opaque encode on the same encoder remains valid. Resolve transparency to a background before requesting native OR output when needed. This does not add terminal transparency semantics or change the decoder's interpretation of OR indices.
+
 ## Quality, size, and performance
 
 OR decomposition does not itself choose different colors: for a fixed palette and valid index raster, recombining its bits recovers those indices. Input quantization, dithering, palette serialization, and receiver behavior remain relevant to the final image. This is not a claim that two complete CLI runs with different modes or scheduling necessarily have identical intermediate rasters.
@@ -335,6 +343,8 @@ The downloader checks recorded hashes rather than silently substituting changed 
 
 ### Behavioral contract tests
 
+The native centroid and sub-byte cases compare working coordinates with an absolute tolerance of `5e-7`, allowing binary32 storage and arithmetic variation without accepting a byte projection. Their literal wire expectations use the independent Decimal equations in [`tools/generate_palette_space_fixtures.py`](../../../../tools/generate_palette_space_fixtures.py). The closest RGB101 rounding boundary is more than `0.0356` away for the gray samples and `0.0753` for the extended centroid, exceeding a conservative `0.002` RGB101 error allowance for these transforms. Indices, masks and supplied wire-grid codes are exact assertions; the tests do not require bitwise equality of intermediate floating-point calculations.
+
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | OR-01 | CLI `-O` selects the OR-mode DCS header. | [tests/cli/options/general/0002_ormode_short_header.t](../../../../tests/cli/options/general/0002_ormode_short_header.t) |
@@ -392,6 +402,18 @@ The downloader checks recorded hashes rather than silently substituting changed 
 | OR-53 | The size-policy OR pipeline matches the serial body across full and tail bands. | [tests/processing/encoder-core/0028_ormode_pipeline_size.t](../../../../tests/processing/encoder-core/0028_ormode_pipeline_size.t) |
 | OR-54 | OR offsets preserve exact pixels through serial dispatch at two workers. | [tests/processing/encoder-core/0029_ormode_offset_disables_pipeline.t](../../../../tests/processing/encoder-core/0029_ormode_offset_disables_pipeline.t) |
 | OR-55 | The legacy decoder exposes untouched palette zero as a color. | [tests/processing/decoder/0041_ormode_legacy_zero_is_color.t](../../../../tests/processing/decoder/0041_ormode_legacy_zero_is_color.t) |
+| OR-56 | Extended linear samples retain their independent mean and emit the expected sRGB RGB101 definition. | [tests/processing/encoder-core/0030_or_float_srgb_center.t](../../../../tests/processing/encoder-core/0030_or_float_srgb_center.t) |
+| OR-57 | The same extended mean emits the independently expected P3 RGB101 definition. | [tests/processing/encoder-core/0031_or_float_p3_center.t](../../../../tests/processing/encoder-core/0031_or_float_p3_center.t) |
+| OR-58 | Sub-byte float centers remain distinct in the lookup index raster even when their sRGB wire codes coincide. | [tests/processing/encoder-core/0032_or_float_srgb_indices.t](../../../../tests/processing/encoder-core/0032_or_float_srgb_indices.t) |
+| OR-59 | P3 serialization preserves the independently labeled float lookup indices across full and tail bands. | [tests/processing/encoder-core/0033_or_float_p3_indices.t](../../../../tests/processing/encoder-core/0033_or_float_p3_indices.t) |
+| OR-60 | The native P3 producer/writer pipeline preserves every expected index and uses multiple encoder workers. | [tests/processing/encoder-core/0034_or_float_p3_pipeline.t](../../../../tests/processing/encoder-core/0034_or_float_p3_pipeline.t) |
+| OR-61 | Native P3 offsets retain exact source indices and zero-valued margins through serial fallback. | [tests/processing/encoder-core/0035_or_float_p3_offset.t](../../../../tests/processing/encoder-core/0035_or_float_p3_offset.t) |
+| OR-62 | A builtin gray palette retains its native linear entries and the independently expected P3 indices. | [tests/processing/encoder-core/0036_or_float_p3_builtin.t](../../../../tests/processing/encoder-core/0036_or_float_p3_builtin.t) |
+| OR-63 | Byte-eligible builtin OR output retains byte application and exact palette/index values. | [tests/processing/encoder-core/0037_or_float_byte_control.t](../../../../tests/processing/encoder-core/0037_or_float_byte_control.t) |
+| OR-64 | P3 rejects a preserved mask before output and the same encoder subsequently accepts an opaque frame. | [tests/processing/encoder-core/0038_or_float_mask_recovery.t](../../../../tests/processing/encoder-core/0038_or_float_mask_recovery.t) |
+| OR-65 | P3 OR rejects the palette-free monochrome convention before output. | [tests/processing/encoder-core/0039_or_float_mono_reject.t](../../../../tests/processing/encoder-core/0039_or_float_mono_reject.t) |
+| OR-66 | The private serial OR writer honors the final float view for all 101 channel codes instead of a conflicting byte view. | [tests/processing/encoder-core/0040_or_float_wire_levels.t](../../../../tests/processing/encoder-core/0040_or_float_wire_levels.t) |
+| OR-67 | The private threaded OR writer honors a conflicting final float view while preserving the expected lookup indices. | [tests/processing/encoder-core/0041_or_float_wire_pipeline.t](../../../../tests/processing/encoder-core/0041_or_float_wire_pipeline.t) |
 
 ### Defensive and malformed-input tests
 

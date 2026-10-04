@@ -58,6 +58,7 @@ test_encoder_core_0004_encoder_core_ormode_body_bad_argument(int argc,
                                       1,
                                       1,
                                       palette,
+                                      NULL,
                                       2,
                                       (-1),
                                       output);

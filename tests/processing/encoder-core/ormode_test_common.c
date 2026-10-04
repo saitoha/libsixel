@@ -72,6 +72,7 @@ test_or_encode(unsigned char const *source, int width, int height,
     output->transparent_offset_left = left;
     output->transparent_offset_top = top;
     status = sixel_encode_body_ormode(indexes, width, height, palette,
+                                      NULL,
                                       colors, -1, output);
     if (SIXEL_FAILED(status) || output->pos >= 12000) {
         goto end;
@@ -257,6 +258,7 @@ test_or_pipeline(int policy, int left, int top)
                                       width,
                                       height,
                                       palette,
+                                      NULL,
                                       serial_dither->ncolors,
                                       serial_dither->keycolor,
                                       serial_output);
@@ -269,6 +271,7 @@ test_or_pipeline(int policy, int left, int top)
                                                width,
                                                height,
                                                palette,
+                                               NULL,
                                                pipeline_dither,
                                                pipeline_output,
                                                2);

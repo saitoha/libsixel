@@ -79,6 +79,7 @@ test_encoder_core_0006_ormode_body_skip_empty_planes(int argc, char **argv)
                                       5,
                                       6,
                                       palette,
+                                      NULL,
                                       4,
                                       (-1),
                                       output);

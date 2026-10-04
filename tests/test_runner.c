@@ -214,6 +214,18 @@ int test_clamp_0040(int argc, char **argv);
 int test_clamp_0041(int argc, char **argv);
 int test_clamp_0042(int argc, char **argv);
 int test_clamp_0043(int argc, char **argv);
+int test_or_native_0030(int argc, char **argv);
+int test_or_native_0031(int argc, char **argv);
+int test_or_native_0032(int argc, char **argv);
+int test_or_native_0033(int argc, char **argv);
+int test_or_native_0034(int argc, char **argv);
+int test_or_native_0035(int argc, char **argv);
+int test_or_native_0036(int argc, char **argv);
+int test_or_native_0037(int argc, char **argv);
+int test_or_native_0038(int argc, char **argv);
+int test_or_native_0039(int argc, char **argv);
+int test_or_native_0040(int argc, char **argv);
+int test_or_native_0041(int argc, char **argv);
 int test_macro_0009(int argc, char **argv);
 int test_macro_0010(int argc, char **argv);
 int test_macro_0011(int argc, char **argv);
@@ -2977,6 +2989,30 @@ static test_entry_t const test_entries[] = {
     { "dither/clamp/0041_fs_vertical_residual", test_clamp_0041 },
     { "dither/clamp/0042_fs_serpentine_residual", test_clamp_0042 },
     { "dither/clamp/0043_parallel_overlap", test_clamp_0043 },
+    { "encoder-core/0030_or_float_srgb_center",
+      test_or_native_0030 },
+    { "encoder-core/0031_or_float_p3_center",
+      test_or_native_0031 },
+    { "encoder-core/0032_or_float_srgb_indices",
+      test_or_native_0032 },
+    { "encoder-core/0033_or_float_p3_indices",
+      test_or_native_0033 },
+    { "encoder-core/0034_or_float_p3_pipeline",
+      test_or_native_0034 },
+    { "encoder-core/0035_or_float_p3_offset",
+      test_or_native_0035 },
+    { "encoder-core/0036_or_float_p3_builtin",
+      test_or_native_0036 },
+    { "encoder-core/0037_or_float_byte_control",
+      test_or_native_0037 },
+    { "encoder-core/0038_or_float_mask_recovery",
+      test_or_native_0038 },
+    { "encoder-core/0039_or_float_mono_reject",
+      test_or_native_0039 },
+    { "encoder-core/0040_or_float_wire_levels",
+      test_or_native_0040 },
+    { "encoder-core/0041_or_float_wire_pipeline",
+      test_or_native_0041 },
     { "codec/macro/0009_srgb_float_define", test_macro_0009 },
     { "codec/macro/0010_p3_float_define", test_macro_0010 },
     { "codec/macro/0011_p3_float_invoke", test_macro_0011 },

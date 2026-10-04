@@ -772,6 +772,19 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0021_AUTO_EXPLICIT_P3 \
     -DBUILD_TEST_0022_AUTO_REJECT_KMEANS_FEEDBACK \
     -DBUILD_TEST_0023_AUTO_IRRELEVANT_HECKBERT_FEEDBACK \
+    -DBUILD_OR_NATIVE_TEST_COMMON \
+    -DBUILD_TEST_0030_OR_FLOAT_SRGB_CENTER \
+    -DBUILD_TEST_0031_OR_FLOAT_P3_CENTER \
+    -DBUILD_TEST_0032_OR_FLOAT_SRGB_INDICES \
+    -DBUILD_TEST_0033_OR_FLOAT_P3_INDICES \
+    -DBUILD_TEST_0034_OR_FLOAT_P3_PIPELINE \
+    -DBUILD_TEST_0035_OR_FLOAT_P3_OFFSET \
+    -DBUILD_TEST_0036_OR_FLOAT_P3_BUILTIN \
+    -DBUILD_TEST_0037_OR_FLOAT_BYTE_CONTROL \
+    -DBUILD_TEST_0038_OR_FLOAT_MASK_RECOVERY \
+    -DBUILD_TEST_0039_OR_FLOAT_MONO_REJECT \
+    -DBUILD_TEST_0040_OR_FLOAT_WIRE_LEVELS \
+    -DBUILD_TEST_0041_OR_FLOAT_WIRE_PIPELINE \
     -DBUILD_NATIVE_MACRO_TEST_COMMON \
     -DBUILD_TEST_0009_SRGB_FLOAT_DEFINE \
     -DBUILD_TEST_0010_P3_FLOAT_DEFINE \
@@ -5324,6 +5337,19 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/auto_float/0021_auto_explicit_p3.c \
     quant/palette/auto_float/0022_auto_reject_kmeans_feedback.c \
     quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
+    processing/encoder-core/or_native_test_common.c \
+    processing/encoder-core/0030_or_float_srgb_center.c \
+    processing/encoder-core/0031_or_float_p3_center.c \
+    processing/encoder-core/0032_or_float_srgb_indices.c \
+    processing/encoder-core/0033_or_float_p3_indices.c \
+    processing/encoder-core/0034_or_float_p3_pipeline.c \
+    processing/encoder-core/0035_or_float_p3_offset.c \
+    processing/encoder-core/0036_or_float_p3_builtin.c \
+    processing/encoder-core/0037_or_float_byte_control.c \
+    processing/encoder-core/0038_or_float_mask_recovery.c \
+    processing/encoder-core/0039_or_float_mono_reject.c \
+    processing/encoder-core/0040_or_float_wire_levels.c \
+    processing/encoder-core/0041_or_float_wire_pipeline.c \
     codec/macro/native_macro_test_common.c \
     codec/macro/0009_srgb_float_define.c \
     codec/macro/0010_p3_float_define.c \

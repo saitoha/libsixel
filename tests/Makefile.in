@@ -2668,6 +2668,19 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/auto_float/0021_auto_explicit_p3.c \
 	quant/palette/auto_float/0022_auto_reject_kmeans_feedback.c \
 	quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
+	processing/encoder-core/or_native_test_common.c \
+	processing/encoder-core/0030_or_float_srgb_center.c \
+	processing/encoder-core/0031_or_float_p3_center.c \
+	processing/encoder-core/0032_or_float_srgb_indices.c \
+	processing/encoder-core/0033_or_float_p3_indices.c \
+	processing/encoder-core/0034_or_float_p3_pipeline.c \
+	processing/encoder-core/0035_or_float_p3_offset.c \
+	processing/encoder-core/0036_or_float_p3_builtin.c \
+	processing/encoder-core/0037_or_float_byte_control.c \
+	processing/encoder-core/0038_or_float_mask_recovery.c \
+	processing/encoder-core/0039_or_float_mono_reject.c \
+	processing/encoder-core/0040_or_float_wire_levels.c \
+	processing/encoder-core/0041_or_float_wire_pipeline.c \
 	codec/macro/native_macro_test_common.c \
 	codec/macro/0009_srgb_float_define.c \
 	codec/macro/0010_p3_float_define.c \
@@ -5238,6 +5251,19 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0021_auto_explicit_p3.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0022_auto_reject_kmeans_feedback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0023_auto_irrelevant_heckbert_feedback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-or_native_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0030_or_float_srgb_center.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0031_or_float_p3_center.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0032_or_float_srgb_indices.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0033_or_float_p3_indices.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0034_or_float_p3_pipeline.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0035_or_float_p3_offset.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0036_or_float_p3_builtin.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0037_or_float_byte_control.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0038_or_float_mask_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0039_or_float_mono_reject.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0040_or_float_wire_levels.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0041_or_float_wire_pipeline.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-native_macro_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0009_srgb_float_define.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0010_p3_float_define.$(OBJEXT) \
@@ -7193,6 +7219,19 @@ am__depfiles_remade =  \
 	processing/encoder-core/$(DEPDIR)/test_runner-0027_ormode_public_output_disable.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0028_ormode_pipeline_size.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0029_ormode_offset_disables_pipeline.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0030_or_float_srgb_center.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0031_or_float_p3_center.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0032_or_float_srgb_indices.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0033_or_float_p3_indices.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0034_or_float_p3_pipeline.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0035_or_float_p3_offset.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0036_or_float_p3_builtin.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0037_or_float_byte_control.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0038_or_float_mask_recovery.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0039_or_float_mono_reject.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0040_or_float_wire_levels.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0041_or_float_wire_pipeline.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-ormode_test_common.Po \
 	processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po \
 	processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po \
@@ -9191,6 +9230,19 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_AUTO_EXPLICIT_P3 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_AUTO_REJECT_KMEANS_FEEDBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_AUTO_IRRELEVANT_HECKBERT_FEEDBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_OR_NATIVE_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_OR_FLOAT_SRGB_CENTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_OR_FLOAT_P3_CENTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_OR_FLOAT_SRGB_INDICES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_OR_FLOAT_P3_INDICES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_OR_FLOAT_P3_PIPELINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_OR_FLOAT_P3_OFFSET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0036_OR_FLOAT_P3_BUILTIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_OR_FLOAT_BYTE_CONTROL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_OR_FLOAT_MASK_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_OR_FLOAT_MONO_REJECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_OR_FLOAT_WIRE_LEVELS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_OR_FLOAT_WIRE_PIPELINE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_NATIVE_MACRO_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_SRGB_FLOAT_DEFINE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_P3_FLOAT_DEFINE \
@@ -13774,6 +13826,19 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0021_auto_explicit_p3.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0022_auto_reject_kmeans_feedback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/or_native_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0030_or_float_srgb_center.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0031_or_float_p3_center.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0032_or_float_srgb_indices.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0033_or_float_p3_indices.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0034_or_float_p3_pipeline.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0035_or_float_p3_offset.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0036_or_float_p3_builtin.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0037_or_float_byte_control.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0038_or_float_mask_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0039_or_float_mono_reject.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0040_or_float_wire_levels.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0041_or_float_wire_pipeline.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/native_macro_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0009_srgb_float_define.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0010_p3_float_define.c \
@@ -22041,6 +22106,45 @@ quant/palette/auto_float/test_runner-0022_auto_reject_kmeans_feedback.$(OBJEXT):
 quant/palette/auto_float/test_runner-0023_auto_irrelevant_heckbert_feedback.$(OBJEXT):  \
 	quant/palette/auto_float/$(am__dirstamp) \
 	quant/palette/auto_float/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-or_native_test_common.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0030_or_float_srgb_center.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0031_or_float_p3_center.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0032_or_float_srgb_indices.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0033_or_float_p3_indices.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0034_or_float_p3_pipeline.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0035_or_float_p3_offset.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0036_or_float_p3_builtin.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0037_or_float_byte_control.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0038_or_float_mask_recovery.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0039_or_float_mono_reject.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0040_or_float_wire_levels.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0041_or_float_wire_pipeline.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
 codec/macro/$(am__dirstamp):
 	@$(MKDIR_P) codec/macro
 	@: >>codec/macro/$(am__dirstamp)
@@ -24238,6 +24342,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0027_ormode_public_output_disable.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0028_ormode_pipeline_size.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0029_ormode_offset_disables_pipeline.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0030_or_float_srgb_center.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0031_or_float_p3_center.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0032_or_float_srgb_indices.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0033_or_float_p3_indices.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0034_or_float_p3_pipeline.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0035_or_float_p3_offset.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0036_or_float_p3_builtin.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0037_or_float_byte_control.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0038_or_float_mask_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0039_or_float_mono_reject.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0040_or_float_wire_levels.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0041_or_float_wire_pipeline.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po@am__quote@ # am--include-marker
@@ -59998,6 +60115,188 @@ quant/palette/auto_float/test_runner-0023_auto_irrelevant_heckbert_feedback.obj:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c' object='quant/palette/auto_float/test_runner-0023_auto_irrelevant_heckbert_feedback.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/auto_float/test_runner-0023_auto_irrelevant_heckbert_feedback.obj `if test -f 'quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c'; then $(CYGPATH_W) 'quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c'; fi`
+
+processing/encoder-core/test_runner-or_native_test_common.o: processing/encoder-core/or_native_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-or_native_test_common.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Tpo -c -o processing/encoder-core/test_runner-or_native_test_common.o `test -f 'processing/encoder-core/or_native_test_common.c' || echo '$(srcdir)/'`processing/encoder-core/or_native_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Tpo processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/or_native_test_common.c' object='processing/encoder-core/test_runner-or_native_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-or_native_test_common.o `test -f 'processing/encoder-core/or_native_test_common.c' || echo '$(srcdir)/'`processing/encoder-core/or_native_test_common.c
+
+processing/encoder-core/test_runner-or_native_test_common.obj: processing/encoder-core/or_native_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-or_native_test_common.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Tpo -c -o processing/encoder-core/test_runner-or_native_test_common.obj `if test -f 'processing/encoder-core/or_native_test_common.c'; then $(CYGPATH_W) 'processing/encoder-core/or_native_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/or_native_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Tpo processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/or_native_test_common.c' object='processing/encoder-core/test_runner-or_native_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-or_native_test_common.obj `if test -f 'processing/encoder-core/or_native_test_common.c'; then $(CYGPATH_W) 'processing/encoder-core/or_native_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/or_native_test_common.c'; fi`
+
+processing/encoder-core/test_runner-0030_or_float_srgb_center.o: processing/encoder-core/0030_or_float_srgb_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0030_or_float_srgb_center.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0030_or_float_srgb_center.Tpo -c -o processing/encoder-core/test_runner-0030_or_float_srgb_center.o `test -f 'processing/encoder-core/0030_or_float_srgb_center.c' || echo '$(srcdir)/'`processing/encoder-core/0030_or_float_srgb_center.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0030_or_float_srgb_center.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0030_or_float_srgb_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0030_or_float_srgb_center.c' object='processing/encoder-core/test_runner-0030_or_float_srgb_center.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0030_or_float_srgb_center.o `test -f 'processing/encoder-core/0030_or_float_srgb_center.c' || echo '$(srcdir)/'`processing/encoder-core/0030_or_float_srgb_center.c
+
+processing/encoder-core/test_runner-0030_or_float_srgb_center.obj: processing/encoder-core/0030_or_float_srgb_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0030_or_float_srgb_center.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0030_or_float_srgb_center.Tpo -c -o processing/encoder-core/test_runner-0030_or_float_srgb_center.obj `if test -f 'processing/encoder-core/0030_or_float_srgb_center.c'; then $(CYGPATH_W) 'processing/encoder-core/0030_or_float_srgb_center.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0030_or_float_srgb_center.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0030_or_float_srgb_center.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0030_or_float_srgb_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0030_or_float_srgb_center.c' object='processing/encoder-core/test_runner-0030_or_float_srgb_center.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0030_or_float_srgb_center.obj `if test -f 'processing/encoder-core/0030_or_float_srgb_center.c'; then $(CYGPATH_W) 'processing/encoder-core/0030_or_float_srgb_center.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0030_or_float_srgb_center.c'; fi`
+
+processing/encoder-core/test_runner-0031_or_float_p3_center.o: processing/encoder-core/0031_or_float_p3_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0031_or_float_p3_center.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0031_or_float_p3_center.Tpo -c -o processing/encoder-core/test_runner-0031_or_float_p3_center.o `test -f 'processing/encoder-core/0031_or_float_p3_center.c' || echo '$(srcdir)/'`processing/encoder-core/0031_or_float_p3_center.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0031_or_float_p3_center.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0031_or_float_p3_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0031_or_float_p3_center.c' object='processing/encoder-core/test_runner-0031_or_float_p3_center.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0031_or_float_p3_center.o `test -f 'processing/encoder-core/0031_or_float_p3_center.c' || echo '$(srcdir)/'`processing/encoder-core/0031_or_float_p3_center.c
+
+processing/encoder-core/test_runner-0031_or_float_p3_center.obj: processing/encoder-core/0031_or_float_p3_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0031_or_float_p3_center.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0031_or_float_p3_center.Tpo -c -o processing/encoder-core/test_runner-0031_or_float_p3_center.obj `if test -f 'processing/encoder-core/0031_or_float_p3_center.c'; then $(CYGPATH_W) 'processing/encoder-core/0031_or_float_p3_center.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0031_or_float_p3_center.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0031_or_float_p3_center.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0031_or_float_p3_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0031_or_float_p3_center.c' object='processing/encoder-core/test_runner-0031_or_float_p3_center.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0031_or_float_p3_center.obj `if test -f 'processing/encoder-core/0031_or_float_p3_center.c'; then $(CYGPATH_W) 'processing/encoder-core/0031_or_float_p3_center.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0031_or_float_p3_center.c'; fi`
+
+processing/encoder-core/test_runner-0032_or_float_srgb_indices.o: processing/encoder-core/0032_or_float_srgb_indices.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0032_or_float_srgb_indices.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0032_or_float_srgb_indices.Tpo -c -o processing/encoder-core/test_runner-0032_or_float_srgb_indices.o `test -f 'processing/encoder-core/0032_or_float_srgb_indices.c' || echo '$(srcdir)/'`processing/encoder-core/0032_or_float_srgb_indices.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0032_or_float_srgb_indices.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0032_or_float_srgb_indices.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0032_or_float_srgb_indices.c' object='processing/encoder-core/test_runner-0032_or_float_srgb_indices.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0032_or_float_srgb_indices.o `test -f 'processing/encoder-core/0032_or_float_srgb_indices.c' || echo '$(srcdir)/'`processing/encoder-core/0032_or_float_srgb_indices.c
+
+processing/encoder-core/test_runner-0032_or_float_srgb_indices.obj: processing/encoder-core/0032_or_float_srgb_indices.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0032_or_float_srgb_indices.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0032_or_float_srgb_indices.Tpo -c -o processing/encoder-core/test_runner-0032_or_float_srgb_indices.obj `if test -f 'processing/encoder-core/0032_or_float_srgb_indices.c'; then $(CYGPATH_W) 'processing/encoder-core/0032_or_float_srgb_indices.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0032_or_float_srgb_indices.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0032_or_float_srgb_indices.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0032_or_float_srgb_indices.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0032_or_float_srgb_indices.c' object='processing/encoder-core/test_runner-0032_or_float_srgb_indices.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0032_or_float_srgb_indices.obj `if test -f 'processing/encoder-core/0032_or_float_srgb_indices.c'; then $(CYGPATH_W) 'processing/encoder-core/0032_or_float_srgb_indices.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0032_or_float_srgb_indices.c'; fi`
+
+processing/encoder-core/test_runner-0033_or_float_p3_indices.o: processing/encoder-core/0033_or_float_p3_indices.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0033_or_float_p3_indices.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0033_or_float_p3_indices.Tpo -c -o processing/encoder-core/test_runner-0033_or_float_p3_indices.o `test -f 'processing/encoder-core/0033_or_float_p3_indices.c' || echo '$(srcdir)/'`processing/encoder-core/0033_or_float_p3_indices.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0033_or_float_p3_indices.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0033_or_float_p3_indices.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0033_or_float_p3_indices.c' object='processing/encoder-core/test_runner-0033_or_float_p3_indices.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0033_or_float_p3_indices.o `test -f 'processing/encoder-core/0033_or_float_p3_indices.c' || echo '$(srcdir)/'`processing/encoder-core/0033_or_float_p3_indices.c
+
+processing/encoder-core/test_runner-0033_or_float_p3_indices.obj: processing/encoder-core/0033_or_float_p3_indices.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0033_or_float_p3_indices.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0033_or_float_p3_indices.Tpo -c -o processing/encoder-core/test_runner-0033_or_float_p3_indices.obj `if test -f 'processing/encoder-core/0033_or_float_p3_indices.c'; then $(CYGPATH_W) 'processing/encoder-core/0033_or_float_p3_indices.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0033_or_float_p3_indices.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0033_or_float_p3_indices.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0033_or_float_p3_indices.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0033_or_float_p3_indices.c' object='processing/encoder-core/test_runner-0033_or_float_p3_indices.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0033_or_float_p3_indices.obj `if test -f 'processing/encoder-core/0033_or_float_p3_indices.c'; then $(CYGPATH_W) 'processing/encoder-core/0033_or_float_p3_indices.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0033_or_float_p3_indices.c'; fi`
+
+processing/encoder-core/test_runner-0034_or_float_p3_pipeline.o: processing/encoder-core/0034_or_float_p3_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0034_or_float_p3_pipeline.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0034_or_float_p3_pipeline.Tpo -c -o processing/encoder-core/test_runner-0034_or_float_p3_pipeline.o `test -f 'processing/encoder-core/0034_or_float_p3_pipeline.c' || echo '$(srcdir)/'`processing/encoder-core/0034_or_float_p3_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0034_or_float_p3_pipeline.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0034_or_float_p3_pipeline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0034_or_float_p3_pipeline.c' object='processing/encoder-core/test_runner-0034_or_float_p3_pipeline.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0034_or_float_p3_pipeline.o `test -f 'processing/encoder-core/0034_or_float_p3_pipeline.c' || echo '$(srcdir)/'`processing/encoder-core/0034_or_float_p3_pipeline.c
+
+processing/encoder-core/test_runner-0034_or_float_p3_pipeline.obj: processing/encoder-core/0034_or_float_p3_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0034_or_float_p3_pipeline.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0034_or_float_p3_pipeline.Tpo -c -o processing/encoder-core/test_runner-0034_or_float_p3_pipeline.obj `if test -f 'processing/encoder-core/0034_or_float_p3_pipeline.c'; then $(CYGPATH_W) 'processing/encoder-core/0034_or_float_p3_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0034_or_float_p3_pipeline.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0034_or_float_p3_pipeline.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0034_or_float_p3_pipeline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0034_or_float_p3_pipeline.c' object='processing/encoder-core/test_runner-0034_or_float_p3_pipeline.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0034_or_float_p3_pipeline.obj `if test -f 'processing/encoder-core/0034_or_float_p3_pipeline.c'; then $(CYGPATH_W) 'processing/encoder-core/0034_or_float_p3_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0034_or_float_p3_pipeline.c'; fi`
+
+processing/encoder-core/test_runner-0035_or_float_p3_offset.o: processing/encoder-core/0035_or_float_p3_offset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0035_or_float_p3_offset.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0035_or_float_p3_offset.Tpo -c -o processing/encoder-core/test_runner-0035_or_float_p3_offset.o `test -f 'processing/encoder-core/0035_or_float_p3_offset.c' || echo '$(srcdir)/'`processing/encoder-core/0035_or_float_p3_offset.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0035_or_float_p3_offset.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0035_or_float_p3_offset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0035_or_float_p3_offset.c' object='processing/encoder-core/test_runner-0035_or_float_p3_offset.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0035_or_float_p3_offset.o `test -f 'processing/encoder-core/0035_or_float_p3_offset.c' || echo '$(srcdir)/'`processing/encoder-core/0035_or_float_p3_offset.c
+
+processing/encoder-core/test_runner-0035_or_float_p3_offset.obj: processing/encoder-core/0035_or_float_p3_offset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0035_or_float_p3_offset.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0035_or_float_p3_offset.Tpo -c -o processing/encoder-core/test_runner-0035_or_float_p3_offset.obj `if test -f 'processing/encoder-core/0035_or_float_p3_offset.c'; then $(CYGPATH_W) 'processing/encoder-core/0035_or_float_p3_offset.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0035_or_float_p3_offset.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0035_or_float_p3_offset.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0035_or_float_p3_offset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0035_or_float_p3_offset.c' object='processing/encoder-core/test_runner-0035_or_float_p3_offset.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0035_or_float_p3_offset.obj `if test -f 'processing/encoder-core/0035_or_float_p3_offset.c'; then $(CYGPATH_W) 'processing/encoder-core/0035_or_float_p3_offset.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0035_or_float_p3_offset.c'; fi`
+
+processing/encoder-core/test_runner-0036_or_float_p3_builtin.o: processing/encoder-core/0036_or_float_p3_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0036_or_float_p3_builtin.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0036_or_float_p3_builtin.Tpo -c -o processing/encoder-core/test_runner-0036_or_float_p3_builtin.o `test -f 'processing/encoder-core/0036_or_float_p3_builtin.c' || echo '$(srcdir)/'`processing/encoder-core/0036_or_float_p3_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0036_or_float_p3_builtin.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0036_or_float_p3_builtin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0036_or_float_p3_builtin.c' object='processing/encoder-core/test_runner-0036_or_float_p3_builtin.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0036_or_float_p3_builtin.o `test -f 'processing/encoder-core/0036_or_float_p3_builtin.c' || echo '$(srcdir)/'`processing/encoder-core/0036_or_float_p3_builtin.c
+
+processing/encoder-core/test_runner-0036_or_float_p3_builtin.obj: processing/encoder-core/0036_or_float_p3_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0036_or_float_p3_builtin.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0036_or_float_p3_builtin.Tpo -c -o processing/encoder-core/test_runner-0036_or_float_p3_builtin.obj `if test -f 'processing/encoder-core/0036_or_float_p3_builtin.c'; then $(CYGPATH_W) 'processing/encoder-core/0036_or_float_p3_builtin.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0036_or_float_p3_builtin.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0036_or_float_p3_builtin.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0036_or_float_p3_builtin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0036_or_float_p3_builtin.c' object='processing/encoder-core/test_runner-0036_or_float_p3_builtin.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0036_or_float_p3_builtin.obj `if test -f 'processing/encoder-core/0036_or_float_p3_builtin.c'; then $(CYGPATH_W) 'processing/encoder-core/0036_or_float_p3_builtin.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0036_or_float_p3_builtin.c'; fi`
+
+processing/encoder-core/test_runner-0037_or_float_byte_control.o: processing/encoder-core/0037_or_float_byte_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0037_or_float_byte_control.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0037_or_float_byte_control.Tpo -c -o processing/encoder-core/test_runner-0037_or_float_byte_control.o `test -f 'processing/encoder-core/0037_or_float_byte_control.c' || echo '$(srcdir)/'`processing/encoder-core/0037_or_float_byte_control.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0037_or_float_byte_control.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0037_or_float_byte_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0037_or_float_byte_control.c' object='processing/encoder-core/test_runner-0037_or_float_byte_control.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0037_or_float_byte_control.o `test -f 'processing/encoder-core/0037_or_float_byte_control.c' || echo '$(srcdir)/'`processing/encoder-core/0037_or_float_byte_control.c
+
+processing/encoder-core/test_runner-0037_or_float_byte_control.obj: processing/encoder-core/0037_or_float_byte_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0037_or_float_byte_control.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0037_or_float_byte_control.Tpo -c -o processing/encoder-core/test_runner-0037_or_float_byte_control.obj `if test -f 'processing/encoder-core/0037_or_float_byte_control.c'; then $(CYGPATH_W) 'processing/encoder-core/0037_or_float_byte_control.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0037_or_float_byte_control.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0037_or_float_byte_control.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0037_or_float_byte_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0037_or_float_byte_control.c' object='processing/encoder-core/test_runner-0037_or_float_byte_control.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0037_or_float_byte_control.obj `if test -f 'processing/encoder-core/0037_or_float_byte_control.c'; then $(CYGPATH_W) 'processing/encoder-core/0037_or_float_byte_control.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0037_or_float_byte_control.c'; fi`
+
+processing/encoder-core/test_runner-0038_or_float_mask_recovery.o: processing/encoder-core/0038_or_float_mask_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0038_or_float_mask_recovery.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0038_or_float_mask_recovery.Tpo -c -o processing/encoder-core/test_runner-0038_or_float_mask_recovery.o `test -f 'processing/encoder-core/0038_or_float_mask_recovery.c' || echo '$(srcdir)/'`processing/encoder-core/0038_or_float_mask_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0038_or_float_mask_recovery.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0038_or_float_mask_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0038_or_float_mask_recovery.c' object='processing/encoder-core/test_runner-0038_or_float_mask_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0038_or_float_mask_recovery.o `test -f 'processing/encoder-core/0038_or_float_mask_recovery.c' || echo '$(srcdir)/'`processing/encoder-core/0038_or_float_mask_recovery.c
+
+processing/encoder-core/test_runner-0038_or_float_mask_recovery.obj: processing/encoder-core/0038_or_float_mask_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0038_or_float_mask_recovery.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0038_or_float_mask_recovery.Tpo -c -o processing/encoder-core/test_runner-0038_or_float_mask_recovery.obj `if test -f 'processing/encoder-core/0038_or_float_mask_recovery.c'; then $(CYGPATH_W) 'processing/encoder-core/0038_or_float_mask_recovery.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0038_or_float_mask_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0038_or_float_mask_recovery.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0038_or_float_mask_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0038_or_float_mask_recovery.c' object='processing/encoder-core/test_runner-0038_or_float_mask_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0038_or_float_mask_recovery.obj `if test -f 'processing/encoder-core/0038_or_float_mask_recovery.c'; then $(CYGPATH_W) 'processing/encoder-core/0038_or_float_mask_recovery.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0038_or_float_mask_recovery.c'; fi`
+
+processing/encoder-core/test_runner-0039_or_float_mono_reject.o: processing/encoder-core/0039_or_float_mono_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0039_or_float_mono_reject.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0039_or_float_mono_reject.Tpo -c -o processing/encoder-core/test_runner-0039_or_float_mono_reject.o `test -f 'processing/encoder-core/0039_or_float_mono_reject.c' || echo '$(srcdir)/'`processing/encoder-core/0039_or_float_mono_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0039_or_float_mono_reject.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0039_or_float_mono_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0039_or_float_mono_reject.c' object='processing/encoder-core/test_runner-0039_or_float_mono_reject.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0039_or_float_mono_reject.o `test -f 'processing/encoder-core/0039_or_float_mono_reject.c' || echo '$(srcdir)/'`processing/encoder-core/0039_or_float_mono_reject.c
+
+processing/encoder-core/test_runner-0039_or_float_mono_reject.obj: processing/encoder-core/0039_or_float_mono_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0039_or_float_mono_reject.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0039_or_float_mono_reject.Tpo -c -o processing/encoder-core/test_runner-0039_or_float_mono_reject.obj `if test -f 'processing/encoder-core/0039_or_float_mono_reject.c'; then $(CYGPATH_W) 'processing/encoder-core/0039_or_float_mono_reject.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0039_or_float_mono_reject.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0039_or_float_mono_reject.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0039_or_float_mono_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0039_or_float_mono_reject.c' object='processing/encoder-core/test_runner-0039_or_float_mono_reject.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0039_or_float_mono_reject.obj `if test -f 'processing/encoder-core/0039_or_float_mono_reject.c'; then $(CYGPATH_W) 'processing/encoder-core/0039_or_float_mono_reject.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0039_or_float_mono_reject.c'; fi`
+
+processing/encoder-core/test_runner-0040_or_float_wire_levels.o: processing/encoder-core/0040_or_float_wire_levels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0040_or_float_wire_levels.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0040_or_float_wire_levels.Tpo -c -o processing/encoder-core/test_runner-0040_or_float_wire_levels.o `test -f 'processing/encoder-core/0040_or_float_wire_levels.c' || echo '$(srcdir)/'`processing/encoder-core/0040_or_float_wire_levels.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0040_or_float_wire_levels.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0040_or_float_wire_levels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0040_or_float_wire_levels.c' object='processing/encoder-core/test_runner-0040_or_float_wire_levels.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0040_or_float_wire_levels.o `test -f 'processing/encoder-core/0040_or_float_wire_levels.c' || echo '$(srcdir)/'`processing/encoder-core/0040_or_float_wire_levels.c
+
+processing/encoder-core/test_runner-0040_or_float_wire_levels.obj: processing/encoder-core/0040_or_float_wire_levels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0040_or_float_wire_levels.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0040_or_float_wire_levels.Tpo -c -o processing/encoder-core/test_runner-0040_or_float_wire_levels.obj `if test -f 'processing/encoder-core/0040_or_float_wire_levels.c'; then $(CYGPATH_W) 'processing/encoder-core/0040_or_float_wire_levels.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0040_or_float_wire_levels.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0040_or_float_wire_levels.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0040_or_float_wire_levels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0040_or_float_wire_levels.c' object='processing/encoder-core/test_runner-0040_or_float_wire_levels.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0040_or_float_wire_levels.obj `if test -f 'processing/encoder-core/0040_or_float_wire_levels.c'; then $(CYGPATH_W) 'processing/encoder-core/0040_or_float_wire_levels.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0040_or_float_wire_levels.c'; fi`
+
+processing/encoder-core/test_runner-0041_or_float_wire_pipeline.o: processing/encoder-core/0041_or_float_wire_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0041_or_float_wire_pipeline.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0041_or_float_wire_pipeline.Tpo -c -o processing/encoder-core/test_runner-0041_or_float_wire_pipeline.o `test -f 'processing/encoder-core/0041_or_float_wire_pipeline.c' || echo '$(srcdir)/'`processing/encoder-core/0041_or_float_wire_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0041_or_float_wire_pipeline.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0041_or_float_wire_pipeline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0041_or_float_wire_pipeline.c' object='processing/encoder-core/test_runner-0041_or_float_wire_pipeline.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0041_or_float_wire_pipeline.o `test -f 'processing/encoder-core/0041_or_float_wire_pipeline.c' || echo '$(srcdir)/'`processing/encoder-core/0041_or_float_wire_pipeline.c
+
+processing/encoder-core/test_runner-0041_or_float_wire_pipeline.obj: processing/encoder-core/0041_or_float_wire_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0041_or_float_wire_pipeline.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0041_or_float_wire_pipeline.Tpo -c -o processing/encoder-core/test_runner-0041_or_float_wire_pipeline.obj `if test -f 'processing/encoder-core/0041_or_float_wire_pipeline.c'; then $(CYGPATH_W) 'processing/encoder-core/0041_or_float_wire_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0041_or_float_wire_pipeline.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0041_or_float_wire_pipeline.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0041_or_float_wire_pipeline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0041_or_float_wire_pipeline.c' object='processing/encoder-core/test_runner-0041_or_float_wire_pipeline.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0041_or_float_wire_pipeline.obj `if test -f 'processing/encoder-core/0041_or_float_wire_pipeline.c'; then $(CYGPATH_W) 'processing/encoder-core/0041_or_float_wire_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0041_or_float_wire_pipeline.c'; fi`
 
 codec/macro/test_runner-native_macro_test_common.o: codec/macro/native_macro_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-native_macro_test_common.o -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Tpo -c -o codec/macro/test_runner-native_macro_test_common.o `test -f 'codec/macro/native_macro_test_common.c' || echo '$(srcdir)/'`codec/macro/native_macro_test_common.c

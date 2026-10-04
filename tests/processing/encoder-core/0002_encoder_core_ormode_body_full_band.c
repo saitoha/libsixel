@@ -87,6 +87,7 @@ test_encoder_core_0002_encoder_core_ormode_body_full_band(int argc,
                                       2,
                                       6,
                                       palette,
+                                      NULL,
                                       4,
                                       (-1),
                                       output);

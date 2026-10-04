@@ -120,12 +120,15 @@ sixel_encoder_core_encode_dispatch(
  * Emit OR-mode body bytes from a complete contiguous palette-index image.
  * Keeping this boundary explicit lets future band workers share the same
  * observable byte contract while changing only how the index data is fed.
+ * palette_float optionally supplies final normalized RGB wire coordinates;
+ * NULL preserves the byte-palette serialization contract.
  */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encode_body_ormode(sixel_index_t *pixels,
                          int width,
                          int height,
                          unsigned char *palette,
+                         float const *palette_float,
                          int ncolors,
                          int keycolor,
                          sixel_output_t *output);
@@ -139,6 +142,7 @@ sixel_encode_body_ormode_pipeline(unsigned char *pixels,
                                   int width,
                                   int height,
                                   unsigned char const *palette,
+                                  float const *palette_float,
                                   sixel_dither_t *dither,
                                   sixel_output_t *output,
                                   int encode_threads);

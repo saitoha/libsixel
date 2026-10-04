@@ -271,6 +271,7 @@ static void sixel_advance(sixel_output_t *output, int nwrite);
 static int sixel_encode_body_ormode_nplanes(int ncolors);
 static SIXELSTATUS
 sixel_encode_body_ormode_emit_palette(unsigned char const *palette,
+                                      float const *palette_float,
                                       int ncolors,
                                       int keycolor,
                                       sixel_output_t *output);
@@ -2091,6 +2092,7 @@ sixel_encode_body_ormode_pipeline(unsigned char *pixels,
                                   int width,
                                   int height,
                                   unsigned char const *palette,
+                                  float const *palette_float,
                                   sixel_dither_t *dither,
                                   sixel_output_t *output,
                                   int encode_threads)
@@ -2152,6 +2154,7 @@ sixel_encode_body_ormode_pipeline(unsigned char *pixels,
     status = SIXEL_OK;
 
     status = sixel_encode_body_ormode_emit_palette(palette,
+                                                   palette_float,
                                                    dither->ncolors,
                                                    dither->keycolor,
                                                    output);
@@ -2280,6 +2283,7 @@ sixel_encode_body_ormode_pipeline(unsigned char *pixels,
                                   int width,
                                   int height,
                                   unsigned char const *palette,
+                                  float const *palette_float,
                                   sixel_dither_t *dither,
                                   sixel_output_t *output,
                                   int encode_threads)
@@ -2288,6 +2292,7 @@ sixel_encode_body_ormode_pipeline(unsigned char *pixels,
     (void)width;
     (void)height;
     (void)palette;
+    (void)palette_float;
     (void)dither;
     (void)output;
     (void)encode_threads;
@@ -3983,6 +3988,7 @@ sixel_encode_body_ormode_nplanes(int ncolors)
 
 static SIXELSTATUS
 sixel_encode_body_ormode_emit_palette(unsigned char const *palette,
+                                      float const *palette_float,
                                       int ncolors,
                                       int keycolor,
                                       sixel_output_t *output)
@@ -3996,7 +4002,7 @@ sixel_encode_body_ormode_emit_palette(unsigned char const *palette,
     for (n = 0; n < ncolors; n++) {
         status = output_rgb_palette_definition(output,
                                                palette,
-                                               NULL,
+                                               palette_float,
                                                n,
                                                keycolor);
         if (SIXEL_FAILED(status)) {
@@ -4461,6 +4467,7 @@ sixel_encode_body_ormode(
     int                 /* in */ width,
     int                 /* in */ height,
     unsigned char       /* in */ *palette,
+    float const         /* in */ *palette_float,
     int                 /* in */ ncolors,
     int                 /* in */ keycolor,
     sixel_output_t      /* in */ *output)
@@ -4490,6 +4497,7 @@ sixel_encode_body_ormode(
     offset_top = output->transparent_offset_top;
 
     status = sixel_encode_body_ormode_emit_palette(palette,
+                                                   palette_float,
                                                    ncolors,
                                                    keycolor,
                                                    output);
@@ -4570,6 +4578,7 @@ sixel_encode_dither(
     SIXELSTATUS close_status;
     int image_started;
     unsigned char const *output_rgb101;
+    float const *ormode_palette_float;
     unsigned int output_rgb101_count;
     int use_rgb101_palette;
 
@@ -4577,6 +4586,7 @@ sixel_encode_dither(
         return SIXEL_BAD_ARGUMENT;
     }
     output_rgb101 = NULL;
+    ormode_palette_float = NULL;
     output_rgb101_count = 0U;
     use_rgb101_palette = dither->use_rgb101_palette != 0;
     output->transparent_mask = NULL;
@@ -4893,6 +4903,11 @@ sixel_encode_dither(
                 (output_rgb101[palette_index] * 255U + 50U) / 100U);
         }
     }
+    /* OR serialization shares the final RGB101 view, not the unrounded
+     * working coordinates. Legacy OR callers keep their byte contract. */
+    if (use_rgb101_palette) {
+        ormode_palette_float = palette_entries_float32;
+    }
     if (!use_rgb101_palette &&
             palette_entries != NULL && palette_entries_float32 != NULL
             && palette_count == palette_float_count
@@ -5006,6 +5021,7 @@ sixel_encode_dither(
                                                        width,
                                                        height,
                                                        palette_entries,
+                                                       ormode_palette_float,
                                                        dither,
                                                        output,
                                                        pipeline_threads);
@@ -5024,6 +5040,7 @@ sixel_encode_dither(
                                           width,
                                           height,
                                           palette_entries,
+                                          ormode_palette_float,
                                           dither->ncolors,
                                           dither->keycolor,
                                           output);
