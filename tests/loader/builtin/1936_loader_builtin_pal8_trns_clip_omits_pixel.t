@@ -24,8 +24,10 @@ clip_out=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
+# Only one visible color remains; its palette index is not a contract.
+# Both the legacy reserved slot and native compacted slot are single digits.
 case "${clip_out}" in
-    *"#1?@"*)
+    *"#"[0-9]"?@"*)
         omitted_then_painted=1
         ;;
 esac

@@ -78,7 +78,7 @@ def read_cases() -> dict[tuple[str, str, tuple[int, ...]], Case]:
                 raise ValueError(f"{test}: unexpected matrix test name")
             source = test.read_text(encoding="utf-8")
             paths = []
-            for variable in ("input_png", "reference_six"):
+            for variable in ("input_png", "reference_(?:six|image)"):
                 found = re.search(
                     rf'^{variable}="\$\{{TOP_SRCDIR\}}/([^"\n]+)"$',
                     source, re.MULTILINE,
@@ -155,7 +155,7 @@ def render_matrix(cases: dict) -> str:
         lines.append("| " + " | ".join(cells) + " |")
     lines += [
         "", "### Reference controls", "",
-        "The cell labels are determined by byte equality with these committed SIXEL controls. The SHA-256 prefixes identify the input and reference bytes; they are not measured decoder output or a guarantee of platform-wide pixel equality.",
+        "The cell labels are determined by byte equality with these committed controls. The SHA-256 prefixes identify the input and reference bytes; they are not measured decoder output or a guarantee of platform-wide pixel equality.",
         "",
         "| Model | Class | Reference control | Input SHA-256 prefix | Reference SHA-256 prefix |",
         "| --- | --- | --- | --- | --- |",

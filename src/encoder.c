@@ -7004,6 +7004,15 @@ sixel_encoder_resolve_direct_binning(
 }
 
 
+/* File encoding normalizes omitted capacity before palette work; direct
+ * frame/byte calls need the same default without changing the request.
+ * Admission and omission-slot reservation must agree on that capacity. */
+static int
+sixel_encoder_palette_capacity(sixel_encoder_t const *encoder)
+{
+    return encoder->reqcolors == -1 ? SIXEL_PALETTE_MAX : encoder->reqcolors;
+}
+
 /* The selected float pipeline keeps a separate RGB101 wire cache. Keep
  * this predicate shared with P3 validation so sRGB cannot enter with an
  * unconnected snap, alpha, cache or alternate lookup policy. */
@@ -7023,10 +7032,10 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
      * An explicit HLS request still needs a separate native output path. */
     palette_type = encoder->palette_type == SIXEL_PALETTETYPE_AUTO
         ? SIXEL_PALETTETYPE_RGB : encoder->palette_type;
-    /* Admission resolves this encoder's mode without consulting another
-     * encode operation's temporary cover override. Keep implicit soft on its
-     * existing path during migration: low-color repair can lose dark detail
-     * when distance-only funding merges frequently used palette entries. */
+    /* Resolve this encoder's mode without consulting another operation's
+     * temporary override. Native AUTO has no repair budget, so omitted and
+     * explicit AUTO need no mode opt-in. An active budget still requires an
+     * explicit supported mode; it must not change byte-path admission. */
     cover_mode = SIXEL_PALETTE_COVER_MODE_SOFT;
     cover_mode_explicit = encoder->cover_policy_mode_override;
     if (encoder->cover_policy_mode_override) {
@@ -7119,6 +7128,7 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
              encoder->color_option != SIXEL_COLOR_OPTION_BUILTIN &&
              encoder->color_option != SIXEL_COLOR_OPTION_MONOCHROME &&
              encoder->cover_policy != SIXEL_PALETTE_COVER_OFF &&
+             encoder->cover_policy != SIXEL_PALETTE_COVER_AUTO &&
              (!cover_mode_explicit ||
               (cover_mode != SIXEL_PALETTE_COVER_MODE_SOFT &&
                cover_mode != SIXEL_PALETTE_COVER_MODE_HARD))) ||
@@ -7154,7 +7164,7 @@ sixel_encoder_rgb101_alpha(sixel_encoder_t const *encoder,
           sixel_encoder_pixelformat_has_alpha(
               sixel_frame_get_pixelformat(frame))) &&
          ((encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
-           encoder->reqcolors > 1) ||
+           sixel_encoder_palette_capacity(encoder) > 1) ||
           encoder->color_option == SIXEL_COLOR_OPTION_MAPFILE ||
           encoder->color_option == SIXEL_COLOR_OPTION_BUILTIN ||
           encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME));
@@ -7224,7 +7234,8 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "eytzinger|fhedt "
             "-X/-W gamma|linear|oklab|cielab|din99d "
             "CPU spatial/positional dither (or -dnone/-dauto), "
-            "-Fnone|ward -_none -tauto|rgb, off or explicit soft/hard cover "
+            "-Fnone|ward -_none -tauto|rgb, auto/off or explicit soft/hard "
+            "cover "
             "for generated palettes, and normal SIXEL output.");
         return SIXEL_BAD_ARGUMENT;
     }
@@ -7672,13 +7683,13 @@ sixel_encoder_prepare_palette(
         sixel_palette_policy_origin_name(binning_origin),
         encoder->quantize_model,
         effective_quantize_model);
+    palette_reqcolors = sixel_encoder_palette_capacity(encoder);
     reserve_alpha_key =
-        encoder->reqcolors > 1
+        palette_reqcolors > 1
         && (sixel_encoder_frame_preserves_alpha_key(frame)
             || sixel_encoder_6delta_reserves_alpha_key(encoder));
-    palette_reqcolors = encoder->reqcolors;
     if (reserve_alpha_key) {
-        palette_reqcolors = encoder->reqcolors - 1;
+        --palette_reqcolors;
     }
     /* Cover repairs real colors before the omission key is appended. Carry
      * its capacity separately from the quantizer's requested color count:

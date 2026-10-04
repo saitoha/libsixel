@@ -1,4 +1,6 @@
 #!/bin/sh
+# A 64-color limit still forces reduction of the 16x16 source, without
+# conflating a severe low-color budget with CLI/env wiring image sanity.
 # Verify center:swap_min_gain preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER|swap_min_gain
 # Registry binding: quantize_model_kcenter_swap_min_gain|quantize_model_kcenter_swap_min_gain_override
@@ -23,7 +25,7 @@ env_output="${artifact_dir}/0081-quantize-center-swap_min_gain-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qcenter:Aswap:J0.1" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 64 "-Qcenter:Aswap:J0.1" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "center:swap_min_gain short conversion failed"
     exit 0
 }
@@ -35,7 +37,7 @@ case "${short_trace}" in *LSXSUB1\|*key=swap_min_gain\|stored=1\|binding=quantiz
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_SWAP_MIN_GAIN=0.1" -p 16 "-Qcenter:Aswap" \
+    --env "SIXEL_PALETTE_KCENTER_SWAP_MIN_GAIN=0.1" -p 64 "-Qcenter:Aswap" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "center:swap_min_gain env conversion failed"
     exit 0

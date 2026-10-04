@@ -1,4 +1,6 @@
 #!/bin/sh
+# A 64-color limit still forces reduction of the 16x16 source, without
+# conflating a severe low-color budget with CLI/env wiring image sanity.
 # Verify center:init_seeds preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER|init_seeds
 # Registry binding: quantize_model_kcenter_init_seeds|quantize_model_kcenter_init_seeds_override
@@ -24,7 +26,7 @@ env_output="${artifact_dir}/0070-quantize-center-init_seeds-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qcenter:Aswap:N2" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 64 "-Qcenter:Aswap:N2" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "center:init_seeds short conversion failed"
     exit 0
 }
@@ -36,7 +38,7 @@ case "${short_trace}" in *LSXSUB1\|*key=init_seeds\|stored=1\|binding=quantize_m
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_INIT_SEEDS=2" -p 16 "-Qcenter:Aswap" \
+    --env "SIXEL_PALETTE_KCENTER_INIT_SEEDS=2" -p 64 "-Qcenter:Aswap" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "center:init_seeds env conversion failed"
     exit 0
@@ -50,7 +52,7 @@ case "${env_trace}" in *LSXSUB1\|*key=init_seeds\|stored=1\|binding=quantize_mod
 width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KCENTER_INIT_SEEDS=4294967296" \
-    -p 16 "-Qcenter:Aswap" "${input_image}" 2>&1 >/dev/null) || {
+    -p 64 "-Qcenter:Aswap" "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "center:init_seeds width conversion failed"
     exit 0
 }

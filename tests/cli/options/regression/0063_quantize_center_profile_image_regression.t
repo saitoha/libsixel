@@ -1,4 +1,6 @@
 #!/bin/sh
+# A 64-color limit still forces reduction of the 16x16 source, without
+# conflating a severe low-color budget with CLI/env wiring image sanity.
 # Verify center:profile preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER|profile
 # Registry binding: quantize_model_kcenter_profile|quantize_model_kcenter_profile_override
@@ -23,7 +25,7 @@ env_output="${artifact_dir}/0063-quantize-center-profile-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qcenter:Pquality" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 64 "-Qcenter:Pquality" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "center:profile short conversion failed"
     exit 0
 }
@@ -35,7 +37,7 @@ case "${short_trace}" in *LSXSUB1\|*key=profile\|stored=1\|binding=quantize_mode
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_PROFILE=quality" -p 16 "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_PROFILE=quality" -p 64 "-Qcenter" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "center:profile env conversion failed"
     exit 0

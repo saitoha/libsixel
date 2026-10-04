@@ -1,4 +1,6 @@
 #!/bin/sh
+# A 64-color limit still forces reduction of the 16x16 source, without
+# conflating a severe low-color budget with CLI/env wiring image sanity.
 # Verify center:restarts preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER|restarts
 # Registry binding: quantize_model_kcenter_restarts|quantize_model_kcenter_restarts_override
@@ -24,7 +26,7 @@ env_output="${artifact_dir}/0069-quantize-center-restarts-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qcenter:X2" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 64 "-Qcenter:X2" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "center:restarts short conversion failed"
     exit 0
 }
@@ -36,7 +38,7 @@ case "${short_trace}" in *LSXSUB1\|*key=restarts\|stored=1\|binding=quantize_mod
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_RESTARTS=2" -p 16 "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_RESTARTS=2" -p 64 "-Qcenter" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "center:restarts env conversion failed"
     exit 0
@@ -50,7 +52,7 @@ case "${env_trace}" in *LSXSUB1\|*key=restarts\|stored=1\|binding=quantize_model
 width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KCENTER_RESTARTS=4294967296" \
-    -p 16 "-Qcenter" "${input_image}" 2>&1 >/dev/null) || {
+    -p 64 "-Qcenter" "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "center:restarts width conversion failed"
     exit 0
 }

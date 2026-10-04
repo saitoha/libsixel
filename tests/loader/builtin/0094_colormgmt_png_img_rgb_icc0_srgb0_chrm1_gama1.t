@@ -1,6 +1,7 @@
 #!/bin/sh
 # Policy: docs/loader/png-color-metadata.md
 # Test-plan: docs/testing/builtin-loader-coverage.md
+# Reference: independent gAMA/cHRM equations, before palette quantization.
 # TAP test: builtin loader colormgmt parity for rgb/img_rgb_icc0_srgb0_chrm1_gama1.png
 
 set -eux
@@ -16,7 +17,7 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/colormgmt/input/png/rgb/img_rgb_icc0_srgb0_chrm1_gama1.png"
-reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/rgb/img_rgb_icc0_srgb0_chrm1_gama1.six"
+reference_image="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/rgb/img_rgb_icc0_srgb0_chrm1_gama1.ppm"
 output_six="${ARTIFACT_LOCAL_DIR}/img_rgb_icc0_srgb0_chrm1_gama1_builtin.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! "${input_png}" >"${output_six}" || {
@@ -24,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! "${input_png}" 
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" "${reference_six}" "${output_six}" 2>&1) || {
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" "${reference_image}" "${output_six}" 2>&1) || {
     echo "not ok" 1 - "${lsqa_msg}"
     exit 0
 }

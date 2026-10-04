@@ -1,5 +1,7 @@
 #!/bin/sh
 # Policy: docs/cli/runtime-policy.md
+# HLS selects the legacy converter that owns this parallel-work threshold.
+# The native extended-float converter currently runs serially.
 # Verify the colorspace threshold environment reaches its consumer.
 
 set -eux
@@ -20,7 +22,7 @@ set -v
 trace=$(set +xv; SIXEL_TRACE_TOPIC=runtime_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS=257 \
-    -W oklab -o /dev/null \
+    -thls -W oklab -o /dev/null \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.png" 2>&1) || {
     echo "not ok 1 - colorspace threshold conversion failed"
     exit 0

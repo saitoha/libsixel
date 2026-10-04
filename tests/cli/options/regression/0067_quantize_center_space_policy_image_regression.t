@@ -1,4 +1,6 @@
 #!/bin/sh
+# A 64-color limit still forces reduction of the 16x16 source, without
+# conflating a severe low-color budget with CLI/env wiring image sanity.
 # Verify center:space_policy preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER|space_policy
 # Registry binding: quantize_model_kcenter_space_policy|quantize_model_kcenter_space_policy_override
@@ -23,7 +25,7 @@ env_output="${artifact_dir}/0067-quantize-center-space_policy-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qcenter:Aauto:Qadaptive:Eperceptual" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 64 "-Qcenter:Aauto:Qadaptive:Eperceptual" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "center:space_policy short conversion failed"
     exit 0
 }
@@ -35,7 +37,7 @@ case "${short_trace}" in *LSXSUB1\|*key=space_policy\|stored=1\|binding=quantize
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_SPACE_POLICY=perceptual" -p 16 "-Qcenter:Aauto:Qadaptive" \
+    --env "SIXEL_PALETTE_KCENTER_SPACE_POLICY=perceptual" -p 64 "-Qcenter:Aauto:Qadaptive" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "center:space_policy env conversion failed"
     exit 0

@@ -1,4 +1,6 @@
 #!/bin/sh
+# A 64-color limit still forces reduction of the 16x16 source, without
+# conflating a severe low-color budget with CLI/env wiring image sanity.
 # Verify center:budget_scale preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER|budget_scale
 # Registry binding: quantize_model_kcenter_budget_scale|quantize_model_kcenter_budget_scale_override
@@ -23,7 +25,7 @@ env_output="${artifact_dir}/0077-quantize-center-budget_scale-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qcenter:Dadaptive:Y1.4" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 64 "-Qcenter:Dadaptive:Y1.4" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "center:budget_scale short conversion failed"
     exit 0
 }
@@ -35,7 +37,7 @@ case "${short_trace}" in *LSXSUB1\|*key=budget_scale\|stored=1\|binding=quantize
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_BUDGET_SCALE=1.4" -p 16 "-Qcenter:Dadaptive" \
+    --env "SIXEL_PALETTE_KCENTER_BUDGET_SCALE=1.4" -p 64 "-Qcenter:Dadaptive" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "center:budget_scale env conversion failed"
     exit 0

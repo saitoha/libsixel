@@ -1,4 +1,6 @@
 #!/bin/sh
+# Reference: original UINT16 ColorMap, plus stored ICC equations for cms1.
+# No encoder or CMM is used to generate the unquantized reference.
 # TAP test: libtiff colormgmt parity for palette/img_tiff_palette_icc1_wp0_pc0_trc1.tiff
 
 set -eux
@@ -19,7 +21,7 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_tiff="${TOP_SRCDIR}/tests/data/colormgmt/input/tiff/palette/img_tiff_palette_icc1_wp0_pc0_trc1.tiff"
-reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/tiff/palette/img_tiff_palette_icc1_wp0_pc0_trc1.six"
+reference_image="${TOP_SRCDIR}/tests/data/colormgmt/reference/tiff/palette/colormap-icc-srgb.ppm"
 output_six="${ARTIFACT_LOCAL_DIR}/img_tiff_palette_icc1_wp0_pc0_trc1_libtiff.six"
 
 test -f "${input_tiff}" || {
@@ -27,17 +29,26 @@ test -f "${input_tiff}" || {
     exit 0
 }
 
-test -f "${reference_six}" || {
-    echo "not ok" 1 - "missing reference fixture: palette/img_tiff_palette_icc1_wp0_pc0_trc1.six"
+test -f "${reference_image}" || {
+    echo "not ok" 1 - "missing reference fixture: palette/colormap-icc-srgb.ppm"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=auto! "${input_tiff}" >"${output_six}" || {
+trace=$(set +xv; SIXEL_TRACE_TOPIC=loader,loader_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=auto! \
+    "${input_tiff}" 2>&1 >"${output_six}") || {
     echo "not ok" 1 - "libtiff decode failed: palette/img_tiff_palette_icc1_wp0_pc0_trc1"
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.998"     "${reference_six}" "${output_six}" 2>&1) || {
+# The perceptual threshold alone can accept an unmanaged approximation.
+# Require an actual successful CMS application before comparing the image.
+case "${trace}" in *"LSXCMS2|event=apply|"*"|src=4|dst=4|ok=1"*) true ;; *) false ;; esac || {
+    echo "not ok 1 - managed palette did not reach a successful CMS apply"
+    exit 0
+}
+
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.998"     "${reference_image}" "${output_six}" 2>&1) || {
     echo "not ok" 1 - "palette/img_tiff_palette_icc1_wp0_pc0_trc1: ${lsqa_msg}"
     exit 0
 }

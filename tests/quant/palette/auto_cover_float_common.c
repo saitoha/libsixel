@@ -1,10 +1,12 @@
 /* SPDX-License-Identifier: MIT */
 /* Float AUTO must bypass repair without losing authoritative palette values. */
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
 #include "src/encoder.h"
+#include "src/frame.h"
 #include "src/dither.h"
 #include "src/palette.h"
 #include "src/palette-common-cover.h"
@@ -252,5 +254,227 @@ end:
     sixel_output_unref(output);
     sixel_encoder_unref(encoder);
     sixel_allocator_unref(allocator);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+/* Each wrapper selects one admission contract. The palette fits three exact
+ * source colors, so no heuristic quality score is needed as an oracle. */
+int
+test_auto_cover_admission(int mode)
+{
+    static float const grays[3] = { -.125f, .501953125f, 1.125f };
+    static unsigned char const gray8[3] = { 32, 128, 224 };
+    sixel_encoder_t *encoders[2] = { NULL, NULL };
+    sixel_encoder_t *encoder;
+    sixel_output_t *output;
+    sixel_frame_t *frame;
+    sixel_frame_interface_t *frame_if;
+    sixel_frame_transparency_t transparency;
+    sixel_dither_t *dither;
+    sixel_palette_float32_entries_view_t view;
+    auto_cover_capture_t capture;
+    float source[12];
+    float saved[12];
+    unsigned char bytes[12];
+    unsigned char *mask;
+    char definition[64];
+    double want;
+    double error;
+    int pass;
+    int passes;
+    int i;
+    int j;
+    int c;
+    int found;
+    int byte_input;
+    int byte_work;
+    int linear;
+    int count;
+    int code;
+    int ok;
+    SIXELSTATUS status;
+
+    output = NULL;
+    frame = NULL;
+    mask = NULL;
+    ok = 0;
+    pass = 0;
+    passes = mode == 10 || mode == 11 || mode == 13 ? 3 : 1;
+    linear = mode == 5;
+    count = mode == 12 || mode >= 14 ? 4 : 3;
+    if (SIXEL_FAILED(sixel_encoder_new(&encoders[0], NULL)) ||
+            SIXEL_FAILED(sixel_output_new(&output, auto_cover_write,
+                &capture, NULL)) ||
+            (mode == 11 && SIXEL_FAILED(sixel_encoder_new(
+                &encoders[1], NULL)))) {
+        goto end;
+    }
+    for (i = 0; i < (mode == 11 ? 2 : 1); ++i) {
+        /* Leave quantizer, lookup, merge, palette size, output type and cover
+         * at their real defaults. Isolate palette values from diffusion. */
+        encoder = encoders[i];
+        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "1")) ||
+                SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd', "none")) ||
+                SIXEL_FAILED(sixel_encoder_setopt(encoder,
+                    '4', "full-frame"))) {
+            goto end;
+        }
+    }
+    encoder = encoders[0];
+    if (((mode == 1 || mode == 8) && SIXEL_FAILED(
+            sixel_encoder_setopt(encoder, 'a', "auto"))) ||
+            (mode == 3 && SIXEL_FAILED(sixel_encoder_setopt(
+                encoder, '.', "float32"))) ||
+            ((mode == 4 || mode == 9) && SIXEL_FAILED(sixel_encoder_setopt(
+                encoder, '.', "8bit"))) ||
+            (linear && SIXEL_FAILED(sixel_encoder_setopt(
+                encoder, 'W', "linear"))) ||
+            ((mode == 9 || mode == 10 || mode == 14) &&
+             SIXEL_FAILED(sixel_encoder_setopt(encoder,
+                'U', "display-p3"))) ||
+            ((mode == 12 || mode >= 14) && SIXEL_FAILED(
+                sixel_encoder_setopt(encoder, 'A', "keep")))) {
+        goto end;
+    }
+    for (pass = 0; pass < passes; ++pass) {
+        encoder = encoders[mode == 11 && pass == 1];
+        byte_input = mode == 2 || mode == 3 || mode == 5 || mode == 9 ||
+            mode == 15 ||
+            ((mode == 11 || mode == 13) && pass == 1);
+        byte_work = byte_input && mode != 3 && mode != 5 && mode != 9;
+        memset(&capture, 0, sizeof(capture));
+        memset(&view, 0, sizeof(view));
+        for (i = 0; i < 4; ++i) {
+            for (c = 0; c < 3; ++c) {
+                source[3 * i + c] = i < 3 ? grays[i] : 80.0f;
+                bytes[3 * i + c] = i < 3 ? gray8[i] : 255;
+            }
+        }
+        memcpy(saved, source, sizeof(saved));
+        if (mode == 10 && SIXEL_FAILED(sixel_encoder_setopt(encoder, 'a',
+                pass == 1 ? "corners" : "auto"))) {
+            goto end;
+        }
+        if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+                SIXEL_FAILED(sixel_frame_init_borrowed(frame,
+                    byte_input ? (void *)bytes : (void *)source, count, 1,
+                    byte_input ? SIXEL_PIXELFORMAT_RGB888
+                               : SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
+            goto end;
+        }
+        if (mode == 12 || mode >= 14) {
+            mask = calloc(4u, 1u);
+            if (mask == NULL) {
+                goto end;
+            }
+            mask[3] = 1;
+            frame_if = sixel_frame_as_interface(frame);
+            transparency.transparent = -1;
+            transparency.alpha_zero_is_transparent = 1;
+            transparency.transparent_mask = mask;
+            transparency.transparent_mask_size = 4;
+            if (SIXEL_FAILED(frame_if->vtbl->set_transparency(frame_if,
+                    &transparency))) {
+                goto end;
+            }
+            mask = NULL;
+        }
+        if (mode == 13) {
+            encoder->fstatic = 1;
+            encoder->fignore_delay = 1;
+            sixel_frame_set_multiframe(frame, 1);
+            sixel_frame_set_frame_no(frame, pass);
+        }
+        status = sixel_encoder_encode_frame(encoder, frame, output);
+        if (mode == 10 && pass == 1) {
+            /* A still-unadmitted active budget must fail before output, and
+             * replacing it with AUTO must recover on this same encoder. */
+            if (status != SIXEL_BAD_ARGUMENT || capture.length != 0) {
+                goto end;
+            }
+        } else {
+            dither = (sixel_dither_t *)encoder->diagnostic_dither;
+            if (SIXEL_FAILED(status) || dither == NULL ||
+                    dither->use_rgb101_palette != !byte_work ||
+                    dither->pixelformat != (byte_work
+                        ? SIXEL_PIXELFORMAT_RGB888 : linear
+                        ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
+                        : SIXEL_PIXELFORMAT_RGBFLOAT32) ||
+                    dither->ncolors != count ||
+                    encoder->cover_policy != SIXEL_PALETTE_COVER_AUTO ||
+                    encoder->reqcolors != -1 ||
+                    (count == 4 && (!dither->keycolor_reserved ||
+                     dither->keycolor != 3)) ||
+                    memcmp(source, saved, sizeof(saved)) != 0) {
+                fprintf(stderr, "status=%x native=%d format=%x count=%d\n",
+                    status, dither ? dither->use_rgb101_palette : -1,
+                    dither ? dither->pixelformat : -1,
+                    dither ? dither->ncolors : -1);
+                goto end;
+            }
+            if (!byte_work) {
+                if (SIXEL_FAILED(dither->palette->vtbl->get_entries_float32(
+                        dither->palette, &view)) || view.entries == NULL ||
+                        view.entry_count != (unsigned int)count ||
+                        (count == 4 && (!dither->keycolor_reserved ||
+                         dither->keycolor != 3))) {
+                    fprintf(stderr, "entries=%u reserved=%d key=%d\n",
+                        view.entry_count, dither->keycolor_reserved,
+                        dither->keycolor);
+                    goto end;
+                }
+                for (i = 0; i < 3; ++i) {
+                    want = byte_input ? gray8[i] / 255.0 : grays[i];
+                    code = want <= 0 ? 0 : want >= 1 ? 100
+                        : (int)(want * 100 + .5);
+                    if (linear) {
+                        want = want <= .04045 ? want / 12.92
+                            : pow((want + .055) / 1.055, 2.4);
+                    }
+                    found = 0;
+                    for (j = 0; j < 3; ++j) {
+                        for (c = 0; c < 3; ++c) {
+                            error = fabs(view.entries[j * 3 + c] - want);
+                            /* Source fractions require no transform; the
+                             * bound also covers binary32 RGB8 normalization
+                             * and one sRGB inverse-TRC in the linear case.
+                             * Wire values are >0.049 from any half-bin. */
+                            if (!isfinite(view.entries[j * 3 + c]) ||
+                                    error > 2e-6) {
+                                break;
+                            }
+                        }
+                        if (c == 3) {
+                            ++found;
+                            snprintf(definition, sizeof(definition),
+                                "#%d;2;%d;%d;%d", j, code, code, code);
+                            if (strstr(capture.bytes, definition) == NULL) {
+                                fprintf(stderr, "missing %s\n", definition);
+                                goto end;
+                            }
+                        }
+                    }
+                    if (found != 1) {
+                        fprintf(stderr, "want=%.9g found=%d first=%.9g\n",
+                            want, found, (double)view.entries[0]);
+                        goto end;
+                    }
+                }
+            }
+        }
+        sixel_frame_unref(frame);
+        frame = NULL;
+    }
+    ok = 1;
+end:
+    if (!ok) {
+        fprintf(stderr, "default admission mode=%d pass=%d: %s\n",
+            mode, pass, sixel_helper_get_additional_message());
+    }
+    free(mask);
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoders[1]);
+    sixel_encoder_unref(encoders[0]);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

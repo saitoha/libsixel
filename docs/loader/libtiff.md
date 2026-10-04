@@ -372,7 +372,7 @@ The selected original RGB16 ICC input passes through the exclusive libtiff loade
 
 ### Quality regression tests
 
-The existing perceptual tests retain their references and thresholds; their separate inventory is in [Loader Color Management](color-management/README.md#test-coverage). They do not substitute for the source/frame or CLI RGB101 expectations above.
+The existing perceptual tests retain their thresholds; palette-matrix references now use unquantized RGB16 PPM values from the original UINT16 ColorMap, with the stored RGB ICC power curves and PCS matrix applied only for managed ICC cases. The [offline generator](../../tools/generate_cms_quality_references.py) uses independent equations and [records every input/reference hash](../../tests/data/colormgmt/reference/analytic-quality.json); it never calls a loader, encoder or CMM. Unmanaged cases retain the source map interpretation, including ICC-tagged inputs with CMS disabled. Non-ICC palette metadata does not add a calibration transform to this route. Final reference clipping/UINT16 serialization precedes only the sRGB display comparison, with at most half a code of serialization error. Managed ICC quality cases additionally require a successful CMS apply, since MS-SSIM alone can accept an unmanaged approximation. Other perceptual references remain unchanged; their separate inventory is in [Loader Color Management](color-management/README.md#test-coverage). They do not substitute for the source/frame or CLI RGB101 expectations above.
 
 ### Defensive and malformed-input tests
 

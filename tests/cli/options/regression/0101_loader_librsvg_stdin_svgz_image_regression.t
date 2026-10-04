@@ -1,4 +1,6 @@
 #!/bin/sh
+# The independent reference follows SVG geometry, with the transparent half
+# decoded with the paint-aware -D reader on black; it must not inherit the old all-red palette output.
 # Verify librsvg stdin-SVGZ policy through short and environment paths.
 # Registry row: SIXEL_OPTION_SCHEMA_LOADERS|g_loader_values + SIXEL_LOADER_INDEX_LIBRSVG|stdin_svgz
 # Registry binding: librsvg_allow_stdin_svgz
@@ -66,7 +68,7 @@ cmp -s "${short_output}" "${env_output}" || {
 }
 
 lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" \
-    -b "MS-SSIM:0.98" "${reference_image}" \
+    -D -b "MS-SSIM:0.98" "${reference_image}" \
     "${short_output}" 2>&1) || lsqa_status=$?
 test "${lsqa_status:-0}" -eq 0 || {
     echo "not ok" 1 - "stdin_svgz image quality regressed"

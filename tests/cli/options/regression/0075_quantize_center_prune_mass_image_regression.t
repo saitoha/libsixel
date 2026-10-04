@@ -1,4 +1,6 @@
 #!/bin/sh
+# A 64-color limit still forces reduction of the 16x16 source, without
+# conflating a severe low-color budget with CLI/env wiring image sanity.
 # Verify center:prune_mass preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER|prune_mass
 # Registry binding: quantize_model_kcenter_prune_mass|quantize_model_kcenter_prune_mass_override
@@ -23,7 +25,7 @@ env_output="${artifact_dir}/0075-quantize-center-prune_mass-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qcenter:U0.95" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 64 "-Qcenter:U0.95" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "center:prune_mass short conversion failed"
     exit 0
 }
@@ -35,7 +37,7 @@ case "${short_trace}" in *LSXSUB1\|*key=prune_mass\|stored=1\|binding=quantize_m
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_PRUNE_MASS=0.95" -p 16 "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_PRUNE_MASS=0.95" -p 64 "-Qcenter" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "center:prune_mass env conversion failed"
     exit 0

@@ -776,6 +776,22 @@ int test_auto_cover_0006(int argc, char **argv);
 int test_auto_cover_0007(int argc, char **argv);
 int test_auto_cover_0008(int argc, char **argv);
 int test_auto_cover_0009(int argc, char **argv);
+int test_auto_cover_0010(int argc, char **argv);
+int test_auto_cover_0011(int argc, char **argv);
+int test_auto_cover_0012(int argc, char **argv);
+int test_auto_cover_0013(int argc, char **argv);
+int test_auto_cover_0014(int argc, char **argv);
+int test_auto_cover_0015(int argc, char **argv);
+int test_auto_cover_0016(int argc, char **argv);
+int test_auto_cover_0017(int argc, char **argv);
+int test_auto_cover_0018(int argc, char **argv);
+int test_auto_cover_0019(int argc, char **argv);
+int test_auto_cover_0020(int argc, char **argv);
+int test_auto_cover_0021(int argc, char **argv);
+int test_auto_cover_0022(int argc, char **argv);
+int test_auto_cover_0023(int argc, char **argv);
+int test_auto_cover_0024(int argc, char **argv);
+int test_auto_cover_0025(int argc, char **argv);
 int test_anim_native_0018(int argc, char **argv);
 int test_anim_native_0019(int argc, char **argv);
 int test_anim_native_0020(int argc, char **argv);
@@ -4005,6 +4021,38 @@ static test_entry_t const test_entries[] = {
       test_auto_cover_0008 },
     { "quant/palette/auto_cover_float/0009_encoder_hard_wire",
       test_auto_cover_0009 },
+    { "quant/palette/auto_cover_float/0010_default_native",
+      test_auto_cover_0010 },
+    { "quant/palette/auto_cover_float/0011_explicit_auto_native",
+      test_auto_cover_0011 },
+    { "quant/palette/auto_cover_float/0012_byte_auto_eligible",
+      test_auto_cover_0012 },
+    { "quant/palette/auto_cover_float/0013_byte_forced_float",
+      test_auto_cover_0013 },
+    { "quant/palette/auto_cover_float/0014_float_byte_preference",
+      test_auto_cover_0014 },
+    { "quant/palette/auto_cover_float/0015_linear_required_float",
+      test_auto_cover_0015 },
+    { "quant/palette/auto_cover_float/0016_environment_auto",
+      test_auto_cover_0016 },
+    { "quant/palette/auto_cover_float/0017_environment_hard_grow",
+      test_auto_cover_0017 },
+    { "quant/palette/auto_cover_float/0018_explicit_auto_precedence",
+      test_auto_cover_0018 },
+    { "quant/palette/auto_cover_float/0019_p3_default_byte",
+      test_auto_cover_0019 },
+    { "quant/palette/auto_cover_float/0020_p3_rejection_recovery",
+      test_auto_cover_0020 },
+    { "quant/palette/auto_cover_float/0021_encoder_isolation",
+      test_auto_cover_0021 },
+    { "quant/palette/auto_cover_float/0022_masked_default",
+      test_auto_cover_0022 },
+    { "quant/palette/auto_cover_float/0023_animation_precision",
+      test_auto_cover_0023 },
+    { "quant/palette/auto_cover_float/0024_masked_p3_default",
+      test_auto_cover_0024 },
+    { "quant/palette/auto_cover_float/0025_masked_byte_default",
+      test_auto_cover_0025 },
     { "quant/palette/animation_native/0018_libpng_serial",
       test_anim_native_0018 },
     { "quant/palette/animation_native/0019_libpng_pipeline_p3",

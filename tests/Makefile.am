@@ -1051,6 +1051,22 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0007_EXPLICIT_TRANSITION \
     -DBUILD_TEST_0008_ENCODER_SOFT_WIRE \
     -DBUILD_TEST_0009_ENCODER_HARD_WIRE \
+    -DBUILD_TEST_0010_DEFAULT_NATIVE \
+    -DBUILD_TEST_0011_EXPLICIT_AUTO_NATIVE \
+    -DBUILD_TEST_0012_BYTE_AUTO_ELIGIBLE \
+    -DBUILD_TEST_0013_BYTE_FORCED_FLOAT \
+    -DBUILD_TEST_0014_FLOAT_BYTE_PREFERENCE \
+    -DBUILD_TEST_0015_LINEAR_REQUIRED_FLOAT \
+    -DBUILD_TEST_0016_ENVIRONMENT_AUTO \
+    -DBUILD_TEST_0017_ENVIRONMENT_HARD_GROW \
+    -DBUILD_TEST_0018_EXPLICIT_AUTO_PRECEDENCE \
+    -DBUILD_TEST_0019_P3_DEFAULT_BYTE \
+    -DBUILD_TEST_0020_P3_REJECTION_RECOVERY \
+    -DBUILD_TEST_0021_ENCODER_ISOLATION \
+    -DBUILD_TEST_0022_MASKED_DEFAULT \
+    -DBUILD_TEST_0023_ANIMATION_PRECISION \
+    -DBUILD_TEST_0024_MASKED_P3_DEFAULT \
+    -DBUILD_TEST_0025_MASKED_BYTE_DEFAULT \
     -DBUILD_TEST_0001_GAMMA_VALUES \
     -DBUILD_TEST_0002_LINEAR_VALUES \
     -DBUILD_TEST_0003_OKLAB_VALUES \
@@ -4749,6 +4765,22 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/auto_cover_float/0007_explicit_transition.c \
     quant/palette/auto_cover_float/0008_encoder_soft_wire.c \
     quant/palette/auto_cover_float/0009_encoder_hard_wire.c \
+    quant/palette/auto_cover_float/0010_default_native.c \
+    quant/palette/auto_cover_float/0011_explicit_auto_native.c \
+    quant/palette/auto_cover_float/0012_byte_auto_eligible.c \
+    quant/palette/auto_cover_float/0013_byte_forced_float.c \
+    quant/palette/auto_cover_float/0014_float_byte_preference.c \
+    quant/palette/auto_cover_float/0015_linear_required_float.c \
+    quant/palette/auto_cover_float/0016_environment_auto.c \
+    quant/palette/auto_cover_float/0017_environment_hard_grow.c \
+    quant/palette/auto_cover_float/0018_explicit_auto_precedence.c \
+    quant/palette/auto_cover_float/0019_p3_default_byte.c \
+    quant/palette/auto_cover_float/0020_p3_rejection_recovery.c \
+    quant/palette/auto_cover_float/0021_encoder_isolation.c \
+    quant/palette/auto_cover_float/0022_masked_default.c \
+    quant/palette/auto_cover_float/0023_animation_precision.c \
+    quant/palette/auto_cover_float/0024_masked_p3_default.c \
+    quant/palette/auto_cover_float/0025_masked_byte_default.c \
     quant/palette/animation_native/0001_gamma_values.c \
     quant/palette/animation_native/0002_linear_values.c \
     quant/palette/animation_native/0003_oklab_values.c \

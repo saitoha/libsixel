@@ -1,4 +1,6 @@
 #!/bin/sh
+# Default cover now admits native float; an injected failure must terminate
+# without planning a lossy legacy retry.
 # Verify exact float coordinates are never retried through lossy RGB888 input.
 
 set -eux
@@ -19,13 +21,8 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     -dnone -p16 "-~none" -Lbuiltin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1 >/dev/null) || status=$?
 
-test "${status}" -eq 2 || {
+test "${status}" -eq 1 || {
     echo "not ok 1 - exact float failure entered the RGB888 retry"
-    exit 0
-}
-
-case "${trace}" in *palette\ fallback\ quantizer\ cannot\ consume**) true ;; *) false ;; esac || {
-    echo "not ok 1 - exact float retry diagnostic is missing"
     exit 0
 }
 

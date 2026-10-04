@@ -1,0 +1,33 @@
+{
+  "generator": "generate_cms_quality_references.py",
+  "sources": {
+    "input/png/gray/img_gray_icc0_srgb0_chrm0_gama1.png": "8da186f48f3025c632a4ea10acb92d22dd0f7b0c43cbad270dfb308c76c9c892",
+    "input/png/gray/img_gray_icc0_srgb0_chrm1_gama1.png": "711932aeb5fe069ca62ba74cb0c801e080adca91960a5c246d40f381b54a5fe3",
+    "input/png/rgb/img_rgb_icc0_srgb0_chrm0_gama1.png": "b43bbb7ebff7b56fb7b5e7f817836a73c979e7376c35deab6cf10e8c8f0e95e6",
+    "input/png/rgb/img_rgb_icc0_srgb0_chrm1_gama1.png": "56b72544e3bd776132339fb6782ed5550aace1a6625266f0a5b21860edf973f5",
+    "input/tiff/palette/img_tiff_palette_icc0_wp0_pc0_trc0.tiff": "761676616be0f5d03ce135b925128f3e7ab1a67696272448fa850c83bc4f9587",
+    "input/tiff/palette/img_tiff_palette_icc0_wp0_pc0_trc1.tiff": "e4ecc07596051f784ad2d895625fecc51c8762ce4acf05f35080959135f5da5e",
+    "input/tiff/palette/img_tiff_palette_icc0_wp0_pc1_trc0.tiff": "ae61fc2f4413fcef4e8da7801dab4139b2c1b12f080c3880225c78c8fc2bc558",
+    "input/tiff/palette/img_tiff_palette_icc0_wp0_pc1_trc1.tiff": "d96e98bcfafc1edc1f48406343f39473757fefe6ab40ba5c40f6c780f9c00f97",
+    "input/tiff/palette/img_tiff_palette_icc0_wp1_pc0_trc0.tiff": "259dc52f1689cec158ee7be952dae2956c8a74dbca467ed9c5683b2f43cc8593",
+    "input/tiff/palette/img_tiff_palette_icc0_wp1_pc0_trc1.tiff": "24de2ea751d8fd50c957fa45f4236e6ed71aa8e373a7432e69facd4d72d755f1",
+    "input/tiff/palette/img_tiff_palette_icc0_wp1_pc1_trc0.tiff": "aee7ff85ec07339b9b1c48c89430967abbe4ab3f4ad1bd6d189ec9827323f4d0",
+    "input/tiff/palette/img_tiff_palette_icc0_wp1_pc1_trc1.tiff": "c567dd119dc3cbdb9dc19f38c56d40ecf0085c30e66f6605ec427b5b4e7273a5",
+    "input/tiff/palette/img_tiff_palette_icc1_wp0_pc0_trc0.tiff": "5f2b9d5384c0d2a612f38c13f9bdb1dc716ff50a87e12d2def06f0829e3587d9",
+    "input/tiff/palette/img_tiff_palette_icc1_wp0_pc0_trc1.tiff": "1e55aceac1f48ba9d1f17e1fe6e3d5dd96f7703bbdaa5be57b70ab9278fca94a",
+    "input/tiff/palette/img_tiff_palette_icc1_wp0_pc1_trc0.tiff": "6ef1b7d4fd60729a6008ebe7379e71a5d38d46b60715c3ccbd3977f26eb3a2a3",
+    "input/tiff/palette/img_tiff_palette_icc1_wp0_pc1_trc1.tiff": "21f8dcee60e8750977765a956d983aaf885810cc245e7c8c9cd2508b831fbe49",
+    "input/tiff/palette/img_tiff_palette_icc1_wp1_pc0_trc0.tiff": "c04821151fcf9e7ba5a64500934e7949d5c5298a54fbeafd33267aaf2c6f9d30",
+    "input/tiff/palette/img_tiff_palette_icc1_wp1_pc0_trc1.tiff": "edfafd4f2c69c3c479c52e9a32f136ba249a680880725a3e6850d574ee8ecbc0",
+    "input/tiff/palette/img_tiff_palette_icc1_wp1_pc1_trc0.tiff": "7b8df64a0b261d476fd89507b9d1b90bca2cf808c8ba8df551217e609f2b1bd4",
+    "input/tiff/palette/img_tiff_palette_icc1_wp1_pc1_trc1.tiff": "76a313988a3c20bb38d568265b65f5131331baa8a16f4fe3bac1fee16e6b6507"
+  },
+  "references": {
+    "reference/png/gray/img_gray_icc0_srgb0_chrm0_gama1.ppm": "ba7e35376f2579284d2e498749195ee4666503cd920efdedb0c1a649e1dde893",
+    "reference/png/gray/img_gray_icc0_srgb0_chrm1_gama1.ppm": "ba7e35376f2579284d2e498749195ee4666503cd920efdedb0c1a649e1dde893",
+    "reference/png/rgb/img_rgb_icc0_srgb0_chrm0_gama1.ppm": "823a275ef150ea899b20131f74747a9a57dc0280896ad9a51cd3f12206cec1f2",
+    "reference/png/rgb/img_rgb_icc0_srgb0_chrm1_gama1.ppm": "d20962a694f82faa7747b0a7bbb5bca742850282c29ed14bf6e0041ce0435871",
+    "reference/tiff/palette/colormap-unmanaged.ppm": "007fb6a010697cccb25ff6f4ed98dbf2cda329283d74f09ad9a0da35ee2ad045",
+    "reference/tiff/palette/colormap-icc-srgb.ppm": "71cd0c8014c72d257ec911c3af6b09079773dcfbf4c5da2601f177968a1915d1"
+  }
+}

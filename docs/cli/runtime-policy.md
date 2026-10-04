@@ -26,7 +26,7 @@ Accepted base values are `auto`, `none`, `scalar`, `sse2`, `avx`, and `neon`; `n
 
 The registry rejects suboptions outside the converter's consumer scope. In particular, the encoder's resize controls are not portable additions to `sixel2png -j`, and the decoder's `parallel_skew` is not an `img2sixel` setting. Explicit suboption fields override corresponding environment values. Repeated options use the shared typed-policy machinery; omitted fields are not a request to clear all existing process overrides.
 
-Without a `parallel_factor` override, resize derives the job span from rows and threads. The minimum-work controls only determine whether a stage can benefit from parallel dispatch; they do not override memory limits or worker availability. See [threading](../threading/README.md) for the distinct encoder, decoder, and stage-local budgets.
+Without a `parallel_factor` override, resize derives the job span from rows and threads. The native extended-float palette converter currently runs serially and does not consume `colorspace_min`; the retained legacy converter (for example, explicit HLS output) owns that threshold. The minimum-work controls only determine whether a stage can benefit from parallel dispatch; they do not override memory limits or worker availability. See [threading](../threading/README.md) for the distinct encoder, decoder, and stage-local budgets.
 
 ```sh
 # Scalar arithmetic with an explicit resize representation.

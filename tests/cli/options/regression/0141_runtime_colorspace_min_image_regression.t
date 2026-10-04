@@ -1,4 +1,6 @@
 #!/bin/sh
+# HLS selects the legacy converter that owns this parallel-work threshold.
+# The native extended-float converter currently runs serially.
 # Verify runtime colorspace threshold through short and environment paths.
 # Registry row: SIXEL_OPTION_SCHEMA_RUNTIME_POLICY|NULL|colorspace_min
 # Registry binding: colorspace_parallel_min_pixels|colorspace_parallel_min_pixels_override
@@ -27,7 +29,7 @@ short_output="${artifact_dir}/0141-colorspace-min-short-$$.six"
 env_output="${artifact_dir}/0141-colorspace-min-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,runtime_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Woklab \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -thls -Woklab \
     "-jauto:C257" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "colorspace threshold short conversion failed"
     exit 0
@@ -42,7 +44,7 @@ case "${short_trace}" in *LSXRT1\|colorspace_min=257**) true ;; *) false ;; esac
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,runtime_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Woklab \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -thls -Woklab \
     --env "SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS=257" -jauto \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "colorspace threshold environment conversion failed"
@@ -58,7 +60,7 @@ case "${env_trace}" in *LSXRT1\|colorspace_min=257**) true ;; *) false ;; esac |
 }
 
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Woklab \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -thls -Woklab \
     --env "SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS=-1" -jauto \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "colorspace threshold signed conversion failed"

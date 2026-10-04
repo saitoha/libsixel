@@ -1,4 +1,6 @@
 #!/bin/sh
+# A 64-color limit still forces reduction of the 16x16 source, without
+# conflating a severe low-color budget with CLI/env wiring image sanity.
 # Verify center:algo preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER|algo
 # Registry binding: quantize_model_kcenter_algo|quantize_model_kcenter_algo_override
@@ -23,7 +25,7 @@ env_output="${artifact_dir}/0062-quantize-center-algo-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qcenter:Ahybrid" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 64 "-Qcenter:Ahybrid" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "center:algo short conversion failed"
     exit 0
 }
@@ -35,7 +37,7 @@ case "${short_trace}" in *LSXSUB1\|*key=algo\|stored=1\|binding=quantize_model_k
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_ALGO=hybrid" -p 16 "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_ALGO=hybrid" -p 64 "-Qcenter" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "center:algo env conversion failed"
     exit 0

@@ -56,6 +56,8 @@ An [image map](../palette-construction/external-palettes.md#selected-ordinary-sr
 
 [Dither clamp policy](../palette-application/clamp-policy.md) can promote the palette-application buffer separately from the planner's image representation. Its signed-headroom requirement does not promote the loader. A planner trace such as `work=rgb888` describes the image representation before that promotion. Check the palette-application lookup trace for the effective byte/float path and the clamp trace for `clamp_requested`, `clamp_effective`, and `clamp_threshold`.
 
+Within the [selected CPU native palette path](../output/output-colorspace.md#selected-ordinary-srgb-float-path), omitted cover and plain `-aauto` admit qualifying float work by default. AUTO has no native repair budget. The source/map precision requirements and explicit `-.` preference still decide byte eligibility; this admission rule does not make every encode float.
+
 Use verbose planner output to audit the effective path. A controlled 8-bit image-storage run must report this working field; the loader and resize formats can independently be float:
 
 ```text
