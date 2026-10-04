@@ -772,6 +772,20 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0021_AUTO_EXPLICIT_P3 \
     -DBUILD_TEST_0022_AUTO_REJECT_KMEANS_FEEDBACK \
     -DBUILD_TEST_0023_AUTO_IRRELEVANT_HECKBERT_FEEDBACK \
+    -DBUILD_DRCS_NATIVE_TEST_COMMON \
+    -DBUILD_TEST_0001_SRGB_FLOAT_CENTER \
+    -DBUILD_TEST_0002_P3_FLOAT_CENTER \
+    -DBUILD_TEST_0003_P3_C1_BODY \
+    -DBUILD_TEST_0004_P3_V3_GRID \
+    -DBUILD_TEST_0005_P3_BUILTIN \
+    -DBUILD_TEST_0006_BYTE_CONTROL \
+    -DBUILD_TEST_0007_MASK_RECOVERY \
+    -DBUILD_TEST_0008_MONO_REJECT \
+    -DBUILD_TEST_0009_OR_REJECT \
+    -DBUILD_TEST_0010_OFFSET_REJECT \
+    -DBUILD_TEST_0011_MACRO_REJECT \
+    -DBUILD_TEST_0012_OUTPUT_REUSE \
+    -DBUILD_TEST_0013_P3_PIPELINE \
     -DBUILD_OR_NATIVE_TEST_COMMON \
     -DBUILD_TEST_0030_OR_FLOAT_SRGB_CENTER \
     -DBUILD_TEST_0031_OR_FLOAT_P3_CENTER \
@@ -5337,6 +5351,20 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/auto_float/0021_auto_explicit_p3.c \
     quant/palette/auto_float/0022_auto_reject_kmeans_feedback.c \
     quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
+    codec/drcs/drcs_native_test_common.c \
+    codec/drcs/0001_srgb_float_center.c \
+    codec/drcs/0002_p3_float_center.c \
+    codec/drcs/0003_p3_c1_body.c \
+    codec/drcs/0004_p3_v3_grid.c \
+    codec/drcs/0005_p3_builtin.c \
+    codec/drcs/0006_byte_control.c \
+    codec/drcs/0007_mask_recovery.c \
+    codec/drcs/0008_mono_reject.c \
+    codec/drcs/0009_or_reject.c \
+    codec/drcs/0010_offset_reject.c \
+    codec/drcs/0011_macro_reject.c \
+    codec/drcs/0012_output_reuse.c \
+    codec/drcs/0013_p3_pipeline.c \
     processing/encoder-core/or_native_test_common.c \
     processing/encoder-core/0030_or_float_srgb_center.c \
     processing/encoder-core/0031_or_float_p3_center.c \

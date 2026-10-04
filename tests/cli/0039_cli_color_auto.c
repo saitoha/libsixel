@@ -697,11 +697,6 @@ color_auto_script(color_auto_peer_t *peer, char const *name,
         color_auto_is(name, "multiple-silent") ? 2 : 1;
     *expected_exit = 0;
     *p3 = selected == 2;
-    if (color_auto_is(name, "drcs-p3")) {
-        *expected_exit = 2;
-        return !peer->cursor_restore ||
-            color_auto_expect(peer, "\033[?25h");
-    }
     if (strncmp(name, "bad-", 4u) == 0 ||
         color_auto_is(name, "drcs-auto") ||
         color_auto_is(name, "drcs-env") ||
@@ -710,7 +705,8 @@ color_auto_script(color_auto_peer_t *peer, char const *name,
         return 1;
     }
     if (color_auto_no_query(name, 0)) {
-        *p3 = color_auto_is(name, "explicit-p3-file");
+        *p3 = color_auto_is(name, "explicit-p3-file") ||
+            color_auto_is(name, "drcs-p3");
         return peer->file_fd >= 0 || color_auto_frame(peer);
     }
     if (!color_auto_expect(peer, COLOR_AUTO_CAP)) {
@@ -869,6 +865,7 @@ test_cli_0039_color_auto(int argc, char **argv)
     int expected_exit;
     int p3;
     char *next_trace;
+    char const *drcs_prefix;
     size_t case_index;
     static char const *const cases[] = {
         "save-0",
@@ -977,7 +974,20 @@ test_cli_0039_color_auto(int argc, char **argv)
             }
             *next_trace = '\0';
         }
-        snprintf(combined, sizeof(combined), "%s%s", peer.trace, peer.image);
+        if (peer.drcs) {
+            /* Check the glyph envelope from this isolated PTY's geometry,
+             * then feed only its SIXEL body to the independent RGB oracle.
+             * No color query or policy write may precede the definition. */
+            drcs_prefix = "\033[?8800h\033P1;0;0;8;1;3;16;0{ 0";
+            if (strncmp(peer.image, drcs_prefix, strlen(drcs_prefix)) != 0) {
+                return color_auto_error("unexpected DRCS envelope");
+            }
+            snprintf(combined, sizeof(combined), "%s\033Pq%s", peer.trace,
+                peer.image + strlen(drcs_prefix));
+        } else {
+            snprintf(combined, sizeof(combined), "%s%s", peer.trace,
+                peer.image);
+        }
         wire_arguments[0] = "cli/0036_cli_color_wire";
         wire_arguments[1] = "libpng-p3-16";
         wire_arguments[2] = combined;

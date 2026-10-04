@@ -1,6 +1,7 @@
 #!/bin/sh
-# Verify automatic output color policy: drcs-p3.
+# Verify explicit P3 DRCS values through a private scripted PTY.
 # Policy: docs/encoder/output/output-colorspace.md
+# Policy: docs/encoder/output/drcs.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 -a "${HAVE_LIBPNG-}" = 1 || {
@@ -21,8 +22,8 @@ test "$result" -ne 77 || {
 echo "1..1"
 set -v
 test "$result" -eq 0 || {
-    echo "not ok 1 - automatic output color drcs-p3"
+    echo "not ok 1 - explicit P3 DRCS values"
     exit 0
 }
-echo "ok 1 - automatic output color drcs-p3"
+echo "ok 1 - explicit P3 DRCS values"
 exit 0

@@ -2668,6 +2668,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/auto_float/0021_auto_explicit_p3.c \
 	quant/palette/auto_float/0022_auto_reject_kmeans_feedback.c \
 	quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
+	codec/drcs/drcs_native_test_common.c \
+	codec/drcs/0001_srgb_float_center.c \
+	codec/drcs/0002_p3_float_center.c codec/drcs/0003_p3_c1_body.c \
+	codec/drcs/0004_p3_v3_grid.c codec/drcs/0005_p3_builtin.c \
+	codec/drcs/0006_byte_control.c codec/drcs/0007_mask_recovery.c \
+	codec/drcs/0008_mono_reject.c codec/drcs/0009_or_reject.c \
+	codec/drcs/0010_offset_reject.c codec/drcs/0011_macro_reject.c \
+	codec/drcs/0012_output_reuse.c codec/drcs/0013_p3_pipeline.c \
 	processing/encoder-core/or_native_test_common.c \
 	processing/encoder-core/0030_or_float_srgb_center.c \
 	processing/encoder-core/0031_or_float_p3_center.c \
@@ -5251,6 +5259,20 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0021_auto_explicit_p3.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0022_auto_reject_kmeans_feedback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0023_auto_irrelevant_heckbert_feedback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-drcs_native_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0001_srgb_float_center.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0002_p3_float_center.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0003_p3_c1_body.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0004_p3_v3_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0005_p3_builtin.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0006_byte_control.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0007_mask_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0008_mono_reject.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0009_or_reject.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0010_offset_reject.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0011_macro_reject.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0012_output_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0013_p3_pipeline.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-or_native_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0030_or_float_srgb_center.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0031_or_float_p3_center.$(OBJEXT) \
@@ -5422,6 +5444,20 @@ am__depfiles_remade =  \
 	cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po \
 	cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po \
 	cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po \
+	codec/drcs/$(DEPDIR)/test_runner-0001_srgb_float_center.Po \
+	codec/drcs/$(DEPDIR)/test_runner-0002_p3_float_center.Po \
+	codec/drcs/$(DEPDIR)/test_runner-0003_p3_c1_body.Po \
+	codec/drcs/$(DEPDIR)/test_runner-0004_p3_v3_grid.Po \
+	codec/drcs/$(DEPDIR)/test_runner-0005_p3_builtin.Po \
+	codec/drcs/$(DEPDIR)/test_runner-0006_byte_control.Po \
+	codec/drcs/$(DEPDIR)/test_runner-0007_mask_recovery.Po \
+	codec/drcs/$(DEPDIR)/test_runner-0008_mono_reject.Po \
+	codec/drcs/$(DEPDIR)/test_runner-0009_or_reject.Po \
+	codec/drcs/$(DEPDIR)/test_runner-0010_offset_reject.Po \
+	codec/drcs/$(DEPDIR)/test_runner-0011_macro_reject.Po \
+	codec/drcs/$(DEPDIR)/test_runner-0012_output_reuse.Po \
+	codec/drcs/$(DEPDIR)/test_runner-0013_p3_pipeline.Po \
+	codec/drcs/$(DEPDIR)/test_runner-drcs_native_test_common.Po \
 	codec/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Po \
 	codec/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Po \
 	codec/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Po \
@@ -9230,6 +9266,20 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_AUTO_EXPLICIT_P3 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_AUTO_REJECT_KMEANS_FEEDBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_AUTO_IRRELEVANT_HECKBERT_FEEDBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_DRCS_NATIVE_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SRGB_FLOAT_CENTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_P3_FLOAT_CENTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_P3_C1_BODY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_P3_V3_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_P3_BUILTIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_BYTE_CONTROL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_MASK_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_MONO_REJECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_OR_REJECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_OFFSET_REJECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_MACRO_REJECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_OUTPUT_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_P3_PIPELINE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_OR_NATIVE_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_OR_FLOAT_SRGB_CENTER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_OR_FLOAT_P3_CENTER \
@@ -13826,6 +13876,20 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0021_auto_explicit_p3.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0022_auto_reject_kmeans_feedback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/drcs_native_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0001_srgb_float_center.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0002_p3_float_center.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0003_p3_c1_body.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0004_p3_v3_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0005_p3_builtin.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0006_byte_control.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0007_mask_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0008_mono_reject.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0009_or_reject.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0010_offset_reject.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0011_macro_reject.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0012_output_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0013_p3_pipeline.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/or_native_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0030_or_float_srgb_center.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0031_or_float_p3_center.c \
@@ -22106,6 +22170,54 @@ quant/palette/auto_float/test_runner-0022_auto_reject_kmeans_feedback.$(OBJEXT):
 quant/palette/auto_float/test_runner-0023_auto_irrelevant_heckbert_feedback.$(OBJEXT):  \
 	quant/palette/auto_float/$(am__dirstamp) \
 	quant/palette/auto_float/$(DEPDIR)/$(am__dirstamp)
+codec/drcs/$(am__dirstamp):
+	@$(MKDIR_P) codec/drcs
+	@: >>codec/drcs/$(am__dirstamp)
+codec/drcs/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) codec/drcs/$(DEPDIR)
+	@: >>codec/drcs/$(DEPDIR)/$(am__dirstamp)
+codec/drcs/test_runner-drcs_native_test_common.$(OBJEXT):  \
+	codec/drcs/$(am__dirstamp) \
+	codec/drcs/$(DEPDIR)/$(am__dirstamp)
+codec/drcs/test_runner-0001_srgb_float_center.$(OBJEXT):  \
+	codec/drcs/$(am__dirstamp) \
+	codec/drcs/$(DEPDIR)/$(am__dirstamp)
+codec/drcs/test_runner-0002_p3_float_center.$(OBJEXT):  \
+	codec/drcs/$(am__dirstamp) \
+	codec/drcs/$(DEPDIR)/$(am__dirstamp)
+codec/drcs/test_runner-0003_p3_c1_body.$(OBJEXT):  \
+	codec/drcs/$(am__dirstamp) \
+	codec/drcs/$(DEPDIR)/$(am__dirstamp)
+codec/drcs/test_runner-0004_p3_v3_grid.$(OBJEXT):  \
+	codec/drcs/$(am__dirstamp) \
+	codec/drcs/$(DEPDIR)/$(am__dirstamp)
+codec/drcs/test_runner-0005_p3_builtin.$(OBJEXT):  \
+	codec/drcs/$(am__dirstamp) \
+	codec/drcs/$(DEPDIR)/$(am__dirstamp)
+codec/drcs/test_runner-0006_byte_control.$(OBJEXT):  \
+	codec/drcs/$(am__dirstamp) \
+	codec/drcs/$(DEPDIR)/$(am__dirstamp)
+codec/drcs/test_runner-0007_mask_recovery.$(OBJEXT):  \
+	codec/drcs/$(am__dirstamp) \
+	codec/drcs/$(DEPDIR)/$(am__dirstamp)
+codec/drcs/test_runner-0008_mono_reject.$(OBJEXT):  \
+	codec/drcs/$(am__dirstamp) \
+	codec/drcs/$(DEPDIR)/$(am__dirstamp)
+codec/drcs/test_runner-0009_or_reject.$(OBJEXT):  \
+	codec/drcs/$(am__dirstamp) \
+	codec/drcs/$(DEPDIR)/$(am__dirstamp)
+codec/drcs/test_runner-0010_offset_reject.$(OBJEXT):  \
+	codec/drcs/$(am__dirstamp) \
+	codec/drcs/$(DEPDIR)/$(am__dirstamp)
+codec/drcs/test_runner-0011_macro_reject.$(OBJEXT):  \
+	codec/drcs/$(am__dirstamp) \
+	codec/drcs/$(DEPDIR)/$(am__dirstamp)
+codec/drcs/test_runner-0012_output_reuse.$(OBJEXT):  \
+	codec/drcs/$(am__dirstamp) \
+	codec/drcs/$(DEPDIR)/$(am__dirstamp)
+codec/drcs/test_runner-0013_p3_pipeline.$(OBJEXT):  \
+	codec/drcs/$(am__dirstamp) \
+	codec/drcs/$(DEPDIR)/$(am__dirstamp)
 processing/encoder-core/test_runner-or_native_test_common.$(OBJEXT):  \
 	processing/encoder-core/$(am__dirstamp) \
 	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
@@ -22421,6 +22533,7 @@ mostlyclean-compile:
 	-rm -f cli/*.$(OBJEXT)
 	-rm -f cli/aborttrace/*.$(OBJEXT)
 	-rm -f cli/core/*.$(OBJEXT)
+	-rm -f codec/drcs/*.$(OBJEXT)
 	-rm -f codec/macro/*.$(OBJEXT)
 	-rm -f diagnostics/*.$(OBJEXT)
 	-rm -f diagnostics/icc/*.$(OBJEXT)
@@ -22545,6 +22658,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0001_srgb_float_center.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0002_p3_float_center.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0003_p3_c1_body.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0004_p3_v3_grid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0005_p3_builtin.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0006_byte_control.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0007_mask_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0008_mono_reject.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0009_or_reject.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0010_offset_reject.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0011_macro_reject.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0012_output_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0013_p3_pipeline.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-drcs_native_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Po@am__quote@ # am--include-marker
@@ -60116,6 +60243,202 @@ quant/palette/auto_float/test_runner-0023_auto_irrelevant_heckbert_feedback.obj:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/auto_float/test_runner-0023_auto_irrelevant_heckbert_feedback.obj `if test -f 'quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c'; then $(CYGPATH_W) 'quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c'; fi`
 
+codec/drcs/test_runner-drcs_native_test_common.o: codec/drcs/drcs_native_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-drcs_native_test_common.o -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-drcs_native_test_common.Tpo -c -o codec/drcs/test_runner-drcs_native_test_common.o `test -f 'codec/drcs/drcs_native_test_common.c' || echo '$(srcdir)/'`codec/drcs/drcs_native_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-drcs_native_test_common.Tpo codec/drcs/$(DEPDIR)/test_runner-drcs_native_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/drcs_native_test_common.c' object='codec/drcs/test_runner-drcs_native_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-drcs_native_test_common.o `test -f 'codec/drcs/drcs_native_test_common.c' || echo '$(srcdir)/'`codec/drcs/drcs_native_test_common.c
+
+codec/drcs/test_runner-drcs_native_test_common.obj: codec/drcs/drcs_native_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-drcs_native_test_common.obj -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-drcs_native_test_common.Tpo -c -o codec/drcs/test_runner-drcs_native_test_common.obj `if test -f 'codec/drcs/drcs_native_test_common.c'; then $(CYGPATH_W) 'codec/drcs/drcs_native_test_common.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/drcs_native_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-drcs_native_test_common.Tpo codec/drcs/$(DEPDIR)/test_runner-drcs_native_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/drcs_native_test_common.c' object='codec/drcs/test_runner-drcs_native_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-drcs_native_test_common.obj `if test -f 'codec/drcs/drcs_native_test_common.c'; then $(CYGPATH_W) 'codec/drcs/drcs_native_test_common.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/drcs_native_test_common.c'; fi`
+
+codec/drcs/test_runner-0001_srgb_float_center.o: codec/drcs/0001_srgb_float_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0001_srgb_float_center.o -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0001_srgb_float_center.Tpo -c -o codec/drcs/test_runner-0001_srgb_float_center.o `test -f 'codec/drcs/0001_srgb_float_center.c' || echo '$(srcdir)/'`codec/drcs/0001_srgb_float_center.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0001_srgb_float_center.Tpo codec/drcs/$(DEPDIR)/test_runner-0001_srgb_float_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0001_srgb_float_center.c' object='codec/drcs/test_runner-0001_srgb_float_center.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0001_srgb_float_center.o `test -f 'codec/drcs/0001_srgb_float_center.c' || echo '$(srcdir)/'`codec/drcs/0001_srgb_float_center.c
+
+codec/drcs/test_runner-0001_srgb_float_center.obj: codec/drcs/0001_srgb_float_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0001_srgb_float_center.obj -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0001_srgb_float_center.Tpo -c -o codec/drcs/test_runner-0001_srgb_float_center.obj `if test -f 'codec/drcs/0001_srgb_float_center.c'; then $(CYGPATH_W) 'codec/drcs/0001_srgb_float_center.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0001_srgb_float_center.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0001_srgb_float_center.Tpo codec/drcs/$(DEPDIR)/test_runner-0001_srgb_float_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0001_srgb_float_center.c' object='codec/drcs/test_runner-0001_srgb_float_center.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0001_srgb_float_center.obj `if test -f 'codec/drcs/0001_srgb_float_center.c'; then $(CYGPATH_W) 'codec/drcs/0001_srgb_float_center.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0001_srgb_float_center.c'; fi`
+
+codec/drcs/test_runner-0002_p3_float_center.o: codec/drcs/0002_p3_float_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0002_p3_float_center.o -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0002_p3_float_center.Tpo -c -o codec/drcs/test_runner-0002_p3_float_center.o `test -f 'codec/drcs/0002_p3_float_center.c' || echo '$(srcdir)/'`codec/drcs/0002_p3_float_center.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0002_p3_float_center.Tpo codec/drcs/$(DEPDIR)/test_runner-0002_p3_float_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0002_p3_float_center.c' object='codec/drcs/test_runner-0002_p3_float_center.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0002_p3_float_center.o `test -f 'codec/drcs/0002_p3_float_center.c' || echo '$(srcdir)/'`codec/drcs/0002_p3_float_center.c
+
+codec/drcs/test_runner-0002_p3_float_center.obj: codec/drcs/0002_p3_float_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0002_p3_float_center.obj -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0002_p3_float_center.Tpo -c -o codec/drcs/test_runner-0002_p3_float_center.obj `if test -f 'codec/drcs/0002_p3_float_center.c'; then $(CYGPATH_W) 'codec/drcs/0002_p3_float_center.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0002_p3_float_center.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0002_p3_float_center.Tpo codec/drcs/$(DEPDIR)/test_runner-0002_p3_float_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0002_p3_float_center.c' object='codec/drcs/test_runner-0002_p3_float_center.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0002_p3_float_center.obj `if test -f 'codec/drcs/0002_p3_float_center.c'; then $(CYGPATH_W) 'codec/drcs/0002_p3_float_center.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0002_p3_float_center.c'; fi`
+
+codec/drcs/test_runner-0003_p3_c1_body.o: codec/drcs/0003_p3_c1_body.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0003_p3_c1_body.o -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0003_p3_c1_body.Tpo -c -o codec/drcs/test_runner-0003_p3_c1_body.o `test -f 'codec/drcs/0003_p3_c1_body.c' || echo '$(srcdir)/'`codec/drcs/0003_p3_c1_body.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0003_p3_c1_body.Tpo codec/drcs/$(DEPDIR)/test_runner-0003_p3_c1_body.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0003_p3_c1_body.c' object='codec/drcs/test_runner-0003_p3_c1_body.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0003_p3_c1_body.o `test -f 'codec/drcs/0003_p3_c1_body.c' || echo '$(srcdir)/'`codec/drcs/0003_p3_c1_body.c
+
+codec/drcs/test_runner-0003_p3_c1_body.obj: codec/drcs/0003_p3_c1_body.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0003_p3_c1_body.obj -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0003_p3_c1_body.Tpo -c -o codec/drcs/test_runner-0003_p3_c1_body.obj `if test -f 'codec/drcs/0003_p3_c1_body.c'; then $(CYGPATH_W) 'codec/drcs/0003_p3_c1_body.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0003_p3_c1_body.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0003_p3_c1_body.Tpo codec/drcs/$(DEPDIR)/test_runner-0003_p3_c1_body.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0003_p3_c1_body.c' object='codec/drcs/test_runner-0003_p3_c1_body.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0003_p3_c1_body.obj `if test -f 'codec/drcs/0003_p3_c1_body.c'; then $(CYGPATH_W) 'codec/drcs/0003_p3_c1_body.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0003_p3_c1_body.c'; fi`
+
+codec/drcs/test_runner-0004_p3_v3_grid.o: codec/drcs/0004_p3_v3_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0004_p3_v3_grid.o -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0004_p3_v3_grid.Tpo -c -o codec/drcs/test_runner-0004_p3_v3_grid.o `test -f 'codec/drcs/0004_p3_v3_grid.c' || echo '$(srcdir)/'`codec/drcs/0004_p3_v3_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0004_p3_v3_grid.Tpo codec/drcs/$(DEPDIR)/test_runner-0004_p3_v3_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0004_p3_v3_grid.c' object='codec/drcs/test_runner-0004_p3_v3_grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0004_p3_v3_grid.o `test -f 'codec/drcs/0004_p3_v3_grid.c' || echo '$(srcdir)/'`codec/drcs/0004_p3_v3_grid.c
+
+codec/drcs/test_runner-0004_p3_v3_grid.obj: codec/drcs/0004_p3_v3_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0004_p3_v3_grid.obj -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0004_p3_v3_grid.Tpo -c -o codec/drcs/test_runner-0004_p3_v3_grid.obj `if test -f 'codec/drcs/0004_p3_v3_grid.c'; then $(CYGPATH_W) 'codec/drcs/0004_p3_v3_grid.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0004_p3_v3_grid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0004_p3_v3_grid.Tpo codec/drcs/$(DEPDIR)/test_runner-0004_p3_v3_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0004_p3_v3_grid.c' object='codec/drcs/test_runner-0004_p3_v3_grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0004_p3_v3_grid.obj `if test -f 'codec/drcs/0004_p3_v3_grid.c'; then $(CYGPATH_W) 'codec/drcs/0004_p3_v3_grid.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0004_p3_v3_grid.c'; fi`
+
+codec/drcs/test_runner-0005_p3_builtin.o: codec/drcs/0005_p3_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0005_p3_builtin.o -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0005_p3_builtin.Tpo -c -o codec/drcs/test_runner-0005_p3_builtin.o `test -f 'codec/drcs/0005_p3_builtin.c' || echo '$(srcdir)/'`codec/drcs/0005_p3_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0005_p3_builtin.Tpo codec/drcs/$(DEPDIR)/test_runner-0005_p3_builtin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0005_p3_builtin.c' object='codec/drcs/test_runner-0005_p3_builtin.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0005_p3_builtin.o `test -f 'codec/drcs/0005_p3_builtin.c' || echo '$(srcdir)/'`codec/drcs/0005_p3_builtin.c
+
+codec/drcs/test_runner-0005_p3_builtin.obj: codec/drcs/0005_p3_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0005_p3_builtin.obj -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0005_p3_builtin.Tpo -c -o codec/drcs/test_runner-0005_p3_builtin.obj `if test -f 'codec/drcs/0005_p3_builtin.c'; then $(CYGPATH_W) 'codec/drcs/0005_p3_builtin.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0005_p3_builtin.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0005_p3_builtin.Tpo codec/drcs/$(DEPDIR)/test_runner-0005_p3_builtin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0005_p3_builtin.c' object='codec/drcs/test_runner-0005_p3_builtin.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0005_p3_builtin.obj `if test -f 'codec/drcs/0005_p3_builtin.c'; then $(CYGPATH_W) 'codec/drcs/0005_p3_builtin.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0005_p3_builtin.c'; fi`
+
+codec/drcs/test_runner-0006_byte_control.o: codec/drcs/0006_byte_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0006_byte_control.o -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0006_byte_control.Tpo -c -o codec/drcs/test_runner-0006_byte_control.o `test -f 'codec/drcs/0006_byte_control.c' || echo '$(srcdir)/'`codec/drcs/0006_byte_control.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0006_byte_control.Tpo codec/drcs/$(DEPDIR)/test_runner-0006_byte_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0006_byte_control.c' object='codec/drcs/test_runner-0006_byte_control.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0006_byte_control.o `test -f 'codec/drcs/0006_byte_control.c' || echo '$(srcdir)/'`codec/drcs/0006_byte_control.c
+
+codec/drcs/test_runner-0006_byte_control.obj: codec/drcs/0006_byte_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0006_byte_control.obj -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0006_byte_control.Tpo -c -o codec/drcs/test_runner-0006_byte_control.obj `if test -f 'codec/drcs/0006_byte_control.c'; then $(CYGPATH_W) 'codec/drcs/0006_byte_control.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0006_byte_control.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0006_byte_control.Tpo codec/drcs/$(DEPDIR)/test_runner-0006_byte_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0006_byte_control.c' object='codec/drcs/test_runner-0006_byte_control.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0006_byte_control.obj `if test -f 'codec/drcs/0006_byte_control.c'; then $(CYGPATH_W) 'codec/drcs/0006_byte_control.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0006_byte_control.c'; fi`
+
+codec/drcs/test_runner-0007_mask_recovery.o: codec/drcs/0007_mask_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0007_mask_recovery.o -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0007_mask_recovery.Tpo -c -o codec/drcs/test_runner-0007_mask_recovery.o `test -f 'codec/drcs/0007_mask_recovery.c' || echo '$(srcdir)/'`codec/drcs/0007_mask_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0007_mask_recovery.Tpo codec/drcs/$(DEPDIR)/test_runner-0007_mask_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0007_mask_recovery.c' object='codec/drcs/test_runner-0007_mask_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0007_mask_recovery.o `test -f 'codec/drcs/0007_mask_recovery.c' || echo '$(srcdir)/'`codec/drcs/0007_mask_recovery.c
+
+codec/drcs/test_runner-0007_mask_recovery.obj: codec/drcs/0007_mask_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0007_mask_recovery.obj -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0007_mask_recovery.Tpo -c -o codec/drcs/test_runner-0007_mask_recovery.obj `if test -f 'codec/drcs/0007_mask_recovery.c'; then $(CYGPATH_W) 'codec/drcs/0007_mask_recovery.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0007_mask_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0007_mask_recovery.Tpo codec/drcs/$(DEPDIR)/test_runner-0007_mask_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0007_mask_recovery.c' object='codec/drcs/test_runner-0007_mask_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0007_mask_recovery.obj `if test -f 'codec/drcs/0007_mask_recovery.c'; then $(CYGPATH_W) 'codec/drcs/0007_mask_recovery.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0007_mask_recovery.c'; fi`
+
+codec/drcs/test_runner-0008_mono_reject.o: codec/drcs/0008_mono_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0008_mono_reject.o -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0008_mono_reject.Tpo -c -o codec/drcs/test_runner-0008_mono_reject.o `test -f 'codec/drcs/0008_mono_reject.c' || echo '$(srcdir)/'`codec/drcs/0008_mono_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0008_mono_reject.Tpo codec/drcs/$(DEPDIR)/test_runner-0008_mono_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0008_mono_reject.c' object='codec/drcs/test_runner-0008_mono_reject.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0008_mono_reject.o `test -f 'codec/drcs/0008_mono_reject.c' || echo '$(srcdir)/'`codec/drcs/0008_mono_reject.c
+
+codec/drcs/test_runner-0008_mono_reject.obj: codec/drcs/0008_mono_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0008_mono_reject.obj -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0008_mono_reject.Tpo -c -o codec/drcs/test_runner-0008_mono_reject.obj `if test -f 'codec/drcs/0008_mono_reject.c'; then $(CYGPATH_W) 'codec/drcs/0008_mono_reject.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0008_mono_reject.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0008_mono_reject.Tpo codec/drcs/$(DEPDIR)/test_runner-0008_mono_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0008_mono_reject.c' object='codec/drcs/test_runner-0008_mono_reject.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0008_mono_reject.obj `if test -f 'codec/drcs/0008_mono_reject.c'; then $(CYGPATH_W) 'codec/drcs/0008_mono_reject.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0008_mono_reject.c'; fi`
+
+codec/drcs/test_runner-0009_or_reject.o: codec/drcs/0009_or_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0009_or_reject.o -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0009_or_reject.Tpo -c -o codec/drcs/test_runner-0009_or_reject.o `test -f 'codec/drcs/0009_or_reject.c' || echo '$(srcdir)/'`codec/drcs/0009_or_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0009_or_reject.Tpo codec/drcs/$(DEPDIR)/test_runner-0009_or_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0009_or_reject.c' object='codec/drcs/test_runner-0009_or_reject.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0009_or_reject.o `test -f 'codec/drcs/0009_or_reject.c' || echo '$(srcdir)/'`codec/drcs/0009_or_reject.c
+
+codec/drcs/test_runner-0009_or_reject.obj: codec/drcs/0009_or_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0009_or_reject.obj -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0009_or_reject.Tpo -c -o codec/drcs/test_runner-0009_or_reject.obj `if test -f 'codec/drcs/0009_or_reject.c'; then $(CYGPATH_W) 'codec/drcs/0009_or_reject.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0009_or_reject.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0009_or_reject.Tpo codec/drcs/$(DEPDIR)/test_runner-0009_or_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0009_or_reject.c' object='codec/drcs/test_runner-0009_or_reject.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0009_or_reject.obj `if test -f 'codec/drcs/0009_or_reject.c'; then $(CYGPATH_W) 'codec/drcs/0009_or_reject.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0009_or_reject.c'; fi`
+
+codec/drcs/test_runner-0010_offset_reject.o: codec/drcs/0010_offset_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0010_offset_reject.o -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0010_offset_reject.Tpo -c -o codec/drcs/test_runner-0010_offset_reject.o `test -f 'codec/drcs/0010_offset_reject.c' || echo '$(srcdir)/'`codec/drcs/0010_offset_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0010_offset_reject.Tpo codec/drcs/$(DEPDIR)/test_runner-0010_offset_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0010_offset_reject.c' object='codec/drcs/test_runner-0010_offset_reject.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0010_offset_reject.o `test -f 'codec/drcs/0010_offset_reject.c' || echo '$(srcdir)/'`codec/drcs/0010_offset_reject.c
+
+codec/drcs/test_runner-0010_offset_reject.obj: codec/drcs/0010_offset_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0010_offset_reject.obj -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0010_offset_reject.Tpo -c -o codec/drcs/test_runner-0010_offset_reject.obj `if test -f 'codec/drcs/0010_offset_reject.c'; then $(CYGPATH_W) 'codec/drcs/0010_offset_reject.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0010_offset_reject.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0010_offset_reject.Tpo codec/drcs/$(DEPDIR)/test_runner-0010_offset_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0010_offset_reject.c' object='codec/drcs/test_runner-0010_offset_reject.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0010_offset_reject.obj `if test -f 'codec/drcs/0010_offset_reject.c'; then $(CYGPATH_W) 'codec/drcs/0010_offset_reject.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0010_offset_reject.c'; fi`
+
+codec/drcs/test_runner-0011_macro_reject.o: codec/drcs/0011_macro_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0011_macro_reject.o -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0011_macro_reject.Tpo -c -o codec/drcs/test_runner-0011_macro_reject.o `test -f 'codec/drcs/0011_macro_reject.c' || echo '$(srcdir)/'`codec/drcs/0011_macro_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0011_macro_reject.Tpo codec/drcs/$(DEPDIR)/test_runner-0011_macro_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0011_macro_reject.c' object='codec/drcs/test_runner-0011_macro_reject.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0011_macro_reject.o `test -f 'codec/drcs/0011_macro_reject.c' || echo '$(srcdir)/'`codec/drcs/0011_macro_reject.c
+
+codec/drcs/test_runner-0011_macro_reject.obj: codec/drcs/0011_macro_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0011_macro_reject.obj -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0011_macro_reject.Tpo -c -o codec/drcs/test_runner-0011_macro_reject.obj `if test -f 'codec/drcs/0011_macro_reject.c'; then $(CYGPATH_W) 'codec/drcs/0011_macro_reject.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0011_macro_reject.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0011_macro_reject.Tpo codec/drcs/$(DEPDIR)/test_runner-0011_macro_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0011_macro_reject.c' object='codec/drcs/test_runner-0011_macro_reject.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0011_macro_reject.obj `if test -f 'codec/drcs/0011_macro_reject.c'; then $(CYGPATH_W) 'codec/drcs/0011_macro_reject.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0011_macro_reject.c'; fi`
+
+codec/drcs/test_runner-0012_output_reuse.o: codec/drcs/0012_output_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0012_output_reuse.o -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0012_output_reuse.Tpo -c -o codec/drcs/test_runner-0012_output_reuse.o `test -f 'codec/drcs/0012_output_reuse.c' || echo '$(srcdir)/'`codec/drcs/0012_output_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0012_output_reuse.Tpo codec/drcs/$(DEPDIR)/test_runner-0012_output_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0012_output_reuse.c' object='codec/drcs/test_runner-0012_output_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0012_output_reuse.o `test -f 'codec/drcs/0012_output_reuse.c' || echo '$(srcdir)/'`codec/drcs/0012_output_reuse.c
+
+codec/drcs/test_runner-0012_output_reuse.obj: codec/drcs/0012_output_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0012_output_reuse.obj -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0012_output_reuse.Tpo -c -o codec/drcs/test_runner-0012_output_reuse.obj `if test -f 'codec/drcs/0012_output_reuse.c'; then $(CYGPATH_W) 'codec/drcs/0012_output_reuse.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0012_output_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0012_output_reuse.Tpo codec/drcs/$(DEPDIR)/test_runner-0012_output_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0012_output_reuse.c' object='codec/drcs/test_runner-0012_output_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0012_output_reuse.obj `if test -f 'codec/drcs/0012_output_reuse.c'; then $(CYGPATH_W) 'codec/drcs/0012_output_reuse.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0012_output_reuse.c'; fi`
+
+codec/drcs/test_runner-0013_p3_pipeline.o: codec/drcs/0013_p3_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0013_p3_pipeline.o -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0013_p3_pipeline.Tpo -c -o codec/drcs/test_runner-0013_p3_pipeline.o `test -f 'codec/drcs/0013_p3_pipeline.c' || echo '$(srcdir)/'`codec/drcs/0013_p3_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0013_p3_pipeline.Tpo codec/drcs/$(DEPDIR)/test_runner-0013_p3_pipeline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0013_p3_pipeline.c' object='codec/drcs/test_runner-0013_p3_pipeline.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0013_p3_pipeline.o `test -f 'codec/drcs/0013_p3_pipeline.c' || echo '$(srcdir)/'`codec/drcs/0013_p3_pipeline.c
+
+codec/drcs/test_runner-0013_p3_pipeline.obj: codec/drcs/0013_p3_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-0013_p3_pipeline.obj -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-0013_p3_pipeline.Tpo -c -o codec/drcs/test_runner-0013_p3_pipeline.obj `if test -f 'codec/drcs/0013_p3_pipeline.c'; then $(CYGPATH_W) 'codec/drcs/0013_p3_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0013_p3_pipeline.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-0013_p3_pipeline.Tpo codec/drcs/$(DEPDIR)/test_runner-0013_p3_pipeline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/drcs/0013_p3_pipeline.c' object='codec/drcs/test_runner-0013_p3_pipeline.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0013_p3_pipeline.obj `if test -f 'codec/drcs/0013_p3_pipeline.c'; then $(CYGPATH_W) 'codec/drcs/0013_p3_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0013_p3_pipeline.c'; fi`
+
 processing/encoder-core/test_runner-or_native_test_common.o: processing/encoder-core/or_native_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-or_native_test_common.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Tpo -c -o processing/encoder-core/test_runner-or_native_test_common.o `test -f 'processing/encoder-core/or_native_test_common.c' || echo '$(srcdir)/'`processing/encoder-core/or_native_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Tpo processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po
@@ -61609,6 +61932,8 @@ distclean-generic:
 	-$(am__rm_f) cli/aborttrace/$(am__dirstamp)
 	-$(am__rm_f) cli/core/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) cli/core/$(am__dirstamp)
+	-$(am__rm_f) codec/drcs/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) codec/drcs/$(am__dirstamp)
 	-$(am__rm_f) codec/macro/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) codec/macro/$(am__dirstamp)
 	-$(am__rm_f) diagnostics/$(DEPDIR)/$(am__dirstamp)

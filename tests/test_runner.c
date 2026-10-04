@@ -234,6 +234,19 @@ int test_macro_0013(int argc, char **argv);
 int test_macro_0014(int argc, char **argv);
 int test_macro_0015(int argc, char **argv);
 int test_macro_0016(int argc, char **argv);
+int test_drcs_native_0001(int argc, char **argv);
+int test_drcs_native_0002(int argc, char **argv);
+int test_drcs_native_0003(int argc, char **argv);
+int test_drcs_native_0004(int argc, char **argv);
+int test_drcs_native_0005(int argc, char **argv);
+int test_drcs_native_0006(int argc, char **argv);
+int test_drcs_native_0007(int argc, char **argv);
+int test_drcs_native_0008(int argc, char **argv);
+int test_drcs_native_0009(int argc, char **argv);
+int test_drcs_native_0010(int argc, char **argv);
+int test_drcs_native_0011(int argc, char **argv);
+int test_drcs_native_0012(int argc, char **argv);
+int test_drcs_native_0013(int argc, char **argv);
 int test_clamp_0047(int argc, char **argv);
 int test_clamp_0032(int argc, char **argv);
 int test_filter_0015_filter_dither_6delta_lso2(int argc, char **argv);
@@ -3021,6 +3034,19 @@ static test_entry_t const test_entries[] = {
     { "codec/macro/0014_float_animation_replay", test_macro_0014 },
     { "codec/macro/0015_byte_define", test_macro_0015 },
     { "codec/macro/0016_float_output_reuse", test_macro_0016 },
+    { "codec/drcs/0001_srgb_float_center", test_drcs_native_0001 },
+    { "codec/drcs/0002_p3_float_center", test_drcs_native_0002 },
+    { "codec/drcs/0003_p3_c1_body", test_drcs_native_0003 },
+    { "codec/drcs/0004_p3_v3_grid", test_drcs_native_0004 },
+    { "codec/drcs/0005_p3_builtin", test_drcs_native_0005 },
+    { "codec/drcs/0006_byte_control", test_drcs_native_0006 },
+    { "codec/drcs/0007_mask_recovery", test_drcs_native_0007 },
+    { "codec/drcs/0008_mono_reject", test_drcs_native_0008 },
+    { "codec/drcs/0009_or_reject", test_drcs_native_0009 },
+    { "codec/drcs/0010_offset_reject", test_drcs_native_0010 },
+    { "codec/drcs/0011_macro_reject", test_drcs_native_0011 },
+    { "codec/drcs/0012_output_reuse", test_drcs_native_0012 },
+    { "codec/drcs/0013_p3_pipeline", test_drcs_native_0013 },
     { "dither/clamp/0047_snapshot_allocation", test_clamp_0047 },
     { "dither/clamp/0032_kernel_interframe", test_clamp_0032 },
     { "filter/0015_filter_dither_6delta_lso2",

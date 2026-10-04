@@ -7147,7 +7147,15 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
              encoder->color_option != SIXEL_COLOR_OPTION_MONOCHROME) ||
             (encoder->ormode != 0 &&
              encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME) ||
-            encoder->fdrcs != 0 ||
+            /* DRCS omits the ordinary P2 header. Admit opaque RGB bodies,
+             * not modes whose interpretation requires that missing header.
+             * Glyphs and macros also have incompatible outer envelopes. */
+            (encoder->fdrcs != 0 &&
+             (encoder->ormode != 0 || encoder->fuse_macro != 0 ||
+              encoder->macro_number >= 0 ||
+              encoder->transparent_offset_left != 0 ||
+              encoder->transparent_offset_top != 0 ||
+              encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME)) ||
             encoder->sixdelta_enabled != 0 || encoder->output_is_png != 0 ||
             (encoder->capture_quantized != 0 &&
              encoder->palette_output == NULL));
@@ -7160,10 +7168,11 @@ static int
 sixel_encoder_rgb101_alpha(sixel_encoder_t const *encoder,
                            sixel_frame_t *frame)
 {
-    /* P2=5 composes indices and cannot represent ordinary omission masks.
-     * Keep keyed/masked frames outside this native OR path; P3 validation
-     * rejects them before output while legacy requests retain their path. */
-    if (encoder->ormode != 0) {
+    /* P2=5 composes indices; DRCS suppresses P2 entirely. Neither path
+     * establishes ordinary omission semantics for the receiver. Keep masks
+     * outside native OR/DRCS; P3 rejects before output and legacy requests
+     * retain their path. */
+    if (encoder->ormode != 0 || encoder->fdrcs != 0) {
         return !sixel_encoder_frame_preserves_alpha_key(frame);
     }
     return !sixel_encoder_frame_preserves_alpha_key(frame) ||
@@ -7243,8 +7252,9 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "CPU spatial/positional dither (or -dnone/-dauto), "
             "-Fnone|ward -_none -tauto|rgb, auto/off or soft/hard "
             "cover "
-            "for generated palettes, and normal, macro or opaque OR "
-            "SIXEL output.");
+            "for generated palettes, and normal, macro, opaque OR or "
+            "opaque DRCS SIXEL output (DRCS excludes OR, macros and "
+            "offsets).");
         return SIXEL_BAD_ARGUMENT;
     }
     return SIXEL_OK;
@@ -7272,7 +7282,7 @@ sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
             "display-p3 requires RGB or packed-alpha frames; "
             "preserved alpha "
             "requires a fixed palette or at least 2 generated slots; "
-            "OR output requires opaque frames.");
+            "OR and DRCS output require opaque frames.");
         return SIXEL_BAD_INPUT;
     }
     return SIXEL_OK;

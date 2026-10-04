@@ -119,6 +119,14 @@ For v3 charset 1, the prefix becomes `CSI ?8800;8801h`, the designation becomes 
 
 `CHARSET` changes the designation and character mapping. It does not change the fixed leading font/erase parameters or reserve storage on behalf of an application. Defining another image at overlapping glyph positions can change what previously written characters display. The current converter provides no glyph allocator, eviction notification, or automatic assignment of disjoint charsets to successive images.
 
+## Native float palettes and color interpretation
+
+Opaque DRCS output uses the [selected CPU native float palette path](output-colorspace.md#selected-ordinary-srgb-float-path), including explicit Display P3 output. Generated palettes, builtin tables and mapfiles retain authoritative working floats through construction and application. The ordinary SIXEL body writer serializes its separate final RGB101 view inside the glyph envelope, without another color transform or byte reconstruction of the working palette. Byte-eligible jobs retain their existing path. This does not change cell geometry, glyph numbering, character routing or the experimental wire format.
+
+The native DRCS path excludes preserved alpha-zero masks, `-e`, OR output, nonzero transparent offsets and terminal macros. The glyph envelope omits the normal SIXEL `P2` header, so ordinary omission, retained-plane and OR interpretations do not follow from the body alone; macros have a different outer-envelope contract. Display P3 rejects these combinations before definition bytes are emitted. Other output definitions keep their existing legacy admission, including the previously documented macro rejection; legacy acceptance is not evidence of receiver support. Resolve source transparency to an opaque background when using this native path.
+
+`-Udisplay-p3` supplies P3 component values but sends no color-policy transaction. The caller must configure the receiver's **DRCS-SIXEL** target to interpret those values as P3, as proposed by the [graphics color-management protocol](../../protocols/graphics-color-management.md). The ordinary SIXEL target is separate. `-Uauto` remains unsupported for DRCS because its implemented transaction addresses ordinary SIXEL only. Downloaded glyphs and saved character grids carry no independent color-profile metadata; receiver color interpretation, glyph registration and later display remain separate responsibilities.
+
 ## Related options and reuse mechanisms
 
 | Feature | Relationship to DRCS output |
@@ -157,8 +165,37 @@ Use mappings 2 or 3 with a matching receiver and a bounded image as the baseline
 | Suppression of ordinary DCS/`q` while retaining raster attributes | [`sixel-writer.c`](../../../src/sixel-writer.c). |
 | Public option entry point | `SIXEL_OPTFLAG_DRCS` and `sixel_encoder_setopt()` in [`sixel.h.in`](../../../include/sixel.h.in). The DRCS emit helpers are internal interfaces. |
 
-There is currently no dedicated DRCS behavioral regression suite in `tests/`. The repository's [static checks](../../testing/staticcheck.md) maintain documentation/help/man/completion consistency, but do not establish correct glyph output. No existing generic SIXEL or macro test should be treated as exact DRCS coverage.
+The [native DRCS tests](../../../tests/codec/drcs) check working values, emitted definitions and bitmap indices through the actual encoder. Their unit fixtures supply cached cell dimensions and never open the invoking terminal. The CLI color-session companion creates a private controlling PTY, supplies character and pixel geometry, rejects unexpected color exchanges and verifies independently expected P3 pixel values. These tests cover the migrated body and its envelope, not every legacy mapping or a hardware receiver.
 
 A protocol-level check can run the CLI with a controlled pseudo-terminal, set both character and pixel geometry, and capture output without displaying it. Inspect definitions separately from character data: mapping-2/3 prefixes, starting charset, UTF-8 values, row breaks, rounding at partial cells, crossing a charset boundary, `-7`/`-8`, split output paths, and rejected macro combinations are distinct observations. A zero-pixel geometry control should reject the conversion. These checks establish emitted bytes and routing, not that a real receiver renders or retains the glyphs correctly.
 
 Receiver validation additionally needs the actual terminal version, mapping modes, cell size, single-cell PUA widths, edge transparency, reuse after scrolling, slot collisions, and reset/redefinition behavior. Animation and stateful output combinations need their own validation rather than inheriting support from a successful still-image demonstration.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+Native centroid and sub-byte comparisons use absolute working-coordinate tolerance `5e-7`, including source binary32 storage. Literal wire values follow the independent Decimal equations in [`tools/generate_palette_space_fixtures.py`](../../../tools/generate_palette_space_fixtures.py). The closest RGB101 decision boundaries are more than `0.0753` away for the extended centroid and `0.0356` for the gray witnesses, above a conservative `0.002` transformed error allowance. Glyph controls, indices and character bytes are exact; intermediate floating-point bit patterns are not required to match.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| DRCS-01 | Extended linear source samples retain their independent mean and emit the expected sRGB definition inside a v2 glyph envelope. | [tests/codec/drcs/0001_srgb_float_center.t](../../../tests/codec/drcs/0001_srgb_float_center.t) |
+| DRCS-02 | The extended mean emits independently expected P3 codes without an extra transform. | [tests/codec/drcs/0002_p3_float_center.t](../../../tests/codec/drcs/0002_p3_float_center.t) |
+| DRCS-03 | C1 mode retains the P3 body under C1 mapping, DCS and ST controls. | [tests/codec/drcs/0003_p3_c1_body.t](../../../tests/codec/drcs/0003_p3_c1_body.t) |
+| DRCS-04 | V3 retains distinct sub-byte lookup indices across bands and emits the exact 3-by-3 UTF-8 grid for partial edge cells. | [tests/codec/drcs/0004_p3_v3_grid.t](../../../tests/codec/drcs/0004_p3_v3_grid.t) |
+| DRCS-05 | A builtin table retains native linear entries and expected P3 bitmap indices. | [tests/codec/drcs/0005_p3_builtin.t](../../../tests/codec/drcs/0005_p3_builtin.t) |
+| DRCS-06 | Byte-eligible builtin input remains RGB888 with the expected bitmap indices. | [tests/codec/drcs/0006_byte_control.t](../../../tests/codec/drcs/0006_byte_control.t) |
+| DRCS-07 | A preserved mask is rejected before output and the same encoder then accepts an opaque frame. | [tests/codec/drcs/0007_mask_recovery.t](../../../tests/codec/drcs/0007_mask_recovery.t) |
+| DRCS-08 | P3 DRCS rejects the palette-free monochrome convention before output. | [tests/codec/drcs/0008_mono_reject.t](../../../tests/codec/drcs/0008_mono_reject.t) |
+| DRCS-09 | P3 DRCS rejects OR composition before output. | [tests/codec/drcs/0009_or_reject.t](../../../tests/codec/drcs/0009_or_reject.t) |
+| DRCS-10 | P3 DRCS rejects nonzero transparent offsets before output. | [tests/codec/drcs/0010_offset_reject.t](../../../tests/codec/drcs/0010_offset_reject.t) |
+| DRCS-11 | P3 DRCS rejects macro wrapping before output. | [tests/codec/drcs/0011_macro_reject.t](../../../tests/codec/drcs/0011_macro_reject.t) |
+| DRCS-12 | Repeated P3/gamma/P3 output on one encoder retains source and working values while updating wire codes. | [tests/codec/drcs/0012_output_reuse.t](../../../tests/codec/drcs/0012_output_reuse.t) |
+| DRCS-13 | The native P3 body preserves every expected index with multiple encoder workers. | [tests/codec/drcs/0013_p3_pipeline.t](../../../tests/codec/drcs/0013_p3_pipeline.t) |
+| DRCS-14 | The CLI uses isolated PTY geometry and emits independently expected P3 pixels without color discovery or policy changes. | [tests/cli/color/session/0072_drcs_p3_values.t](../../../tests/cli/color/session/0072_drcs_p3_values.t) |
+
+### Coverage boundary
+
+The unit envelope cases cover mappings 2/3 at charset 1, cached 2-by-6 cells, C0/C1 controls, partial cells and a short character grid; the CLI case exercises real geometry lookup on its own PTY. They do not establish glyph appearance, transparent edge behavior, font capacity, mapping-0/1 correctness, later receiver color-policy changes or exhaustive charset rollover. The existing limitations above remain. The bitmap decoder only observes the extracted SIXEL body; it is not a DRCS receiver. Automatic color-transaction rejections remain owned by [output colorspace](output-colorspace.md#test-coverage).
