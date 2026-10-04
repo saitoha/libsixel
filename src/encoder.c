@@ -7028,7 +7028,7 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
 
     /* AUTO emits RGB. Admission also runs before filename normalization
      * and through frame/byte APIs, so resolve it without mutating the request.
-     * An explicit HLS request still needs a separate native output path. */
+     * HLS shares native working values but rounds its own wire fields. */
     palette_type = encoder->palette_type == SIXEL_PALETTETYPE_AUTO
         ? SIXEL_PALETTETYPE_RGB : encoder->palette_type;
     /* Resolve this encoder's mode without consulting another operation's
@@ -7140,7 +7140,8 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
               (encoder->cover_policy != SIXEL_PALETTE_COVER_OFF &&
                encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT))) ||
             encoder->gpu_policy != SIXEL_GPU_POLICY_OFF ||
-            palette_type != SIXEL_PALETTETYPE_RGB ||
+            (palette_type != SIXEL_PALETTETYPE_RGB &&
+             palette_type != SIXEL_PALETTETYPE_HLS) ||
             (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT &&
              encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
              encoder->color_option != SIXEL_COLOR_OPTION_BUILTIN &&
@@ -7250,7 +7251,7 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "eytzinger|fhedt "
             "-X/-W gamma|linear|oklab|cielab|din99d "
             "CPU spatial/positional dither (or -dnone/-dauto), "
-            "-Fnone|ward -_none -tauto|rgb, auto/off or soft/hard "
+            "-Fnone|ward -_none -tauto|rgb|hls, auto/off or soft/hard "
             "cover "
             "for generated palettes, and normal, macro, opaque OR or "
             "opaque DRCS SIXEL output (DRCS excludes OR, macros and "

@@ -114,6 +114,12 @@ sixel_palette_get_rgb101(sixel_palette_t const *palette,
                          unsigned char const **entries, unsigned int *count);
 
 
+/* Borrow destination RGB before wire rounding, for the HLS serializer.
+ * This is an output copy, not a new working-space palette or public API. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_get_output_rgb(sixel_palette_t const *palette,
+                             float const **entries, unsigned int *count);
+
 #ifdef __cplusplus
 }
 #endif

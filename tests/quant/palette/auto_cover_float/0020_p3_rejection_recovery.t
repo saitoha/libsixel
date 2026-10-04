@@ -1,5 +1,5 @@
 #!/bin/sh
-# P3 recovers after replacing unsupported HLS output with AUTO.
+# P3 recovers after disabling unsupported active snap.
 # Policy: docs/encoder/output/output-colorspace.md
 # Policy: docs/encoder/palette-construction/cover-policy/README.md
 set -eux

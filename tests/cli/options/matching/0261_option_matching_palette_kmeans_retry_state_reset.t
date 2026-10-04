@@ -1,5 +1,5 @@
 #!/bin/sh
-# Explicit HLS keeps this recovery test on the legacy palette path.
+# Early snap keeps this recovery test on the legacy palette path.
 # Verify a failed float K-means attempt resets state before the legacy retry.
 
 set -eux
@@ -16,7 +16,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     _SIXEL_TEST_PALETTE_QUANTIZER_POST_BUILD_FAILURE=kmeans-float32 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
     --binning-policy=hard -Qkmeans --precision=float32 \
-    -thls -dnone -p16 "-~none" -Lbuiltin -ldisable \
+    -_nearest:Iall -dnone -p16 "-~none" -Lbuiltin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1 >/dev/null) || {
     echo "not ok 1 - legacy K-means retry failed"
     exit 0

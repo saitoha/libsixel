@@ -234,6 +234,21 @@ int test_macro_0013(int argc, char **argv);
 int test_macro_0014(int argc, char **argv);
 int test_macro_0015(int argc, char **argv);
 int test_macro_0016(int argc, char **argv);
+int test_hls_native_0014(int argc, char **argv);
+int test_hls_native_0015(int argc, char **argv);
+int test_hls_native_0001(int argc, char **argv);
+int test_hls_native_0002(int argc, char **argv);
+int test_hls_native_0003(int argc, char **argv);
+int test_hls_native_0004(int argc, char **argv);
+int test_hls_native_0005(int argc, char **argv);
+int test_hls_native_0006(int argc, char **argv);
+int test_hls_native_0007(int argc, char **argv);
+int test_hls_native_0008(int argc, char **argv);
+int test_hls_native_0009(int argc, char **argv);
+int test_hls_native_0010(int argc, char **argv);
+int test_hls_native_0011(int argc, char **argv);
+int test_hls_native_0012(int argc, char **argv);
+int test_hls_native_0013(int argc, char **argv);
 int test_drcs_native_0001(int argc, char **argv);
 int test_drcs_native_0002(int argc, char **argv);
 int test_drcs_native_0003(int argc, char **argv);
@@ -3034,6 +3049,21 @@ static test_entry_t const test_entries[] = {
     { "codec/macro/0014_float_animation_replay", test_macro_0014 },
     { "codec/macro/0015_byte_define", test_macro_0015 },
     { "codec/macro/0016_float_output_reuse", test_macro_0016 },
+    { "codec/hls/0014_byte_or_control", test_hls_native_0014 },
+    { "codec/hls/0015_serial_or", test_hls_native_0015 },
+    { "codec/hls/0001_srgb_centroid", test_hls_native_0001 },
+    { "codec/hls/0002_p3_centroid", test_hls_native_0002 },
+    { "codec/hls/0003_srgb_rounding", test_hls_native_0003 },
+    { "codec/hls/0004_p3_rounding", test_hls_native_0004 },
+    { "codec/hls/0005_hue_and_gamut", test_hls_native_0005 },
+    { "codec/hls/0006_builtin_float", test_hls_native_0006 },
+    { "codec/hls/0007_byte_control", test_hls_native_0007 },
+    { "codec/hls/0008_p3_mask", test_hls_native_0008 },
+    { "codec/hls/0009_parallel_body", test_hls_native_0009 },
+    { "codec/hls/0010_parallel_or", test_hls_native_0010 },
+    { "codec/hls/0011_output_reuse", test_hls_native_0011 },
+    { "codec/hls/0012_cache_isolation", test_hls_native_0012 },
+    { "codec/hls/0013_cache_invalidation", test_hls_native_0013 },
     { "codec/drcs/0001_srgb_float_center", test_drcs_native_0001 },
     { "codec/drcs/0002_p3_float_center", test_drcs_native_0002 },
     { "codec/drcs/0003_p3_c1_body", test_drcs_native_0003 },

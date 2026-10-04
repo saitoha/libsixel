@@ -2005,6 +2005,7 @@ sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
     sixel_color_xform_t *forward;
     SIXELSTATUS status;
     unsigned char codes[SIXEL_PALETTE_MAX * 3];
+    float output_rgb[SIXEL_PALETTE_MAX * 3];
     double source[3];
     double gamma[3];
     double output[3];
@@ -2077,6 +2078,7 @@ sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
             } else if (output[channel] > 1.0) {
                 output[channel] = 1.0;
             }
+            output_rgb[offset + channel] = (float)output[channel];
             codes[offset + channel] =
                 (unsigned char)(output[channel] * 100.0 + 0.5);
         }
@@ -2085,6 +2087,8 @@ sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
      * unchanged, including extended coordinates and unsnapped centroids.
      * Cached codes retain the same indices; no later reordering is allowed. */
     memcpy(storage->output_rgb101, codes, storage->entry_count * 3U);
+    memcpy(storage->output_rgb_float, output_rgb,
+        storage->entry_count * 3U * sizeof(float));
     storage->output_rgb101_count = storage->entry_count;
     status = SIXEL_OK;
 end:
@@ -2113,6 +2117,26 @@ sixel_palette_get_rgb101(sixel_palette_t const *palette,
     *entries = storage->output_rgb101;
     *count = storage->output_rgb101_count;
     return SIXEL_OK;
+}
+
+/* HLS consumes destination RGB before percentage rounding. Its lifetime
+ * and invalidation match RGB101, while neither view modifies working RGB. */
+SIXELSTATUS
+sixel_palette_get_output_rgb(sixel_palette_t const *palette,
+                             float const **entries, unsigned int *count)
+{
+    unsigned char const *codes;
+    SIXELSTATUS status;
+
+    if (entries == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *entries = NULL;
+    status = sixel_palette_get_rgb101(palette, &codes, count);
+    if (SIXEL_SUCCEEDED(status)) {
+        *entries = SIXEL_PALETTE_STORAGE_CONST(palette)->output_rgb_float;
+    }
+    return status;
 }
 
 /* emacs Local Variables:      */

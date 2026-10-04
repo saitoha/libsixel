@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* P3 recovers after replacing unsupported HLS output with AUTO. */
+/* P3 recovers after disabling unsupported active snap. */
 int test_auto_cover_admission(int);
 
 int

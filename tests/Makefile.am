@@ -182,6 +182,22 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_FHEDT_WEIGHT_COMMON \
+    -DBUILD_TEST_0001_SRGB_CENTROID \
+    -DBUILD_TEST_0002_P3_CENTROID \
+    -DBUILD_TEST_0003_SRGB_ROUNDING \
+    -DBUILD_TEST_0004_P3_ROUNDING \
+    -DBUILD_TEST_0005_HUE_AND_GAMUT \
+    -DBUILD_TEST_0006_BUILTIN_FLOAT \
+    -DBUILD_TEST_0007_BYTE_CONTROL \
+    -DBUILD_TEST_0008_P3_MASK \
+    -DBUILD_TEST_0009_PARALLEL_BODY \
+    -DBUILD_TEST_0010_PARALLEL_OR \
+    -DBUILD_TEST_0011_OUTPUT_REUSE \
+    -DBUILD_TEST_0012_CACHE_ISOLATION \
+    -DBUILD_TEST_0013_CACHE_INVALIDATION \
+    -DBUILD_TEST_0014_BYTE_OR_CONTROL \
+    -DBUILD_TEST_0015_SERIAL_OR \
+    -DBUILD_HLS_NATIVE_TEST_COMMON \
     -DBUILD_TEST_0001_CIELAB_DEFAULT \
     -DBUILD_TEST_0002_CIELAB_UNWEIGHTED \
     -DBUILD_TEST_0003_DIN99D_DEFAULT \
@@ -5351,6 +5367,22 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/auto_float/0021_auto_explicit_p3.c \
     quant/palette/auto_float/0022_auto_reject_kmeans_feedback.c \
     quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
+    codec/hls/0014_byte_or_control.c \
+    codec/hls/0015_serial_or.c \
+    codec/hls/hls_native_test_common.c \
+    codec/hls/0001_srgb_centroid.c \
+    codec/hls/0002_p3_centroid.c \
+    codec/hls/0003_srgb_rounding.c \
+    codec/hls/0004_p3_rounding.c \
+    codec/hls/0005_hue_and_gamut.c \
+    codec/hls/0006_builtin_float.c \
+    codec/hls/0007_byte_control.c \
+    codec/hls/0008_p3_mask.c \
+    codec/hls/0009_parallel_body.c \
+    codec/hls/0010_parallel_or.c \
+    codec/hls/0011_output_reuse.c \
+    codec/hls/0012_cache_isolation.c \
+    codec/hls/0013_cache_invalidation.c \
     codec/drcs/drcs_native_test_common.c \
     codec/drcs/0001_srgb_float_center.c \
     codec/drcs/0002_p3_float_center.c \

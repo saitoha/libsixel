@@ -110,16 +110,19 @@ test_palette_0054_p3_encoder(int argc, char **argv)
             goto end;
         }
         if (palette_auto) {
-            /* Default AUTO, explicit HLS rejection, then explicit AUTO on
-             * the same encoder/output. A failed request emits no bytes and
-             * must not poison the next job's RGB serialization. */
+            /* Default AUTO, explicit HLS, then explicit AUTO on the same
+             * encoder/output. Each syntax uses its own output rounding;
+             * switching back must recover the original RGB stream. */
             if (phase != 0 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
                     't', phase == 1 ? "hls" : "auto"))) {
                 goto end;
             }
             status = sixel_encoder_encode_frame(encoder, frame, output);
             if (phase == 1) {
-                if (status != SIXEL_BAD_ARGUMENT || capture.size != 0) {
+                /* Independent P3 transform/HLS equations: the closest field
+                 * rounding boundary is >.0176 units, above .002 error. */
+                if (SIXEL_FAILED(status) || strstr(capture.bytes,
+                        "#0;1;125;53;83") == NULL) {
                     goto end;
                 }
             } else {

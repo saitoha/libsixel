@@ -4000,11 +4000,16 @@ sixel_encode_body_ormode_emit_palette(unsigned char const *palette,
         return SIXEL_BAD_ARGUMENT;
     }
     for (n = 0; n < ncolors; n++) {
-        status = output_rgb_palette_definition(output,
-                                               palette,
-                                               palette_float,
-                                               n,
-                                               keycolor);
+        /* Native output has a destination float view for either syntax.
+         * Legacy OR callers have always emitted RGB from their byte view. */
+        if (palette_float != NULL &&
+                output->palette_type == SIXEL_PALETTETYPE_HLS) {
+            status = output_hls_palette_definition(output, palette,
+                palette_float, n, keycolor);
+        } else {
+            status = output_rgb_palette_definition(output, palette,
+                palette_float, n, keycolor);
+        }
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -4578,6 +4583,7 @@ sixel_encode_dither(
     SIXELSTATUS close_status;
     int image_started;
     unsigned char const *output_rgb101;
+    float const *output_rgb_float;
     float const *ormode_palette_float;
     unsigned int output_rgb101_count;
     int use_rgb101_palette;
@@ -4586,6 +4592,7 @@ sixel_encode_dither(
         return SIXEL_BAD_ARGUMENT;
     }
     output_rgb101 = NULL;
+    output_rgb_float = NULL;
     ormode_palette_float = NULL;
     output_rgb101_count = 0U;
     use_rgb101_palette = dither->use_rgb101_palette != 0;
@@ -4892,19 +4899,29 @@ sixel_encode_dither(
             status = SIXEL_LOGIC_ERROR;
             goto end;
         }
-        /* Lookup used the unrounded working palette. Only this private
-         * writer copy uses cached wire codes; never feed them back into
-         * the working palette or reconstruct their values through bytes. */
+        if (output->palette_type == SIXEL_PALETTETYPE_HLS) {
+            status = sixel_palette_get_output_rgb(palette_obj,
+                &output_rgb_float, &output_rgb101_count);
+            if (SIXEL_FAILED(status) || output_rgb_float == NULL ||
+                    output_rgb101_count != palette_count) {
+                status = SIXEL_LOGIC_ERROR;
+                goto end;
+            }
+        }
+        /* Lookup used the unrounded working palette. RGB serialization uses
+         * cached percentages; HLS uses destination RGB before rounding to
+         * avoid a second quantization. Neither copy feeds back into lookup. */
         for (palette_index = 0U; palette_index < palette_count * 3U;
                 ++palette_index) {
             palette_entries_float32[palette_index] =
+                output_rgb_float != NULL ? output_rgb_float[palette_index] :
                 (float)output_rgb101[palette_index] / 100.0f;
             palette_entries[palette_index] = (unsigned char)(
                 (output_rgb101[palette_index] * 255U + 50U) / 100U);
         }
     }
-    /* OR serialization shares the final RGB101 view, not the unrounded
-     * working coordinates. Legacy OR callers keep their byte contract. */
+    /* OR shares the destination view selected above, never working RGB.
+     * Legacy OR callers retain their existing byte contract. */
     if (use_rgb101_palette) {
         ormode_palette_float = palette_entries_float32;
     }

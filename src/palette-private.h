@@ -65,6 +65,9 @@ typedef struct sixel_palette_storage {
     sixel_palette_build_context_t *build_context;
     /* Final output codes are distinct from the canonical float/byte views. */
     unsigned char output_rgb101[SIXEL_PALETTE_MAX * 3];
+    /* HLS rounds its own fields, not an already rounded RGB101 triplet.
+     * Both output views share the count/invalidation boundary below. */
+    float output_rgb_float[SIXEL_PALETTE_MAX * 3];
     unsigned int output_rgb101_count;
 } sixel_palette_storage_t;
 

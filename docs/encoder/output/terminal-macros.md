@@ -183,6 +183,8 @@ DEC also defines a macro-space query, `CSI ? 62 n`, and a response, `CSI Pn * {`
 
 [`src/encoder.c`](../../../src/encoder.c) owns `sixel_encoder_apply_macro_number_option()`, the hexadecimal writer, macro definition/invocation, and the output dispatch. The public C setopt flags are `SIXEL_OPTFLAG_USE_MACRO` and `SIXEL_OPTFLAG_MACRO_NUMBER` in [`include/sixel.h.in`](../../../include/sixel.h.in). These configure the encoder-object path; the low-level SIXEL encoding API does not itself allocate terminal macro IDs. The option spellings are listed in the [`img2sixel` manual](../../../converters/img2sixel.1).
 
+HLS serialization on the selected native path follows [Output color space](output-colorspace.md#native-hls-serialization); the macro wrapper does not change its color fields.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
