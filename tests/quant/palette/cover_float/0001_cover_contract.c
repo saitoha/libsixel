@@ -447,8 +447,8 @@ cover_native_wire(sixel_allocator_t *allocator, int model, int space, int mode)
     output = NULL;
     frame = NULL;
     ok = 0;
-    byte = mode == 2 || mode == 9;
-    hard = mode == 3 || mode == 5 || mode >= 8;
+    byte = mode == 2 || mode == 9 || mode == 13;
+    hard = mode == 3 || mode == 5 || (mode >= 8 && mode <= 10);
     memset(&capture, 0, sizeof(capture));
     for (n = 0; n < 18; ++n) {
         pixels[n] = hard ? (n < 9 ? -.25f : 1.5f)
@@ -470,7 +470,8 @@ cover_native_wire(sixel_allocator_t *allocator, int model, int space, int mode)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '.',
                 byte ? "8bit" : "auto")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'a',
-                mode == 5 || mode == 6 ? "corners:V1" :
+                mode == 14 ? "faces:V1" : mode == 15 ? "edges:V1" :
+                mode == 5 || mode == 6 || mode >= 11 ? "corners:V1" :
                 hard ? "corners:Whard:V1" :
                 "corners:Wsoft:V1")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X',
@@ -478,7 +479,7 @@ cover_native_wire(sixel_allocator_t *allocator, int model, int space, int mode)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
                 cover_native_spaces[space])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                mode == 1 || mode == 3 || mode == 5
+                mode == 1 || mode == 3 || mode == 5 || mode == 12
                 ? "display-p3" : "gamma")) ||
             SIXEL_FAILED(sixel_frame_new(&frame, allocator)) ||
             SIXEL_FAILED(sixel_frame_init_borrowed(frame,

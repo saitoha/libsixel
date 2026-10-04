@@ -7025,7 +7025,6 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
     int quantize_model;
     int palette_type;
     int cover_mode;
-    int cover_mode_explicit;
 
     /* AUTO emits RGB. Admission also runs before filename normalization
      * and through frame/byte APIs, so resolve it without mutating the request.
@@ -7034,14 +7033,14 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
         ? SIXEL_PALETTETYPE_RGB : encoder->palette_type;
     /* Resolve this encoder's mode without consulting another operation's
      * temporary override. Native AUTO has no repair budget, so omitted and
-     * explicit AUTO need no mode opt-in. An active budget still requires an
-     * explicit supported mode; it must not change byte-path admission. */
+     * explicit AUTO need no mode opt-in. An active budget uses the same soft
+     * default, environment or encoder override as the repair consumer.
+     * Mode spelling must not change native or byte-path admission. */
     cover_mode = SIXEL_PALETTE_COVER_MODE_SOFT;
-    cover_mode_explicit = encoder->cover_policy_mode_override;
     if (encoder->cover_policy_mode_override) {
         cover_mode = encoder->cover_policy_mode;
     } else {
-        cover_mode_explicit = sixel_option_resolve_registered_int_binding(
+        (void)sixel_option_resolve_registered_int_binding(
             SIXEL_OPTION_SCHEMA_COVER_POLICY, NULL,
             SIXEL_SUBOPTION_BINDING_ID_2(cover_policy_mode,
                 cover_policy_mode_override), &cover_mode);
@@ -7129,9 +7128,8 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
              encoder->color_option != SIXEL_COLOR_OPTION_MONOCHROME &&
              encoder->cover_policy != SIXEL_PALETTE_COVER_OFF &&
              encoder->cover_policy != SIXEL_PALETTE_COVER_AUTO &&
-             (!cover_mode_explicit ||
-              (cover_mode != SIXEL_PALETTE_COVER_MODE_SOFT &&
-               cover_mode != SIXEL_PALETTE_COVER_MODE_HARD))) ||
+             (cover_mode != SIXEL_PALETTE_COVER_MODE_SOFT &&
+              cover_mode != SIXEL_PALETTE_COVER_MODE_HARD)) ||
             (encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE &&
              encoder->snap_policy_approach_rate > 0.0 &&
              (encoder->output_color_definition ==
@@ -7234,7 +7232,7 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "eytzinger|fhedt "
             "-X/-W gamma|linear|oklab|cielab|din99d "
             "CPU spatial/positional dither (or -dnone/-dauto), "
-            "-Fnone|ward -_none -tauto|rgb, auto/off or explicit soft/hard "
+            "-Fnone|ward -_none -tauto|rgb, auto/off or soft/hard "
             "cover "
             "for generated palettes, and normal SIXEL output.");
         return SIXEL_BAD_ARGUMENT;
@@ -7848,7 +7846,7 @@ sixel_encoder_prepare_palette(
         goto end;
     }
     /* Native construction and newly separated byte input share visible-only
-     * candidates. Do not change excluded implicit-default or fixed-animation paths. */
+     * candidates. Excluded legacy paths retain their existing preparation. */
     if (reserve_alpha_key &&
             sixel_encoder_frame_has_transparent_mask(palette_frame) &&
             ((*dither)->use_rgb101_palette ||

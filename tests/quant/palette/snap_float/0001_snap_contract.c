@@ -406,7 +406,7 @@ native_snap_cover(int model, int space, int policy, int mode)
             memcmp(saved, pixels, sizeof(saved)) != 0) {
         goto end;
     }
-    if (mode >= 6 && mode <= 8) {
+    if (mode == 6 || mode == 8) {
         ok = !dither->use_rgb101_palette &&
             (mode != 6 || dither->pixelformat == SIXEL_PIXELFORMAT_RGB888);
         goto end;

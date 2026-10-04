@@ -3771,7 +3771,7 @@ static test_entry_t const test_entries[] = {
       test_auto_native_0013 },
     { "palette/auto_float/0014_auto_binning_reuse",
       test_auto_native_0014 },
-    { "palette/auto_float/0015_auto_reject_implicit_cover",
+    { "palette/auto_float/0015_auto_implicit_cover",
       test_auto_native_0015 },
     { "palette/auto_float/0016_auto_reject_snap",
       test_auto_native_0016 },

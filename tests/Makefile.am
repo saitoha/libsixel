@@ -762,7 +762,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0012_AUTO_SOFT_KMEANS \
     -DBUILD_TEST_0013_AUTO_ZERO_SNAP \
     -DBUILD_TEST_0014_AUTO_BINNING_REUSE \
-    -DBUILD_TEST_0015_AUTO_REJECT_IMPLICIT_COVER \
+    -DBUILD_TEST_0015_AUTO_IMPLICIT_COVER \
     -DBUILD_TEST_0016_AUTO_REJECT_SNAP \
     -DBUILD_TEST_0017_AUTO_SUBBYTE_DIFFUSION \
     -DBUILD_TEST_0018_AUTO_EXPLICIT_AUTO_BINNING \
@@ -5302,7 +5302,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/auto_float/0012_auto_soft_kmeans.c \
     quant/palette/auto_float/0013_auto_zero_snap.c \
     quant/palette/auto_float/0014_auto_binning_reuse.c \
-    quant/palette/auto_float/0015_auto_reject_implicit_cover.c \
+    quant/palette/auto_float/0015_auto_implicit_cover.c \
     quant/palette/auto_float/0016_auto_reject_snap.c \
     quant/palette/auto_float/0017_auto_subbyte_diffusion.c \
     quant/palette/auto_float/0018_auto_explicit_auto_binning.c \

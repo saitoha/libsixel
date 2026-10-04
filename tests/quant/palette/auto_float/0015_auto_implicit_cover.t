@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify automatic palette selection: reject implicit cover.
+# Verify automatic palette selection: implicit soft cover.
 # Policy: docs/encoder/palette-construction/quantization/README.md
 set -eux
 
@@ -8,11 +8,11 @@ set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    palette/auto_float/0015_auto_reject_implicit_cover 2>&1) || {
-    echo "not ok 1 - auto reject implicit cover"
+    palette/auto_float/0015_auto_implicit_cover 2>&1) || {
+    echo "not ok 1 - auto implicit soft cover"
     printf '# %s\n' "${trace}"
     exit 0
 }
 
-echo "ok 1 - auto reject implicit cover"
+echo "ok 1 - auto implicit soft cover"
 exit 0

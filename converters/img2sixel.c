@@ -1199,7 +1199,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    binning: kmeans any, center none/exact/hard/auto,\n"
         "    medoids/heckbert none/auto;\n"
         "    none/CPU spatial or positional diffusion/auto;\n"
-        "    none/ward merge; cover auto/off or explicit soft/hard\n"
+        "    none/ward merge; cover auto/off or soft/hard\n"
         "    snap none or rate=0\n"
         "    -m with the admitted solvers; -M exports sRGB8; no interframe\n"
     },

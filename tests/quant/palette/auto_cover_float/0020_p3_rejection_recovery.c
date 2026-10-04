@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* P3 recovers after replacing an unsupported active budget with AUTO. */
+/* P3 recovers after replacing unsupported HLS output with AUTO. */
 int test_auto_cover_admission(int);
 
 int

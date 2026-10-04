@@ -81,7 +81,7 @@ test_auto_palette(int mode, int space)
     byte_input = mode == 4 || mode == 5 || mode == 14;
     byte_work = byte_input && mode != 5;
     p3 = mode == 2 || mode == 10 || mode == 11 || mode >= 15;
-    reject = mode == 10 || mode == 11 || mode == 17;
+    reject = mode == 11 || mode == 17;
     passes = mode == 9 ? 3 : 1;
     count = mode == 12 ? 3 : 2;
     if (space < 0 || space > 4) {

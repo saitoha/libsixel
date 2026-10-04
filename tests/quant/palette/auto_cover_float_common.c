@@ -351,8 +351,8 @@ test_auto_cover_admission(int mode)
             }
         }
         memcpy(saved, source, sizeof(saved));
-        if (mode == 10 && SIXEL_FAILED(sixel_encoder_setopt(encoder, 'a',
-                pass == 1 ? "corners" : "auto"))) {
+        if (mode == 10 && SIXEL_FAILED(sixel_encoder_setopt(encoder, 't',
+                pass == 1 ? "hls" : "auto"))) {
             goto end;
         }
         if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
@@ -387,8 +387,8 @@ test_auto_cover_admission(int mode)
         }
         status = sixel_encoder_encode_frame(encoder, frame, output);
         if (mode == 10 && pass == 1) {
-            /* A still-unadmitted active budget must fail before output, and
-             * replacing it with AUTO must recover on this same encoder. */
+            /* HLS remains outside P3 admission. Replacing it with AUTO must
+             * recover on this same encoder without changing cover policy. */
             if (status != SIXEL_BAD_ARGUMENT || capture.length != 0) {
                 goto end;
             }

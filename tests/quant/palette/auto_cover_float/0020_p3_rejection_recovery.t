@@ -1,5 +1,5 @@
 #!/bin/sh
-# P3 recovers after replacing an unsupported active budget with AUTO.
+# P3 recovers after replacing unsupported HLS output with AUTO.
 # Policy: docs/encoder/output/output-colorspace.md
 # Policy: docs/encoder/palette-construction/cover-policy/README.md
 set -eux

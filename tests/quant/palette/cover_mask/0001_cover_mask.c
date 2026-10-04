@@ -248,10 +248,11 @@ cm_wire(int mode)
     }
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'p',
             boundary ? "256" : "3")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'a', hard ?
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'a', mode >= 13 ?
+                "corners:V1" : hard ?
                 (grow ? "corners:Whard:V1" : "corners:Whard:V0") :
                 (grow ? "corners:Wsoft:V1" : "corners:Wsoft:V0"))) ||
-            ((mode == 4 || mode == 5) &&
+            ((mode == 4 || mode == 5 || mode == 14) &&
              SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 'U', "display-p3"))) ||
             (mode == 12 && SIXEL_FAILED(sixel_encoder_setopt(encoder,

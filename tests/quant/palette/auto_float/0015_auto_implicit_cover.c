@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Observe automatic palette selection: reject implicit cover. */
+/* Observe automatic palette selection: implicit soft cover. */
 int test_auto_palette(int mode, int space);
 
 int
