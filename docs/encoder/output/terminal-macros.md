@@ -10,6 +10,12 @@ A terminal macro stores a sequence of terminal input bytes. DECDMAC defines thos
 
 This is separate from the legacy SIXEL DCS `P1` parameter, also called a “macro parameter” in descriptions of pixel aspect ratio. `-n` does not select `P1`. It selects the ID of an outer terminal macro that contains a SIXEL stream. See the [SIXEL wire format](../../sixel-format/README.md#dcs-envelope) for the inner format and [project history](../../project-history.md#araki-kens-experiments-around-mlterm) for the origin of the libsixel macro path.
 
+## Native float palettes and color interpretation
+
+The selected [native float palette path](output-colorspace.md#selected-ordinary-srgb-float-path) also supports `-u` and `-n`, including Display P3 output. Macro selection changes the final transport: the same SIXEL writer consumes the unchanged float working palette and its separate RGB101 serialization cache, then the macro callback hex-encodes the complete stream. It does not reconstruct float centers from an 8-bit palette or introduce a new intermediate clamp. Byte-eligible input retains its existing byte path. All other native-path admission restrictions still apply.
+
+A macro stores image bytes, not the receiver's color interpretation. Explicit `-U display-p3` requires the receiver to interpret those palette components as Display P3 when it executes the macro. A CLI `-Uauto` color session surrounds that conversion/playback only; it does not embed a color-policy change in each stored definition. An application invoking a preloaded macro later must restore the matching receiver policy itself. Replaying under a different policy changes the meaning of the stored RGB values. The proposed [graphics color-management protocol](../../protocols/graphics-color-management.md) describes interpretation separately from SIXEL image data.
+
 ## Origin and emulation model
 
 Araki Ken (`@arakiken`) proposed image preloading with terminal macros as a speed improvement during libsixel's formative 2014 period. mlterm's [2014-07-21 history](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/ChangeLog#L11508-L11515) records both DECDMAC/DECINVM support and caching of macro images. libsixel added [`-u` on July 21](https://github.com/saitoha/libsixel/commit/fc93d97631a6c1556b8af0ceceab2a5cf8c9fa35), incorporated [Araki Ken's faster hexadecimal output patch on July 22](https://github.com/saitoha/libsixel/commit/45bd1b2c9a6ad20b6681adb48ec3a2052d13a5b4), and added [`-n` on August 2](https://github.com/saitoha/libsixel/commit/7f12bdb00456f43a260c03cba9986227744d46cd). The [2014 timeline](../../project-history.md#2014-from-utility-to-reusable-library) places this work alongside the high-color and image-ID implementations that followed in the same year.
@@ -183,7 +189,7 @@ DEC also defines a macro-space query, `CSI ? 62 n`, and a response, `CSI Pn * {`
 
 ### Behavioral contract tests
 
-Each test compares the complete emitted control stream, including the hex-encoded SIXEL envelope, a fixed gray2 palette, pixel commands, definition IDs, cursor controls where applicable, and invocations. The static fixture is a 1-by-1 PNG. The animated fixture contains two distinct 2-by-1 frames and requests two loops; `-g` removes wall-clock waits without changing the expected control order.
+The first eight tests compare the complete emitted control stream, including the hex-encoded SIXEL envelope, a fixed gray2 palette, pixel commands, definition IDs, cursor controls where applicable, and invocations. The static fixture is a 1-by-1 PNG. The animated fixture contains two distinct 2-by-1 frames and requests two loops; `-g` removes wall-clock waits without changing the expected control order.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
@@ -196,10 +202,24 @@ Each test compares the complete emitted control stream, including the hex-encode
 | TM-07 | `-u -n7` retains definition-only behavior for a static PNG. | [tests/codec/macro/0007_number_after_use.t](../../../tests/codec/macro/0007_number_after_use.t) |
 | TM-08 | `-n7 -u` also retains definition-only behavior for a static PNG. | [tests/codec/macro/0008_number_before_use.t](../../../tests/codec/macro/0008_number_before_use.t) |
 
+
+The native macro tests use borrowed typed frames through the encoder's fd-backed hexadecimal callback. They check source preservation and float palette values with a storage-rounding tolerance, then compare the complete macro stream against literal expected bytes. The signed/above-one source pair has linear mean `(0.875, 0.1, 0.1)`, independently mapping to sRGB `(94,35,35)` or P3 `(87,39,37)` in RGB101; clipping that pair before averaging fails the test. These are value and wire contracts, not image-quality scores.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| TM-09 | Native linear samples retain their unrounded arithmetic center and emit independently derived sRGB RGB101 values in a fixed-ID macro. | [tests/codec/macro/0009_srgb_float_define.t](../../../tests/codec/macro/0009_srgb_float_define.t) |
+| TM-10 | The same extended source center emits independently derived P3 RGB101 values without intermediate source clipping. | [tests/codec/macro/0010_p3_float_define.t](../../../tests/codec/macro/0010_p3_float_define.t) |
+| TM-11 | A native P3 static macro is defined before its automatic invocation. | [tests/codec/macro/0011_p3_float_invoke.t](../../../tests/codec/macro/0011_p3_float_invoke.t) |
+| TM-12 | C1 changes only the inner native P3 SIXEL envelope; the outer macro remains 7-bit. | [tests/codec/macro/0012_p3_float_c1.t](../../../tests/codec/macro/0012_p3_float_c1.t) |
+| TM-13 | A generated native P3 palette excludes the masked extended sample and the body leaves that pixel unpainted. | [tests/codec/macro/0013_p3_float_mask.t](../../../tests/codec/macro/0013_p3_float_mask.t) |
+| TM-14 | Two distinct native float frames are defined on the first loop and invoked without redefinition on the second. | [tests/codec/macro/0014_float_animation_replay.t](../../../tests/codec/macro/0014_float_animation_replay.t) |
+| TM-15 | Byte-eligible macro input retains byte palette application and the independently expected wire stream. | [tests/codec/macro/0015_byte_define.t](../../../tests/codec/macro/0015_byte_define.t) |
+| TM-16 | One encoder reused for P3, gamma and P3 macro definitions refreshes wire values while retaining the same unrounded center. | [tests/codec/macro/0016_float_output_reuse.t](../../../tests/codec/macro/0016_float_output_reuse.t) |
+
 ### Supplementary coverage and boundaries
 
 The [builtin animation macro smoke test](../../../tests/loader/builtin/0107_builtin_disable_update_mode.t) and the [optional libwebp macro smoke test](../../../tests/loader/libwebp/0007_webp_use_macro.t) provide additional command-success coverage and discard output. They do not replace the exact stream assertions above.
 
-The exact tests cover the static/animation definition boundary and the listed playback contracts. They do not establish a timing tolerance, other loaders' frame metadata, all numeric validation cases, repeated `-n` precedence, C1 output, DRCS rejection, or file/multiplexer handling. Receiver capacity, macro lifetime, visual placement, and rendering require terminal integration checks; a successful local test does not prove those receiver-dependent properties. No perceptual quality threshold or malformed-input inventory is substituted for these exact stream tests.
+The exact tests cover the static/animation definition boundary and the listed playback contracts. They do not establish a timing tolerance, other loaders' frame metadata, all numeric validation cases, repeated `-n` precedence, DRCS rejection, or file/multiplexer handling. Receiver capacity, macro lifetime, visual placement, and rendering require terminal integration checks; a successful local test does not prove those receiver-dependent properties. No perceptual quality threshold or malformed-input inventory is substituted for these exact stream tests.
 
 The RLogin, mlterm, and tanasinn descriptions above are based on their documentation and source. This suite does not execute those terminals, test the alternative encodings or image-reference extensions, or measure receiver cache hits.

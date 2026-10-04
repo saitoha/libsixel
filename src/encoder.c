@@ -7099,6 +7099,8 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
     default:
         return 0;
     }
+    /* DEC macros hex-wrap this same SIXEL writer and retain its RGB101
+     * cache. They do not introduce another palette or coordinate domain. */
     /* Generated palettes and image maps share the supported solver families;
      * structured maps, built-in tables and monochrome endpoints skip
      * construction but retain the working palette.
@@ -7144,7 +7146,6 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
              encoder->color_option != SIXEL_COLOR_OPTION_BUILTIN &&
              encoder->color_option != SIXEL_COLOR_OPTION_MONOCHROME) ||
             encoder->ormode != 0 || encoder->fdrcs != 0 ||
-            encoder->fuse_macro != 0 || encoder->macro_number >= 0 ||
             encoder->sixdelta_enabled != 0 || encoder->output_is_png != 0 ||
             (encoder->capture_quantized != 0 &&
              encoder->palette_output == NULL));
@@ -7234,7 +7235,7 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "CPU spatial/positional dither (or -dnone/-dauto), "
             "-Fnone|ward -_none -tauto|rgb, auto/off or soft/hard "
             "cover "
-            "for generated palettes, and normal SIXEL output.");
+            "for generated palettes, and normal or macro SIXEL output.");
         return SIXEL_BAD_ARGUMENT;
     }
     return SIXEL_OK;

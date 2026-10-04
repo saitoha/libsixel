@@ -772,6 +772,15 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0021_AUTO_EXPLICIT_P3 \
     -DBUILD_TEST_0022_AUTO_REJECT_KMEANS_FEEDBACK \
     -DBUILD_TEST_0023_AUTO_IRRELEVANT_HECKBERT_FEEDBACK \
+    -DBUILD_NATIVE_MACRO_TEST_COMMON \
+    -DBUILD_TEST_0009_SRGB_FLOAT_DEFINE \
+    -DBUILD_TEST_0010_P3_FLOAT_DEFINE \
+    -DBUILD_TEST_0011_P3_FLOAT_INVOKE \
+    -DBUILD_TEST_0012_P3_FLOAT_C1 \
+    -DBUILD_TEST_0013_P3_FLOAT_MASK \
+    -DBUILD_TEST_0014_FLOAT_ANIMATION_REPLAY \
+    -DBUILD_TEST_0015_BYTE_DEFINE \
+    -DBUILD_TEST_0016_FLOAT_OUTPUT_REUSE \
     -DBUILD_HECKBERT_TEST_COMMON \
     -DBUILD_TEST_0034_HECKBERT_REPEATED_SUBBYTE \
     -DBUILD_TEST_0033_HECKBERT_REPEATED_POPULATION \
@@ -5315,6 +5324,15 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/auto_float/0021_auto_explicit_p3.c \
     quant/palette/auto_float/0022_auto_reject_kmeans_feedback.c \
     quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
+    codec/macro/native_macro_test_common.c \
+    codec/macro/0009_srgb_float_define.c \
+    codec/macro/0010_p3_float_define.c \
+    codec/macro/0011_p3_float_invoke.c \
+    codec/macro/0012_p3_float_c1.c \
+    codec/macro/0013_p3_float_mask.c \
+    codec/macro/0014_float_animation_replay.c \
+    codec/macro/0015_byte_define.c \
+    codec/macro/0016_float_output_reuse.c \
     quant/palette/heckbert_test_common.c \
     quant/palette/heckbert_float/0034_heckbert_repeated_subbyte.c \
     quant/palette/heckbert_float/0033_heckbert_repeated_population.c \

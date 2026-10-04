@@ -2668,6 +2668,15 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/auto_float/0021_auto_explicit_p3.c \
 	quant/palette/auto_float/0022_auto_reject_kmeans_feedback.c \
 	quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
+	codec/macro/native_macro_test_common.c \
+	codec/macro/0009_srgb_float_define.c \
+	codec/macro/0010_p3_float_define.c \
+	codec/macro/0011_p3_float_invoke.c \
+	codec/macro/0012_p3_float_c1.c \
+	codec/macro/0013_p3_float_mask.c \
+	codec/macro/0014_float_animation_replay.c \
+	codec/macro/0015_byte_define.c \
+	codec/macro/0016_float_output_reuse.c \
 	quant/palette/heckbert_test_common.c \
 	quant/palette/heckbert_float/0034_heckbert_repeated_subbyte.c \
 	quant/palette/heckbert_float/0033_heckbert_repeated_population.c \
@@ -5229,6 +5238,15 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0021_auto_explicit_p3.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0022_auto_reject_kmeans_feedback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0023_auto_irrelevant_heckbert_feedback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-native_macro_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0009_srgb_float_define.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0010_p3_float_define.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0011_p3_float_invoke.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0012_p3_float_c1.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0013_p3_float_mask.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0014_float_animation_replay.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0015_byte_define.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0016_float_output_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-heckbert_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/heckbert_float/test_runner-0034_heckbert_repeated_subbyte.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/heckbert_float/test_runner-0033_heckbert_repeated_population.$(OBJEXT) \
@@ -5378,6 +5396,15 @@ am__depfiles_remade =  \
 	cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po \
 	cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po \
 	cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po \
+	codec/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Po \
+	codec/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Po \
+	codec/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Po \
+	codec/macro/$(DEPDIR)/test_runner-0012_p3_float_c1.Po \
+	codec/macro/$(DEPDIR)/test_runner-0013_p3_float_mask.Po \
+	codec/macro/$(DEPDIR)/test_runner-0014_float_animation_replay.Po \
+	codec/macro/$(DEPDIR)/test_runner-0015_byte_define.Po \
+	codec/macro/$(DEPDIR)/test_runner-0016_float_output_reuse.Po \
+	codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Po \
 	diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po \
@@ -9164,6 +9191,15 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_AUTO_EXPLICIT_P3 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_AUTO_REJECT_KMEANS_FEEDBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_AUTO_IRRELEVANT_HECKBERT_FEEDBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_NATIVE_MACRO_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_SRGB_FLOAT_DEFINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_P3_FLOAT_DEFINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_P3_FLOAT_INVOKE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_P3_FLOAT_C1 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_P3_FLOAT_MASK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_FLOAT_ANIMATION_REPLAY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_BYTE_DEFINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_FLOAT_OUTPUT_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_HECKBERT_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_HECKBERT_REPEATED_SUBBYTE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_HECKBERT_REPEATED_POPULATION \
@@ -13738,6 +13774,15 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0021_auto_explicit_p3.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0022_auto_reject_kmeans_feedback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/native_macro_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0009_srgb_float_define.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0010_p3_float_define.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0011_p3_float_invoke.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0012_p3_float_c1.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0013_p3_float_mask.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0014_float_animation_replay.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0015_byte_define.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0016_float_output_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_float/0034_heckbert_repeated_subbyte.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_float/0033_heckbert_repeated_population.c \
@@ -21996,6 +22041,39 @@ quant/palette/auto_float/test_runner-0022_auto_reject_kmeans_feedback.$(OBJEXT):
 quant/palette/auto_float/test_runner-0023_auto_irrelevant_heckbert_feedback.$(OBJEXT):  \
 	quant/palette/auto_float/$(am__dirstamp) \
 	quant/palette/auto_float/$(DEPDIR)/$(am__dirstamp)
+codec/macro/$(am__dirstamp):
+	@$(MKDIR_P) codec/macro
+	@: >>codec/macro/$(am__dirstamp)
+codec/macro/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) codec/macro/$(DEPDIR)
+	@: >>codec/macro/$(DEPDIR)/$(am__dirstamp)
+codec/macro/test_runner-native_macro_test_common.$(OBJEXT):  \
+	codec/macro/$(am__dirstamp) \
+	codec/macro/$(DEPDIR)/$(am__dirstamp)
+codec/macro/test_runner-0009_srgb_float_define.$(OBJEXT):  \
+	codec/macro/$(am__dirstamp) \
+	codec/macro/$(DEPDIR)/$(am__dirstamp)
+codec/macro/test_runner-0010_p3_float_define.$(OBJEXT):  \
+	codec/macro/$(am__dirstamp) \
+	codec/macro/$(DEPDIR)/$(am__dirstamp)
+codec/macro/test_runner-0011_p3_float_invoke.$(OBJEXT):  \
+	codec/macro/$(am__dirstamp) \
+	codec/macro/$(DEPDIR)/$(am__dirstamp)
+codec/macro/test_runner-0012_p3_float_c1.$(OBJEXT):  \
+	codec/macro/$(am__dirstamp) \
+	codec/macro/$(DEPDIR)/$(am__dirstamp)
+codec/macro/test_runner-0013_p3_float_mask.$(OBJEXT):  \
+	codec/macro/$(am__dirstamp) \
+	codec/macro/$(DEPDIR)/$(am__dirstamp)
+codec/macro/test_runner-0014_float_animation_replay.$(OBJEXT):  \
+	codec/macro/$(am__dirstamp) \
+	codec/macro/$(DEPDIR)/$(am__dirstamp)
+codec/macro/test_runner-0015_byte_define.$(OBJEXT):  \
+	codec/macro/$(am__dirstamp) \
+	codec/macro/$(DEPDIR)/$(am__dirstamp)
+codec/macro/test_runner-0016_float_output_reuse.$(OBJEXT):  \
+	codec/macro/$(am__dirstamp) \
+	codec/macro/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-heckbert_test_common.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
@@ -22239,6 +22317,7 @@ mostlyclean-compile:
 	-rm -f cli/*.$(OBJEXT)
 	-rm -f cli/aborttrace/*.$(OBJEXT)
 	-rm -f cli/core/*.$(OBJEXT)
+	-rm -f codec/macro/*.$(OBJEXT)
 	-rm -f diagnostics/*.$(OBJEXT)
 	-rm -f diagnostics/icc/*.$(OBJEXT)
 	-rm -f diagnostics/probe/*.$(OBJEXT)
@@ -22362,6 +22441,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/macro/$(DEPDIR)/test_runner-0012_p3_float_c1.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/macro/$(DEPDIR)/test_runner-0013_p3_float_mask.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/macro/$(DEPDIR)/test_runner-0014_float_animation_replay.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/macro/$(DEPDIR)/test_runner-0015_byte_define.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/macro/$(DEPDIR)/test_runner-0016_float_output_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po@am__quote@ # am--include-marker
@@ -59911,6 +59999,132 @@ quant/palette/auto_float/test_runner-0023_auto_irrelevant_heckbert_feedback.obj:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/auto_float/test_runner-0023_auto_irrelevant_heckbert_feedback.obj `if test -f 'quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c'; then $(CYGPATH_W) 'quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c'; fi`
 
+codec/macro/test_runner-native_macro_test_common.o: codec/macro/native_macro_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-native_macro_test_common.o -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Tpo -c -o codec/macro/test_runner-native_macro_test_common.o `test -f 'codec/macro/native_macro_test_common.c' || echo '$(srcdir)/'`codec/macro/native_macro_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Tpo codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/native_macro_test_common.c' object='codec/macro/test_runner-native_macro_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-native_macro_test_common.o `test -f 'codec/macro/native_macro_test_common.c' || echo '$(srcdir)/'`codec/macro/native_macro_test_common.c
+
+codec/macro/test_runner-native_macro_test_common.obj: codec/macro/native_macro_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-native_macro_test_common.obj -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Tpo -c -o codec/macro/test_runner-native_macro_test_common.obj `if test -f 'codec/macro/native_macro_test_common.c'; then $(CYGPATH_W) 'codec/macro/native_macro_test_common.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/native_macro_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Tpo codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/native_macro_test_common.c' object='codec/macro/test_runner-native_macro_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-native_macro_test_common.obj `if test -f 'codec/macro/native_macro_test_common.c'; then $(CYGPATH_W) 'codec/macro/native_macro_test_common.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/native_macro_test_common.c'; fi`
+
+codec/macro/test_runner-0009_srgb_float_define.o: codec/macro/0009_srgb_float_define.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0009_srgb_float_define.o -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Tpo -c -o codec/macro/test_runner-0009_srgb_float_define.o `test -f 'codec/macro/0009_srgb_float_define.c' || echo '$(srcdir)/'`codec/macro/0009_srgb_float_define.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Tpo codec/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0009_srgb_float_define.c' object='codec/macro/test_runner-0009_srgb_float_define.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0009_srgb_float_define.o `test -f 'codec/macro/0009_srgb_float_define.c' || echo '$(srcdir)/'`codec/macro/0009_srgb_float_define.c
+
+codec/macro/test_runner-0009_srgb_float_define.obj: codec/macro/0009_srgb_float_define.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0009_srgb_float_define.obj -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Tpo -c -o codec/macro/test_runner-0009_srgb_float_define.obj `if test -f 'codec/macro/0009_srgb_float_define.c'; then $(CYGPATH_W) 'codec/macro/0009_srgb_float_define.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0009_srgb_float_define.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Tpo codec/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0009_srgb_float_define.c' object='codec/macro/test_runner-0009_srgb_float_define.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0009_srgb_float_define.obj `if test -f 'codec/macro/0009_srgb_float_define.c'; then $(CYGPATH_W) 'codec/macro/0009_srgb_float_define.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0009_srgb_float_define.c'; fi`
+
+codec/macro/test_runner-0010_p3_float_define.o: codec/macro/0010_p3_float_define.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0010_p3_float_define.o -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Tpo -c -o codec/macro/test_runner-0010_p3_float_define.o `test -f 'codec/macro/0010_p3_float_define.c' || echo '$(srcdir)/'`codec/macro/0010_p3_float_define.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Tpo codec/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0010_p3_float_define.c' object='codec/macro/test_runner-0010_p3_float_define.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0010_p3_float_define.o `test -f 'codec/macro/0010_p3_float_define.c' || echo '$(srcdir)/'`codec/macro/0010_p3_float_define.c
+
+codec/macro/test_runner-0010_p3_float_define.obj: codec/macro/0010_p3_float_define.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0010_p3_float_define.obj -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Tpo -c -o codec/macro/test_runner-0010_p3_float_define.obj `if test -f 'codec/macro/0010_p3_float_define.c'; then $(CYGPATH_W) 'codec/macro/0010_p3_float_define.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0010_p3_float_define.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Tpo codec/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0010_p3_float_define.c' object='codec/macro/test_runner-0010_p3_float_define.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0010_p3_float_define.obj `if test -f 'codec/macro/0010_p3_float_define.c'; then $(CYGPATH_W) 'codec/macro/0010_p3_float_define.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0010_p3_float_define.c'; fi`
+
+codec/macro/test_runner-0011_p3_float_invoke.o: codec/macro/0011_p3_float_invoke.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0011_p3_float_invoke.o -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Tpo -c -o codec/macro/test_runner-0011_p3_float_invoke.o `test -f 'codec/macro/0011_p3_float_invoke.c' || echo '$(srcdir)/'`codec/macro/0011_p3_float_invoke.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Tpo codec/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0011_p3_float_invoke.c' object='codec/macro/test_runner-0011_p3_float_invoke.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0011_p3_float_invoke.o `test -f 'codec/macro/0011_p3_float_invoke.c' || echo '$(srcdir)/'`codec/macro/0011_p3_float_invoke.c
+
+codec/macro/test_runner-0011_p3_float_invoke.obj: codec/macro/0011_p3_float_invoke.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0011_p3_float_invoke.obj -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Tpo -c -o codec/macro/test_runner-0011_p3_float_invoke.obj `if test -f 'codec/macro/0011_p3_float_invoke.c'; then $(CYGPATH_W) 'codec/macro/0011_p3_float_invoke.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0011_p3_float_invoke.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Tpo codec/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0011_p3_float_invoke.c' object='codec/macro/test_runner-0011_p3_float_invoke.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0011_p3_float_invoke.obj `if test -f 'codec/macro/0011_p3_float_invoke.c'; then $(CYGPATH_W) 'codec/macro/0011_p3_float_invoke.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0011_p3_float_invoke.c'; fi`
+
+codec/macro/test_runner-0012_p3_float_c1.o: codec/macro/0012_p3_float_c1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0012_p3_float_c1.o -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0012_p3_float_c1.Tpo -c -o codec/macro/test_runner-0012_p3_float_c1.o `test -f 'codec/macro/0012_p3_float_c1.c' || echo '$(srcdir)/'`codec/macro/0012_p3_float_c1.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0012_p3_float_c1.Tpo codec/macro/$(DEPDIR)/test_runner-0012_p3_float_c1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0012_p3_float_c1.c' object='codec/macro/test_runner-0012_p3_float_c1.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0012_p3_float_c1.o `test -f 'codec/macro/0012_p3_float_c1.c' || echo '$(srcdir)/'`codec/macro/0012_p3_float_c1.c
+
+codec/macro/test_runner-0012_p3_float_c1.obj: codec/macro/0012_p3_float_c1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0012_p3_float_c1.obj -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0012_p3_float_c1.Tpo -c -o codec/macro/test_runner-0012_p3_float_c1.obj `if test -f 'codec/macro/0012_p3_float_c1.c'; then $(CYGPATH_W) 'codec/macro/0012_p3_float_c1.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0012_p3_float_c1.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0012_p3_float_c1.Tpo codec/macro/$(DEPDIR)/test_runner-0012_p3_float_c1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0012_p3_float_c1.c' object='codec/macro/test_runner-0012_p3_float_c1.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0012_p3_float_c1.obj `if test -f 'codec/macro/0012_p3_float_c1.c'; then $(CYGPATH_W) 'codec/macro/0012_p3_float_c1.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0012_p3_float_c1.c'; fi`
+
+codec/macro/test_runner-0013_p3_float_mask.o: codec/macro/0013_p3_float_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0013_p3_float_mask.o -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0013_p3_float_mask.Tpo -c -o codec/macro/test_runner-0013_p3_float_mask.o `test -f 'codec/macro/0013_p3_float_mask.c' || echo '$(srcdir)/'`codec/macro/0013_p3_float_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0013_p3_float_mask.Tpo codec/macro/$(DEPDIR)/test_runner-0013_p3_float_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0013_p3_float_mask.c' object='codec/macro/test_runner-0013_p3_float_mask.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0013_p3_float_mask.o `test -f 'codec/macro/0013_p3_float_mask.c' || echo '$(srcdir)/'`codec/macro/0013_p3_float_mask.c
+
+codec/macro/test_runner-0013_p3_float_mask.obj: codec/macro/0013_p3_float_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0013_p3_float_mask.obj -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0013_p3_float_mask.Tpo -c -o codec/macro/test_runner-0013_p3_float_mask.obj `if test -f 'codec/macro/0013_p3_float_mask.c'; then $(CYGPATH_W) 'codec/macro/0013_p3_float_mask.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0013_p3_float_mask.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0013_p3_float_mask.Tpo codec/macro/$(DEPDIR)/test_runner-0013_p3_float_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0013_p3_float_mask.c' object='codec/macro/test_runner-0013_p3_float_mask.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0013_p3_float_mask.obj `if test -f 'codec/macro/0013_p3_float_mask.c'; then $(CYGPATH_W) 'codec/macro/0013_p3_float_mask.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0013_p3_float_mask.c'; fi`
+
+codec/macro/test_runner-0014_float_animation_replay.o: codec/macro/0014_float_animation_replay.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0014_float_animation_replay.o -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0014_float_animation_replay.Tpo -c -o codec/macro/test_runner-0014_float_animation_replay.o `test -f 'codec/macro/0014_float_animation_replay.c' || echo '$(srcdir)/'`codec/macro/0014_float_animation_replay.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0014_float_animation_replay.Tpo codec/macro/$(DEPDIR)/test_runner-0014_float_animation_replay.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0014_float_animation_replay.c' object='codec/macro/test_runner-0014_float_animation_replay.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0014_float_animation_replay.o `test -f 'codec/macro/0014_float_animation_replay.c' || echo '$(srcdir)/'`codec/macro/0014_float_animation_replay.c
+
+codec/macro/test_runner-0014_float_animation_replay.obj: codec/macro/0014_float_animation_replay.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0014_float_animation_replay.obj -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0014_float_animation_replay.Tpo -c -o codec/macro/test_runner-0014_float_animation_replay.obj `if test -f 'codec/macro/0014_float_animation_replay.c'; then $(CYGPATH_W) 'codec/macro/0014_float_animation_replay.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0014_float_animation_replay.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0014_float_animation_replay.Tpo codec/macro/$(DEPDIR)/test_runner-0014_float_animation_replay.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0014_float_animation_replay.c' object='codec/macro/test_runner-0014_float_animation_replay.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0014_float_animation_replay.obj `if test -f 'codec/macro/0014_float_animation_replay.c'; then $(CYGPATH_W) 'codec/macro/0014_float_animation_replay.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0014_float_animation_replay.c'; fi`
+
+codec/macro/test_runner-0015_byte_define.o: codec/macro/0015_byte_define.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0015_byte_define.o -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0015_byte_define.Tpo -c -o codec/macro/test_runner-0015_byte_define.o `test -f 'codec/macro/0015_byte_define.c' || echo '$(srcdir)/'`codec/macro/0015_byte_define.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0015_byte_define.Tpo codec/macro/$(DEPDIR)/test_runner-0015_byte_define.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0015_byte_define.c' object='codec/macro/test_runner-0015_byte_define.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0015_byte_define.o `test -f 'codec/macro/0015_byte_define.c' || echo '$(srcdir)/'`codec/macro/0015_byte_define.c
+
+codec/macro/test_runner-0015_byte_define.obj: codec/macro/0015_byte_define.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0015_byte_define.obj -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0015_byte_define.Tpo -c -o codec/macro/test_runner-0015_byte_define.obj `if test -f 'codec/macro/0015_byte_define.c'; then $(CYGPATH_W) 'codec/macro/0015_byte_define.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0015_byte_define.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0015_byte_define.Tpo codec/macro/$(DEPDIR)/test_runner-0015_byte_define.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0015_byte_define.c' object='codec/macro/test_runner-0015_byte_define.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0015_byte_define.obj `if test -f 'codec/macro/0015_byte_define.c'; then $(CYGPATH_W) 'codec/macro/0015_byte_define.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0015_byte_define.c'; fi`
+
+codec/macro/test_runner-0016_float_output_reuse.o: codec/macro/0016_float_output_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0016_float_output_reuse.o -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0016_float_output_reuse.Tpo -c -o codec/macro/test_runner-0016_float_output_reuse.o `test -f 'codec/macro/0016_float_output_reuse.c' || echo '$(srcdir)/'`codec/macro/0016_float_output_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0016_float_output_reuse.Tpo codec/macro/$(DEPDIR)/test_runner-0016_float_output_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0016_float_output_reuse.c' object='codec/macro/test_runner-0016_float_output_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0016_float_output_reuse.o `test -f 'codec/macro/0016_float_output_reuse.c' || echo '$(srcdir)/'`codec/macro/0016_float_output_reuse.c
+
+codec/macro/test_runner-0016_float_output_reuse.obj: codec/macro/0016_float_output_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-0016_float_output_reuse.obj -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-0016_float_output_reuse.Tpo -c -o codec/macro/test_runner-0016_float_output_reuse.obj `if test -f 'codec/macro/0016_float_output_reuse.c'; then $(CYGPATH_W) 'codec/macro/0016_float_output_reuse.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0016_float_output_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/macro/$(DEPDIR)/test_runner-0016_float_output_reuse.Tpo codec/macro/$(DEPDIR)/test_runner-0016_float_output_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/macro/0016_float_output_reuse.c' object='codec/macro/test_runner-0016_float_output_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/macro/test_runner-0016_float_output_reuse.obj `if test -f 'codec/macro/0016_float_output_reuse.c'; then $(CYGPATH_W) 'codec/macro/0016_float_output_reuse.c'; else $(CYGPATH_W) '$(srcdir)/codec/macro/0016_float_output_reuse.c'; fi`
+
 quant/palette/test_runner-heckbert_test_common.o: quant/palette/heckbert_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-heckbert_test_common.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-heckbert_test_common.Tpo -c -o quant/palette/test_runner-heckbert_test_common.o `test -f 'quant/palette/heckbert_test_common.c' || echo '$(srcdir)/'`quant/palette/heckbert_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-heckbert_test_common.Tpo quant/palette/$(DEPDIR)/test_runner-heckbert_test_common.Po
@@ -61096,6 +61310,8 @@ distclean-generic:
 	-$(am__rm_f) cli/aborttrace/$(am__dirstamp)
 	-$(am__rm_f) cli/core/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) cli/core/$(am__dirstamp)
+	-$(am__rm_f) codec/macro/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) codec/macro/$(am__dirstamp)
 	-$(am__rm_f) diagnostics/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) diagnostics/$(am__dirstamp)
 	-$(am__rm_f) diagnostics/icc/$(DEPDIR)/$(am__dirstamp)

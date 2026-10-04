@@ -214,6 +214,14 @@ int test_clamp_0040(int argc, char **argv);
 int test_clamp_0041(int argc, char **argv);
 int test_clamp_0042(int argc, char **argv);
 int test_clamp_0043(int argc, char **argv);
+int test_macro_0009(int argc, char **argv);
+int test_macro_0010(int argc, char **argv);
+int test_macro_0011(int argc, char **argv);
+int test_macro_0012(int argc, char **argv);
+int test_macro_0013(int argc, char **argv);
+int test_macro_0014(int argc, char **argv);
+int test_macro_0015(int argc, char **argv);
+int test_macro_0016(int argc, char **argv);
 int test_clamp_0047(int argc, char **argv);
 int test_clamp_0032(int argc, char **argv);
 int test_filter_0015_filter_dither_6delta_lso2(int argc, char **argv);
@@ -2969,6 +2977,14 @@ static test_entry_t const test_entries[] = {
     { "dither/clamp/0041_fs_vertical_residual", test_clamp_0041 },
     { "dither/clamp/0042_fs_serpentine_residual", test_clamp_0042 },
     { "dither/clamp/0043_parallel_overlap", test_clamp_0043 },
+    { "codec/macro/0009_srgb_float_define", test_macro_0009 },
+    { "codec/macro/0010_p3_float_define", test_macro_0010 },
+    { "codec/macro/0011_p3_float_invoke", test_macro_0011 },
+    { "codec/macro/0012_p3_float_c1", test_macro_0012 },
+    { "codec/macro/0013_p3_float_mask", test_macro_0013 },
+    { "codec/macro/0014_float_animation_replay", test_macro_0014 },
+    { "codec/macro/0015_byte_define", test_macro_0015 },
+    { "codec/macro/0016_float_output_reuse", test_macro_0016 },
     { "dither/clamp/0047_snapshot_allocation", test_clamp_0047 },
     { "dither/clamp/0032_kernel_interframe", test_clamp_0032 },
     { "filter/0015_filter_dither_6delta_lso2",
