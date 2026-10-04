@@ -593,6 +593,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0041_FS_VERTICAL_RESIDUAL \
     -DBUILD_TEST_0042_FS_SERPENTINE_RESIDUAL \
     -DBUILD_TEST_0043_PARALLEL_OVERLAP \
+    -DBUILD_TEST_0047_SNAPSHOT_ALLOCATION \
     -DBUILD_TEST_0065_SRGB_GAMMA_UNSNAPPED_LOOKUP \
     -DBUILD_TEST_0066_SRGB_LINEAR_UNSNAPPED_LOOKUP \
     -DBUILD_TEST_0067_SRGB_GAMMA_EXTENDED_SOURCE \
@@ -772,6 +773,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0022_AUTO_REJECT_KMEANS_FEEDBACK \
     -DBUILD_TEST_0023_AUTO_IRRELEVANT_HECKBERT_FEEDBACK \
     -DBUILD_HECKBERT_TEST_COMMON \
+    -DBUILD_TEST_0034_HECKBERT_REPEATED_SUBBYTE \
+    -DBUILD_TEST_0033_HECKBERT_REPEATED_POPULATION \
     -DBUILD_TEST_0032_HECKBERT_SUBBYTE_DIFFUSION \
     -DBUILD_TEST_0030_HECKBERT_HISTOGRAM_ALLOCATION \
     -DBUILD_TEST_0031_HECKBERT_REPRESENTATIVE_ALLOCATION \
@@ -3460,6 +3463,7 @@ test_runner_SOURCES = test_runner.c \
     processing/dither/clamp/0041_fs_vertical_residual.c \
     processing/dither/clamp/0042_fs_serpentine_residual.c \
     processing/dither/clamp/0043_parallel_overlap.c \
+    processing/dither/clamp/0047_snapshot_allocation.c \
     processing/dither/clamp/clamp_test_common.c \
     processing/dither/clamp/clamp_test_common.h \
     processing/dither/clamp/0017_keep_fs.c \
@@ -5312,6 +5316,8 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/auto_float/0022_auto_reject_kmeans_feedback.c \
     quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
     quant/palette/heckbert_test_common.c \
+    quant/palette/heckbert_float/0034_heckbert_repeated_subbyte.c \
+    quant/palette/heckbert_float/0033_heckbert_repeated_population.c \
     quant/palette/heckbert_float/0032_heckbert_subbyte_diffusion.c \
     quant/palette/heckbert_float/0030_heckbert_histogram_allocation.c \
     quant/palette/heckbert_float/0031_heckbert_representative_allocation.c \

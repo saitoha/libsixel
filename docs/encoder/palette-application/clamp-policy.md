@@ -39,7 +39,19 @@ On the selected Display P3 and ordinary sRGB float paths, sources can hold exten
 
 The interframe implementation retains its existing quantized history representation. This option controls the corrected sample supplied to lookup; it does not increase temporal-history precision or remove its representation limits.
 
-Each float diffusion request owns an immutable source snapshot. Parallel bands do not share mutable limiter state. Band boundaries can still change incoming errors, so use a fixed worker count, scan order, and palette when comparing policies. RGB byte-input promotion preserves retained-color competition and residual propagation in delta encoding.
+Each hard/soft float diffusion request owns an immutable source snapshot. Unlimited feedback (`none`) needs no source-dependent bound and allocates no snapshot. Parallel bands do not share mutable limiter state. Band boundaries can still change incoming errors, so use a fixed worker count, scan order, and palette when comparing policies. RGB byte-input promotion preserves retained-color competition and residual propagation in delta encoding.
+
+### Snapshot storage and process memory
+
+For an RGB float request covering `W` by `H` pixels, hard and soft each allocate one `W * H * 3 * sizeof(float)` snapshot. With binary32 components this is 12 bytes per pixel. The snapshot preserves the original coordinates exactly and owns independent storage; allocation failure is reported and does not select another policy. Finishing a failed or already finished snapshot does not free source pixels. The original source is needed by hard as well as soft because both expand their bounds to contain extended source coordinates. The eligible byte hard path has no float snapshot.
+
+| Full-image RGB request | Hard or soft snapshot | None snapshot |
+| --- | ---: | ---: |
+| 640 × 480 | 3.516 MiB | 0 |
+| 1920 × 1080 | 23.730 MiB | 0 |
+| 3840 × 2160 | 94.922 MiB | 0 |
+
+These are derived allocation sizes, not measured whole-process peak RSS. Input decoding, format conversion, working copies, palette construction, output indexes, and queues can coexist or peak at other times. Consequently, subtracting two process RSS peaks does not directly measure the snapshot. A parallel request uses its effective work-band height including warm-up rows; sum the sizes of simultaneously active snapshots rather than multiplying the full-image size by the requested worker count. [Work-band geometry](../../threading/overview.md#work-band-seams-and-image-quality) defines that execution boundary. Keep format and concurrency fixed when comparing hard, soft and none; an 8-bit hard versus float soft comparison also includes a precision-path change.
 
 ## Quality and threshold selection
 
@@ -99,6 +111,10 @@ The default threshold 1.01 retains a small correction margin. It is a compromise
 | DC-44 | FS with odd overlap preserves absolute-row serpentine parity while each worker rebuilds private limiter history. | [tests/processing/dither/clamp/0044_parallel_serpentine_overlap.t](../../../tests/processing/dither/clamp/0044_parallel_serpentine_overlap.t) |
 | DC-45 | FS with a requested two-row work band uses the effective six-row geometry for soft-clamp feedback. | [tests/processing/dither/clamp/0045_parallel_minimum_band.t](../../../tests/processing/dither/clamp/0045_parallel_minimum_band.t) |
 | DC-46 | FS with a requested seven-row work band rounds to twelve rows and excessive overlap is capped at six before soft-clamp application. | [tests/processing/dither/clamp/0046_parallel_overlap_cap.t](../../../tests/processing/dither/clamp/0046_parallel_overlap_cap.t) |
+| DC-47 | Soft allocates one independent exact-size snapshot and frees it once. | [tests/processing/dither/clamp/0047_soft_snapshot.t](../../../tests/processing/dither/clamp/0047_soft_snapshot.t) |
+| DC-48 | Source-containing hard has the same snapshot size and ownership contract. | [tests/processing/dither/clamp/0048_hard_snapshot.t](../../../tests/processing/dither/clamp/0048_hard_snapshot.t) |
+| DC-49 | None allocates no source snapshot. | [tests/processing/dither/clamp/0049_none_no_snapshot.t](../../../tests/processing/dither/clamp/0049_none_no_snapshot.t) |
+| DC-50 | Snapshot allocation failure permits safe finish and a successful retry. | [tests/processing/dither/clamp/0050_snapshot_failure.t](../../../tests/processing/dither/clamp/0050_snapshot_failure.t) |
 
 ### Quality regression tests
 

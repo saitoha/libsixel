@@ -31,8 +31,9 @@
 /* Keep a small correction margin at nominal working-space boundaries. */
 #define SIXEL_DITHER_CLAMP_THRESHOLD 1.01
 
-/* Each apply request owns an immutable source snapshot. Work bands never
- * share writable limiter state, including during overlap warm-up. */
+/* Hard/soft float requests own an immutable source snapshot; NONE does not
+ * allocate one. Work bands never share writable limiter state, including
+ * during overlap warm-up. */
 typedef struct sixel_dither_clamp {
     float *source;
     size_t samples;

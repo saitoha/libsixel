@@ -19,11 +19,13 @@ static int const heckbert_formats[] = {
  * otherwise turn the intentionally failed native build into success. */
 static int heckbert_allocations;
 static int heckbert_fail_at;
+static size_t heckbert_size_limit;
 
 static void *
 heckbert_malloc(size_t size)
 {
-    if (++heckbert_allocations == heckbert_fail_at) {
+    if (++heckbert_allocations == heckbert_fail_at ||
+            (heckbert_size_limit != 0U && size > heckbert_size_limit)) {
         return NULL;
     }
     return malloc(size);
@@ -32,7 +34,11 @@ heckbert_malloc(size_t size)
 int
 test_heckbert_native(int argc, char **argv)
 {
-    float pixels[18] = {
+    static float const repeated[2][8] = {
+        { -.5f, -.5f, -.5f, -.5f, .25f, .25f, 1.0f, 1.0f },
+        { 0.0f, -0.0f, 0.0f, -0.0f, .5001f, .5001f, .5002f, .5002f }
+    };
+    float pixels[4096 * 3] = {
         -.5f, -.5f, -.5f, -.5f, -.5f, -.5f,
         -.5f, -.5f, -.5f, -.5f, -.5f, -.5f,
         .25f, .25f, .25f, 1.5f, 1.5f, 1.5f
@@ -44,6 +50,7 @@ test_heckbert_native(int argc, char **argv)
     sixel_palette_generate_request_t request;
     sixel_palette_build_attempt_t attempt;
     sixel_palette_float32_entries_view_t view;
+    sixel_palette_metadata_t metadata;
     SIXELSTATUS status;
     SIXELSTATUS finish;
     int space;
@@ -162,6 +169,24 @@ test_heckbert_native(int argc, char **argv)
     } else if (mode == 12 || mode == 13) {
         pixels[0] = mode == 12 ? NAN : INFINITY;
     }
+    if (mode == 16 || mode == 17) {
+        /* Many repeats need a compact distinct-color table, not one double
+         * tuple per pixel. The cap admits sorting references on 32/64-bit
+         * hosts but rejects the former per-pixel double tuple allocation. */
+        count = 4096U;
+        colors = mode == 16 ? 1U : 3U;
+        request.method_for_rep = SIXEL_REP_AVERAGE_PIXELS;
+        for (i = 0U; i < count; ++i) {
+            for (channel = 0U; channel < 3U; ++channel) {
+                pixels[i * 3U + channel] = repeated[mode - 16][i % 8U];
+            }
+        }
+        for (channel = 0U; channel < 3U; ++channel) {
+            expected[channel] = mode == 16 ? .0625 : 0.0;
+            expected[3U + channel] = .5001f;
+            expected[6U + channel] = .5002f;
+        }
+    }
     if (SIXEL_FAILED(sixel_allocator_new(&allocator,
             heckbert_malloc, NULL, NULL, NULL)) ||
             SIXEL_FAILED(sixel_palette_factory_new(allocator, &object))) {
@@ -184,11 +209,14 @@ test_heckbert_native(int argc, char **argv)
     sixel_set_final_merge_target_factor_override(1, 2.0);
     sixel_set_final_merge_lloyd_iterations_override(1, mode == 11 ? 3U : 0U);
     heckbert_allocations = 0;
-    heckbert_fail_at = mode == 14 ? 1 : mode == 15 ? 4 : 0;
+    heckbert_fail_at = mode == 14 ? 1 : mode == 15 ? 5 : mode == 18 ? 2 : 0;
+    heckbert_size_limit = mode == 16 || mode == 17
+        ? count * sizeof(float const *) + 256U : 0U;
     status = sixel_palette_generate_extended(palette, &request);
+    heckbert_size_limit = 0U;
     heckbert_fail_at = 0;
     finish = sixel_palette_build_attempt_finish(palette, &attempt);
-    if (mode >= 12 && mode <= 15) {
+    if ((mode >= 12 && mode <= 15) || mode == 18) {
         ok = SIXEL_FAILED(status);
         goto end;
     }
@@ -196,6 +224,22 @@ test_heckbert_native(int argc, char **argv)
             SIXEL_FAILED(palette->vtbl->get_entries_float32(palette, &view)) ||
             view.entries == NULL || view.entry_count != colors) {
         goto end;
+    }
+    if (mode == 16 || mode == 17) {
+        if (SIXEL_FAILED(palette->vtbl->get_metadata(palette, &metadata)) ||
+                metadata.original_colors != 3U) {
+            goto end;
+        }
+        /* Sorting may reorder references, never the caller's source. This
+         * ownership observation is bit-exact, including signed zero. */
+        for (i = 0U; i < count; ++i) {
+            for (channel = 0U; channel < 3U; ++channel) {
+                if (memcmp(pixels + i * 3U + channel,
+                        &repeated[mode - 16][i % 8U], sizeof(float)) != 0) {
+                    goto end;
+                }
+            }
+        }
     }
     /* Palette order is not a color contract. Require every literal expected
      * triple once; storage arithmetic gets a small relative binary32 budget.

@@ -214,6 +214,7 @@ int test_clamp_0040(int argc, char **argv);
 int test_clamp_0041(int argc, char **argv);
 int test_clamp_0042(int argc, char **argv);
 int test_clamp_0043(int argc, char **argv);
+int test_clamp_0047(int argc, char **argv);
 int test_clamp_0032(int argc, char **argv);
 int test_filter_0015_filter_dither_6delta_lso2(int argc, char **argv);
 int test_perturb_0002_api(int argc, char **argv);
@@ -648,6 +649,8 @@ int test_auto_native_0020(int argc, char **argv);
 int test_auto_native_0021(int argc, char **argv);
 int test_auto_native_0022(int argc, char **argv);
 int test_auto_native_0023(int argc, char **argv);
+int test_heckbert_native_0033(int argc, char **argv);
+int test_heckbert_native_0034(int argc, char **argv);
 int test_heckbert_native_0032(int argc, char **argv);
 int test_heckbert_native_0030(int argc, char **argv);
 int test_heckbert_native_0031(int argc, char **argv);
@@ -2966,6 +2969,7 @@ static test_entry_t const test_entries[] = {
     { "dither/clamp/0041_fs_vertical_residual", test_clamp_0041 },
     { "dither/clamp/0042_fs_serpentine_residual", test_clamp_0042 },
     { "dither/clamp/0043_parallel_overlap", test_clamp_0043 },
+    { "dither/clamp/0047_snapshot_allocation", test_clamp_0047 },
     { "dither/clamp/0032_kernel_interframe", test_clamp_0032 },
     { "filter/0015_filter_dither_6delta_lso2",
       test_filter_0015_filter_dither_6delta_lso2 },
@@ -3789,6 +3793,10 @@ static test_entry_t const test_entries[] = {
       test_auto_native_0022 },
     { "palette/auto_float/0023_auto_irrelevant_heckbert_feedback",
       test_auto_native_0023 },
+    { "palette/heckbert_float/0033_heckbert_repeated_population",
+      test_heckbert_native_0033 },
+    { "palette/heckbert_float/0034_heckbert_repeated_subbyte",
+      test_heckbert_native_0034 },
     { "palette/heckbert_float/0032_heckbert_subbyte_diffusion",
       test_heckbert_native_0032 },
     { "palette/heckbert_float/0030_heckbert_histogram_allocation",

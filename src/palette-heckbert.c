@@ -3296,17 +3296,17 @@ end:
 static int
 sixel_heckbert_native_compare(void const *left, void const *right)
 {
-    struct tupleint const *a;
-    struct tupleint const *b;
+    float const *a;
+    float const *b;
     unsigned int channel;
 
-    a = *(struct tupleint const *const *)left;
-    b = *(struct tupleint const *const *)right;
+    a = *(float const *const *)left;
+    b = *(float const *const *)right;
     for (channel = 0U; channel < 3U; ++channel) {
-        if (a->tuple[channel] < b->tuple[channel]) {
+        if (a[channel] < b[channel]) {
             return -1;
         }
-        if (a->tuple[channel] > b->tuple[channel]) {
+        if (a[channel] > b[channel]) {
             return 1;
         }
     }
@@ -3322,13 +3322,13 @@ sixel_heckbert_native_histogram(unsigned char const *data,
 {
     SIXELSTATUS status;
     float const *pixels;
+    float const **sorted;
     double range[3];
     unsigned int count;
     unsigned int index;
     unsigned int channel;
     unsigned int unique;
     struct tupleint *entry;
-    struct tupleint *previous;
 
     histogram->preserve_extended = 1;
     if (data == NULL || !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ||
@@ -3342,38 +3342,60 @@ sixel_heckbert_native_histogram(unsigned char const *data,
         range[channel] = sixel_pixelformat_float_channel_range(
             pixelformat, (int)channel);
     }
-    status = alloctupletable(&histogram->table, 3U, count, allocator);
-    if (SIXEL_FAILED(status)) {
-        return status;
+    /* Sort borrowed input references first. Allocating double tuples for
+     * every pixel before deduplication exceeds the allocation limit even
+     * for a repeated-color 4K image. Only distinct triples need tuples.
+     * Positive per-axis scaling preserves order and equality, including
+     * signed zero, so sorting finite source values gives the same bins. */
+    if ((size_t)count > (size_t)-1 / sizeof(*sorted)) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    sorted = sixel_allocator_malloc(allocator, count * sizeof(*sorted));
+    if (sorted == NULL) {
+        return SIXEL_BAD_ALLOCATION;
     }
     for (index = 0U; index < count; ++index) {
-        entry = histogram->table[index];
-        entry->value = 1U;
+        sorted[index] = pixels + index * 3U;
         for (channel = 0U; channel < 3U; ++channel) {
-            if (!isfinite(pixels[index * 3U + channel])) {
-                return SIXEL_BAD_ARGUMENT;
+            if (!isfinite(sorted[index][channel])) {
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
             }
-            entry->tuple[channel] =
-                (double)pixels[index * 3U + channel]
-                * 255.0 / range[channel];
         }
     }
-    qsort(histogram->table, count, sizeof(*histogram->table),
-          sixel_heckbert_native_compare);
+    qsort(sorted, count, sizeof(*sorted), sixel_heckbert_native_compare);
+    unique = 1U;
+    for (index = 1U; index < count; ++index) {
+        if (sixel_heckbert_native_compare(sorted + index - 1U,
+                                         sorted + index) != 0) {
+            unique++;
+        }
+    }
+    status = alloctupletable(&histogram->table, 3U, unique, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
     unique = 0U;
-    previous = NULL;
+    entry = NULL;
     for (index = 0U; index < count; ++index) {
-        entry = histogram->table[index];
-        if (previous != NULL &&
-                sixel_heckbert_native_compare(&previous, &entry) == 0) {
-            previous->value++;
-        } else {
-            histogram->table[unique++] = entry;
-            previous = entry;
+        if (index != 0U &&
+                sixel_heckbert_native_compare(sorted + index - 1U,
+                                             sorted + index) == 0) {
+            entry->value++;
+            continue;
+        }
+        entry = histogram->table[unique++];
+        entry->value = 1U;
+        for (channel = 0U; channel < 3U; ++channel) {
+            entry->tuple[channel] =
+                (double)sorted[index][channel] * 255.0 / range[channel];
         }
     }
     histogram->size = unique;
-    return SIXEL_OK;
+    status = SIXEL_OK;
+end:
+    sixel_allocator_free(allocator, sorted);
+    return status;
 }
 
 /* pcc may ICE on very long parameter lists; bundle into one request object. */
