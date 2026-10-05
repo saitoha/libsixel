@@ -237,3 +237,5 @@ $(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
 all-local: $(SIXEL_SHEBANG_STAMP)
 CLEANFILES += $(SIXEL_SHEBANG_STAMP)
 endif
+
+include $(top_srcdir)/build-aux/dependency-bootstrap.am

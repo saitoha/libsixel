@@ -71,3 +71,5 @@ preuninstall:
 	    $(REGSVR32) -u -s \
 	    "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
 endif
+
+include $(top_srcdir)/build-aux/dependency-bootstrap.am

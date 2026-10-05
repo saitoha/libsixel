@@ -6,3 +6,5 @@ demo_LDADD = -lm $(LIBSIXEL_LIBS) $(GL_LIBS) $(X_LIBS)
 
 check: check-am
 	./demo
+
+include $(top_srcdir)/build-aux/dependency-bootstrap.am

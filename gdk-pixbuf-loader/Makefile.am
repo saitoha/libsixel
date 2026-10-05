@@ -27,3 +27,5 @@ install-data-hook:
 	else \
 	  echo "Skipping gdk-pixbuf cache update (DESTDIR is set)"; \
 	fi
+
+include $(top_srcdir)/build-aux/dependency-bootstrap.am

@@ -45,6 +45,7 @@ DIST_SUBDIRS = \
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
 EXTRA_DIST = LICENSE build.md build-aux/depcomp \
+    build-aux/dependency-bootstrap.am \
     tools/generate_color_fixtures.py \
     tools/generate_palette_space_fixtures.py \
     tools/generate_cover_anchor_fixtures.py \

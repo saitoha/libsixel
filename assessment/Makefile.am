@@ -145,3 +145,5 @@ endif
 # The top-level Makefile uses this split target to run object compilation in
 # parallel with libsixel shared library creation.
 prelink-objs: $(BUILT_SOURCES) $(lsqa_OBJECTS)
+
+include $(top_srcdir)/build-aux/dependency-bootstrap.am

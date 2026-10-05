@@ -189,3 +189,5 @@ uninstall-hook:
 	@WANT_THUMBNAILER_TRUE@      $(SHELL) "$(top_srcdir)/tools/update-mime-database.sh" "$(UPDATE_MIME_DATABASE)" "$(datadir)" uninstall; \
 	@WANT_THUMBNAILER_TRUE@    fi
 	@WANT_THUMBNAILER_FALSE@    @:
+
+include $(top_srcdir)/build-aux/dependency-bootstrap.am

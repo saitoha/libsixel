@@ -441,3 +441,5 @@ run-struct-full-set:
 			FUZZ_STRUCT_CORPUS='$(FUZZ_STRUCT_CORPUS)' \
 			FUZZ_STRUCT_ARGS='$(FUZZ_STRUCT_ARGS)' || exit $$?; \
 	done
+
+include $(top_srcdir)/build-aux/dependency-bootstrap.am

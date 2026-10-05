@@ -1,0 +1,18 @@
+# config.status removes dependency includes before invoking am--depfiles.
+# Bootstrap the same inventory in small shell batches instead of running
+# mkdir and a separate shell for every file.  Keep existing dependency data
+# and timestamps intact, and leave Automake's per-file rules available when
+# a dependency file is removed after configuration.  Filter existing paths
+# inside make so reconfiguration does not launch empty shell batches.
+define sixel_init_depfile_batches
+$(if $(strip $(1)),@set -e; for depfile in $(wordlist 1,16,$(1)); do \
+    test -f "$$depfile" && continue; \
+    depdir=$${depfile%/*}; \
+    test -d "$$depdir" || $(MKDIR_P) "$$depdir"; \
+    : >>"$$depfile"; \
+done
+$(call sixel_init_depfile_batches,$(wordlist 17,$(words $(1)),$(1))))
+endef
+
+am--depfiles:
+	$(call sixel_init_depfile_batches,$(filter-out $(wildcard $(am__depfiles_remade)),$(am__depfiles_remade)))

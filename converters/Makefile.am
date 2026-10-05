@@ -311,3 +311,5 @@ if WANT_SIXEL2PNG
 PRELINK_OBJECTS += $(sixel2png_OBJECTS)
 endif
 prelink-objs: $(BUILT_SOURCES) $(PRELINK_OBJECTS)
+
+include $(top_srcdir)/build-aux/dependency-bootstrap.am

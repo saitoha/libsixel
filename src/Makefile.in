@@ -779,7 +779,8 @@ am__define_uniq_tagged_files = \
     if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
   done | $(am__uniquify_input)`
 am__DIST_COMMON = $(dist_man_MANS) $(srcdir)/Makefile.in \
-	$(top_srcdir)/build-aux/depcomp
+	$(top_srcdir)/build-aux/depcomp \
+	$(top_srcdir)/build-aux/dependency-bootstrap.am
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 VPATH = @srcdir@
 ABORTTRACE_LIBS = @ABORTTRACE_LIBS@
@@ -1517,7 +1518,7 @@ all: $(BUILT_SOURCES)
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .m .o .obj
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/build-aux/dependency-bootstrap.am $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -1537,6 +1538,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__maybe_remake_depfiles)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__maybe_remake_depfiles);; \
 	esac;
+$(top_srcdir)/build-aux/dependency-bootstrap.am $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
@@ -1766,8 +1768,6 @@ distclean-compile:
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
 	@: >>$@
-
-am--depfiles: $(am__depfiles_remade)
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -3639,6 +3639,25 @@ gen-classid: $(FACTORY_CLASSID_INPUTS) $(SERVICEID_CLASSID_INPUTS)
 @WITH_SHEBANG_FILE_TRUE@	                $(SIXEL_SHEBANG_TARGETS); \
 @WITH_SHEBANG_FILE_TRUE@	fi
 @WITH_SHEBANG_FILE_TRUE@	@touch $@
+
+# config.status removes dependency includes before invoking am--depfiles.
+# Bootstrap the same inventory in small shell batches instead of running
+# mkdir and a separate shell for every file.  Keep existing dependency data
+# and timestamps intact, and leave Automake's per-file rules available when
+# a dependency file is removed after configuration.  Filter existing paths
+# inside make so reconfiguration does not launch empty shell batches.
+define sixel_init_depfile_batches
+$(if $(strip $(1)),@set -e; for depfile in $(wordlist 1,16,$(1)); do \
+    test -f "$$depfile" && continue; \
+    depdir=$${depfile%/*}; \
+    test -d "$$depdir" || $(MKDIR_P) "$$depdir"; \
+    : >>"$$depfile"; \
+done
+$(call sixel_init_depfile_batches,$(wordlist 17,$(words $(1)),$(1))))
+endef
+
+am--depfiles:
+	$(call sixel_init_depfile_batches,$(filter-out $(wildcard $(am__depfiles_remade)),$(am__depfiles_remade)))
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
