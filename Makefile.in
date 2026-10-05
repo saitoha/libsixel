@@ -1171,6 +1171,14 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/encoder/palette-construction/quantization/README.md \
 	docs/quality/measurement-policy.md \
 	docs/quality/metrics.md \
+	docs/concepts/clustering/README.md \
+	docs/concepts/clustering/figures/color-cloud.svg \
+	docs/concepts/clustering/figures/figures.json \
+	docs/concepts/clustering/figures/kmeans.svg \
+	docs/concepts/clustering/figures/mean-vs-max.svg \
+	docs/concepts/clustering/figures/median-cut.svg \
+	docs/concepts/clustering/figures/palette-results.svg \
+	docs/concepts/clustering/figures/voronoi.svg \
 	docs/concepts/dithering/README.md \
 	docs/concepts/dithering/figures/error-diffusion-kernel.svg \
 	docs/concepts/dithering/figures/figures.json \

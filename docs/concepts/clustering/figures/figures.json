@@ -1,0 +1,19 @@
+{
+  "generator": "tools/plot_clustering_concept_figures.py",
+  "plot_dependency": "matplotlib 3.10, numpy, Pillow",
+  "seed": 20261006,
+  "algorithms": {
+    "median_cut": "split the box with the longest side at its median; box means",
+    "kmeans": "Lloyd iterations; palette results start from the median-cut colors",
+    "k_center": "Gonzalez farthest-first traversal"
+  },
+  "palette_results": {
+    "image": "images/snake.png at 240 x 180",
+    "space": "encoded sRGB for clustering, CIELAB D65 for error",
+    "mean_delta_e_ab": {
+      "Fixed RGB corners": 55.86,
+      "Median cut": 9.69,
+      "k-means": 7.59
+    }
+  }
+}

@@ -55,6 +55,7 @@ The foundations the rest of the documentation builds on, in reading order: how v
 
 ### Palettes and dithering
 
+- [Palette clustering](concepts/clustering/README.md) explains how a palette is chosen for an image: colors as points, Voronoi regions and total error, why the optimum is hard to find, median cut, octree, k-means, k-medoids, k-center, Ward merging and neural methods, and the roles of color space, pixel weighting and important rare colors.
 - [Dithering](concepts/dithering/README.md) explains why few-color images need dithering, how random, ordered, error-diffusion and blue-noise methods work, where each puts its error, why error belongs at fine scales, color and linear-light averaging, structure-preserving dithering, and what dithering costs in SIXEL.
 
 ## Quality and measurement

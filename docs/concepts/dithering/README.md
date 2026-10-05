@@ -4,7 +4,7 @@
 
 This document explains dithering as an idea: why an image drawn with few colors needs it, how the main families of methods work, where each puts its error, and what limits apply in color and in SIXEL. It builds on [visual perception](../../quality/visual-perception/README.md), in particular on how the eye integrates fine detail, and it is meant to be read from start to finish.
 
-The [dithering reference](../../encoder/palette-application/dithering/README.md) documents every `-d` method libsixel implements, with its exact rules, costs, and measurements. [Image-quality metrics](../../quality/metrics.md#measuring-dither-noise) explains how dither noise is measured.
+[Palette clustering](../clustering/README.md) explains how the palette itself is chosen. The [dithering reference](../../encoder/palette-application/dithering/README.md) documents every `-d` method libsixel implements, with its exact rules, costs, and measurements. [Image-quality metrics](../../quality/metrics.md#measuring-dither-noise) explains how dither noise is measured.
 
 **Key ideas in one minute:**
 
