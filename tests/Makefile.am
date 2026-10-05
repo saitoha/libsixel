@@ -232,6 +232,27 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0078_DELTA_BYTE_REPEAT \
     -DBUILD_TEST_0079_DELTA_BYTE_REPEAT_WORKERS \
     -DBUILD_TEST_0080_DELTA_BYTE_GRID \
+    -DBUILD_TEST_0081_DELTA_LINEAR_FRAMES \
+    -DBUILD_TEST_0082_DELTA_OKLAB_FRAMES \
+    -DBUILD_TEST_0083_DELTA_CIELAB_FRAMES \
+    -DBUILD_TEST_0084_DELTA_DIN99D_FRAMES \
+    -DBUILD_TEST_0085_DELTA_LINEAR_DIFFUSE \
+    -DBUILD_TEST_0086_DELTA_LINEAR_SKIP \
+    -DBUILD_TEST_0087_DELTA_LINEAR_COMPARE \
+    -DBUILD_TEST_0088_DELTA_OKLAB_COMPARE \
+    -DBUILD_TEST_0089_DELTA_CIELAB_COMPARE \
+    -DBUILD_TEST_0090_DELTA_DIN99D_COMPARE \
+    -DBUILD_TEST_0091_DELTA_LINEAR_EXTENDED \
+    -DBUILD_TEST_0092_DELTA_WORKSPACE_FIXED \
+    -DBUILD_TEST_0093_DELTA_WORKSPACE_WORKERS \
+    -DBUILD_TEST_0094_DELTA_WORKSPACE_MASK \
+    -DBUILD_TEST_0095_DELTA_WORKSPACE_ORIGIN \
+    -DBUILD_TEST_0096_DELTA_WORKSPACE_BANDS \
+    -DBUILD_TEST_0097_DELTA_WORKSPACE_DOMAIN \
+    -DBUILD_TEST_0098_DELTA_WORKSPACE_LEGACY \
+    -DBUILD_TEST_0099_DELTA_VIRTUAL_GUARD \
+    -DBUILD_TEST_0100_DELTA_VIRTUAL_FS \
+    -DBUILD_DELTA_WORK_COMMON \
     -DBUILD_DELTA_BYTE_COMMON \
     -DBUILD_DELTA_FIXED_COMMON \
     -DBUILD_TEST_0033_DELTA_BUILTIN_SLOTS \
@@ -2948,6 +2969,27 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0078_delta_byte_repeat.c \
     quant/palette/delta_native/0079_delta_byte_repeat_workers.c \
     quant/palette/delta_native/0080_delta_byte_grid.c \
+    quant/palette/delta_native/0081_delta_linear_frames.c \
+    quant/palette/delta_native/0082_delta_oklab_frames.c \
+    quant/palette/delta_native/0083_delta_cielab_frames.c \
+    quant/palette/delta_native/0084_delta_din99d_frames.c \
+    quant/palette/delta_native/0085_delta_linear_diffuse.c \
+    quant/palette/delta_native/0086_delta_linear_skip.c \
+    quant/palette/delta_native/0087_delta_linear_compare.c \
+    quant/palette/delta_native/0088_delta_oklab_compare.c \
+    quant/palette/delta_native/0089_delta_cielab_compare.c \
+    quant/palette/delta_native/0090_delta_din99d_compare.c \
+    quant/palette/delta_native/0091_delta_linear_extended.c \
+    quant/palette/delta_native/0092_delta_workspace_fixed.c \
+    quant/palette/delta_native/0093_delta_workspace_workers.c \
+    quant/palette/delta_native/0094_delta_workspace_mask.c \
+    quant/palette/delta_native/0095_delta_workspace_origin.c \
+    quant/palette/delta_native/0096_delta_workspace_bands.c \
+    quant/palette/delta_native/0097_delta_workspace_domain.c \
+    quant/palette/delta_native/0098_delta_workspace_legacy.c \
+    quant/palette/delta_native/0099_delta_virtual_guard.c \
+    quant/palette/delta_native/0100_delta_virtual_fs.c \
+    quant/palette/delta_work_common.c \
     quant/palette/delta_byte_common.c \
     quant/palette/delta_fixed_common.c \
     quant/palette/delta_native/0033_delta_builtin_slots.c \

@@ -62,6 +62,7 @@
 #include "dither-common-pipeline.h"
 #include "timeline-logger.h"
 #include "pixelformat.h"
+#include "colorspace.h"
 #include "sixel_atomic.h"
 #include <sixel.h>
 
@@ -1775,7 +1776,10 @@ sixel_dither_pipeline_6delta_try_keep_after_lookup(
 
 
 /* Compare without clipping or rounding the corrected sample. The native
- * caller admits only sRGB gamma working coordinates and RGB wire output.
+ * caller admits sRGB gamma RGB wire output; keep comparisons stay in those
+ * coordinates regardless of the workspace. Non-threshold keeps must also
+ * avoid increasing emitted-color error in normalized working coordinates.
+ * Kept-color residuals use the transform back to the caller's workspace.
  * Compete with the emitted candidate in that case: comparing retained wire
  * RGB against an unrounded centroid would repaint even identical frames.
  * This does not snap the working palette or alter ordinary diffusion. */
@@ -1793,12 +1797,20 @@ sixel_dither_6delta_keep_float(
     double keep_distance;
     double chosen_distance;
     double delta;
+    double query[3];
+    double history[3];
+    double working[3];
+    double emitted[3];
+    double target[3];
+    int colorspace;
     int within;
     int n;
 
-    if (pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ||
             dither == NULL || (!dither->clamp_promoted_rgb888 &&
-            !dither->use_rgb101_palette)) {
+            !dither->use_rgb101_palette) ||
+            (!dither->use_rgb101_palette &&
+             pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32)) {
         return 0;
     }
     pixel = sixel_dither_pipeline_6delta_plane_pixel(dither, x, y);
@@ -1813,13 +1825,25 @@ sixel_dither_6delta_keep_float(
              (unsigned int)chosen_index >= wire_count)) {
         return 0;
     }
+    colorspace = sixel_pixelformat_get_colorspace(pixelformat);
+    for (n = 0; n < 3; ++n) {
+        query[n] = rgb[n];
+    }
+    /* A failed inverse cannot establish a safe keep. Repaint the chosen
+     * entry instead, without publishing a keep bit or a clipped query. */
+    if (colorspace != SIXEL_COLORSPACE_GAMMA &&
+            !sixel_color_convert(query, query, colorspace,
+                SIXEL_COLORSPACE_GAMMA)) {
+        return 0;
+    }
     threshold = (double)dither->pipeline_6delta_threshold / 255.0;
     within = 1;
     keep_distance = 0.0;
     chosen_distance = 0.0;
     for (n = 0; n < 3; ++n) {
         retained[n] = (float)pixel[n] / 255.0f;
-        delta = (double)rgb[n] - retained[n];
+        history[n] = retained[n];
+        delta = query[n] - history[n];
         within = within && fabs(delta) <= threshold;
         keep_distance += delta * delta;
         /* Match the byte projection used to update the retained plane.
@@ -1829,11 +1853,46 @@ sixel_dither_6delta_keep_float(
             ? (float)(((wire[chosen_index * 3 + n] * 255U + 50U) / 100U)
                 / 255.0)
             : chosen[n];
-        delta = (double)rgb[n] - candidate;
+        emitted[n] = candidate;
+        delta = query[n] - candidate;
         chosen_distance += delta * delta;
     }
     if (!within && keep_distance > chosen_distance) {
         return 0;
+    }
+    if (colorspace != SIXEL_COLORSPACE_GAMMA) {
+        if (!sixel_color_convert(working, history,
+                SIXEL_COLORSPACE_GAMMA, colorspace)) {
+            return 0;
+        }
+        if (!within) {
+            /* Virtual working colors can map far outside gamma RGB. A
+             * gamma-only comparison can then prefer bright history over
+             * the dark candidate chosen in the actual diffusion geometry.
+             * Compare both emitted colors in working units too; do not
+             * clamp the query or substitute the unrounded centroid. The
+             * explicit gamma threshold remains the approximation gate. */
+            if (!sixel_color_convert(target, emitted,
+                    SIXEL_COLORSPACE_GAMMA, colorspace)) {
+                return 0;
+            }
+            keep_distance = 0.0;
+            chosen_distance = 0.0;
+            for (n = 0; n < 3; ++n) {
+                delta = (double)rgb[n] - working[n];
+                keep_distance += delta * delta;
+                delta = (double)rgb[n] - target[n];
+                chosen_distance += delta * delta;
+            }
+            if (keep_distance > chosen_distance) {
+                return 0;
+            }
+        }
+        /* History is bounded sRGB, so its working triplet fits float32.
+         * Do this only for a keep; ordinary palette residuals are unchanged. */
+        for (n = 0; n < 3; ++n) {
+            retained[n] = (float)working[n];
+        }
     }
     if (record && dither->pipeline_accumulation_result_mask != NULL &&
             index < dither->pipeline_accumulation_result_mask_size) {
@@ -4496,7 +4555,9 @@ sixel_dither_apply_palette_with_mode(
             entries_view.entries_size / (size_t)entries_view.depth;
     }
     if (pipeline_pixelformat == SIXEL_PIXELFORMAT_RGB888 ||
-            pipeline_pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+            pipeline_pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+            (dither->use_rgb101_palette &&
+             SIXEL_PIXELFORMAT_IS_FLOAT32(pipeline_pixelformat))) {
         if (sixel_dither_has_compatible_accumulation_hint(dither,
                                                           width,
                                                           height,

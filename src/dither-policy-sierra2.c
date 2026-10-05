@@ -706,7 +706,7 @@ sixel_dither_apply_sierra2_float32(
                 context->lookup_policy,
                 lookup_pixel);
 
-            /* Native gamma and promoted-byte delta share retained-color
+            /* Native and promoted-byte delta share retained-color
              * competition without rounding the corrected working sample. */
             for (n = 0; n < context->depth; ++n) {
                 selected[n] = have_palette_float

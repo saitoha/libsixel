@@ -6780,17 +6780,16 @@ sixel_encoder_palette_capacity(sixel_encoder_t const *encoder)
     return encoder->reqcolors == -1 ? SIXEL_PALETTE_MAX : encoder->reqcolors;
 }
 
-/* Retained RGB888 is an emitted sRGB view. Start native delta with the
- * matching gamma workspace and RGB wire format; other output definitions
- * need an explicit inverse transform before competing with working colors.
+/* Retained RGB888 is an emitted sRGB view. Native delta compares in gamma
+ * RGB and converts kept colors back to the selected workspace for diffusion.
+ * Other output definitions need their own retained-color interpretation.
  * Generated palettes can reserve an omission key after history exists.
  * Fixed tables use a separate mask without consuming a palette entry.
  * Alternate transports retain their separate migration boundaries. */
 static int
 sixel_encoder_native_delta(sixel_encoder_t const *encoder)
 {
-    if (encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
-            encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA ||
+    if (encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA ||
             encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
             (encoder->palette_type != SIXEL_PALETTETYPE_AUTO &&
              encoder->palette_type != SIXEL_PALETTETYPE_RGB) ||

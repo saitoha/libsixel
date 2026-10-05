@@ -726,7 +726,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
                 lookup_pixel);
 
             /* Noise selects a candidate, but retained-color fidelity uses
-             * the unperturbed source. Native gamma delta compares the wire
+             * the unperturbed source. Native delta compares the wire
              * cache, so no byte projection of the working sample is needed.
              * Positional methods have no neighboring residual to update. */
             if (absolute_y >= 0 && context->depth == 3 &&

@@ -4712,7 +4712,7 @@ sixel_encode_dither(
     }
     if (use_rgb101_palette && dither->keycolor < 0 &&
             dither->pipeline_6delta_enabled &&
-            dither->pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+            SIXEL_PIXELFORMAT_IS_FLOAT32(dither->pixelformat)) {
         /* Reserve the shared mask before pipeline workers copy output views.
          * PaletteApply reuses this storage and publishes each row only after
          * its keep decisions. Fixed-table index zero remains a real color;

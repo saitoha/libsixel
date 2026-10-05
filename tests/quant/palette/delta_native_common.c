@@ -38,7 +38,7 @@ dn_write(char *data, int size, void *context)
 /* A single extended color makes the independent palette oracle exact up to
  * binary32 storage. No image metric can substitute for this observation. */
 static int
-dn_frames(int mode, char const *positional)
+dn_frames(int mode, char const *positional, int workspace)
 {
     static struct { int flag; char const *value; } const options[] = {
         {'=', "1"}, {'~', "none"}, {'d', "none"}, {'Q', "heckbert"},
@@ -53,6 +53,21 @@ dn_frames(int mode, char const *positional)
     };
     static float const color[3] = { -.05f, .124f, 1.05f };
     static unsigned char const wire[3] = { 0, 31, 255 };
+    static char const *const spaces[] = {
+        "gamma", "linear", "oklab", "cielab", "din99d"
+    };
+    /* Independently evaluated extended sRGB equations, not CMS output.
+     * Normalized Lab/DIN units match the documented working convention. */
+    static double const expected_work[4][2][3] = {
+        { { -0.00393593950409, 0.01415928656, 1.11754125416 },
+          { -0.00393593950409, 0.347281425222, 1.11754125416 } },
+        { { 0.481133016718, -0.0360300948491, -0.314968626732 },
+          { 0.689632218883, -0.0691481091903, -0.180477139597 } },
+        { { 0.359741883657, 0.592721069355, -0.850261220688 },
+          { 0.64013315703, 0.0348948871053, -0.491635614787 } },
+        { { 0.396057220284, 0.0944152028064, -0.461506164481 },
+          { 0.674435639385, -0.154742585819, -0.339409067107 } },
+    };
     sixel_encoder_t *encoder;
     sixel_frame_t *frame;
     sixel_output_t *output;
@@ -89,10 +104,6 @@ dn_frames(int mode, char const *positional)
     ok = 0;
     rows = mode == 4 ? 25 : 1;
     count = rows * 4;
-    for (i = 0; i < count * 3; ++i) {
-        pixels[i] = color[i % 3];
-        bytes[i] = wire[i % 3];
-    }
     if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
             SIXEL_FAILED(sixel_output_new(&output, dn_write, &stream, NULL))) {
         goto end;
@@ -102,6 +113,9 @@ dn_frames(int mode, char const *positional)
                 options[i].value))) {
             goto end;
         }
+    }
+    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', spaces[workspace]))) {
+        goto end;
     }
     if ((mode == 1 && SIXEL_FAILED(sixel_encoder_setopt(encoder, '.',
             "8bit"))) || (mode == 4 && SIXEL_FAILED(sixel_encoder_setopt(
@@ -119,6 +133,12 @@ dn_frames(int mode, char const *positional)
     }
     for (pass = 0; pass < 4; ++pass) {
         memset(&stream, 0, sizeof(stream));
+        /* Borrowed frames permit in-place workspace conversion. Each new
+         * frame starts with original gamma input, not the previous scratch. */
+        for (i = 0; i < count * 3; ++i) {
+            pixels[i] = color[i % 3];
+            bytes[i] = wire[i % 3];
+        }
         if (pass == 3) {
             /* A changed source must repaint, not freeze on valid history. */
             for (i = 0; i < count; ++i) {
@@ -180,8 +200,17 @@ dn_frames(int mode, char const *positional)
                  * Green is .001 below the next RGB101 boundary; source
                  * byte rounding gives 32, while actual wire RGB is 31. */
                 want = pass == 3 && c == 1 ? .624 : color[c];
+                if (workspace != 0) {
+                    want = expected_work[workspace - 1][pass == 3][c];
+                }
+                /* Inverse matrix and nonlinear transforms add rounding;
+                 * 3e-6 normalized units still exclude byte projection. */
                 if (!isfinite(view.entries[c]) ||
-                        fabs(view.entries[c] - want) > 2e-7) {
+                        fabs(view.entries[c] - want) >
+                            (workspace != 0 ? 3e-6 : 2e-7)) {
+                    fprintf(stderr, "workspace=%d channel=%d actual=%.9g "
+                        "expected=%.9g\n", workspace, c, view.entries[c],
+                        want);
                     goto end;
                 }
             }
@@ -242,7 +271,7 @@ end:
 int
 test_delta_native_frames(int mode)
 {
-    return dn_frames(mode, NULL);
+    return dn_frames(mode, NULL, 0);
 }
 
 int
@@ -252,7 +281,13 @@ test_delta_positional_frames(int method, int mode)
         "a_dither", "x_dither", "bluenoise"
     };
 
-    return dn_frames(mode, names[method]);
+    return dn_frames(mode, names[method], 0);
+}
+
+int
+test_delta_work_frames(int workspace, int mode, int positional)
+{
+    return dn_frames(mode, positional ? "x_dither" : NULL, workspace);
 }
 
 /* Low-level setup supplies both independent storage views, as the high-level
@@ -360,7 +395,7 @@ test_delta_native_threshold(int unused)
     unsigned char palette[6] = { 0, 0, 0, 255, 255, 255 };
     unsigned char history[3] = { 1, 1, 1 };
     unsigned char valid[1] = { 1 };
-    float sample[3] = { -.003f, -.003f, -.003f };
+    float sample[3] = { -.005f, -.005f, -.005f };
     float chosen[3] = { 0, 0, 0 };
     float retained[3];
     sixel_dither_t *dither;
@@ -379,15 +414,15 @@ test_delta_native_threshold(int unused)
     if (!dn_prepare(dither, palette, 2)) {
         goto end;
     }
-    for (threshold = 1; threshold <= 2; ++threshold) {
+    for (threshold = 2; threshold <= 3; ++threshold) {
         sixel_dither_set_pipeline_accumulation_buffer_hint(dither,
             history, sizeof(history), valid, sizeof(valid),
             1, 1, 0, 0, 1, 1, 1, 1, threshold, SIXEL_6DELTA_ERROR_SKIP);
         keep = sixel_dither_6delta_keep_float(dither, 0, 0, 0,
             SIXEL_PIXELFORMAT_RGBFLOAT32, sample, chosen, 0, 0, retained);
-        /* Distance to retained is .006921569, between 1/255 and 2/255.
-         * Black is nearer. Clamping the source to zero falsely keeps at 1. */
-        if (keep != (threshold == 2) ||
+        /* Distance to retained is .008921569, between 2/255 and 3/255.
+         * Black is nearer. Clamping the source to zero falsely keeps at 2. */
+        if (keep != (threshold == 3) ||
                 !isfinite(retained[0]) ||
                 fabs(retained[0] - 1.0 / 255.0) > 1e-9) {
             goto end;

@@ -269,6 +269,26 @@ int test_delta_native_0077(int argc, char **argv);
 int test_delta_native_0078(int argc, char **argv);
 int test_delta_native_0079(int argc, char **argv);
 int test_delta_native_0080(int argc, char **argv);
+int test_delta_native_0081(int argc, char **argv);
+int test_delta_native_0082(int argc, char **argv);
+int test_delta_native_0083(int argc, char **argv);
+int test_delta_native_0084(int argc, char **argv);
+int test_delta_native_0085(int argc, char **argv);
+int test_delta_native_0086(int argc, char **argv);
+int test_delta_native_0087(int argc, char **argv);
+int test_delta_native_0088(int argc, char **argv);
+int test_delta_native_0089(int argc, char **argv);
+int test_delta_native_0090(int argc, char **argv);
+int test_delta_native_0091(int argc, char **argv);
+int test_delta_native_0092(int argc, char **argv);
+int test_delta_native_0093(int argc, char **argv);
+int test_delta_native_0094(int argc, char **argv);
+int test_delta_native_0095(int argc, char **argv);
+int test_delta_native_0096(int argc, char **argv);
+int test_delta_native_0097(int argc, char **argv);
+int test_delta_native_0098(int argc, char **argv);
+int test_delta_native_0099(int argc, char **argv);
+int test_delta_native_0100(int argc, char **argv);
 int test_delta_native_0033(int argc, char **argv);
 int test_delta_native_0034(int argc, char **argv);
 int test_delta_native_0035(int argc, char **argv);
@@ -3212,6 +3232,46 @@ static test_entry_t const test_entries[] = {
         test_delta_native_0079 },
     { "palette/delta_native/0080_delta_byte_grid",
         test_delta_native_0080 },
+    { "palette/delta_native/0081_delta_linear_frames",
+        test_delta_native_0081 },
+    { "palette/delta_native/0082_delta_oklab_frames",
+        test_delta_native_0082 },
+    { "palette/delta_native/0083_delta_cielab_frames",
+        test_delta_native_0083 },
+    { "palette/delta_native/0084_delta_din99d_frames",
+        test_delta_native_0084 },
+    { "palette/delta_native/0085_delta_linear_diffuse",
+        test_delta_native_0085 },
+    { "palette/delta_native/0086_delta_linear_skip",
+        test_delta_native_0086 },
+    { "palette/delta_native/0087_delta_linear_compare",
+        test_delta_native_0087 },
+    { "palette/delta_native/0088_delta_oklab_compare",
+        test_delta_native_0088 },
+    { "palette/delta_native/0089_delta_cielab_compare",
+        test_delta_native_0089 },
+    { "palette/delta_native/0090_delta_din99d_compare",
+        test_delta_native_0090 },
+    { "palette/delta_native/0091_delta_linear_extended",
+        test_delta_native_0091 },
+    { "palette/delta_native/0092_delta_workspace_fixed",
+        test_delta_native_0092 },
+    { "palette/delta_native/0093_delta_workspace_workers",
+        test_delta_native_0093 },
+    { "palette/delta_native/0094_delta_workspace_mask",
+        test_delta_native_0094 },
+    { "palette/delta_native/0095_delta_workspace_origin",
+        test_delta_native_0095 },
+    { "palette/delta_native/0096_delta_workspace_bands",
+        test_delta_native_0096 },
+    { "palette/delta_native/0097_delta_workspace_domain",
+        test_delta_native_0097 },
+    { "palette/delta_native/0098_delta_workspace_legacy",
+        test_delta_native_0098 },
+    { "palette/delta_native/0099_delta_virtual_guard",
+        test_delta_native_0099 },
+    { "palette/delta_native/0100_delta_virtual_fs",
+        test_delta_native_0100 },
     { "palette/delta_native/0033_delta_builtin_slots",
         test_delta_native_0033 },
     { "palette/delta_native/0034_delta_map_slots",
