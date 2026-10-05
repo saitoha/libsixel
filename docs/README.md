@@ -33,7 +33,11 @@ Supported platforms and command-line behavior that needs no background in color 
 
 ## Concepts and theory
 
-Color, pixel representation, and visual perception that the rest of the documentation builds on.
+Visual perception, color, and pixel representation that the rest of the documentation builds on.
+
+### Visual perception
+
+- [Visual perception for image quality](quality/visual-perception/README.md) explains the sensory physiology behind the metrics: perceptual quality, photoreceptors and opponent channels, light and chromatic adaptation including display filters and dark rooms, contrast sensitivity, viewing geometry, and the visibility of noise and chroma detail.
 
 ### Color and pixel representation
 
@@ -41,10 +45,6 @@ Color, pixel representation, and visual perception that the rest of the document
 - [DIN99d and color difference](concepts/din99d/README.md) illustrates perceptual nearest-color selection, the corrected XYZ transform, common coordinate normalization, and measured palette tradeoffs.
 - [Pixel-format precision](concepts/pixelformat-precision/README.md) explains the `RGB888` and typed float32 storage contracts, implicit promotion by resize, CMS, and color-space conversion, memory cost, and measured resize quality.
 - [Pixel formats and alpha representation](concepts/pixelformat.md) separates input memory layouts, frame storage, alpha-zero metadata, and what can be represented in a SIXEL stream.
-
-### Visual perception
-
-- [Visual perception for image quality](quality/visual-perception/README.md) explains the sensory physiology behind the metrics: perceptual quality, photoreceptors and opponent channels, light and chromatic adaptation including display filters and dark rooms, contrast sensitivity, viewing geometry, and the visibility of noise and chroma detail.
 
 ## Quality and measurement
 
