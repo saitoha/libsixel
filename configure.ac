@@ -5250,8 +5250,15 @@ AS_IF([test x$enable_tests != xno], [
         > tests/check-tests.list ||
       AC_MSG_ERROR([could not create tests/check-tests.list])
   ], [
-    SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
-        tests "$srcdir/tests" "$sixel_ruby_tests_mode"`
+    # Autoconf serializes each substituted line in 148-character chunks.
+    # A single line containing the entire inventory makes that sed loop
+    # repeatedly scan a shrinking, very large string.  Keep one path per
+    # line and join them with make continuations to preserve TESTS ordering.
+    SIXEL_CHECK_TESTS=$($SHELL "$srcdir/build-aux/read-check-test-list.sh" \
+        tests "$srcdir/tests" "$sixel_ruby_tests_mode" newline) ||
+      AC_MSG_ERROR([could not discover tests])
+    SIXEL_CHECK_TESTS=$(printf '%s\n' "$SIXEL_CHECK_TESTS" | \
+        sed '$!s/$/ \\/')
   ])
 ])
 AC_SUBST([SIXEL_CHECK_TESTS])
