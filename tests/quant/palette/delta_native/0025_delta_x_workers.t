@@ -3,6 +3,11 @@
 # Policy: docs/encoder/output/delta-encoding.md
 set -eux
 
+test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
+    echo "1..0 # SKIP threads disabled"
+    exit 0
+}
+
 echo "1..1"
 set -v
 

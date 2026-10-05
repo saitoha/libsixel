@@ -77,6 +77,8 @@ generate-palette | img2sixel -m gpl:- -o output.six input.png
 
 Repeating `-m` is allowed and the last mapfile wins. `-m` is mutually exclusive with `-b`, `-e`, and `-I` because each selects a different palette or output mode.
 
+Native sRGB/gamma [delta output](../output/delta-encoding.md#fixed-table-omission-and-ownership) preserves every supplied entry, including full 256-entry tables, and carries omissions separately from palette indices. Image-map construction does not reserve a color for the image being displayed; its palette is independent of the retained display history. The delta guide owns the applicable workspaces, output formats and mask lifecycle.
+
 ## Display P3 output
 
 The [selected CPU float Display P3 path](../output/output-colorspace.md) accepts `-m`. ACT, JASC PAL, RIFF PAL and GPL retain their sRGB interpretation. The encoder converts a separate copy to P3 and rounds it to SIXEL RGB101 values. Lookup and error diffusion retain the unrounded working coordinates. Palette order, duplicates and unused entries are retained. All five workspaces keep an authoritative float palette; ordinary byte-eligible sRGB jobs keep their existing fast path.

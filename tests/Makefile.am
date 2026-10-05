@@ -199,6 +199,26 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0030_DELTA_A_BAND \
     -DBUILD_TEST_0031_DELTA_X_BAND \
     -DBUILD_TEST_0032_DELTA_BLUE_BAND \
+    -DBUILD_TEST_0048_DELTA_FIXED_FS_DIFFUSE \
+    -DBUILD_TEST_0049_DELTA_FIXED_FS_SKIP \
+    -DBUILD_TEST_0050_DELTA_FIXED_MASK_FAILURE \
+    -DBUILD_TEST_0051_DELTA_IMAGE_MAP_CAPACITY \
+    -DBUILD_DELTA_FIXED_COMMON \
+    -DBUILD_TEST_0033_DELTA_BUILTIN_SLOTS \
+    -DBUILD_TEST_0034_DELTA_MAP_SLOTS \
+    -DBUILD_TEST_0035_DELTA_MAP_DUPLICATES \
+    -DBUILD_TEST_0036_DELTA_BUILTIN_MASK \
+    -DBUILD_TEST_0037_DELTA_MAP_MASK \
+    -DBUILD_TEST_0038_DELTA_BUILTIN_ORIGIN \
+    -DBUILD_TEST_0039_DELTA_MAP_ORIGIN \
+    -DBUILD_TEST_0040_DELTA_BUILTIN_WORKERS \
+    -DBUILD_TEST_0041_DELTA_MAP_WORKERS \
+    -DBUILD_TEST_0042_DELTA_BUILTIN_ANIMATION \
+    -DBUILD_TEST_0043_DELTA_MAP_ANIMATION \
+    -DBUILD_TEST_0044_DELTA_BUILTIN_BYTE \
+    -DBUILD_TEST_0045_DELTA_MAP_BYTE \
+    -DBUILD_TEST_0046_DELTA_BUILTIN_REUSE \
+    -DBUILD_TEST_0047_DELTA_MAP_REUSE \
     -DBUILD_DELTA_NATIVE_COMMON \
     -DBUILD_TEST_0001_DELTA_FLOAT_CENTROID \
     -DBUILD_TEST_0002_DELTA_BYTE_CONTROL \
@@ -2865,6 +2885,26 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0030_delta_a_band.c \
     quant/palette/delta_native/0031_delta_x_band.c \
     quant/palette/delta_native/0032_delta_blue_band.c \
+    quant/palette/delta_native/0048_delta_fixed_fs_diffuse.c \
+    quant/palette/delta_native/0049_delta_fixed_fs_skip.c \
+    quant/palette/delta_native/0050_delta_fixed_mask_failure.c \
+    quant/palette/delta_native/0051_delta_image_map_capacity.c \
+    quant/palette/delta_fixed_common.c \
+    quant/palette/delta_native/0033_delta_builtin_slots.c \
+    quant/palette/delta_native/0034_delta_map_slots.c \
+    quant/palette/delta_native/0035_delta_map_duplicates.c \
+    quant/palette/delta_native/0036_delta_builtin_mask.c \
+    quant/palette/delta_native/0037_delta_map_mask.c \
+    quant/palette/delta_native/0038_delta_builtin_origin.c \
+    quant/palette/delta_native/0039_delta_map_origin.c \
+    quant/palette/delta_native/0040_delta_builtin_workers.c \
+    quant/palette/delta_native/0041_delta_map_workers.c \
+    quant/palette/delta_native/0042_delta_builtin_animation.c \
+    quant/palette/delta_native/0043_delta_map_animation.c \
+    quant/palette/delta_native/0044_delta_builtin_byte.c \
+    quant/palette/delta_native/0045_delta_map_byte.c \
+    quant/palette/delta_native/0046_delta_builtin_reuse.c \
+    quant/palette/delta_native/0047_delta_map_reuse.c \
     quant/palette/delta_native_common.c \
     quant/palette/delta_native/0001_delta_float_centroid.c \
     quant/palette/delta_native/0002_delta_byte_control.c \

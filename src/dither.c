@@ -1919,8 +1919,11 @@ sixel_dither_ensure_pipeline_accumulation_result_rgb(
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
-sixel_dither_prepare_accumulation_result_mask(
+/* Prepare before output workers borrow this storage. PaletteApply prepares
+ * the same geometry again before publishing rows, reusing the capacity so
+ * the writer's mask pointer remains valid throughout the encode. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_prepare_delta_mask(
     sixel_dither_t *dither,
     unsigned char const *transparent_mask,
     size_t transparent_mask_size,
@@ -1929,7 +1932,12 @@ sixel_dither_prepare_accumulation_result_mask(
     SIXELSTATUS status;
 
     status = SIXEL_FALSE;
-    if (dither == NULL || dither->pipeline_accumulation_result_enabled == 0) {
+    if (dither == NULL) {
+        return SIXEL_OK;
+    }
+    /* A reused dither must not expose a previous frame's active mask. */
+    dither->pipeline_accumulation_result_mask_size = 0U;
+    if (dither->pipeline_accumulation_result_enabled == 0) {
         return SIXEL_OK;
     }
     if (!sixel_dither_has_compatible_accumulation_hint(
@@ -3246,7 +3254,7 @@ sixel_dither_set_pipeline_transparent_mask_hint(
     dither->pipeline_transparent_keycolor = keycolor;
 }
 
-void
+SIXEL_INTERNAL_API void
 sixel_dither_clear_pipeline_accumulation_buffer_hint(
     sixel_dither_t *dither)
 {
@@ -4458,7 +4466,7 @@ sixel_dither_apply_palette_with_mode(
             keycolor_for_mask < 0) {
             keycolor_for_mask = dither->pipeline_accumulation_keycolor;
         }
-        status = sixel_dither_prepare_accumulation_result_mask(
+        status = sixel_dither_prepare_delta_mask(
             dither,
             transparent_mask,
             apply_transparent_mask != 0 ? total_pixels : 0u,

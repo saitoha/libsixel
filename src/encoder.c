@@ -2635,6 +2635,7 @@ sixel_encoder_bind_transparent_mask(
     int alpha_covers;
     int frame_mask_covers;
     int mask_has_hit;
+    int omission_index;
 
     status = SIXEL_FALSE;
     memset(&view, 0, sizeof(view));
@@ -2672,6 +2673,10 @@ sixel_encoder_bind_transparent_mask(
             dither->keycolor >= SIXEL_PALETTE_MAX) {
         return SIXEL_OK;
     }
+    /* Fixed native tables omit by a separate mask, not by removing a color.
+     * Index zero is only a placeholder for omitted pixels; keycolor remains
+     * negative so all fixed entries participate in ordinary lookup. */
+    omission_index = dither->keycolor < 0 ? 0 : dither->keycolor;
     status = sixel_encoder_frame_get_pixels_view(frame, &view);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -2730,7 +2735,7 @@ sixel_encoder_bind_transparent_mask(
                  * a placeholder; the body writer omits them by source mask,
                  * while visible samples can still select every palette entry.
                  */
-                dither->keycolor < 0 ? 0 : dither->keycolor);
+                omission_index);
         }
         return SIXEL_OK;
     }
@@ -2749,7 +2754,7 @@ sixel_encoder_bind_transparent_mask(
             origin_y,
             view.width,
             view.height,
-            dither->keycolor,
+            omission_index,
             encoder->sixdelta_enabled,
             encoder->sixdelta_threshold,
             encoder->sixdelta_error_mode);
@@ -2782,7 +2787,7 @@ sixel_encoder_bind_transparent_mask(
             dither,
             encoder->accumulation_mask,
             pixel_count,
-            dither->keycolor);
+            omission_index);
     }
     sixel_dither_set_pipeline_accumulation_buffer_hint(
         dither,
@@ -2796,7 +2801,7 @@ sixel_encoder_bind_transparent_mask(
         origin_y,
         view.width,
         view.height,
-        dither->keycolor,
+        omission_index,
         encoder->sixdelta_enabled,
         encoder->sixdelta_threshold,
         encoder->sixdelta_error_mode);
@@ -6779,8 +6784,8 @@ sixel_encoder_palette_capacity(sixel_encoder_t const *encoder)
  * matching gamma workspace and RGB wire format; other output definitions
  * need an explicit inverse transform before competing with working colors.
  * Generated palettes can reserve an omission key after history exists.
- * Fixed tables and alternate transports are separate migration steps,
- * not reasons to discard floats on the connected path. */
+ * Fixed tables use a separate mask without consuming a palette entry.
+ * Alternate transports retain their separate migration boundaries. */
 static int
 sixel_encoder_native_delta(sixel_encoder_t const *encoder)
 {
@@ -6789,8 +6794,11 @@ sixel_encoder_native_delta(sixel_encoder_t const *encoder)
             encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
             (encoder->palette_type != SIXEL_PALETTETYPE_AUTO &&
              encoder->palette_type != SIXEL_PALETTETYPE_RGB) ||
-            encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT ||
-            sixel_encoder_palette_capacity(encoder) < 2 ||
+            (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT &&
+             encoder->color_option != SIXEL_COLOR_OPTION_BUILTIN &&
+             encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE) ||
+            (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
+             sixel_encoder_palette_capacity(encoder) < 2) ||
             encoder->ormode || encoder->fdrcs || encoder->fuse_macro ||
             encoder->macro_number >= 0 || encoder->output_is_png) {
         return 0;
@@ -7515,7 +7523,8 @@ sixel_encoder_prepare_palette(
     reserve_alpha_key =
         palette_reqcolors > 1
         && (sixel_encoder_frame_preserves_alpha_key(frame)
-            || sixel_encoder_6delta_reserves_alpha_key(encoder));
+            || (!from_map_image &&
+                sixel_encoder_6delta_reserves_alpha_key(encoder)));
     if (reserve_alpha_key) {
         --palette_reqcolors;
     }

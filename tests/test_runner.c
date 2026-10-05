@@ -236,6 +236,25 @@ int test_macro_0015(int argc, char **argv);
 int test_macro_0016(int argc, char **argv);
 int test_hls_native_0014(int argc, char **argv);
 int test_hls_native_0015(int argc, char **argv);
+int test_delta_native_0048(int argc, char **argv);
+int test_delta_native_0049(int argc, char **argv);
+int test_delta_native_0050(int argc, char **argv);
+int test_delta_native_0051(int argc, char **argv);
+int test_delta_native_0033(int argc, char **argv);
+int test_delta_native_0034(int argc, char **argv);
+int test_delta_native_0035(int argc, char **argv);
+int test_delta_native_0036(int argc, char **argv);
+int test_delta_native_0037(int argc, char **argv);
+int test_delta_native_0038(int argc, char **argv);
+int test_delta_native_0039(int argc, char **argv);
+int test_delta_native_0040(int argc, char **argv);
+int test_delta_native_0041(int argc, char **argv);
+int test_delta_native_0042(int argc, char **argv);
+int test_delta_native_0043(int argc, char **argv);
+int test_delta_native_0044(int argc, char **argv);
+int test_delta_native_0045(int argc, char **argv);
+int test_delta_native_0046(int argc, char **argv);
+int test_delta_native_0047(int argc, char **argv);
 int test_delta_native_0018(int argc, char **argv);
 int test_delta_native_0019(int argc, char **argv);
 int test_delta_native_0020(int argc, char **argv);
@@ -3098,6 +3117,44 @@ static test_entry_t const test_entries[] = {
     { "codec/macro/0016_float_output_reuse", test_macro_0016 },
     { "codec/hls/0014_byte_or_control", test_hls_native_0014 },
     { "codec/hls/0015_serial_or", test_hls_native_0015 },
+    { "palette/delta_native/0048_delta_fixed_fs_diffuse",
+        test_delta_native_0048 },
+    { "palette/delta_native/0049_delta_fixed_fs_skip",
+        test_delta_native_0049 },
+    { "palette/delta_native/0050_delta_fixed_mask_failure",
+        test_delta_native_0050 },
+    { "palette/delta_native/0051_delta_image_map_capacity",
+        test_delta_native_0051 },
+    { "palette/delta_native/0033_delta_builtin_slots",
+        test_delta_native_0033 },
+    { "palette/delta_native/0034_delta_map_slots",
+        test_delta_native_0034 },
+    { "palette/delta_native/0035_delta_map_duplicates",
+        test_delta_native_0035 },
+    { "palette/delta_native/0036_delta_builtin_mask",
+        test_delta_native_0036 },
+    { "palette/delta_native/0037_delta_map_mask",
+        test_delta_native_0037 },
+    { "palette/delta_native/0038_delta_builtin_origin",
+        test_delta_native_0038 },
+    { "palette/delta_native/0039_delta_map_origin",
+        test_delta_native_0039 },
+    { "palette/delta_native/0040_delta_builtin_workers",
+        test_delta_native_0040 },
+    { "palette/delta_native/0041_delta_map_workers",
+        test_delta_native_0041 },
+    { "palette/delta_native/0042_delta_builtin_animation",
+        test_delta_native_0042 },
+    { "palette/delta_native/0043_delta_map_animation",
+        test_delta_native_0043 },
+    { "palette/delta_native/0044_delta_builtin_byte",
+        test_delta_native_0044 },
+    { "palette/delta_native/0045_delta_map_byte",
+        test_delta_native_0045 },
+    { "palette/delta_native/0046_delta_builtin_reuse",
+        test_delta_native_0046 },
+    { "palette/delta_native/0047_delta_map_reuse",
+        test_delta_native_0047 },
     { "palette/delta_native/0018_delta_a_source",
         test_delta_native_0018 },
     { "palette/delta_native/0019_delta_x_source",

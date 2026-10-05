@@ -4653,6 +4653,28 @@ sixel_encode_dither(
          * it on both success and failure before output reuse. */
         output->transparent_mask = dither->pipeline_transparent_mask;
     }
+    if (use_rgb101_palette && dither->keycolor < 0 &&
+            dither->pipeline_6delta_enabled &&
+            dither->pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        /* Reserve the shared mask before pipeline workers copy output views.
+         * PaletteApply reuses this storage and publishes each row only after
+         * its keep decisions. Fixed-table index zero remains a real color;
+         * only mask bits distinguish it from an omission placeholder. */
+        if (output->ormode) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        status = sixel_dither_prepare_delta_mask(dither,
+            dither->pipeline_transparent_mask,
+            dither->pipeline_transparent_mask_size, pixel_count);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        if (dither->pipeline_accumulation_result_mask_size == pixel_count) {
+            output->transparent_mask =
+                dither->pipeline_accumulation_result_mask;
+        }
+    }
     palette_float_pixelformat =
         sixel_palette_float_pixelformat_for_colorspace(
             palette_source_colorspace);

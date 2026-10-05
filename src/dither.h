@@ -424,9 +424,17 @@ sixel_dither_6delta_keep_float(
 SIXEL_INTERNAL_API int
 sixel_dither_pipeline_6delta_error_mode(sixel_dither_t const *dither);
 
-void
+SIXEL_INTERNAL_API void
 sixel_dither_clear_pipeline_accumulation_buffer_hint(
     sixel_dither_t *dither);
+
+/* Prepare a combined source/delta omission mask before parallel writers
+ * borrow it. A later same-size PaletteApply reuses the owned allocation. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_prepare_delta_mask(sixel_dither_t *dither,
+                                unsigned char const *transparent_mask,
+                                size_t transparent_mask_size,
+                                size_t total_pixels);
 
 SIXEL_INTERNAL_API void
 sixel_dither_clear_pipeline_accumulation_result_mask(
