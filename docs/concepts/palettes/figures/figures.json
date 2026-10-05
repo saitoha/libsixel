@@ -1,0 +1,84 @@
+{
+  "generator": "tools/plot_palette_concept_figures.py",
+  "plot_dependency": "matplotlib 3.10, numpy, Pillow",
+  "builtin_tables": {
+    "xterm256": "src/dither.c pal_xterm256",
+    "vt340color": "src/dither.c pal_vt340_color"
+  },
+  "web_safe_levels": [
+    0,
+    51,
+    102,
+    153,
+    204,
+    255
+  ],
+  "palette_sizes": "images/snake.png at 240 x 180, Pillow median cut, Floyd-Steinberg dithering",
+  "timeline": [
+    {
+      "year": 1973,
+      "event": "SuperPaint frame buffer",
+      "detail": "8-bit pixels through a color map"
+    },
+    {
+      "year": 1981,
+      "event": "IBM CGA",
+      "detail": "4 fixed colors at 320 × 200"
+    },
+    {
+      "year": 1984,
+      "event": "IBM EGA",
+      "detail": "16 of 64 colors"
+    },
+    {
+      "year": 1985,
+      "event": "Amiga",
+      "detail": "32 of 4,096; HAM mode"
+    },
+    {
+      "year": 1987,
+      "event": "IBM VGA",
+      "detail": "256 of 262,144 colors"
+    },
+    {
+      "year": 1987,
+      "event": "DEC VT340 (SIXEL)",
+      "detail": "16 of 4,096 colors"
+    },
+    {
+      "year": 1987,
+      "event": "GIF87a",
+      "detail": "256-color palettes"
+    },
+    {
+      "year": 1989,
+      "event": "GIF89a",
+      "detail": "animation, transparency"
+    },
+    {
+      "year": 1995,
+      "event": "Web-safe palette",
+      "detail": "216 shared colors"
+    },
+    {
+      "year": 1996,
+      "event": "PNG",
+      "detail": "palettes with alpha per entry"
+    },
+    {
+      "year": 1998,
+      "event": "S3TC texture blocks",
+      "detail": "4-color palette per 4×4 block"
+    },
+    {
+      "year": 1999,
+      "event": "xterm 256 colors",
+      "detail": "16 + 216 + 24 grays"
+    },
+    {
+      "year": 2015,
+      "event": "PICO-8",
+      "detail": "a fixed 16-color palette"
+    }
+  ]
+}

@@ -55,6 +55,7 @@ The foundations the rest of the documentation builds on, in reading order: how v
 
 ### Palettes and dithering
 
+- [Palettes](concepts/palettes/README.md) explains indexed-color images and color lookup tables, the history of palettes from early frame buffers, PC graphics, the VT340 and GIF to the web-safe palette, texture compression and xterm 256 colors, fixed, adaptive and local palettes, palette size, today's applications, and how palettes work in SIXEL.
 - [Palette clustering](concepts/clustering/README.md) explains how a palette is chosen for an image: colors as points, Voronoi regions and total error, why the optimum is hard to find, median cut, octree, k-means, k-medoids, k-center, Ward merging and neural methods, and the roles of color space, pixel weighting and important rare colors.
 - [Dithering](concepts/dithering/README.md) explains why few-color images need dithering, how random, ordered, error-diffusion and blue-noise methods work, where each puts its error, why error belongs at fine scales, color and linear-light averaging, structure-preserving dithering, and what dithering costs in SIXEL.
 

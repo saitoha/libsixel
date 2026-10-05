@@ -673,6 +673,13 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/concepts/dithering/figures/ordered-dither.svg \
 	docs/concepts/dithering/figures/posterization.svg \
 	docs/concepts/dithering/figures/spectra.svg \
+	docs/concepts/palettes/README.md \
+	docs/concepts/palettes/figures/block-palette.svg \
+	docs/concepts/palettes/figures/figures.json \
+	docs/concepts/palettes/figures/indexed-image.svg \
+	docs/concepts/palettes/figures/palette-sizes.svg \
+	docs/concepts/palettes/figures/standard-palettes.svg \
+	docs/concepts/palettes/figures/timeline.svg \
 	docs/quality/visual-perception/README.md \
 	docs/quality/visual-perception/figures/blind-spot.svg \
 	docs/quality/visual-perception/figures/campbell-robson.svg \

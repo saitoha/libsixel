@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="486" viewBox="0 0 760 486" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Palette timeline</title>
+<desc id="desc">A timeline of palette-based displays, file formats, texture compression, and terminals from 1973 to 2015.</desc>
+<rect x="0" y="0" width="760" height="486" fill="#ffffff"/>
+<text x="380" y="32" font-size="17" fill="#183247" font-weight="700" text-anchor="middle">Palettes in hardware, formats, and terminals</text>
+<line x1="96" y1="58" x2="96" y2="468" stroke="#183247" stroke-width="2"/>
+<text x="78" y="75" font-size="15" fill="#183247" font-weight="700" text-anchor="end">1973</text>
+<circle cx="96" cy="70" r="5.5" fill="#183247"/>
+<text x="116" y="75" font-size="15" fill="#183247"><tspan font-weight="700">SuperPaint frame buffer</tspan><tspan fill="#4c6070"> — 8-bit pixels through a color map</tspan></text>
+<text x="78" y="107" font-size="15" fill="#183247" font-weight="700" text-anchor="end">1981</text>
+<circle cx="96" cy="102" r="5.5" fill="#183247"/>
+<text x="116" y="107" font-size="15" fill="#183247"><tspan font-weight="700">IBM CGA</tspan><tspan fill="#4c6070"> — 4 fixed colors at 320 × 200</tspan></text>
+<text x="78" y="139" font-size="15" fill="#183247" font-weight="700" text-anchor="end">1984</text>
+<circle cx="96" cy="134" r="5.5" fill="#183247"/>
+<text x="116" y="139" font-size="15" fill="#183247"><tspan font-weight="700">IBM EGA</tspan><tspan fill="#4c6070"> — 16 of 64 colors</tspan></text>
+<text x="78" y="171" font-size="15" fill="#183247" font-weight="700" text-anchor="end">1985</text>
+<circle cx="96" cy="166" r="5.5" fill="#183247"/>
+<text x="116" y="171" font-size="15" fill="#183247"><tspan font-weight="700">Amiga</tspan><tspan fill="#4c6070"> — 32 of 4,096; HAM mode</tspan></text>
+<text x="78" y="203" font-size="15" fill="#183247" font-weight="700" text-anchor="end">1987</text>
+<circle cx="96" cy="198" r="5.5" fill="#183247"/>
+<text x="116" y="203" font-size="15" fill="#183247"><tspan font-weight="700">IBM VGA</tspan><tspan fill="#4c6070"> — 256 of 262,144 colors</tspan></text>
+<circle cx="96" cy="230" r="5.5" fill="#183247"/>
+<text x="116" y="235" font-size="15" fill="#183247"><tspan font-weight="700">DEC VT340 (SIXEL)</tspan><tspan fill="#4c6070"> — 16 of 4,096 colors</tspan></text>
+<circle cx="96" cy="262" r="5.5" fill="#183247"/>
+<text x="116" y="267" font-size="15" fill="#183247"><tspan font-weight="700">GIF87a</tspan><tspan fill="#4c6070"> — 256-color palettes</tspan></text>
+<text x="78" y="299" font-size="15" fill="#183247" font-weight="700" text-anchor="end">1989</text>
+<circle cx="96" cy="294" r="5.5" fill="#183247"/>
+<text x="116" y="299" font-size="15" fill="#183247"><tspan font-weight="700">GIF89a</tspan><tspan fill="#4c6070"> — animation, transparency</tspan></text>
+<text x="78" y="331" font-size="15" fill="#183247" font-weight="700" text-anchor="end">1995</text>
+<circle cx="96" cy="326" r="5.5" fill="#183247"/>
+<text x="116" y="331" font-size="15" fill="#183247"><tspan font-weight="700">Web-safe palette</tspan><tspan fill="#4c6070"> — 216 shared colors</tspan></text>
+<text x="78" y="363" font-size="15" fill="#183247" font-weight="700" text-anchor="end">1996</text>
+<circle cx="96" cy="358" r="5.5" fill="#183247"/>
+<text x="116" y="363" font-size="15" fill="#183247"><tspan font-weight="700">PNG</tspan><tspan fill="#4c6070"> — palettes with alpha per entry</tspan></text>
+<text x="78" y="395" font-size="15" fill="#183247" font-weight="700" text-anchor="end">1998</text>
+<circle cx="96" cy="390" r="5.5" fill="#183247"/>
+<text x="116" y="395" font-size="15" fill="#183247"><tspan font-weight="700">S3TC texture blocks</tspan><tspan fill="#4c6070"> — 4-color palette per 4×4 block</tspan></text>
+<text x="78" y="427" font-size="15" fill="#183247" font-weight="700" text-anchor="end">1999</text>
+<circle cx="96" cy="422" r="5.5" fill="#183247"/>
+<text x="116" y="427" font-size="15" fill="#183247"><tspan font-weight="700">xterm 256 colors</tspan><tspan fill="#4c6070"> — 16 + 216 + 24 grays</tspan></text>
+<text x="78" y="459" font-size="15" fill="#183247" font-weight="700" text-anchor="end">2015</text>
+<circle cx="96" cy="454" r="5.5" fill="#183247"/>
+<text x="116" y="459" font-size="15" fill="#183247"><tspan font-weight="700">PICO-8</tspan><tspan fill="#4c6070"> — a fixed 16-color palette</tspan></text>
+</svg>

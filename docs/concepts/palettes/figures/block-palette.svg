@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="250" viewBox="0 0 760 250" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Block palette texture compression</title>
+<desc id="desc">A four by four block stores two endpoint colors and a two-bit index per pixel; the two other palette colors are interpolated between the endpoints.</desc>
+<rect x="0" y="0" width="760" height="250" fill="#ffffff"/>
+<text x="100" y="30" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">4 × 4 block of indices</text>
+<rect x="20" y="45" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="40" y="71" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">0</text>
+<rect x="60" y="45" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="80" y="71" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">2</text>
+<rect x="100" y="45" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="120" y="71" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">2</text>
+<rect x="140" y="45" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="160" y="71" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">2</text>
+<rect x="20" y="85" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="40" y="111" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">0</text>
+<rect x="60" y="85" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="80" y="111" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">2</text>
+<rect x="100" y="85" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="120" y="111" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">3</text>
+<rect x="140" y="85" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="160" y="111" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">3</text>
+<rect x="20" y="125" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="40" y="151" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">2</text>
+<rect x="60" y="125" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="80" y="151" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">3</text>
+<rect x="100" y="125" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="120" y="151" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">3</text>
+<rect x="140" y="125" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="160" y="151" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">3</text>
+<rect x="20" y="165" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="40" y="191" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">3</text>
+<rect x="60" y="165" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="80" y="191" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">3</text>
+<rect x="100" y="165" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="120" y="191" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">1</text>
+<rect x="140" y="165" width="40" height="40" fill="#ffffff" stroke="#4c6070"/>
+<text x="160" y="191" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">1</text>
+<text x="330" y="30" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Palette of this block</text>
+<rect x="250" y="50" width="44" height="30" fill="#2e5ca0" stroke="#4c6070"/>
+<text x="304" y="71" font-size="14" fill="#183247" font-weight="400" text-anchor="start">0: endpoint C0</text>
+<rect x="250" y="88" width="44" height="30" fill="#eebe5c" stroke="#4c6070"/>
+<text x="304" y="109" font-size="14" fill="#183247" font-weight="400" text-anchor="start">1: endpoint C1</text>
+<rect x="250" y="126" width="44" height="30" fill="#6e7c89" stroke="#4c6070"/>
+<text x="304" y="147" font-size="14" fill="#183247" font-weight="400" text-anchor="start">2: ⅔ C0 + ⅓ C1</text>
+<rect x="250" y="164" width="44" height="30" fill="#ae9d72" stroke="#4c6070"/>
+<text x="304" y="185" font-size="14" fill="#183247" font-weight="400" text-anchor="start">3: ⅓ C0 + ⅔ C1</text>
+<text x="610" y="30" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Decoded block</text>
+<rect x="530" y="45" width="40" height="40" fill="#2e5ca0"/>
+<rect x="570" y="45" width="40" height="40" fill="#6e7c89"/>
+<rect x="610" y="45" width="40" height="40" fill="#6e7c89"/>
+<rect x="650" y="45" width="40" height="40" fill="#6e7c89"/>
+<rect x="530" y="85" width="40" height="40" fill="#2e5ca0"/>
+<rect x="570" y="85" width="40" height="40" fill="#6e7c89"/>
+<rect x="610" y="85" width="40" height="40" fill="#ae9d72"/>
+<rect x="650" y="85" width="40" height="40" fill="#ae9d72"/>
+<rect x="530" y="125" width="40" height="40" fill="#6e7c89"/>
+<rect x="570" y="125" width="40" height="40" fill="#ae9d72"/>
+<rect x="610" y="125" width="40" height="40" fill="#ae9d72"/>
+<rect x="650" y="125" width="40" height="40" fill="#ae9d72"/>
+<rect x="530" y="165" width="40" height="40" fill="#ae9d72"/>
+<rect x="570" y="165" width="40" height="40" fill="#ae9d72"/>
+<rect x="610" y="165" width="40" height="40" fill="#eebe5c"/>
+<rect x="650" y="165" width="40" height="40" fill="#eebe5c"/>
+<text x="380" y="238" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Two stored colors and sixteen 2-bit indices: 64 bits for 16 pixels, every 4 × 4 block with its own palette.</text>
+</svg>
