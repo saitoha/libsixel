@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="300" viewBox="0 0 720 300" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Viewing geometry</title>
+<desc id="desc">An eye at distance d from a screen. One degree of visual angle covers d times tan 1 degree on the screen, which divided by the pixel pitch gives pixels per degree.</desc>
+<rect x="0" y="0" width="720" height="300" fill="#ffffff"/>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4c6070"/></marker></defs>
+<circle cx="90" cy="150" r="42" fill="#ffffff" stroke="#183247" stroke-width="2.5"/>
+<circle cx="122" cy="150" r="13" fill="#183247"/>
+<text x="90" y="222" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Eye</text>
+<rect x="600" y="40" width="16" height="220" fill="#e6ecf0" stroke="#183247" stroke-width="2"/>
+<rect x="600" y="120" width="16" height="6" fill="#183247"/>
+<rect x="600" y="126" width="16" height="6" fill="#ffffff"/>
+<rect x="600" y="132" width="16" height="6" fill="#183247"/>
+<rect x="600" y="138" width="16" height="6" fill="#ffffff"/>
+<rect x="600" y="144" width="16" height="6" fill="#183247"/>
+<rect x="600" y="150" width="16" height="6" fill="#ffffff"/>
+<rect x="600" y="156" width="16" height="6" fill="#183247"/>
+<rect x="600" y="162" width="16" height="6" fill="#ffffff"/>
+<rect x="600" y="168" width="16" height="6" fill="#183247"/>
+<rect x="600" y="174" width="16" height="6" fill="#ffffff"/>
+<text x="640" y="125" font-size="14" fill="#183247" font-weight="400" text-anchor="start">pixels of</text>
+<text x="640" y="143" font-size="14" fill="#183247" font-weight="700" text-anchor="start">pitch p</text>
+<text x="608" y="285" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Screen</text>
+<path d="M 122 150 L 600 120" stroke="#c0392b" stroke-width="2"/>
+<path d="M 122 150 L 600 180" stroke="#c0392b" stroke-width="2"/>
+<path d="M 180 146 A 60 60 0 0 1 180 154" stroke="#c0392b" fill="none" stroke-width="2"/>
+<text x="200" y="140" font-size="16" fill="#c0392b" font-weight="700" text-anchor="start">1°</text>
+<path d="M 122 245 L 598 245" stroke="#4c6070" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="360" y="238" font-size="15" fill="#183247" font-weight="400" text-anchor="middle">viewing distance d</text>
+<text x="360" y="40" font-size="17" fill="#183247" font-weight="700" text-anchor="middle">pixels per degree = d × tan(1°) / p</text>
+<text x="360" y="64" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">finest pattern (one-pixel stripes) = pixels per degree / 2 cycles per degree</text>
+</svg>

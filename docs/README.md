@@ -44,7 +44,7 @@ Color, pixel representation, and visual perception that the rest of the document
 
 ### Visual perception
 
-- [Visual perception for image quality](quality/visual-perception.md) explains the sensory physiology behind the metrics: perceptual quality, photoreceptors and opponent channels, light and chromatic adaptation including display filters and dark rooms, contrast sensitivity, viewing geometry, and the visibility of noise and chroma detail.
+- [Visual perception for image quality](quality/visual-perception/README.md) explains the sensory physiology behind the metrics: perceptual quality, photoreceptors and opponent channels, light and chromatic adaptation including display filters and dark rooms, contrast sensitivity, viewing geometry, and the visibility of noise and chroma detail.
 
 ## Quality and measurement
 

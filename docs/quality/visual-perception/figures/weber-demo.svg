@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="250" viewBox="0 0 720 250" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Weber law demonstration</title>
+<desc id="desc">Two squares that are each 0.02 brighter, in linear light, than their background. On the dark background the square is clearly visible; on the bright background it is hard to see.</desc>
+<rect x="0" y="0" width="720" height="250" fill="#ffffff"/>
+<rect x="30" y="50" width="310" height="150" fill="#272727"/>
+<rect x="135" y="85" width="100" height="80" fill="#383838"/>
+<text x="185" y="35" font-size="17" fill="#183247" font-weight="700" text-anchor="middle">Dark background</text>
+<text x="185" y="228" font-size="13" fill="#4c6070" font-weight="400" text-anchor="middle">background 0.02, square 0.04 (linear light)</text>
+<rect x="380" y="50" width="310" height="150" fill="#cbcbcb"/>
+<rect x="485" y="85" width="100" height="80" fill="#cecece"/>
+<text x="535" y="35" font-size="17" fill="#183247" font-weight="700" text-anchor="middle">Bright background</text>
+<text x="535" y="228" font-size="13" fill="#4c6070" font-weight="400" text-anchor="middle">background 0.60, square 0.62 (linear light)</text>
+</svg>

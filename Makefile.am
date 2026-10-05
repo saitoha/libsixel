@@ -657,7 +657,25 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/encoder/palette-construction/quantization/README.md \
 	docs/quality/measurement-policy.md \
 	docs/quality/metrics.md \
-	docs/quality/visual-perception.md \
+	docs/quality/visual-perception/README.md \
+	docs/quality/visual-perception/figures/blind-spot.svg \
+	docs/quality/visual-perception/figures/campbell-robson.svg \
+	docs/quality/visual-perception/figures/chromatic-adaptation.svg \
+	docs/quality/visual-perception/figures/cone-sensitivity.svg \
+	docs/quality/visual-perception/figures/contrast-sensitivity.svg \
+	docs/quality/visual-perception/figures/dark-adaptation.svg \
+	docs/quality/visual-perception/figures/dither-integration.svg \
+	docs/quality/visual-perception/figures/eye-anatomy.jpg \
+	docs/quality/visual-perception/figures/figures.json \
+	docs/quality/visual-perception/figures/light-levels.svg \
+	docs/quality/visual-perception/figures/luma-chroma.svg \
+	docs/quality/visual-perception/figures/luminosity-functions.svg \
+	docs/quality/visual-perception/figures/opponent-channels.svg \
+	docs/quality/visual-perception/figures/receptor-density.svg \
+	docs/quality/visual-perception/figures/retina-layers.jpg \
+	docs/quality/visual-perception/figures/retina-mosaic.jpg \
+	docs/quality/visual-perception/figures/viewing-geometry.svg \
+	docs/quality/visual-perception/figures/weber-demo.svg \
 	docs/testing/builtin-loader-coverage.md \
 	docs/testing/guide.md \
 	docs/testing/staticcheck.md \

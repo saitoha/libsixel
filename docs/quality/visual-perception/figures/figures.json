@@ -1,0 +1,59 @@
+{
+  "generator": "tools/plot_visual_perception_figures.py",
+  "plot_dependency": "matplotlib 3.10, numpy, Pillow",
+  "generated": [
+    "blind-spot.svg",
+    "campbell-robson.svg",
+    "chromatic-adaptation.svg",
+    "cone-sensitivity.svg",
+    "contrast-sensitivity.svg",
+    "dark-adaptation.svg",
+    "dither-integration.svg",
+    "light-levels.svg",
+    "luma-chroma.svg",
+    "luminosity-functions.svg",
+    "opponent-channels.svg",
+    "receptor-density.svg",
+    "viewing-geometry.svg",
+    "weber-demo.svg"
+  ],
+  "data_sources": {
+    "cone-sensitivity.svg": "Govardovskii et al. (2000) A1 alpha-band template, peaks 420, 498, 530 and 559 nm",
+    "luminosity-functions.svg": "CIE 1924 V(lambda) and CIE 1951 V'(lambda), 10 nm",
+    "receptor-density.svg": "schematic curves shaped after Curcio et al. (1990)",
+    "dark-adaptation.svg": "schematic two-branch threshold curve",
+    "contrast-sensitivity.svg": "Mannos and Sakrison (1974) luminance model; schematic chroma low-pass after Mullen (1985)",
+    "light-levels.svg": "approximate luminances; regime limits from CIE 191:2010",
+    "luma-chroma.svg": "images/snake.png, BT.601 YCbCr on encoded values",
+    "dither-integration.svg": "Floyd-Steinberg and seeded random threshold dither"
+  },
+  "external": {
+    "eye-anatomy.jpg": {
+      "title": "1413 Structure of the Eye",
+      "author": "OpenStax College",
+      "source": "https://commons.wikimedia.org/wiki/File:1413_Structure_of_the_Eye.jpg",
+      "credit": "Anatomy & Physiology, Connexions Web site, https://cnx.org/content/col11496/1.6/, Jun 19, 2013",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "changes": "scaled to 1200 pixels wide and re-encoded as JPEG"
+    },
+    "retina-layers.jpg": {
+      "title": "1414 Rods and Cones",
+      "author": "OpenStax College",
+      "source": "https://commons.wikimedia.org/wiki/File:1414_Rods_and_Cones.jpg",
+      "credit": "Anatomy & Physiology, Connexions Web site, https://cnx.org/content/col11496/1.6/, Jun 19, 2013",
+      "license": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "changes": "scaled to 700 pixels wide and re-encoded as JPEG"
+    },
+    "retina-mosaic.jpg": {
+      "title": "Rods and Cones in Retina",
+      "author": "Johnny Tam, National Eye Institute (NIH)",
+      "source": "https://commons.wikimedia.org/wiki/File:Rods_and_Cones_in_Retina_(51175951237).jpg",
+      "credit": "NIH Image Gallery, https://www.flickr.com/photos/nihgov/51175951237/",
+      "license": "Public domain",
+      "license_url": "https://www.usa.gov/government-copyright",
+      "changes": "none"
+    }
+  }
+}

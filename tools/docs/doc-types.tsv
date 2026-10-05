@@ -109,7 +109,7 @@ docs/quality/color-difference.md	explanation	both	color-difference formulas + re
 docs/quality/color-evaluation.md	reference	both	quality-tool contracts + color-model explanation and contributor test ledger
 docs/quality/measurement-policy.md	reference	contributor	measurement policy + comparison procedure
 docs/quality/metrics.md	explanation	both	metric reference definitions + usage explanation
-docs/quality/visual-perception.md	explanation	both	
+docs/quality/visual-perception/README.md	explanation	both	
 docs/quality/palette-gradient-analysis.md	how-to	both	diagnostic workflow + geometry explanation and contributor validation
 docs/sixel-format/README.md	reference	both	wire specification + encoding explanation and contributor implementation map
 docs/sixel-format/comparison/README.md	explanation	both	codec tradeoff explanation + measured reference and reproduction how-to

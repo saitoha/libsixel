@@ -4,7 +4,7 @@
 
 This document explains the image-quality metrics that `lsqa` reports: where each one comes from, the quantity it computes, how the libsixel implementation differs from the published definition, and what it can and cannot observe. It then explains how the metrics are used: why multiscale structure matters, how dither noise spectra are measured, how structure-preserving dithering is evaluated, which metrics to combine for dithered output, and why the current spatial metrics are computed on a luminance-like signal.
 
-[Visual perception for image quality](visual-perception.md) explains the sensory physiology these metrics rest on: perceptual quality, photoreceptors and adaptation, contrast sensitivity, and viewing geometry. [Color difference and color reproduction](color-difference.md) compares color-difference formulas and evaluates color across scales. The [image-quality measurement policy](measurement-policy.md) owns the primary gate, thresholds, fixtures, baselines, and comparison conditions. [Color-aware quality evaluation](color-evaluation.md) owns input interpretation, the XYZ D50 connection space, the comparison-signal options, and regional tiling. This page defines and explains; it does not set acceptance limits.
+[Visual perception for image quality](visual-perception/README.md) explains the sensory physiology these metrics rest on: perceptual quality, photoreceptors and adaptation, contrast sensitivity, and viewing geometry. [Color difference and color reproduction](color-difference.md) compares color-difference formulas and evaluates color across scales. The [image-quality measurement policy](measurement-policy.md) owns the primary gate, thresholds, fixtures, baselines, and comparison conditions. [Color-aware quality evaluation](color-evaluation.md) owns input interpretation, the XYZ D50 connection space, the comparison-signal options, and regional tiling. This page defines and explains; it does not set acceptance limits.
 
 ## Reading the definitions
 
@@ -15,7 +15,7 @@ This document explains the image-quality metrics that `lsqa` reports: where each
 
 `Y'` is *luma*, a weighted sum of gamma-encoded components. It is not CIE luminance `Y`, and with saturated colors it departs from the lightness that a viewer perceives (the non-constant-luminance error of video luma). It is nevertheless roughly perceptually uniform in the way that encoded sRGB is, which is why it remains the default.
 
-All of these are *full-reference* metrics: they compare an output with its reference, and what makes them perceptual is discussed in [perceptual quality](visual-perception.md#perceptual-quality).
+All of these are *full-reference* metrics: they compare an output with its reference, and what makes them perceptual is discussed in [perceptual quality](visual-perception/README.md#perceptual-quality).
 
 Formulas use plain-text notation: `Σ` is a sum, `Π` a product, `E[·]` an average over pixels, `*` convolution, and `|·|` an absolute value or magnitude. Unless stated otherwise, "higher is better" applies to similarity scores and "lower is better" to differences.
 
@@ -91,7 +91,7 @@ MS-SSIM = l_M^{α_M} · Π_{j=1..M} c_j^{β_j} · s_j^{γ_j}
 (w_1 .. w_5) = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333)
 ```
 
-The weights peak at the middle scales. That is the fitted psychophysical result: with the experiment's viewing geometry, distortions near the middle scales were the most visible, consistent with the band-pass shape of the luminance contrast sensitivity function described [in visual perception](visual-perception.md#contrast-sensitivity).
+The weights peak at the middle scales. That is the fitted psychophysical result: with the experiment's viewing geometry, distortions near the middle scales were the most visible, consistent with the band-pass shape of the luminance contrast sensitivity function described [in visual perception](visual-perception/README.md#contrast-sensitivity).
 
 ### The `lsqa` MS-SSIM
 
@@ -237,7 +237,7 @@ It reports saturation at the ends of the comparison signal's range. It describes
 
 ## Why multiscale structure matters
 
-A metric evaluated at one scale implicitly assumes one viewing geometry. Because the [contrast sensitivity function](visual-perception.md#contrast-sensitivity) is defined in cycles per degree ([from pixels to cycles per degree](visual-perception.md#from-pixels-to-cycles-per-degree)), changing the distance or the display pitch moves every image frequency along the CSF, so a pattern that is invisible at one distance is obvious at another. Neither libsixel nor its user can know the final geometry in general.
+A metric evaluated at one scale implicitly assumes one viewing geometry. Because the [contrast sensitivity function](visual-perception/README.md#contrast-sensitivity) is defined in cycles per degree ([from pixels to cycles per degree](visual-perception/README.md#from-pixels-to-cycles-per-degree)), changing the distance or the display pitch moves every image frequency along the CSF, so a pattern that is invisible at one distance is obvious at another. Neither libsixel nor its user can know the final geometry in general.
 
 A multiscale metric hedges against this uncertainty. Each dyadic scale corresponds to a band of image frequencies; evaluating structure in every band and weighting the bands approximates integrating visibility over the CSF across a range of plausible viewing conditions, in the spirit of Campbell and Robson's spatial-frequency channels. The fitted MS-SSIM weights favor the middle scales because those carried the most visible distortion in the calibration experiment.
 
@@ -256,7 +256,7 @@ Palette quantization replaces each pixel with a palette color, leaving an error 
 
 ### Why push the error upward
 
-At normal viewing distance the visual system integrates fine detail and is least sensitive to high spatial frequencies, especially in the chromatic channels ([spatial integration and noise visibility](visual-perception.md#spatial-integration-and-noise-visibility)). If the quantization error has little energy at low frequencies, the perceived image keeps the local average tone and color of the reference, and the remaining error lies where sensitivity is lowest. Blue-noise placement minimizes the visible part of a fixed error budget, which a palette makes unavoidable.
+At normal viewing distance the visual system integrates fine detail and is least sensitive to high spatial frequencies, especially in the chromatic channels ([spatial integration and noise visibility](visual-perception/README.md#spatial-integration-and-noise-visibility)). If the quantization error has little energy at low frequencies, the perceived image keeps the local average tone and color of the reference, and the remaining error lies where sensitivity is lowest. Blue-noise placement minimizes the visible part of a fixed error budget, which a palette makes unavoidable.
 
 Error diffusion achieves this by *noise shaping*. Floyd and Steinberg ("An adaptive algorithm for spatial greyscale", Proceedings of the Society for Information Display 17(2), 1976) propagate each pixel's quantization error to unprocessed neighbors with fixed weights. Modeling the quantizer as additive noise `n`, the output error is the noise filtered by `(1 − H)`, where `H` is the transfer function of the diffusion filter:
 
@@ -311,7 +311,7 @@ Read the rows together. A dither that lowers regional ΔE00 and banding while ra
 
 The spatial metrics in `lsqa` operate on a single luma signal, while color is measured separately with per-pixel and regional ΔE00. There are physiological and practical reasons for this split, and limits to it.
 
-**Physiology.** The achromatic channel has the highest spatial resolution and contrast sensitivity, and structure, edges, and texture are perceived mainly through luminance contrast; see [luminance and chroma in spatial vision](visual-perception.md#luminance-and-chroma-in-spatial-vision). A metric that spends its spatial analysis on luminance therefore concentrates on the channel where spatial errors are most visible. The same reasoning motivates [structure-preserving dithering that prioritizes luminance](#structure-preserving-dithering-and-luminance-priority).
+**Physiology.** The achromatic channel has the highest spatial resolution and contrast sensitivity, and structure, edges, and texture are perceived mainly through luminance contrast; see [luminance and chroma in spatial vision](visual-perception/README.md#luminance-and-chroma-in-spatial-vision). A metric that spends its spatial analysis on luminance therefore concentrates on the channel where spatial errors are most visible. The same reasoning motivates [structure-preserving dithering that prioritizes luminance](#structure-preserving-dithering-and-luminance-priority).
 
 **Lineage and validation.** SSIM, MS-SSIM, and GMSD were defined and validated on grayscale or luma images. Using them on luma keeps `lsqa` values interpretable against their published behavior, apart from the implementation differences documented above. Extending them to color has no single accepted definition, and an ad hoc per-channel average would weight RGB channels as though they were perceptually equivalent, which they are not.
 

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="270" viewBox="0 0 720 270" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Chromatic adaptation</title>
+<desc id="desc">Six colored patches under daylight, the same patches tinted by warm lamplight, and the colors restored after dividing each channel by the illuminant, a simplified von Kries adaptation.</desc>
+<rect x="0" y="0" width="720" height="270" fill="#ffffff"/>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4c6070"/></marker></defs>
+<text x="125" y="30" font-size="16" fill="#183247" font-weight="700" text-anchor="middle">Under daylight</text>
+<rect x="20" y="50" width="64" height="70" rx="4" fill="#da7661" stroke="#ffffff"/>
+<rect x="92" y="50" width="64" height="70" rx="4" fill="#edce6c" stroke="#ffffff"/>
+<rect x="164" y="50" width="64" height="70" rx="4" fill="#7cb376" stroke="#ffffff"/>
+<rect x="20" y="130" width="64" height="70" rx="4" fill="#6c95d3" stroke="#ffffff"/>
+<rect x="92" y="130" width="64" height="70" rx="4" fill="#cecece" stroke="#ffffff"/>
+<rect x="164" y="130" width="64" height="70" rx="4" fill="#959595" stroke="#ffffff"/>
+<path d="M 238 125 L 252 125" stroke="#4c6070" stroke-width="2.5" marker-end="url(#arrow)"/>
+<text x="360" y="30" font-size="16" fill="#183247" font-weight="700" text-anchor="middle">Under warm lamplight</text>
+<rect x="255" y="50" width="64" height="70" rx="4" fill="#da6944" stroke="#ffffff"/>
+<rect x="327" y="50" width="64" height="70" rx="4" fill="#edb94c" stroke="#ffffff"/>
+<rect x="399" y="50" width="64" height="70" rx="4" fill="#7ca053" stroke="#ffffff"/>
+<rect x="255" y="130" width="64" height="70" rx="4" fill="#6c8598" stroke="#ffffff"/>
+<rect x="327" y="130" width="64" height="70" rx="4" fill="#ceb994" stroke="#ffffff"/>
+<rect x="399" y="130" width="64" height="70" rx="4" fill="#95856a" stroke="#ffffff"/>
+<path d="M 473 125 L 487 125" stroke="#4c6070" stroke-width="2.5" marker-end="url(#arrow)"/>
+<text x="595" y="30" font-size="16" fill="#183247" font-weight="700" text-anchor="middle">After adaptation</text>
+<rect x="490" y="50" width="64" height="70" rx="4" fill="#da7661" stroke="#ffffff"/>
+<rect x="562" y="50" width="64" height="70" rx="4" fill="#edce6c" stroke="#ffffff"/>
+<rect x="634" y="50" width="64" height="70" rx="4" fill="#7cb376" stroke="#ffffff"/>
+<rect x="490" y="130" width="64" height="70" rx="4" fill="#6c95d3" stroke="#ffffff"/>
+<rect x="562" y="130" width="64" height="70" rx="4" fill="#cecece" stroke="#ffffff"/>
+<rect x="634" y="130" width="64" height="70" rx="4" fill="#959595" stroke="#ffffff"/>
+<text x="360" y="240" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">The light reaching the eye changes (middle); the visual</text>
+<text x="360" y="260" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">system rescales each cone class and restores the colors (right).</text>
+</svg>

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="360" viewBox="0 0 760 360" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Light levels and vision regimes</title>
+<desc id="desc">A logarithmic luminance scale from 10 to the minus 6 to 10 to the 6 candela per square meter, divided into scotopic, mesopic and photopic vision, with starlight, moonlight, display black, display white and an office desk, an overcast sky and sunlit snow.</desc>
+<rect x="0" y="0" width="760" height="360" fill="#ffffff"/>
+<rect x="40" y="30" width="209.608" height="110" fill="#dfe6f2"/>
+<text x="144.804" y="62" font-size="18" fill="#183247" font-weight="700" text-anchor="middle">Scotopic</text>
+<text x="144.804" y="84" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">rods only</text>
+<rect x="249.608" y="30" width="170" height="110" fill="#ece7f4"/>
+<text x="334.608" y="62" font-size="18" fill="#183247" font-weight="700" text-anchor="middle">Mesopic</text>
+<text x="334.608" y="84" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">rods + cones</text>
+<rect x="419.608" y="30" width="300.392" height="110" fill="#f6eedc"/>
+<text x="569.804" y="62" font-size="18" fill="#183247" font-weight="700" text-anchor="middle">Photopic</text>
+<text x="569.804" y="84" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">cones</text>
+<line x1="40" y1="140" x2="720" y2="140" stroke="#183247" stroke-width="2"/>
+<line x1="40" y1="140" x2="40" y2="148" stroke="#183247"/>
+<text x="40" y="166" font-size="13" fill="#4c6070" text-anchor="middle">10<tspan dy="-6" font-size="10">−6</tspan></text>
+<line x1="153.333" y1="140" x2="153.333" y2="148" stroke="#183247"/>
+<text x="153.333" y="166" font-size="13" fill="#4c6070" text-anchor="middle">10<tspan dy="-6" font-size="10">−4</tspan></text>
+<line x1="266.667" y1="140" x2="266.667" y2="148" stroke="#183247"/>
+<text x="266.667" y="166" font-size="13" fill="#4c6070" text-anchor="middle">10<tspan dy="-6" font-size="10">−2</tspan></text>
+<line x1="380" y1="140" x2="380" y2="148" stroke="#183247"/>
+<text x="380" y="166" font-size="13" fill="#4c6070" font-weight="400" text-anchor="middle">1</text>
+<line x1="493.333" y1="140" x2="493.333" y2="148" stroke="#183247"/>
+<text x="493.333" y="166" font-size="13" fill="#4c6070" text-anchor="middle">10<tspan dy="-6" font-size="10">2</tspan></text>
+<line x1="606.667" y1="140" x2="606.667" y2="148" stroke="#183247"/>
+<text x="606.667" y="166" font-size="13" fill="#4c6070" text-anchor="middle">10<tspan dy="-6" font-size="10">4</tspan></text>
+<line x1="720" y1="140" x2="720" y2="148" stroke="#183247"/>
+<text x="720" y="166" font-size="13" fill="#4c6070" text-anchor="middle">10<tspan dy="-6" font-size="10">6</tspan></text>
+<line x1="181.667" y1="140" x2="181.667" y2="185" stroke="#4c6070" stroke-dasharray="3 3"/>
+<circle cx="181.667" cy="140" r="5" fill="#183247"/>
+<text x="181.667" y="200" font-size="14" fill="#183247" font-weight="400" text-anchor="middle">Starlit night</text>
+<line x1="295" y1="140" x2="295" y2="217" stroke="#4c6070" stroke-dasharray="3 3"/>
+<circle cx="295" cy="140" r="5" fill="#183247"/>
+<text x="295" y="232" font-size="14" fill="#183247" font-weight="400" text-anchor="middle">Full moon</text>
+<line x1="346" y1="140" x2="346" y2="185" stroke="#4c6070" stroke-dasharray="3 3"/>
+<circle cx="346" cy="140" r="5" fill="#183247"/>
+<text x="346" y="200" font-size="14" fill="#183247" font-weight="400" text-anchor="middle">LCD black</text>
+<line x1="493.333" y1="140" x2="493.333" y2="217" stroke="#4c6070" stroke-dasharray="3 3"/>
+<circle cx="493.333" cy="140" r="5" fill="#183247"/>
+<text x="493.333" y="232" font-size="14" fill="#183247" font-weight="400" text-anchor="middle">Display white, office desk</text>
+<line x1="589.667" y1="140" x2="589.667" y2="185" stroke="#4c6070" stroke-dasharray="3 3"/>
+<circle cx="589.667" cy="140" r="5" fill="#183247"/>
+<text x="589.667" y="200" font-size="14" fill="#183247" font-weight="400" text-anchor="middle">Overcast sky</text>
+<line x1="640.667" y1="140" x2="640.667" y2="217" stroke="#4c6070" stroke-dasharray="3 3"/>
+<circle cx="640.667" cy="140" r="5" fill="#183247"/>
+<text x="640.667" y="232" font-size="14" fill="#183247" font-weight="400" text-anchor="middle">Sunlit snow</text>
+<text x="380" y="290" font-size="14" fill="#183247" font-weight="400" text-anchor="middle">Luminance in cd/m² on a logarithmic scale: each tick is a factor of 100</text>
+<text x="40" y="330" font-size="12" fill="#4c6070" font-weight="400" text-anchor="start">Approximate luminances. Regime boundaries follow CIE 191:2010.</text>
+</svg>

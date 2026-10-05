@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="200" viewBox="0 0 720 200" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Blind spot test</title>
+<desc id="desc">A cross on the left and a red dot on the right. With the left eye closed, fixating the cross with the right eye at the right distance makes the dot fall on the blind spot and disappear.</desc>
+<rect x="0" y="0" width="720" height="200" fill="#ffffff"/>
+<path d="M 140 70 L 140 130 M 110 100 L 170 100" stroke="#183247" stroke-width="6" stroke-linecap="round"/>
+<circle cx="560" cy="100" r="26" fill="#c0392b"/>
+<text x="140" y="168" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">look here with the right eye</text>
+<text x="560" y="168" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">this dot vanishes</text>
+</svg>
