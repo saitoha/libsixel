@@ -106,6 +106,7 @@ docs/project-history.md	explanation	both	public project history + contributor at
 docs/protocols/graphics-color-management.md	reference	both	experimental protocol specification + rationale and implementation-status evidence
 docs/quality/color-evaluation.md	reference	both	quality-tool contracts + color-model explanation and contributor test ledger
 docs/quality/measurement-policy.md	reference	contributor	measurement policy + comparison procedure
+docs/quality/metrics.md	explanation	both	metric reference definitions + perceptual and physiological explanation
 docs/quality/palette-gradient-analysis.md	how-to	both	diagnostic workflow + geometry explanation and contributor validation
 docs/sixel-format/README.md	reference	both	wire specification + encoding explanation and contributor implementation map
 docs/sixel-format/comparison/README.md	explanation	both	codec tradeoff explanation + measured reference and reproduction how-to

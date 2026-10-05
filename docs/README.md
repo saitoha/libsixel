@@ -142,6 +142,7 @@ are grouped by domain so each area can grow without overloading one document.
 ## Quality
 
 - [Palette gradient analysis](quality/palette-gradient-analysis.md) provides a local command to select a source-image gradient and inspect its quantized output through RGB scatter plots, exact Voronoi slices, actual pixel profiles and reusable source selections.
+- [Image-quality metrics and their perceptual basis](quality/metrics.md) defines each `lsqa` metric with its origin, mathematical definition, and implementation differences, and explains perceptual quality, contrast sensitivity, multiscale evaluation, dither noise spectra, structure-preserving dithering, and the current emphasis on luminance.
 - [Color-aware quality evaluation](quality/color-evaluation.md) defines independent input color interpretation, current-coordinate measurement, XYZ D50 color differences, fixed regional means, comparison signals, and the pending PNG integration boundary.
 - [Quality measurement policy](quality/measurement-policy.md) defines
   perceptual metrics, fixtures, thresholds, baselines, and performance

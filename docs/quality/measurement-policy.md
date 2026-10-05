@@ -65,6 +65,8 @@ required.
 
 For sparse corruption, also inspect the maximum per-pixel color error and its location and tail counts, as defined in [color-aware evaluation](color-evaluation.md#per-pixel-and-regional-differences). Spatial and arithmetic means can hide isolated faults. In dither comparisons, inspect regional average colors alongside individual errors: intended high-frequency modulation is not automatically an artifact. A fixed palette has the same convex hull with or without error clamping; removing clamps may improve attainable spatial averages within that hull, but does not guarantee better local structure.
 
+[Image-quality metrics and their perceptual basis](metrics.md) gives each metric's definition, origin, and implementation details, and explains how to combine them for dithered output.
+
 A secondary metric is diagnostic unless its interpretation and threshold are
 defined for the tested behavior. Do not select whichever metric makes a change
 look best after seeing the result.
