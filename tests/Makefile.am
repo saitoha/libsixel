@@ -181,6 +181,15 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0009_TRANSPORT_REJECTION \
+    -DBUILD_TEST_0001_SRGB_FRAME_PRECISION \
+    -DBUILD_TEST_0002_P3_FRAME_PRECISION \
+    -DBUILD_TEST_0003_BYTE_FRAME_CONTROL \
+    -DBUILD_TEST_0004_FRAME_OUTPUT_REUSE \
+    -DBUILD_TEST_0005_SRGB_RGB_PIXELS \
+    -DBUILD_TEST_0006_P3_RGB_PIXELS \
+    -DBUILD_TEST_0007_SRGB_HLS_PIXELS \
+    -DBUILD_TEST_0008_P3_HLS_PIXELS \
     -DBUILD_FHEDT_WEIGHT_COMMON \
     -DBUILD_TEST_0001_SRGB_CENTROID \
     -DBUILD_TEST_0002_P3_CENTROID \
@@ -5369,6 +5378,15 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
     codec/hls/0014_byte_or_control.c \
     codec/hls/0015_serial_or.c \
+    codec/png_snapshot/0001_srgb_frame_precision.c \
+    codec/png_snapshot/0002_p3_frame_precision.c \
+    codec/png_snapshot/0003_byte_frame_control.c \
+    codec/png_snapshot/0004_frame_output_reuse.c \
+    codec/png_snapshot/0005_srgb_rgb_pixels.c \
+    codec/png_snapshot/0006_p3_rgb_pixels.c \
+    codec/png_snapshot/0007_srgb_hls_pixels.c \
+    codec/png_snapshot/0008_p3_hls_pixels.c \
+    codec/png_snapshot/0009_transport_rejection.c \
     codec/hls/hls_native_test_common.c \
     codec/hls/0001_srgb_centroid.c \
     codec/hls/0002_p3_centroid.c \

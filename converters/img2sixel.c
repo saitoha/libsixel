@@ -1439,7 +1439,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DECODER_INPUT_COLORSPACE",
         "sixel2png decoded RGB interpretation: srgb (default) or display-p3.\n"
-        "Overridden by -T. Encoder PNG snapshots remain sRGB."
+        "Overridden by -T. Encoder PNG snapshots follow -U display-p3; "
+        "otherwise sRGB."
     },
     {
         "SIXEL_DEQUANTIZE_LSO_VARIANT",

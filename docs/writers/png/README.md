@@ -28,6 +28,14 @@ img2sixel with -o output.png, -o png:<path>, or -o png:-
 
 The second path is intentionally a post-SIXEL snapshot, not serialization of the input image or a pre-SIXEL encoder buffer. For an ordinary stable-palette SIXEL stream, the decoder returns the painted palette indices and palette, so the PNG exposes the quantized and dithered result that the generated SIXEL represents. This is the path intended for encoder quality inspection. The same command options must therefore affect both normal SIXEL output and PNG snapshot output before the paths diverge at the final destination.
 
+### Native float snapshots
+
+Selecting a PNG destination preserves ordinary SIXEL's selected native CPU float palette path. It does not reconstruct the working palette from bytes or apply an extra RGB101 snap. Palette construction, lookup, diffusion, and final RGB/HLS serialization run before PNG readback, using the same policies as ordinary output. Byte-eligible jobs remain byte-eligible. The supported construction and application combinations are defined by [output color spaces](../../encoder/output/output-colorspace.md#display-p3-selected-cpu-float-path).
+
+The snapshot decoder interprets `-U display-p3` output as Display P3 and writes that ICC profile without converting the emitted RGB a second time. Other output definitions retain the existing sRGB interpretation. In particular, legacy `-Ulinear` and `-Usmpte-c` snapshots are numeric previews interpreted as sRGB, not correctly tagged renditions of those definitions. The source image's ICC and `SIXEL_DECODER_INPUT_COLORSPACE` cannot override the encoder's explicit snapshot interpretation. HLS snapshots retain the decoder's existing HLS-to-RGB rounding; they need not match RGB serialization pixel-for-pixel.
+
+Native PNG admission covers ordinary SIXEL, excluding macro and DRCS envelopes and OR composition. Explicit P3 rejects those combinations before emitting the SIXEL body. This does not add APNG output, change high-color register handling, or change the default indexed decoder's transparency behavior. The internal pre-output quantized-image capture facility remains a separate path; PNG snapshots do not use that capture as their image source.
+
 The decoder selects the writer representation as follows:
 
 | Decoder path | Writer input | PNG class |
@@ -56,7 +64,7 @@ sixel2png -T display-p3 input.six output.png
 sixel2png --input-colorspace=srgb -D input.six output.png
 ```
 
-Library consumers select the same interpretation through `sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT_COLORSPACE, "display-p3")`. The option affects `sixel_decoder_decode()` file output only. Raw pixel decoding remains numeric. Encoder-generated PNG snapshots explicitly select sRGB, independently of the decoder environment default.
+Library consumers select the same interpretation through `sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT_COLORSPACE, "display-p3")`. The option affects `sixel_decoder_decode()` file output only. Raw pixel decoding remains numeric. Encoder-generated PNG snapshots explicitly select the interpretation described under [native float snapshots](#native-float-snapshots), independently of the decoder environment default.
 
 ### Profile ownership and encoding
 
@@ -187,6 +195,22 @@ Each row is one independently reportable observation. Format tests run against w
 | PW-28 | P3 direct resize coordinates. | Both | [tests/writer/png/0024_p3_direct_resize_coordinates.t](../../../tests/writer/png/0024_p3_direct_resize_coordinates.t) |
 | PW-29 | P3 direct undither coordinates. | Both | [tests/writer/png/0025_p3_direct_undither_coordinates.t](../../../tests/writer/png/0025_p3_direct_undither_coordinates.t) |
 
+
+### Native snapshot behavioral contracts
+
+The first four cases exercise PNG destination selection with in-memory SIXEL capture, including working-coordinate assertions; the next four execute `img2sixel` and inspect the actual PNG. Metadata checks reuse the independently derived D50 primary/TRC references above, not a profile emitted by the implementation as an oracle. Primary RGB101 and HLS fields are fixed from chromaticity matrices and transfer equations. HLS's smallest field margin is greater than 0.0176 against an arithmetic budget of 0.002; decoder RGB-percent rounding is included in the expected bytes. The centroid cases inherit the [native HLS numeric contract](../../encoder/output/output-colorspace.md#native-hls-behavioral-contracts). These are value and routing contracts, not new image-quality thresholds.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| PN-01 | With PNG selected, the linear centroid (.875, .1, .1) survives extended input (2, .1, .1) and (-.25, .1, .1), and emits independently derived HLS fields. | [tests/codec/png_snapshot/0001_srgb_frame_precision.t](../../../tests/codec/png_snapshot/0001_srgb_frame_precision.t) |
+| PN-02 | The same PNG-selected working centroid survives until P3 output conversion, with independent HLS fields. | [tests/codec/png_snapshot/0002_p3_frame_precision.t](../../../tests/codec/png_snapshot/0002_p3_frame_precision.t) |
+| PN-03 | PNG selection preserves byte eligibility and the builtin gray palette. | [tests/codec/png_snapshot/0003_byte_frame_control.t](../../../tests/codec/png_snapshot/0003_byte_frame_control.t) |
+| PN-04 | One PNG-selected encoder transitions P3/HLS to gamma/RGB and back without stale working or output coordinates. | [tests/codec/png_snapshot/0004_frame_output_reuse.t](../../../tests/codec/png_snapshot/0004_frame_output_reuse.t) |
+| PN-05 | Actual RGB snapshot has exact source-primary pixel values and sRGB metadata despite an inherited P3 decoder setting. | [tests/codec/png_snapshot/0005_srgb_rgb_pixels.t](../../../tests/codec/png_snapshot/0005_srgb_rgb_pixels.t) |
+| PN-06 | Actual RGB snapshot has independently derived converted P3 primary values and an independently checked ICC matrix/TRC. | [tests/codec/png_snapshot/0006_p3_rgb_pixels.t](../../../tests/codec/png_snapshot/0006_p3_rgb_pixels.t) |
+| PN-07 | Actual HLS snapshot retains decoded sRGB primary values and explicit sRGB interpretation. | [tests/codec/png_snapshot/0007_srgb_hls_pixels.t](../../../tests/codec/png_snapshot/0007_srgb_hls_pixels.t) |
+| PN-08 | Actual HLS snapshot retains independently derived P3 HLS-decoded values and P3 ICC interpretation. | [tests/codec/png_snapshot/0008_p3_hls_pixels.t](../../../tests/codec/png_snapshot/0008_p3_hls_pixels.t) |
+| PN-09 | P3 PNG rejects macro/DRCS envelopes and OR mode before any body bytes. | [tests/codec/png_snapshot/0009_transport_rejection.t](../../../tests/codec/png_snapshot/0009_transport_rejection.t) |
 
 ### Coverage audit and boundary
 

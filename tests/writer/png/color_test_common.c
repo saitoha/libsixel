@@ -117,8 +117,9 @@ pc_profile(unsigned char const *profile, size_t length)
     return 1;
 }
 
-int
-png_color_check(int expected_space, int direct, int sample_case)
+static int
+pc_check(int expected_space, int direct, int sample_case,
+         unsigned char const *expected)
 {
     unsigned char data[8192];
     unsigned char *pixels;
@@ -220,7 +221,13 @@ png_color_check(int expected_space, int direct, int sample_case)
     }
     free(probe);
     pixels = rgba;
-    if (sample_case >= 2) {
+    if (expected != NULL) {
+        ok &= width == 3 && height == 1;
+        for (i = 0; i < 3 && ok; ++i) {
+            ok &= memcmp(pixels + i * 4, expected + i * 3, 3u) == 0 &&
+                pixels[i * 4 + 3] == 255u;
+        }
+    } else if (sample_case >= 2) {
         ok &= width == (sample_case == 2 ? 3 : 6) && height == width;
         if (ok) {
             for (i = 0; i < width * height; ++i) {
@@ -233,7 +240,7 @@ png_color_check(int expected_space, int direct, int sample_case)
     } else {
         ok &= width == 3 && height == 1;
     }
-    if (ok && sample_case < 2) {
+    if (ok && expected == NULL && sample_case < 2) {
         ok &= pixels[0] == 255u && pixels[1] == 51u && pixels[2] == 0u &&
             pixels[3] == 255u && pixels[4] == 0u && pixels[5] == 255u &&
             pixels[6] == 102u && pixels[7] == 255u;
@@ -242,6 +249,28 @@ png_color_check(int expected_space, int direct, int sample_case)
         }
     }
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+png_color_check(int expected_space, int direct, int sample_case)
+{
+    return pc_check(expected_space, direct, sample_case, NULL);
+}
+
+/* Independent primary matrices/TRCs followed by DEC field rounding give
+ * these RGB8 samples. HLS decoding rounds reconstructed RGB to percent
+ * before expansion to bytes; the P3 green blue-channel is 29, not 30.
+ * The closest HLS field margin is .0176, versus a .002 error budget. */
+int
+png_snapshot_check(int p3, int hls)
+{
+    static unsigned char const rgb[3][9] = {
+        {255, 0, 0, 0, 255, 0, 0, 0, 255},
+        {235, 51, 36, 117, 252, 77, 0, 0, 245},
+        {235, 51, 36, 117, 252, 74, 0, 0, 245}
+    };
+
+    return pc_check(p3, 0, 0, rgb[p3 ? 1 + hls : 0]);
 }
 
 int

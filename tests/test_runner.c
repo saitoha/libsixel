@@ -236,6 +236,15 @@ int test_macro_0015(int argc, char **argv);
 int test_macro_0016(int argc, char **argv);
 int test_hls_native_0014(int argc, char **argv);
 int test_hls_native_0015(int argc, char **argv);
+int test_png_snapshot_0001(int argc, char **argv);
+int test_png_snapshot_0002(int argc, char **argv);
+int test_png_snapshot_0003(int argc, char **argv);
+int test_png_snapshot_0004(int argc, char **argv);
+int test_png_snapshot_0005(int argc, char **argv);
+int test_png_snapshot_0006(int argc, char **argv);
+int test_png_snapshot_0007(int argc, char **argv);
+int test_png_snapshot_0008(int argc, char **argv);
+int test_png_snapshot_0009(int argc, char **argv);
 int test_hls_native_0001(int argc, char **argv);
 int test_hls_native_0002(int argc, char **argv);
 int test_hls_native_0003(int argc, char **argv);
@@ -3051,6 +3060,16 @@ static test_entry_t const test_entries[] = {
     { "codec/macro/0016_float_output_reuse", test_macro_0016 },
     { "codec/hls/0014_byte_or_control", test_hls_native_0014 },
     { "codec/hls/0015_serial_or", test_hls_native_0015 },
+    { "codec/png_snapshot/0001_srgb_frame_precision", test_png_snapshot_0001 },
+    { "codec/png_snapshot/0002_p3_frame_precision", test_png_snapshot_0002 },
+    { "codec/png_snapshot/0003_byte_frame_control", test_png_snapshot_0003 },
+    { "codec/png_snapshot/0004_frame_output_reuse", test_png_snapshot_0004 },
+    { "codec/png_snapshot/0005_srgb_rgb_pixels", test_png_snapshot_0005 },
+    { "codec/png_snapshot/0006_p3_rgb_pixels", test_png_snapshot_0006 },
+    { "codec/png_snapshot/0007_srgb_hls_pixels", test_png_snapshot_0007 },
+    { "codec/png_snapshot/0008_p3_hls_pixels", test_png_snapshot_0008 },
+    { "codec/png_snapshot/0009_transport_rejection",
+      test_png_snapshot_0009 },
     { "codec/hls/0001_srgb_centroid", test_hls_native_0001 },
     { "codec/hls/0002_p3_centroid", test_hls_native_0002 },
     { "codec/hls/0003_srgb_rounding", test_hls_native_0003 },

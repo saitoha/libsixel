@@ -91,8 +91,8 @@ end:
     return ok;
 }
 
-int
-hls_native_contract(int scenario)
+static int
+hls_native_run(int scenario, int snapshot)
 {
     static struct { int flag; char const *value; } const options[] = {
         { '=', "1" }, { 'Q', "heckbert" }, { 'F', "none" },
@@ -174,6 +174,10 @@ hls_native_contract(int scenario)
     if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
             SIXEL_FAILED(sixel_output_new(&output, hls_write,
                 &capture, NULL))) {
+        goto end;
+    }
+    if (snapshot && SIXEL_FAILED(sixel_encoder_setopt(encoder,
+            'o', "png:-"))) {
         goto end;
     }
     for (n = 0; n < (int)(sizeof(options) / sizeof(options[0])); ++n) {
@@ -317,6 +321,20 @@ end:
     sixel_output_unref(output);
     sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+/* Destination selection is the only difference from the ordinary oracle.
+ * encode_frame captures SIXEL here; CLI tests own actual PNG readback. */
+int
+hls_native_contract(int scenario)
+{
+    return hls_native_run(scenario, 0);
+}
+
+int
+hls_png_contract(int scenario)
+{
+    return hls_native_run(scenario, 1);
 }
 
 /* The output views share a publication/invalidation boundary. Distinct

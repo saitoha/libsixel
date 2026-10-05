@@ -7157,7 +7157,13 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
               encoder->transparent_offset_left != 0 ||
               encoder->transparent_offset_top != 0 ||
               encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME)) ||
-            encoder->sixdelta_enabled != 0 || encoder->output_is_png != 0 ||
+            encoder->sixdelta_enabled != 0 ||
+            /* PNG snapshots decode ordinary SIXEL, not outer transports
+             * or receiver-dependent OR composition. Their destination
+             * must not otherwise change palette construction. */
+            (encoder->output_is_png != 0 &&
+             (encoder->fuse_macro != 0 || encoder->macro_number >= 0 ||
+              encoder->fdrcs != 0 || encoder->ormode != 0)) ||
             (encoder->capture_quantized != 0 &&
              encoder->palette_output == NULL));
 }
@@ -7254,8 +7260,8 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "-Fnone|ward -_none -tauto|rgb|hls, auto/off or soft/hard "
             "cover "
             "for generated palettes, and normal, macro, opaque OR or "
-            "opaque DRCS SIXEL output (DRCS excludes OR, macros and "
-            "offsets).");
+            "opaque DRCS SIXEL output, or an ordinary SIXEL PNG snapshot "
+            "(DRCS excludes OR, macros and offsets).");
         return SIXEL_BAD_ARGUMENT;
     }
     return SIXEL_OK;
@@ -14358,9 +14364,13 @@ write_png_from_sixel(char const *sixel_path,
         goto end;
     }
 
-    /* An inherited decoder default cannot relabel the encoder's snapshot. */
+    /* Interpret the emitted values, not the source image's profile. This
+     * only tags the decoded snapshot; applying another transform would
+     * convert an already converted palette twice. Legacy linear/SMPTE-C
+     * snapshots retain their existing sRGB decoder interpretation. */
     status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT_COLORSPACE,
-                                   "srgb");
+        encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3
+            ? "display-p3" : "srgb");
     if (SIXEL_FAILED(status)) {
         goto end;
     }

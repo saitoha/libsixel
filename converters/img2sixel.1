@@ -82,7 +82,13 @@ specify output file name (default:stdout).
 Selecting a name ending in \(dq.png\(dq, the literal \(dqpng:-\(dq, or the
 prefix \(dqpng:\(dq emits PNG data that reproduces the generated SIXEL
 stream. For ordinary palette SIXEL, the PNG keeps the palette indices
-and mirrors the quantized and dithered output. High-color output is not
+and mirrors the quantized and dithered output. PNG selection preserves
+the ordinary native float palette path and the byte fast path.
+\fB\-U display-p3\fP snapshots record a Display P3 ICC profile; other
+output definitions retain the existing sRGB interpretation. In particular,
+linear and SMPTE-C snapshots are numeric previews, not matching-profile
+renditions. Native snapshots exclude macro/DRCS envelopes and OR mode.
+High-color output is not
 an indexed-exact snapshot because it redefines palette registers while
 painting. \(dqpng:-\(dq writes to standard output, while
 \(dqpng:\fIpath\fP\(dq stores the PNG alongside the SIXEL output. Using
@@ -1716,7 +1722,8 @@ not recover higher source bit depth from the loader.
 .br
 set the sixel2png decoded RGB interpretation: srgb (default) or display-p3.
 The sixel2png \fB\-T\fP option takes precedence.
-Encoder-generated PNG snapshots remain sRGB independently of this default.
+Encoder-generated PNG snapshots use Display P3 for \fB\-U display-p3\fP
+and sRGB otherwise, independently of this default.
 .TP 5
 .B SIXEL_DEQUANTIZE_LSO_VARIANT
 .br

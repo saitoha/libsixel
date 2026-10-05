@@ -2669,6 +2669,15 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/auto_float/0022_auto_reject_kmeans_feedback.c \
 	quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
 	codec/hls/0014_byte_or_control.c codec/hls/0015_serial_or.c \
+	codec/png_snapshot/0001_srgb_frame_precision.c \
+	codec/png_snapshot/0002_p3_frame_precision.c \
+	codec/png_snapshot/0003_byte_frame_control.c \
+	codec/png_snapshot/0004_frame_output_reuse.c \
+	codec/png_snapshot/0005_srgb_rgb_pixels.c \
+	codec/png_snapshot/0006_p3_rgb_pixels.c \
+	codec/png_snapshot/0007_srgb_hls_pixels.c \
+	codec/png_snapshot/0008_p3_hls_pixels.c \
+	codec/png_snapshot/0009_transport_rejection.c \
 	codec/hls/hls_native_test_common.c \
 	codec/hls/0001_srgb_centroid.c codec/hls/0002_p3_centroid.c \
 	codec/hls/0003_srgb_rounding.c codec/hls/0004_p3_rounding.c \
@@ -5270,6 +5279,15 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0023_auto_irrelevant_heckbert_feedback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/hls/test_runner-0014_byte_or_control.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/hls/test_runner-0015_serial_or.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0001_srgb_frame_precision.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0002_p3_frame_precision.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0003_byte_frame_control.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0004_frame_output_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0005_srgb_rgb_pixels.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0006_p3_rgb_pixels.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0007_srgb_hls_pixels.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0008_p3_hls_pixels.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0009_transport_rejection.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/hls/test_runner-hls_native_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/hls/test_runner-0001_srgb_centroid.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/hls/test_runner-0002_p3_centroid.$(OBJEXT) \
@@ -5508,6 +5526,15 @@ am__depfiles_remade =  \
 	codec/macro/$(DEPDIR)/test_runner-0015_byte_define.Po \
 	codec/macro/$(DEPDIR)/test_runner-0016_float_output_reuse.Po \
 	codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0001_srgb_frame_precision.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0002_p3_frame_precision.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0003_byte_frame_control.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0004_frame_output_reuse.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0005_srgb_rgb_pixels.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0006_p3_rgb_pixels.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0007_srgb_hls_pixels.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0008_p3_hls_pixels.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Po \
 	diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po \
@@ -8716,6 +8743,15 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_TRANSPORT_REJECTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SRGB_FRAME_PRECISION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_P3_FRAME_PRECISION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_BYTE_FRAME_CONTROL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_FRAME_OUTPUT_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_SRGB_RGB_PIXELS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_P3_RGB_PIXELS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_SRGB_HLS_PIXELS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_P3_HLS_PIXELS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_FHEDT_WEIGHT_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SRGB_CENTROID \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_P3_CENTROID \
@@ -13935,6 +13971,15 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/hls/0014_byte_or_control.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/hls/0015_serial_or.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0001_srgb_frame_precision.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0002_p3_frame_precision.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0003_byte_frame_control.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0004_frame_output_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0005_srgb_rgb_pixels.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0006_p3_rgb_pixels.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0007_srgb_hls_pixels.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0008_p3_hls_pixels.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0009_transport_rejection.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/hls/hls_native_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/hls/0001_srgb_centroid.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/hls/0002_p3_centroid.c \
@@ -22253,6 +22298,39 @@ codec/hls/test_runner-0014_byte_or_control.$(OBJEXT):  \
 	codec/hls/$(am__dirstamp) codec/hls/$(DEPDIR)/$(am__dirstamp)
 codec/hls/test_runner-0015_serial_or.$(OBJEXT):  \
 	codec/hls/$(am__dirstamp) codec/hls/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/$(am__dirstamp):
+	@$(MKDIR_P) codec/png_snapshot
+	@: >>codec/png_snapshot/$(am__dirstamp)
+codec/png_snapshot/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) codec/png_snapshot/$(DEPDIR)
+	@: >>codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0001_srgb_frame_precision.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0002_p3_frame_precision.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0003_byte_frame_control.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0004_frame_output_reuse.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0005_srgb_rgb_pixels.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0006_p3_rgb_pixels.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0007_srgb_hls_pixels.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0008_p3_hls_pixels.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0009_transport_rejection.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
 codec/hls/test_runner-hls_native_test_common.$(OBJEXT):  \
 	codec/hls/$(am__dirstamp) codec/hls/$(DEPDIR)/$(am__dirstamp)
 codec/hls/test_runner-0001_srgb_centroid.$(OBJEXT):  \
@@ -22647,6 +22725,7 @@ mostlyclean-compile:
 	-rm -f codec/drcs/*.$(OBJEXT)
 	-rm -f codec/hls/*.$(OBJEXT)
 	-rm -f codec/macro/*.$(OBJEXT)
+	-rm -f codec/png_snapshot/*.$(OBJEXT)
 	-rm -f diagnostics/*.$(OBJEXT)
 	-rm -f diagnostics/icc/*.$(OBJEXT)
 	-rm -f diagnostics/probe/*.$(OBJEXT)
@@ -22809,6 +22888,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@codec/macro/$(DEPDIR)/test_runner-0015_byte_define.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/macro/$(DEPDIR)/test_runner-0016_float_output_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0001_srgb_frame_precision.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0002_p3_frame_precision.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0003_byte_frame_control.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0004_frame_output_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0005_srgb_rgb_pixels.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0006_p3_rgb_pixels.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0007_srgb_hls_pixels.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0008_p3_hls_pixels.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po@am__quote@ # am--include-marker
@@ -60399,6 +60487,132 @@ codec/hls/test_runner-0015_serial_or.obj: codec/hls/0015_serial_or.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/hls/test_runner-0015_serial_or.obj `if test -f 'codec/hls/0015_serial_or.c'; then $(CYGPATH_W) 'codec/hls/0015_serial_or.c'; else $(CYGPATH_W) '$(srcdir)/codec/hls/0015_serial_or.c'; fi`
 
+codec/png_snapshot/test_runner-0001_srgb_frame_precision.o: codec/png_snapshot/0001_srgb_frame_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0001_srgb_frame_precision.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0001_srgb_frame_precision.Tpo -c -o codec/png_snapshot/test_runner-0001_srgb_frame_precision.o `test -f 'codec/png_snapshot/0001_srgb_frame_precision.c' || echo '$(srcdir)/'`codec/png_snapshot/0001_srgb_frame_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0001_srgb_frame_precision.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0001_srgb_frame_precision.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0001_srgb_frame_precision.c' object='codec/png_snapshot/test_runner-0001_srgb_frame_precision.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0001_srgb_frame_precision.o `test -f 'codec/png_snapshot/0001_srgb_frame_precision.c' || echo '$(srcdir)/'`codec/png_snapshot/0001_srgb_frame_precision.c
+
+codec/png_snapshot/test_runner-0001_srgb_frame_precision.obj: codec/png_snapshot/0001_srgb_frame_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0001_srgb_frame_precision.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0001_srgb_frame_precision.Tpo -c -o codec/png_snapshot/test_runner-0001_srgb_frame_precision.obj `if test -f 'codec/png_snapshot/0001_srgb_frame_precision.c'; then $(CYGPATH_W) 'codec/png_snapshot/0001_srgb_frame_precision.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0001_srgb_frame_precision.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0001_srgb_frame_precision.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0001_srgb_frame_precision.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0001_srgb_frame_precision.c' object='codec/png_snapshot/test_runner-0001_srgb_frame_precision.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0001_srgb_frame_precision.obj `if test -f 'codec/png_snapshot/0001_srgb_frame_precision.c'; then $(CYGPATH_W) 'codec/png_snapshot/0001_srgb_frame_precision.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0001_srgb_frame_precision.c'; fi`
+
+codec/png_snapshot/test_runner-0002_p3_frame_precision.o: codec/png_snapshot/0002_p3_frame_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0002_p3_frame_precision.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0002_p3_frame_precision.Tpo -c -o codec/png_snapshot/test_runner-0002_p3_frame_precision.o `test -f 'codec/png_snapshot/0002_p3_frame_precision.c' || echo '$(srcdir)/'`codec/png_snapshot/0002_p3_frame_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0002_p3_frame_precision.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0002_p3_frame_precision.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0002_p3_frame_precision.c' object='codec/png_snapshot/test_runner-0002_p3_frame_precision.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0002_p3_frame_precision.o `test -f 'codec/png_snapshot/0002_p3_frame_precision.c' || echo '$(srcdir)/'`codec/png_snapshot/0002_p3_frame_precision.c
+
+codec/png_snapshot/test_runner-0002_p3_frame_precision.obj: codec/png_snapshot/0002_p3_frame_precision.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0002_p3_frame_precision.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0002_p3_frame_precision.Tpo -c -o codec/png_snapshot/test_runner-0002_p3_frame_precision.obj `if test -f 'codec/png_snapshot/0002_p3_frame_precision.c'; then $(CYGPATH_W) 'codec/png_snapshot/0002_p3_frame_precision.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0002_p3_frame_precision.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0002_p3_frame_precision.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0002_p3_frame_precision.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0002_p3_frame_precision.c' object='codec/png_snapshot/test_runner-0002_p3_frame_precision.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0002_p3_frame_precision.obj `if test -f 'codec/png_snapshot/0002_p3_frame_precision.c'; then $(CYGPATH_W) 'codec/png_snapshot/0002_p3_frame_precision.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0002_p3_frame_precision.c'; fi`
+
+codec/png_snapshot/test_runner-0003_byte_frame_control.o: codec/png_snapshot/0003_byte_frame_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0003_byte_frame_control.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0003_byte_frame_control.Tpo -c -o codec/png_snapshot/test_runner-0003_byte_frame_control.o `test -f 'codec/png_snapshot/0003_byte_frame_control.c' || echo '$(srcdir)/'`codec/png_snapshot/0003_byte_frame_control.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0003_byte_frame_control.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0003_byte_frame_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0003_byte_frame_control.c' object='codec/png_snapshot/test_runner-0003_byte_frame_control.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0003_byte_frame_control.o `test -f 'codec/png_snapshot/0003_byte_frame_control.c' || echo '$(srcdir)/'`codec/png_snapshot/0003_byte_frame_control.c
+
+codec/png_snapshot/test_runner-0003_byte_frame_control.obj: codec/png_snapshot/0003_byte_frame_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0003_byte_frame_control.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0003_byte_frame_control.Tpo -c -o codec/png_snapshot/test_runner-0003_byte_frame_control.obj `if test -f 'codec/png_snapshot/0003_byte_frame_control.c'; then $(CYGPATH_W) 'codec/png_snapshot/0003_byte_frame_control.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0003_byte_frame_control.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0003_byte_frame_control.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0003_byte_frame_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0003_byte_frame_control.c' object='codec/png_snapshot/test_runner-0003_byte_frame_control.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0003_byte_frame_control.obj `if test -f 'codec/png_snapshot/0003_byte_frame_control.c'; then $(CYGPATH_W) 'codec/png_snapshot/0003_byte_frame_control.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0003_byte_frame_control.c'; fi`
+
+codec/png_snapshot/test_runner-0004_frame_output_reuse.o: codec/png_snapshot/0004_frame_output_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0004_frame_output_reuse.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0004_frame_output_reuse.Tpo -c -o codec/png_snapshot/test_runner-0004_frame_output_reuse.o `test -f 'codec/png_snapshot/0004_frame_output_reuse.c' || echo '$(srcdir)/'`codec/png_snapshot/0004_frame_output_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0004_frame_output_reuse.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0004_frame_output_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0004_frame_output_reuse.c' object='codec/png_snapshot/test_runner-0004_frame_output_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0004_frame_output_reuse.o `test -f 'codec/png_snapshot/0004_frame_output_reuse.c' || echo '$(srcdir)/'`codec/png_snapshot/0004_frame_output_reuse.c
+
+codec/png_snapshot/test_runner-0004_frame_output_reuse.obj: codec/png_snapshot/0004_frame_output_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0004_frame_output_reuse.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0004_frame_output_reuse.Tpo -c -o codec/png_snapshot/test_runner-0004_frame_output_reuse.obj `if test -f 'codec/png_snapshot/0004_frame_output_reuse.c'; then $(CYGPATH_W) 'codec/png_snapshot/0004_frame_output_reuse.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0004_frame_output_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0004_frame_output_reuse.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0004_frame_output_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0004_frame_output_reuse.c' object='codec/png_snapshot/test_runner-0004_frame_output_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0004_frame_output_reuse.obj `if test -f 'codec/png_snapshot/0004_frame_output_reuse.c'; then $(CYGPATH_W) 'codec/png_snapshot/0004_frame_output_reuse.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0004_frame_output_reuse.c'; fi`
+
+codec/png_snapshot/test_runner-0005_srgb_rgb_pixels.o: codec/png_snapshot/0005_srgb_rgb_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0005_srgb_rgb_pixels.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0005_srgb_rgb_pixels.Tpo -c -o codec/png_snapshot/test_runner-0005_srgb_rgb_pixels.o `test -f 'codec/png_snapshot/0005_srgb_rgb_pixels.c' || echo '$(srcdir)/'`codec/png_snapshot/0005_srgb_rgb_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0005_srgb_rgb_pixels.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0005_srgb_rgb_pixels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0005_srgb_rgb_pixels.c' object='codec/png_snapshot/test_runner-0005_srgb_rgb_pixels.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0005_srgb_rgb_pixels.o `test -f 'codec/png_snapshot/0005_srgb_rgb_pixels.c' || echo '$(srcdir)/'`codec/png_snapshot/0005_srgb_rgb_pixels.c
+
+codec/png_snapshot/test_runner-0005_srgb_rgb_pixels.obj: codec/png_snapshot/0005_srgb_rgb_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0005_srgb_rgb_pixels.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0005_srgb_rgb_pixels.Tpo -c -o codec/png_snapshot/test_runner-0005_srgb_rgb_pixels.obj `if test -f 'codec/png_snapshot/0005_srgb_rgb_pixels.c'; then $(CYGPATH_W) 'codec/png_snapshot/0005_srgb_rgb_pixels.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0005_srgb_rgb_pixels.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0005_srgb_rgb_pixels.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0005_srgb_rgb_pixels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0005_srgb_rgb_pixels.c' object='codec/png_snapshot/test_runner-0005_srgb_rgb_pixels.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0005_srgb_rgb_pixels.obj `if test -f 'codec/png_snapshot/0005_srgb_rgb_pixels.c'; then $(CYGPATH_W) 'codec/png_snapshot/0005_srgb_rgb_pixels.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0005_srgb_rgb_pixels.c'; fi`
+
+codec/png_snapshot/test_runner-0006_p3_rgb_pixels.o: codec/png_snapshot/0006_p3_rgb_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0006_p3_rgb_pixels.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0006_p3_rgb_pixels.Tpo -c -o codec/png_snapshot/test_runner-0006_p3_rgb_pixels.o `test -f 'codec/png_snapshot/0006_p3_rgb_pixels.c' || echo '$(srcdir)/'`codec/png_snapshot/0006_p3_rgb_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0006_p3_rgb_pixels.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0006_p3_rgb_pixels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0006_p3_rgb_pixels.c' object='codec/png_snapshot/test_runner-0006_p3_rgb_pixels.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0006_p3_rgb_pixels.o `test -f 'codec/png_snapshot/0006_p3_rgb_pixels.c' || echo '$(srcdir)/'`codec/png_snapshot/0006_p3_rgb_pixels.c
+
+codec/png_snapshot/test_runner-0006_p3_rgb_pixels.obj: codec/png_snapshot/0006_p3_rgb_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0006_p3_rgb_pixels.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0006_p3_rgb_pixels.Tpo -c -o codec/png_snapshot/test_runner-0006_p3_rgb_pixels.obj `if test -f 'codec/png_snapshot/0006_p3_rgb_pixels.c'; then $(CYGPATH_W) 'codec/png_snapshot/0006_p3_rgb_pixels.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0006_p3_rgb_pixels.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0006_p3_rgb_pixels.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0006_p3_rgb_pixels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0006_p3_rgb_pixels.c' object='codec/png_snapshot/test_runner-0006_p3_rgb_pixels.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0006_p3_rgb_pixels.obj `if test -f 'codec/png_snapshot/0006_p3_rgb_pixels.c'; then $(CYGPATH_W) 'codec/png_snapshot/0006_p3_rgb_pixels.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0006_p3_rgb_pixels.c'; fi`
+
+codec/png_snapshot/test_runner-0007_srgb_hls_pixels.o: codec/png_snapshot/0007_srgb_hls_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0007_srgb_hls_pixels.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0007_srgb_hls_pixels.Tpo -c -o codec/png_snapshot/test_runner-0007_srgb_hls_pixels.o `test -f 'codec/png_snapshot/0007_srgb_hls_pixels.c' || echo '$(srcdir)/'`codec/png_snapshot/0007_srgb_hls_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0007_srgb_hls_pixels.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0007_srgb_hls_pixels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0007_srgb_hls_pixels.c' object='codec/png_snapshot/test_runner-0007_srgb_hls_pixels.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0007_srgb_hls_pixels.o `test -f 'codec/png_snapshot/0007_srgb_hls_pixels.c' || echo '$(srcdir)/'`codec/png_snapshot/0007_srgb_hls_pixels.c
+
+codec/png_snapshot/test_runner-0007_srgb_hls_pixels.obj: codec/png_snapshot/0007_srgb_hls_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0007_srgb_hls_pixels.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0007_srgb_hls_pixels.Tpo -c -o codec/png_snapshot/test_runner-0007_srgb_hls_pixels.obj `if test -f 'codec/png_snapshot/0007_srgb_hls_pixels.c'; then $(CYGPATH_W) 'codec/png_snapshot/0007_srgb_hls_pixels.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0007_srgb_hls_pixels.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0007_srgb_hls_pixels.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0007_srgb_hls_pixels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0007_srgb_hls_pixels.c' object='codec/png_snapshot/test_runner-0007_srgb_hls_pixels.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0007_srgb_hls_pixels.obj `if test -f 'codec/png_snapshot/0007_srgb_hls_pixels.c'; then $(CYGPATH_W) 'codec/png_snapshot/0007_srgb_hls_pixels.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0007_srgb_hls_pixels.c'; fi`
+
+codec/png_snapshot/test_runner-0008_p3_hls_pixels.o: codec/png_snapshot/0008_p3_hls_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0008_p3_hls_pixels.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0008_p3_hls_pixels.Tpo -c -o codec/png_snapshot/test_runner-0008_p3_hls_pixels.o `test -f 'codec/png_snapshot/0008_p3_hls_pixels.c' || echo '$(srcdir)/'`codec/png_snapshot/0008_p3_hls_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0008_p3_hls_pixels.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0008_p3_hls_pixels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0008_p3_hls_pixels.c' object='codec/png_snapshot/test_runner-0008_p3_hls_pixels.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0008_p3_hls_pixels.o `test -f 'codec/png_snapshot/0008_p3_hls_pixels.c' || echo '$(srcdir)/'`codec/png_snapshot/0008_p3_hls_pixels.c
+
+codec/png_snapshot/test_runner-0008_p3_hls_pixels.obj: codec/png_snapshot/0008_p3_hls_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0008_p3_hls_pixels.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0008_p3_hls_pixels.Tpo -c -o codec/png_snapshot/test_runner-0008_p3_hls_pixels.obj `if test -f 'codec/png_snapshot/0008_p3_hls_pixels.c'; then $(CYGPATH_W) 'codec/png_snapshot/0008_p3_hls_pixels.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0008_p3_hls_pixels.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0008_p3_hls_pixels.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0008_p3_hls_pixels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0008_p3_hls_pixels.c' object='codec/png_snapshot/test_runner-0008_p3_hls_pixels.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0008_p3_hls_pixels.obj `if test -f 'codec/png_snapshot/0008_p3_hls_pixels.c'; then $(CYGPATH_W) 'codec/png_snapshot/0008_p3_hls_pixels.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0008_p3_hls_pixels.c'; fi`
+
+codec/png_snapshot/test_runner-0009_transport_rejection.o: codec/png_snapshot/0009_transport_rejection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0009_transport_rejection.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Tpo -c -o codec/png_snapshot/test_runner-0009_transport_rejection.o `test -f 'codec/png_snapshot/0009_transport_rejection.c' || echo '$(srcdir)/'`codec/png_snapshot/0009_transport_rejection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0009_transport_rejection.c' object='codec/png_snapshot/test_runner-0009_transport_rejection.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0009_transport_rejection.o `test -f 'codec/png_snapshot/0009_transport_rejection.c' || echo '$(srcdir)/'`codec/png_snapshot/0009_transport_rejection.c
+
+codec/png_snapshot/test_runner-0009_transport_rejection.obj: codec/png_snapshot/0009_transport_rejection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0009_transport_rejection.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Tpo -c -o codec/png_snapshot/test_runner-0009_transport_rejection.obj `if test -f 'codec/png_snapshot/0009_transport_rejection.c'; then $(CYGPATH_W) 'codec/png_snapshot/0009_transport_rejection.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0009_transport_rejection.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0009_transport_rejection.c' object='codec/png_snapshot/test_runner-0009_transport_rejection.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0009_transport_rejection.obj `if test -f 'codec/png_snapshot/0009_transport_rejection.c'; then $(CYGPATH_W) 'codec/png_snapshot/0009_transport_rejection.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0009_transport_rejection.c'; fi`
+
 codec/hls/test_runner-hls_native_test_common.o: codec/hls/hls_native_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/hls/test_runner-hls_native_test_common.o -MD -MP -MF codec/hls/$(DEPDIR)/test_runner-hls_native_test_common.Tpo -c -o codec/hls/test_runner-hls_native_test_common.o `test -f 'codec/hls/hls_native_test_common.c' || echo '$(srcdir)/'`codec/hls/hls_native_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/hls/$(DEPDIR)/test_runner-hls_native_test_common.Tpo codec/hls/$(DEPDIR)/test_runner-hls_native_test_common.Po
@@ -62290,6 +62504,8 @@ distclean-generic:
 	-$(am__rm_f) codec/hls/$(am__dirstamp)
 	-$(am__rm_f) codec/macro/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) codec/macro/$(am__dirstamp)
+	-$(am__rm_f) codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) codec/png_snapshot/$(am__dirstamp)
 	-$(am__rm_f) diagnostics/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) diagnostics/$(am__dirstamp)
 	-$(am__rm_f) diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
