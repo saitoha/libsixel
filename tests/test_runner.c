@@ -236,6 +236,21 @@ int test_macro_0015(int argc, char **argv);
 int test_macro_0016(int argc, char **argv);
 int test_hls_native_0014(int argc, char **argv);
 int test_hls_native_0015(int argc, char **argv);
+int test_delta_native_0018(int argc, char **argv);
+int test_delta_native_0019(int argc, char **argv);
+int test_delta_native_0020(int argc, char **argv);
+int test_delta_native_0021(int argc, char **argv);
+int test_delta_native_0022(int argc, char **argv);
+int test_delta_native_0023(int argc, char **argv);
+int test_delta_native_0024(int argc, char **argv);
+int test_delta_native_0025(int argc, char **argv);
+int test_delta_native_0026(int argc, char **argv);
+int test_delta_native_0027(int argc, char **argv);
+int test_delta_native_0028(int argc, char **argv);
+int test_delta_native_0029(int argc, char **argv);
+int test_delta_native_0030(int argc, char **argv);
+int test_delta_native_0031(int argc, char **argv);
+int test_delta_native_0032(int argc, char **argv);
 int test_delta_native_0015(int argc, char **argv);
 int test_delta_native_0016(int argc, char **argv);
 int test_delta_native_0017(int argc, char **argv);
@@ -3083,6 +3098,36 @@ static test_entry_t const test_entries[] = {
     { "codec/macro/0016_float_output_reuse", test_macro_0016 },
     { "codec/hls/0014_byte_or_control", test_hls_native_0014 },
     { "codec/hls/0015_serial_or", test_hls_native_0015 },
+    { "palette/delta_native/0018_delta_a_source",
+        test_delta_native_0018 },
+    { "palette/delta_native/0019_delta_x_source",
+        test_delta_native_0019 },
+    { "palette/delta_native/0020_delta_blue_source",
+        test_delta_native_0020 },
+    { "palette/delta_native/0021_delta_a_frames",
+        test_delta_native_0021 },
+    { "palette/delta_native/0022_delta_x_frames",
+        test_delta_native_0022 },
+    { "palette/delta_native/0023_delta_blue_frames",
+        test_delta_native_0023 },
+    { "palette/delta_native/0024_delta_a_workers",
+        test_delta_native_0024 },
+    { "palette/delta_native/0025_delta_x_workers",
+        test_delta_native_0025 },
+    { "palette/delta_native/0026_delta_blue_workers",
+        test_delta_native_0026 },
+    { "palette/delta_native/0027_delta_a_byte",
+        test_delta_native_0027 },
+    { "palette/delta_native/0028_delta_x_byte",
+        test_delta_native_0028 },
+    { "palette/delta_native/0029_delta_blue_byte",
+        test_delta_native_0029 },
+    { "palette/delta_native/0030_delta_a_band",
+        test_delta_native_0030 },
+    { "palette/delta_native/0031_delta_x_band",
+        test_delta_native_0031 },
+    { "palette/delta_native/0032_delta_blue_band",
+        test_delta_native_0032 },
     { "palette/delta_native/0015_delta_signed_threshold",
         test_delta_native_0015 },
     { "palette/delta_native/0016_delta_p3_rejection_recovery",

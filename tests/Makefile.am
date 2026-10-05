@@ -184,6 +184,21 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0015_DELTA_SIGNED_THRESHOLD \
     -DBUILD_TEST_0016_DELTA_P3_REJECTION_RECOVERY \
     -DBUILD_TEST_0017_DELTA_SPATIAL_DISPATCH \
+    -DBUILD_TEST_0018_DELTA_A_SOURCE \
+    -DBUILD_TEST_0019_DELTA_X_SOURCE \
+    -DBUILD_TEST_0020_DELTA_BLUE_SOURCE \
+    -DBUILD_TEST_0021_DELTA_A_FRAMES \
+    -DBUILD_TEST_0022_DELTA_X_FRAMES \
+    -DBUILD_TEST_0023_DELTA_BLUE_FRAMES \
+    -DBUILD_TEST_0024_DELTA_A_WORKERS \
+    -DBUILD_TEST_0025_DELTA_X_WORKERS \
+    -DBUILD_TEST_0026_DELTA_BLUE_WORKERS \
+    -DBUILD_TEST_0027_DELTA_A_BYTE \
+    -DBUILD_TEST_0028_DELTA_X_BYTE \
+    -DBUILD_TEST_0029_DELTA_BLUE_BYTE \
+    -DBUILD_TEST_0030_DELTA_A_BAND \
+    -DBUILD_TEST_0031_DELTA_X_BAND \
+    -DBUILD_TEST_0032_DELTA_BLUE_BAND \
     -DBUILD_DELTA_NATIVE_COMMON \
     -DBUILD_TEST_0001_DELTA_FLOAT_CENTROID \
     -DBUILD_TEST_0002_DELTA_BYTE_CONTROL \
@@ -2835,6 +2850,21 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0015_delta_signed_threshold.c \
     quant/palette/delta_native/0016_delta_p3_rejection_recovery.c \
     quant/palette/delta_native/0017_delta_spatial_dispatch.c \
+    quant/palette/delta_native/0018_delta_a_source.c \
+    quant/palette/delta_native/0019_delta_x_source.c \
+    quant/palette/delta_native/0020_delta_blue_source.c \
+    quant/palette/delta_native/0021_delta_a_frames.c \
+    quant/palette/delta_native/0022_delta_x_frames.c \
+    quant/palette/delta_native/0023_delta_blue_frames.c \
+    quant/palette/delta_native/0024_delta_a_workers.c \
+    quant/palette/delta_native/0025_delta_x_workers.c \
+    quant/palette/delta_native/0026_delta_blue_workers.c \
+    quant/palette/delta_native/0027_delta_a_byte.c \
+    quant/palette/delta_native/0028_delta_x_byte.c \
+    quant/palette/delta_native/0029_delta_blue_byte.c \
+    quant/palette/delta_native/0030_delta_a_band.c \
+    quant/palette/delta_native/0031_delta_x_band.c \
+    quant/palette/delta_native/0032_delta_blue_band.c \
     quant/palette/delta_native_common.c \
     quant/palette/delta_native/0001_delta_float_centroid.c \
     quant/palette/delta_native/0002_delta_byte_control.c \

@@ -378,6 +378,7 @@ sixel_dither_apply_x_dither_float32(sixel_dither_t *dither,
     float noise;
     float val;
     float lookup_pixel_float[SIXEL_MAX_CHANNELS];
+    float retained[3];
     unsigned char const *lookup_pixel;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
@@ -473,6 +474,23 @@ sixel_dither_apply_x_dither_float32(sixel_dither_t *dither,
             color_index = context->lookup_policy->vtbl->map_pixel(
                 context->lookup_policy,
                 lookup_pixel);
+
+            /* Noise selects a candidate, but retained-color fidelity uses
+             * the unperturbed source. Native gamma delta compares the wire
+             * cache, so no byte projection of the working sample is needed.
+             * Positional methods have no neighboring residual to update. */
+            if (absolute_y >= 0 && context->depth == 3 &&
+                    dither->pipeline_6delta_enabled &&
+                    dither->use_rgb101_palette &&
+                    sixel_dither_6delta_keep_float(dither,
+                        (size_t)absolute_y * (size_t)context->width +
+                            (size_t)x,
+                        x, absolute_y, context->pixelformat,
+                        context->pixels_float + (size_t)pos * 3U,
+                        NULL, color_index,
+                        absolute_y >= context->output_start, retained)) {
+                color_index = dither->pipeline_accumulation_keycolor;
+            }
 
             if (absolute_y >= context->output_start) {
                 context->result[pos] = (sixel_index_t)color_index;

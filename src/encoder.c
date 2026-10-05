@@ -6779,8 +6779,8 @@ sixel_encoder_palette_capacity(sixel_encoder_t const *encoder)
  * matching gamma workspace and RGB wire format; other output definitions
  * need an explicit inverse transform before competing with working colors.
  * Generated palettes can reserve an omission key after history exists.
- * Fixed tables, positional dithers and alternate transports are separate
- * migration steps, not reasons to discard floats on the connected path. */
+ * Fixed tables and alternate transports are separate migration steps,
+ * not reasons to discard floats on the connected path. */
 static int
 sixel_encoder_native_delta(sixel_encoder_t const *encoder)
 {
@@ -6807,6 +6807,9 @@ sixel_encoder_native_delta(sixel_encoder_t const *encoder)
     case SIXEL_DIFFUSE_SIERRA2:
     case SIXEL_DIFFUSE_SIERRA3:
     case SIXEL_DIFFUSE_LSO2:
+    case SIXEL_DIFFUSE_A_DITHER:
+    case SIXEL_DIFFUSE_X_DITHER:
+    case SIXEL_DIFFUSE_BLUENOISE_DITHER:
         return 1;
     default:
         return 0;

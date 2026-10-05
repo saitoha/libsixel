@@ -11,6 +11,9 @@
 #include "src/encoder.h"
 #include "src/dither.h"
 #include "src/palette.h"
+#include "src/dither-policy-a-dither.h"
+#include "src/dither-policy-x-dither.h"
+#include "src/dither-policy-bluenoise.h"
 
 typedef struct dn_stream {
     char bytes[65536];
@@ -34,8 +37,8 @@ dn_write(char *data, int size, void *context)
 
 /* A single extended color makes the independent palette oracle exact up to
  * binary32 storage. No image metric can substitute for this observation. */
-int
-test_delta_native_frames(int mode)
+static int
+dn_frames(int mode, char const *positional)
 {
     static struct { int flag; char const *value; } const options[] = {
         {'=', "1"}, {'~', "none"}, {'d', "none"}, {'Q', "heckbert"},
@@ -108,6 +111,10 @@ test_delta_native_frames(int mode)
     }
     if (mode >= 10 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
             'd', methods[mode - 10]))) {
+        goto end;
+    }
+    if (positional != NULL && SIXEL_FAILED(
+            sixel_encoder_setopt(encoder, 'd', positional))) {
         goto end;
     }
     for (pass = 0; pass < 4; ++pass) {
@@ -230,6 +237,22 @@ end:
     sixel_output_unref(output);
     sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_delta_native_frames(int mode)
+{
+    return dn_frames(mode, NULL);
+}
+
+int
+test_delta_positional_frames(int method, int mode)
+{
+    static char const *const names[] = {
+        "a_dither", "x_dither", "bluenoise"
+    };
+
+    return dn_frames(mode, names[method]);
 }
 
 /* Low-level setup supplies both independent storage views, as the high-level
@@ -420,7 +443,8 @@ test_delta_native_scope(int unused)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma")) ||
             SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, output)) ||
             stream.size == 0 || encoder->diagnostic_dither == NULL ||
-            !((sixel_dither_t *)encoder->diagnostic_dither)->use_rgb101_palette) {
+            !((sixel_dither_t *)encoder->diagnostic_dither)->
+                use_rgb101_palette) {
         goto end;
     }
     ok = 1;
@@ -428,5 +452,209 @@ end:
     sixel_frame_unref(frame);
     sixel_output_unref(output);
     sixel_encoder_unref(encoder);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+/* The selected candidate is controlled independently of the keep decision.
+ * A/X at (0,0) shift red by -32/255; blue's frozen red tap sum is 52/255.
+ * The source and the biased query lie on opposite sides of the midpoint
+ * between red 0 and .2. A 2e-6 query budget is far below the .01 decision
+ * margin. Other channels cancel because the competing colors agree there. */
+typedef struct dn_observer {
+    sixel_lookup_policy_interface_t base;
+    int candidate;
+    int calls;
+    int check_query;
+    int failed;
+    double expected_red;
+} dn_observer_t;
+
+static sixel_lookup_policy_result_t
+dn_observe(sixel_lookup_policy_interface_t const *base,
+           unsigned char const *pixel)
+{
+    dn_observer_t *observer;
+    float const *values;
+
+    observer = (dn_observer_t *)(void *)base;
+    values = (float const *)(void const *)pixel;
+    ++observer->calls;
+    if (observer->check_query && (!isfinite(values[0]) ||
+            fabs(values[0] - observer->expected_red) > 2e-6)) {
+        observer->failed = 1;
+    }
+    return observer->candidate;
+}
+
+static sixel_lookup_policy_vtbl_t const dn_observer_vtbl = {
+    NULL, NULL, NULL, dn_observe
+};
+
+int
+test_delta_positional_query(int method, int band)
+{
+    static SIXELSTATUS (*const create[])(sixel_allocator_t *, void **) = {
+        sixel_dither_policy_a_dither_float32_new,
+        sixel_dither_policy_x_dither_float32_new,
+        sixel_dither_policy_bluenoise_float32_new
+    };
+    unsigned char palette[9] = { 0, 0, 0, 51, 0, 0, 0, 0, 0 };
+    unsigned char history[4 * 10 * 3];
+    unsigned char valid[4 * 10];
+    unsigned char mask[2 * 9];
+    unsigned char *record;
+    float source[2 * 3 * 3];
+    float original[2 * 3 * 3];
+    sixel_index_t result[2 * 3];
+    sixel_dither_t *dither;
+    sixel_dither_policy_interface_t *policy;
+    sixel_dither_policy_prepare_request_t prepare;
+    sixel_dither_policy_apply_request_t request;
+    dn_observer_t observer;
+    void *object;
+    int pass;
+    int i;
+    int expected;
+    int ok;
+
+    dither = NULL;
+    policy = NULL;
+    object = NULL;
+    record = NULL;
+    pass = 0;
+    ok = 0;
+    memset(&prepare, 0, sizeof(prepare));
+    memset(&request, 0, sizeof(request));
+    memset(&observer, 0, sizeof(observer));
+    memset(history, 0, sizeof(history));
+    memset(valid, 1, sizeof(valid));
+    memset(mask, 0, sizeof(mask));
+    memset(source, 0, sizeof(source));
+    if (SIXEL_FAILED(sixel_dither_new(&dither, 3, NULL)) ||
+            SIXEL_FAILED(create[method](dither->allocator, &object))) {
+        goto end;
+    }
+    policy = object;
+    sixel_dither_set_palette(dither, palette);
+    dither->use_rgb101_palette = 1;
+    if (!dn_prepare(dither, palette, 3)) {
+        goto end;
+    }
+    record = sixel_allocator_malloc(dither->allocator, sizeof(mask));
+    if (record == NULL) {
+        goto end;
+    }
+    if (SIXEL_FAILED(sixel_dither_set_pipeline_accumulation_result_mask(
+            dither, record, sizeof(mask)))) {
+        sixel_allocator_free(dither->allocator, record);
+        record = NULL;
+        goto end;
+    }
+    /* The dither owns record from here. All other buffers are borrowed. */
+    dither->a_dither_strength_override = 1;
+    dither->a_dither_strength = 1.0f;
+    dither->x_dither_strength_override = 1;
+    dither->x_dither_strength = 1.0f;
+    dither->bluenoise_strength_override = 1;
+    dither->bluenoise_strength = 1.0f;
+    dither->bluenoise_phase_override = 1;
+    dither->bluenoise_phase_x = dither->bluenoise_phase_y = 0;
+    dither->bluenoise_channel_override = 1;
+    dither->bluenoise_channel_rgb = 1;
+    dither->bluenoise_gradient_factor_override = 1;
+    dither->bluenoise_gradient_factor = 0.0f;
+    observer.base.vtbl = &dn_observer_vtbl;
+    observer.check_query = !band;
+    observer.candidate = !band && method == 2 ? 1 : 0;
+    request.dither = prepare.dither = dither;
+    request.depth = prepare.depth = 3;
+    prepare.pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    request.width = band ? 2 : 1;
+    request.height = band ? 3 : 1;
+    request.band_origin = band ? 6 : 0;
+    request.output_start = band ? 7 : 0;
+    request.data = (unsigned char *)(void *)source;
+    request.palette = palette;
+    request.result = result;
+    request.lookup_policy = &observer.base;
+    if (band) {
+        /* Only the offset plane positions have the candidate's black.
+         * A wrong origin therefore loses the keep contest. */
+        for (i = 0; i < 40; ++i) {
+            history[i * 3] = 255;
+        }
+        for (i = 0; i < 6; ++i) {
+            history[((i / 2 + 7) * 4 + i % 2 + 1) * 3] = 0;
+            source[i * 3] = -.1f;
+            source[i * 3 + 1] = .1f;
+            source[i * 3 + 2] = 1.1f;
+        }
+        valid[8 * 4 + 2] = 0;
+        mask[8 * 2] = 1;
+        sixel_dither_set_pipeline_transparent_mask_hint(dither,
+            mask, sizeof(mask), 2);
+    } else {
+        history[0] = method == 2 ? 0 : 51;
+    }
+    for (pass = 0; pass < (band ? 2 : 4); ++pass) {
+        prepare.method_for_scan = pass & 1
+            ? SIXEL_SCAN_SERPENTINE : SIXEL_SCAN_RASTER;
+        observer.calls = observer.failed = 0;
+        memset(record, 0, sizeof(mask));
+        for (i = 0; i < 6; ++i) {
+            result[i] = 123;
+        }
+        if (!band) {
+            source[0] = method == 2
+                ? (pass == 3 ? .18f : .09f)
+                : (pass == 3 ? .02f : .11f);
+            valid[0] = pass != 1;
+            observer.expected_red = source[0] +
+                (method == 2 ? 52.0 / 255.0 : -1.0) * (32.0 / 255.0);
+        }
+        memcpy(original, source, sizeof(source));
+        sixel_dither_set_pipeline_accumulation_buffer_hint(dither,
+            history, sizeof(history), valid, sizeof(valid),
+            band ? 4 : 1, band ? 10 : 1, band, band,
+            request.width, band ? 9 : 1, 2, band || pass != 2,
+            !band && pass == 3 ? 50U : 0U, SIXEL_6DELTA_ERROR_DIFFUSE);
+        if (SIXEL_FAILED(policy->vtbl->prepare(policy, &prepare)) ||
+                SIXEL_FAILED(policy->vtbl->apply(policy, &request)) ||
+                observer.failed || observer.calls != (band ? 5 : 1) ||
+                memcmp(source, original, sizeof(source)) != 0) {
+            goto end;
+        }
+        if (band) {
+            /* Warmup is untouched, invalid history paints, source mask
+             * omits without recording a delta keep; both scans agree. */
+            for (i = 0; i < 6; ++i) {
+                expected = i < 2 ? 123 : i == 3 ? 0 : 2;
+                if (result[i] != expected) {
+                    goto end;
+                }
+            }
+            for (i = 0; i < 18; ++i) {
+                if (record[i] != (i == 14 || i == 17)) {
+                    goto end;
+                }
+            }
+        } else {
+            expected = pass == 0 || pass == 3;
+            if (result[0] != (expected ? 2 : observer.candidate) ||
+                    record[0] != expected) {
+                goto end;
+            }
+        }
+    }
+    ok = 1;
+end:
+    if (!ok) {
+        fprintf(stderr, "positional delta method=%d band=%d pass=%d: %s\n",
+            method, band, pass, sixel_helper_get_additional_message());
+    }
+    if (policy != NULL) {
+        policy->vtbl->unref(policy);
+    }
+    sixel_dither_unref(dither);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
