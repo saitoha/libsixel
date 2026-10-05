@@ -4572,6 +4572,19 @@ ac_config_headers="$ac_config_headers config.h"
 # on systems with multiple CPUs.
 
 
+# Framework probe bodies are shared by the Darwin parallel driver and
+# ordinary cached checks.  Keep feature decisions outside the cache body.
+
+
+
+
+
+
+# Cache independent framework link tests in isolated directories.  Only the
+# parent imports results and logs; workers must not update configuration
+# defines or share conftest files.  The caller bounds workers by CPU_COUNT.
+
+
 # Run config.status with explicit parallelism based on AX_COUNT_CPUS.
 # The flow is:
 # 1) Save the caller's --no-create choice.
@@ -23069,13 +23082,53 @@ fi
 
 
 
-if test x$with_coregraphics != xno; then
-    saved_LIBS="$LIBS"
-    LIBS="$LIBS -framework CoreGraphics -framework ImageIO"
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+# CoreGraphics, Metal, and AppKit do not depend on one another.  Queue only
+# requested, uncached probes, then consume their answers in the usual order.
+# Quick Look and the Carbon fallback retain their prerequisite checks below.
+
+case $host_os in #(
+  darwin*) :
+
+    sixel_macos_probe_dir="$ac_pwd/conftest-frameworks$$"
+    sixel_macos_probe_pids=
+    sixel_macos_probe_pending=
+    sixel_macos_probe_active=0
+    sixel_macos_probe_max=$CPU_COUNT
+    case $sixel_macos_probe_max in
+      ''|0|*[!0-9]*) sixel_macos_probe_max=1 ;;
+    esac
+    sixel_wait_macos_probes () {
+        sixel_macos_probe_status=0
+        for sixel_macos_probe_pid in $sixel_macos_probe_pids; do
+            wait "$sixel_macos_probe_pid" || sixel_macos_probe_status=$?
+        done
+        sixel_macos_probe_pids=
+        sixel_macos_probe_active=0
+        return "$sixel_macos_probe_status"
+    }
+    if test x$with_coregraphics != xno
+then :
+
+
+
+  if test ${sixel_cv_macos_coregraphics+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+    as_dir="$sixel_macos_probe_dir/sixel_cv_macos_coregraphics"; as_fn_mkdir_p
+    cp confdefs.h "$sixel_macos_probe_dir/sixel_cv_macos_coregraphics/confdefs.h" ||
+      as_fn_error $? "could not prepare macOS framework probe" "$LINENO" 5
+    (
+      cd "$sixel_macos_probe_dir/sixel_cv_macos_coregraphics" || exit 1
+      exec 5>probe.log
+
+  saved_LIBS="$LIBS"
+  LIBS="$LIBS -framework CoreGraphics -framework ImageIO"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <CoreGraphics/CoreGraphics.h>
-                           #include <ImageIO/ImageIO.h>
+                         #include <ImageIO/ImageIO.h>
 int
 main (void)
 {
@@ -23086,14 +23139,239 @@ CGImageRef image = NULL;
 _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
-  have_coregraphics=yes
+  sixel_cv_macos_coregraphics=yes
 else case e in #(
-  e) have_coregraphics=no ;;
+  e) sixel_cv_macos_coregraphics=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
-    LIBS="$saved_LIBS"
+  LIBS="$saved_LIBS"
+
+      sixel_macos_probe_result=$sixel_cv_macos_coregraphics
+      printf '%s\n' "$sixel_macos_probe_result" > result
+    ) &
+    sixel_macos_probe_pids="$sixel_macos_probe_pids $!"
+    sixel_macos_probe_pending="$sixel_macos_probe_pending sixel_cv_macos_coregraphics"
+    sixel_macos_probe_active=$((sixel_macos_probe_active + 1))
+    if test "$sixel_macos_probe_active" -ge "$sixel_macos_probe_max"; then
+      sixel_wait_macos_probes ||
+        as_fn_error $? "could not run macOS framework probes" "$LINENO" 5
+    fi
+   ;;
+esac
+fi
+
+
+
+fi
+    if test x$with_metal != xno
+then :
+
+
+
+  if test ${sixel_cv_macos_metal+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+    as_dir="$sixel_macos_probe_dir/sixel_cv_macos_metal"; as_fn_mkdir_p
+    cp confdefs.h "$sixel_macos_probe_dir/sixel_cv_macos_metal/confdefs.h" ||
+      as_fn_error $? "could not prepare macOS framework probe" "$LINENO" 5
+    (
+      cd "$sixel_macos_probe_dir/sixel_cv_macos_metal" || exit 1
+      exec 5>probe.log
+
+  ac_ext=m
+ac_cpp='$OBJCPP $CPPFLAGS'
+ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$OBJC -o conftest$ac_exeext $OBJCFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_objc_compiler_gnu
+
+  saved_LIBS="$LIBS"
+  LIBS="$LIBS -framework Metal -framework Foundation"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#import <Foundation/Foundation.h>
+#import <Metal/Metal.h>
+int
+main (void)
+{
+@autoreleasepool {
+    id<MTLDevice> device = MTLCreateSystemDefaultDevice();
+    (void)device;
+}
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_objc_try_link "$LINENO"
+then :
+  sixel_cv_macos_metal=yes
+else case e in #(
+  e) sixel_cv_macos_metal=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+  LIBS="$saved_LIBS"
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+      sixel_macos_probe_result=$sixel_cv_macos_metal
+      printf '%s\n' "$sixel_macos_probe_result" > result
+    ) &
+    sixel_macos_probe_pids="$sixel_macos_probe_pids $!"
+    sixel_macos_probe_pending="$sixel_macos_probe_pending sixel_cv_macos_metal"
+    sixel_macos_probe_active=$((sixel_macos_probe_active + 1))
+    if test "$sixel_macos_probe_active" -ge "$sixel_macos_probe_max"; then
+      sixel_wait_macos_probes ||
+        as_fn_error $? "could not run macOS framework probes" "$LINENO" 5
+    fi
+   ;;
+esac
+fi
+
+
+
+fi
+    if test x$enable_appkit != xno
+then :
+
+
+
+  if test ${sixel_cv_macos_appkit+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+    as_dir="$sixel_macos_probe_dir/sixel_cv_macos_appkit"; as_fn_mkdir_p
+    cp confdefs.h "$sixel_macos_probe_dir/sixel_cv_macos_appkit/confdefs.h" ||
+      as_fn_error $? "could not prepare macOS framework probe" "$LINENO" 5
+    (
+      cd "$sixel_macos_probe_dir/sixel_cv_macos_appkit" || exit 1
+      exec 5>probe.log
+
+  ac_ext=m
+ac_cpp='$OBJCPP $CPPFLAGS'
+ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$OBJC -o conftest$ac_exeext $OBJCFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_objc_compiler_gnu
+
+  saved_LIBS="$LIBS"
+  LIBS="$LIBS -framework AppKit -framework Foundation"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#import <AppKit/AppKit.h>
+int
+main (void)
+{
+@autoreleasepool {
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    return pb == nil;
+}
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_objc_try_link "$LINENO"
+then :
+  sixel_cv_macos_appkit=yes
+else case e in #(
+  e) sixel_cv_macos_appkit=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+  LIBS="$saved_LIBS"
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+      sixel_macos_probe_result=$sixel_cv_macos_appkit
+      printf '%s\n' "$sixel_macos_probe_result" > result
+    ) &
+    sixel_macos_probe_pids="$sixel_macos_probe_pids $!"
+    sixel_macos_probe_pending="$sixel_macos_probe_pending sixel_cv_macos_appkit"
+    sixel_macos_probe_active=$((sixel_macos_probe_active + 1))
+    if test "$sixel_macos_probe_active" -ge "$sixel_macos_probe_max"; then
+      sixel_wait_macos_probes ||
+        as_fn_error $? "could not run macOS framework probes" "$LINENO" 5
+    fi
+   ;;
+esac
+fi
+
+
+
+fi
+    sixel_wait_macos_probes ||
+        as_fn_error $? "could not run macOS framework probes" "$LINENO" 5
+    for sixel_macos_probe_name in $sixel_macos_probe_pending; do
+        cat "$sixel_macos_probe_dir/$sixel_macos_probe_name/probe.log" >&5
+        IFS= read -r sixel_macos_probe_result \
+            < "$sixel_macos_probe_dir/$sixel_macos_probe_name/result" ||
+            as_fn_error $? "could not read macOS framework probe result" "$LINENO" 5
+        case $sixel_macos_probe_result in
+          yes|no) ;;
+          *) as_fn_error $? "invalid macOS framework probe result" "$LINENO" 5 ;;
+        esac
+        eval "$sixel_macos_probe_name=\$sixel_macos_probe_result"
+    done
+    if test -d "$sixel_macos_probe_dir"; then
+        rm -rf "$sixel_macos_probe_dir"
+    fi
+ ;; #(
+  *) :
+     ;;
+esac
+
+if test x$with_coregraphics != xno; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for CoreGraphics and ImageIO" >&5
+printf %s "checking for CoreGraphics and ImageIO... " >&6; }
+if test ${sixel_cv_macos_coregraphics+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  saved_LIBS="$LIBS"
+  LIBS="$LIBS -framework CoreGraphics -framework ImageIO"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <CoreGraphics/CoreGraphics.h>
+                         #include <ImageIO/ImageIO.h>
+int
+main (void)
+{
+CGImageRef image = NULL;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  sixel_cv_macos_coregraphics=yes
+else case e in #(
+  e) sixel_cv_macos_coregraphics=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+  LIBS="$saved_LIBS"
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_macos_coregraphics" >&5
+printf "%s\n" "$sixel_cv_macos_coregraphics" >&6; }
+    have_coregraphics=$sixel_cv_macos_coregraphics
     if test x$have_coregraphics = xyes; then
 
 printf "%s\n" "#define HAVE_COREGRAPHICS 1" >>confdefs.h
@@ -23115,16 +23393,22 @@ have_metal=no
 case $host_os in
   darwin*)
     if test x$with_metal != xno; then
-        ac_ext=m
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Metal" >&5
+printf %s "checking for Metal... " >&6; }
+if test ${sixel_cv_macos_metal+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ac_ext=m
 ac_cpp='$OBJCPP $CPPFLAGS'
 ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$OBJC -o conftest$ac_exeext $OBJCFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_objc_compiler_gnu
 
-        saved_LIBS="$LIBS"
-        LIBS="$LIBS -framework Metal -framework Foundation"
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  saved_LIBS="$LIBS"
+  LIBS="$LIBS -framework Metal -framework Foundation"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
@@ -23142,20 +23426,26 @@ return 0;
 _ACEOF
 if ac_fn_objc_try_link "$LINENO"
 then :
-  have_metal=yes
+  sixel_cv_macos_metal=yes
 else case e in #(
-  e) have_metal=no ;;
+  e) sixel_cv_macos_metal=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
-        LIBS="$saved_LIBS"
-        ac_ext=c
+  LIBS="$saved_LIBS"
+  ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_macos_metal" >&5
+printf "%s\n" "$sixel_cv_macos_metal" >&6; }
+        have_metal=$sixel_cv_macos_metal
         if test x$have_metal = xyes; then
 
 printf "%s\n" "#define HAVE_METAL 1" >>confdefs.h
@@ -23200,7 +23490,14 @@ case $host_os in
             saved_LIBS="$LIBS"
             LIBS="$LIBS -framework QuickLook -framework CoreServices \
                   -framework ApplicationServices -framework CoreGraphics"
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Quick Look preview" >&5
+printf %s "checking for Quick Look preview... " >&6; }
+if test ${sixel_cv_macos_quicklook+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+                cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <CoreServices/CoreServices.h>
 #include <QuickLook/QuickLook.h>
@@ -23232,13 +23529,19 @@ if (image) {
 _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
-  have_quicklook_preview=yes
+  sixel_cv_macos_quicklook=yes
 else case e in #(
-  e) have_quicklook_preview=no ;;
+  e) sixel_cv_macos_quicklook=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
+             ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_macos_quicklook" >&5
+printf "%s\n" "$sixel_cv_macos_quicklook" >&6; }
+            have_quicklook_preview=$sixel_cv_macos_quicklook
             LIBS="$saved_LIBS"
             if test x$have_quicklook_preview = xyes; then
 
@@ -23261,7 +23564,14 @@ ac_compiler_gnu=$ac_cv_objc_compiler_gnu
                                    -framework UniformTypeIdentifiers \
                                    -framework Foundation"
                 LIBS="$LIBS $added_OBJC_LIBS"
-                cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Quick Look Thumbnailing" >&5
+printf %s "checking for Quick Look Thumbnailing... " >&6; }
+if test ${sixel_cv_macos_quicklook_thumbnailing+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+                    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #import <Foundation/Foundation.h>
 #import <QuickLookThumbnailing/QuickLookThumbnailing.h>
@@ -23287,13 +23597,19 @@ main (void)
 _ACEOF
 if ac_fn_objc_try_link "$LINENO"
 then :
-  have_quicklook_thumbnailing=yes
+  sixel_cv_macos_quicklook_thumbnailing=yes
 else case e in #(
-  e) have_quicklook_thumbnailing=no ;;
+  e) sixel_cv_macos_quicklook_thumbnailing=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
+                 ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_macos_quicklook_thumbnailing" >&5
+printf "%s\n" "$sixel_cv_macos_quicklook_thumbnailing" >&6; }
+                have_quicklook_thumbnailing=$sixel_cv_macos_quicklook_thumbnailing
                 LIBS="$saved_LIBS_OBJC"
                 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -23341,45 +23657,58 @@ have_clipboard_linux=no
 case $host_os in
   darwin*)
     if test x$enable_appkit != xno; then
-        ac_ext=m
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the AppKit clipboard" >&5
+printf %s "checking for the AppKit clipboard... " >&6; }
+if test ${sixel_cv_macos_appkit+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ac_ext=m
 ac_cpp='$OBJCPP $CPPFLAGS'
 ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$OBJC -o conftest$ac_exeext $OBJCFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_objc_compiler_gnu
 
-        saved_LIBS="$LIBS"
-        LIBS="$LIBS -framework AppKit -framework Foundation"
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  saved_LIBS="$LIBS"
+  LIBS="$LIBS -framework AppKit -framework Foundation"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #import <AppKit/AppKit.h>
 int
 main (void)
 {
 @autoreleasepool {
-        NSPasteboard *pb = [NSPasteboard generalPasteboard];
-        return pb == nil;
-    }
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    return pb == nil;
+}
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_objc_try_link "$LINENO"
 then :
-  have_clipboard_macos=yes
-             have_clipboard_macos_appkit=yes
+  sixel_cv_macos_appkit=yes
 else case e in #(
-  e) have_clipboard_macos=no ;;
+  e) sixel_cv_macos_appkit=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
-        LIBS="$saved_LIBS"
-        ac_ext=c
+  LIBS="$saved_LIBS"
+  ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_macos_appkit" >&5
+printf "%s\n" "$sixel_cv_macos_appkit" >&6; }
+        have_clipboard_macos_appkit=$sixel_cv_macos_appkit
+        have_clipboard_macos=$sixel_cv_macos_appkit
         if test x$have_clipboard_macos_appkit = xyes; then
 
 printf "%s\n" "#define HAVE_APPKIT 1" >>confdefs.h
@@ -23397,7 +23726,14 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
         saved_LIBS="$LIBS"
         LIBS="$LIBS -framework Carbon -framework CoreGraphics \
             -framework CoreFoundation"
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the Carbon clipboard" >&5
+printf %s "checking for the Carbon clipboard... " >&6; }
+if test ${sixel_cv_macos_carbon+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <ApplicationServices/ApplicationServices.h>
 int
@@ -23419,16 +23755,24 @@ PasteboardRef pasteboard;
 _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
-  have_clipboard_macos=yes
-             have_clipboard_macos_carbon=yes
-             CLIPBOARD_LIBS="-framework Carbon -framework CoreGraphics \
-                -framework CoreFoundation"
+  sixel_cv_macos_carbon=yes
 else case e in #(
-  e) have_clipboard_macos=no ;;
+  e) sixel_cv_macos_carbon=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
+         ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_macos_carbon" >&5
+printf "%s\n" "$sixel_cv_macos_carbon" >&6; }
+        have_clipboard_macos=$sixel_cv_macos_carbon
+        if test x$have_clipboard_macos = xyes; then
+            have_clipboard_macos_carbon=yes
+            CLIPBOARD_LIBS="-framework Carbon -framework CoreGraphics \
+                -framework CoreFoundation"
+        fi
         LIBS="$saved_LIBS"
         ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -23609,7 +23953,14 @@ ac_compiler_gnu=$ac_cv_objc_compiler_gnu
         added_LIBS="$added_LIBS -framework CoreGraphics "
         added_LIBS="$added_LIBS -framework ImageIO "
         LIBS="$LIBS $added_LIBS"
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Quick Look extension frameworks" >&5
+printf %s "checking for Quick Look extension frameworks... " >&6; }
+if test ${sixel_cv_macos_quicklook_extension+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #import <Foundation/Foundation.h>
@@ -23627,13 +23978,19 @@ QLThumbnailReply *reply = nil; (void)reply;
 _ACEOF
 if ac_fn_objc_try_link "$LINENO"
 then :
-  have_quicklook_extension=yes
+  sixel_cv_macos_quicklook_extension=yes
 else case e in #(
-  e) have_quicklook_extension=no ;;
+  e) sixel_cv_macos_quicklook_extension=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
+         ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_macos_quicklook_extension" >&5
+printf "%s\n" "$sixel_cv_macos_quicklook_extension" >&6; }
+        have_quicklook_extension=$sixel_cv_macos_quicklook_extension
         LIBS="$saved_LIBS"
         ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -23652,7 +24009,12 @@ ac_compiler_gnu=$ac_cv_objc_compiler_gnu
 
             saved_LIBS_OBJC="$LIBS"
             LIBS="$LIBS $added_LIBS"
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+            if test ${sixel_cv_macos_nsworkspace_running_application+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+                cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #import <Foundation/Foundation.h>
@@ -23679,12 +24041,18 @@ NSRunningApplication *app = [[NSWorkspace sharedWorkspace]
 _ACEOF
 if ac_fn_objc_try_compile "$LINENO"
 then :
-  have_nsworkspace_openurls_returns_running_application=yes
+  sixel_cv_macos_nsworkspace_running_application=yes
 else case e in #(
-  e) have_nsworkspace_openurls_returns_running_application=no ;;
+  e) sixel_cv_macos_nsworkspace_running_application=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+             ;;
+esac
+fi
+
+            have_nsworkspace_openurls_returns_running_application=\
+$sixel_cv_macos_nsworkspace_running_application
             ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -23706,7 +24074,12 @@ ac_compiler_gnu=$ac_cv_objc_compiler_gnu
 
                 saved_LIBS_OBJC="$LIBS"
                 LIBS="$LIBS $added_LIBS"
-                cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+                if test ${sixel_cv_macos_nsworkspace_bool+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+                    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #import <Foundation/Foundation.h>
@@ -23733,12 +24106,17 @@ BOOL success = [[NSWorkspace sharedWorkspace]
 _ACEOF
 if ac_fn_objc_try_compile "$LINENO"
 then :
-  have_nsworkspace_openurls_returns_bool=yes
+  sixel_cv_macos_nsworkspace_bool=yes
 else case e in #(
-  e) have_nsworkspace_openurls_returns_bool=no ;;
+  e) sixel_cv_macos_nsworkspace_bool=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                 ;;
+esac
+fi
+
+                have_nsworkspace_openurls_returns_bool=$sixel_cv_macos_nsworkspace_bool
                 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'

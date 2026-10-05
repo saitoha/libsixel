@@ -81,6 +81,7 @@ The tracked Libtool macros and `ltmain.sh` must be treated as a related set when
 | `AC_CHECK_HEADERS_PARALLEL` | Batches independent header preprocessing probes in per-header directories, then imports results. | Checks preprocessing availability with the supplied includes; it does not prove every use of a header will compile. |
 | `AC_CHECK_FUNCS_PARALLEL` | Batches independent function link probes in per-function directories, then imports results. | Checks symbol linkability with the selected flags and libraries, including stub rejection; does not run the functions. |
 | `AC_OUTPUT_PARALLEL` | Generates `config.status`, checks for `--jobs` support, and invokes it explicitly. | Preserves `--no-create`, supports a serial fallback, and rewrites fragile generated setup on OpenVMS/GNV. |
+| `LS_QUEUE_MACOS_PROBE` and `LS_PROBE_*` | Run independent CoreGraphics, Metal, and AppKit link probes in isolated directories on Darwin, bounded by `CPU_COUNT`. | The parent imports cache answers and logs before applying feature decisions; dependent Quick Look and Carbon checks retain their original prerequisites. |
 | `LS_CHECK_CFLAG` | Temporarily tests a candidate C flag with `-Werror`, caches the answer, and runs the selected action. | Restores the caller's `CFLAGS`; acceptance of this specimen is narrower than validation of every source file. |
 | `LS_CHECK_LDFLAG` | Temporarily appends a candidate linker flag, performs a link test, caches the answer, and runs the selected action. | Restores `LDFLAGS`; the call site owns what to enable after success. |
 
@@ -93,6 +94,10 @@ After workers complete, the parent walks the original list in order, prints resu
 Function probes need additional care. They check whether `-fno-builtin` is accepted, optionally apply it, suppress the supported builtin-declaration diagnostic, and use a controlled declaration to avoid a compiler builtin standing in for the linkable symbol. They reject libc `__stub_*` markers. This makes the probe about the function symbol available to this build, rather than whether the compiler happens to recognize a familiar name.
 
 The header macro uses `ac_fn_c_try_cpp`; the function macro uses `ac_fn_c_try_link`. Those generated Autoconf helpers and the quoting around embedded C/shell text are part of the maintenance boundary. An Autoconf upgrade deserves review of the emitted shell, not just confirmation that the M4 source still expands.
+
+### macOS framework probes
+
+The macOS framework probes use ordinary configure cache variables. With `configure -C`, repeated configuration reuses framework availability and NSWorkspace signature answers; feature definitions, linker flags, explicit-request errors, and disabled options are still evaluated on each run. CoreGraphics, Metal, and AppKit can run concurrently on an uncached Darwin configuration. Each worker has its own `confdefs.h`, compiler outputs, result file, and log; the parent waits for every worker and reads their logs in a stable order. Quick Look checks remain behind their CoreGraphics prerequisite, and Carbon remains the fallback when AppKit is unavailable or disabled. Compiler and flag changes follow Autoconf's cache validation; remove the cache when updating an SDK or installed dependencies that the cache cannot track.
 
 ### Output generation and OpenVMS adaptation
 

@@ -436,6 +436,80 @@ $ac_check_funcs_parallel_batch_pids; do
   AC_LANG_POP([C])
 ])
 
+# Framework probe bodies are shared by the Darwin parallel driver and
+# ordinary cached checks.  Keep feature decisions outside the cache body.
+AC_DEFUN([LS_PROBE_COREGRAPHICS], [
+  saved_LIBS="$LIBS"
+  LIBS="$LIBS -framework CoreGraphics -framework ImageIO"
+  AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM([[#include <CoreGraphics/CoreGraphics.h>
+                         #include <ImageIO/ImageIO.h>]],
+                       [[CGImageRef image = NULL;]])],
+      [sixel_cv_macos_coregraphics=yes],
+      [sixel_cv_macos_coregraphics=no])
+  LIBS="$saved_LIBS"
+])
+
+AC_DEFUN([LS_PROBE_METAL], [
+  AC_LANG_PUSH([Objective C])
+  saved_LIBS="$LIBS"
+  LIBS="$LIBS -framework Metal -framework Foundation"
+  AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM([[#import <Foundation/Foundation.h>
+#import <Metal/Metal.h>]],
+                       [[@autoreleasepool {
+    id<MTLDevice> device = MTLCreateSystemDefaultDevice();
+    (void)device;
+}
+return 0;]])],
+      [sixel_cv_macos_metal=yes],
+      [sixel_cv_macos_metal=no])
+  LIBS="$saved_LIBS"
+  AC_LANG_POP([Objective C])
+])
+
+AC_DEFUN([LS_PROBE_APPKIT], [
+  AC_LANG_PUSH([Objective C])
+  saved_LIBS="$LIBS"
+  LIBS="$LIBS -framework AppKit -framework Foundation"
+  AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM([[#import <AppKit/AppKit.h>]],
+                       [[@autoreleasepool {
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    return pb == nil;
+}]])],
+      [sixel_cv_macos_appkit=yes],
+      [sixel_cv_macos_appkit=no])
+  LIBS="$saved_LIBS"
+  AC_LANG_POP([Objective C])
+])
+
+# Cache independent framework link tests in isolated directories.  Only the
+# parent imports results and logs; workers must not update configuration
+# defines or share conftest files.  The caller bounds workers by CPU_COUNT.
+AC_DEFUN([LS_QUEUE_MACOS_PROBE], [
+  AC_REQUIRE([AX_COUNT_CPUS])
+  AC_CACHE_VAL([$1], [
+    AS_MKDIR_P(["$sixel_macos_probe_dir/$1"])
+    cp confdefs.h "$sixel_macos_probe_dir/$1/confdefs.h" ||
+      AC_MSG_ERROR([could not prepare macOS framework probe])
+    (
+      cd "$sixel_macos_probe_dir/$1" || exit 1
+      exec 5>probe.log
+      $2
+      AS_VAR_COPY([sixel_macos_probe_result], [$1])
+      printf '%s\n' "$sixel_macos_probe_result" > result
+    ) &
+    sixel_macos_probe_pids="$sixel_macos_probe_pids $!"
+    sixel_macos_probe_pending="$sixel_macos_probe_pending $1"
+    sixel_macos_probe_active=$((sixel_macos_probe_active + 1))
+    if test "$sixel_macos_probe_active" -ge "$sixel_macos_probe_max"; then
+      sixel_wait_macos_probes ||
+        AC_MSG_ERROR([could not run macOS framework probes])
+    fi
+  ])
+])
+
 # Run config.status with explicit parallelism based on AX_COUNT_CPUS.
 # The flow is:
 # 1) Save the caller's --no-create choice.
@@ -3356,16 +3430,59 @@ AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
 AC_SUBST(GDK_PIXBUF_QUERY_LOADERS)
 
+# CoreGraphics, Metal, and AppKit do not depend on one another.  Queue only
+# requested, uncached probes, then consume their answers in the usual order.
+# Quick Look and the Carbon fallback retain their prerequisite checks below.
+AS_CASE([$host_os], [darwin*], [
+    sixel_macos_probe_dir="$ac_pwd/conftest-frameworks$$"
+    sixel_macos_probe_pids=
+    sixel_macos_probe_pending=
+    sixel_macos_probe_active=0
+    sixel_macos_probe_max=$CPU_COUNT
+    case $sixel_macos_probe_max in
+      ''|0|*[[!0-9]]*) sixel_macos_probe_max=1 ;;
+    esac
+    sixel_wait_macos_probes () {
+        sixel_macos_probe_status=0
+        for sixel_macos_probe_pid in $sixel_macos_probe_pids; do
+            wait "$sixel_macos_probe_pid" || sixel_macos_probe_status=$?
+        done
+        sixel_macos_probe_pids=
+        sixel_macos_probe_active=0
+        return "$sixel_macos_probe_status"
+    }
+    AS_IF([test x$with_coregraphics != xno], [
+        LS_QUEUE_MACOS_PROBE([sixel_cv_macos_coregraphics],
+                            [LS_PROBE_COREGRAPHICS])
+    ])
+    AS_IF([test x$with_metal != xno], [
+        LS_QUEUE_MACOS_PROBE([sixel_cv_macos_metal], [LS_PROBE_METAL])
+    ])
+    AS_IF([test x$enable_appkit != xno], [
+        LS_QUEUE_MACOS_PROBE([sixel_cv_macos_appkit], [LS_PROBE_APPKIT])
+    ])
+    sixel_wait_macos_probes ||
+        AC_MSG_ERROR([could not run macOS framework probes])
+    for sixel_macos_probe_name in $sixel_macos_probe_pending; do
+        cat "$sixel_macos_probe_dir/$sixel_macos_probe_name/probe.log" >&5
+        IFS= read -r sixel_macos_probe_result \
+            < "$sixel_macos_probe_dir/$sixel_macos_probe_name/result" ||
+            AC_MSG_ERROR([could not read macOS framework probe result])
+        case $sixel_macos_probe_result in
+          yes|no) ;;
+          *) AC_MSG_ERROR([invalid macOS framework probe result]) ;;
+        esac
+        eval "$sixel_macos_probe_name=\$sixel_macos_probe_result"
+    done
+    if test -d "$sixel_macos_probe_dir"; then
+        rm -rf "$sixel_macos_probe_dir"
+    fi
+])
+
 if test x$with_coregraphics != xno; then
-    saved_LIBS="$LIBS"
-    LIBS="$LIBS -framework CoreGraphics -framework ImageIO"
-    AC_LINK_IFELSE(
-        [AC_LANG_PROGRAM([[#include <CoreGraphics/CoreGraphics.h>
-                           #include <ImageIO/ImageIO.h>]],
-                         [[CGImageRef image = NULL;]])],
-        [have_coregraphics=yes],
-        [have_coregraphics=no])
-    LIBS="$saved_LIBS"
+    AC_CACHE_CHECK([for CoreGraphics and ImageIO],
+                   [sixel_cv_macos_coregraphics], [LS_PROBE_COREGRAPHICS])
+    have_coregraphics=$sixel_cv_macos_coregraphics
     if test x$have_coregraphics = xyes; then
         AC_DEFINE(HAVE_COREGRAPHICS, 1, [whether CoreGraphics is available])
         COREGRAPHICS_LIBS="-framework CoreFoundation -framework CoreGraphics -framework ImageIO"
@@ -3385,21 +3502,9 @@ have_metal=no
 case $host_os in
   darwin*)
     if test x$with_metal != xno; then
-        AC_LANG_PUSH([Objective C])
-        saved_LIBS="$LIBS"
-        LIBS="$LIBS -framework Metal -framework Foundation"
-        AC_LINK_IFELSE(
-            [AC_LANG_PROGRAM([[#import <Foundation/Foundation.h>
-#import <Metal/Metal.h>]],
-                             [[@autoreleasepool {
-    id<MTLDevice> device = MTLCreateSystemDefaultDevice();
-    (void)device;
-}
-return 0;]])],
-            [have_metal=yes],
-            [have_metal=no])
-        LIBS="$saved_LIBS"
-        AC_LANG_POP([Objective C])
+        AC_CACHE_CHECK([for Metal],
+                       [sixel_cv_macos_metal], [LS_PROBE_METAL])
+        have_metal=$sixel_cv_macos_metal
         if test x$have_metal = xyes; then
             AC_DEFINE(HAVE_METAL, 1,
                       [whether Metal GPU palette apply is available])
@@ -3436,8 +3541,10 @@ case $host_os in
             saved_LIBS="$LIBS"
             LIBS="$LIBS -framework QuickLook -framework CoreServices \
                   -framework ApplicationServices -framework CoreGraphics"
-            AC_LINK_IFELSE(
-                [AC_LANG_PROGRAM([[#include <CoreServices/CoreServices.h>
+            AC_CACHE_CHECK([for Quick Look preview],
+                           [sixel_cv_macos_quicklook], [
+                AC_LINK_IFELSE(
+                    [AC_LANG_PROGRAM([[#include <CoreServices/CoreServices.h>
 #include <QuickLook/QuickLook.h>
 #include <CoreGraphics/CoreGraphics.h>]],
                                  [[CGSize size = CGSizeMake(1.0f, 1.0f);
@@ -3458,8 +3565,10 @@ if (image) {
 # pragma GCC diagnostic pop
 #endif
 ]])],
-                [have_quicklook_preview=yes],
-                [have_quicklook_preview=no])
+                    [sixel_cv_macos_quicklook=yes],
+                    [sixel_cv_macos_quicklook=no])
+            ])
+            have_quicklook_preview=$sixel_cv_macos_quicklook
             LIBS="$saved_LIBS"
             if test x$have_quicklook_preview = xyes; then
                 AC_DEFINE(HAVE_QUICKLOOK, 1,
@@ -3476,8 +3585,10 @@ if (image) {
                                    -framework UniformTypeIdentifiers \
                                    -framework Foundation"
                 LIBS="$LIBS $added_OBJC_LIBS"
-                AC_LINK_IFELSE(
-                    [AC_LANG_PROGRAM([[#import <Foundation/Foundation.h>
+                AC_CACHE_CHECK([for Quick Look Thumbnailing],
+                               [sixel_cv_macos_quicklook_thumbnailing], [
+                    AC_LINK_IFELSE(
+                        [AC_LANG_PROGRAM([[#import <Foundation/Foundation.h>
 #import <QuickLookThumbnailing/QuickLookThumbnailing.h>]],
                                      [[@autoreleasepool {
     NSURL *url = [NSURL fileURLWithPath:@"/"];
@@ -3492,8 +3603,10 @@ if (image) {
     [[QLThumbnailGenerator sharedGenerator] cancelRequest:request];
     [request release];
 } return 0;]])],
-                    [have_quicklook_thumbnailing=yes],
-                    [have_quicklook_thumbnailing=no])
+                        [sixel_cv_macos_quicklook_thumbnailing=yes],
+                        [sixel_cv_macos_quicklook_thumbnailing=no])
+                ])
+                have_quicklook_thumbnailing=$sixel_cv_macos_quicklook_thumbnailing
                 LIBS="$saved_LIBS_OBJC"
                 AC_LANG_POP([Objective C])
                 if test x$have_quicklook_thumbnailing = xyes; then
@@ -3529,20 +3642,10 @@ have_clipboard_linux=no
 case $host_os in
   darwin*)
     if test x$enable_appkit != xno; then
-        AC_LANG_PUSH([Objective C])
-        saved_LIBS="$LIBS"
-        LIBS="$LIBS -framework AppKit -framework Foundation"
-        AC_LINK_IFELSE(
-            [AC_LANG_PROGRAM([[#import <AppKit/AppKit.h>]],
-                             [[@autoreleasepool {
-        NSPasteboard *pb = [NSPasteboard generalPasteboard];
-        return pb == nil;
-    }]])],
-            [have_clipboard_macos=yes
-             have_clipboard_macos_appkit=yes],
-            [have_clipboard_macos=no])
-        LIBS="$saved_LIBS"
-        AC_LANG_POP([Objective C])
+        AC_CACHE_CHECK([for the AppKit clipboard],
+                       [sixel_cv_macos_appkit], [LS_PROBE_APPKIT])
+        have_clipboard_macos_appkit=$sixel_cv_macos_appkit
+        have_clipboard_macos=$sixel_cv_macos_appkit
         if test x$have_clipboard_macos_appkit = xyes; then
             AC_DEFINE(HAVE_APPKIT, 1,
                       [whether AppKit clipboard backend is available])
@@ -3554,8 +3657,10 @@ case $host_os in
         saved_LIBS="$LIBS"
         LIBS="$LIBS -framework Carbon -framework CoreGraphics \
             -framework CoreFoundation"
-        AC_LINK_IFELSE(
-            [AC_LANG_PROGRAM([[#include <ApplicationServices/ApplicationServices.h>]],
+        AC_CACHE_CHECK([for the Carbon clipboard],
+                       [sixel_cv_macos_carbon], [
+            AC_LINK_IFELSE(
+                [AC_LANG_PROGRAM([[#include <ApplicationServices/ApplicationServices.h>]],
                              [[PasteboardRef pasteboard;
     OSStatus status;
 
@@ -3566,11 +3671,15 @@ case $host_os in
     }
     status = PasteboardSynchronize(pasteboard);
     return status != noErr;]])],
-            [have_clipboard_macos=yes
-             have_clipboard_macos_carbon=yes
-             CLIPBOARD_LIBS="-framework Carbon -framework CoreGraphics \
-                -framework CoreFoundation"],
-            [have_clipboard_macos=no])
+                [sixel_cv_macos_carbon=yes],
+                [sixel_cv_macos_carbon=no])
+        ])
+        have_clipboard_macos=$sixel_cv_macos_carbon
+        if test x$have_clipboard_macos = xyes; then
+            have_clipboard_macos_carbon=yes
+            CLIPBOARD_LIBS="-framework Carbon -framework CoreGraphics \
+                -framework CoreFoundation"
+        fi
         LIBS="$saved_LIBS"
         AC_LANG_POP([C])
     fi
@@ -3672,16 +3781,20 @@ case $host_os in
         added_LIBS="$added_LIBS -framework CoreGraphics "
         added_LIBS="$added_LIBS -framework ImageIO "
         LIBS="$LIBS $added_LIBS"
-        AC_LINK_IFELSE(
-            [AC_LANG_PROGRAM([[
+        AC_CACHE_CHECK([for Quick Look extension frameworks],
+                       [sixel_cv_macos_quicklook_extension], [
+            AC_LINK_IFELSE(
+                [AC_LANG_PROGRAM([[
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <QuickLookUI/QuickLookUI.h>
 #import <QuickLookThumbnailing/QuickLookThumbnailing.h>
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>]],
                              [[QLThumbnailReply *reply = nil; (void)reply;]])],
-            [have_quicklook_extension=yes],
-            [have_quicklook_extension=no])
+                [sixel_cv_macos_quicklook_extension=yes],
+                [sixel_cv_macos_quicklook_extension=no])
+        ])
+        have_quicklook_extension=$sixel_cv_macos_quicklook_extension
         LIBS="$saved_LIBS"
         AC_LANG_POP([Objective C])
         if test x$have_quicklook_extension = xyes; then
@@ -3689,8 +3802,9 @@ case $host_os in
             AC_LANG_PUSH([Objective C])
             saved_LIBS_OBJC="$LIBS"
             LIBS="$LIBS $added_LIBS"
-            AC_COMPILE_IFELSE(
-                [AC_LANG_PROGRAM([[
+            AC_CACHE_VAL([sixel_cv_macos_nsworkspace_running_application], [
+                AC_COMPILE_IFELSE(
+                    [AC_LANG_PROGRAM([[
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>]],
                                  [[NSURL *url = [NSURL fileURLWithPath:@"/tmp"];
@@ -3706,8 +3820,11 @@ NSRunningApplication *app = [[NSWorkspace sharedWorkspace]
 #pragma clang diagnostic pop
 (void)app;
 (void)error;]])],
-                [have_nsworkspace_openurls_returns_running_application=yes],
-                [have_nsworkspace_openurls_returns_running_application=no])
+                    [sixel_cv_macos_nsworkspace_running_application=yes],
+                    [sixel_cv_macos_nsworkspace_running_application=no])
+            ])
+            have_nsworkspace_openurls_returns_running_application=\
+$sixel_cv_macos_nsworkspace_running_application
             AC_LANG_POP([Objective C])
             LIBS="$saved_LIBS_OBJC"
             AC_MSG_RESULT([$have_nsworkspace_openurls_returns_running_application])
@@ -3717,8 +3834,9 @@ NSRunningApplication *app = [[NSWorkspace sharedWorkspace]
                 AC_LANG_PUSH([Objective C])
                 saved_LIBS_OBJC="$LIBS"
                 LIBS="$LIBS $added_LIBS"
-                AC_COMPILE_IFELSE(
-                    [AC_LANG_PROGRAM([[
+                AC_CACHE_VAL([sixel_cv_macos_nsworkspace_bool], [
+                    AC_COMPILE_IFELSE(
+                        [AC_LANG_PROGRAM([[
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>]],
                                      [[NSURL *url = [NSURL fileURLWithPath:@"/tmp"];
@@ -3734,8 +3852,10 @@ BOOL success = [[NSWorkspace sharedWorkspace]
 #pragma clang diagnostic pop
 (void)success;
 (void)error;]])],
-                    [have_nsworkspace_openurls_returns_bool=yes],
-                    [have_nsworkspace_openurls_returns_bool=no])
+                        [sixel_cv_macos_nsworkspace_bool=yes],
+                        [sixel_cv_macos_nsworkspace_bool=no])
+                ])
+                have_nsworkspace_openurls_returns_bool=$sixel_cv_macos_nsworkspace_bool
                 AC_LANG_POP([Objective C])
                 LIBS="$saved_LIBS_OBJC"
                 AC_MSG_RESULT([$have_nsworkspace_openurls_returns_bool])
