@@ -142,11 +142,14 @@ check_cmp_wrapper()
         fail "OpenVMS cmp wrapper repeated a comparison or changed operands"
 }
 
+# Autotools can retain /build/.. in abs_top_srcdir.  cd normalizes PWD, so
+# resolve the expected directory while still probing the original operands.
+cmp_absolute_dir=$(CDPATH='' cd "$src_root/tests" && pwd)
 for cmp_probe_status in 0 1 2; do
     cmp_relative=$(printf '%s\n' "$PWD" -s 'first file' 'second file')
     check_cmp_wrapper "$cmp_relative" "$cmp_probe_status" \
         -s 'first file' 'second file'
-    cmp_absolute=$(printf '%s\n' "$src_root/tests" \
+    cmp_absolute=$(printf '%s\n' "$cmp_absolute_dir" \
         -s 'first file' '../second file')
     check_cmp_wrapper "$cmp_absolute" "$cmp_probe_status" \
         -s "$src_root/tests/first file" "$src_root/second file"
