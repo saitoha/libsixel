@@ -114,7 +114,7 @@ All timings use public in-process APIs through a small ctypes binding. The tiny 
 | `sixel_encoder_encode_bytes()` | Prepared RGB through palette construction, palette application/dither, high-color assignment if selected, SIXEL serialization, and writes to `/dev/null` | Loader, resize, input copy, process startup, encoder setup/destruction, terminal/transport |
 | `sixel_decode_direct()` | One fixed in-memory stream through parsing, fresh output allocation, RGBA painting, and any attempted parallel scan/fallback | Input I/O/copy, output comparison/free, PNG encoding, terminal rendering |
 
-This matches the work boundary across all requested thread counts. It is not an isolated serialization benchmark: high color bypasses normal palette construction and lookup. Conversely, the old first-worker-to-last-worker interval omitted already-completed dither at two threads while including producer waits at three threads. Its two-to-three-thread discontinuity must not be reused as a CPU scaling claim.
+This matches the work boundary across all requested thread counts. It is not an isolated serialization benchmark: high color bypasses normal palette construction and lookup. A first-worker-to-last-worker interval would not: it omits already-completed dither at two threads but includes producer waits from three threads on, so its two-to-three-thread discontinuity is not a CPU scaling result. The [high-color reference](README.md#why-worker-intervals-are-not-used-for-speed) explains this boundary.
 
 ![Full HD encode and fixed-stream decode, median with IQR by requested threads](study/thread-scaling.png)
 
@@ -144,7 +144,7 @@ A later complete repetition used the same prepared fixtures, policies, and codec
 | 4 | 76.500 | 156.617 | 79.885 | 22.899 |
 | 8 | 52.915 | 99.490 | 85.716 | 23.578 |
 
-The broad changes include the mostly serial high-color path, so they cannot all be attributed to worker-budget scaling. Host activity was not isolated or instrumented enough to identify the cause. The precise speedup ratios are therefore provisional; the consistent result is that the old two-to-three-thread worker-window spike disappears when the same API boundary is used. The lack of independent high-color bands and the decoder fallback are established by code inspection, not inferred solely from a favorable runtime sample.
+The broad changes include the mostly serial high-color path, so they cannot all be attributed to worker-budget scaling. Host activity was not isolated or instrumented enough to identify the cause. The precise speedup ratios are therefore provisional; the consistent result is that timing every budget at the same API boundary shows no discontinuity between two and three threads. The lack of independent high-color bands and the decoder fallback are established by code inspection, not inferred solely from a favorable runtime sample.
 
 The [timing CSV](study/timings.csv) includes the smaller inputs and warmups as well as Full HD. The [quality/size CSV](study/summary.csv) retains exact values for all five retained fixtures.
 
@@ -163,7 +163,7 @@ export PATH="/Users/saitoha/repo/libsixel/.local/bin:$PATH"
 make -j8
 ```
 
-Replace the absolute PATH prefix with the main checkout's `.local/bin` on another machine. The study tool lives in the documentation checkout containing this change, while `--build` selects the clean measured checkout. Create an optional Python environment and run from that documentation checkout:
+Replace the absolute PATH prefix with the main checkout's `.local/bin` on another machine. Run the study tool, `tools/highcolor/study.py`, from a source checkout; `--build` selects the separately built, clean checkout being measured. Create an optional Python environment and run from the checkout that contains the tool:
 
 ```sh
 python3 -m venv /tmp/libsixel-high-color-python
@@ -173,7 +173,7 @@ python3 -m venv /tmp/libsixel-high-color-python
   --output docs/encoder/output/high-color/study --runs 11
 ```
 
-The [measurement-generator.py](study/measurement-generator.py) snapshot has been updated to omit the removed AI-generated input. The run record preserves `script_sha256` for the original historical generator; it is not the hash of this edited snapshot. The maintained tool has the same measurement boundary, additional completeness checks, and shorter figure labels. The script loads `src/.libs/libsixel.dylib` or `libsixel.so` from that build explicitly. It verifies each timed encode policy against the CLI at the same thread budget, checks direct decoder pixels for every timed call, and removes ambient `SIXEL_*`/`LSQA_*` settings from subprocesses. It uses real measured output for all figures; no image-generation or retouching step is involved.
+The [measurement-generator.py](study/measurement-generator.py) snapshot omits one input that is not part of the published study, so it differs from the generator that produced the run. The run record's `script_sha256` identifies the generator that was actually run, not this snapshot. The maintained tool has the same measurement boundary, additional completeness checks, and shorter figure labels. The script loads `src/.libs/libsixel.dylib` or `libsixel.so` from that build explicitly. It verifies each timed encode policy against the CLI at the same thread budget, checks direct decoder pixels for every timed call, and removes ambient `SIXEL_*`/`LSQA_*` settings from subprocesses. It uses real measured output for all figures; no image-generation or retouching step is involved.
 
 To verify retained data without a build or rerender figures without rerunning timings:
 
