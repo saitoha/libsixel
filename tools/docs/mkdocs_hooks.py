@@ -15,6 +15,8 @@ from mkdocs.exceptions import ConfigurationError
 
 
 HEADING_RE = re.compile(r"^##\s+(.+?)\s*$")
+# Chapters group the documents of a part; see docs/AGENTS.md.
+CHAPTER_RE = re.compile(r"^###\s+(.+?)\s*$")
 TITLE_RE = re.compile(r"^#\s+(.+?)\s*$", re.MULTILINE)
 LINK_RE = re.compile(
     r"(?P<prefix>!?\[[^\]\n]*\]\()"
@@ -134,8 +136,14 @@ def _directory_navigation(
 
 
 def _root_sections(index: Path, docs_dir: Path):
+    """Return the index parts as [title, entries].
+
+    An entry is a linked document path, or [chapter title, paths] for the
+    documents listed under a ``###`` chapter heading inside the part.
+    """
     sections = []
     current = None
+    targets = None
     fence = None
     for line in index.read_text(encoding="utf-8").splitlines():
         fence_match = FENCE_RE.match(line)
@@ -152,6 +160,13 @@ def _root_sections(index: Path, docs_dir: Path):
         if heading is not None:
             current = [heading.group(1).strip(), []]
             sections.append(current)
+            targets = current[1]
+            continue
+        chapter = CHAPTER_RE.match(line)
+        if chapter is not None and current is not None:
+            group = [chapter.group(1).strip(), []]
+            current[1].append(group)
+            targets = group[1]
             continue
         if current is None:
             continue
@@ -164,9 +179,30 @@ def _root_sections(index: Path, docs_dir: Path):
                 continue
             target = (index.parent / unquote(parsed.path)).resolve()
             if _is_relative_to(target, docs_dir) and target.is_file():
-                if target not in current[1]:
-                    current[1].append(target)
+                if target not in targets:
+                    targets.append(target)
     return sections
+
+
+def _target_navigation(
+    targets: list[Path], docs_dir: Path, visited: set[Path]
+) -> list[object]:
+    navigation: list[object] = []
+    for target in targets:
+        if target in visited:
+            continue
+        if target.name == "README.md":
+            navigation.append(
+                {
+                    _document_title(target): _directory_navigation(
+                        target, docs_dir, visited
+                    )
+                }
+            )
+            continue
+        visited.add(target)
+        navigation.append({_document_title(target): _nav_path(target, docs_dir)})
+    return navigation
 
 
 def _build_navigation(docs_dir: Path) -> list[object]:
@@ -176,23 +212,21 @@ def _build_navigation(docs_dir: Path) -> list[object]:
 
     visited = {index}
     navigation: list[object] = [{"Home": "README.md"}]
-    for section_title, targets in _root_sections(index, docs_dir):
-        section_navigation = []
-        for target in targets:
-            if target in visited:
-                continue
-            if target.name == "README.md":
-                section_navigation.append(
-                    {
-                        _document_title(target): _directory_navigation(
-                            target, docs_dir, visited
-                        )
-                    }
+    for section_title, entries in _root_sections(index, docs_dir):
+        section_navigation: list[object] = []
+        for entry in entries:
+            if isinstance(entry, list):
+                chapter_title, targets = entry
+                chapter_navigation = _target_navigation(
+                    targets, docs_dir, visited
                 )
+                if chapter_navigation:
+                    section_navigation.append(
+                        {chapter_title: chapter_navigation}
+                    )
                 continue
-            visited.add(target)
-            section_navigation.append(
-                {_document_title(target): _nav_path(target, docs_dir)}
+            section_navigation.extend(
+                _target_navigation([entry], docs_dir, visited)
             )
         if section_navigation:
             navigation.append({section_title: section_navigation})
