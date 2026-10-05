@@ -12,7 +12,7 @@ Image *fidelity* is how closely a reproduction matches a reference. Image *quali
 
 The ground truth for any such metric is human judgment collected under controlled conditions, for example by the methods in ITU-R Recommendation BT.500 for television pictures, summarized as mean opinion scores. A metric is "perceptual" to the extent that its predictions agree with those judgments across many images and distortion types. SSIM, MS-SSIM, GMSD, and CIEDE2000 were each validated against such data; the libsixel-specific descriptors were not.
 
-For libsixel, perceptual quality of a quantized and dithered image means this: viewed at the intended size and distance, it is not distinguishable from the reference, or where it is, the visible differences are the least objectionable available within the palette and size constraints. That definition depends on the viewing conditions, which a file does not record: the light level the viewer is adapted to, and the viewing distance and pixel size that set spatial frequency on the retina. The sections below explain those dependencies.
+libsixel aims at the fidelity of the image the viewer perceives, not of the stored pixels: within the limits of a palette image, the output should look like the reference. Pixel values may differ widely, as they do in any dithered image, as long as the perceived image does not. What a viewer perceives depends on conditions that a file does not record: the light level the viewer is adapted to, and the viewing distance and pixel size that set spatial frequency on the retina. The sections below explain how these conditions shape perception.
 
 ## Photoreceptors and opponent channels
 
