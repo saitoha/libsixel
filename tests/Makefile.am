@@ -181,6 +181,24 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0015_DELTA_SIGNED_THRESHOLD \
+    -DBUILD_TEST_0016_DELTA_P3_REJECTION_RECOVERY \
+    -DBUILD_TEST_0017_DELTA_SPATIAL_DISPATCH \
+    -DBUILD_DELTA_NATIVE_COMMON \
+    -DBUILD_TEST_0001_DELTA_FLOAT_CENTROID \
+    -DBUILD_TEST_0002_DELTA_BYTE_CONTROL \
+    -DBUILD_TEST_0003_DELTA_PLANE_ORIGIN \
+    -DBUILD_TEST_0004_DELTA_SOURCE_MASK \
+    -DBUILD_TEST_0005_DELTA_PARALLEL_ROWS \
+    -DBUILD_TEST_0006_DELTA_RESIDUAL_FS \
+    -DBUILD_TEST_0007_DELTA_RESIDUAL_ATKINSON \
+    -DBUILD_TEST_0008_DELTA_RESIDUAL_JAJUNI \
+    -DBUILD_TEST_0009_DELTA_RESIDUAL_STUCKI \
+    -DBUILD_TEST_0010_DELTA_RESIDUAL_BURKES \
+    -DBUILD_TEST_0011_DELTA_RESIDUAL_SIERRA1 \
+    -DBUILD_TEST_0012_DELTA_RESIDUAL_SIERRA2 \
+    -DBUILD_TEST_0013_DELTA_RESIDUAL_SIERRA3 \
+    -DBUILD_TEST_0014_DELTA_RESIDUAL_LSO2 \
     -DBUILD_EXPORT_CAPTURE_COMMON \
     -DBUILD_TEST_0001_NATIVE_CAPTURE_MEMORY \
     -DBUILD_TEST_0002_BYTE_CAPTURE_MEMORY \
@@ -2814,6 +2832,24 @@ TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 endif
 
 test_runner_SOURCES = test_runner.c \
+    quant/palette/delta_native/0015_delta_signed_threshold.c \
+    quant/palette/delta_native/0016_delta_p3_rejection_recovery.c \
+    quant/palette/delta_native/0017_delta_spatial_dispatch.c \
+    quant/palette/delta_native_common.c \
+    quant/palette/delta_native/0001_delta_float_centroid.c \
+    quant/palette/delta_native/0002_delta_byte_control.c \
+    quant/palette/delta_native/0003_delta_plane_origin.c \
+    quant/palette/delta_native/0004_delta_source_mask.c \
+    quant/palette/delta_native/0005_delta_parallel_rows.c \
+    quant/palette/delta_native/0006_delta_residual_fs.c \
+    quant/palette/delta_native/0007_delta_residual_atkinson.c \
+    quant/palette/delta_native/0008_delta_residual_jajuni.c \
+    quant/palette/delta_native/0009_delta_residual_stucki.c \
+    quant/palette/delta_native/0010_delta_residual_burkes.c \
+    quant/palette/delta_native/0011_delta_residual_sierra1.c \
+    quant/palette/delta_native/0012_delta_residual_sierra2.c \
+    quant/palette/delta_native/0013_delta_residual_sierra3.c \
+    quant/palette/delta_native/0014_delta_residual_lso2.c \
     quant/palette/export_capture_common.c \
     quant/palette/export_capture/0001_native_capture_memory.c \
     quant/palette/export_capture/0002_byte_capture_memory.c \

@@ -159,7 +159,7 @@ for each sample in the policy's scan order:
     update diffusion or ordered-policy state
 ```
 
-The exact order has specialized fences for 6delta, inter-frame modes, accumulation capture, and GPU execution, but the lookup remains the operation that selects a palette index. `-d none` still calls lookup per pixel; `--lookup-policy=none` still runs PaletteApply and any selected dither policy.
+The exact order has specialized fences for 6delta, inter-frame modes, accumulation capture, and GPU execution, but the lookup remains the operation that selects a palette index. The selected [native delta path](../output/delta-encoding.md#native-float-comparison-and-retained-precision) compares retained display RGB with the selected emitted RGB101 color while leaving working float centroids unchanged. `-d none` still calls lookup per pixel; `--lookup-policy=none` still runs PaletteApply and any selected dither policy.
 
 When eligible, the CPU pipeline divides PaletteApply into overlapped row bands and notifies SIXEL band workers as output rows become ready. Lookup state can be shared or worker-local according to policy. A writer thread flushes encoded band buffers in image order. GPU PaletteApply instead produces a complete index plane after its command-buffer wait, so CPU workers are assigned to encoding after the result becomes visible.
 

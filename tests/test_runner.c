@@ -236,6 +236,23 @@ int test_macro_0015(int argc, char **argv);
 int test_macro_0016(int argc, char **argv);
 int test_hls_native_0014(int argc, char **argv);
 int test_hls_native_0015(int argc, char **argv);
+int test_delta_native_0015(int argc, char **argv);
+int test_delta_native_0016(int argc, char **argv);
+int test_delta_native_0017(int argc, char **argv);
+int test_delta_native_0001(int argc, char **argv);
+int test_delta_native_0002(int argc, char **argv);
+int test_delta_native_0003(int argc, char **argv);
+int test_delta_native_0004(int argc, char **argv);
+int test_delta_native_0005(int argc, char **argv);
+int test_delta_native_0006(int argc, char **argv);
+int test_delta_native_0007(int argc, char **argv);
+int test_delta_native_0008(int argc, char **argv);
+int test_delta_native_0009(int argc, char **argv);
+int test_delta_native_0010(int argc, char **argv);
+int test_delta_native_0011(int argc, char **argv);
+int test_delta_native_0012(int argc, char **argv);
+int test_delta_native_0013(int argc, char **argv);
+int test_delta_native_0014(int argc, char **argv);
 int test_export_capture_0001(int argc, char **argv);
 int test_export_capture_0002(int argc, char **argv);
 int test_export_capture_0003(int argc, char **argv);
@@ -3066,6 +3083,40 @@ static test_entry_t const test_entries[] = {
     { "codec/macro/0016_float_output_reuse", test_macro_0016 },
     { "codec/hls/0014_byte_or_control", test_hls_native_0014 },
     { "codec/hls/0015_serial_or", test_hls_native_0015 },
+    { "palette/delta_native/0015_delta_signed_threshold",
+        test_delta_native_0015 },
+    { "palette/delta_native/0016_delta_p3_rejection_recovery",
+        test_delta_native_0016 },
+    { "palette/delta_native/0017_delta_spatial_dispatch",
+        test_delta_native_0017 },
+    { "palette/delta_native/0001_delta_float_centroid",
+        test_delta_native_0001 },
+    { "palette/delta_native/0002_delta_byte_control",
+        test_delta_native_0002 },
+    { "palette/delta_native/0003_delta_plane_origin",
+        test_delta_native_0003 },
+    { "palette/delta_native/0004_delta_source_mask",
+        test_delta_native_0004 },
+    { "palette/delta_native/0005_delta_parallel_rows",
+        test_delta_native_0005 },
+    { "palette/delta_native/0006_delta_residual_fs",
+        test_delta_native_0006 },
+    { "palette/delta_native/0007_delta_residual_atkinson",
+        test_delta_native_0007 },
+    { "palette/delta_native/0008_delta_residual_jajuni",
+        test_delta_native_0008 },
+    { "palette/delta_native/0009_delta_residual_stucki",
+        test_delta_native_0009 },
+    { "palette/delta_native/0010_delta_residual_burkes",
+        test_delta_native_0010 },
+    { "palette/delta_native/0011_delta_residual_sierra1",
+        test_delta_native_0011 },
+    { "palette/delta_native/0012_delta_residual_sierra2",
+        test_delta_native_0012 },
+    { "palette/delta_native/0013_delta_residual_sierra3",
+        test_delta_native_0013 },
+    { "palette/delta_native/0014_delta_residual_lso2",
+        test_delta_native_0014 },
     { "palette/export_capture/0001_native_capture_memory",
         test_export_capture_0001 },
     { "palette/export_capture/0002_byte_capture_memory",

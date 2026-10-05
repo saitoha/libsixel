@@ -977,8 +977,8 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                 context->lookup_policy,
                 lookup_pixel);
 
-            /* Preserve retained-color competition when byte input has been
-             * promoted for signed diffusion headroom. */
+            /* Native gamma and promoted-byte delta share retained-color
+             * competition without rounding the corrected working sample. */
             for (n = 0; n < context->depth; ++n) {
                 selected[n] = have_palette_float
                     ? palette_float[color_index * float_depth + n]
@@ -990,7 +990,8 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                 keep = sixel_dither_6delta_keep_float(dither,
                     (size_t)absolute_y * (size_t)context->width + (size_t)x,
                     x, absolute_y, context->pixelformat, lookup_pixel_float,
-                    selected, absolute_y >= context->output_start, retained);
+                    selected, color_index,
+                    absolute_y >= context->output_start, retained);
             }
 
             output_index = keep

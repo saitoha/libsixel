@@ -386,6 +386,9 @@ sixel_dither_apply_none_float32(
     size_t base;
     float *source_pixel;
     float working_float[SIXEL_MAX_CHANNELS] = { 0.0f };
+    float selected[3];
+    float retained[3];
+    int keep;
     int color_index;
     int output_index;
     unsigned char palette_value_u8;
@@ -486,10 +489,31 @@ sixel_dither_apply_none_float32(
                 context->lookup_policy,
                 lookup_pixel);
 
-                output_index = color_index;
-                if (absolute_y >= context->output_start) {
-                    context->result[pos] = (sixel_index_t)output_index;
+            keep = 0;
+            if (absolute_y >= 0 && dither->pipeline_6delta_enabled) {
+                /* Ordinary no-dither jobs need no retained-color work. */
+                for (n = 0; n < context->depth; ++n) {
+                    selected[n] = have_palette_float
+                        ? palette_float[color_index * float_depth + n]
+                        : sixel_pixelformat_byte_to_float(
+                            context->pixelformat, n,
+                            palette[color_index * context->depth + n]);
                 }
+                keep = sixel_dither_6delta_keep_float(dither,
+                    (size_t)absolute_y * (size_t)context->width + (size_t)x,
+                    x, absolute_y, context->pixelformat, working_float,
+                    selected, color_index,
+                    absolute_y >= context->output_start, retained);
+            }
+            output_index = keep
+                ? dither->pipeline_accumulation_keycolor : color_index;
+            if (absolute_y >= context->output_start) {
+                context->result[pos] = (sixel_index_t)output_index;
+            }
+            /* NONE has no residual taps. A kept sample needs no mutation. */
+            if (keep) {
+                continue;
+            }
 
             for (n = 0; n < context->depth; ++n) {
                     palette_value_u8 =

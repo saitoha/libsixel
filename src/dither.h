@@ -418,7 +418,8 @@ sixel_dither_pipeline_6delta_try_keep_after_lookup(
 SIXEL_INTERNAL_API int
 sixel_dither_6delta_keep_float(
     sixel_dither_t *dither, size_t index, int x, int y, int pixelformat,
-    float const *rgb, float const *chosen, int record, float *retained);
+    float const *rgb, float const *chosen, int chosen_index, int record,
+    float *retained);
 
 SIXEL_INTERNAL_API int
 sixel_dither_pipeline_6delta_error_mode(sixel_dither_t const *dither);

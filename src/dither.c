@@ -1737,15 +1737,21 @@ sixel_dither_pipeline_6delta_try_keep_after_lookup(
 }
 
 
-/* The byte-input promotion used by soft/none must retain 6delta's existing
- * keep gate. Compare in double without clipping or rounding the corrected
- * sample, then return the actual retained RGB for error propagation. */
+/* Compare without clipping or rounding the corrected sample. The native
+ * caller admits only sRGB gamma working coordinates and RGB wire output.
+ * Compete with the emitted candidate in that case: comparing retained wire
+ * RGB against an unrounded centroid would repaint even identical frames.
+ * This does not snap the working palette or alter ordinary diffusion. */
 SIXEL_INTERNAL_API int
 sixel_dither_6delta_keep_float(
     sixel_dither_t *dither, size_t index, int x, int y, int pixelformat,
-    float const *rgb, float const *chosen, int record, float *retained)
+    float const *rgb, float const *chosen, int chosen_index, int record,
+    float *retained)
 {
     unsigned char const *pixel;
+    unsigned char const *wire;
+    unsigned int wire_count;
+    double candidate;
     double threshold;
     double keep_distance;
     double chosen_distance;
@@ -1754,12 +1760,20 @@ sixel_dither_6delta_keep_float(
     int n;
 
     if (pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-            dither == NULL || !dither->clamp_promoted_rgb888 ||
-            dither->use_rgb101_palette != 0) {
+            dither == NULL || (!dither->clamp_promoted_rgb888 &&
+            !dither->use_rgb101_palette)) {
         return 0;
     }
     pixel = sixel_dither_pipeline_6delta_plane_pixel(dither, x, y);
     if (pixel == NULL) {
+        return 0;
+    }
+    wire = NULL;
+    wire_count = 0U;
+    if (dither->use_rgb101_palette &&
+            (SIXEL_FAILED(sixel_palette_get_rgb101(dither->palette,
+                &wire, &wire_count)) || wire == NULL || chosen_index < 0 ||
+             (unsigned int)chosen_index >= wire_count)) {
         return 0;
     }
     threshold = (double)dither->pipeline_6delta_threshold / 255.0;
@@ -1771,7 +1785,14 @@ sixel_dither_6delta_keep_float(
         delta = (double)rgb[n] - retained[n];
         within = within && fabs(delta) <= threshold;
         keep_distance += delta * delta;
-        delta = (double)rgb[n] - chosen[n];
+        /* Match the byte projection used to update the retained plane.
+         * Cast the quotient to float so excess intermediate precision cannot
+         * distinguish identical wire colors. Never round the RGB sample. */
+        candidate = wire != NULL
+            ? (float)(((wire[chosen_index * 3 + n] * 255U + 50U) / 100U)
+                / 255.0)
+            : chosen[n];
+        delta = (double)rgb[n] - candidate;
         chosen_distance += delta * delta;
     }
     if (!within && keep_distance > chosen_distance) {

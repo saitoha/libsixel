@@ -6775,6 +6775,44 @@ sixel_encoder_palette_capacity(sixel_encoder_t const *encoder)
     return encoder->reqcolors == -1 ? SIXEL_PALETTE_MAX : encoder->reqcolors;
 }
 
+/* Retained RGB888 is an emitted sRGB view. Start native delta with the
+ * matching gamma workspace and RGB wire format; other output definitions
+ * need an explicit inverse transform before competing with working colors.
+ * Generated palettes can reserve an omission key after history exists.
+ * Fixed tables, positional dithers and alternate transports are separate
+ * migration steps, not reasons to discard floats on the connected path. */
+static int
+sixel_encoder_native_delta(sixel_encoder_t const *encoder)
+{
+    if (encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
+            (encoder->palette_type != SIXEL_PALETTETYPE_AUTO &&
+             encoder->palette_type != SIXEL_PALETTETYPE_RGB) ||
+            encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT ||
+            sixel_encoder_palette_capacity(encoder) < 2 ||
+            encoder->ormode || encoder->fdrcs || encoder->fuse_macro ||
+            encoder->macro_number >= 0 || encoder->output_is_png) {
+        return 0;
+    }
+    switch (encoder->method_for_diffuse) {
+    case SIXEL_DIFFUSE_AUTO:
+    case SIXEL_DIFFUSE_NONE:
+    case SIXEL_DIFFUSE_FS:
+    case SIXEL_DIFFUSE_ATKINSON:
+    case SIXEL_DIFFUSE_JAJUNI:
+    case SIXEL_DIFFUSE_STUCKI:
+    case SIXEL_DIFFUSE_BURKES:
+    case SIXEL_DIFFUSE_SIERRA1:
+    case SIXEL_DIFFUSE_SIERRA2:
+    case SIXEL_DIFFUSE_SIERRA3:
+    case SIXEL_DIFFUSE_LSO2:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
 /* The selected float pipeline keeps a separate RGB101 wire cache. Keep
  * this predicate shared with P3 validation so sRGB cannot enter with an
  * unconnected snap, alpha, cache or alternate lookup policy. */
@@ -6919,7 +6957,8 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
               encoder->transparent_offset_left != 0 ||
               encoder->transparent_offset_top != 0 ||
               encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME)) ||
-            encoder->sixdelta_enabled != 0 ||
+            (encoder->sixdelta_enabled != 0 &&
+             !sixel_encoder_native_delta(encoder)) ||
             /* PNG snapshots decode ordinary SIXEL, not outer transports
              * or receiver-dependent OR composition. Their destination
              * must not otherwise change palette construction. */
