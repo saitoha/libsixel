@@ -1,10 +1,10 @@
-# Image-Quality Metrics and Their Perceptual Basis
+# Image-Quality Metrics
 
 ## Scope
 
-This document explains the image-quality metrics that `lsqa` reports: where each one comes from, the quantity it computes, how the libsixel implementation differs from the published definition, and what it can and cannot observe. It then explains the perceptual and physiological reasoning behind combining them for dithered output, why multiscale structure matters, why dither noise should be pushed toward high spatial frequencies, how structure-preserving dithering prioritizes luminance, and why the current spatial metrics are computed on a luminance-like signal.
+This document explains the image-quality metrics that `lsqa` reports: where each one comes from, the quantity it computes, how the libsixel implementation differs from the published definition, and what it can and cannot observe. It then explains how the metrics are used: why multiscale structure matters, how dither noise spectra are measured, how structure-preserving dithering is evaluated, which metrics to combine for dithered output, and why the current spatial metrics are computed on a luminance-like signal.
 
-The [image-quality measurement policy](measurement-policy.md) owns the primary gate, thresholds, fixtures, baselines, and comparison conditions. [Color-aware quality evaluation](color-evaluation.md) owns input interpretation, the XYZ D50 connection space, the comparison-signal options, and regional tiling. This page defines and explains; it does not set acceptance limits.
+[Visual perception for image quality](visual-perception.md) explains the sensory physiology these metrics rest on: perceptual quality, photoreceptors and adaptation, contrast sensitivity, and viewing geometry. [Color difference and color reproduction](color-difference.md) compares color-difference formulas and evaluates color across scales. The [image-quality measurement policy](measurement-policy.md) owns the primary gate, thresholds, fixtures, baselines, and comparison conditions. [Color-aware quality evaluation](color-evaluation.md) owns input interpretation, the XYZ D50 connection space, the comparison-signal options, and regional tiling. This page defines and explains; it does not set acceptance limits.
 
 ## Reading the definitions
 
@@ -14,6 +14,8 @@ The [image-quality measurement policy](measurement-policy.md) owns the primary g
 - **Color metrics** (`Δ E00_mean`, `DE00_max`, `Δ Chroma_mean`, and the regional ΔE00 values) read CIELAB computed from physical XYZ with the ICC D50 white. They do not depend on the comparison-signal options.
 
 `Y'` is *luma*, a weighted sum of gamma-encoded components. It is not CIE luminance `Y`, and with saturated colors it departs from the lightness that a viewer perceives (the non-constant-luminance error of video luma). It is nevertheless roughly perceptually uniform in the way that encoded sRGB is, which is why it remains the default.
+
+All of these are *full-reference* metrics: they compare an output with its reference, and what makes them perceptual is discussed in [perceptual quality](visual-perception.md#perceptual-quality).
 
 Formulas use plain-text notation: `Σ` is a sum, `Π` a product, `E[·]` an average over pixels, `*` convolution, and `|·|` an absolute value or magnitude. Unless stated otherwise, "higher is better" applies to similarity scores and "lower is better" to differences.
 
@@ -89,7 +91,7 @@ MS-SSIM = l_M^{α_M} · Π_{j=1..M} c_j^{β_j} · s_j^{γ_j}
 (w_1 .. w_5) = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333)
 ```
 
-The weights peak at the middle scales. That is the fitted psychophysical result: with the experiment's viewing geometry, distortions near the middle scales were the most visible, consistent with the band-pass shape of the luminance contrast sensitivity function described [below](#contrast-sensitivity).
+The weights peak at the middle scales. That is the fitted psychophysical result: with the experiment's viewing geometry, distortions near the middle scales were the most visible, consistent with the band-pass shape of the luminance contrast sensitivity function described [in visual perception](visual-perception.md#contrast-sensitivity).
 
 ### The `lsqa` MS-SSIM
 
@@ -233,87 +235,11 @@ ClipRate_c = fraction of pixels with c ≤ 10⁻⁶ or c ≥ 1 − 10⁻⁶,    
 
 It reports saturation at the ends of the comparison signal's range. It describes the signal being compared; it cannot show how much an earlier loader or encoder stage clipped.
 
-## Perceptual quality
-
-### Fidelity, quality, and their measurement
-
-Image *fidelity* is how closely a reproduction matches a reference. Image *quality* is how good an image is judged to be. They can diverge: a sharpened reproduction can be preferred to an exact one. All metrics in `lsqa` are *full-reference* fidelity metrics. They need the reference and estimate how visible or objectionable the departure from it is.
-
-The ground truth for any such metric is human judgment collected under controlled conditions, for example by the methods in ITU-R Recommendation BT.500 for television pictures, summarized as mean opinion scores. A metric is "perceptual" to the extent that its predictions agree with those judgments across many images and distortion types. SSIM, MS-SSIM, GMSD, and CIEDE2000 were each validated against such data; the libsixel-specific descriptors were not.
-
-For libsixel, perceptual quality of a quantized and dithered image means this: viewed at the intended size and distance, it is not distinguishable from the reference, or where it is, the visible differences are the least objectionable available within the palette and size constraints. That definition depends on the viewing geometry, which a file does not record; the next sections explain why that dependence is fundamental and how the metrics hedge against it.
-
-### Visual physiology
-
-#### Photoreceptors and opponent channels
-
-Daylight vision begins with three cone classes, sensitive to long, medium, and short wavelengths (L, M, S). The retina and lateral geniculate nucleus recombine the cone signals into an achromatic channel, roughly L + M, and two opponent chromatic channels, roughly L − M (red-green) and S − (L + M) (blue-yellow). This recoding was proposed in the opponent-process theory of Hering and quantified by Hurvich and Jameson (1957). S cones are sparse and absent from the center of the fovea, which already limits blue-yellow spatial resolution.
-
-CIELAB, the opponent coordinates OKLab and DIN99d, and YCbCr video all reflect this organization: one lightness axis and two opponent chroma axes. The achromatic channel is the one with high spatial resolution.
-
-#### Light level and adaptation
-
-The visual system works over roughly ten orders of magnitude of luminance, from starlight to sunlit snow, but at any moment it uses a far narrower operating range set by *adaptation*. Two photoreceptor systems divide that span.
-
-**Cones and rods.** The human retina has about six million cones and more than ninety million rods. Cones come in the three classes described above, so they support color vision; they are concentrated in the fovea and need comparatively high light levels. Rods contain a single photopigment, rhodopsin, so they cannot distinguish wavelength and give no color by themselves; they are far more sensitive, are absent from the central fovea (about one degree across), and dominate peripheral vision. In bright light rods are saturated and contribute little (Aguilar and Stiles, "Saturation of the rod mechanism of the retina at high levels of stimulation", Optica Acta 1(1), 1954).
-
-**Photopic, mesopic, and scotopic vision.** Which system carries vision depends on the adaptation luminance:
-
-| Regime | Approximate luminance | Receptors | Consequences |
-| --- | --- | --- | --- |
-| Photopic | above about 5 cd/m² | cones | full color vision, highest acuity, spectral sensitivity `V(λ)` peaking near 555 nm |
-| Mesopic | about 0.005 to 5 cd/m² | cones and rods together | color discrimination and acuity decline progressively; blue-green looks relatively brighter and red darker |
-| Scotopic | below about 0.005 cd/m² | rods | no hue discrimination, low acuity, the fovea is nearly blind, spectral sensitivity `V'(λ)` peaking near 507 nm |
-
-The mesopic limits are those of CIE 191:2010, which defines photometry for that range. The movement of peak sensitivity from about 555 nm to about 507 nm as light falls is the Purkinje shift: in dusk, red flowers darken while blue-green foliage remains visible. Colorimetry, including CIELAB and CIEDE2000, assumes photopic vision throughout.
-
-**How adaptation works.** Several mechanisms adjust sensitivity to the prevailing light:
-
-- the pupil changes diameter between about 2 and 8 mm, a factor of about 16 in light admitted, which covers only a small part of the full range;
-- photopigment bleaching and regeneration reduce receptor sensitivity in bright light and restore it in darkness;
-- neural gain control in the retina scales each receptor class's signal to the local mean, so that the response encodes *contrast*, the ratio to the adapted level, rather than absolute light.
-
-The last mechanism is why vision follows Weber's law over much of the photopic range: the just-visible luminance step is a roughly constant fraction of the adapted luminance. At lower light levels photon noise dominates and the threshold grows more slowly than the luminance (the de Vries–Rose regime), so relative sensitivity falls. CIELAB's cube-root lightness and SSIM's ratio-based luminance term both encode the Weber-law idea.
-
-**Time course.** Light adaptation, from dark to bright, takes from seconds to a minute or two. Dark adaptation is slow. Cone thresholds reach a plateau after about ten minutes in darkness, at the rod–cone break rods become the more sensitive system, and full rod sensitivity takes thirty to forty minutes. A viewer who has just looked at a bright window is not adapted to a dim screen, and the reverse.
-
-**Chromatic adaptation.** Gain control acts separately on the three cone classes, so the visual system also adapts to the color of the illumination: a white paper looks white under both daylight and incandescent light. Von Kries ("Chromatic adaptation", 1902) modeled this as independent scaling of each cone response. CIELAB's division of `X`, `Y`, and `Z` by the white point is a simplified version of the same idea, applied to XYZ rather than to cone responses; color appearance models such as CIECAM02 and CAM16 use a proper cone-space adaptation transform and also take the absolute adapting luminance as a parameter.
-
-**Global and local adaptation.** The pupil and the balance between rods and cones follow the light of the whole visual field. Retinal gain control is partly local, and the eyes move constantly between regions, so the adapted state also varies across the scene and over time. A dark region inside a bright image therefore does not switch vision to rods: it is seen by light-adapted cones, whose signal is weak and whose contrast against the surrounding adaptation level is low. Vision becomes mesopic only when the overall field is dim, as with a dark room, a low display brightness, and content that is mostly dark. Image appearance models such as iCAM build local adaptation into their processing for this reason.
-
-**Displays.** An SDR display typically has a white of 80 to 300 cd/m² and a black of a few tenths of a cd/m² or less, before room reflections. With an 80 cd/m² white, CIELAB `L* = 30` corresponds to about 5 cd/m², the photopic boundary, and `L* = 10` to about 0.9 cd/m². Shadows in an image routinely fall below the photopic boundary in absolute terms, but whether the viewer is mesopic depends on the whole field, as described above. [Dark colors and luminance level](color-difference.md#dark-colors-and-luminance-level) explains what this means for color differences.
-
-**Display color filters.** Night-time display modes such as Night Shift and Night Light, and similar warm-tint utilities, lower the correlated color temperature of the display white by reducing its short-wavelength output. Their stated purpose concerns a third class of retinal photoreceptor, the intrinsically photosensitive retinal ganglion cells containing melanopsin (peak sensitivity near 480 nm). These cells feed a non-image-forming pathway that regulates the circadian clock and melatonin secretion; they are separate from the cone and rod adaptation described above, and the health benefit of display tinting is still debated. The filters still interact with vision through chromatic adaptation. After a few minutes the tinted white looks nearly white again, but adaptation to a self-luminous display is incomplete, and the room light competes with it, so a warm cast usually remains; CIECAM02 represents this with a degree of adaptation below one. Adaptation restores only the white reference. Because the filter removes part of the blue primary's output, the display gamut shrinks, and blues and violets that differed before remain harder to tell apart after adaptation. The filter acts on every image equally, so side-by-side comparisons of a reference and an output stay meaningful. Absolute judgments of color, such as whether a gray is neutral or a skin tone natural, are biased under a filter and should be made with it off. `lsqa` reads encoded values and is unaffected by any display filter.
-
-**Dark terminals and dark rooms.** A full-screen terminal with a black background can lower the adaptation level, but only under some conditions. In a lit room, office lighting of a few hundred lux keeps the surrounding surfaces at tens of cd/m², and vision stays photopic. In a dark room, most of the field is the display black, roughly 0.05 to 0.5 cd/m² for an LCD and nearly zero for an OLED, which lies in the mesopic range. Several factors keep adaptation from going deep: text and images at tens to hundreds of cd/m² stay in view and pull adaptation upward, bright areas weigh more heavily than dark ones, reading fixates the rod-free fovea, a 27-inch display at 60 cm spans only about 53 degrees horizontally, many dark themes use a dark gray rather than black, and rod sensitivity needs tens of minutes of continuous darkness while one bright image restores light adaptation within seconds. The practical result of long dark-room work on a dark theme is adaptation near the photopic–mesopic boundary: steps between near-black levels become easier to see, color discrimination in dark areas declines slightly, and a suddenly displayed bright image causes glare. How this changes the visibility of near-black errors is described under [dark colors and luminance level](color-difference.md#dark-colors-and-luminance-level).
-
-#### Contrast sensitivity
-
-The contrast sensitivity function (CSF) gives the reciprocal of the smallest visible contrast of a sinusoidal grating as a function of spatial frequency in cycles per degree of visual angle (cpd). Its shape differs by channel:
-
-- **Achromatic:** band-pass. Under photopic conditions sensitivity peaks at a few cycles per degree and falls steeply above roughly 10 cpd, reaching the resolution limit near 50 to 60 cpd. Lateral inhibition in center-surround receptive fields suppresses the lowest frequencies, and optical blur and the cone sampling mosaic limit the highest.
-- **Chromatic:** low-pass, with a much lower cutoff. Mullen ("The contrast sensitivity of human colour vision to red-green and blue-yellow chromatic gratings", Journal of Physiology 359, 1985) measured isoluminant gratings whose sensitivity falls off several times earlier than luminance gratings; blue-yellow resolution is lower still.
-
-Campbell and Robson ("Application of Fourier analysis to the visibility of gratings", Journal of Physiology 197, 1968) showed that the visibility of complex gratings follows from the responses of separate channels tuned to bands of spatial frequency, which is the physiological motivation for multiscale models. Mannos and Sakrison (1974) gave an early analytic luminance CSF used in image coding.
-
-Two further effects matter for quantization. Sensitivity depends on adaptation level: at low luminance the CSF drops and its peak shifts to lower frequencies, and near black the visibility of a fixed luminance step changes with the display's black level and surround. Chromatic discrimination likewise declines as adaptation moves from photopic toward mesopic light, as described under [light level and adaptation](#light-level-and-adaptation). Contrast masking reduces the visibility of an error placed on a busy texture compared with the same error on a flat area, so identical error energy is more visible in skies and gradients than in foliage.
-
-#### From pixels to cycles per degree
-
-Spatial frequency on the retina depends on display pitch and viewing distance:
-
-```text
-pixels per degree = d · tan(1°) / p          d = viewing distance, p = pixel pitch (same unit)
-Nyquist frequency  = pixels per degree / 2    cycles per degree
-```
-
-A 100 ppi display (`p = 0.254 mm`) viewed at 50 cm gives about 34 pixels per degree, so a one-pixel checkerboard is about 17 cpd. A 220 ppi display at 40 cm gives about 60 pixels per degree and 30 cpd. In the first case the finest luminance pattern is attenuated but still visible, and the finest chroma pattern is close to invisible. In the second, the finest pattern is near the luminance resolution limit. Terminal image viewing adds a complication: users often enlarge character cells, which lowers the pixels per degree and moves the same dither pattern into the visible band.
-
 ## Why multiscale structure matters
 
-A metric evaluated at one scale implicitly assumes one viewing geometry. Because the CSF is defined in cycles per degree, changing the distance or the display pitch moves every image frequency along the CSF, so a pattern that is invisible at one distance is obvious at another. Neither libsixel nor its user can know the final geometry in general.
+A metric evaluated at one scale implicitly assumes one viewing geometry. Because the [contrast sensitivity function](visual-perception.md#contrast-sensitivity) is defined in cycles per degree ([from pixels to cycles per degree](visual-perception.md#from-pixels-to-cycles-per-degree)), changing the distance or the display pitch moves every image frequency along the CSF, so a pattern that is invisible at one distance is obvious at another. Neither libsixel nor its user can know the final geometry in general.
 
-A multiscale metric hedges against this uncertainty. Each dyadic scale corresponds to a band of image frequencies; evaluating structure in every band and weighting the bands approximates integrating visibility over the CSF across a range of plausible viewing conditions, in the spirit of Campbell and Robson's channels. The fitted MS-SSIM weights favor the middle scales because those carried the most visible distortion in the calibration experiment.
+A multiscale metric hedges against this uncertainty. Each dyadic scale corresponds to a band of image frequencies; evaluating structure in every band and weighting the bands approximates integrating visibility over the CSF across a range of plausible viewing conditions, in the spirit of Campbell and Robson's spatial-frequency channels. The fitted MS-SSIM weights favor the middle scales because those carried the most visible distortion in the calibration experiment.
 
 For dithered images the scale decomposition has a direct interpretation. A ditherer trades fine-scale fidelity, where it places quantization noise, for coarse-scale fidelity, where the locally averaged tone should match the reference. Single-scale SSIM at full resolution sees mostly the noise and can rank a dither below a posterized image whose flat areas happen to correlate locally. MS-SSIM's coarser scales see through the noise to the reproduced tone and structure, and its finest scale still registers the noise, so the score reflects the trade the ditherer actually makes.
 
@@ -330,7 +256,7 @@ Palette quantization replaces each pixel with a palette color, leaving an error 
 
 ### Why push the error upward
 
-The visual system acts as a low-pass filter at normal viewing distance: the CSF attenuates high-frequency luminance contrast, and chromatic contrast even more so. If the quantization error has little energy at low frequencies, then after this filtering the perceived image is close to the reference: the local average tone and color are preserved, while the remaining error lies where sensitivity is lowest. Blue-noise placement minimizes the visible part of a fixed error budget, which a palette makes unavoidable.
+At normal viewing distance the visual system integrates fine detail and is least sensitive to high spatial frequencies, especially in the chromatic channels ([spatial integration and noise visibility](visual-perception.md#spatial-integration-and-noise-visibility)). If the quantization error has little energy at low frequencies, the perceived image keeps the local average tone and color of the reference, and the remaining error lies where sensitivity is lowest. Blue-noise placement minimizes the visible part of a fixed error budget, which a palette makes unavoidable.
 
 Error diffusion achieves this by *noise shaping*. Floyd and Steinberg ("An adaptive algorithm for spatial greyscale", Proceedings of the Society for Information Display 17(2), 1976) propagate each pixel's quantization error to unprocessed neighbors with fixed weights. Modeling the quantizer as additive noise `n`, the output error is the noise filtered by `(1 − H)`, where `H` is the transfer function of the diffusion filter:
 
@@ -385,7 +311,7 @@ Read the rows together. A dither that lowers regional ΔE00 and banding while ra
 
 The spatial metrics in `lsqa` operate on a single luma signal, while color is measured separately with per-pixel and regional ΔE00. There are physiological and practical reasons for this split, and limits to it.
 
-**Physiology.** The achromatic channel has the highest spatial resolution and contrast sensitivity, as described under [contrast sensitivity](#contrast-sensitivity). Structure, edges, and texture are perceived mainly through luminance contrast; an isoluminant image looks blurry and its edges are hard to locate. Fine chromatic error is attenuated far more than fine luminance error, which is why image and video coding keep luma at full resolution while subsampling chroma, as in JPEG and 4:2:0 video, with little visible loss. A metric that spends its spatial analysis on luminance therefore concentrates on the channel where spatial errors are most visible. The same reasoning motivates [structure-preserving dithering that prioritizes luminance](#structure-preserving-dithering-and-luminance-priority).
+**Physiology.** The achromatic channel has the highest spatial resolution and contrast sensitivity, and structure, edges, and texture are perceived mainly through luminance contrast; see [luminance and chroma in spatial vision](visual-perception.md#luminance-and-chroma-in-spatial-vision). A metric that spends its spatial analysis on luminance therefore concentrates on the channel where spatial errors are most visible. The same reasoning motivates [structure-preserving dithering that prioritizes luminance](#structure-preserving-dithering-and-luminance-priority).
 
 **Lineage and validation.** SSIM, MS-SSIM, and GMSD were defined and validated on grayscale or luma images. Using them on luma keeps `lsqa` values interpretable against their published behavior, apart from the implementation differences documented above. Extending them to color has no single accepted definition, and an ad hoc per-channel average would weight RGB channels as though they were perceptually equivalent, which they are not.
 
@@ -395,28 +321,20 @@ The spatial metrics in `lsqa` operate on a single luma signal, while color is me
 
 ## References
 
-- Aguilar, M., and W. S. Stiles. "Saturation of the rod mechanism of the retina at high levels of stimulation." Optica Acta 1(1), 1954.
 - Bayer, B. E. "An optimum method for two-level rendition of continuous-tone pictures." IEEE International Conference on Communications, 1973.
 - Campbell, F. W., and J. G. Robson. "Application of Fourier analysis to the visibility of gratings." Journal of Physiology 197, 1968.
 - Chang, J., B. Alain, and V. Ostromoukhov. "Structure-aware error diffusion." ACM Transactions on Graphics 28(5), 2009.
-- CIE Publication 191. Recommended system for mesopic photometry based on visual performance, 2010.
 - Eschbach, R., and K. T. Knox. "Error-diffusion algorithm with edge enhancement." Journal of the Optical Society of America A 8(12), 1991.
-- Fairchild, M. D., and G. M. Johnson. "iCAM framework for image appearance, differences, and quality." Journal of Electronic Imaging 13(1), 2004.
 - Floyd, R. W., and L. Steinberg. "An adaptive algorithm for spatial greyscale." Proceedings of the Society for Information Display 17(2), 1976.
-- Hurvich, L. M., and D. Jameson. "An opponent-process theory of color vision." Psychological Review 64(6), 1957.
-- ITU-R Recommendation BT.500. Methodologies for the subjective assessment of the quality of television images.
 - ITU-R Recommendation BT.709. Parameter values for the HDTV standards for production and international programme exchange.
 - Kite, T. D., B. L. Evans, and A. C. Bovik. "Modeling and quality assessment of halftoning by error diffusion." IEEE Transactions on Image Processing 9(5), 2000.
 - Kolpatzik, B. W., and C. A. Bouman. "Optimized error diffusion for image display." Journal of Electronic Imaging 1(3), 1992.
 - Luo, M. R., G. Cui, and B. Rigg. "The development of the CIE 2000 colour-difference formula: CIEDE2000." Color Research and Application 26(5), 2001.
-- Mannos, J. L., and D. J. Sakrison. "The effects of a visual fidelity criterion on the encoding of images." IEEE Transactions on Information Theory 20(4), 1974.
-- Mullen, K. T. "The contrast sensitivity of human colour vision to red-green and blue-yellow chromatic gratings." Journal of Physiology 359, 1985.
 - Pang, W.-M., Y. Qu, T.-T. Wong, D. Cohen-Or, and P.-A. Heng. "Structure-aware halftoning." ACM Transactions on Graphics 27(3), 2008.
 - Shaked, D., N. Arad, A. Fitzhugh, and I. Sobel. "Color diffusion: error diffusion for color halftones." Proceedings of SPIE 3648, 1999.
 - Sharma, G., W. Wu, and E. N. Dalal. "The CIEDE2000 color-difference formula: implementation notes, supplementary test data, and mathematical observations." Color Research and Application 30(1), 2005.
 - Ulichney, R. *Digital Halftoning*. MIT Press, 1987.
 - Ulichney, R. "Dithering with blue noise." Proceedings of the IEEE 76(1), 1988.
-- von Kries, J. "Chromatic adaptation." Festschrift der Albrecht-Ludwigs-Universität, Freiburg, 1902. English translation in D. L. MacAdam, ed., *Sources of Color Science*, MIT Press, 1970.
 - Wang, Z., A. C. Bovik, H. R. Sheikh, and E. P. Simoncelli. "Image quality assessment: from error visibility to structural similarity." IEEE Transactions on Image Processing 13(4), 2004.
 - Wang, Z., E. P. Simoncelli, and A. C. Bovik. "Multiscale structural similarity for image quality assessment." 37th Asilomar Conference on Signals, Systems and Computers, 2003.
 - Xue, W., L. Zhang, X. Mou, and A. C. Bovik. "Gradient magnitude similarity deviation: a highly efficient perceptual image quality index." IEEE Transactions on Image Processing 23(2), 2014.

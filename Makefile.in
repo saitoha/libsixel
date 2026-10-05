@@ -1164,6 +1164,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/encoder/palette-construction/quantization/README.md \
 	docs/quality/measurement-policy.md \
 	docs/quality/metrics.md \
+	docs/quality/visual-perception.md \
 	docs/testing/builtin-loader-coverage.md \
 	docs/testing/guide.md \
 	docs/testing/staticcheck.md \
