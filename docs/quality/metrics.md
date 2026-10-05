@@ -172,7 +172,7 @@ R_T  = −2 √(C̄'⁷ / (C̄'⁷ + 25⁷)) · sin(60° · exp(−((h̄' − 27
 
 #### What it measures
 
-ΔE00 measures the visible difference between two uniform color patches seen side by side. A value around 1 is often used as a rough just-noticeable difference for such patches. It was not fitted to spatially varying content: applied pixel by pixel to a dithered image it measures the color amplitude of the dither pattern, which the eye largely averages away at normal viewing distance. The per-pixel mean is therefore an indicator of dither noise energy in color terms, the maximum and tail counts expose sparse faults, and neither alone is a perceptual quality score for dithered images.
+ΔE00 measures the visible difference between two uniform color patches seen side by side. [Color difference and color reproduction](color-difference.md) compares it with other formulas and discusses tolerance grades. A value around 1 is often used as a rough just-noticeable difference for such patches. It was not fitted to spatially varying content: applied pixel by pixel to a dithered image it measures the color amplitude of the dither pattern, which the eye largely averages away at normal viewing distance. The per-pixel mean is therefore an indicator of dither noise energy in color terms, the maximum and tail counts expose sparse faults, and neither alone is a perceptual quality score for dithered images.
 
 ### Regional ΔE00
 

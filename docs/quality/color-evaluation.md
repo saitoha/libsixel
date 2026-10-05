@@ -105,7 +105,7 @@ Tests distinguish same physical colors in different coordinates, identical RGB n
 
 The `png-samples.json` and `png-samples.h` fixtures additionally separate source RGB/RGBA integers at 8 and 16 bits, ideal P3 coordinates, exact encoded ICC matrix/TRC coefficients, and sRGB override expectations. The 16 small PNGs include tagged and untagged samples, orientation 6, and a green file background. Alpha remains independent coverage (`integer / 255` or `integer / 65535`). Their midtones are 128/255 and 32768/65535, neither the analytic 0.5 fixture. These independent fixtures define the loader integration target; their existence does not establish that the current loader retains extended color.
 
-See the [measurement policy](measurement-policy.md) for unchanged sRGB MS-SSIM gates and the [loader CMS guide](../loader/color-management/README.md) for the legacy normalization boundary.
+See [color difference and color reproduction](color-difference.md) for global and multiscale color measures and tolerance grades, the [measurement policy](measurement-policy.md) for unchanged sRGB MS-SSIM gates and the [loader CMS guide](../loader/color-management/README.md) for the legacy normalization boundary.
 
 ## Test coverage
 

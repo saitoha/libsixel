@@ -104,6 +104,7 @@ docs/misc/platforms/windows.md	reference	contributor	""
 docs/platform-support.md	reference	both	user support matrix + contributor matrix-maintenance guidance
 docs/project-history.md	explanation	both	public project history + contributor attribution and source-lineage evidence
 docs/protocols/graphics-color-management.md	reference	both	experimental protocol specification + rationale and implementation-status evidence
+docs/quality/color-difference.md	explanation	both	color-difference formulas + reproduction measures and tolerance guidance
 docs/quality/color-evaluation.md	reference	both	quality-tool contracts + color-model explanation and contributor test ledger
 docs/quality/measurement-policy.md	reference	contributor	measurement policy + comparison procedure
 docs/quality/metrics.md	explanation	both	metric reference definitions + perceptual and physiological explanation

@@ -757,6 +757,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-kmeans-high-k.png \
 	docs/encoder/palette-construction/external-palettes.md \
 	docs/quality/color-evaluation.md \
+	docs/quality/color-difference.md \
 	docs/sixel-format/comparison/README.md \
 	docs/sixel-format/comparison/figures/codec-timeline-figures.json \
 	docs/sixel-format/comparison/figures/codec-timeline-mobile.svg \
