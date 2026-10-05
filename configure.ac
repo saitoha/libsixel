@@ -5262,6 +5262,9 @@ AS_IF([test x$enable_tests != xno], [
   ])
 ])
 AC_SUBST([SIXEL_CHECK_TESTS])
+# Only tests/Makefile.am consumes this substitution directly.  Suppress the
+# unused assignment that Automake otherwise emits into every Makefile.
+AM_SUBST_NOTMAKE([SIXEL_CHECK_TESTS])
 
 AC_SUBST([ENABLE_RUBY])
 AC_SUBST([ENABLE_PHP])

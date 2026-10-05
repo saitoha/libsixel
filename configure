@@ -29121,6 +29121,9 @@ fi
 
 fi
 
+# Only tests/Makefile.am consumes this substitution directly.  Suppress the
+# unused assignment that Automake otherwise emits into every Makefile.
+
 
 
 

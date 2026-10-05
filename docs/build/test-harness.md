@@ -6,6 +6,8 @@ Runtime test discovery is centralized in [read-check-test-list.sh](../../build-a
 
 Autotools invokes discovery during configuration; Meson invokes it during setup. A directory scan is shared policy, not continuous discovery on every test invocation. After adding or renaming tests, refresh the configured inventory.
 
+Autotools substitutes the inventory directly into `TESTS` in `tests/Makefile`. `AM_SUBST_NOTMAKE` suppresses an unused `SIXEL_CHECK_TESTS` assignment in every generated Makefile, so directories that do not run these tests do not carry a duplicate inventory.
+
 [test_runner.c](../../tests/test_runner.c) is a separate layer: a C dispatch executable shared by many small TAP wrappers. It reduces the number of independently linked helper programs while retaining independent test reports. A shell test can also call a converter or another helper without using this executable. Sharing one executable does not mean running all observations inside a single long-lived process.
 
 | Registration layer | Autotools | Meson |
