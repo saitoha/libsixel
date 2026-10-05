@@ -6864,9 +6864,20 @@ include $(top_srcdir)/build-aux/dependency-bootstrap.am
 # exact inventory into small commands, preserving shared-directory files
 # owned by other programs and avoiding shell argument limits.  Keep this
 # compatible with GNU make 3.81.
+# Common POSIX hosts accept larger batches.  Retain the conservative limit
+# for Windows, OpenVMS, and other hosts with smaller command-line budgets.
+if OPENVMS_GNV
+sixel_clean_batch_size = 16
+else
+sixel_clean_batch_size = $(if $(filter darwin% linux% freebsd% netbsd% openbsd% dragonfly% solaris% illumos% haiku% aix%,$(host_os)),128,16)
+endif
+# Appending each copied path rebuilds the shell's positional arguments.
+# Use smaller copy batches so that cost does not outweigh saved rm launches.
+sixel_clean_copy_batch_size = $(if $(filter 128,$(sixel_clean_batch_size)),32,16)
+
 define sixel_rm_depfile_batches
-$(if $(strip $(1)),-rm -f $(wordlist 1,16,$(1))
-$(call sixel_rm_depfile_batches,$(wordlist 17,$(words $(1)),$(1))))
+$(if $(strip $(1)),-rm -f $(wordlist 1,$(sixel_clean_batch_size),$(1))
+$(call sixel_rm_depfile_batches,$(wordlist $(words x $(wordlist 1,$(sixel_clean_batch_size),$(1))),$(words $(1)),$(1))))
 endef
 
 distclean: distclean-am
@@ -7334,7 +7345,7 @@ clean-local:
 	        test -n "$$test_path" || continue; \
 	        test -e "$$test_path" || test -L "$$test_path" || continue; \
 	        set -- "$$@" "./$$test_path"; \
-	        if test "$$#" -eq 16; then \
+	        if test "$$#" -eq "$(sixel_clean_copy_batch_size)"; then \
 	            rm -f "$$@" || exit $$?; \
 	            set --; \
 	        fi; \

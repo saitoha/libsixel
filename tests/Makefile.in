@@ -13675,6 +13675,18 @@ AM_LOG_DRIVER_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 # Leave AM_LOG_FLAGS empty so Automake does not append timeout parameters to
 # LOG_COMPILE; the drivers consume timeout hints themselves.
 AM_LOG_FLAGS = 
+@OPENVMS_GNV_FALSE@sixel_clean_batch_size = $(if $(filter darwin% linux% freebsd% netbsd% openbsd% dragonfly% solaris% illumos% haiku% aix%,$(host_os)),128,16)
+
+# Automake otherwise emits one rm recipe per dependency file.  Expand its
+# exact inventory into small commands, preserving shared-directory files
+# owned by other programs and avoiding shell argument limits.  Keep this
+# compatible with GNU make 3.81.
+# Common POSIX hosts accept larger batches.  Retain the conservative limit
+# for Windows, OpenVMS, and other hosts with smaller command-line budgets.
+@OPENVMS_GNV_TRUE@sixel_clean_batch_size = 16
+# Appending each copied path rebuilds the shell's positional arguments.
+# Use smaller copy batches so that cost does not outweigh saved rm launches.
+sixel_clean_copy_batch_size = $(if $(filter 128,$(sixel_clean_batch_size)),32,16)
 
 # Distribute fixture trees as directories so DISTFILES remains short and
 # distdir does not hit shell ARG_MAX limits on some platforms.
@@ -62186,13 +62198,9 @@ endef
 am--depfiles:
 	$(call sixel_init_depfile_batches,$(filter-out $(wildcard $(am__depfiles_remade)),$(am__depfiles_remade)))
 
-# Automake otherwise emits one rm recipe per dependency file.  Expand its
-# exact inventory into small commands, preserving shared-directory files
-# owned by other programs and avoiding shell argument limits.  Keep this
-# compatible with GNU make 3.81.
 define sixel_rm_depfile_batches
-$(if $(strip $(1)),-rm -f $(wordlist 1,16,$(1))
-$(call sixel_rm_depfile_batches,$(wordlist 17,$(words $(1)),$(1))))
+$(if $(strip $(1)),-rm -f $(wordlist 1,$(sixel_clean_batch_size),$(1))
+$(call sixel_rm_depfile_batches,$(wordlist $(words x $(wordlist 1,$(sixel_clean_batch_size),$(1))),$(words $(1)),$(1))))
 endef
 
 distclean: distclean-am
@@ -62530,7 +62538,7 @@ clean-local:
 	        test -n "$$test_path" || continue; \
 	        test -e "$$test_path" || test -L "$$test_path" || continue; \
 	        set -- "$$@" "./$$test_path"; \
-	        if test "$$#" -eq 16; then \
+	        if test "$$#" -eq "$(sixel_clean_copy_batch_size)"; then \
 	            rm -f "$$@" || exit $$?; \
 	            set --; \
 	        fi; \

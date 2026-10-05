@@ -148,6 +148,8 @@ The relevant limit may be the combined argument/environment budget, a single arg
 
 The history uses `ARG_MAX` as shorthand for this family of process-launch limits. For example, Linux also imposes a per-string limit separate from the combined argument/environment budget, as documented in [execve(2)](https://man7.org/linux/man-pages/man2/execve.2.html). A large `sh -c` program or a single `TEST_LOGS=...` argument can hit that boundary even if the combined budget is larger. Moving the same complete inventory into one environment variable therefore does not generally solve the problem.
 
+Cleanup batches dependency-file removals in groups of 128 and copied test scripts in groups of 32 on macOS, Linux, the BSDs, Solaris/illumos, Haiku, and AIX. Copy cleanup grows shell positional arguments one path at a time, so its smaller batch balances that copying cost against process launches. Windows, OpenVMS, and unlisted hosts retain the conservative 16-path limit for both operations. The batch size changes process-launch overhead, not the inventory of files owned by the build or the guard that protects in-tree test sources.
+
 To inspect the inventory scale without running tests or putting its contents in command arguments:
 
 ```sh
