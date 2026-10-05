@@ -26,6 +26,7 @@ Supported platforms and command-line behavior that needs no background in color 
 
 ### Command-line basics
 
+- [Command-line options at a glance](cli/options.md) lists every `img2sixel` and `sixel2png` option by purpose with a one-line summary, marks which options need background in color or encoding, and links each one to its detailed explanation.
 - [Clipboard input and output](cli/clipboard.md) explains `-y`, pseudo targets, system/file backends, platform payloads, and headless workflows.
 - [Choice prefix-matching policy](cli/prefix-matching.md) defines exact and unique-prefix resolution, ambiguity, CLI/environment vocabulary separation, and compatibility constraints.
 - [CLI correction-suggestion policy](cli/correction-suggestions.md) defines ambiguous-prefix, fuzzy-name, and nearby-path guidance, including defaults, ranking, diagnostics, performance, and privacy boundaries.

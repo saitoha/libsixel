@@ -735,6 +735,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/sixel-format/figures/sixel-format-figures.json \
 	docs/ci/design.md \
 	docs/cli/design-policy.md \
+	docs/cli/options.md \
 	docs/misc/platforms/README.md \
 	docs/misc/platforms/cosmopolitan.md \
 	docs/misc/platforms/cygwin-msys.md \

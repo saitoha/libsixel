@@ -12,6 +12,7 @@ docs/ci/design.md	reference	contributor	CI policy + design rationale and change/
 docs/cli/abort-trace/README.md	reference	both	CLI diagnostic contracts + design explanation and contributor test ledger
 docs/cli/clipboard.md	reference	both	clipboard contracts + usage how-to and contributor test ledger
 docs/cli/correction-suggestions.md	reference	both	diagnostic contracts + contributor implementation map and test ledger
+docs/cli/options.md	reference	user	
 docs/cli/design-policy.md	reference	both	CLI contracts + design rationale and contributor review/test guidance
 docs/cli/diagnostics.md	how-to	both	diagnostic capture workflow + option reference and contributor test ledger
 docs/cli/prefix-matching.md	reference	both	choice syntax + contributor algorithm map and test ledger
