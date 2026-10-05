@@ -209,6 +209,30 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0055_DELTA_WIRE_DISABLED \
     -DBUILD_TEST_0056_DELTA_WIRE_GENERATED \
     -DBUILD_TEST_0057_DELTA_WIRE_GENERATED_WORKERS \
+    -DBUILD_TEST_0058_DELTA_BYTE_NONE_KEEP \
+    -DBUILD_TEST_0059_DELTA_BYTE_FS_KEEP \
+    -DBUILD_TEST_0060_DELTA_BYTE_ATKINSON_KEEP \
+    -DBUILD_TEST_0061_DELTA_BYTE_LSO2_KEEP \
+    -DBUILD_TEST_0062_DELTA_BYTE_JAJUNI_KEEP \
+    -DBUILD_TEST_0063_DELTA_BYTE_STUCKI_KEEP \
+    -DBUILD_TEST_0064_DELTA_BYTE_BURKES_KEEP \
+    -DBUILD_TEST_0065_DELTA_BYTE_SIERRA1_KEEP \
+    -DBUILD_TEST_0066_DELTA_BYTE_SIERRA2_KEEP \
+    -DBUILD_TEST_0067_DELTA_BYTE_SIERRA3_KEEP \
+    -DBUILD_TEST_0068_DELTA_BYTE_A_DITHER_KEEP \
+    -DBUILD_TEST_0069_DELTA_BYTE_X_DITHER_KEEP \
+    -DBUILD_TEST_0070_DELTA_BYTE_BLUENOISE_DITHER_KEEP \
+    -DBUILD_TEST_0071_DELTA_BYTE_COMPARE \
+    -DBUILD_TEST_0072_DELTA_BYTE_SCOPE_HLS \
+    -DBUILD_TEST_0073_DELTA_BYTE_SCOPE_OR \
+    -DBUILD_TEST_0074_DELTA_BYTE_SCOPE_BODY \
+    -DBUILD_TEST_0075_DELTA_BYTE_SCOPE_SOURCE \
+    -DBUILD_TEST_0076_DELTA_BYTE_SCOPE_OUTPUT \
+    -DBUILD_TEST_0077_DELTA_BYTE_SCOPE_FLOAT \
+    -DBUILD_TEST_0078_DELTA_BYTE_REPEAT \
+    -DBUILD_TEST_0079_DELTA_BYTE_REPEAT_WORKERS \
+    -DBUILD_TEST_0080_DELTA_BYTE_GRID \
+    -DBUILD_DELTA_BYTE_COMMON \
     -DBUILD_DELTA_FIXED_COMMON \
     -DBUILD_TEST_0033_DELTA_BUILTIN_SLOTS \
     -DBUILD_TEST_0034_DELTA_MAP_SLOTS \
@@ -2901,6 +2925,30 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0055_delta_wire_disabled.c \
     quant/palette/delta_native/0056_delta_wire_generated.c \
     quant/palette/delta_native/0057_delta_wire_generated_workers.c \
+    quant/palette/delta_native/0058_delta_byte_none_keep.c \
+    quant/palette/delta_native/0059_delta_byte_fs_keep.c \
+    quant/palette/delta_native/0060_delta_byte_atkinson_keep.c \
+    quant/palette/delta_native/0061_delta_byte_lso2_keep.c \
+    quant/palette/delta_native/0062_delta_byte_jajuni_keep.c \
+    quant/palette/delta_native/0063_delta_byte_stucki_keep.c \
+    quant/palette/delta_native/0064_delta_byte_burkes_keep.c \
+    quant/palette/delta_native/0065_delta_byte_sierra1_keep.c \
+    quant/palette/delta_native/0066_delta_byte_sierra2_keep.c \
+    quant/palette/delta_native/0067_delta_byte_sierra3_keep.c \
+    quant/palette/delta_native/0068_delta_byte_a_dither_keep.c \
+    quant/palette/delta_native/0069_delta_byte_x_dither_keep.c \
+    quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c \
+    quant/palette/delta_native/0071_delta_byte_compare.c \
+    quant/palette/delta_native/0072_delta_byte_scope_hls.c \
+    quant/palette/delta_native/0073_delta_byte_scope_or.c \
+    quant/palette/delta_native/0074_delta_byte_scope_body.c \
+    quant/palette/delta_native/0075_delta_byte_scope_source.c \
+    quant/palette/delta_native/0076_delta_byte_scope_output.c \
+    quant/palette/delta_native/0077_delta_byte_scope_float.c \
+    quant/palette/delta_native/0078_delta_byte_repeat.c \
+    quant/palette/delta_native/0079_delta_byte_repeat_workers.c \
+    quant/palette/delta_native/0080_delta_byte_grid.c \
+    quant/palette/delta_byte_common.c \
     quant/palette/delta_fixed_common.c \
     quant/palette/delta_native/0033_delta_builtin_slots.c \
     quant/palette/delta_native/0034_delta_map_slots.c \

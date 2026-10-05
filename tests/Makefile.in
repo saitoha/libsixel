@@ -138,6 +138,30 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/delta_native/0055_delta_wire_disabled.c \
 	quant/palette/delta_native/0056_delta_wire_generated.c \
 	quant/palette/delta_native/0057_delta_wire_generated_workers.c \
+	quant/palette/delta_native/0058_delta_byte_none_keep.c \
+	quant/palette/delta_native/0059_delta_byte_fs_keep.c \
+	quant/palette/delta_native/0060_delta_byte_atkinson_keep.c \
+	quant/palette/delta_native/0061_delta_byte_lso2_keep.c \
+	quant/palette/delta_native/0062_delta_byte_jajuni_keep.c \
+	quant/palette/delta_native/0063_delta_byte_stucki_keep.c \
+	quant/palette/delta_native/0064_delta_byte_burkes_keep.c \
+	quant/palette/delta_native/0065_delta_byte_sierra1_keep.c \
+	quant/palette/delta_native/0066_delta_byte_sierra2_keep.c \
+	quant/palette/delta_native/0067_delta_byte_sierra3_keep.c \
+	quant/palette/delta_native/0068_delta_byte_a_dither_keep.c \
+	quant/palette/delta_native/0069_delta_byte_x_dither_keep.c \
+	quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c \
+	quant/palette/delta_native/0071_delta_byte_compare.c \
+	quant/palette/delta_native/0072_delta_byte_scope_hls.c \
+	quant/palette/delta_native/0073_delta_byte_scope_or.c \
+	quant/palette/delta_native/0074_delta_byte_scope_body.c \
+	quant/palette/delta_native/0075_delta_byte_scope_source.c \
+	quant/palette/delta_native/0076_delta_byte_scope_output.c \
+	quant/palette/delta_native/0077_delta_byte_scope_float.c \
+	quant/palette/delta_native/0078_delta_byte_repeat.c \
+	quant/palette/delta_native/0079_delta_byte_repeat_workers.c \
+	quant/palette/delta_native/0080_delta_byte_grid.c \
+	quant/palette/delta_byte_common.c \
 	quant/palette/delta_fixed_common.c \
 	quant/palette/delta_native/0033_delta_builtin_slots.c \
 	quant/palette/delta_native/0034_delta_map_slots.c \
@@ -2873,6 +2897,30 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0055_delta_wire_disabled.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0056_delta_wire_generated.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0057_delta_wire_generated_workers.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0058_delta_byte_none_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0059_delta_byte_fs_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0060_delta_byte_atkinson_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0061_delta_byte_lso2_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0062_delta_byte_jajuni_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0063_delta_byte_stucki_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0064_delta_byte_burkes_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0065_delta_byte_sierra1_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0066_delta_byte_sierra2_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0067_delta_byte_sierra3_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0068_delta_byte_a_dither_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0069_delta_byte_x_dither_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0070_delta_byte_bluenoise_dither_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0071_delta_byte_compare.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0072_delta_byte_scope_hls.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0073_delta_byte_scope_or.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0074_delta_byte_scope_body.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0075_delta_byte_scope_source.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0076_delta_byte_scope_output.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0077_delta_byte_scope_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0078_delta_byte_repeat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0079_delta_byte_repeat_workers.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0080_delta_byte_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-delta_byte_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-delta_fixed_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0033_delta_builtin_slots.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0034_delta_map_slots.$(OBJEXT) \
@@ -7739,6 +7787,7 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-auto_cover_float_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-auto_test_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-builtin_float_common.Po \
+	quant/palette/$(DEPDIR)/test_runner-delta_byte_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-delta_fixed_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-delta_native_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-export_capture_common.Po \
@@ -7940,6 +7989,29 @@ am__depfiles_remade =  \
 	quant/palette/delta_native/$(DEPDIR)/test_runner-0055_delta_wire_disabled.Po \
 	quant/palette/delta_native/$(DEPDIR)/test_runner-0056_delta_wire_generated.Po \
 	quant/palette/delta_native/$(DEPDIR)/test_runner-0057_delta_wire_generated_workers.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0058_delta_byte_none_keep.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0059_delta_byte_fs_keep.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0060_delta_byte_atkinson_keep.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0061_delta_byte_lso2_keep.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0062_delta_byte_jajuni_keep.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0063_delta_byte_stucki_keep.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0064_delta_byte_burkes_keep.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0065_delta_byte_sierra1_keep.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0066_delta_byte_sierra2_keep.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0067_delta_byte_sierra3_keep.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0068_delta_byte_a_dither_keep.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0069_delta_byte_x_dither_keep.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0070_delta_byte_bluenoise_dither_keep.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0071_delta_byte_compare.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0072_delta_byte_scope_hls.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0073_delta_byte_scope_or.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0074_delta_byte_scope_body.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0075_delta_byte_scope_source.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0076_delta_byte_scope_output.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0077_delta_byte_scope_float.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0078_delta_byte_repeat.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0079_delta_byte_repeat_workers.Po \
+	quant/palette/delta_native/$(DEPDIR)/test_runner-0080_delta_byte_grid.Po \
 	quant/palette/export_capture/$(DEPDIR)/test_runner-0001_native_capture_memory.Po \
 	quant/palette/export_capture/$(DEPDIR)/test_runner-0002_byte_capture_memory.Po \
 	quant/palette/export_capture/$(DEPDIR)/test_runner-0003_native_writer_memory.Po \
@@ -8969,6 +9041,30 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_DELTA_WIRE_DISABLED \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0056_DELTA_WIRE_GENERATED \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_DELTA_WIRE_GENERATED_WORKERS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_DELTA_BYTE_NONE_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_DELTA_BYTE_FS_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0060_DELTA_BYTE_ATKINSON_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_DELTA_BYTE_LSO2_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_DELTA_BYTE_JAJUNI_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_DELTA_BYTE_STUCKI_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_DELTA_BYTE_BURKES_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_DELTA_BYTE_SIERRA1_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_DELTA_BYTE_SIERRA2_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0067_DELTA_BYTE_SIERRA3_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0068_DELTA_BYTE_A_DITHER_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0069_DELTA_BYTE_X_DITHER_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0070_DELTA_BYTE_BLUENOISE_DITHER_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0071_DELTA_BYTE_COMPARE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0072_DELTA_BYTE_SCOPE_HLS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0073_DELTA_BYTE_SCOPE_OR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0074_DELTA_BYTE_SCOPE_BODY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0075_DELTA_BYTE_SCOPE_SOURCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0076_DELTA_BYTE_SCOPE_OUTPUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0077_DELTA_BYTE_SCOPE_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0078_DELTA_BYTE_REPEAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0079_DELTA_BYTE_REPEAT_WORKERS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0080_DELTA_BYTE_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_DELTA_BYTE_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_DELTA_FIXED_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_DELTA_BUILTIN_SLOTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_DELTA_MAP_SLOTS \
@@ -11692,6 +11788,30 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0055_delta_wire_disabled.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0056_delta_wire_generated.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0057_delta_wire_generated_workers.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0058_delta_byte_none_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0059_delta_byte_fs_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0060_delta_byte_atkinson_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0061_delta_byte_lso2_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0062_delta_byte_jajuni_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0063_delta_byte_stucki_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0064_delta_byte_burkes_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0065_delta_byte_sierra1_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0066_delta_byte_sierra2_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0067_delta_byte_sierra3_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0068_delta_byte_a_dither_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0069_delta_byte_x_dither_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0071_delta_byte_compare.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0072_delta_byte_scope_hls.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0073_delta_byte_scope_or.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0074_delta_byte_scope_body.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0075_delta_byte_scope_source.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0076_delta_byte_scope_output.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0077_delta_byte_scope_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0078_delta_byte_repeat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0079_delta_byte_repeat_workers.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0080_delta_byte_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_byte_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_fixed_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0033_delta_builtin_slots.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0034_delta_map_slots.c \
@@ -14714,12 +14834,84 @@ quant/palette/delta_native/test_runner-0056_delta_wire_generated.$(OBJEXT):  \
 quant/palette/delta_native/test_runner-0057_delta_wire_generated_workers.$(OBJEXT):  \
 	quant/palette/delta_native/$(am__dirstamp) \
 	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0058_delta_byte_none_keep.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0059_delta_byte_fs_keep.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0060_delta_byte_atkinson_keep.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0061_delta_byte_lso2_keep.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0062_delta_byte_jajuni_keep.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0063_delta_byte_stucki_keep.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0064_delta_byte_burkes_keep.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0065_delta_byte_sierra1_keep.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0066_delta_byte_sierra2_keep.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0067_delta_byte_sierra3_keep.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0068_delta_byte_a_dither_keep.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0069_delta_byte_x_dither_keep.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0070_delta_byte_bluenoise_dither_keep.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0071_delta_byte_compare.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0072_delta_byte_scope_hls.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0073_delta_byte_scope_or.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0074_delta_byte_scope_body.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0075_delta_byte_scope_source.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0076_delta_byte_scope_output.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0077_delta_byte_scope_float.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0078_delta_byte_repeat.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0079_delta_byte_repeat_workers.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
+quant/palette/delta_native/test_runner-0080_delta_byte_grid.$(OBJEXT):  \
+	quant/palette/delta_native/$(am__dirstamp) \
+	quant/palette/delta_native/$(DEPDIR)/$(am__dirstamp)
 quant/palette/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette
 	@: >>quant/palette/$(am__dirstamp)
 quant/palette/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette/$(DEPDIR)
 	@: >>quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-delta_byte_common.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-delta_fixed_common.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
@@ -25511,6 +25703,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-auto_cover_float_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-auto_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-builtin_float_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-delta_byte_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-delta_fixed_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-delta_native_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-export_capture_common.Po@am__quote@ # am--include-marker
@@ -25712,6 +25905,29 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0055_delta_wire_disabled.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0056_delta_wire_generated.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0057_delta_wire_generated_workers.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0058_delta_byte_none_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0059_delta_byte_fs_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0060_delta_byte_atkinson_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0061_delta_byte_lso2_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0062_delta_byte_jajuni_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0063_delta_byte_stucki_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0064_delta_byte_burkes_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0065_delta_byte_sierra1_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0066_delta_byte_sierra2_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0067_delta_byte_sierra3_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0068_delta_byte_a_dither_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0069_delta_byte_x_dither_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0070_delta_byte_bluenoise_dither_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0071_delta_byte_compare.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0072_delta_byte_scope_hls.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0073_delta_byte_scope_or.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0074_delta_byte_scope_body.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0075_delta_byte_scope_source.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0076_delta_byte_scope_output.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0077_delta_byte_scope_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0078_delta_byte_repeat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0079_delta_byte_repeat_workers.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/delta_native/$(DEPDIR)/test_runner-0080_delta_byte_grid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/export_capture/$(DEPDIR)/test_runner-0001_native_capture_memory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/export_capture/$(DEPDIR)/test_runner-0002_byte_capture_memory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/export_capture/$(DEPDIR)/test_runner-0003_native_writer_memory.Po@am__quote@ # am--include-marker
@@ -26486,6 +26702,342 @@ quant/palette/delta_native/test_runner-0057_delta_wire_generated_workers.obj: qu
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0057_delta_wire_generated_workers.c' object='quant/palette/delta_native/test_runner-0057_delta_wire_generated_workers.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0057_delta_wire_generated_workers.obj `if test -f 'quant/palette/delta_native/0057_delta_wire_generated_workers.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0057_delta_wire_generated_workers.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0057_delta_wire_generated_workers.c'; fi`
+
+quant/palette/delta_native/test_runner-0058_delta_byte_none_keep.o: quant/palette/delta_native/0058_delta_byte_none_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0058_delta_byte_none_keep.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0058_delta_byte_none_keep.Tpo -c -o quant/palette/delta_native/test_runner-0058_delta_byte_none_keep.o `test -f 'quant/palette/delta_native/0058_delta_byte_none_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0058_delta_byte_none_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0058_delta_byte_none_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0058_delta_byte_none_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0058_delta_byte_none_keep.c' object='quant/palette/delta_native/test_runner-0058_delta_byte_none_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0058_delta_byte_none_keep.o `test -f 'quant/palette/delta_native/0058_delta_byte_none_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0058_delta_byte_none_keep.c
+
+quant/palette/delta_native/test_runner-0058_delta_byte_none_keep.obj: quant/palette/delta_native/0058_delta_byte_none_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0058_delta_byte_none_keep.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0058_delta_byte_none_keep.Tpo -c -o quant/palette/delta_native/test_runner-0058_delta_byte_none_keep.obj `if test -f 'quant/palette/delta_native/0058_delta_byte_none_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0058_delta_byte_none_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0058_delta_byte_none_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0058_delta_byte_none_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0058_delta_byte_none_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0058_delta_byte_none_keep.c' object='quant/palette/delta_native/test_runner-0058_delta_byte_none_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0058_delta_byte_none_keep.obj `if test -f 'quant/palette/delta_native/0058_delta_byte_none_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0058_delta_byte_none_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0058_delta_byte_none_keep.c'; fi`
+
+quant/palette/delta_native/test_runner-0059_delta_byte_fs_keep.o: quant/palette/delta_native/0059_delta_byte_fs_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0059_delta_byte_fs_keep.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0059_delta_byte_fs_keep.Tpo -c -o quant/palette/delta_native/test_runner-0059_delta_byte_fs_keep.o `test -f 'quant/palette/delta_native/0059_delta_byte_fs_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0059_delta_byte_fs_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0059_delta_byte_fs_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0059_delta_byte_fs_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0059_delta_byte_fs_keep.c' object='quant/palette/delta_native/test_runner-0059_delta_byte_fs_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0059_delta_byte_fs_keep.o `test -f 'quant/palette/delta_native/0059_delta_byte_fs_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0059_delta_byte_fs_keep.c
+
+quant/palette/delta_native/test_runner-0059_delta_byte_fs_keep.obj: quant/palette/delta_native/0059_delta_byte_fs_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0059_delta_byte_fs_keep.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0059_delta_byte_fs_keep.Tpo -c -o quant/palette/delta_native/test_runner-0059_delta_byte_fs_keep.obj `if test -f 'quant/palette/delta_native/0059_delta_byte_fs_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0059_delta_byte_fs_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0059_delta_byte_fs_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0059_delta_byte_fs_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0059_delta_byte_fs_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0059_delta_byte_fs_keep.c' object='quant/palette/delta_native/test_runner-0059_delta_byte_fs_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0059_delta_byte_fs_keep.obj `if test -f 'quant/palette/delta_native/0059_delta_byte_fs_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0059_delta_byte_fs_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0059_delta_byte_fs_keep.c'; fi`
+
+quant/palette/delta_native/test_runner-0060_delta_byte_atkinson_keep.o: quant/palette/delta_native/0060_delta_byte_atkinson_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0060_delta_byte_atkinson_keep.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0060_delta_byte_atkinson_keep.Tpo -c -o quant/palette/delta_native/test_runner-0060_delta_byte_atkinson_keep.o `test -f 'quant/palette/delta_native/0060_delta_byte_atkinson_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0060_delta_byte_atkinson_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0060_delta_byte_atkinson_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0060_delta_byte_atkinson_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0060_delta_byte_atkinson_keep.c' object='quant/palette/delta_native/test_runner-0060_delta_byte_atkinson_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0060_delta_byte_atkinson_keep.o `test -f 'quant/palette/delta_native/0060_delta_byte_atkinson_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0060_delta_byte_atkinson_keep.c
+
+quant/palette/delta_native/test_runner-0060_delta_byte_atkinson_keep.obj: quant/palette/delta_native/0060_delta_byte_atkinson_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0060_delta_byte_atkinson_keep.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0060_delta_byte_atkinson_keep.Tpo -c -o quant/palette/delta_native/test_runner-0060_delta_byte_atkinson_keep.obj `if test -f 'quant/palette/delta_native/0060_delta_byte_atkinson_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0060_delta_byte_atkinson_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0060_delta_byte_atkinson_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0060_delta_byte_atkinson_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0060_delta_byte_atkinson_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0060_delta_byte_atkinson_keep.c' object='quant/palette/delta_native/test_runner-0060_delta_byte_atkinson_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0060_delta_byte_atkinson_keep.obj `if test -f 'quant/palette/delta_native/0060_delta_byte_atkinson_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0060_delta_byte_atkinson_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0060_delta_byte_atkinson_keep.c'; fi`
+
+quant/palette/delta_native/test_runner-0061_delta_byte_lso2_keep.o: quant/palette/delta_native/0061_delta_byte_lso2_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0061_delta_byte_lso2_keep.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0061_delta_byte_lso2_keep.Tpo -c -o quant/palette/delta_native/test_runner-0061_delta_byte_lso2_keep.o `test -f 'quant/palette/delta_native/0061_delta_byte_lso2_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0061_delta_byte_lso2_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0061_delta_byte_lso2_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0061_delta_byte_lso2_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0061_delta_byte_lso2_keep.c' object='quant/palette/delta_native/test_runner-0061_delta_byte_lso2_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0061_delta_byte_lso2_keep.o `test -f 'quant/palette/delta_native/0061_delta_byte_lso2_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0061_delta_byte_lso2_keep.c
+
+quant/palette/delta_native/test_runner-0061_delta_byte_lso2_keep.obj: quant/palette/delta_native/0061_delta_byte_lso2_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0061_delta_byte_lso2_keep.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0061_delta_byte_lso2_keep.Tpo -c -o quant/palette/delta_native/test_runner-0061_delta_byte_lso2_keep.obj `if test -f 'quant/palette/delta_native/0061_delta_byte_lso2_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0061_delta_byte_lso2_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0061_delta_byte_lso2_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0061_delta_byte_lso2_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0061_delta_byte_lso2_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0061_delta_byte_lso2_keep.c' object='quant/palette/delta_native/test_runner-0061_delta_byte_lso2_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0061_delta_byte_lso2_keep.obj `if test -f 'quant/palette/delta_native/0061_delta_byte_lso2_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0061_delta_byte_lso2_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0061_delta_byte_lso2_keep.c'; fi`
+
+quant/palette/delta_native/test_runner-0062_delta_byte_jajuni_keep.o: quant/palette/delta_native/0062_delta_byte_jajuni_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0062_delta_byte_jajuni_keep.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0062_delta_byte_jajuni_keep.Tpo -c -o quant/palette/delta_native/test_runner-0062_delta_byte_jajuni_keep.o `test -f 'quant/palette/delta_native/0062_delta_byte_jajuni_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0062_delta_byte_jajuni_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0062_delta_byte_jajuni_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0062_delta_byte_jajuni_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0062_delta_byte_jajuni_keep.c' object='quant/palette/delta_native/test_runner-0062_delta_byte_jajuni_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0062_delta_byte_jajuni_keep.o `test -f 'quant/palette/delta_native/0062_delta_byte_jajuni_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0062_delta_byte_jajuni_keep.c
+
+quant/palette/delta_native/test_runner-0062_delta_byte_jajuni_keep.obj: quant/palette/delta_native/0062_delta_byte_jajuni_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0062_delta_byte_jajuni_keep.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0062_delta_byte_jajuni_keep.Tpo -c -o quant/palette/delta_native/test_runner-0062_delta_byte_jajuni_keep.obj `if test -f 'quant/palette/delta_native/0062_delta_byte_jajuni_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0062_delta_byte_jajuni_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0062_delta_byte_jajuni_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0062_delta_byte_jajuni_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0062_delta_byte_jajuni_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0062_delta_byte_jajuni_keep.c' object='quant/palette/delta_native/test_runner-0062_delta_byte_jajuni_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0062_delta_byte_jajuni_keep.obj `if test -f 'quant/palette/delta_native/0062_delta_byte_jajuni_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0062_delta_byte_jajuni_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0062_delta_byte_jajuni_keep.c'; fi`
+
+quant/palette/delta_native/test_runner-0063_delta_byte_stucki_keep.o: quant/palette/delta_native/0063_delta_byte_stucki_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0063_delta_byte_stucki_keep.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0063_delta_byte_stucki_keep.Tpo -c -o quant/palette/delta_native/test_runner-0063_delta_byte_stucki_keep.o `test -f 'quant/palette/delta_native/0063_delta_byte_stucki_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0063_delta_byte_stucki_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0063_delta_byte_stucki_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0063_delta_byte_stucki_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0063_delta_byte_stucki_keep.c' object='quant/palette/delta_native/test_runner-0063_delta_byte_stucki_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0063_delta_byte_stucki_keep.o `test -f 'quant/palette/delta_native/0063_delta_byte_stucki_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0063_delta_byte_stucki_keep.c
+
+quant/palette/delta_native/test_runner-0063_delta_byte_stucki_keep.obj: quant/palette/delta_native/0063_delta_byte_stucki_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0063_delta_byte_stucki_keep.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0063_delta_byte_stucki_keep.Tpo -c -o quant/palette/delta_native/test_runner-0063_delta_byte_stucki_keep.obj `if test -f 'quant/palette/delta_native/0063_delta_byte_stucki_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0063_delta_byte_stucki_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0063_delta_byte_stucki_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0063_delta_byte_stucki_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0063_delta_byte_stucki_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0063_delta_byte_stucki_keep.c' object='quant/palette/delta_native/test_runner-0063_delta_byte_stucki_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0063_delta_byte_stucki_keep.obj `if test -f 'quant/palette/delta_native/0063_delta_byte_stucki_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0063_delta_byte_stucki_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0063_delta_byte_stucki_keep.c'; fi`
+
+quant/palette/delta_native/test_runner-0064_delta_byte_burkes_keep.o: quant/palette/delta_native/0064_delta_byte_burkes_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0064_delta_byte_burkes_keep.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0064_delta_byte_burkes_keep.Tpo -c -o quant/palette/delta_native/test_runner-0064_delta_byte_burkes_keep.o `test -f 'quant/palette/delta_native/0064_delta_byte_burkes_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0064_delta_byte_burkes_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0064_delta_byte_burkes_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0064_delta_byte_burkes_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0064_delta_byte_burkes_keep.c' object='quant/palette/delta_native/test_runner-0064_delta_byte_burkes_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0064_delta_byte_burkes_keep.o `test -f 'quant/palette/delta_native/0064_delta_byte_burkes_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0064_delta_byte_burkes_keep.c
+
+quant/palette/delta_native/test_runner-0064_delta_byte_burkes_keep.obj: quant/palette/delta_native/0064_delta_byte_burkes_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0064_delta_byte_burkes_keep.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0064_delta_byte_burkes_keep.Tpo -c -o quant/palette/delta_native/test_runner-0064_delta_byte_burkes_keep.obj `if test -f 'quant/palette/delta_native/0064_delta_byte_burkes_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0064_delta_byte_burkes_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0064_delta_byte_burkes_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0064_delta_byte_burkes_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0064_delta_byte_burkes_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0064_delta_byte_burkes_keep.c' object='quant/palette/delta_native/test_runner-0064_delta_byte_burkes_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0064_delta_byte_burkes_keep.obj `if test -f 'quant/palette/delta_native/0064_delta_byte_burkes_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0064_delta_byte_burkes_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0064_delta_byte_burkes_keep.c'; fi`
+
+quant/palette/delta_native/test_runner-0065_delta_byte_sierra1_keep.o: quant/palette/delta_native/0065_delta_byte_sierra1_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0065_delta_byte_sierra1_keep.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0065_delta_byte_sierra1_keep.Tpo -c -o quant/palette/delta_native/test_runner-0065_delta_byte_sierra1_keep.o `test -f 'quant/palette/delta_native/0065_delta_byte_sierra1_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0065_delta_byte_sierra1_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0065_delta_byte_sierra1_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0065_delta_byte_sierra1_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0065_delta_byte_sierra1_keep.c' object='quant/palette/delta_native/test_runner-0065_delta_byte_sierra1_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0065_delta_byte_sierra1_keep.o `test -f 'quant/palette/delta_native/0065_delta_byte_sierra1_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0065_delta_byte_sierra1_keep.c
+
+quant/palette/delta_native/test_runner-0065_delta_byte_sierra1_keep.obj: quant/palette/delta_native/0065_delta_byte_sierra1_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0065_delta_byte_sierra1_keep.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0065_delta_byte_sierra1_keep.Tpo -c -o quant/palette/delta_native/test_runner-0065_delta_byte_sierra1_keep.obj `if test -f 'quant/palette/delta_native/0065_delta_byte_sierra1_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0065_delta_byte_sierra1_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0065_delta_byte_sierra1_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0065_delta_byte_sierra1_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0065_delta_byte_sierra1_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0065_delta_byte_sierra1_keep.c' object='quant/palette/delta_native/test_runner-0065_delta_byte_sierra1_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0065_delta_byte_sierra1_keep.obj `if test -f 'quant/palette/delta_native/0065_delta_byte_sierra1_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0065_delta_byte_sierra1_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0065_delta_byte_sierra1_keep.c'; fi`
+
+quant/palette/delta_native/test_runner-0066_delta_byte_sierra2_keep.o: quant/palette/delta_native/0066_delta_byte_sierra2_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0066_delta_byte_sierra2_keep.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0066_delta_byte_sierra2_keep.Tpo -c -o quant/palette/delta_native/test_runner-0066_delta_byte_sierra2_keep.o `test -f 'quant/palette/delta_native/0066_delta_byte_sierra2_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0066_delta_byte_sierra2_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0066_delta_byte_sierra2_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0066_delta_byte_sierra2_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0066_delta_byte_sierra2_keep.c' object='quant/palette/delta_native/test_runner-0066_delta_byte_sierra2_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0066_delta_byte_sierra2_keep.o `test -f 'quant/palette/delta_native/0066_delta_byte_sierra2_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0066_delta_byte_sierra2_keep.c
+
+quant/palette/delta_native/test_runner-0066_delta_byte_sierra2_keep.obj: quant/palette/delta_native/0066_delta_byte_sierra2_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0066_delta_byte_sierra2_keep.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0066_delta_byte_sierra2_keep.Tpo -c -o quant/palette/delta_native/test_runner-0066_delta_byte_sierra2_keep.obj `if test -f 'quant/palette/delta_native/0066_delta_byte_sierra2_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0066_delta_byte_sierra2_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0066_delta_byte_sierra2_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0066_delta_byte_sierra2_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0066_delta_byte_sierra2_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0066_delta_byte_sierra2_keep.c' object='quant/palette/delta_native/test_runner-0066_delta_byte_sierra2_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0066_delta_byte_sierra2_keep.obj `if test -f 'quant/palette/delta_native/0066_delta_byte_sierra2_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0066_delta_byte_sierra2_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0066_delta_byte_sierra2_keep.c'; fi`
+
+quant/palette/delta_native/test_runner-0067_delta_byte_sierra3_keep.o: quant/palette/delta_native/0067_delta_byte_sierra3_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0067_delta_byte_sierra3_keep.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0067_delta_byte_sierra3_keep.Tpo -c -o quant/palette/delta_native/test_runner-0067_delta_byte_sierra3_keep.o `test -f 'quant/palette/delta_native/0067_delta_byte_sierra3_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0067_delta_byte_sierra3_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0067_delta_byte_sierra3_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0067_delta_byte_sierra3_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0067_delta_byte_sierra3_keep.c' object='quant/palette/delta_native/test_runner-0067_delta_byte_sierra3_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0067_delta_byte_sierra3_keep.o `test -f 'quant/palette/delta_native/0067_delta_byte_sierra3_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0067_delta_byte_sierra3_keep.c
+
+quant/palette/delta_native/test_runner-0067_delta_byte_sierra3_keep.obj: quant/palette/delta_native/0067_delta_byte_sierra3_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0067_delta_byte_sierra3_keep.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0067_delta_byte_sierra3_keep.Tpo -c -o quant/palette/delta_native/test_runner-0067_delta_byte_sierra3_keep.obj `if test -f 'quant/palette/delta_native/0067_delta_byte_sierra3_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0067_delta_byte_sierra3_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0067_delta_byte_sierra3_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0067_delta_byte_sierra3_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0067_delta_byte_sierra3_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0067_delta_byte_sierra3_keep.c' object='quant/palette/delta_native/test_runner-0067_delta_byte_sierra3_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0067_delta_byte_sierra3_keep.obj `if test -f 'quant/palette/delta_native/0067_delta_byte_sierra3_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0067_delta_byte_sierra3_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0067_delta_byte_sierra3_keep.c'; fi`
+
+quant/palette/delta_native/test_runner-0068_delta_byte_a_dither_keep.o: quant/palette/delta_native/0068_delta_byte_a_dither_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0068_delta_byte_a_dither_keep.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0068_delta_byte_a_dither_keep.Tpo -c -o quant/palette/delta_native/test_runner-0068_delta_byte_a_dither_keep.o `test -f 'quant/palette/delta_native/0068_delta_byte_a_dither_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0068_delta_byte_a_dither_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0068_delta_byte_a_dither_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0068_delta_byte_a_dither_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0068_delta_byte_a_dither_keep.c' object='quant/palette/delta_native/test_runner-0068_delta_byte_a_dither_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0068_delta_byte_a_dither_keep.o `test -f 'quant/palette/delta_native/0068_delta_byte_a_dither_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0068_delta_byte_a_dither_keep.c
+
+quant/palette/delta_native/test_runner-0068_delta_byte_a_dither_keep.obj: quant/palette/delta_native/0068_delta_byte_a_dither_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0068_delta_byte_a_dither_keep.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0068_delta_byte_a_dither_keep.Tpo -c -o quant/palette/delta_native/test_runner-0068_delta_byte_a_dither_keep.obj `if test -f 'quant/palette/delta_native/0068_delta_byte_a_dither_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0068_delta_byte_a_dither_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0068_delta_byte_a_dither_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0068_delta_byte_a_dither_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0068_delta_byte_a_dither_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0068_delta_byte_a_dither_keep.c' object='quant/palette/delta_native/test_runner-0068_delta_byte_a_dither_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0068_delta_byte_a_dither_keep.obj `if test -f 'quant/palette/delta_native/0068_delta_byte_a_dither_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0068_delta_byte_a_dither_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0068_delta_byte_a_dither_keep.c'; fi`
+
+quant/palette/delta_native/test_runner-0069_delta_byte_x_dither_keep.o: quant/palette/delta_native/0069_delta_byte_x_dither_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0069_delta_byte_x_dither_keep.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0069_delta_byte_x_dither_keep.Tpo -c -o quant/palette/delta_native/test_runner-0069_delta_byte_x_dither_keep.o `test -f 'quant/palette/delta_native/0069_delta_byte_x_dither_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0069_delta_byte_x_dither_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0069_delta_byte_x_dither_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0069_delta_byte_x_dither_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0069_delta_byte_x_dither_keep.c' object='quant/palette/delta_native/test_runner-0069_delta_byte_x_dither_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0069_delta_byte_x_dither_keep.o `test -f 'quant/palette/delta_native/0069_delta_byte_x_dither_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0069_delta_byte_x_dither_keep.c
+
+quant/palette/delta_native/test_runner-0069_delta_byte_x_dither_keep.obj: quant/palette/delta_native/0069_delta_byte_x_dither_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0069_delta_byte_x_dither_keep.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0069_delta_byte_x_dither_keep.Tpo -c -o quant/palette/delta_native/test_runner-0069_delta_byte_x_dither_keep.obj `if test -f 'quant/palette/delta_native/0069_delta_byte_x_dither_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0069_delta_byte_x_dither_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0069_delta_byte_x_dither_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0069_delta_byte_x_dither_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0069_delta_byte_x_dither_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0069_delta_byte_x_dither_keep.c' object='quant/palette/delta_native/test_runner-0069_delta_byte_x_dither_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0069_delta_byte_x_dither_keep.obj `if test -f 'quant/palette/delta_native/0069_delta_byte_x_dither_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0069_delta_byte_x_dither_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0069_delta_byte_x_dither_keep.c'; fi`
+
+quant/palette/delta_native/test_runner-0070_delta_byte_bluenoise_dither_keep.o: quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0070_delta_byte_bluenoise_dither_keep.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0070_delta_byte_bluenoise_dither_keep.Tpo -c -o quant/palette/delta_native/test_runner-0070_delta_byte_bluenoise_dither_keep.o `test -f 'quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0070_delta_byte_bluenoise_dither_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0070_delta_byte_bluenoise_dither_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c' object='quant/palette/delta_native/test_runner-0070_delta_byte_bluenoise_dither_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0070_delta_byte_bluenoise_dither_keep.o `test -f 'quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c' || echo '$(srcdir)/'`quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c
+
+quant/palette/delta_native/test_runner-0070_delta_byte_bluenoise_dither_keep.obj: quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0070_delta_byte_bluenoise_dither_keep.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0070_delta_byte_bluenoise_dither_keep.Tpo -c -o quant/palette/delta_native/test_runner-0070_delta_byte_bluenoise_dither_keep.obj `if test -f 'quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0070_delta_byte_bluenoise_dither_keep.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0070_delta_byte_bluenoise_dither_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c' object='quant/palette/delta_native/test_runner-0070_delta_byte_bluenoise_dither_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0070_delta_byte_bluenoise_dither_keep.obj `if test -f 'quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c'; fi`
+
+quant/palette/delta_native/test_runner-0071_delta_byte_compare.o: quant/palette/delta_native/0071_delta_byte_compare.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0071_delta_byte_compare.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0071_delta_byte_compare.Tpo -c -o quant/palette/delta_native/test_runner-0071_delta_byte_compare.o `test -f 'quant/palette/delta_native/0071_delta_byte_compare.c' || echo '$(srcdir)/'`quant/palette/delta_native/0071_delta_byte_compare.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0071_delta_byte_compare.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0071_delta_byte_compare.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0071_delta_byte_compare.c' object='quant/palette/delta_native/test_runner-0071_delta_byte_compare.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0071_delta_byte_compare.o `test -f 'quant/palette/delta_native/0071_delta_byte_compare.c' || echo '$(srcdir)/'`quant/palette/delta_native/0071_delta_byte_compare.c
+
+quant/palette/delta_native/test_runner-0071_delta_byte_compare.obj: quant/palette/delta_native/0071_delta_byte_compare.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0071_delta_byte_compare.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0071_delta_byte_compare.Tpo -c -o quant/palette/delta_native/test_runner-0071_delta_byte_compare.obj `if test -f 'quant/palette/delta_native/0071_delta_byte_compare.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0071_delta_byte_compare.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0071_delta_byte_compare.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0071_delta_byte_compare.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0071_delta_byte_compare.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0071_delta_byte_compare.c' object='quant/palette/delta_native/test_runner-0071_delta_byte_compare.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0071_delta_byte_compare.obj `if test -f 'quant/palette/delta_native/0071_delta_byte_compare.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0071_delta_byte_compare.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0071_delta_byte_compare.c'; fi`
+
+quant/palette/delta_native/test_runner-0072_delta_byte_scope_hls.o: quant/palette/delta_native/0072_delta_byte_scope_hls.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0072_delta_byte_scope_hls.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0072_delta_byte_scope_hls.Tpo -c -o quant/palette/delta_native/test_runner-0072_delta_byte_scope_hls.o `test -f 'quant/palette/delta_native/0072_delta_byte_scope_hls.c' || echo '$(srcdir)/'`quant/palette/delta_native/0072_delta_byte_scope_hls.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0072_delta_byte_scope_hls.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0072_delta_byte_scope_hls.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0072_delta_byte_scope_hls.c' object='quant/palette/delta_native/test_runner-0072_delta_byte_scope_hls.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0072_delta_byte_scope_hls.o `test -f 'quant/palette/delta_native/0072_delta_byte_scope_hls.c' || echo '$(srcdir)/'`quant/palette/delta_native/0072_delta_byte_scope_hls.c
+
+quant/palette/delta_native/test_runner-0072_delta_byte_scope_hls.obj: quant/palette/delta_native/0072_delta_byte_scope_hls.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0072_delta_byte_scope_hls.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0072_delta_byte_scope_hls.Tpo -c -o quant/palette/delta_native/test_runner-0072_delta_byte_scope_hls.obj `if test -f 'quant/palette/delta_native/0072_delta_byte_scope_hls.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0072_delta_byte_scope_hls.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0072_delta_byte_scope_hls.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0072_delta_byte_scope_hls.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0072_delta_byte_scope_hls.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0072_delta_byte_scope_hls.c' object='quant/palette/delta_native/test_runner-0072_delta_byte_scope_hls.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0072_delta_byte_scope_hls.obj `if test -f 'quant/palette/delta_native/0072_delta_byte_scope_hls.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0072_delta_byte_scope_hls.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0072_delta_byte_scope_hls.c'; fi`
+
+quant/palette/delta_native/test_runner-0073_delta_byte_scope_or.o: quant/palette/delta_native/0073_delta_byte_scope_or.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0073_delta_byte_scope_or.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0073_delta_byte_scope_or.Tpo -c -o quant/palette/delta_native/test_runner-0073_delta_byte_scope_or.o `test -f 'quant/palette/delta_native/0073_delta_byte_scope_or.c' || echo '$(srcdir)/'`quant/palette/delta_native/0073_delta_byte_scope_or.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0073_delta_byte_scope_or.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0073_delta_byte_scope_or.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0073_delta_byte_scope_or.c' object='quant/palette/delta_native/test_runner-0073_delta_byte_scope_or.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0073_delta_byte_scope_or.o `test -f 'quant/palette/delta_native/0073_delta_byte_scope_or.c' || echo '$(srcdir)/'`quant/palette/delta_native/0073_delta_byte_scope_or.c
+
+quant/palette/delta_native/test_runner-0073_delta_byte_scope_or.obj: quant/palette/delta_native/0073_delta_byte_scope_or.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0073_delta_byte_scope_or.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0073_delta_byte_scope_or.Tpo -c -o quant/palette/delta_native/test_runner-0073_delta_byte_scope_or.obj `if test -f 'quant/palette/delta_native/0073_delta_byte_scope_or.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0073_delta_byte_scope_or.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0073_delta_byte_scope_or.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0073_delta_byte_scope_or.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0073_delta_byte_scope_or.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0073_delta_byte_scope_or.c' object='quant/palette/delta_native/test_runner-0073_delta_byte_scope_or.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0073_delta_byte_scope_or.obj `if test -f 'quant/palette/delta_native/0073_delta_byte_scope_or.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0073_delta_byte_scope_or.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0073_delta_byte_scope_or.c'; fi`
+
+quant/palette/delta_native/test_runner-0074_delta_byte_scope_body.o: quant/palette/delta_native/0074_delta_byte_scope_body.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0074_delta_byte_scope_body.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0074_delta_byte_scope_body.Tpo -c -o quant/palette/delta_native/test_runner-0074_delta_byte_scope_body.o `test -f 'quant/palette/delta_native/0074_delta_byte_scope_body.c' || echo '$(srcdir)/'`quant/palette/delta_native/0074_delta_byte_scope_body.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0074_delta_byte_scope_body.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0074_delta_byte_scope_body.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0074_delta_byte_scope_body.c' object='quant/palette/delta_native/test_runner-0074_delta_byte_scope_body.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0074_delta_byte_scope_body.o `test -f 'quant/palette/delta_native/0074_delta_byte_scope_body.c' || echo '$(srcdir)/'`quant/palette/delta_native/0074_delta_byte_scope_body.c
+
+quant/palette/delta_native/test_runner-0074_delta_byte_scope_body.obj: quant/palette/delta_native/0074_delta_byte_scope_body.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0074_delta_byte_scope_body.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0074_delta_byte_scope_body.Tpo -c -o quant/palette/delta_native/test_runner-0074_delta_byte_scope_body.obj `if test -f 'quant/palette/delta_native/0074_delta_byte_scope_body.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0074_delta_byte_scope_body.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0074_delta_byte_scope_body.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0074_delta_byte_scope_body.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0074_delta_byte_scope_body.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0074_delta_byte_scope_body.c' object='quant/palette/delta_native/test_runner-0074_delta_byte_scope_body.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0074_delta_byte_scope_body.obj `if test -f 'quant/palette/delta_native/0074_delta_byte_scope_body.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0074_delta_byte_scope_body.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0074_delta_byte_scope_body.c'; fi`
+
+quant/palette/delta_native/test_runner-0075_delta_byte_scope_source.o: quant/palette/delta_native/0075_delta_byte_scope_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0075_delta_byte_scope_source.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0075_delta_byte_scope_source.Tpo -c -o quant/palette/delta_native/test_runner-0075_delta_byte_scope_source.o `test -f 'quant/palette/delta_native/0075_delta_byte_scope_source.c' || echo '$(srcdir)/'`quant/palette/delta_native/0075_delta_byte_scope_source.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0075_delta_byte_scope_source.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0075_delta_byte_scope_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0075_delta_byte_scope_source.c' object='quant/palette/delta_native/test_runner-0075_delta_byte_scope_source.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0075_delta_byte_scope_source.o `test -f 'quant/palette/delta_native/0075_delta_byte_scope_source.c' || echo '$(srcdir)/'`quant/palette/delta_native/0075_delta_byte_scope_source.c
+
+quant/palette/delta_native/test_runner-0075_delta_byte_scope_source.obj: quant/palette/delta_native/0075_delta_byte_scope_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0075_delta_byte_scope_source.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0075_delta_byte_scope_source.Tpo -c -o quant/palette/delta_native/test_runner-0075_delta_byte_scope_source.obj `if test -f 'quant/palette/delta_native/0075_delta_byte_scope_source.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0075_delta_byte_scope_source.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0075_delta_byte_scope_source.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0075_delta_byte_scope_source.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0075_delta_byte_scope_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0075_delta_byte_scope_source.c' object='quant/palette/delta_native/test_runner-0075_delta_byte_scope_source.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0075_delta_byte_scope_source.obj `if test -f 'quant/palette/delta_native/0075_delta_byte_scope_source.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0075_delta_byte_scope_source.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0075_delta_byte_scope_source.c'; fi`
+
+quant/palette/delta_native/test_runner-0076_delta_byte_scope_output.o: quant/palette/delta_native/0076_delta_byte_scope_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0076_delta_byte_scope_output.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0076_delta_byte_scope_output.Tpo -c -o quant/palette/delta_native/test_runner-0076_delta_byte_scope_output.o `test -f 'quant/palette/delta_native/0076_delta_byte_scope_output.c' || echo '$(srcdir)/'`quant/palette/delta_native/0076_delta_byte_scope_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0076_delta_byte_scope_output.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0076_delta_byte_scope_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0076_delta_byte_scope_output.c' object='quant/palette/delta_native/test_runner-0076_delta_byte_scope_output.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0076_delta_byte_scope_output.o `test -f 'quant/palette/delta_native/0076_delta_byte_scope_output.c' || echo '$(srcdir)/'`quant/palette/delta_native/0076_delta_byte_scope_output.c
+
+quant/palette/delta_native/test_runner-0076_delta_byte_scope_output.obj: quant/palette/delta_native/0076_delta_byte_scope_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0076_delta_byte_scope_output.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0076_delta_byte_scope_output.Tpo -c -o quant/palette/delta_native/test_runner-0076_delta_byte_scope_output.obj `if test -f 'quant/palette/delta_native/0076_delta_byte_scope_output.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0076_delta_byte_scope_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0076_delta_byte_scope_output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0076_delta_byte_scope_output.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0076_delta_byte_scope_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0076_delta_byte_scope_output.c' object='quant/palette/delta_native/test_runner-0076_delta_byte_scope_output.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0076_delta_byte_scope_output.obj `if test -f 'quant/palette/delta_native/0076_delta_byte_scope_output.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0076_delta_byte_scope_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0076_delta_byte_scope_output.c'; fi`
+
+quant/palette/delta_native/test_runner-0077_delta_byte_scope_float.o: quant/palette/delta_native/0077_delta_byte_scope_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0077_delta_byte_scope_float.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0077_delta_byte_scope_float.Tpo -c -o quant/palette/delta_native/test_runner-0077_delta_byte_scope_float.o `test -f 'quant/palette/delta_native/0077_delta_byte_scope_float.c' || echo '$(srcdir)/'`quant/palette/delta_native/0077_delta_byte_scope_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0077_delta_byte_scope_float.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0077_delta_byte_scope_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0077_delta_byte_scope_float.c' object='quant/palette/delta_native/test_runner-0077_delta_byte_scope_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0077_delta_byte_scope_float.o `test -f 'quant/palette/delta_native/0077_delta_byte_scope_float.c' || echo '$(srcdir)/'`quant/palette/delta_native/0077_delta_byte_scope_float.c
+
+quant/palette/delta_native/test_runner-0077_delta_byte_scope_float.obj: quant/palette/delta_native/0077_delta_byte_scope_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0077_delta_byte_scope_float.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0077_delta_byte_scope_float.Tpo -c -o quant/palette/delta_native/test_runner-0077_delta_byte_scope_float.obj `if test -f 'quant/palette/delta_native/0077_delta_byte_scope_float.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0077_delta_byte_scope_float.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0077_delta_byte_scope_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0077_delta_byte_scope_float.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0077_delta_byte_scope_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0077_delta_byte_scope_float.c' object='quant/palette/delta_native/test_runner-0077_delta_byte_scope_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0077_delta_byte_scope_float.obj `if test -f 'quant/palette/delta_native/0077_delta_byte_scope_float.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0077_delta_byte_scope_float.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0077_delta_byte_scope_float.c'; fi`
+
+quant/palette/delta_native/test_runner-0078_delta_byte_repeat.o: quant/palette/delta_native/0078_delta_byte_repeat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0078_delta_byte_repeat.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0078_delta_byte_repeat.Tpo -c -o quant/palette/delta_native/test_runner-0078_delta_byte_repeat.o `test -f 'quant/palette/delta_native/0078_delta_byte_repeat.c' || echo '$(srcdir)/'`quant/palette/delta_native/0078_delta_byte_repeat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0078_delta_byte_repeat.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0078_delta_byte_repeat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0078_delta_byte_repeat.c' object='quant/palette/delta_native/test_runner-0078_delta_byte_repeat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0078_delta_byte_repeat.o `test -f 'quant/palette/delta_native/0078_delta_byte_repeat.c' || echo '$(srcdir)/'`quant/palette/delta_native/0078_delta_byte_repeat.c
+
+quant/palette/delta_native/test_runner-0078_delta_byte_repeat.obj: quant/palette/delta_native/0078_delta_byte_repeat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0078_delta_byte_repeat.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0078_delta_byte_repeat.Tpo -c -o quant/palette/delta_native/test_runner-0078_delta_byte_repeat.obj `if test -f 'quant/palette/delta_native/0078_delta_byte_repeat.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0078_delta_byte_repeat.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0078_delta_byte_repeat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0078_delta_byte_repeat.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0078_delta_byte_repeat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0078_delta_byte_repeat.c' object='quant/palette/delta_native/test_runner-0078_delta_byte_repeat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0078_delta_byte_repeat.obj `if test -f 'quant/palette/delta_native/0078_delta_byte_repeat.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0078_delta_byte_repeat.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0078_delta_byte_repeat.c'; fi`
+
+quant/palette/delta_native/test_runner-0079_delta_byte_repeat_workers.o: quant/palette/delta_native/0079_delta_byte_repeat_workers.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0079_delta_byte_repeat_workers.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0079_delta_byte_repeat_workers.Tpo -c -o quant/palette/delta_native/test_runner-0079_delta_byte_repeat_workers.o `test -f 'quant/palette/delta_native/0079_delta_byte_repeat_workers.c' || echo '$(srcdir)/'`quant/palette/delta_native/0079_delta_byte_repeat_workers.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0079_delta_byte_repeat_workers.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0079_delta_byte_repeat_workers.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0079_delta_byte_repeat_workers.c' object='quant/palette/delta_native/test_runner-0079_delta_byte_repeat_workers.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0079_delta_byte_repeat_workers.o `test -f 'quant/palette/delta_native/0079_delta_byte_repeat_workers.c' || echo '$(srcdir)/'`quant/palette/delta_native/0079_delta_byte_repeat_workers.c
+
+quant/palette/delta_native/test_runner-0079_delta_byte_repeat_workers.obj: quant/palette/delta_native/0079_delta_byte_repeat_workers.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0079_delta_byte_repeat_workers.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0079_delta_byte_repeat_workers.Tpo -c -o quant/palette/delta_native/test_runner-0079_delta_byte_repeat_workers.obj `if test -f 'quant/palette/delta_native/0079_delta_byte_repeat_workers.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0079_delta_byte_repeat_workers.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0079_delta_byte_repeat_workers.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0079_delta_byte_repeat_workers.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0079_delta_byte_repeat_workers.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0079_delta_byte_repeat_workers.c' object='quant/palette/delta_native/test_runner-0079_delta_byte_repeat_workers.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0079_delta_byte_repeat_workers.obj `if test -f 'quant/palette/delta_native/0079_delta_byte_repeat_workers.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0079_delta_byte_repeat_workers.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0079_delta_byte_repeat_workers.c'; fi`
+
+quant/palette/delta_native/test_runner-0080_delta_byte_grid.o: quant/palette/delta_native/0080_delta_byte_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0080_delta_byte_grid.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0080_delta_byte_grid.Tpo -c -o quant/palette/delta_native/test_runner-0080_delta_byte_grid.o `test -f 'quant/palette/delta_native/0080_delta_byte_grid.c' || echo '$(srcdir)/'`quant/palette/delta_native/0080_delta_byte_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0080_delta_byte_grid.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0080_delta_byte_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0080_delta_byte_grid.c' object='quant/palette/delta_native/test_runner-0080_delta_byte_grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0080_delta_byte_grid.o `test -f 'quant/palette/delta_native/0080_delta_byte_grid.c' || echo '$(srcdir)/'`quant/palette/delta_native/0080_delta_byte_grid.c
+
+quant/palette/delta_native/test_runner-0080_delta_byte_grid.obj: quant/palette/delta_native/0080_delta_byte_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0080_delta_byte_grid.obj -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0080_delta_byte_grid.Tpo -c -o quant/palette/delta_native/test_runner-0080_delta_byte_grid.obj `if test -f 'quant/palette/delta_native/0080_delta_byte_grid.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0080_delta_byte_grid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0080_delta_byte_grid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/delta_native/$(DEPDIR)/test_runner-0080_delta_byte_grid.Tpo quant/palette/delta_native/$(DEPDIR)/test_runner-0080_delta_byte_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_native/0080_delta_byte_grid.c' object='quant/palette/delta_native/test_runner-0080_delta_byte_grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/delta_native/test_runner-0080_delta_byte_grid.obj `if test -f 'quant/palette/delta_native/0080_delta_byte_grid.c'; then $(CYGPATH_W) 'quant/palette/delta_native/0080_delta_byte_grid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_native/0080_delta_byte_grid.c'; fi`
+
+quant/palette/test_runner-delta_byte_common.o: quant/palette/delta_byte_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-delta_byte_common.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-delta_byte_common.Tpo -c -o quant/palette/test_runner-delta_byte_common.o `test -f 'quant/palette/delta_byte_common.c' || echo '$(srcdir)/'`quant/palette/delta_byte_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-delta_byte_common.Tpo quant/palette/$(DEPDIR)/test_runner-delta_byte_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_byte_common.c' object='quant/palette/test_runner-delta_byte_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-delta_byte_common.o `test -f 'quant/palette/delta_byte_common.c' || echo '$(srcdir)/'`quant/palette/delta_byte_common.c
+
+quant/palette/test_runner-delta_byte_common.obj: quant/palette/delta_byte_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-delta_byte_common.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-delta_byte_common.Tpo -c -o quant/palette/test_runner-delta_byte_common.obj `if test -f 'quant/palette/delta_byte_common.c'; then $(CYGPATH_W) 'quant/palette/delta_byte_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_byte_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-delta_byte_common.Tpo quant/palette/$(DEPDIR)/test_runner-delta_byte_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/delta_byte_common.c' object='quant/palette/test_runner-delta_byte_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-delta_byte_common.obj `if test -f 'quant/palette/delta_byte_common.c'; then $(CYGPATH_W) 'quant/palette/delta_byte_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/delta_byte_common.c'; fi`
 
 quant/palette/test_runner-delta_fixed_common.o: quant/palette/delta_fixed_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-delta_fixed_common.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-delta_fixed_common.Tpo -c -o quant/palette/test_runner-delta_fixed_common.o `test -f 'quant/palette/delta_fixed_common.c' || echo '$(srcdir)/'`quant/palette/delta_fixed_common.c

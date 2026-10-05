@@ -269,6 +269,8 @@ struct sixel_dither {
     int pipeline_accumulation_frame_height; /* encoded frame height */
     int pipeline_accumulation_keycolor; /* keycolor for previous hits */
     int pipeline_6delta_enabled; /* non-zero enables early keep */
+    /* Encode-call hint: chosen byte RGB competes after wire rounding. */
+    int pipeline_6delta_rgb101;
     unsigned int pipeline_6delta_threshold; /* per-channel keep threshold */
     int pipeline_6delta_error_mode; /* kept-pixel error handling */
     unsigned char *pipeline_accumulation_result_mask; /* encoded keeps */
@@ -397,7 +399,9 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
 
 /*
  * Post-lookup keep.  CHOSEN_RGB is the palette color the nearest-color lookup
- * settled on for this pixel.  The retained plane's color at the same position
+ * settled on for this pixel. The output owner can bind RGB101 comparison
+ * for byte gamma palettes; the query and palette itself remain unchanged.
+ * The retained plane's color at the same position
  * competes against it in the same metric, and wins ties, because emitting
  * nothing is free.  This is what makes keeping principled rather than a
  * threshold guess -- and it is safe to let the plane compete, unlike a

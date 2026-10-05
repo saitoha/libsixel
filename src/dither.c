@@ -1691,6 +1691,34 @@ sixel_dither_pipeline_6delta_try_keep_after_lookup(
     int *keycolor_out)
 {
     unsigned char const *accumulation_pixel;
+    /* b -> round(100*b/255) -> round(255*percent/100). The readonly
+     * table avoids repeating both divisions for each selected pixel. */
+    static unsigned char const wire_byte[256] = {
+        0, 0, 3, 3, 5, 5, 5, 8, 8, 10, 10, 10,
+        13, 13, 13, 15, 15, 18, 18, 18, 20, 20, 23, 23,
+        23, 26, 26, 28, 28, 28, 31, 31, 33, 33, 33, 36,
+        36, 38, 38, 38, 41, 41, 41, 43, 43, 46, 46, 46,
+        48, 48, 51, 51, 51, 54, 54, 56, 56, 56, 59, 59,
+        61, 61, 61, 64, 64, 64, 66, 66, 69, 69, 69, 71,
+        71, 74, 74, 74, 77, 77, 79, 79, 79, 82, 82, 84,
+        84, 84, 87, 87, 89, 89, 89, 92, 92, 92, 94, 94,
+        97, 97, 97, 99, 99, 102, 102, 102, 105, 105, 107, 107,
+        107, 110, 110, 112, 112, 112, 115, 115, 115, 117, 117, 120,
+        120, 120, 122, 122, 125, 125, 125, 128, 128, 130, 130, 130,
+        133, 133, 135, 135, 135, 138, 138, 140, 140, 140, 143, 143,
+        143, 145, 145, 148, 148, 148, 150, 150, 153, 153, 153, 156,
+        156, 158, 158, 158, 161, 161, 163, 163, 163, 166, 166, 166,
+        168, 168, 171, 171, 171, 173, 173, 176, 176, 176, 179, 179,
+        181, 181, 181, 184, 184, 186, 186, 186, 189, 189, 191, 191,
+        191, 194, 194, 194, 196, 196, 199, 199, 199, 201, 201, 204,
+        204, 204, 207, 207, 209, 209, 209, 212, 212, 214, 214, 214,
+        217, 217, 217, 219, 219, 222, 222, 222, 224, 224, 227, 227,
+        227, 230, 230, 232, 232, 232, 235, 235, 237, 237, 237, 240,
+        240, 242, 242, 242, 245, 245, 245, 247, 247, 250, 250, 250,
+        252, 252, 255, 255,
+    };
+    unsigned char wire[3];
+    int channel;
 
     if (accumulation_rgb_out != NULL) {
         *accumulation_rgb_out = NULL;
@@ -1717,6 +1745,15 @@ sixel_dither_pipeline_6delta_try_keep_after_lookup(
      * repeat the failure of giving the transparency key a fixed color and
      * letting it compete: there is no fixed color involved.
      */
+    /* Only the output owner can establish these byte gamma wire semantics.
+     * Round the selected candidate, never the corrected source query. The
+     * working palette still owns lookup and newly painted-pixel residuals. */
+    if (dither->pipeline_6delta_rgb101) {
+        for (channel = 0; channel < 3; ++channel) {
+            wire[channel] = wire_byte[chosen_rgb[channel]];
+        }
+        chosen_rgb = wire;
+    }
     if (sixel_dither_rgb888_distance_sq(rgb, accumulation_pixel)
             > sixel_dither_rgb888_distance_sq(rgb, chosen_rgb)) {
         return 0;
@@ -2146,6 +2183,7 @@ sixel_dither_new(
     (*ppdither)->clamp_promoted_rgb888 = 0;
     (*ppdither)->palette_snap_exact = 0;
     (*ppdither)->use_rgb101_palette = 0;
+    (*ppdither)->pipeline_6delta_rgb101 = 0;
     (*ppdither)->allocator = allocator;
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->lut_policy_override = 0;
