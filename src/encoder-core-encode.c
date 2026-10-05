@@ -123,6 +123,15 @@ typedef struct sixel_band_state {
     int active_color_count;
 } sixel_band_state_t;
 
+static SIXELSTATUS
+sixel_encode_capture_delta(sixel_dither_t *dither,
+                            sixel_index_t const *indexes,
+                            size_t pixel_count,
+                            unsigned char const *palette,
+                            float const *palette_float,
+                            size_t palette_count,
+                            sixel_output_t const *output);
+
 #if SIXEL_ENABLE_THREADS
 /*
  * Parallel execution relies on dedicated buffers per band and reusable
@@ -2003,12 +2012,9 @@ sixel_encode_body_pipeline(unsigned char *pixels,
         goto cleanup;
     }
     if (dither->pipeline_accumulation_result_enabled != 0) {
-        status = sixel_dither_set_pipeline_accumulation_result_rgb(
-            dither,
-            indexes,
-            pixel_count,
-            palette,
-            (size_t)dither->ncolors);
+        status = sixel_encode_capture_delta(
+            dither, indexes, pixel_count, palette, palette_float,
+            (size_t)dither->ncolors, output);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
@@ -2224,12 +2230,9 @@ sixel_encode_body_ormode_pipeline(unsigned char *pixels,
         goto cleanup;
     }
     if (dither->pipeline_accumulation_result_enabled != 0) {
-        status = sixel_dither_set_pipeline_accumulation_result_rgb(
-            dither,
-            indexes,
-            pixel_count,
-            palette,
-            (size_t)dither->ncolors);
+        status = sixel_encode_capture_delta(
+            dither, indexes, pixel_count, palette, palette_float,
+            (size_t)dither->ncolors, output);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
@@ -2920,6 +2923,47 @@ sixel_output_palette_channel_to_pct(unsigned char const *palette,
     }
 
     return 0;
+}
+
+/* Retained RGB must describe the serialized color, not its pre-wire table
+ * value. Project a small capture-only copy through the same percentages as
+ * the RGB writer. Lookup, diffusion and palette export keep their own values.
+ * Native RGB already supplies this projection. Other wire interpretations
+ * and receiver-defined colors retain their separate migration boundaries. */
+static SIXELSTATUS
+sixel_encode_capture_delta(sixel_dither_t *dither,
+                            sixel_index_t const *indexes,
+                            size_t pixel_count,
+                            unsigned char const *palette,
+                            float const *palette_float,
+                            size_t palette_count,
+                            sixel_output_t const *output)
+{
+    unsigned char emitted[SIXEL_PALETTE_MAX * 3];
+    size_t i;
+    int percent;
+
+    if (dither == NULL || output == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (!dither->use_rgb101_palette && !output->ormode &&
+            !dither->bodyonly &&
+            output->colorspace == SIXEL_COLORSPACE_GAMMA &&
+            output->palette_type != SIXEL_PALETTETYPE_HLS &&
+            !(dither->ncolors == 2 && dither->keycolor >= 0 &&
+              !dither->keycolor_reserved)) {
+        if (palette == NULL || palette_count > SIXEL_PALETTE_MAX) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        for (i = 0U; i < palette_count * 3U; ++i) {
+            percent = sixel_output_palette_channel_to_pct(palette,
+                palette_float, (int)(i / 3U), (int)(i % 3U));
+            emitted[i] = (unsigned char)((percent * 255 + 50) / 100);
+        }
+        palette = emitted;
+    }
+    return sixel_dither_set_pipeline_accumulation_result_rgb(dither,
+        indexes, pixel_count, palette, palette_count);
 }
 
 static double
@@ -5027,12 +5071,9 @@ sixel_encode_dither(
 
     if (input_pixels != NULL &&
             dither->pipeline_accumulation_result_enabled != 0) {
-        status = sixel_dither_set_pipeline_accumulation_result_rgb(
-            dither,
-            input_pixels,
-            pixel_count,
-            palette_entries,
-            palette_count);
+        status = sixel_encode_capture_delta(
+            dither, input_pixels, pixel_count, palette_entries,
+            palette_entries_float32, palette_count, output);
         if (SIXEL_FAILED(status)) {
             goto end;
         }

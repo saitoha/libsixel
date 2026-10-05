@@ -203,6 +203,12 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0049_DELTA_FIXED_FS_SKIP \
     -DBUILD_TEST_0050_DELTA_FIXED_MASK_FAILURE \
     -DBUILD_TEST_0051_DELTA_IMAGE_MAP_CAPACITY \
+    -DBUILD_TEST_0052_DELTA_BYTE_WORKERS \
+    -DBUILD_TEST_0053_DELTA_BYTE_MAP_WORKERS \
+    -DBUILD_TEST_0054_DELTA_WIRE_FLOAT_PALETTE \
+    -DBUILD_TEST_0055_DELTA_WIRE_DISABLED \
+    -DBUILD_TEST_0056_DELTA_WIRE_GENERATED \
+    -DBUILD_TEST_0057_DELTA_WIRE_GENERATED_WORKERS \
     -DBUILD_DELTA_FIXED_COMMON \
     -DBUILD_TEST_0033_DELTA_BUILTIN_SLOTS \
     -DBUILD_TEST_0034_DELTA_MAP_SLOTS \
@@ -2889,6 +2895,12 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0049_delta_fixed_fs_skip.c \
     quant/palette/delta_native/0050_delta_fixed_mask_failure.c \
     quant/palette/delta_native/0051_delta_image_map_capacity.c \
+    quant/palette/delta_native/0052_delta_byte_workers.c \
+    quant/palette/delta_native/0053_delta_byte_map_workers.c \
+    quant/palette/delta_native/0054_delta_wire_float_palette.c \
+    quant/palette/delta_native/0055_delta_wire_disabled.c \
+    quant/palette/delta_native/0056_delta_wire_generated.c \
+    quant/palette/delta_native/0057_delta_wire_generated_workers.c \
     quant/palette/delta_fixed_common.c \
     quant/palette/delta_native/0033_delta_builtin_slots.c \
     quant/palette/delta_native/0034_delta_map_slots.c \

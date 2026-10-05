@@ -240,6 +240,12 @@ int test_delta_native_0048(int argc, char **argv);
 int test_delta_native_0049(int argc, char **argv);
 int test_delta_native_0050(int argc, char **argv);
 int test_delta_native_0051(int argc, char **argv);
+int test_delta_native_0052(int argc, char **argv);
+int test_delta_native_0053(int argc, char **argv);
+int test_delta_native_0054(int argc, char **argv);
+int test_delta_native_0055(int argc, char **argv);
+int test_delta_native_0056(int argc, char **argv);
+int test_delta_native_0057(int argc, char **argv);
 int test_delta_native_0033(int argc, char **argv);
 int test_delta_native_0034(int argc, char **argv);
 int test_delta_native_0035(int argc, char **argv);
@@ -3125,6 +3131,18 @@ static test_entry_t const test_entries[] = {
         test_delta_native_0050 },
     { "palette/delta_native/0051_delta_image_map_capacity",
         test_delta_native_0051 },
+    { "palette/delta_native/0052_delta_byte_workers",
+        test_delta_native_0052 },
+    { "palette/delta_native/0053_delta_byte_map_workers",
+        test_delta_native_0053 },
+    { "palette/delta_native/0054_delta_wire_float_palette",
+        test_delta_native_0054 },
+    { "palette/delta_native/0055_delta_wire_disabled",
+        test_delta_native_0055 },
+    { "palette/delta_native/0056_delta_wire_generated",
+        test_delta_native_0056 },
+    { "palette/delta_native/0057_delta_wire_generated_workers",
+        test_delta_native_0057 },
     { "palette/delta_native/0033_delta_builtin_slots",
         test_delta_native_0033 },
     { "palette/delta_native/0034_delta_map_slots",

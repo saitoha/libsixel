@@ -110,7 +110,7 @@ test_delta_fixed_frames(int mode, int duplicates, char const *map)
     ok = 0;
     pass = 0;
     colors = duplicates ? 4 : 256;
-    rows = mode == 3 ? 25 : 1;
+    rows = mode == 3 || mode == 8 ? 25 : 1;
     count = colors * rows;
     plane_width = colors + (mode == 2);
     plane_count = plane_width * rows;
@@ -128,8 +128,8 @@ test_delta_fixed_frames(int mode, int duplicates, char const *map)
     }
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, map ? 'm' : 'b',
             map ? map : "gray8")) ||
-            (mode == 3 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
-                '=', "4"))) ||
+            ((mode == 3 || mode == 8) && SIXEL_FAILED(
+                sixel_encoder_setopt(encoder, '=', "4"))) ||
             (mode == 2 && SIXEL_FAILED(sixel_encoder_set_6delta_plane_size(
                 encoder, plane_width, rows)))) {
         goto end;
@@ -137,7 +137,7 @@ test_delta_fixed_frames(int mode, int duplicates, char const *map)
     /* Keep the animation cache, but do not send cursor controls to stdout. */
     encoder->fstatic = 1;
     for (pass = 0; pass < 6; ++pass) {
-        native = mode != 5 && !(mode == 6 && pass == 1);
+        native = mode != 5 && mode != 8 && !(mode == 6 && pass == 1);
         origin = mode == 2 && pass > 0;
         if (((pass == 0 || (mode == 6 && pass < 3)) &&
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, '.',
@@ -147,7 +147,7 @@ test_delta_fixed_frames(int mode, int duplicates, char const *map)
                         origin, 0)))) {
             goto end;
         }
-        if (pass == 2) {
+        if (pass == 2 && mode != 6) {
             sixel_encoder_invalidate_6delta_plane(encoder);
             memset(valid, 0, sizeof(valid));
         }
@@ -166,6 +166,12 @@ test_delta_fixed_frames(int mode, int duplicates, char const *map)
             for (c = 0; c < 3; ++c) {
                 bytes[i * 3 + c] =
                     (unsigned char)df_component(target, c, duplicates);
+                /* Return to native using the displayed, rounded samples.
+                 * No invalidation may hide stale byte-history coordinates. */
+                if (mode == 6 && pass == 2) {
+                    bytes[i * 3 + c] =
+                        (unsigned char)df_wire(bytes[i * 3 + c]);
+                }
                 pixels[i * 3 + c] = bytes[i * 3 + c] / 255.0f;
             }
             plane = (i / colors) * plane_width + origin + i % colors;
@@ -220,7 +226,8 @@ test_delta_fixed_frames(int mode, int duplicates, char const *map)
         dither = (sixel_dither_t *)encoder->diagnostic_dither;
         if (dither == NULL || dither->use_rgb101_palette != native ||
                 dither->keycolor != -1 || dither->keycolor_reserved ||
-                (mode == 3 && dither->pipeline_last_encode_threads < 2)) {
+                ((mode == 3 || mode == 8) &&
+                 dither->pipeline_last_encode_threads < 2)) {
             fprintf(stderr, "fixed state native=%d key=%d reserved=%d\n",
                 dither == NULL ? -1 : dither->use_rgb101_palette,
                 dither == NULL ? -2 : dither->keycolor,
@@ -296,12 +303,10 @@ test_delta_fixed_frames(int mode, int duplicates, char const *map)
                 fprintf(stderr, "fixed history validity mismatch\n");
                 goto end;
             }
-            /* Native history records wire RGB; the legacy byte control
-             * retains its unsnapped table bytes. Precision-switch cases
-             * invalidate before returning to native comparisons. */
+            /* Both byte and native history must record emitted wire RGB. */
             for (i = 0; i < plane_count; ++i) {
                 for (c = 0; valid[i] && c < 3; ++c) {
-                    want = native ? retained[i * 3 + c] : bytes[i * 3 + c];
+                    want = retained[i * 3 + c];
                     if (encoder->accumulation_pixels[i * 3 + c] != want) {
                         fprintf(stderr, "fixed history RGB pixel=%d "
                             "channel=%d got=%d want=%.0f\n", i, c,
@@ -528,5 +533,146 @@ end:
     df_fail_mask = 0;
     sixel_dither_unref(dither);
     sixel_allocator_unref(allocator);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+/* A legacy float-backed palette can straddle a wire-percent boundary while
+ * still rounding to the same byte table. .0051 is .0001 above .005, much
+ * farther than float storage error: it emits 1%, whose RGB888 value is 3. */
+int
+test_delta_wire_palette(int enabled)
+{
+    unsigned char bytes[6] = {1, 1, 1, 64, 64, 64};
+    unsigned char indexes[2] = {0, 1};
+    unsigned char expected[6] = {3, 3, 3, 64, 64, 64};
+    float entries[6] = {.0051f, .0051f, .0051f,
+        64.0f / 255.0f, 64.0f / 255.0f, 64.0f / 255.0f};
+    sixel_palette_float32_entries_request_t request;
+    sixel_palette_float32_entries_view_t view;
+    sixel_dither_t *dither;
+    sixel_output_t *output;
+    unsigned char const *history;
+    df_stream_t stream;
+    size_t size;
+    int ok;
+
+    dither = NULL;
+    output = NULL;
+    ok = 0;
+    memset(&stream, 0, sizeof(stream));
+    if (SIXEL_FAILED(sixel_dither_new(&dither, 2, NULL)) ||
+            SIXEL_FAILED(sixel_output_new(&output, df_write, &stream, NULL))) {
+        goto end;
+    }
+    sixel_dither_set_palette(dither, bytes);
+    sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_PAL8);
+    sixel_output_set_palette_type(output, SIXEL_PALETTETYPE_RGB);
+    request.entries = entries;
+    request.colors = 2;
+    request.depth = 3 * sizeof(float);
+    if (SIXEL_FAILED(dither->palette->vtbl->init_entries_float32(
+            dither->palette, &request))) {
+        goto end;
+    }
+    sixel_dither_set_pipeline_accumulation_result_enabled(dither, enabled);
+    if (SIXEL_FAILED(sixel_encode(indexes, 2, 1, 1, dither, output)) ||
+            strstr(stream.data, "#0;2;1;1;1") == NULL ||
+            strstr(stream.data, "#1;2;25;25;25") == NULL ||
+            SIXEL_FAILED(dither->palette->vtbl->get_entries_float32(
+                dither->palette, &view)) || view.entries == NULL ||
+            memcmp(view.entries, entries, sizeof(entries)) != 0) {
+        goto end;
+    }
+    history = sixel_dither_get_pipeline_accumulation_result_rgb(dither,
+        &size);
+    if (enabled) {
+        ok = history != NULL && size == sizeof(expected) &&
+            memcmp(history, expected, sizeof(expected)) == 0;
+    } else {
+        ok = history == NULL && size == 0U &&
+            dither->pipeline_accumulation_result_rgb_capacity == 0U;
+    }
+end:
+    if (!ok) {
+        fprintf(stderr, "wire palette capture enabled=%d: %s\n", enabled,
+            sixel_helper_get_additional_message());
+    }
+    sixel_output_unref(output);
+    sixel_dither_unref(dither);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+/* Three literal gray clusters survive byte Heckbert construction exactly.
+ * Their RGB101 expansion differs from each original byte, making unsnapped
+ * capture observable without a photographic similarity threshold. */
+int
+test_delta_wire_generated(int workers)
+{
+    static struct { int flag; char const *value; } const options[] = {
+        {'~', "none"}, {'d', "none"}, {'0', "hard"}, {'_', "none"},
+        {'.', "8bit"}, {'W', "gamma"}, {'U', "gamma"}, {'t', "rgb"},
+        {'Z', "delta"}, {'7', NULL}, {'Q', "heckbert"}, {'F', "none"},
+        {'4', "full-frame"}, {'5', "none"}, {'p', "4"}, {'a', "off"}
+    };
+    unsigned char pixels[256 * 25 * 3];
+    sixel_encoder_t *encoder;
+    sixel_output_t *output;
+    sixel_frame_t *frame;
+    sixel_dither_t *dither;
+    df_stream_t stream;
+    int rows;
+    int i;
+    int want;
+    int ok;
+
+    encoder = NULL;
+    output = NULL;
+    frame = NULL;
+    ok = 0;
+    rows = workers ? 25 : 1;
+    memset(&stream, 0, sizeof(stream));
+    for (i = 0; i < 256 * rows * 3; ++i) {
+        pixels[i] = (unsigned char)(32 + (i / 3 % 3) * 64);
+    }
+    if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
+            SIXEL_FAILED(sixel_output_new(&output, df_write, &stream, NULL))) {
+        goto end;
+    }
+    for (i = 0; i < (int)(sizeof(options) / sizeof(options[0])); ++i) {
+        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, options[i].flag,
+                options[i].value))) {
+            goto end;
+        }
+    }
+    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', workers ? "4" : "1"))
+            || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+            SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 256, rows,
+                SIXEL_PIXELFORMAT_RGB888, NULL, -1)) ||
+            SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, output))) {
+        goto end;
+    }
+    dither = (sixel_dither_t *)encoder->diagnostic_dither;
+    if (dither == NULL || dither->use_rgb101_palette ||
+            !encoder->accumulation_valid ||
+            (workers && dither->pipeline_last_encode_threads < 2)) {
+        goto end;
+    }
+    for (i = 0; i < 256 * rows * 3; ++i) {
+        want = df_wire(pixels[i]);
+        if (encoder->accumulation_pixels[i] != want) {
+            fprintf(stderr, "generated history component=%d got=%u "
+                "want=%d\n", i, encoder->accumulation_pixels[i], want);
+            goto end;
+        }
+    }
+    ok = 1;
+end:
+    if (!ok) {
+        fprintf(stderr, "generated wire capture workers=%d: %s\n", workers,
+            sixel_helper_get_additional_message());
+    }
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
