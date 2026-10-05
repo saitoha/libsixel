@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="270" viewBox="0 0 720 270" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Ordered dither</title>
+<desc id="desc">A four by four Bayer threshold matrix, a uniform input gray of 0.4, and the resulting black and white tile in which six of sixteen cells are white.</desc>
+<rect x="0" y="0" width="720" height="270" fill="#ffffff"/>
+<text x="140" y="32" font-size="16" fill="#183247" font-weight="700" text-anchor="middle">Threshold matrix</text>
+<rect x="60" y="50" width="40" height="40" fill="#080808" stroke="#ffffff"/>
+<text x="80" y="76" font-size="15" fill="#ffffff" font-weight="700" text-anchor="middle">0</text>
+<rect x="100" y="50" width="40" height="40" fill="#878787" stroke="#ffffff"/>
+<text x="120" y="76" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">8</text>
+<rect x="140" y="50" width="40" height="40" fill="#282828" stroke="#ffffff"/>
+<text x="160" y="76" font-size="15" fill="#ffffff" font-weight="700" text-anchor="middle">2</text>
+<rect x="180" y="50" width="40" height="40" fill="#a7a7a7" stroke="#ffffff"/>
+<text x="200" y="76" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">10</text>
+<rect x="60" y="90" width="40" height="40" fill="#c7c7c7" stroke="#ffffff"/>
+<text x="80" y="116" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">12</text>
+<rect x="100" y="90" width="40" height="40" fill="#484848" stroke="#ffffff"/>
+<text x="120" y="116" font-size="15" fill="#ffffff" font-weight="700" text-anchor="middle">4</text>
+<rect x="140" y="90" width="40" height="40" fill="#e7e7e7" stroke="#ffffff"/>
+<text x="160" y="116" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">14</text>
+<rect x="180" y="90" width="40" height="40" fill="#686868" stroke="#ffffff"/>
+<text x="200" y="116" font-size="15" fill="#ffffff" font-weight="700" text-anchor="middle">6</text>
+<rect x="60" y="130" width="40" height="40" fill="#383838" stroke="#ffffff"/>
+<text x="80" y="156" font-size="15" fill="#ffffff" font-weight="700" text-anchor="middle">3</text>
+<rect x="100" y="130" width="40" height="40" fill="#b7b7b7" stroke="#ffffff"/>
+<text x="120" y="156" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">11</text>
+<rect x="140" y="130" width="40" height="40" fill="#181818" stroke="#ffffff"/>
+<text x="160" y="156" font-size="15" fill="#ffffff" font-weight="700" text-anchor="middle">1</text>
+<rect x="180" y="130" width="40" height="40" fill="#979797" stroke="#ffffff"/>
+<text x="200" y="156" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">9</text>
+<rect x="60" y="170" width="40" height="40" fill="#f7f7f7" stroke="#ffffff"/>
+<text x="80" y="196" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">15</text>
+<rect x="100" y="170" width="40" height="40" fill="#787878" stroke="#ffffff"/>
+<text x="120" y="196" font-size="15" fill="#ffffff" font-weight="700" text-anchor="middle">7</text>
+<rect x="140" y="170" width="40" height="40" fill="#d7d7d7" stroke="#ffffff"/>
+<text x="160" y="196" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">13</text>
+<rect x="180" y="170" width="40" height="40" fill="#585858" stroke="#ffffff"/>
+<text x="200" y="196" font-size="15" fill="#ffffff" font-weight="700" text-anchor="middle">5</text>
+<text x="140" y="236" font-size="13" fill="#4c6070" font-weight="400" text-anchor="middle">threshold = (v + 0.5) / 16</text>
+<text x="365" y="32" font-size="16" fill="#183247" font-weight="700" text-anchor="middle">Input gray 0.4</text>
+<rect x="285" y="50" width="160" height="160" fill="#666666"/>
+<text x="590" y="32" font-size="16" fill="#183247" font-weight="700" text-anchor="middle">Output tile</text>
+<text x="590" y="236" font-size="13" fill="#4c6070" font-weight="400" text-anchor="middle">white where gray &gt; threshold</text>
+<rect x="510" y="50" width="40" height="40" fill="#ffffff" stroke="#4c6070" stroke-width="0.5"/>
+<rect x="550" y="50" width="40" height="40" fill="#000000" stroke="#4c6070" stroke-width="0.5"/>
+<rect x="590" y="50" width="40" height="40" fill="#ffffff" stroke="#4c6070" stroke-width="0.5"/>
+<rect x="630" y="50" width="40" height="40" fill="#000000" stroke="#4c6070" stroke-width="0.5"/>
+<rect x="510" y="90" width="40" height="40" fill="#000000" stroke="#4c6070" stroke-width="0.5"/>
+<rect x="550" y="90" width="40" height="40" fill="#ffffff" stroke="#4c6070" stroke-width="0.5"/>
+<rect x="590" y="90" width="40" height="40" fill="#000000" stroke="#4c6070" stroke-width="0.5"/>
+<rect x="630" y="90" width="40" height="40" fill="#000000" stroke="#4c6070" stroke-width="0.5"/>
+<rect x="510" y="130" width="40" height="40" fill="#ffffff" stroke="#4c6070" stroke-width="0.5"/>
+<rect x="550" y="130" width="40" height="40" fill="#000000" stroke="#4c6070" stroke-width="0.5"/>
+<rect x="590" y="130" width="40" height="40" fill="#ffffff" stroke="#4c6070" stroke-width="0.5"/>
+<rect x="630" y="130" width="40" height="40" fill="#000000" stroke="#4c6070" stroke-width="0.5"/>
+<rect x="510" y="170" width="40" height="40" fill="#000000" stroke="#4c6070" stroke-width="0.5"/>
+<rect x="550" y="170" width="40" height="40" fill="#000000" stroke="#4c6070" stroke-width="0.5"/>
+<rect x="590" y="170" width="40" height="40" fill="#000000" stroke="#4c6070" stroke-width="0.5"/>
+<rect x="630" y="170" width="40" height="40" fill="#ffffff" stroke="#4c6070" stroke-width="0.5"/>
+<path d="M 232 130 L 273 130" stroke="#4c6070" stroke-width="2.5"/>
+<path d="M 265 124 L 273 130 L 265 136" fill="none" stroke="#4c6070" stroke-width="2.5"/>
+<path d="M 457 130 L 498 130" stroke="#4c6070" stroke-width="2.5"/>
+<path d="M 490 124 L 498 130 L 490 136" fill="none" stroke="#4c6070" stroke-width="2.5"/>
+<text x="360" y="258" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">6 of 16 cells are white: the tile averages 0.375, close to the input 0.4.</text>
+</svg>

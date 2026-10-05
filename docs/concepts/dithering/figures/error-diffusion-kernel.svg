@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="250" viewBox="0 0 720 250" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Floyd-Steinberg error diffusion</title>
+<desc id="desc">A three by three neighborhood. Pixels above and to the left are done. The current pixel passes its quantization error to the right neighbor with weight 7/16 and to the three pixels below with weights 3/16, 5/16 and 1/16.</desc>
+<rect x="0" y="0" width="720" height="250" fill="#ffffff"/>
+<rect x="220" y="10" width="64" height="64" fill="#e9eef2" stroke="#4c6070"/>
+<text x="252" y="48" font-size="15" fill="#4c6070" font-weight="400" text-anchor="middle">done</text>
+<rect x="284" y="10" width="64" height="64" fill="#e9eef2" stroke="#4c6070"/>
+<text x="316" y="48" font-size="15" fill="#4c6070" font-weight="400" text-anchor="middle">done</text>
+<rect x="348" y="10" width="64" height="64" fill="#e9eef2" stroke="#4c6070"/>
+<text x="380" y="48" font-size="15" fill="#4c6070" font-weight="400" text-anchor="middle">done</text>
+<rect x="220" y="74" width="64" height="64" fill="#e9eef2" stroke="#4c6070"/>
+<text x="252" y="112" font-size="15" fill="#4c6070" font-weight="400" text-anchor="middle">done</text>
+<rect x="284" y="74" width="64" height="64" fill="#f4d6d2" stroke="#4c6070"/>
+<text x="316" y="112" font-size="15" fill="#c0392b" font-weight="700" text-anchor="middle">current</text>
+<rect x="348" y="74" width="64" height="64" fill="#ffffff" stroke="#4c6070"/>
+<text x="380" y="112" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">7/16</text>
+<rect x="220" y="138" width="64" height="64" fill="#ffffff" stroke="#4c6070"/>
+<text x="252" y="176" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">3/16</text>
+<rect x="284" y="138" width="64" height="64" fill="#ffffff" stroke="#4c6070"/>
+<text x="316" y="176" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">5/16</text>
+<rect x="348" y="138" width="64" height="64" fill="#ffffff" stroke="#4c6070"/>
+<text x="380" y="176" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">1/16</text>
+<path d="M 40 106 L 180 106" stroke="#4c6070" stroke-width="2.5"/>
+<path d="M 172 100 L 180 106 L 172 112" fill="none" stroke="#4c6070" stroke-width="2.5"/>
+<text x="40" y="96" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">scan order</text>
+<text x="445" y="40" font-size="15" fill="#183247" font-weight="400" text-anchor="start">1. Choose the nearest palette color</text>
+<text x="445" y="66" font-size="15" fill="#183247" font-weight="400" text-anchor="start">   for the current pixel.</text>
+<text x="445" y="92" font-size="15" fill="#183247" font-weight="400" text-anchor="start">2. Error = wanted − chosen.</text>
+<text x="445" y="118" font-size="15" fill="#183247" font-weight="400" text-anchor="start">3. Add the error, split by these</text>
+<text x="445" y="144" font-size="15" fill="#183247" font-weight="400" text-anchor="start">   weights, to pixels not yet drawn.</text>
+<text x="360" y="238" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">The weights sum to 1, so the average tone of each neighborhood is preserved.</text>
+</svg>

@@ -657,6 +657,14 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/encoder/palette-construction/quantization/README.md \
 	docs/quality/measurement-policy.md \
 	docs/quality/metrics.md \
+	docs/concepts/dithering/README.md \
+	docs/concepts/dithering/figures/error-diffusion-kernel.svg \
+	docs/concepts/dithering/figures/figures.json \
+	docs/concepts/dithering/figures/linear-averaging.svg \
+	docs/concepts/dithering/figures/methods-comparison.svg \
+	docs/concepts/dithering/figures/ordered-dither.svg \
+	docs/concepts/dithering/figures/posterization.svg \
+	docs/concepts/dithering/figures/spectra.svg \
 	docs/quality/visual-perception/README.md \
 	docs/quality/visual-perception/figures/blind-spot.svg \
 	docs/quality/visual-perception/figures/campbell-robson.svg \

@@ -1,0 +1,20 @@
+{
+  "generator": "tools/plot_dithering_concept_figures.py",
+  "plot_dependency": "matplotlib 3.10, numpy, Pillow",
+  "seed": 20261006,
+  "methods": {
+    "random": "uniform random threshold per pixel",
+    "ordered": "recursive Bayer threshold matrix, thresholds (v + 0.5) / n",
+    "error_diffusion": "Floyd-Steinberg weights 7/16, 3/16, 5/16, 1/16, raster scan",
+    "blue_noise": "void-and-cluster rank array, 128 x 128, Gaussian sigma 1.5"
+  },
+  "posterization_palette": "Pillow median cut, 8 colors, images/snake.png",
+  "figures": [
+    "error-diffusion-kernel.svg",
+    "linear-averaging.svg",
+    "methods-comparison.svg",
+    "ordered-dither.svg",
+    "posterization.svg",
+    "spectra.svg"
+  ]
+}

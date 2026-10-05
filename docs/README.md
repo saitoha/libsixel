@@ -33,7 +33,7 @@ Supported platforms and command-line behavior that needs no background in color 
 
 ## Concepts and theory
 
-The foundations the rest of the documentation builds on, in reading order: how vision works, how colors are represented as numbers, how color differences are judged, and how pixels and precision are stored.
+The foundations the rest of the documentation builds on, in reading order: how vision works, how colors are represented as numbers, how color differences are judged, how pixels and precision are stored, and how images are drawn with a limited palette.
 
 ### Visual perception
 
@@ -52,6 +52,10 @@ The foundations the rest of the documentation builds on, in reading order: how v
 
 - [Pixel formats and alpha representation](concepts/pixelformat.md) separates input memory layouts, frame storage, alpha-zero metadata, and what can be represented in a SIXEL stream.
 - [Pixel-format precision](concepts/pixelformat-precision/README.md) explains the `RGB888` and typed float32 storage contracts, implicit promotion by resize, CMS, and color-space conversion, memory cost, and measured resize quality.
+
+### Palettes and dithering
+
+- [Dithering](concepts/dithering/README.md) explains why few-color images need dithering, how random, ordered, error-diffusion and blue-noise methods work, where each puts its error, why error belongs at fine scales, color and linear-light averaging, structure-preserving dithering, and what dithering costs in SIXEL.
 
 ## Quality and measurement
 

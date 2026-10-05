@@ -19,6 +19,7 @@ docs/cli/prefix-matching.md	reference	both	choice syntax + contributor algorithm
 docs/cli/runtime-policy.md	reference	both	runtime option contracts + contributor implementation map and test ledger
 docs/cli/suboptions.md	reference	both	public grammar + contributor registry architecture and test ledger
 docs/concepts/colorspace/README.md	explanation	user	explanation + option reference and configuration examples
+docs/concepts/dithering/README.md	explanation	both	
 docs/concepts/din99d/README.md	explanation	user	color-distance intuition + measured reference and reproduction how-to
 docs/concepts/pixelformat-precision/README.md	explanation	both	storage model + numeric contracts and large contributor test ledger
 docs/concepts/pixelformat.md	reference	both	pixel representations + explanatory model and contributor test ledger

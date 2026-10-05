@@ -2,7 +2,7 @@
 
 ## Scope
 
-This document explains the image-quality metrics that `lsqa` reports: where each one comes from, the quantity it computes, how the libsixel implementation differs from the published definition, and what it can and cannot observe. It then explains how the metrics are used: why multiscale structure matters, how dither noise spectra are measured, how structure-preserving dithering is evaluated, which metrics to combine for dithered output, and why the current spatial metrics are computed on a luminance-like signal.
+This document explains the image-quality metrics that `lsqa` reports: where each one comes from, the quantity it computes, how the libsixel implementation differs from the published definition, and what it can and cannot observe. It then explains how the metrics are used: why multiscale structure matters, how dither noise is measured, which metrics to combine for dithered output, and why the current spatial metrics are computed on a luminance-like signal.
 
 [Visual perception for image quality](visual-perception/README.md) explains the sensory physiology these metrics rest on: perceptual quality, photoreceptors and adaptation, contrast sensitivity, and viewing geometry. [Color difference and color reproduction](color-difference.md) compares color-difference formulas and evaluates color across scales. The [image-quality measurement policy](measurement-policy.md) owns the primary gate, thresholds, fixtures, baselines, and comparison conditions. [Color-aware quality evaluation](color-evaluation.md) owns input interpretation, the XYZ D50 connection space, the comparison-signal options, and regional tiling. This page defines and explains; it does not set acceptance limits.
 
@@ -243,53 +243,15 @@ A multiscale metric hedges against this uncertainty. Each dyadic scale correspon
 
 For dithered images the scale decomposition has a direct interpretation. A ditherer trades fine-scale fidelity, where it places quantization noise, for coarse-scale fidelity, where the locally averaged tone should match the reference. Single-scale SSIM at full resolution sees mostly the noise and can rank a dither below a posterized image whose flat areas happen to correlate locally. MS-SSIM's coarser scales see through the noise to the reproduced tone and structure, and its finest scale still registers the noise, so the score reflects the trade the ditherer actually makes.
 
-## Noise spectrum and why dither noise belongs at high frequencies
+## Measuring dither noise
 
-### Quantization error as a signal
-
-Palette quantization replaces each pixel with a palette color, leaving an error image `e = y − x`. Whether the result looks good depends far more on the *spectrum* of `e` than on its total power. Ulichney's analysis of halftoning (*Digital Halftoning*, MIT Press, 1987, and "Dithering with blue noise", Proceedings of the IEEE 76(1), 1988) classified dither patterns by the radially averaged power spectrum of their error:
-
-- **White noise** (independent random dither): flat spectrum. It places substantial energy at the low and middle frequencies where the eye is most sensitive, so it looks grainy and mottled.
-- **Low-frequency (red or clustered) noise**: energy concentrated at low frequencies, seen as blotches, contours, and banding. Plain nearest-color quantization of a smooth gradient produces this.
-- **Periodic patterns** (ordered dither, Bayer, "An optimum method for two-level rendition of continuous-tone pictures", 1973): energy at discrete spectral peaks. The pattern is regular and can produce visible texture or moiré with image content and resampling.
-- **Blue noise**: little energy below a principal frequency and most energy above it, with an isotropic, aperiodic distribution. Ulichney identified this as the ideal for a pattern that must carry tone with minimal visibility.
-
-### Why push the error upward
-
-At normal viewing distance the visual system integrates fine detail and is least sensitive to high spatial frequencies, especially in the chromatic channels ([spatial integration and noise visibility](visual-perception/README.md#spatial-integration-and-noise-visibility)). If the quantization error has little energy at low frequencies, the perceived image keeps the local average tone and color of the reference, and the remaining error lies where sensitivity is lowest. Blue-noise placement minimizes the visible part of a fixed error budget, which a palette makes unavoidable.
-
-Error diffusion achieves this by *noise shaping*. Floyd and Steinberg ("An adaptive algorithm for spatial greyscale", Proceedings of the Society for Information Display 17(2), 1976) propagate each pixel's quantization error to unprocessed neighbors with fixed weights. Modeling the quantizer as additive noise `n`, the output error is the noise filtered by `(1 − H)`, where `H` is the transfer function of the diffusion filter:
-
-```text
-E(ω) = (1 − H(ω)) · N(ω)
-```
-
-Because the weights sum to one, `H(0) = 1`, so the error response is zero at DC and grows with frequency: a high-pass filter applied to the quantization noise. Kite, Evans, and Bovik ("Modeling and quality assessment of halftoning by error diffusion", IEEE Transactions on Image Processing 9(5), 2000) extended this linear model to account for the sharpening that error diffusion also introduces and used it to build CSF-weighted quality measures for halftones.
-
-Pushing noise upward has limits that the metrics must expose:
-
-- **Viewing geometry.** Blue noise is invisible only while its frequencies lie beyond the viewer's sensitivity. Enlarging terminal cells or viewing closely brings it into view.
-- **Directionality.** Fixed raster-order diffusion produces oriented "worm" textures and start-up artifacts in highlights and shadows, which are anisotropic and therefore more conspicuous than isotropic noise.
-- **Low-frequency leakage.** Error clamping, limited palettes near the gamut boundary, and serpentine or band-parallel processing can leave low-frequency residue, seen as drift in tone, color casts, or seams.
-- **Stream size.** SIXEL compresses runs of equal palette indices within six-pixel-high bands. High-frequency noise shortens those runs, so a more thoroughly shaped dither usually produces a larger stream. Quality and size are separate axes and should be reported together.
-
-### Measuring the noise spectrum
+[Dithering](../concepts/dithering/README.md) explains why dither error should be pushed toward fine scales, how the main methods distribute it, and how structure-preserving dithering trades noise placement for edges. The metrics below observe those properties.
 
 `HighFreqRatio_delta` shows how much luma energy processing moved above its cutoff, so a well-shaped dither raises it while posterization lowers it. `StripeScore_rel` shows whether the added energy is oriented or periodic. `BandingIndex_*` shows low-frequency contouring that should have been broken up. Regional ΔE00 checks the complementary property: that the low-frequency content, the part the eye integrates, is correct. A dither can score well on noise placement and still be wrong on average color; both views are needed.
 
-These scalar descriptors summarize the spectrum. The [dithering reference](../encoder/palette-application/dithering/README.md#measured-spatial-error-spectra) shows the full radially averaged and two-dimensional error spectra of every libsixel dither method on controlled flat fields, which is the direct view of the noise classes above.
+These scalar descriptors summarize the spectrum. The [dithering reference](../encoder/palette-application/dithering/README.md#measured-spatial-error-spectra) shows the full radially averaged and two-dimensional error spectra of every libsixel dither method on controlled flat fields.
 
-### Structure-preserving dithering and luminance priority
-
-The noise-shaping view treats the ditherer's goal as reproducing tone after low-pass filtering, with the residual pushed out of sight. A complementary line of work adds an explicit *structure* objective: the dithered image should also preserve edges, fine lines, and texture orientation of the original, as judged by a structural measure, rather than only its local averages. Because structure is perceived mainly through luminance, these methods in practice protect luminance structure first.
-
-Several approaches follow this idea:
-
-- **Edge-enhancing error diffusion.** Eschbach and Knox ("Error-diffusion algorithm with edge enhancement", Journal of the Optical Society of America A 8(12), 1991) modulate the quantization threshold by the input signal, which sharpens edges that ordinary error diffusion softens.
-- **Structure-aware halftoning.** Pang, Qu, Wong, Cohen-Or, and Heng ("Structure-aware halftoning", ACM Transactions on Graphics 27(3), 2008) optimize the halftone against an objective that combines tone similarity after Gaussian filtering with an SSIM-style structural similarity. Chang, Alain, and Ostromoukhov ("Structure-aware error diffusion", ACM Transactions on Graphics 28(5), 2009) obtain a similar effect within error diffusion by adapting it to local image structure.
-- **Luminance priority in color dithering.** With a color palette, several candidate colors can give nearly the same local average color. Choosing among them so that luminance varies as little as possible keeps the dither noise mostly chromatic, where the eye is least sensitive, and leaves luminance structure intact. The minimum brightness variation criterion of Shaked, Arad, Fitzhugh, and Sobel ("Color diffusion: error diffusion for color halftones", Proceedings of SPIE 3648, 1999) formalizes this for printer colorants. Kolpatzik and Bouman ("Optimized error diffusion for image display", Journal of Electronic Imaging 1(3), 1992) designed error-diffusion filters with separate luminance and chrominance visual models, so that luminance error is shaped more aggressively than chrominance error.
-
-Structure preservation and blue-noise tone reproduction can conflict. Sharpening edges or aligning dots with structure adds energy that is neither isotropic nor confined to high frequencies, and choosing colors to minimize luminance variation can increase chroma noise and per-pixel ΔE00. The metrics in this document observe the trade-off from both sides: `MS-SSIM` and `GMSD` on luma reward preserved luminance structure, regional ΔE00 and `Δ Chroma_mean` guard the integrated color, and `StripeScore_rel` shows when structure-following produces oriented texture. libsixel's current dither policies, listed in the [dithering reference](../encoder/palette-application/dithering/README.md), do not include an explicit structural objective or a luminance-priority color choice; this subsection describes the idea and its evaluation, not an implemented mode.
+Structure-preserving dithering is observed from both sides: `MS-SSIM` and `GMSD` on luma reward preserved luminance structure, regional ΔE00 and `Δ Chroma_mean` guard the integrated color, and `StripeScore_rel` shows when structure-following produces oriented texture.
 
 ## Combining metrics for dithered output
 
@@ -311,7 +273,7 @@ Read the rows together. A dither that lowers regional ΔE00 and banding while ra
 
 The spatial metrics in `lsqa` operate on a single luma signal, while color is measured separately with per-pixel and regional ΔE00. There are physiological and practical reasons for this split, and limits to it.
 
-**Physiology.** The achromatic channel has the highest spatial resolution and contrast sensitivity, and structure, edges, and texture are perceived mainly through luminance contrast; see [luminance and chroma in spatial vision](visual-perception/README.md#luminance-and-chroma-in-spatial-vision). A metric that spends its spatial analysis on luminance therefore concentrates on the channel where spatial errors are most visible. The same reasoning motivates [structure-preserving dithering that prioritizes luminance](#structure-preserving-dithering-and-luminance-priority).
+**Physiology.** The achromatic channel has the highest spatial resolution and contrast sensitivity, and structure, edges, and texture are perceived mainly through luminance contrast; see [luminance and chroma in spatial vision](visual-perception/README.md#luminance-and-chroma-in-spatial-vision). A metric that spends its spatial analysis on luminance therefore concentrates on the channel where spatial errors are most visible. The same reasoning motivates [structure-preserving dithering that prioritizes luminance](../concepts/dithering/README.md#structure-preserving-dithering-and-luminance-priority).
 
 **Lineage and validation.** SSIM, MS-SSIM, and GMSD were defined and validated on grayscale or luma images. Using them on luma keeps `lsqa` values interpretable against their published behavior, apart from the implementation differences documented above. Extending them to color has no single accepted definition, and an ad hoc per-channel average would weight RGB channels as though they were perceptually equivalent, which they are not.
 
@@ -321,20 +283,10 @@ The spatial metrics in `lsqa` operate on a single luma signal, while color is me
 
 ## References
 
-- Bayer, B. E. "An optimum method for two-level rendition of continuous-tone pictures." IEEE International Conference on Communications, 1973.
 - Campbell, F. W., and J. G. Robson. "Application of Fourier analysis to the visibility of gratings." Journal of Physiology 197, 1968.
-- Chang, J., B. Alain, and V. Ostromoukhov. "Structure-aware error diffusion." ACM Transactions on Graphics 28(5), 2009.
-- Eschbach, R., and K. T. Knox. "Error-diffusion algorithm with edge enhancement." Journal of the Optical Society of America A 8(12), 1991.
-- Floyd, R. W., and L. Steinberg. "An adaptive algorithm for spatial greyscale." Proceedings of the Society for Information Display 17(2), 1976.
 - ITU-R Recommendation BT.709. Parameter values for the HDTV standards for production and international programme exchange.
-- Kite, T. D., B. L. Evans, and A. C. Bovik. "Modeling and quality assessment of halftoning by error diffusion." IEEE Transactions on Image Processing 9(5), 2000.
-- Kolpatzik, B. W., and C. A. Bouman. "Optimized error diffusion for image display." Journal of Electronic Imaging 1(3), 1992.
 - Luo, M. R., G. Cui, and B. Rigg. "The development of the CIE 2000 colour-difference formula: CIEDE2000." Color Research and Application 26(5), 2001.
-- Pang, W.-M., Y. Qu, T.-T. Wong, D. Cohen-Or, and P.-A. Heng. "Structure-aware halftoning." ACM Transactions on Graphics 27(3), 2008.
-- Shaked, D., N. Arad, A. Fitzhugh, and I. Sobel. "Color diffusion: error diffusion for color halftones." Proceedings of SPIE 3648, 1999.
 - Sharma, G., W. Wu, and E. N. Dalal. "The CIEDE2000 color-difference formula: implementation notes, supplementary test data, and mathematical observations." Color Research and Application 30(1), 2005.
-- Ulichney, R. *Digital Halftoning*. MIT Press, 1987.
-- Ulichney, R. "Dithering with blue noise." Proceedings of the IEEE 76(1), 1988.
 - Wang, Z., A. C. Bovik, H. R. Sheikh, and E. P. Simoncelli. "Image quality assessment: from error visibility to structural similarity." IEEE Transactions on Image Processing 13(4), 2004.
 - Wang, Z., E. P. Simoncelli, and A. C. Bovik. "Multiscale structural similarity for image quality assessment." 37th Asilomar Conference on Signals, Systems and Computers, 2003.
 - Xue, W., L. Zhang, X. Mou, and A. C. Bovik. "Gradient magnitude similarity deviation: a highly efficient perceptual image quality index." IEEE Transactions on Image Processing 23(2), 2014.

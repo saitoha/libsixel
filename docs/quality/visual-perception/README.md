@@ -206,7 +206,7 @@ This is the perceptual basis of dithering and halftoning: an image can be reprod
 
 > **Try it.** Lean back from the screen, or squint, while looking at the left column of Figure 16. The dots melt into gray, and the bottom row becomes almost indistinguishable from the original gradient. This is what a dithered SIXEL image relies on.
 
-Error energy at low frequencies is seen directly as blotches, contours, or color casts. Within the visible band, regular structure such as stripes and lattices tends to be more conspicuous than isotropic noise of the same energy, because the visual system is tuned to orientation and readily groups regular elements. [Noise spectrum and why dither noise belongs at high frequencies](../metrics.md#noise-spectrum-and-why-dither-noise-belongs-at-high-frequencies) describes how dithers shape their error spectrum and how the metrics measure it.
+Error energy at low frequencies is seen directly as blotches, contours, or color casts. Within the visible band, regular structure such as stripes and lattices tends to be more conspicuous than isotropic noise of the same energy, because the visual system is tuned to orientation and readily groups regular elements. [Dithering](../../concepts/dithering/README.md#noise-spectrum-where-the-error-goes) describes how dithers shape their error spectrum, and [image-quality metrics](../metrics.md#measuring-dither-noise) how it is measured.
 
 ## Luminance and chroma in spatial vision
 
