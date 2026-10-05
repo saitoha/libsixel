@@ -181,6 +181,13 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_EXPORT_CAPTURE_COMMON \
+    -DBUILD_TEST_0001_NATIVE_CAPTURE_MEMORY \
+    -DBUILD_TEST_0002_BYTE_CAPTURE_MEMORY \
+    -DBUILD_TEST_0003_NATIVE_WRITER_MEMORY \
+    -DBUILD_TEST_0004_BYTE_WRITER_MEMORY \
+    -DBUILD_TEST_0005_REUSE_COUNT \
+    -DBUILD_TEST_0006_ENCODER_ISOLATION \
     -DBUILD_TEST_0009_TRANSPORT_REJECTION \
     -DBUILD_TEST_0001_SRGB_FRAME_PRECISION \
     -DBUILD_TEST_0002_P3_FRAME_PRECISION \
@@ -2807,6 +2814,13 @@ TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 endif
 
 test_runner_SOURCES = test_runner.c \
+    quant/palette/export_capture_common.c \
+    quant/palette/export_capture/0001_native_capture_memory.c \
+    quant/palette/export_capture/0002_byte_capture_memory.c \
+    quant/palette/export_capture/0003_native_writer_memory.c \
+    quant/palette/export_capture/0004_byte_writer_memory.c \
+    quant/palette/export_capture/0005_reuse_count.c \
+    quant/palette/export_capture/0006_encoder_isolation.c \
     writer/png/0015_p3_resize_coordinates.c \
     writer/png/0016_p3_k_undither_coordinates.c \
     writer/png/0021_p3_lso_fs_coordinates.c \

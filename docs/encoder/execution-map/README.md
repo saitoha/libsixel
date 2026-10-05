@@ -6,7 +6,7 @@ This document is the implementation-oriented companion to the introductory [Enco
 
 The diagrams are intentionally layered rather than pretending that one graph has a single meaning. The implementation contains a six-node execution scheduler, a more descriptive planner graph, filters inside those nodes, model-specific palette solvers, and a separate band pipeline inside palette application and output. Collapsing all of them into one flat DAG would imply dependencies and concurrency that do not exist.
 
-High-color output, DRCS, macro playback, 6delta retained-screen comparison, animation timing, and quantized capture share parts of this route but add specialized branches. They are named where they change a boundary, not expanded into every internal step here.
+High-color output, DRCS, macro playback, 6delta retained-screen comparison, animation timing, and palette export share parts of this route but add specialized branches. They are named where they change a boundary, not expanded into every internal step here.
 
 ## 1. The scheduler and the real asynchronous boundary
 

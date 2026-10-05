@@ -236,6 +236,12 @@ int test_macro_0015(int argc, char **argv);
 int test_macro_0016(int argc, char **argv);
 int test_hls_native_0014(int argc, char **argv);
 int test_hls_native_0015(int argc, char **argv);
+int test_export_capture_0001(int argc, char **argv);
+int test_export_capture_0002(int argc, char **argv);
+int test_export_capture_0003(int argc, char **argv);
+int test_export_capture_0004(int argc, char **argv);
+int test_export_capture_0005(int argc, char **argv);
+int test_export_capture_0006(int argc, char **argv);
 int test_png_snapshot_0001(int argc, char **argv);
 int test_png_snapshot_0002(int argc, char **argv);
 int test_png_snapshot_0003(int argc, char **argv);
@@ -3060,6 +3066,18 @@ static test_entry_t const test_entries[] = {
     { "codec/macro/0016_float_output_reuse", test_macro_0016 },
     { "codec/hls/0014_byte_or_control", test_hls_native_0014 },
     { "codec/hls/0015_serial_or", test_hls_native_0015 },
+    { "palette/export_capture/0001_native_capture_memory",
+        test_export_capture_0001 },
+    { "palette/export_capture/0002_byte_capture_memory",
+        test_export_capture_0002 },
+    { "palette/export_capture/0003_native_writer_memory",
+        test_export_capture_0003 },
+    { "palette/export_capture/0004_byte_writer_memory",
+        test_export_capture_0004 },
+    { "palette/export_capture/0005_reuse_count",
+        test_export_capture_0005 },
+    { "palette/export_capture/0006_encoder_isolation",
+        test_export_capture_0006 },
     { "codec/png_snapshot/0001_srgb_frame_precision", test_png_snapshot_0001 },
     { "codec/png_snapshot/0002_p3_frame_precision", test_png_snapshot_0002 },
     { "codec/png_snapshot/0003_byte_frame_control", test_png_snapshot_0003 },

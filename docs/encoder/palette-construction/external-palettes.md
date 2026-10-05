@@ -122,7 +122,7 @@ The output format is selected by a prefix or by `.act`, `.pal`, or `.gpl`. A pla
 img2sixel -M gpl:- -o output.six input.png > palette.gpl
 ```
 
-Repeating `-M` is allowed and the last palette-output destination wins.
+Repeating `-M` is allowed and the last palette-output destination wins. Export retains only the sRGB8 palette entries and writes them directly; it does not allocate or duplicate an indexed image. Its retained storage is bounded by 256 RGB entries (768 bytes), independent of image dimensions. Reusing an encoder with a smaller palette writes only the current entry count; different encoder objects own independent export buffers.
 
 Combining `-m` and `-M` can translate the prepared RGB entries into another palette format:
 
@@ -465,6 +465,17 @@ The direct FS case uses byte samples 92 then 91 and palette entries 88/94. The f
 | --- | --- | --- |
 | EP-142 | Native unsnapped sRGB8 export is unchanged by linear wire output. | [tests/quant/palette/output_float/0028_export_linear.t](../../../tests/quant/palette/output_float/0028_export_linear.t) |
 | EP-143 | Native unsnapped sRGB8 export is unchanged by smptec wire output. | [tests/quant/palette/output_float/0029_export_smptec.t](../../../tests/quant/palette/output_float/0029_export_smptec.t) |
+
+### Palette-only export storage and reuse
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| EP-144 | Native float export adds palette storage only and preserves the emitted stream. | [tests/quant/palette/export_capture/0001_native_capture_memory.t](../../../tests/quant/palette/export_capture/0001_native_capture_memory.t) |
+| EP-145 | Byte export adds palette storage only and preserves the emitted stream. | [tests/quant/palette/export_capture/0002_byte_capture_memory.t](../../../tests/quant/palette/export_capture/0002_byte_capture_memory.t) |
+| EP-146 | Native full-file export avoids image-sized capture and writer copies. | [tests/quant/palette/export_capture/0003_native_writer_memory.t](../../../tests/quant/palette/export_capture/0003_native_writer_memory.t) |
+| EP-147 | Byte full-file export avoids image-sized capture and writer copies. | [tests/quant/palette/export_capture/0004_byte_writer_memory.t](../../../tests/quant/palette/export_capture/0004_byte_writer_memory.t) |
+| EP-148 | Encoder reuse exports the current count after a palette shrinks. | [tests/quant/palette/export_capture/0005_reuse_count.t](../../../tests/quant/palette/export_capture/0005_reuse_count.t) |
+| EP-149 | Two encoders retain independent export counts and values. | [tests/quant/palette/export_capture/0006_encoder_isolation.t](../../../tests/quant/palette/export_capture/0006_encoder_isolation.t) |
 
 ### Defensive, malformed-input, and supplementary tests
 

@@ -372,16 +372,9 @@ struct sixel_encoder {
     void *diagnostic_dither;
     unsigned short drcs_charset_no;
     int drcs_mmv;
-    int capture_quantized;
-    unsigned char *capture_pixels;
-    size_t capture_pixels_size;
+    /* Latest -M export; sRGB8 entries only, independent of wire output. */
     unsigned char *capture_palette;
     size_t capture_palette_size;
-    size_t capture_pixel_bytes;
-    int capture_width;
-    int capture_height;
-    int capture_pixelformat;
-    int capture_colorspace;
     int capture_ncolors;
     int capture_valid;
     int output_is_png;

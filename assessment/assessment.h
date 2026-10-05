@@ -317,11 +317,6 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
  *  the quality pipeline without exposing the API in the public header.
  */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_assessment_expand_quantized_frame(sixel_frame_t *source,
-                                        sixel_allocator_t *allocator,
-                                        sixel_frame_t **ppframe);
-
-SIXEL_INTERNAL_API SIXELSTATUS
 sixel_assessment_load_single_frame(char const *path,
                                    sixel_allocator_t *allocator,
                                    sixel_frame_t **ppframe);
@@ -347,11 +342,6 @@ sixel_assessment_record_loader(sixel_assessment_t *assessment,
 SIXEL_INTERNAL_API void
 sixel_assessment_record_source_frame(sixel_assessment_t *assessment,
                                      sixel_frame_t *frame);
-
-SIXEL_INTERNAL_API void
-sixel_assessment_record_quantized_capture(
-    sixel_assessment_t *assessment,
-    struct sixel_encoder *encoder);
 
 SIXEL_INTERNAL_API void
 sixel_assessment_record_output_size(sixel_assessment_t *assessment,

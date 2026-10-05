@@ -34,7 +34,7 @@ Selecting a PNG destination preserves ordinary SIXEL's selected native CPU float
 
 The snapshot decoder interprets `-U display-p3` output as Display P3 and writes that ICC profile without converting the emitted RGB a second time. Other output definitions retain the existing sRGB interpretation. In particular, legacy `-Ulinear` and `-Usmpte-c` snapshots are numeric previews interpreted as sRGB, not correctly tagged renditions of those definitions. The source image's ICC and `SIXEL_DECODER_INPUT_COLORSPACE` cannot override the encoder's explicit snapshot interpretation. HLS snapshots retain the decoder's existing HLS-to-RGB rounding; they need not match RGB serialization pixel-for-pixel.
 
-Native PNG admission covers ordinary SIXEL, excluding macro and DRCS envelopes and OR composition. Explicit P3 rejects those combinations before emitting the SIXEL body. This does not add APNG output, change high-color register handling, or change the default indexed decoder's transparency behavior. The internal pre-output quantized-image capture facility remains a separate path; PNG snapshots do not use that capture as their image source.
+Native PNG admission covers ordinary SIXEL, excluding macro and DRCS envelopes and OR composition. Explicit P3 rejects those combinations before emitting the SIXEL body. This does not add APNG output, change high-color register handling, or change the default indexed decoder's transparency behavior. PNG snapshots decode the emitted SIXEL stream; the palette-only `-M` export buffer is not their image source.
 
 The decoder selects the writer representation as follows:
 

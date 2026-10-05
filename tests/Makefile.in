@@ -110,6 +110,13 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	quant/palette/export_capture_common.c \
+	quant/palette/export_capture/0001_native_capture_memory.c \
+	quant/palette/export_capture/0002_byte_capture_memory.c \
+	quant/palette/export_capture/0003_native_writer_memory.c \
+	quant/palette/export_capture/0004_byte_writer_memory.c \
+	quant/palette/export_capture/0005_reuse_count.c \
+	quant/palette/export_capture/0006_encoder_isolation.c \
 	writer/png/0015_p3_resize_coordinates.c \
 	writer/png/0016_p3_k_undither_coordinates.c \
 	writer/png/0021_p3_lso_fs_coordinates.c \
@@ -2779,6 +2786,13 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-export_capture_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/export_capture/test_runner-0001_native_capture_memory.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/export_capture/test_runner-0002_byte_capture_memory.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/export_capture/test_runner-0003_native_writer_memory.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/export_capture/test_runner-0004_byte_writer_memory.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/export_capture/test_runner-0005_reuse_count.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/export_capture/test_runner-0006_encoder_isolation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0015_p3_resize_coordinates.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0016_p3_k_undither_coordinates.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0021_p3_lso_fs_coordinates.$(OBJEXT) \
@@ -7607,6 +7621,7 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-auto_cover_float_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-auto_test_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-builtin_float_common.Po \
+	quant/palette/$(DEPDIR)/test_runner-export_capture_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-fixed_mask_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-heckbert_test_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-map_float_common.Po \
@@ -7748,6 +7763,12 @@ am__depfiles_remade =  \
 	quant/palette/color_space/$(DEPDIR)/test_runner-0001_space_contract.Po \
 	quant/palette/cover_float/$(DEPDIR)/test_runner-0001_cover_contract.Po \
 	quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Po \
+	quant/palette/export_capture/$(DEPDIR)/test_runner-0001_native_capture_memory.Po \
+	quant/palette/export_capture/$(DEPDIR)/test_runner-0002_byte_capture_memory.Po \
+	quant/palette/export_capture/$(DEPDIR)/test_runner-0003_native_writer_memory.Po \
+	quant/palette/export_capture/$(DEPDIR)/test_runner-0004_byte_writer_memory.Po \
+	quant/palette/export_capture/$(DEPDIR)/test_runner-0005_reuse_count.Po \
+	quant/palette/export_capture/$(DEPDIR)/test_runner-0006_encoder_isolation.Po \
 	quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0001_eyt_gamma_srgb.Po \
 	quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0002_eyt_gamma_p3.Po \
 	quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0003_eyt_linear_srgb.Po \
@@ -8743,6 +8764,13 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_EXPORT_CAPTURE_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_NATIVE_CAPTURE_MEMORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_BYTE_CAPTURE_MEMORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_NATIVE_WRITER_MEMORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_BYTE_WRITER_MEMORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_REUSE_COUNT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_ENCODER_ISOLATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_TRANSPORT_REJECTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SRGB_FRAME_PRECISION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_P3_FRAME_PRECISION \
@@ -11400,6 +11428,13 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Avoid duplicate symbol definitions when test_runner links sixel.lib.
 @WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = 
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/export_capture_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/export_capture/0001_native_capture_memory.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/export_capture/0002_byte_capture_memory.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/export_capture/0003_native_writer_memory.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/export_capture/0004_byte_writer_memory.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/export_capture/0005_reuse_count.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/export_capture/0006_encoder_isolation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0015_p3_resize_coordinates.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0016_p3_k_undither_coordinates.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0021_p3_lso_fs_coordinates.c \
@@ -14294,6 +14329,39 @@ $(am__aclocal_m4_deps):
 clean-checkPROGRAMS:
 	$(am__rm_f) $(check_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
+quant/palette/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette
+	@: >>quant/palette/$(am__dirstamp)
+quant/palette/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/$(DEPDIR)
+	@: >>quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-export_capture_common.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/export_capture/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/export_capture
+	@: >>quant/palette/export_capture/$(am__dirstamp)
+quant/palette/export_capture/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/export_capture/$(DEPDIR)
+	@: >>quant/palette/export_capture/$(DEPDIR)/$(am__dirstamp)
+quant/palette/export_capture/test_runner-0001_native_capture_memory.$(OBJEXT):  \
+	quant/palette/export_capture/$(am__dirstamp) \
+	quant/palette/export_capture/$(DEPDIR)/$(am__dirstamp)
+quant/palette/export_capture/test_runner-0002_byte_capture_memory.$(OBJEXT):  \
+	quant/palette/export_capture/$(am__dirstamp) \
+	quant/palette/export_capture/$(DEPDIR)/$(am__dirstamp)
+quant/palette/export_capture/test_runner-0003_native_writer_memory.$(OBJEXT):  \
+	quant/palette/export_capture/$(am__dirstamp) \
+	quant/palette/export_capture/$(DEPDIR)/$(am__dirstamp)
+quant/palette/export_capture/test_runner-0004_byte_writer_memory.$(OBJEXT):  \
+	quant/palette/export_capture/$(am__dirstamp) \
+	quant/palette/export_capture/$(DEPDIR)/$(am__dirstamp)
+quant/palette/export_capture/test_runner-0005_reuse_count.$(OBJEXT):  \
+	quant/palette/export_capture/$(am__dirstamp) \
+	quant/palette/export_capture/$(DEPDIR)/$(am__dirstamp)
+quant/palette/export_capture/test_runner-0006_encoder_isolation.$(OBJEXT):  \
+	quant/palette/export_capture/$(am__dirstamp) \
+	quant/palette/export_capture/$(DEPDIR)/$(am__dirstamp)
 writer/png/$(am__dirstamp):
 	@$(MKDIR_P) writer/png
 	@: >>writer/png/$(am__dirstamp)
@@ -20095,12 +20163,6 @@ loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.$(OB
 	loader/builtin/$(DEPDIR)/$(am__dirstamp)
 loader/test_runner-gif_bgcolor_canvas_fill_test_common.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
-quant/palette/$(am__dirstamp):
-	@$(MKDIR_P) quant/palette
-	@: >>quant/palette/$(am__dirstamp)
-quant/palette/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) quant/palette/$(DEPDIR)
-	@: >>quant/palette/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-0001_kmeans_init.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
@@ -22799,6 +22861,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/color_space/*.$(OBJEXT)
 	-rm -f quant/palette/cover_float/*.$(OBJEXT)
 	-rm -f quant/palette/cover_mask/*.$(OBJEXT)
+	-rm -f quant/palette/export_capture/*.$(OBJEXT)
 	-rm -f quant/palette/eytzinger_float/*.$(OBJEXT)
 	-rm -f quant/palette/fallback/*.$(OBJEXT)
 	-rm -f quant/palette/fhedt_float/*.$(OBJEXT)
@@ -24969,6 +25032,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-auto_cover_float_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-auto_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-builtin_float_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-export_capture_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-fixed_mask_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-heckbert_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-map_float_common.Po@am__quote@ # am--include-marker
@@ -25110,6 +25174,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/color_space/$(DEPDIR)/test_runner-0001_space_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cover_float/$(DEPDIR)/test_runner-0001_cover_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/export_capture/$(DEPDIR)/test_runner-0001_native_capture_memory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/export_capture/$(DEPDIR)/test_runner-0002_byte_capture_memory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/export_capture/$(DEPDIR)/test_runner-0003_native_writer_memory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/export_capture/$(DEPDIR)/test_runner-0004_byte_writer_memory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/export_capture/$(DEPDIR)/test_runner-0005_reuse_count.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/export_capture/$(DEPDIR)/test_runner-0006_encoder_isolation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0001_eyt_gamma_srgb.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0002_eyt_gamma_p3.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/eytzinger_float/$(DEPDIR)/test_runner-0003_eyt_linear_srgb.Po@am__quote@ # am--include-marker
@@ -25486,6 +25556,104 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+quant/palette/test_runner-export_capture_common.o: quant/palette/export_capture_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-export_capture_common.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-export_capture_common.Tpo -c -o quant/palette/test_runner-export_capture_common.o `test -f 'quant/palette/export_capture_common.c' || echo '$(srcdir)/'`quant/palette/export_capture_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-export_capture_common.Tpo quant/palette/$(DEPDIR)/test_runner-export_capture_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/export_capture_common.c' object='quant/palette/test_runner-export_capture_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-export_capture_common.o `test -f 'quant/palette/export_capture_common.c' || echo '$(srcdir)/'`quant/palette/export_capture_common.c
+
+quant/palette/test_runner-export_capture_common.obj: quant/palette/export_capture_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-export_capture_common.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-export_capture_common.Tpo -c -o quant/palette/test_runner-export_capture_common.obj `if test -f 'quant/palette/export_capture_common.c'; then $(CYGPATH_W) 'quant/palette/export_capture_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/export_capture_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-export_capture_common.Tpo quant/palette/$(DEPDIR)/test_runner-export_capture_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/export_capture_common.c' object='quant/palette/test_runner-export_capture_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-export_capture_common.obj `if test -f 'quant/palette/export_capture_common.c'; then $(CYGPATH_W) 'quant/palette/export_capture_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/export_capture_common.c'; fi`
+
+quant/palette/export_capture/test_runner-0001_native_capture_memory.o: quant/palette/export_capture/0001_native_capture_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/export_capture/test_runner-0001_native_capture_memory.o -MD -MP -MF quant/palette/export_capture/$(DEPDIR)/test_runner-0001_native_capture_memory.Tpo -c -o quant/palette/export_capture/test_runner-0001_native_capture_memory.o `test -f 'quant/palette/export_capture/0001_native_capture_memory.c' || echo '$(srcdir)/'`quant/palette/export_capture/0001_native_capture_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/export_capture/$(DEPDIR)/test_runner-0001_native_capture_memory.Tpo quant/palette/export_capture/$(DEPDIR)/test_runner-0001_native_capture_memory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/export_capture/0001_native_capture_memory.c' object='quant/palette/export_capture/test_runner-0001_native_capture_memory.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/export_capture/test_runner-0001_native_capture_memory.o `test -f 'quant/palette/export_capture/0001_native_capture_memory.c' || echo '$(srcdir)/'`quant/palette/export_capture/0001_native_capture_memory.c
+
+quant/palette/export_capture/test_runner-0001_native_capture_memory.obj: quant/palette/export_capture/0001_native_capture_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/export_capture/test_runner-0001_native_capture_memory.obj -MD -MP -MF quant/palette/export_capture/$(DEPDIR)/test_runner-0001_native_capture_memory.Tpo -c -o quant/palette/export_capture/test_runner-0001_native_capture_memory.obj `if test -f 'quant/palette/export_capture/0001_native_capture_memory.c'; then $(CYGPATH_W) 'quant/palette/export_capture/0001_native_capture_memory.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/export_capture/0001_native_capture_memory.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/export_capture/$(DEPDIR)/test_runner-0001_native_capture_memory.Tpo quant/palette/export_capture/$(DEPDIR)/test_runner-0001_native_capture_memory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/export_capture/0001_native_capture_memory.c' object='quant/palette/export_capture/test_runner-0001_native_capture_memory.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/export_capture/test_runner-0001_native_capture_memory.obj `if test -f 'quant/palette/export_capture/0001_native_capture_memory.c'; then $(CYGPATH_W) 'quant/palette/export_capture/0001_native_capture_memory.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/export_capture/0001_native_capture_memory.c'; fi`
+
+quant/palette/export_capture/test_runner-0002_byte_capture_memory.o: quant/palette/export_capture/0002_byte_capture_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/export_capture/test_runner-0002_byte_capture_memory.o -MD -MP -MF quant/palette/export_capture/$(DEPDIR)/test_runner-0002_byte_capture_memory.Tpo -c -o quant/palette/export_capture/test_runner-0002_byte_capture_memory.o `test -f 'quant/palette/export_capture/0002_byte_capture_memory.c' || echo '$(srcdir)/'`quant/palette/export_capture/0002_byte_capture_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/export_capture/$(DEPDIR)/test_runner-0002_byte_capture_memory.Tpo quant/palette/export_capture/$(DEPDIR)/test_runner-0002_byte_capture_memory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/export_capture/0002_byte_capture_memory.c' object='quant/palette/export_capture/test_runner-0002_byte_capture_memory.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/export_capture/test_runner-0002_byte_capture_memory.o `test -f 'quant/palette/export_capture/0002_byte_capture_memory.c' || echo '$(srcdir)/'`quant/palette/export_capture/0002_byte_capture_memory.c
+
+quant/palette/export_capture/test_runner-0002_byte_capture_memory.obj: quant/palette/export_capture/0002_byte_capture_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/export_capture/test_runner-0002_byte_capture_memory.obj -MD -MP -MF quant/palette/export_capture/$(DEPDIR)/test_runner-0002_byte_capture_memory.Tpo -c -o quant/palette/export_capture/test_runner-0002_byte_capture_memory.obj `if test -f 'quant/palette/export_capture/0002_byte_capture_memory.c'; then $(CYGPATH_W) 'quant/palette/export_capture/0002_byte_capture_memory.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/export_capture/0002_byte_capture_memory.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/export_capture/$(DEPDIR)/test_runner-0002_byte_capture_memory.Tpo quant/palette/export_capture/$(DEPDIR)/test_runner-0002_byte_capture_memory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/export_capture/0002_byte_capture_memory.c' object='quant/palette/export_capture/test_runner-0002_byte_capture_memory.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/export_capture/test_runner-0002_byte_capture_memory.obj `if test -f 'quant/palette/export_capture/0002_byte_capture_memory.c'; then $(CYGPATH_W) 'quant/palette/export_capture/0002_byte_capture_memory.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/export_capture/0002_byte_capture_memory.c'; fi`
+
+quant/palette/export_capture/test_runner-0003_native_writer_memory.o: quant/palette/export_capture/0003_native_writer_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/export_capture/test_runner-0003_native_writer_memory.o -MD -MP -MF quant/palette/export_capture/$(DEPDIR)/test_runner-0003_native_writer_memory.Tpo -c -o quant/palette/export_capture/test_runner-0003_native_writer_memory.o `test -f 'quant/palette/export_capture/0003_native_writer_memory.c' || echo '$(srcdir)/'`quant/palette/export_capture/0003_native_writer_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/export_capture/$(DEPDIR)/test_runner-0003_native_writer_memory.Tpo quant/palette/export_capture/$(DEPDIR)/test_runner-0003_native_writer_memory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/export_capture/0003_native_writer_memory.c' object='quant/palette/export_capture/test_runner-0003_native_writer_memory.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/export_capture/test_runner-0003_native_writer_memory.o `test -f 'quant/palette/export_capture/0003_native_writer_memory.c' || echo '$(srcdir)/'`quant/palette/export_capture/0003_native_writer_memory.c
+
+quant/palette/export_capture/test_runner-0003_native_writer_memory.obj: quant/palette/export_capture/0003_native_writer_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/export_capture/test_runner-0003_native_writer_memory.obj -MD -MP -MF quant/palette/export_capture/$(DEPDIR)/test_runner-0003_native_writer_memory.Tpo -c -o quant/palette/export_capture/test_runner-0003_native_writer_memory.obj `if test -f 'quant/palette/export_capture/0003_native_writer_memory.c'; then $(CYGPATH_W) 'quant/palette/export_capture/0003_native_writer_memory.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/export_capture/0003_native_writer_memory.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/export_capture/$(DEPDIR)/test_runner-0003_native_writer_memory.Tpo quant/palette/export_capture/$(DEPDIR)/test_runner-0003_native_writer_memory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/export_capture/0003_native_writer_memory.c' object='quant/palette/export_capture/test_runner-0003_native_writer_memory.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/export_capture/test_runner-0003_native_writer_memory.obj `if test -f 'quant/palette/export_capture/0003_native_writer_memory.c'; then $(CYGPATH_W) 'quant/palette/export_capture/0003_native_writer_memory.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/export_capture/0003_native_writer_memory.c'; fi`
+
+quant/palette/export_capture/test_runner-0004_byte_writer_memory.o: quant/palette/export_capture/0004_byte_writer_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/export_capture/test_runner-0004_byte_writer_memory.o -MD -MP -MF quant/palette/export_capture/$(DEPDIR)/test_runner-0004_byte_writer_memory.Tpo -c -o quant/palette/export_capture/test_runner-0004_byte_writer_memory.o `test -f 'quant/palette/export_capture/0004_byte_writer_memory.c' || echo '$(srcdir)/'`quant/palette/export_capture/0004_byte_writer_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/export_capture/$(DEPDIR)/test_runner-0004_byte_writer_memory.Tpo quant/palette/export_capture/$(DEPDIR)/test_runner-0004_byte_writer_memory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/export_capture/0004_byte_writer_memory.c' object='quant/palette/export_capture/test_runner-0004_byte_writer_memory.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/export_capture/test_runner-0004_byte_writer_memory.o `test -f 'quant/palette/export_capture/0004_byte_writer_memory.c' || echo '$(srcdir)/'`quant/palette/export_capture/0004_byte_writer_memory.c
+
+quant/palette/export_capture/test_runner-0004_byte_writer_memory.obj: quant/palette/export_capture/0004_byte_writer_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/export_capture/test_runner-0004_byte_writer_memory.obj -MD -MP -MF quant/palette/export_capture/$(DEPDIR)/test_runner-0004_byte_writer_memory.Tpo -c -o quant/palette/export_capture/test_runner-0004_byte_writer_memory.obj `if test -f 'quant/palette/export_capture/0004_byte_writer_memory.c'; then $(CYGPATH_W) 'quant/palette/export_capture/0004_byte_writer_memory.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/export_capture/0004_byte_writer_memory.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/export_capture/$(DEPDIR)/test_runner-0004_byte_writer_memory.Tpo quant/palette/export_capture/$(DEPDIR)/test_runner-0004_byte_writer_memory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/export_capture/0004_byte_writer_memory.c' object='quant/palette/export_capture/test_runner-0004_byte_writer_memory.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/export_capture/test_runner-0004_byte_writer_memory.obj `if test -f 'quant/palette/export_capture/0004_byte_writer_memory.c'; then $(CYGPATH_W) 'quant/palette/export_capture/0004_byte_writer_memory.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/export_capture/0004_byte_writer_memory.c'; fi`
+
+quant/palette/export_capture/test_runner-0005_reuse_count.o: quant/palette/export_capture/0005_reuse_count.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/export_capture/test_runner-0005_reuse_count.o -MD -MP -MF quant/palette/export_capture/$(DEPDIR)/test_runner-0005_reuse_count.Tpo -c -o quant/palette/export_capture/test_runner-0005_reuse_count.o `test -f 'quant/palette/export_capture/0005_reuse_count.c' || echo '$(srcdir)/'`quant/palette/export_capture/0005_reuse_count.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/export_capture/$(DEPDIR)/test_runner-0005_reuse_count.Tpo quant/palette/export_capture/$(DEPDIR)/test_runner-0005_reuse_count.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/export_capture/0005_reuse_count.c' object='quant/palette/export_capture/test_runner-0005_reuse_count.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/export_capture/test_runner-0005_reuse_count.o `test -f 'quant/palette/export_capture/0005_reuse_count.c' || echo '$(srcdir)/'`quant/palette/export_capture/0005_reuse_count.c
+
+quant/palette/export_capture/test_runner-0005_reuse_count.obj: quant/palette/export_capture/0005_reuse_count.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/export_capture/test_runner-0005_reuse_count.obj -MD -MP -MF quant/palette/export_capture/$(DEPDIR)/test_runner-0005_reuse_count.Tpo -c -o quant/palette/export_capture/test_runner-0005_reuse_count.obj `if test -f 'quant/palette/export_capture/0005_reuse_count.c'; then $(CYGPATH_W) 'quant/palette/export_capture/0005_reuse_count.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/export_capture/0005_reuse_count.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/export_capture/$(DEPDIR)/test_runner-0005_reuse_count.Tpo quant/palette/export_capture/$(DEPDIR)/test_runner-0005_reuse_count.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/export_capture/0005_reuse_count.c' object='quant/palette/export_capture/test_runner-0005_reuse_count.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/export_capture/test_runner-0005_reuse_count.obj `if test -f 'quant/palette/export_capture/0005_reuse_count.c'; then $(CYGPATH_W) 'quant/palette/export_capture/0005_reuse_count.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/export_capture/0005_reuse_count.c'; fi`
+
+quant/palette/export_capture/test_runner-0006_encoder_isolation.o: quant/palette/export_capture/0006_encoder_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/export_capture/test_runner-0006_encoder_isolation.o -MD -MP -MF quant/palette/export_capture/$(DEPDIR)/test_runner-0006_encoder_isolation.Tpo -c -o quant/palette/export_capture/test_runner-0006_encoder_isolation.o `test -f 'quant/palette/export_capture/0006_encoder_isolation.c' || echo '$(srcdir)/'`quant/palette/export_capture/0006_encoder_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/export_capture/$(DEPDIR)/test_runner-0006_encoder_isolation.Tpo quant/palette/export_capture/$(DEPDIR)/test_runner-0006_encoder_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/export_capture/0006_encoder_isolation.c' object='quant/palette/export_capture/test_runner-0006_encoder_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/export_capture/test_runner-0006_encoder_isolation.o `test -f 'quant/palette/export_capture/0006_encoder_isolation.c' || echo '$(srcdir)/'`quant/palette/export_capture/0006_encoder_isolation.c
+
+quant/palette/export_capture/test_runner-0006_encoder_isolation.obj: quant/palette/export_capture/0006_encoder_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/export_capture/test_runner-0006_encoder_isolation.obj -MD -MP -MF quant/palette/export_capture/$(DEPDIR)/test_runner-0006_encoder_isolation.Tpo -c -o quant/palette/export_capture/test_runner-0006_encoder_isolation.obj `if test -f 'quant/palette/export_capture/0006_encoder_isolation.c'; then $(CYGPATH_W) 'quant/palette/export_capture/0006_encoder_isolation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/export_capture/0006_encoder_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/export_capture/$(DEPDIR)/test_runner-0006_encoder_isolation.Tpo quant/palette/export_capture/$(DEPDIR)/test_runner-0006_encoder_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/export_capture/0006_encoder_isolation.c' object='quant/palette/export_capture/test_runner-0006_encoder_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/export_capture/test_runner-0006_encoder_isolation.obj `if test -f 'quant/palette/export_capture/0006_encoder_isolation.c'; then $(CYGPATH_W) 'quant/palette/export_capture/0006_encoder_isolation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/export_capture/0006_encoder_isolation.c'; fi`
 
 writer/png/test_runner-0015_p3_resize_coordinates.o: writer/png/0015_p3_resize_coordinates.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0015_p3_resize_coordinates.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0015_p3_resize_coordinates.Tpo -c -o writer/png/test_runner-0015_p3_resize_coordinates.o `test -f 'writer/png/0015_p3_resize_coordinates.c' || echo '$(srcdir)/'`writer/png/0015_p3_resize_coordinates.c
@@ -62652,6 +62820,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/cover_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/cover_mask/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/cover_mask/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/export_capture/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/export_capture/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/eytzinger_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/eytzinger_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/fallback/$(DEPDIR)/$(am__dirstamp)
