@@ -62,6 +62,8 @@ CIEDE2000 has no lightness-dependent weight on chroma or hue. `S_C` depends on m
 
 **Display black and flare.** A real display does not show zero light for black. Its own black level and reflected room light, called veiling glare or flare, add a roughly constant luminance to every pixel. That addition dilutes chromaticity differences between dark colors, much as diluting two pigments with the same gray makes them more alike. A color difference computed directly from encoded pixel values ignores it and so overstates differences near black. The sRGB specification (IEC 61966-2-1) includes viewing flare in its reference viewing conditions for this reason.
 
+The direction of this error depends on the viewing conditions. In a lit room with an LCD, black level and reflections are substantial and near-black differences are less visible than the formulas suggest. In a dark room with an OLED, black is close to zero, there is little flare, and the viewer may be adapted near the photopic–mesopic boundary (see [dark terminals and dark rooms](metrics.md#light-level-and-adaptation)). Under those conditions a near-black error, such as a palette whose darkest entry is 3/255 instead of 0, can appear as a visible gray veil over a black background. No single treatment of near-black differences is correct for all viewing; an evaluation must state which conditions it assumes.
+
 **Range of the calibration data.** CIEDE2000 was fitted mainly to surface colors of moderate lightness viewed under bright illumination. Its behavior close to black is less thoroughly validated than its behavior at mid lightness.
 
 ### Local darkness is not dark adaptation
@@ -163,6 +165,8 @@ The grades assume a *side-by-side* comparison, the strictest situation. Images a
 - **Side-by-side comparison** (the original next to the output, as in a review tool): the industrial grades apply most directly.
 - **Successive or remembered comparison** (switching between versions, or recognizing a familiar photograph): tolerance is roughly a grade looser, because color memory is less precise than direct comparison.
 - **Viewing without a reference** (the normal case for a terminal image): the viewer cannot measure a difference and judges only plausibility. Differences in colors with strong expectations remain noticeable: neutral grays and whites, skin tones, sky, foliage, and brand or interface colors. Other colors tolerate shifts of a grade or more.
+
+Two display-side conditions change these judgments. A night-time warm-tint filter leaves a residual cast and a reduced blue gamut even after chromatic adaptation, so judgments of neutrality and of blue-violet differences made under a filter are unreliable. A dark theme in a dark room can lower adaptation toward the mesopic range, which makes near-black steps more visible and dark-area color differences less visible. Both are described under [light level and adaptation](metrics.md#light-level-and-adaptation); make visual quality judgments with filters off and record the room and display conditions.
 
 ### Recommended targets for libsixel output
 
