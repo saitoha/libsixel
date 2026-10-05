@@ -131,7 +131,15 @@ require_fixed '@SIXEL_LIBTOOL_OBJDIR@/img2sixel@EXEEXT@' \
     build-aux/resolve-test-tool-paths.sh.in
 require_fixed 'quote_single()' build-aux/resolve-test-tool-paths.sh.in
 require_fixed "bin_ext = '.exe'" tests/meson.build
-require_fixed "test_env.prepend('PATH', dll_path)" tests/meson.build
+# DLL paths flow through the shared standalone setups or a copied environment
+# for subproject tests. Guard both routes so neither drops the PATH prepend.
+require_fixed "env.prepend('PATH', dll_path)" tests/meson.build
+require_fixed 'setup_env = env' tests/meson.build
+require_fixed 'test_env = env' tests/meson.build
+require_fixed 'env: setup_env' tests/meson.build
+require_fixed 'is_default: share_test_env' tests/meson.build
+require_fixed 'installcheck_env = setup_env' tests/meson.build
+require_fixed 'env: test_env' tests/meson.build
 require_fixed "export SIXEL_RUNTIME=''" tests/Makefile.am
 # shellcheck disable=SC2016
 require_fixed '$(SIXEL_RUNTIME) "$$test_runner_probe"' tests/Makefile.am

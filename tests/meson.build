@@ -293,6 +293,16 @@ tap_exitcode_wrapper_file = configure_file(
   copy: true,
 )
 
+# Store common exports once in the test setups. Repeating the full environment
+# in every test makes Meson copy and serialize millions of identical entries.
+# A subproject cannot select a default setup for its parent, so retain complete
+# per-test environments in that case.
+share_test_env = not meson.is_subproject()
+setup_env = environment()
+if share_test_env
+  setup_env = env
+endif
+
 foreach t : tests
   parts = t.split('/')
   test_base = parts[parts.length() - 1]
@@ -318,13 +328,9 @@ foreach t : tests
   endif
   test_artifact_dir = artifact_root / test_category / test_artifact_leaf
   test_env = environment()
-  foreach setting : base_env_settings
-    test_env.set(setting[0], setting[1])
-  endforeach
-  if is_windows
-    foreach dll_path : dll_paths
-      test_env.prepend('PATH', dll_path)
-    endforeach
+  if not share_test_env
+    # Assignment copies the environment, keeping artifact paths independent.
+    test_env = env
   endif
   test_env.set('ARTIFACT_LOCAL_DIR', test_artifact_dir)
   test_cmd = [meson.current_source_dir() / t]
@@ -349,19 +355,23 @@ foreach t : tests
     suite: ['tap'])
 endforeach
 
-add_test_setup('ci', timeout_multiplier: 1)
+add_test_setup('ci',
+  env: setup_env,
+  is_default: share_test_env,
+  timeout_multiplier: 1)
 
 # installcheck runs the same TAP suite but resolves command paths from PATH
 # so callers can validate installed binaries instead of build-tree wrappers.
-installcheck_env = environment()
+installcheck_env = setup_env
 installcheck_env.set('SIXEL_INSTALLCHECK', '1')
 installcheck_env.set('SIXEL_RUNTIME', '')
 installcheck_env.set('IMG2SIXEL_PATH', 'img2sixel' + bin_ext)
 installcheck_env.set('SIXEL2PNG_PATH', 'sixel2png' + bin_ext)
 installcheck_env.set('LSQA_PATH', 'lsqa' + bin_ext)
 installcheck_env.set('TEST_RUNNER_PATH', 'test_runner' + bin_ext)
-installcheck_env.set('LIBSIXEL_LIBDIR',
-                     join_paths(get_option('prefix'), get_option('libdir')))
+# Keep the effective common library path: the former per-test environment
+# already overrode this setup's LIBSIXEL_LIBDIR with the build-tree directory.
+# The installcheck run target supplies the installed runtime search paths.
 add_test_setup('installcheck',
   env: installcheck_env,
   timeout_multiplier: 1)
