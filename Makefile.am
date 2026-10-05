@@ -278,6 +278,12 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/loader/color-management/examples/gamma-wide.png \
 	docs/loader/color-management/examples/gamma-mobile.png \
 	docs/loader/color-management/examples/examples.json \
+	docs/loader/color-management/figures/colorsync-gamma2-wide.png \
+	docs/loader/color-management/figures/colorsync-gamma2-mobile.png \
+	docs/loader/color-management/measurements/colorsync-gamma2.json \
+	docs/loader/color-management/measurements/native-curv-sixel.png \
+	docs/loader/color-management/measurements/equivalent-para3-sixel.png \
+	docs/loader/color-management/measurements/reference-sixel.png \
 	docs/loader/alpha-policy/README.md \
 	docs/loader/background-policy.md \
 	docs/loader/builtin.md \
@@ -731,6 +737,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	tools/bench/png-loader.c \
 	tools/plot_loader_architecture_figures.py \
 	tools/plot_loader_cms_examples.py \
+	tools/plot_colorsync_gamma.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
 	tools/plot_merge_policy_measurements.py \

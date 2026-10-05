@@ -1,0 +1,1329 @@
+{
+  "schema": 1,
+  "captured": "2026-09-15",
+  "platform": "macOS 26.5.1 (25F80), arm64",
+  "source_revision": "fc5c5963eaeb3fbe52f1a6bc3a77d91027e86670",
+  "profile": "ICC v4 Gray, D50, gamma 2: one-entry curv versus para3 [2,1,0,0,0]",
+  "profile_sha256": {
+    "curv14": "e937c5cd35a91c697fe85a09d772fd41510fc3015a884954609a31f89179b4ca",
+    "para3": "876478a11fe17c01e6e7cca85197b6e4cd3caea8ccb2ce5e1ac65ef6726a2f62"
+  },
+  "input": "64 equally spaced positions over [0,0.125], rounded to uint16 then normalized to float32; 64 identical rows",
+  "output": "linear sRGB float32; plot uses the red component",
+  "reference": "100-digit Decimal evaluation of stored ICC gamma/matrix and D50-to-linear-sRGB conversion, rounded to float32",
+  "native_para3_equals_adapter_output": true,
+  "sixel": "Historical encoder: LINEARRGBFLOAT32 input, precision=float32, threads=1, default 256-color limit; direct sixel2png -D decode. These images are historical outputs, not current-encoder goldens.",
+  "images_sha256": {
+    "native-curv-sixel.png": "ee15d691fa051b87da0f2f763f022279578a49c80726563e3e221fb985747eaa",
+    "equivalent-para3-sixel.png": "a8710d3d4e560ca3718b4ffcd8baeef8a4acf6db5e4db47ed15ce09112718a44",
+    "reference-sixel.png": "a8710d3d4e560ca3718b4ffcd8baeef8a4acf6db5e4db47ed15ce09112718a44"
+  },
+  "source_files_sha256": {
+    "curv-observations.json": "86676ec8a579df55d6aae9a3b5d0c3e945dfd46f1cba457e76fdf12da0bb7d6f",
+    "curv-gray-dark-ramp.input.f32": "e6dea5fc72c43e31923b37206404251e69ceb6fa2fa57899e7cae3d17b8ee380",
+    "curv-gray-dark-ramp.oracle.f32": "2d2d4037fe377d158072cb9e8579faded9716344344f4322fb5e809f6f889d24",
+    "curv-results.json": "fa313b9a1f0a32eaa5cec511f5e36066365e17f0f65275600192c942060486a8"
+  },
+  "samples": [
+    {
+      "input_u16": 0,
+      "input_f32_bits": 0,
+      "reference_rgb_f32_bits": [
+        0,
+        0,
+        0
+      ],
+      "native_curv_rgb_f32_bits": [
+        0,
+        0,
+        0
+      ],
+      "native_para3_rgb_f32_bits": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "input_u16": 130,
+      "input_f32_bits": 989986946,
+      "reference_rgb_f32_bits": [
+        914622728,
+        914622728,
+        914622728
+      ],
+      "native_curv_rgb_f32_bits": [
+        956432514,
+        956432514,
+        956432514
+      ],
+      "native_para3_rgb_f32_bits": [
+        914622728,
+        914622728,
+        914622728
+      ]
+    },
+    {
+      "input_u16": 260,
+      "input_f32_bits": 998375554,
+      "reference_rgb_f32_bits": [
+        931399944,
+        931399944,
+        931399944
+      ],
+      "native_curv_rgb_f32_bits": [
+        964821122,
+        964821122,
+        964821122
+      ],
+      "native_para3_rgb_f32_bits": [
+        931399944,
+        931399944,
+        931399944
+      ]
+    },
+    {
+      "input_u16": 390,
+      "input_f32_bits": 1002635459,
+      "reference_rgb_f32_bits": [
+        940870185,
+        940870185,
+        940870185
+      ],
+      "native_curv_rgb_f32_bits": [
+        969081027,
+        969081027,
+        969081027
+      ],
+      "native_para3_rgb_f32_bits": [
+        940870185,
+        940870185,
+        940870185
+      ]
+    },
+    {
+      "input_u16": 520,
+      "input_f32_bits": 1006764162,
+      "reference_rgb_f32_bits": [
+        948177160,
+        948177160,
+        948177160
+      ],
+      "native_curv_rgb_f32_bits": [
+        973209730,
+        973209730,
+        973209730
+      ],
+      "native_para3_rgb_f32_bits": [
+        948177160,
+        948177160,
+        948177160
+      ]
+    },
+    {
+      "input_u16": 650,
+      "input_f32_bits": 1008894115,
+      "reference_rgb_f32_bits": [
+        953044510,
+        953044510,
+        953044510
+      ],
+      "native_curv_rgb_f32_bits": [
+        975339683,
+        975339683,
+        975339683
+      ],
+      "native_para3_rgb_f32_bits": [
+        953044510,
+        953044510,
+        953044510
+      ]
+    },
+    {
+      "input_u16": 780,
+      "input_f32_bits": 1011024067,
+      "reference_rgb_f32_bits": [
+        957647401,
+        957647401,
+        957647401
+      ],
+      "native_curv_rgb_f32_bits": [
+        977469635,
+        977469635,
+        977469635
+      ],
+      "native_para3_rgb_f32_bits": [
+        957647401,
+        957647401,
+        957647401
+      ]
+    },
+    {
+      "input_u16": 910,
+      "input_f32_bits": 1013154020,
+      "reference_rgb_f32_bits": [
+        961162709,
+        961162709,
+        961162709
+      ],
+      "native_curv_rgb_f32_bits": [
+        979599588,
+        979599588,
+        979599588
+      ],
+      "native_para3_rgb_f32_bits": [
+        961162709,
+        961162709,
+        961162709
+      ]
+    },
+    {
+      "input_u16": 1040,
+      "input_f32_bits": 1015152770,
+      "reference_rgb_f32_bits": [
+        964954376,
+        964954376,
+        964954376
+      ],
+      "native_curv_rgb_f32_bits": [
+        981598338,
+        981598338,
+        981598338
+      ],
+      "native_para3_rgb_f32_bits": [
+        964954376,
+        964954376,
+        964954376
+      ]
+    },
+    {
+      "input_u16": 1170,
+      "input_f32_bits": 1016217746,
+      "reference_rgb_f32_bits": [
+        967252846,
+        967252846,
+        967252846
+      ],
+      "native_curv_rgb_f32_bits": [
+        982663314,
+        982663314,
+        982663314
+      ],
+      "native_para3_rgb_f32_bits": [
+        967252846,
+        967252846,
+        967252846
+      ]
+    },
+    {
+      "input_u16": 1300,
+      "input_f32_bits": 1017282723,
+      "reference_rgb_f32_bits": [
+        969821726,
+        969821726,
+        969821726
+      ],
+      "native_curv_rgb_f32_bits": [
+        983728291,
+        983728291,
+        983728291
+      ],
+      "native_para3_rgb_f32_bits": [
+        969821726,
+        969821726,
+        969821726
+      ]
+    },
+    {
+      "input_u16": 1430,
+      "input_f32_bits": 1018347699,
+      "reference_rgb_f32_bits": [
+        972661012,
+        972661012,
+        972661012
+      ],
+      "native_curv_rgb_f32_bits": [
+        984793267,
+        984793267,
+        984793267
+      ],
+      "native_para3_rgb_f32_bits": [
+        972661012,
+        972661012,
+        972661012
+      ]
+    },
+    {
+      "input_u16": 1560,
+      "input_f32_bits": 1019412675,
+      "reference_rgb_f32_bits": [
+        974424617,
+        974424617,
+        974424617
+      ],
+      "native_curv_rgb_f32_bits": [
+        985858243,
+        985858243,
+        985858243
+      ],
+      "native_para3_rgb_f32_bits": [
+        974424617,
+        974424617,
+        974424617
+      ]
+    },
+    {
+      "input_u16": 1690,
+      "input_f32_bits": 1020477651,
+      "reference_rgb_f32_bits": [
+        976114668,
+        976114668,
+        976114668
+      ],
+      "native_curv_rgb_f32_bits": [
+        986923219,
+        986923219,
+        986923219
+      ],
+      "native_para3_rgb_f32_bits": [
+        976114668,
+        976114668,
+        976114668
+      ]
+    },
+    {
+      "input_u16": 1820,
+      "input_f32_bits": 1021542628,
+      "reference_rgb_f32_bits": [
+        977939925,
+        977939925,
+        977939925
+      ],
+      "native_curv_rgb_f32_bits": [
+        987988196,
+        987988196,
+        987988196
+      ],
+      "native_para3_rgb_f32_bits": [
+        977939925,
+        977939925,
+        977939925
+      ]
+    },
+    {
+      "input_u16": 1950,
+      "input_f32_bits": 1022607604,
+      "reference_rgb_f32_bits": [
+        979900385,
+        979900385,
+        979900385
+      ],
+      "native_curv_rgb_f32_bits": [
+        989053172,
+        989053172,
+        989053172
+      ],
+      "native_para3_rgb_f32_bits": [
+        979900385,
+        979900385,
+        979900385
+      ]
+    },
+    {
+      "input_u16": 2080,
+      "input_f32_bits": 1023541378,
+      "reference_rgb_f32_bits": [
+        981731592,
+        981731592,
+        981731592
+      ],
+      "native_curv_rgb_f32_bits": [
+        989986946,
+        989986946,
+        989986946
+      ],
+      "native_para3_rgb_f32_bits": [
+        981731592,
+        981731592,
+        981731592
+      ]
+    },
+    {
+      "input_u16": 2211,
+      "input_f32_bits": 1024077962,
+      "reference_rgb_f32_bits": [
+        982855868,
+        982855868,
+        982855868
+      ],
+      "native_curv_rgb_f32_bits": [
+        990523530,
+        990523530,
+        990523530
+      ],
+      "native_para3_rgb_f32_bits": [
+        982855868,
+        982855868,
+        982855868
+      ]
+    },
+    {
+      "input_u16": 2341,
+      "input_f32_bits": 1024610450,
+      "reference_rgb_f32_bits": [
+        984039424,
+        984039424,
+        984039424
+      ],
+      "native_curv_rgb_f32_bits": [
+        991056018,
+        991056018,
+        991056018
+      ],
+      "native_para3_rgb_f32_bits": [
+        984039424,
+        984039424,
+        984039424
+      ]
+    },
+    {
+      "input_u16": 2471,
+      "input_f32_bits": 1025142938,
+      "reference_rgb_f32_bits": [
+        985290582,
+        985290582,
+        985290582
+      ],
+      "native_curv_rgb_f32_bits": [
+        991588506,
+        991588506,
+        991588506
+      ],
+      "native_para3_rgb_f32_bits": [
+        985290582,
+        985290582,
+        985290582
+      ]
+    },
+    {
+      "input_u16": 2601,
+      "input_f32_bits": 1025675427,
+      "reference_rgb_f32_bits": [
+        986609344,
+        986609344,
+        986609344
+      ],
+      "native_curv_rgb_f32_bits": [
+        992120995,
+        992120995,
+        992120995
+      ],
+      "native_para3_rgb_f32_bits": [
+        986609344,
+        986609344,
+        986609344
+      ]
+    },
+    {
+      "input_u16": 2731,
+      "input_f32_bits": 1026207915,
+      "reference_rgb_f32_bits": [
+        987995706,
+        987995706,
+        987995706
+      ],
+      "native_curv_rgb_f32_bits": [
+        992653483,
+        992653483,
+        992653483
+      ],
+      "native_para3_rgb_f32_bits": [
+        987995706,
+        987995706,
+        987995706
+      ]
+    },
+    {
+      "input_u16": 2861,
+      "input_f32_bits": 1026740403,
+      "reference_rgb_f32_bits": [
+        989449670,
+        989449670,
+        989449670
+      ],
+      "native_curv_rgb_f32_bits": [
+        993185971,
+        993185971,
+        993185971
+      ],
+      "native_para3_rgb_f32_bits": [
+        989449670,
+        989449670,
+        989449670
+      ]
+    },
+    {
+      "input_u16": 2991,
+      "input_f32_bits": 1027272891,
+      "reference_rgb_f32_bits": [
+        990413490,
+        990413490,
+        990413490
+      ],
+      "native_curv_rgb_f32_bits": [
+        993718459,
+        993718459,
+        993718459
+      ],
+      "native_para3_rgb_f32_bits": [
+        990413490,
+        990413490,
+        990413490
+      ]
+    },
+    {
+      "input_u16": 3121,
+      "input_f32_bits": 1027805379,
+      "reference_rgb_f32_bits": [
+        991208074,
+        991208074,
+        991208074
+      ],
+      "native_curv_rgb_f32_bits": [
+        994250947,
+        994250947,
+        994250947
+      ],
+      "native_para3_rgb_f32_bits": [
+        991208074,
+        991208074,
+        991208074
+      ]
+    },
+    {
+      "input_u16": 3251,
+      "input_f32_bits": 1028337867,
+      "reference_rgb_f32_bits": [
+        992036459,
+        992036459,
+        992036459
+      ],
+      "native_curv_rgb_f32_bits": [
+        994783435,
+        994783435,
+        994783435
+      ],
+      "native_para3_rgb_f32_bits": [
+        992036459,
+        992036459,
+        992036459
+      ]
+    },
+    {
+      "input_u16": 3381,
+      "input_f32_bits": 1028870355,
+      "reference_rgb_f32_bits": [
+        992898645,
+        992898645,
+        992898645
+      ],
+      "native_curv_rgb_f32_bits": [
+        995315923,
+        995315923,
+        995315923
+      ],
+      "native_para3_rgb_f32_bits": [
+        992898645,
+        992898645,
+        992898645
+      ]
+    },
+    {
+      "input_u16": 3511,
+      "input_f32_bits": 1029402843,
+      "reference_rgb_f32_bits": [
+        993794632,
+        993794632,
+        993794632
+      ],
+      "native_curv_rgb_f32_bits": [
+        995848411,
+        995848411,
+        995848411
+      ],
+      "native_para3_rgb_f32_bits": [
+        993794632,
+        993794632,
+        993794632
+      ]
+    },
+    {
+      "input_u16": 3641,
+      "input_f32_bits": 1029935332,
+      "reference_rgb_f32_bits": [
+        994724422,
+        994724422,
+        994724422
+      ],
+      "native_curv_rgb_f32_bits": [
+        996380900,
+        996380900,
+        996380900
+      ],
+      "native_para3_rgb_f32_bits": [
+        994724422,
+        994724422,
+        994724422
+      ]
+    },
+    {
+      "input_u16": 3771,
+      "input_f32_bits": 1030467820,
+      "reference_rgb_f32_bits": [
+        995688012,
+        995688012,
+        995688012
+      ],
+      "native_curv_rgb_f32_bits": [
+        996913388,
+        996913388,
+        996913388
+      ],
+      "native_para3_rgb_f32_bits": [
+        995688012,
+        995688012,
+        995688012
+      ]
+    },
+    {
+      "input_u16": 3901,
+      "input_f32_bits": 1031000308,
+      "reference_rgb_f32_bits": [
+        996685402,
+        996685402,
+        996685402
+      ],
+      "native_curv_rgb_f32_bits": [
+        997445876,
+        997445876,
+        997445876
+      ],
+      "native_para3_rgb_f32_bits": [
+        996685402,
+        996685402,
+        996685402
+      ]
+    },
+    {
+      "input_u16": 4031,
+      "input_f32_bits": 1031532796,
+      "reference_rgb_f32_bits": [
+        997716593,
+        997716593,
+        997716593
+      ],
+      "native_curv_rgb_f32_bits": [
+        997978364,
+        997978364,
+        997978364
+      ],
+      "native_para3_rgb_f32_bits": [
+        997716593,
+        997716593,
+        997716593
+      ]
+    },
+    {
+      "input_u16": 4161,
+      "input_f32_bits": 1031932034,
+      "reference_rgb_f32_bits": [
+        998512969,
+        998512969,
+        998512969
+      ],
+      "native_curv_rgb_f32_bits": [
+        998512969,
+        998512969,
+        998512969
+      ],
+      "native_para3_rgb_f32_bits": [
+        998512969,
+        998512969,
+        998512969
+      ]
+    },
+    {
+      "input_u16": 4291,
+      "input_f32_bits": 1032198278,
+      "reference_rgb_f32_bits": [
+        999062365,
+        999062365,
+        999062365
+      ],
+      "native_curv_rgb_f32_bits": [
+        999062365,
+        999062365,
+        999062365
+      ],
+      "native_para3_rgb_f32_bits": [
+        999062365,
+        999062365,
+        999062365
+      ]
+    },
+    {
+      "input_u16": 4421,
+      "input_f32_bits": 1032464522,
+      "reference_rgb_f32_bits": [
+        999628662,
+        999628662,
+        999628662
+      ],
+      "native_curv_rgb_f32_bits": [
+        999628662,
+        999628662,
+        999628662
+      ],
+      "native_para3_rgb_f32_bits": [
+        999628662,
+        999628662,
+        999628662
+      ]
+    },
+    {
+      "input_u16": 4551,
+      "input_f32_bits": 1032730766,
+      "reference_rgb_f32_bits": [
+        1000211860,
+        1000211860,
+        1000211860
+      ],
+      "native_curv_rgb_f32_bits": [
+        1000211860,
+        1000211860,
+        1000211860
+      ],
+      "native_para3_rgb_f32_bits": [
+        1000211860,
+        1000211860,
+        1000211860
+      ]
+    },
+    {
+      "input_u16": 4681,
+      "input_f32_bits": 1032997010,
+      "reference_rgb_f32_bits": [
+        1000811958,
+        1000811958,
+        1000811958
+      ],
+      "native_curv_rgb_f32_bits": [
+        1000811958,
+        1000811958,
+        1000811958
+      ],
+      "native_para3_rgb_f32_bits": [
+        1000811958,
+        1000811958,
+        1000811958
+      ]
+    },
+    {
+      "input_u16": 4811,
+      "input_f32_bits": 1033263254,
+      "reference_rgb_f32_bits": [
+        1001428957,
+        1001428957,
+        1001428957
+      ],
+      "native_curv_rgb_f32_bits": [
+        1001428957,
+        1001428957,
+        1001428957
+      ],
+      "native_para3_rgb_f32_bits": [
+        1001428957,
+        1001428957,
+        1001428957
+      ]
+    },
+    {
+      "input_u16": 4941,
+      "input_f32_bits": 1033529498,
+      "reference_rgb_f32_bits": [
+        1002062856,
+        1002062856,
+        1002062856
+      ],
+      "native_curv_rgb_f32_bits": [
+        1002062856,
+        1002062856,
+        1002062856
+      ],
+      "native_para3_rgb_f32_bits": [
+        1002062856,
+        1002062856,
+        1002062856
+      ]
+    },
+    {
+      "input_u16": 5071,
+      "input_f32_bits": 1033795742,
+      "reference_rgb_f32_bits": [
+        1002713656,
+        1002713656,
+        1002713656
+      ],
+      "native_curv_rgb_f32_bits": [
+        1002713656,
+        1002713656,
+        1002713656
+      ],
+      "native_para3_rgb_f32_bits": [
+        1002713656,
+        1002713656,
+        1002713656
+      ]
+    },
+    {
+      "input_u16": 5201,
+      "input_f32_bits": 1034061987,
+      "reference_rgb_f32_bits": [
+        1003381358,
+        1003381358,
+        1003381358
+      ],
+      "native_curv_rgb_f32_bits": [
+        1003381358,
+        1003381358,
+        1003381358
+      ],
+      "native_para3_rgb_f32_bits": [
+        1003381358,
+        1003381358,
+        1003381358
+      ]
+    },
+    {
+      "input_u16": 5331,
+      "input_f32_bits": 1034328231,
+      "reference_rgb_f32_bits": [
+        1004065959,
+        1004065959,
+        1004065959
+      ],
+      "native_curv_rgb_f32_bits": [
+        1004065959,
+        1004065959,
+        1004065959
+      ],
+      "native_para3_rgb_f32_bits": [
+        1004065959,
+        1004065959,
+        1004065959
+      ]
+    },
+    {
+      "input_u16": 5461,
+      "input_f32_bits": 1034594475,
+      "reference_rgb_f32_bits": [
+        1004767460,
+        1004767460,
+        1004767460
+      ],
+      "native_curv_rgb_f32_bits": [
+        1004767460,
+        1004767460,
+        1004767460
+      ],
+      "native_para3_rgb_f32_bits": [
+        1004767460,
+        1004767460,
+        1004767460
+      ]
+    },
+    {
+      "input_u16": 5591,
+      "input_f32_bits": 1034860719,
+      "reference_rgb_f32_bits": [
+        1005485862,
+        1005485862,
+        1005485862
+      ],
+      "native_curv_rgb_f32_bits": [
+        1005485862,
+        1005485862,
+        1005485862
+      ],
+      "native_para3_rgb_f32_bits": [
+        1005485862,
+        1005485862,
+        1005485862
+      ]
+    },
+    {
+      "input_u16": 5721,
+      "input_f32_bits": 1035126963,
+      "reference_rgb_f32_bits": [
+        1006221165,
+        1006221165,
+        1006221165
+      ],
+      "native_curv_rgb_f32_bits": [
+        1006221165,
+        1006221165,
+        1006221165
+      ],
+      "native_para3_rgb_f32_bits": [
+        1006221165,
+        1006221165,
+        1006221165
+      ]
+    },
+    {
+      "input_u16": 5851,
+      "input_f32_bits": 1035393207,
+      "reference_rgb_f32_bits": [
+        1006803164,
+        1006803164,
+        1006803164
+      ],
+      "native_curv_rgb_f32_bits": [
+        1006803164,
+        1006803164,
+        1006803164
+      ],
+      "native_para3_rgb_f32_bits": [
+        1006803164,
+        1006803164,
+        1006803164
+      ]
+    },
+    {
+      "input_u16": 5981,
+      "input_f32_bits": 1035659451,
+      "reference_rgb_f32_bits": [
+        1007187715,
+        1007187715,
+        1007187715
+      ],
+      "native_curv_rgb_f32_bits": [
+        1007187715,
+        1007187715,
+        1007187715
+      ],
+      "native_para3_rgb_f32_bits": [
+        1007187715,
+        1007187715,
+        1007187715
+      ]
+    },
+    {
+      "input_u16": 6111,
+      "input_f32_bits": 1035925695,
+      "reference_rgb_f32_bits": [
+        1007580717,
+        1007580717,
+        1007580717
+      ],
+      "native_curv_rgb_f32_bits": [
+        1007580717,
+        1007580717,
+        1007580717
+      ],
+      "native_para3_rgb_f32_bits": [
+        1007580717,
+        1007580717,
+        1007580717
+      ]
+    },
+    {
+      "input_u16": 6241,
+      "input_f32_bits": 1036191939,
+      "reference_rgb_f32_bits": [
+        1007982169,
+        1007982169,
+        1007982169
+      ],
+      "native_curv_rgb_f32_bits": [
+        1007982169,
+        1007982169,
+        1007982169
+      ],
+      "native_para3_rgb_f32_bits": [
+        1007982169,
+        1007982169,
+        1007982169
+      ]
+    },
+    {
+      "input_u16": 6371,
+      "input_f32_bits": 1036458183,
+      "reference_rgb_f32_bits": [
+        1008392072,
+        1008392072,
+        1008392072
+      ],
+      "native_curv_rgb_f32_bits": [
+        1008392072,
+        1008392072,
+        1008392072
+      ],
+      "native_para3_rgb_f32_bits": [
+        1008392072,
+        1008392072,
+        1008392072
+      ]
+    },
+    {
+      "input_u16": 6501,
+      "input_f32_bits": 1036724427,
+      "reference_rgb_f32_bits": [
+        1008810424,
+        1008810424,
+        1008810424
+      ],
+      "native_curv_rgb_f32_bits": [
+        1008810424,
+        1008810424,
+        1008810424
+      ],
+      "native_para3_rgb_f32_bits": [
+        1008810424,
+        1008810424,
+        1008810424
+      ]
+    },
+    {
+      "input_u16": 6632,
+      "input_f32_bits": 1036992719,
+      "reference_rgb_f32_bits": [
+        1009240543,
+        1009240543,
+        1009240543
+      ],
+      "native_curv_rgb_f32_bits": [
+        1009240543,
+        1009240543,
+        1009240543
+      ],
+      "native_para3_rgb_f32_bits": [
+        1009240543,
+        1009240543,
+        1009240543
+      ]
+    },
+    {
+      "input_u16": 6762,
+      "input_f32_bits": 1037258963,
+      "reference_rgb_f32_bits": [
+        1009675861,
+        1009675861,
+        1009675861
+      ],
+      "native_curv_rgb_f32_bits": [
+        1009675861,
+        1009675861,
+        1009675861
+      ],
+      "native_para3_rgb_f32_bits": [
+        1009675861,
+        1009675861,
+        1009675861
+      ]
+    },
+    {
+      "input_u16": 6892,
+      "input_f32_bits": 1037525207,
+      "reference_rgb_f32_bits": [
+        1010119630,
+        1010119630,
+        1010119630
+      ],
+      "native_curv_rgb_f32_bits": [
+        1010119630,
+        1010119630,
+        1010119630
+      ],
+      "native_para3_rgb_f32_bits": [
+        1010119630,
+        1010119630,
+        1010119630
+      ]
+    },
+    {
+      "input_u16": 7022,
+      "input_f32_bits": 1037791451,
+      "reference_rgb_f32_bits": [
+        1010571848,
+        1010571848,
+        1010571848
+      ],
+      "native_curv_rgb_f32_bits": [
+        1010571848,
+        1010571848,
+        1010571848
+      ],
+      "native_para3_rgb_f32_bits": [
+        1010571848,
+        1010571848,
+        1010571848
+      ]
+    },
+    {
+      "input_u16": 7152,
+      "input_f32_bits": 1038057696,
+      "reference_rgb_f32_bits": [
+        1011032519,
+        1011032519,
+        1011032519
+      ],
+      "native_curv_rgb_f32_bits": [
+        1011032519,
+        1011032519,
+        1011032519
+      ],
+      "native_para3_rgb_f32_bits": [
+        1011032519,
+        1011032519,
+        1011032519
+      ]
+    },
+    {
+      "input_u16": 7282,
+      "input_f32_bits": 1038323940,
+      "reference_rgb_f32_bits": [
+        1011501638,
+        1011501638,
+        1011501638
+      ],
+      "native_curv_rgb_f32_bits": [
+        1011501638,
+        1011501638,
+        1011501638
+      ],
+      "native_para3_rgb_f32_bits": [
+        1011501638,
+        1011501638,
+        1011501638
+      ]
+    },
+    {
+      "input_u16": 7412,
+      "input_f32_bits": 1038590184,
+      "reference_rgb_f32_bits": [
+        1011979208,
+        1011979208,
+        1011979208
+      ],
+      "native_curv_rgb_f32_bits": [
+        1011979208,
+        1011979208,
+        1011979208
+      ],
+      "native_para3_rgb_f32_bits": [
+        1011979208,
+        1011979208,
+        1011979208
+      ]
+    },
+    {
+      "input_u16": 7542,
+      "input_f32_bits": 1038856428,
+      "reference_rgb_f32_bits": [
+        1012465228,
+        1012465228,
+        1012465228
+      ],
+      "native_curv_rgb_f32_bits": [
+        1012465228,
+        1012465228,
+        1012465228
+      ],
+      "native_para3_rgb_f32_bits": [
+        1012465228,
+        1012465228,
+        1012465228
+      ]
+    },
+    {
+      "input_u16": 7672,
+      "input_f32_bits": 1039122672,
+      "reference_rgb_f32_bits": [
+        1012959698,
+        1012959698,
+        1012959698
+      ],
+      "native_curv_rgb_f32_bits": [
+        1012959698,
+        1012959698,
+        1012959698
+      ],
+      "native_para3_rgb_f32_bits": [
+        1012959698,
+        1012959698,
+        1012959698
+      ]
+    },
+    {
+      "input_u16": 7802,
+      "input_f32_bits": 1039388916,
+      "reference_rgb_f32_bits": [
+        1013462618,
+        1013462618,
+        1013462618
+      ],
+      "native_curv_rgb_f32_bits": [
+        1013462618,
+        1013462618,
+        1013462618
+      ],
+      "native_para3_rgb_f32_bits": [
+        1013462618,
+        1013462618,
+        1013462618
+      ]
+    },
+    {
+      "input_u16": 7932,
+      "input_f32_bits": 1039655160,
+      "reference_rgb_f32_bits": [
+        1013973988,
+        1013973988,
+        1013973988
+      ],
+      "native_curv_rgb_f32_bits": [
+        1013973988,
+        1013973988,
+        1013973988
+      ],
+      "native_para3_rgb_f32_bits": [
+        1013973988,
+        1013973988,
+        1013973988
+      ]
+    },
+    {
+      "input_u16": 8062,
+      "input_f32_bits": 1039921404,
+      "reference_rgb_f32_bits": [
+        1014493809,
+        1014493809,
+        1014493809
+      ],
+      "native_curv_rgb_f32_bits": [
+        1014493809,
+        1014493809,
+        1014493809
+      ],
+      "native_para3_rgb_f32_bits": [
+        1014493809,
+        1014493809,
+        1014493809
+      ]
+    },
+    {
+      "input_u16": 8192,
+      "input_f32_bits": 1040187520,
+      "reference_rgb_f32_bits": [
+        1015021824,
+        1015021824,
+        1015021824
+      ],
+      "native_curv_rgb_f32_bits": [
+        1015021824,
+        1015021824,
+        1015021824
+      ],
+      "native_para3_rgb_f32_bits": [
+        1015021824,
+        1015021824,
+        1015021824
+      ]
+    }
+  ],
+  "sixel_sha256": {
+    "original_curv": "96f31fac181fef9eeead2ed1cfcab952a149ab35489dfd33dd694dc889ec8373",
+    "equivalent_para3": "9798de37aecb5abe640e2c68161489c126bd6fd8e254e68798996af2dd2f7e1d",
+    "reference": "9798de37aecb5abe640e2c68161489c126bd6fd8e254e68798996af2dd2f7e1d"
+  },
+  "decoded_pixels_differ_from_reference": {
+    "native-curv-sixel.png": 995,
+    "equivalent-para3-sixel.png": 0,
+    "reference-sixel.png": 0
+  },
+  "shared_palette_rgb101": [
+    [
+      0,
+      1,
+      1,
+      1
+    ],
+    [
+      1,
+      2,
+      2,
+      2
+    ],
+    [
+      2,
+      4,
+      4,
+      4
+    ],
+    [
+      3,
+      5,
+      5,
+      5
+    ],
+    [
+      4,
+      7,
+      7,
+      7
+    ],
+    [
+      5,
+      9,
+      9,
+      9
+    ],
+    [
+      6,
+      10,
+      10,
+      10
+    ],
+    [
+      7,
+      12,
+      12,
+      12
+    ],
+    [
+      8,
+      13,
+      13,
+      13
+    ],
+    [
+      9,
+      15,
+      15,
+      15
+    ]
+  ],
+  "shared_palette_columns": [
+    "index",
+    "red",
+    "green",
+    "blue"
+  ],
+  "figure_environment": {
+    "matplotlib": "3.10.8",
+    "numpy": "2.5.3",
+    "pillow": "12.3.0",
+    "font": "bundled DejaVu Sans"
+  }
+}

@@ -358,16 +358,55 @@ A useful comparison holds the decoder fixed, uses explicit builtin/lcms2 selecti
 
 Compare decoded managed pixels against an independently prepared color-managed reference before palette reduction, including neutral ramps, near-black gradients, saturated colors, RGB matrix profiles, and CMYK/LUT profiles where the loader supports them. Report color error in a stated common color space, including worst cases; supplement with final SIXEL MS-SSIM and stream size. A high MS-SSIM score against a baseline made by the same engine proves regression stability, not independent ICC correctness. Skipped profiles must be reported as unsupported/fallback cases, not counted as fast successful conversions.
 
+## ColorSync pure-gamma curves and dark tones
+
+An ICC curve can describe the pure power `y = x^gamma` in several equivalent forms. ColorSync can nevertheless produce different dark tones depending on that representation. In the recorded gamma-2 case, a one-entry `curv` produces a nearly straight segment near black instead of following `x^2`. Positive dark samples become brighter, while exact black stays black and the curves meet again near input `1/16`. This is a measured curve-shape difference, not simply loss of a few least-significant float bits. The join near `1/16` belongs to this gamma-2 observation; it is not a universal threshold for every profile or OS.
+
+The graph plots actual float32 CMS output before palette reduction. The circles are independent ICC-formula expectations. The previews below it are the corresponding historical SIXEL outputs, decoded to RGB; they are enlarged without increasing brightness or contrast.
+
+<picture>
+  <source media="(max-width: 700px)" srcset="figures/colorsync-gamma2-mobile.png">
+  <img alt="Measured gamma-2 curves: original ColorSync curv is above the independent power-law reference near black; equivalent para3 follows the reference. Three dark-ramp SIXEL previews show the original, equivalent and reference outputs." src="figures/colorsync-gamma2-wide.png">
+</picture>
+
+For example, these are selected samples from the graph. Output is the red component of linear sRGB, not an encoded display-byte value or a claim about perceived brightness ratios.
+
+| Normalized input | Independent output | Original `curv` output | Equivalent `para3` output | Original / reference |
+| ---: | ---: | ---: | ---: | ---: |
+| 0 | 0 | 0 | 0 | — |
+| 0.01586938 | 0.0002518373 | 0.0009918364 | 0.0002518373 | 3.9384 |
+| 0.03173877 | 0.0010073492 | 0.0019836728 | 0.0010073492 | 1.9692 |
+| 0.06349279 | 0.0040313345 | 0.0040313345 | 0.0040313345 | 1.0000 |
+
+libsixel's default preparation expresses eligible pure-gamma source curves as `para` type 3 with parameters `[gamma, 1, 0, 0, 0]`. For normalized nonnegative input, this still means exactly `x^gamma`. It changes the spelling in a private profile copy, not the gamma exponent, original sample values or caller's ICC data. The conversion still runs through ColorSync. The [detailed preparation contract and value-test coverage](#behavioral-contract-tests) define eligibility, including the related type-0 `para` case, RGB/Gray differences and extended-input handling. Ordinary sRGB and Display P3 piecewise transfer curves are outside this pure-power workaround. The observation does not reveal whether Apple's internal approximation is intentional or accidental.
+
+### Measurement scope and figure reproduction
+
+The archived measurements were captured on 2026-09-15 with macOS 26.5.1 (25F80), arm64, using an ICC v4 D50 Gray profile with gamma 2. The `curv` and equivalent `para3` profiles have the same non-curve tags. The source has 64 ramp positions over nominal `[0, 0.125]`, rounded to uint16 and then normalized into float32, repeated over 64 rows. The final sample is therefore slightly above 0.125. The independent reference evaluates the stored ICC values with 100-digit Decimal arithmetic, then rounds to float32. The graph shows the red component of the resulting linear sRGB; it is not a direct measurement of emitted display light.
+
+The three previews preserve the encoder output recorded with source revision `fc5c5963eaeb3fbe52f1a6bc3a77d91027e86670`: linear float input, float32 encoding precision, one thread and the default 256-color limit, followed by direct `sixel2png -D` decoding. The equivalent-curve adapter and direct native `para3` conversion produced identical float outputs for this specimen. Its SIXEL stream also matched the independently calculated reference stream. Original `curv` differed from that reference at 995 of 4096 decoded pixels, even though the emitted palette definitions were the same. Palette indices and dithering can preserve a CMS difference despite the final 101-level palette. These are historical outputs, not current-encoder golden files or a claim of universal perceptual improvement.
+
+The [measurement record](measurements/colorsync-gamma2.json) retains the original float32 words, input integers, profile hashes, source-record hashes and decoded preview hashes. The [plot generator](../../../tools/plot_colorsync_gamma.py) reads those records; it neither fits an assumed ColorSync formula nor remeasures the current OS. With Matplotlib 3.10.8, regenerate or verify the desktop and mobile figures using:
+
+```sh
+python3 tools/plot_colorsync_gamma.py
+python3 tools/plot_colorsync_gamma.py --check
+```
+
+The native numerical values can change across OS releases. Automated tests therefore check the mathematical contract in normal mode and compare compatibility mode with a native transform on the same host; they do not require later ColorSync versions to reproduce this graph's dark-tone deviation.
+
 ### Original ColorSync gamma representation
 
-`SIXEL_LOADER_CMS_COLORSYNC_NATIVE_GAMMA=1` selects the original pure-gamma curve representation for the ColorSync input-to-linear helpers above. The default is `0`: keep the equivalent `para3` workaround enabled. Unset and empty values use the same default. This environment-only compatibility setting is registered with a strict boolean type and no assigned short option or public `setopt` flag. It is also accepted through the existing `--env NAME=VALUE` mechanism; there is no dedicated CLI flag or loader suboption.
+`SIXEL_LOADER_CMS_COLORSYNC_NATIVE_GAMMA=1` selects the original pure-gamma curve representation for the ColorSync input-to-linear helpers. The default is `0`: keep the equivalent `para3` workaround enabled. Unset and empty values use the same default. This environment-only compatibility setting is registered with a strict boolean type and no assigned short option or public `setopt` flag. It is also accepted through the existing `--env NAME=VALUE` mechanism; there is no dedicated CLI flag or loader suboption.
 
 With value `1`, eligible RGB `curv` and pure-power `para` payloads retain their original bytes. The independent identity-blue protection still exchanges original source sample bits and their corresponding TRC/XYZ payloads together when required; compatibility mode does not disable that protection. Eligible gray `curv` and type-0 `kTRC` payloads use the unprepared native profile. The borrowed profile and the caller's original ICC bytes remain unchanged. Both generic direct-linear and strict ColorSync RGB entry points honor this setting; gray uses the generic direct-linear entry. The normalized range limits equivalent curve spelling; the original-curve component permutation is also eligible for finite extended RGB triplets. Profile-version, matrix, whitepoint and forward-LUT eligibility limits remain in force.
 
 The setting is read once during each ColorSync source preparation, not cached when the source profile is opened. Reusing a borrowed profile with `0`, then `1`, then `0` therefore restores the initial conversion behavior. Only exact `0` and `1` are accepted. An invalid nonempty value makes this CMS helper return failure with a diagnostic before publishing changed source samples. A loader may retain its existing unmanaged fallback after a CMS failure; this setting does not turn every loader's fallback into a fatal CLI error. Other CMS engines do not consume the setting, and ordinary `create_transform`/`do_transform` calls do not invoke this preparation. In particular, conversion from the canonical linear representation to a P3 output definition is outside its scope.
 
-Compatibility tests compare against a direct native transform on the same OS, using the original ICC or an independently permuted original-tag/sample reference when identity-blue protection applies. They do not freeze the current OS's dark-toe values or require normal and compatibility outputs to differ. If Apple later evaluates both curve representations identically, equality to the contemporaneous native reference and comparisons of the actual prepared TRC/XYZ/whitepoint payloads and source sample bits remain the contracts. Mixed-domain comparisons treat positive and negative output zero as the same color value; source and rollback bits remain exact. Normal mode retains the independent gamma/matrix numeric tests above. The observed curve-representation difference does not establish Apple's internal intent or a perceptual-rendering policy.
+Compatibility tests compare against a direct native transform on the same OS, using the original ICC or an independently permuted original-tag/sample reference when identity-blue protection applies. They do not freeze the current OS's dark-toe values or require normal and compatibility outputs to differ. If Apple later evaluates both curve representations identically, equality to the contemporaneous native reference and comparisons of the actual prepared TRC/XYZ/whitepoint payloads and source sample bits remain the contracts. Mixed-domain comparisons treat positive and negative output zero as the same color value; source and rollback bits remain exact. Normal mode retains the independent gamma/matrix [numeric tests](#behavioral-contract-tests). The observed curve-representation difference does not establish Apple's internal intent or a perceptual-rendering policy.
 
+
+## Loader sample and CMS boundary contracts
 
 ### TIFF original byte RGB and Gray input
 
