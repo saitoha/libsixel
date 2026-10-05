@@ -15,7 +15,7 @@ SIXEL divides an image into bands six pixels high. Within a band, a SIXEL data c
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/encode-policy-band-mobile.svg">
-  <img alt="An eight by six indexed grid uses blue, amber, green, and pink. Four masks are paired with their literal SIXEL characters. The auto and fast paint body is #1o{BN#3o{BN$#0NB{o#2NB{o, while size uses #1!4~#3!4~$#0NB{o#2NB{o." src="figures/encode-policy-band-wide.svg">
+  <img alt="An eight by six indexed grid uses blue, amber, green, and pink. Four masks are paired with their literal SIXEL characters. The auto and fast paint body is #1o{BN#3o{BN&#36;#0NB{o#2NB{o, while size uses #1!4~#3!4~&#36;#0NB{o#2NB{o." src="figures/encode-policy-band-wide.svg">
 </picture>
 
 *Figure 1. Literal paint bodies emitted for the illustrated 8 by 6, four-color band. The DCS wrapper, raster attributes, palette definitions, and string terminator are omitted so the part controlled by `-E` remains visible.*
