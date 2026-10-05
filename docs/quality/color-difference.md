@@ -34,6 +34,53 @@ Any color difference can be decomposed into three perceptual components, which a
 
 All of these formulas were fitted to judgments of **uniform patches** of moderate size, viewed side by side under standard illumination. Images differ in every respect: colors vary spatially, the eye integrates fine detail, and the viewer usually has no reference to compare against. That is why the evaluation of images needs the spatial measures below and why the grades later in this document depend on scale and viewing situation.
 
+## Dark colors and luminance level
+
+Cones, which carry color vision, work best at photopic light levels. As light decreases, color discrimination weakens until rods, which do not distinguish hue, take over. It is therefore reasonable to ask whether a color difference discounts chroma and hue differences in shadows. CIELAB and CIEDE2000 do so partly and only in relative terms; they do not model the absolute light level.
+
+### What the formulas already discount
+
+**Cube-root compression in CIELAB.** CIELAB computes its opponent axes as differences of compressed, white-normalized tristimulus values:
+
+```text
+L* = 116 · f(Y/Yn) − 16
+a* = 500 · (f(X/Xn) − f(Y/Yn))
+b* = 200 · (f(Y/Yn) − f(Z/Zn))
+f(t) = t^(1/3)                 t > 0.008856
+f(t) = 7.787 · t + 16/116      t ≤ 0.008856 (near black)
+```
+
+Scaling a color's light by `k` without changing its chromaticity scales `a*` and `b*` by about `k^(1/3)`, so chroma `C*` falls roughly in proportion to lightness `L*`. Near black, where `f` is linear, chroma falls in proportion to the light itself. For sRGB red with a D65 white, full intensity gives `L* ≈ 53` and `C* ≈ 105`; one eighth of the light gives `L* ≈ 19` and `C* ≈ 49`; one sixty-fourth gives `L* ≈ 3` and `C* ≈ 14`. A chromaticity error of fixed size therefore produces a smaller `Δa*b*` in a dark color than in a light one. The hue component `ΔH = 2 √(C₁ C₂) · sin(Δh / 2)` is proportional to chroma, so a hue-angle error in a dark, low-chroma color also yields a small `ΔH`. This is a proportional, Weber-like discount built into the space.
+
+**The lightness weight in CIEDE2000.** `S_L = 1 + 0.015 (L̄' − 50)² / √(20 + (L̄' − 50)²)` divides the lightness difference. It is 1 at `L* = 50` and grows toward both ends: 1.45 at `L* = 20`, 1.60 at `L* = 10`, and 1.67 at `L* = 5`. A given `ΔL*` near black therefore counts about 40% less than the same step at mid lightness. The weight reflects visual data collected against a mid-gray surround, where steps close to the background lightness are most visible (crispening).
+
+CIEDE2000 has no lightness-dependent weight on chroma or hue. `S_C` depends on mean chroma and `S_H` on mean chroma and hue; any discount of dark chromatic differences comes only from the CIELAB compression above.
+
+### What the formulas do not model
+
+**Absolute luminance.** CIELAB is relative colorimetry: every value is normalized by the white `Yn`, so a display at 80 cd/m² and one at 500 cd/m² produce identical numbers. Effects that depend on the absolute level are absent. Colorfulness increases with luminance (the Hunt effect), perceived contrast increases with luminance (the Stevens effect), and chromatic discrimination declines through the mesopic range, which CIE 191:2010 places between about 0.005 and 5 cd/m². Color appearance models such as CIECAM02 and CAM16 include the adapting luminance explicitly; CAM16 computes colorfulness as `M = C · F_L^0.25`, where `F_L` grows with the adapting luminance. Distances in CAM16-UCS (Li et al., 2017) therefore respond to the absolute viewing level, which CIEDE2000 cannot.
+
+**Display black and flare.** A real display does not show zero light for black. Its own black level and reflected room light, called veiling glare or flare, add a roughly constant luminance to every pixel. That addition dilutes chromaticity differences between dark colors, much as diluting two pigments with the same gray makes them more alike. A color difference computed directly from encoded pixel values ignores it and so overstates differences near black. The sRGB specification (IEC 61966-2-1) includes viewing flare in its reference viewing conditions for this reason.
+
+**Range of the calibration data.** CIEDE2000 was fitted mainly to surface colors of moderate lightness viewed under bright illumination. Its behavior close to black is less thoroughly validated than its behavior at mid lightness.
+
+### Local darkness is not dark adaptation
+
+Whether rods take over depends on the adaptation state of the visual system, which follows the overall light in the field of view, not on one dark region. A shadow inside a normally lit image is still seen by light-adapted cones. Its colors are harder to distinguish because the cone signal is weak and its contrast against the adapted level is small, not because vision has become mesopic. CIELAB's proportional compression is a reasonable approximation of that effect.
+
+The situation changes when the whole display is dim: a low-brightness setting, a dark room, or a dark-themed terminal whose content is mostly near black. With a white of 80 cd/m², `L* = 30` is about 5 cd/m², `L* = 10` about 0.9 cd/m², and `L* = 5` about 0.4 cd/m². If most of the field is that dark, adaptation moves toward the mesopic range, and chromatic differences there are discounted more strongly by vision than by CIELAB.
+
+### Consequences for `lsqa`
+
+`lsqa` computes CIELAB relative to the ICC D50 white with no flare term and no absolute luminance. Dark chromatic differences are discounted only through CIELAB compression, and differences between near-black colors are somewhat overstated compared with what a viewer sees on a real display. The compression is nevertheless strong enough that a palette whose darkest entry is slightly above black usually produces only a small ΔE00, even where the luma-based MS-SSIM penalizes the same area heavily; see the near-black example in [image-quality metrics](metrics.md#the-lsqa-ms-ssim).
+
+Two extensions would model dark viewing more faithfully. Neither is implemented:
+
+- **Flare simulation.** Add the same black level, a small fraction of white, to the XYZ of both images before converting to CIELAB, and to the luma comparison signal before structural metrics. This models a real display's black directly and would also soften the near-black sensitivity of SSIM's luminance term, for which the constant `C1` currently acts as a very small floor.
+- **CAM16-UCS color difference.** Report a color difference in a color appearance space parameterized by the display luminance and surround, so that absolute viewing level enters the result.
+
+Either extension requires the [measurement policy](measurement-policy.md) to fix the assumed viewing conditions, since results would depend on them.
+
 ## Evaluating color reproduction across scales
 
 A color reproduction can be wrong at different spatial scales, and each needs a different measure.
@@ -139,8 +186,13 @@ These targets are for interpreting experiments and choosing between alternatives
 
 - CIE Publication 15. Colorimetry. Commission Internationale de l'Éclairage.
 - CIE Publication 142. Improvement to industrial colour-difference evaluation (CIEDE2000), 2001.
+- CIE Publication 159. A colour appearance model for colour management systems: CIECAM02, 2004.
+- CIE Publication 191. Recommended system for mesopic photometry based on visual performance, 2010.
 - Fairchild, M. D., and G. M. Johnson. "iCAM framework for image appearance, differences, and quality." Journal of Electronic Imaging 13(1), 2004.
+- Hunt, R. W. G. "Light and dark adaptation and the perception of color." Journal of the Optical Society of America 42(3), 1952.
+- IEC 61966-2-1. Multimedia systems and equipment: colour measurement and management, part 2-1: default RGB colour space, sRGB, 1999.
 - ITU-R Recommendation BT.2124. Objective metric for the assessment of the potential visibility of colour differences in television, 2019.
+- Li, C., Z. Li, Z. Wang, Y. Xu, M. R. Luo, G. Cui, M. Melgosa, M. H. Brill, and M. Pointer. "Comprehensive color solutions: CAM16, CAT16, and CAM16-UCS." Color Research and Application 42(6), 2017.
 - Luo, M. R., G. Cui, and B. Rigg. "The development of the CIE 2000 colour-difference formula: CIEDE2000." Color Research and Application 26(5), 2001.
 - Mahy, M., L. Van Eycken, and A. Oosterlinck. "Evaluation of uniform color spaces developed after the adoption of CIELAB and CIELUV." Color Research and Application 19(2), 1994.
 - Nippon Denshoku Industries. "Allowance by color." Color story, <https://www.nippondenshoku.co.jp/web/english/colorstory/08_allowance_by_color.htm>.
@@ -148,4 +200,5 @@ These targets are for interpreting experiments and choosing between alternatives
 - Preiss, J., F. Fernandes, and P. Urban. "Color-image quality assessment: from prediction to optimization." IEEE Transactions on Image Processing 23(3), 2014.
 - Rubner, Y., C. Tomasi, and L. J. Guibas. "The Earth Mover's Distance as a metric for image retrieval." International Journal of Computer Vision 40(2), 2000.
 - Sharma, G., W. Wu, and E. N. Dalal. "The CIEDE2000 color-difference formula: implementation notes, supplementary test data, and mathematical observations." Color Research and Application 30(1), 2005.
+- Stevens, J. C., and S. S. Stevens. "Brightness function: effects of adaptation." Journal of the Optical Society of America 53(3), 1963.
 - Zhang, X., and B. A. Wandell. "A spatial extension of CIELAB for digital color image reproduction." SID International Symposium Digest of Technical Papers, 1996.
