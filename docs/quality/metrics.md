@@ -251,6 +251,38 @@ Daylight vision begins with three cone classes, sensitive to long, medium, and s
 
 CIELAB, the opponent coordinates OKLab and DIN99d, and YCbCr video all reflect this organization: one lightness axis and two opponent chroma axes. The achromatic channel is the one with high spatial resolution.
 
+#### Light level and adaptation
+
+The visual system works over roughly ten orders of magnitude of luminance, from starlight to sunlit snow, but at any moment it uses a far narrower operating range set by *adaptation*. Two photoreceptor systems divide that span.
+
+**Cones and rods.** The human retina has about six million cones and more than ninety million rods. Cones come in the three classes described above, so they support color vision; they are concentrated in the fovea and need comparatively high light levels. Rods contain a single photopigment, rhodopsin, so they cannot distinguish wavelength and give no color by themselves; they are far more sensitive, are absent from the central fovea (about one degree across), and dominate peripheral vision. In bright light rods are saturated and contribute little (Aguilar and Stiles, "Saturation of the rod mechanism of the retina at high levels of stimulation", Optica Acta 1(1), 1954).
+
+**Photopic, mesopic, and scotopic vision.** Which system carries vision depends on the adaptation luminance:
+
+| Regime | Approximate luminance | Receptors | Consequences |
+| --- | --- | --- | --- |
+| Photopic | above about 5 cd/m² | cones | full color vision, highest acuity, spectral sensitivity `V(λ)` peaking near 555 nm |
+| Mesopic | about 0.005 to 5 cd/m² | cones and rods together | color discrimination and acuity decline progressively; blue-green looks relatively brighter and red darker |
+| Scotopic | below about 0.005 cd/m² | rods | no hue discrimination, low acuity, the fovea is nearly blind, spectral sensitivity `V'(λ)` peaking near 507 nm |
+
+The mesopic limits are those of CIE 191:2010, which defines photometry for that range. The movement of peak sensitivity from about 555 nm to about 507 nm as light falls is the Purkinje shift: in dusk, red flowers darken while blue-green foliage remains visible. Colorimetry, including CIELAB and CIEDE2000, assumes photopic vision throughout.
+
+**How adaptation works.** Several mechanisms adjust sensitivity to the prevailing light:
+
+- the pupil changes diameter between about 2 and 8 mm, a factor of about 16 in light admitted, which covers only a small part of the full range;
+- photopigment bleaching and regeneration reduce receptor sensitivity in bright light and restore it in darkness;
+- neural gain control in the retina scales each receptor class's signal to the local mean, so that the response encodes *contrast*, the ratio to the adapted level, rather than absolute light.
+
+The last mechanism is why vision follows Weber's law over much of the photopic range: the just-visible luminance step is a roughly constant fraction of the adapted luminance. At lower light levels photon noise dominates and the threshold grows more slowly than the luminance (the de Vries–Rose regime), so relative sensitivity falls. CIELAB's cube-root lightness and SSIM's ratio-based luminance term both encode the Weber-law idea.
+
+**Time course.** Light adaptation, from dark to bright, takes from seconds to a minute or two. Dark adaptation is slow. Cone thresholds reach a plateau after about ten minutes in darkness, at the rod–cone break rods become the more sensitive system, and full rod sensitivity takes thirty to forty minutes. A viewer who has just looked at a bright window is not adapted to a dim screen, and the reverse.
+
+**Chromatic adaptation.** Gain control acts separately on the three cone classes, so the visual system also adapts to the color of the illumination: a white paper looks white under both daylight and incandescent light. Von Kries ("Chromatic adaptation", 1902) modeled this as independent scaling of each cone response. CIELAB's division of `X`, `Y`, and `Z` by the white point is a simplified version of the same idea, applied to XYZ rather than to cone responses; color appearance models such as CIECAM02 and CAM16 use a proper cone-space adaptation transform and also take the absolute adapting luminance as a parameter.
+
+**Global and local adaptation.** The pupil and the balance between rods and cones follow the light of the whole visual field. Retinal gain control is partly local, and the eyes move constantly between regions, so the adapted state also varies across the scene and over time. A dark region inside a bright image therefore does not switch vision to rods: it is seen by light-adapted cones, whose signal is weak and whose contrast against the surrounding adaptation level is low. Vision becomes mesopic only when the overall field is dim, as with a dark room, a low display brightness, and content that is mostly dark. Image appearance models such as iCAM build local adaptation into their processing for this reason.
+
+**Displays.** An SDR display typically has a white of 80 to 300 cd/m² and a black of a few tenths of a cd/m² or less, before room reflections. With an 80 cd/m² white, CIELAB `L* = 30` corresponds to about 5 cd/m², the photopic boundary, and `L* = 10` to about 0.9 cd/m². Shadows in an image routinely fall below the photopic boundary in absolute terms, but whether the viewer is mesopic depends on the whole field, as described above. [Dark colors and luminance level](color-difference.md#dark-colors-and-luminance-level) explains what this means for color differences.
+
 #### Contrast sensitivity
 
 The contrast sensitivity function (CSF) gives the reciprocal of the smallest visible contrast of a sinusoidal grating as a function of spatial frequency in cycles per degree of visual angle (cpd). Its shape differs by channel:
@@ -260,7 +292,7 @@ The contrast sensitivity function (CSF) gives the reciprocal of the smallest vis
 
 Campbell and Robson ("Application of Fourier analysis to the visibility of gratings", Journal of Physiology 197, 1968) showed that the visibility of complex gratings follows from the responses of separate channels tuned to bands of spatial frequency, which is the physiological motivation for multiscale models. Mannos and Sakrison (1974) gave an early analytic luminance CSF used in image coding.
 
-Two further effects matter for quantization. Sensitivity depends on adaptation level: at low luminance the CSF drops and its peak shifts to lower frequencies, and near black the visibility of a fixed luminance step changes with the display's black level and surround. Color appearance changes with light level too: cones need photopic light for good color discrimination, so chromatic differences in very dark, dim-adapted viewing are seen less well than relative colorimetry predicts; [dark colors and luminance level](color-difference.md#dark-colors-and-luminance-level) explains which part CIELAB captures. Contrast masking reduces the visibility of an error placed on a busy texture compared with the same error on a flat area, so identical error energy is more visible in skies and gradients than in foliage.
+Two further effects matter for quantization. Sensitivity depends on adaptation level: at low luminance the CSF drops and its peak shifts to lower frequencies, and near black the visibility of a fixed luminance step changes with the display's black level and surround. Chromatic discrimination likewise declines as adaptation moves from photopic toward mesopic light, as described under [light level and adaptation](#light-level-and-adaptation). Contrast masking reduces the visibility of an error placed on a busy texture compared with the same error on a flat area, so identical error energy is more visible in skies and gradients than in foliage.
 
 #### From pixels to cycles per degree
 
@@ -359,10 +391,13 @@ The spatial metrics in `lsqa` operate on a single luma signal, while color is me
 
 ## References
 
+- Aguilar, M., and W. S. Stiles. "Saturation of the rod mechanism of the retina at high levels of stimulation." Optica Acta 1(1), 1954.
 - Bayer, B. E. "An optimum method for two-level rendition of continuous-tone pictures." IEEE International Conference on Communications, 1973.
 - Campbell, F. W., and J. G. Robson. "Application of Fourier analysis to the visibility of gratings." Journal of Physiology 197, 1968.
 - Chang, J., B. Alain, and V. Ostromoukhov. "Structure-aware error diffusion." ACM Transactions on Graphics 28(5), 2009.
+- CIE Publication 191. Recommended system for mesopic photometry based on visual performance, 2010.
 - Eschbach, R., and K. T. Knox. "Error-diffusion algorithm with edge enhancement." Journal of the Optical Society of America A 8(12), 1991.
+- Fairchild, M. D., and G. M. Johnson. "iCAM framework for image appearance, differences, and quality." Journal of Electronic Imaging 13(1), 2004.
 - Floyd, R. W., and L. Steinberg. "An adaptive algorithm for spatial greyscale." Proceedings of the Society for Information Display 17(2), 1976.
 - Hurvich, L. M., and D. Jameson. "An opponent-process theory of color vision." Psychological Review 64(6), 1957.
 - ITU-R Recommendation BT.500. Methodologies for the subjective assessment of the quality of television images.
@@ -377,6 +412,7 @@ The spatial metrics in `lsqa` operate on a single luma signal, while color is me
 - Sharma, G., W. Wu, and E. N. Dalal. "The CIEDE2000 color-difference formula: implementation notes, supplementary test data, and mathematical observations." Color Research and Application 30(1), 2005.
 - Ulichney, R. *Digital Halftoning*. MIT Press, 1987.
 - Ulichney, R. "Dithering with blue noise." Proceedings of the IEEE 76(1), 1988.
+- von Kries, J. "Chromatic adaptation." Festschrift der Albrecht-Ludwigs-Universität, Freiburg, 1902. English translation in D. L. MacAdam, ed., *Sources of Color Science*, MIT Press, 1970.
 - Wang, Z., A. C. Bovik, H. R. Sheikh, and E. P. Simoncelli. "Image quality assessment: from error visibility to structural similarity." IEEE Transactions on Image Processing 13(4), 2004.
 - Wang, Z., E. P. Simoncelli, and A. C. Bovik. "Multiscale structural similarity for image quality assessment." 37th Asilomar Conference on Signals, Systems and Computers, 2003.
 - Xue, W., L. Zhang, X. Mou, and A. C. Bovik. "Gradient magnitude similarity deviation: a highly efficient perceptual image quality index." IEEE Transactions on Image Processing 23(2), 2014.

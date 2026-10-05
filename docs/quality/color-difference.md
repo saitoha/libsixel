@@ -36,7 +36,7 @@ All of these formulas were fitted to judgments of **uniform patches** of moderat
 
 ## Dark colors and luminance level
 
-Cones, which carry color vision, work best at photopic light levels. As light decreases, color discrimination weakens until rods, which do not distinguish hue, take over. It is therefore reasonable to ask whether a color difference discounts chroma and hue differences in shadows. CIELAB and CIEDE2000 do so partly and only in relative terms; they do not model the absolute light level.
+Cones, which carry color vision, work best at photopic light levels. As light decreases, color discrimination weakens until rods, which do not distinguish hue, take over; [light level and adaptation](metrics.md#light-level-and-adaptation) explains cones, rods, the photopic, mesopic, and scotopic regimes, and how adaptation works. It is therefore reasonable to ask whether a color difference discounts chroma and hue differences in shadows. CIELAB and CIEDE2000 do so partly and only in relative terms; they do not model the absolute light level.
 
 ### What the formulas already discount
 
@@ -66,7 +66,7 @@ CIEDE2000 has no lightness-dependent weight on chroma or hue. `S_C` depends on m
 
 ### Local darkness is not dark adaptation
 
-Whether rods take over depends on the adaptation state of the visual system, which follows the overall light in the field of view, not on one dark region. A shadow inside a normally lit image is still seen by light-adapted cones. Its colors are harder to distinguish because the cone signal is weak and its contrast against the adapted level is small, not because vision has become mesopic. CIELAB's proportional compression is a reasonable approximation of that effect.
+Whether rods take over depends on the adaptation state of the visual system, which follows the overall light in the field of view, not on one dark region (see [global and local adaptation](metrics.md#light-level-and-adaptation)). A shadow inside a normally lit image is still seen by light-adapted cones. Its colors are harder to distinguish because the cone signal is weak and its contrast against the adapted level is small, not because vision has become mesopic. CIELAB's proportional compression is a reasonable approximation of that effect.
 
 The situation changes when the whole display is dim: a low-brightness setting, a dark room, or a dark-themed terminal whose content is mostly near black. With a white of 80 cd/m², `L* = 30` is about 5 cd/m², `L* = 10` about 0.9 cd/m², and `L* = 5` about 0.4 cd/m². If most of the field is that dark, adaptation moves toward the mesopic range, and chromatic differences there are discounted more strongly by vision than by CIELAB.
 
