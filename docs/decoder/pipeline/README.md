@@ -184,7 +184,7 @@ Figure 7 belongs to the measured threading suite and is regenerated through the 
 
 The audit followed the pipeline rather than counting test filenames. It checked wire entry, paint semantics, raster policy, representation, transparency and palette history, reconstruction, resize, PNG handoff, parallel equivalence, failure fallback, and platform-conditioned execution.
 
-| Area | Assessment after this change | Evidence or remaining gap |
+| Area | Current assessment | Evidence or remaining gap |
 | --- | --- | --- |
 | Complete stream versus body entry | Focused | DP-06 compares complete and body APIs for dimensions, pixels, format, stride, and flags. |
 | Core paint operations | Focused for color selection, overlay, repeat, carriage/band split interactions | DP-01 through DP-04 and DP-13 cover raw, direct, legacy, repeat, and split behavior. There is no single table-driven test that enumerates every accepted numeric/control syntax. |
@@ -193,7 +193,7 @@ The audit followed the pipeline rather than counting test filenames. It checked 
 | Transparency and mask propagation | Focused for packed, dequantized, and sparse direct output | DP-08, DP-10, and DP-14 cover alpha opacity, transparent neighbors, and sparse paint. The raw indexed `index >= ncolors` sentinel is a documented public contract but still lacks a dedicated one-observation regression test. |
 | Palette redefinition | Focused | DP-11 proves the result flag and direct bypass for high-color-style paint history. |
 | Reconstruction | Focused across representative algorithms and parallel equivalence | DP-08 through DP-12 cover defaults, thresholds, transparency, opacity, and scalar/parallel agreement. They do not constitute a perceptual claim that reconstruction recovers the unknown source image. |
-| Resize | Focused at the CLI geometry boundary | DP-16 adds the previously missing `-s` longer-edge and aspect-ratio observation. Filter-level resize quality and alpha-mask behavior remain owned by the frame/scale suites. |
+| Resize | Focused at the CLI geometry boundary | DP-16 observes the `-s` longer-edge and aspect-ratio behavior. Filter-level resize quality and alpha-mask behavior remain owned by the frame/scale suites. |
 | PNG handoff | Focused by output class | DP-17 through DP-19 reuse the writer policy's indexed, RGB, and RGBA IHDR observations. Compression identity across backends is intentionally outside the contract. |
 | Parallel correctness and fallback | Strong focused coverage | DP-13 through DP-15 and DP-20 through DP-25 cover split boundaries, serial equivalence, sparse paint, repeat overflow, overlap, worker-creation failure, the all-ready barrier, and paired timeline spans. |
 | Malformed input and resource ceilings | Broad elsewhere, not exhaustively mapped here | Security regressions and fuzz targets exercise parser hardening, but this pipeline document does not claim a complete grammar-by-failure inventory. Exact maximum dimensions, every allocation site, all terminator variants, and every integer boundary remain candidates for a separate adversarial decoder contract. |

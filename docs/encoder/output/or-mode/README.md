@@ -194,7 +194,7 @@ For color-count and thread-count curves, plus indexed/RGBA decoder timing, see t
 
 In [PR #133](https://github.com/saitoha/libsixel/pull/133#issuecomment-3240025194), saitoha compared OR output with ordinary `-E size` and reported that some images, including `egret.jpg`, became larger. Recalculation from the [attached 100-image result](https://github.com/user-attachments/files/22065690/result.txt), preserved as [raw historical data](measurements/pr133-result.txt), gives 25 larger images, a 24.11% reduction in total bytes, a 17.42% mean per-image reduction, and a 22.75% median per-image reduction. These are different aggregation methods. The comment's approximate 30–40% average reduction is not the exact aggregate of that attachment.
 
-The original photos and script are no longer available. The new study repeats the scale and comparison method, not the original photo set or historical binary. It uses the first 100 entries returned by the Picsum catalog, fetched by explicit ID at 800×600, plus six retained repository fixtures. The [photo manifest](measurements/inputs.json) records IDs, source URLs, authors, and SHA-256 hashes; this consecutive catalog sample is not a random sample of all possible images. Retained repository inputs are recorded in the [control manifest](measurements/controls.json).
+The photos and script behind that comment are not available. The study below repeats its scale and comparison method, not its photo set or binary. It uses the first 100 entries returned by the Picsum catalog, fetched by explicit ID at 800×600, plus six retained repository fixtures. The [photo manifest](measurements/inputs.json) records IDs, source URLs, authors, and SHA-256 hashes; this consecutive catalog sample is not a random sample of all possible images. Retained repository inputs are recorded in the [control manifest](measurements/controls.json).
 
 ### Conditions and timing boundaries
 
@@ -235,7 +235,7 @@ A speed ratio is normal elapsed time divided by OR elapsed time; larger is faste
 
 The box plots summarize per-photo speed ratios: center lines are medians, boxes span the interquartile range, whiskers extend to 1.5 times that range, and individual points beyond them are outliers. They describe differences across images, not confidence intervals for a single timing run.
 
-The following retained repository controls use 256 colors and one thread at their original dimensions. AI-generated controls and their measurements have been removed; surviving measurements retain their original values and build provenance.
+The following repository controls use 256 colors and one thread at their original dimensions. Their measurements are the values of the recorded run with its build provenance.
 
 | Image | Normal bytes | OR bytes | Size change | Normal / OR CLI ms | CLI speed ratio |
 | --- | ---: | ---: | ---: | ---: | ---: |

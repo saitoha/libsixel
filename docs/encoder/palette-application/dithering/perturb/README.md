@@ -40,7 +40,7 @@ There are 44 decoded outputs: 36 main comparisons, four additional strength case
 
 Radially averaged power spectral density (RAPSD) describes how a pattern's power is distributed over spatial frequency after averaging over direction. It is a curve, not a single perceptual score. Flat regions expose dither structure without mixing it with the subject's edges or texture. Ulichney's [*A Review of Halftoning Techniques*, section 2.1](https://cv.ulichney.com/papers/2000-halftoning-review.pdf) describes annular averaging and the role of the DC component and gray-level normalization.
 
-For this experiment, the calculation is deliberately the same as the initial measurement:
+For this experiment, the calculation is fixed as follows:
 
 1. Convert the decoded black/white image to values `0` and `1`, then subtract its measured mean.
 2. Compute `abs(fft2(centered_image))²` and set the DC power to zero.
@@ -59,7 +59,7 @@ Blue is raster and orange is serpentine; solid lines are `P=0`, dashed lines are
 
 **Peak ratio** is the maximum non-DC radial mean divided by the arithmetic mean of all non-DC radial means. It is a custom description of spectral concentration for this experiment, not a standardized quality metric or a measurement of peak width. A lower value indicates a less dominant radial bin under this estimator. It does not establish isotropy or perceptual preference, and a blue-noise pattern can have a useful characteristic-frequency peak.
 
-**Below-cutoff energy** is the sum of the original two-dimensional power cells with `radius < sqrt(g/255)`, divided by the total non-DC power. It uses cell-count weighting, rather than treating radial means as equal-area energy samples. The cutoff is retained exactly from the initial experiment; it is a tone-dependent reference, not a universal threshold for visible grain.
+**Below-cutoff energy** is the sum of the original two-dimensional power cells with `radius < sqrt(g/255)`, divided by the total non-DC power. It uses cell-count weighting, rather than treating radial means as equal-area energy samples. The cutoff is a fixed tone-dependent reference, not a universal threshold for visible grain.
 
 At `g=128`, `sqrt(128/255) ≈ 0.70849` exceeds the maximum FFT radius `sqrt(0.5) ≈ 0.70711`. Consequently **all four energy shares are 100% and provide no discrimination**. This input is also just above half scale. The saturated values are published for completeness and must not be interpreted as a deterioration or improvement in low-frequency noise.
 

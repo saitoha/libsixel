@@ -1146,4 +1146,4 @@ The following 64x64 snake comparisons pin the admitted float path and verify act
 
 ### Coverage limits
 
-These tests cover opaque three-channel CPU candidates and the selected native float palette path. They do not establish temporal history, GPU, transparency, or every blue-noise phase/gradient combination. Byte controls protect the serial candidate rule; correcting absolute coordinates can change previously band-dependent byte output. The existing [quality measurements](#a_dither-addition-based-positional-dither) describe their recorded configurations and are not a new measurement of every migrated combination.
+These tests cover opaque three-channel CPU candidates and the selected native float palette path. They do not establish temporal history, GPU, transparency, or every blue-noise phase/gradient combination. Byte controls protect the serial candidate rule, which uses absolute image coordinates so that output does not depend on band boundaries. The [quality measurements](#a_dither-addition-based-positional-dither) describe their recorded configurations and do not cover every combination of candidate path, palette path, and dither method.

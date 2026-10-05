@@ -294,7 +294,7 @@ Stage resolvers are pure functions over explicit input and result structures.
 They neither mutate the per-frame lifecycle state nor read process-wide option
 overrides. The caller applies a successful selection to the owning state before
 execution. A failed selection leaves both the plan and result object unchanged.
-The sampling compatibility wrapper now uses this contract before scheduler
+The sampling compatibility wrapper uses this contract before scheduler
 allocation. K-means resolves binning at point-set construction after sampling.
 The multi-fixture quality and performance measurements below make `hard` the
 automatic profile for quantizers that consume weighted points without an

@@ -1264,7 +1264,7 @@ Its current implementation is
 
 ### Purpose and current status
 
-The float32 `mahalanobis` policy retains its historical name and deterministic RBC-like cluster traversal, but selects colors by normalized weighted Euclidean distance. It scans every palette member. Earlier versions also built means and inverse covariance matrices and calculated a Mahalanobis score without using it for ordering, pruning or selection. That unconsumed statistical work has been removed: extended finite coordinates should not pass through unused, overflow-prone covariance arithmetic.
+The float32 `mahalanobis` policy retains its historical name and deterministic RBC-like cluster traversal, but selects colors by normalized weighted Euclidean distance. It scans every palette member. It does not build means or inverse covariance matrices or calculate a Mahalanobis score, because nothing would consume them for ordering, pruning or selection, and extended finite coordinates should not pass through unused, overflow-prone covariance arithmetic.
 
 ```text
 palette --> deterministic RBC clusters
@@ -1567,7 +1567,7 @@ faster at 82.3 ms but reaches 2.003165 mean Delta E00; Eytzinger is similarly
 fast at 83.1 ms but reaches 2.186592. The result exposes several distinct
 quality/speed tradeoffs rather than one uniformly best accelerated policy.
 
-A previously generated fixed-palette figure is intentionally not retained because it was produced while the CLI discarded explicit lookup policies for a text `-m` palette, so its overlapping curves did not constitute a policy comparison. The current CLI applies an explicit policy to the supplied palette; any replacement measurement must be regenerated from the corrected path rather than reusing that invalid figure.
+This section has no fixed-palette comparison. Such a comparison must apply each explicit lookup policy to the supplied `-m` palette, which the CLI does, and has not been measured.
 
 ### Legacy RGB555 context in current Heckbert mode
 
@@ -1755,9 +1755,9 @@ At `K = 256`, the result is:
 
 These checked artifacts were recorded at source revision `f2c138d8f6aa0a90c89d019f85eaf9bb3efa5edb`, before worker-local `5bit` and `6bit` instances populated their dense tables during parallel mapping. At that revision, the private and shared curves were mostly within each other's interquartile ranges, so the run did not establish a material end-to-end latency benefit for either setting.
 
-The shared `5bit` and `6bit` values are `TODO(remeasure)` because shared instances now populate their dense tables with relaxed atomic accesses. The checked graph and CSV still describe the older read-only shared-cache implementation and must not be used to characterize the new shared path.
+The shared `5bit` and `6bit` values are `TODO(remeasure)`. Shared instances populate their dense tables with relaxed atomic accesses since commit `30820aa9b`; the checked graph and CSV describe the read-only shared cache of the recorded revision and must not be used to characterize the current shared path.
 
-The old runner also required `S0` and `S1` to produce byte-identical SIXEL at `K = 256` for all three policies. That equality was evidence of the worker-local cache-write defect, not a contract. The current reproduction runner requires `S0` and `S1` to differ for `5bit` and `6bit`, while `certlut` remains byte-identical. Diffusion is disabled and band overlap is fixed at zero. Regenerate these artifacts before using the recorded table to characterize current dense-cache performance. Shared `5bit` and `6bit` output can also vary between runs because competing first writers can memoize different valid representatives. This is intentionally not a thread-scaling benchmark and does not measure the quality effect of parallel-band error diffusion.
+The runner that recorded these artifacts also required `S0` and `S1` to produce byte-identical SIXEL at `K = 256` for all three policies. At that revision the equality was a consequence of a defect in worker-local cache writes, not a contract. The current reproduction runner requires `S0` and `S1` to differ for `5bit` and `6bit`, while `certlut` remains byte-identical. Diffusion is disabled and band overlap is fixed at zero. Regenerate these artifacts before using the recorded table to characterize current dense-cache performance. Shared `5bit` and `6bit` output can also vary between runs because competing first writers can memoize different valid representatives. This is intentionally not a thread-scaling benchmark and does not measure the quality effect of parallel-band error diffusion.
 
 ### Metal PaletteApply performance
 

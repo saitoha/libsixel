@@ -4,7 +4,7 @@ This reference accompanies [High-color output](README.md). It separates ordinary
 
 ## Method and artifacts
 
-AI-generated inputs, their image derivatives, and their measurement rows have been removed from this distributed study. The remaining measurements retain their original values and build provenance; charts and corpus totals reflect only the retained inputs.
+The distributed study contains only the inputs listed in its records. Their measurements are the values of the recorded run with its build provenance, and charts and corpus totals cover exactly these inputs.
 
 Measurements were made on 2026-09-13 JST (2026-09-12 UTC), macOS arm64, with 14 logical CPUs, from clean revision `3c92b3a1cc` (the full hash is in the [run record](study/results.json)). The detached build uses `CFLAGS=-O3` and the builtin loaders, with external image loaders and CMS disabled. The run record retains configure arguments, compiler, library hash, measurement-generator hash, renderer hash, dependency versions, source hashes, exact CLI controls, every timing sample, and raw histogram bins.
 

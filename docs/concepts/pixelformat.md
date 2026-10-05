@@ -45,7 +45,7 @@ The frame interface's `set_alpha()` adopts allocator-compatible storage only on 
 
 The current consumer is the builtin APNG compositor. Its retained canvas keeps straight linear RGB and coverage between frames. Before the legacy loader callback, a cloned frame resolves coverage through the common frame compositor: with a background, blend in linear light according to zero-alpha policy; without one, retain straight RGB and mark exact alpha zero in the binary mask. Extended RGB is preserved. This operation publishes the new pixels and mask only after allocation and numeric validation succeed.
 
-Continuous-alpha resampling is not implemented by this change: changing dimensions while such a plane is attached returns `SIXEL_BAD_ARGUMENT`. Existing encoder resizing still operates after the loader callback on resolved RGB and a binary mask. Moving composition past resampling requires a separate premultiplied-color resampling contract; merely adding alpha storage does not change that order.
+Continuous-alpha resampling is not implemented: changing dimensions while such a plane is attached returns `SIXEL_BAD_ARGUMENT`. Existing encoder resizing still operates after the loader callback on resolved RGB and a binary mask. Moving composition past resampling requires a separate premultiplied-color resampling contract; merely adding alpha storage does not change that order.
 
 ## Alpha resolution
 

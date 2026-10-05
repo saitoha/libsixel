@@ -181,7 +181,7 @@ Stream size also changes because different working geometry selects different pa
 - Start with `gamma` when compatibility, lower memory, and speed are more important than changing the palette-application geometry.
 - Evaluate `oklab` when spatial structure and smooth perceived transitions are important; on this fixture it provides the strongest MS-SSIM results, especially with Floyd--Steinberg.
 - Use `linear` when the arithmetic should follow additive light, but do not assume linear Euclidean distance is perceptually uniform.
-- Evaluate `cielab` or `din99d` when pointwise perceptual color error is the primary concern, while accounting for the documented coordinate scales and measured runtime cost. DIN99d now uses one common scale that preserves its native Euclidean geometry; see the [DIN99d guide](../../../concepts/din99d/README.md).
+- Evaluate `cielab` or `din99d` when pointwise perceptual color error is the primary concern, while accounting for the documented coordinate scales and measured runtime cost. DIN99d uses one common scale that preserves its native Euclidean geometry; see the [DIN99d guide](../../../concepts/din99d/README.md).
 - Match `-X` and `-W` when one coherent geometry is desired. Set both explicitly when benchmarking, or when intentionally using different palette-construction and palette-application spaces.
 - Re-measure representative content. The checked-in run is evidence for one image and one controlled pipeline, not a universal default-selection study.
 

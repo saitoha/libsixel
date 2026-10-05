@@ -4,7 +4,7 @@ OR-mode size and speed depend on the palette budget, image structure, worker bud
 
 ## Experimental controls
 
-AI-generated controls and their measurement rows have been removed from the distributed study. Remaining values are unchanged; figures and corpus totals describe the retained subset.
+The distributed study contains only the controls listed in its records. Their values are those of the recorded run, and figures and corpus totals cover exactly these controls.
 
 The source is the clean tracked checkout at `cf4cb3439aedec252b68bbc3674b10aa2bf0145f`, built with `-O3` on Apple M3 Max/macOS 26.5.1. The [original build metadata](measurements/metadata.json) records compiler and configuration; the [sweep metadata](sweeps/metadata.json) records the additional decoder harness and binary hashes. Image loading and PNG writing use the builtin implementations in this build.
 

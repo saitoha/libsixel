@@ -1,6 +1,6 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# TAP test confirming VP8 static/anim error contracts no longer emit
+# TAP test confirming VP8 static/anim error contracts do not emit
 # W_UNSUP_VP8_FEATURE or W_UNSUP_VP8_ALPHA.
 
 set -eux
