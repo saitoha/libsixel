@@ -6852,17 +6852,28 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	done; \
 	exit 0
 
-# Avoid expanding $(TEST_LOGS) into a single rm invocation during
-# mostlyclean/distclean; the test suite can exceed shell argument limits.
+# Let find batch removals within the host argument limit.  Expanding TEST_LOGS
+# into one command is too large, while launching rm per log is very slow.
 mostlyclean-generic:
-	-@find "$(builddir)" -type f \( -name '*.log' -o -name '*.trs' \) -print | \
-	    while IFS= read -r file; do \
-	        test -n "$$file" || continue; \
-	        test "$$file" != "." || continue; \
-	        test "$$file" != "./" || continue; \
-	        test -f "$$file" || continue; \
-	        rm -f "$$file"; \
-	    done
+	-@find "$(builddir)" -type f \( -name '*.log' -o -name '*.trs' \) \
+	    -exec rm -f {} +
+
+# Automake otherwise emits one rm recipe per dependency file.  Expand its
+# exact inventory into small commands, preserving shared-directory files
+# owned by other programs and avoiding shell argument limits.  Keep this
+# compatible with GNU make 3.81.
+define sixel_rm_depfile_batches
+$(if $(strip $(1)),-rm -f $(wordlist 1,16,$(1))
+$(call sixel_rm_depfile_batches,$(wordlist 17,$(words $(1)),$(1))))
+endef
+
+distclean: distclean-am
+	$(call sixel_rm_depfile_batches,$(am__depfiles_remade))
+	-rm -f Makefile
+
+maintainer-clean: maintainer-clean-am
+	$(call sixel_rm_depfile_batches,$(am__depfiles_remade))
+	-rm -f Makefile
 
 .PHONY: check-binding-loader-setopt-sync prepare-binding-artifacts prepare-psd-large-fixtures check-python check-ruby check-perl check-php sixel-check-test-logs
 check-binding-loader-setopt-sync:
@@ -7307,17 +7318,27 @@ DISTCLEANFILES = check-tests.mk
 # Avoid deleting in-tree test scripts when "make clean" is invoked.
 # Only remove copied test files in an out-of-tree build so that the
 # distributed sources remain intact for developers and package builds.
+# Skip absent copies and remove existing ones in bounded batches; discovery
+# lists every test even when no tests have been built or run.
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 clean-local:
 	@if test "$(abs_builddir)" != "$(abs_srcdir)"; then \
 	rm -f $(LOG_COMPILER) $(HELPER_FILES); \
 	$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
-	    tests "$(abs_srcdir)" include | tr ' ' '\n' | \
-	while IFS= read -r test_path; do \
-	    test -n "$$test_path" || continue; \
-	    rm -f "$$test_path"; \
-	done; \
+	    tests "$(abs_srcdir)" include newline | { \
+	    set --; \
+	    while IFS= read -r test_path; do \
+	        test -n "$$test_path" || continue; \
+	        test -e "$$test_path" || test -L "$$test_path" || continue; \
+	        set -- "$$@" "./$$test_path"; \
+	        if test "$$#" -eq 16; then \
+	            rm -f "$$@" || exit $$?; \
+	            set --; \
+	        fi; \
+	    done; \
+	    test "$$#" -eq 0 || rm -f "$$@"; \
+	}; \
 	fi
 	rm -rf $(ARTIFACT_ROOT)
 	rm -rf $(OPENVMS_TEST_SHARD_DIR)

@@ -135,7 +135,7 @@ Before the manifest-based collector, the project's `check-TESTS` recipe expanded
 | --- | --- | --- |
 | Recursive test launch | Passing every `.log` target on the recursive make command line. | `sixel-check-test-logs` is a single command argument; the full list remains make prerequisites on ordinary platforms. |
 | Suite aggregation | Expanding every result path into a generated shell recipe or utility argument list. | `find` plus a sorted `.trs` manifest, then shell `read` loops and small per-file operations in `check-TESTS`. |
-| Cleanup | One `rm` command containing the complete `TEST_LOGS` expansion. | `mostlyclean-generic` and suite setup discover logs and process paths incrementally. |
+| Cleanup | One oversized `rm` command, or thousands of processes removing individual test outputs. | `mostlyclean-generic` uses `find -exec ... +` for logs; `clean-local` removes existing test copies in small batches; `distclean` and `maintainer-clean` batch Automake's exact dependency-file inventory. Suite setup separately discovers logs and processes paths incrementally. |
 | Test-script distribution | Expanding `$(TESTS)` through `EXTRA_DIST` into a very large `distdir` shell command. | A `dist-hook` streams discovered paths and copies scripts individually. |
 | Fixture distribution | Listing every fixture separately in `DISTFILES`. | `TEST_DATA_DIRS = data` distributes the fixture tree as a directory. |
 | OpenVMS Makefile generation | Substituting the complete inventory as one large RMS file record. | Configure writes `tests/check-tests.list` with one path per line; the OpenVMS runner consumes that file directly. |
