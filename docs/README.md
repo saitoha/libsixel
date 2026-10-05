@@ -33,27 +33,33 @@ Supported platforms and command-line behavior that needs no background in color 
 
 ## Concepts and theory
 
-Visual perception, color, and pixel representation that the rest of the documentation builds on.
+The foundations the rest of the documentation builds on, in reading order: how vision works, how colors are represented as numbers, how color differences are judged, and how pixels and precision are stored.
 
 ### Visual perception
 
 - [Visual perception for image quality](quality/visual-perception/README.md) explains the sensory physiology behind the metrics: perceptual quality, photoreceptors and opponent channels, light and chromatic adaptation including display filters and dark rooms, contrast sensitivity, viewing geometry, and the visibility of noise and chroma detail.
 
-### Color and pixel representation
+### Color spaces
 
 - [Color spaces and loader color management](concepts/colorspace/README.md) explains linear RGB/XYZ conversion hubs, ICC PCS and reference whites, linear-light mixing, and when implicit conversions occur, then connects loader output with the `-X`, `-W`, and `-U` encoder boundaries and shows how to inspect the effective path.
+
+### Color difference
+
+- [Color difference and color reproduction](quality/color-difference.md) compares color-difference formulas, explains per-pixel, regional, global, and multiscale measures of color reproduction, why small palettes shift color, and which tolerance grades to target for output that does not look wrong.
 - [DIN99d and color difference](concepts/din99d/README.md) illustrates perceptual nearest-color selection, the corrected XYZ transform, common coordinate normalization, and measured palette tradeoffs.
-- [Pixel-format precision](concepts/pixelformat-precision/README.md) explains the `RGB888` and typed float32 storage contracts, implicit promotion by resize, CMS, and color-space conversion, memory cost, and measured resize quality.
+
+### Pixel representation and precision
+
 - [Pixel formats and alpha representation](concepts/pixelformat.md) separates input memory layouts, frame storage, alpha-zero metadata, and what can be represented in a SIXEL stream.
+- [Pixel-format precision](concepts/pixelformat-precision/README.md) explains the `RGB888` and typed float32 storage contracts, implicit promotion by resize, CMS, and color-space conversion, memory cost, and measured resize quality.
 
 ## Quality and measurement
 
-How output quality is defined, measured, and accepted.
+How output quality is measured and accepted, building on the concepts above.
 
-### Metrics and color evaluation
+### Metrics
 
 - [Image-quality metrics](quality/metrics.md) defines each `lsqa` metric with its origin, mathematical definition, and implementation differences, and explains multiscale evaluation, dither noise spectra, structure-preserving dithering, how to combine metrics for dithered output, and the current emphasis on luminance.
-- [Color difference and color reproduction](quality/color-difference.md) compares color-difference formulas, explains per-pixel, regional, global, and multiscale measures of color reproduction, why small palettes shift color, and which tolerance grades to target for output that does not look wrong.
 - [Color-aware quality evaluation](quality/color-evaluation.md) defines independent input color interpretation, current-coordinate measurement, XYZ D50 color differences, fixed regional means, comparison signals, and the pending PNG integration boundary.
 
 ### Measurement practice
