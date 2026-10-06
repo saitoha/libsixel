@@ -6517,6 +6517,20 @@ sixel_encoder_validate_delta_macro(int enabled, int use_macro, int number)
 }
 
 static SIXELSTATUS
+sixel_encoder_validate_delta_png(int enabled, int png)
+{
+    /* A standalone snapshot decoder starts without the retained base.
+     * Reading omitted pixels as palette indices cannot reconstruct it. */
+    if (enabled && png) {
+        sixel_helper_set_additional_message(
+            "update-policy=delta conflicts with PNG snapshot output: "
+            "snapshot decoding has no retained base surface.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_encoder_validate_alpha_feature_policy(sixel_encoder_t const *encoder)
 {
     SIXELSTATUS status;
@@ -6553,8 +6567,13 @@ sixel_encoder_validate_alpha_feature_policy(sixel_encoder_t const *encoder)
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    return sixel_encoder_validate_delta_macro(encoder->sixdelta_enabled,
+    status = sixel_encoder_validate_delta_macro(encoder->sixdelta_enabled,
         encoder->fuse_macro, encoder->macro_number);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    return sixel_encoder_validate_delta_png(encoder->sixdelta_enabled,
+        encoder->output_is_png);
 }
 
 static SIXELSTATUS
@@ -9037,6 +9056,14 @@ sixel_encoder_encode_frame_internal(
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    /* A PNG destination must not prepare a delta palette on a fresh
+     * snapshot canvas, even if private state bypassed option validation. */
+    status = sixel_encoder_validate_delta_png(encoder->sixdelta_enabled,
+        encoder->output_is_png);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
     status = sixel_encoder_validate_p3_frame(encoder, frame);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -11415,6 +11442,11 @@ sixel_encoder_apply_update_policy_option(
             resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA,
             encoder->fuse_macro, encoder->macro_number);
     }
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_encoder_validate_delta_png(
+            resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA,
+            encoder->output_is_png);
+    }
     if (SIXEL_FAILED(status)) {
         sixel_option_free_argument_resolution(&resolution);
         return status;
@@ -11768,6 +11800,12 @@ sixel_encoder_apply_outfile_option(
     }
 
     if (is_png_target(value)) {
+        /* Reject before replacing output paths or descriptor ownership. */
+        status = sixel_encoder_validate_delta_png(encoder->sixdelta_enabled,
+            1);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
         encoder->output_is_png = 1;
         png_argument_has_prefix = (strncmp(value, "png:", 4) == 0);
         png_path_view = png_target_payload_view(value);
@@ -14429,6 +14467,13 @@ sixel_encoder_encode(
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
+    /* Reject before input access, staging or cleanup can replace the
+     * configured PNG destination. No encode resources are owned yet. */
+    status = sixel_encoder_validate_delta_png(encoder->sixdelta_enabled,
+        encoder->output_is_png);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     sixel_encoder_ref(encoder);
     sixel_encoder_clear_dither_cache(encoder);
     status = sixel_encoder_validate_p3(encoder);
@@ -15120,6 +15165,14 @@ sixel_encoder_encode_frame(
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    /* A PNG destination must not prepare a delta palette on a fresh
+     * snapshot canvas, even if private state bypassed option validation. */
+    status = sixel_encoder_validate_delta_png(encoder->sixdelta_enabled,
+        encoder->output_is_png);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
     status = sixel_encoder_validate_p3_frame(encoder, frame);
     if (SIXEL_FAILED(status)) {
         return status;

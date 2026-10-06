@@ -2918,6 +2918,21 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/auto_float/0022_auto_reject_kmeans_feedback.c \
 	quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
 	codec/hls/0014_byte_or_control.c codec/hls/0015_serial_or.c \
+	codec/png_snapshot/0010_delta_stdout_then_delta.c \
+	codec/png_snapshot/0011_delta_delta_then_stdout.c \
+	codec/png_snapshot/0012_delta_prefix_then_delta.c \
+	codec/png_snapshot/0013_delta_delta_then_prefix.c \
+	codec/png_snapshot/0014_delta_suffix_then_delta.c \
+	codec/png_snapshot/0015_delta_delta_then_suffix.c \
+	codec/png_snapshot/0016_delta_environment.c \
+	codec/png_snapshot/0017_delta_full_override.c \
+	codec/png_snapshot/0018_delta_sixel_switch.c \
+	codec/png_snapshot/0019_delta_byte_recovery.c \
+	codec/png_snapshot/0020_delta_float_recovery.c \
+	codec/png_snapshot/0021_delta_p3_recovery.c \
+	codec/png_snapshot/0022_delta_file_guard.c \
+	codec/png_snapshot/0023_delta_stdout_guard.c \
+	codec/png_delta_common.c \
 	codec/png_snapshot/0001_srgb_frame_precision.c \
 	codec/png_snapshot/0002_p3_frame_precision.c \
 	codec/png_snapshot/0003_byte_frame_control.c \
@@ -5777,6 +5792,21 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0023_auto_irrelevant_heckbert_feedback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/hls/test_runner-0014_byte_or_control.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/hls/test_runner-0015_serial_or.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0010_delta_stdout_then_delta.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0011_delta_delta_then_stdout.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0012_delta_prefix_then_delta.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0013_delta_delta_then_prefix.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0014_delta_suffix_then_delta.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0015_delta_delta_then_suffix.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0016_delta_environment.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0017_delta_full_override.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0018_delta_sixel_switch.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0019_delta_byte_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0020_delta_float_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0021_delta_p3_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0022_delta_file_guard.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0023_delta_stdout_guard.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/test_runner-png_delta_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0001_srgb_frame_precision.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0002_p3_frame_precision.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0003_byte_frame_control.$(OBJEXT) \
@@ -5985,6 +6015,7 @@ am__depfiles_remade =  \
 	cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po \
 	cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po \
 	cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po \
+	codec/$(DEPDIR)/test_runner-png_delta_common.Po \
 	codec/drcs/$(DEPDIR)/test_runner-0001_srgb_float_center.Po \
 	codec/drcs/$(DEPDIR)/test_runner-0002_p3_float_center.Po \
 	codec/drcs/$(DEPDIR)/test_runner-0003_p3_c1_body.Po \
@@ -6033,6 +6064,20 @@ am__depfiles_remade =  \
 	codec/png_snapshot/$(DEPDIR)/test_runner-0007_srgb_hls_pixels.Po \
 	codec/png_snapshot/$(DEPDIR)/test_runner-0008_p3_hls_pixels.Po \
 	codec/png_snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0010_delta_stdout_then_delta.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0011_delta_delta_then_stdout.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0012_delta_prefix_then_delta.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0013_delta_delta_then_prefix.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0014_delta_suffix_then_delta.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0015_delta_delta_then_suffix.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0016_delta_environment.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0017_delta_full_override.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0018_delta_sixel_switch.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0019_delta_byte_recovery.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0020_delta_float_recovery.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0021_delta_p3_recovery.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0022_delta_file_guard.Po \
+	codec/png_snapshot/$(DEPDIR)/test_runner-0023_delta_stdout_guard.Po \
 	diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po \
@@ -9740,6 +9785,21 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_REUSE_COUNT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_ENCODER_ISOLATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_TRANSPORT_REJECTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_DELTA_STDOUT_THEN_DELTA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_DELTA_DELTA_THEN_STDOUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_DELTA_PREFIX_THEN_DELTA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_DELTA_DELTA_THEN_PREFIX \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_DELTA_SUFFIX_THEN_DELTA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_DELTA_DELTA_THEN_SUFFIX \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_DELTA_ENVIRONMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_DELTA_FULL_OVERRIDE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_DELTA_SIXEL_SWITCH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_DELTA_BYTE_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_DELTA_FLOAT_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_DELTA_P3_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_DELTA_FILE_GUARD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_DELTA_STDOUT_GUARD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PNG_DELTA_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SRGB_FRAME_PRECISION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_P3_FRAME_PRECISION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_BYTE_FRAME_CONTROL \
@@ -15216,6 +15276,21 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/hls/0014_byte_or_control.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/hls/0015_serial_or.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0010_delta_stdout_then_delta.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0011_delta_delta_then_stdout.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0012_delta_prefix_then_delta.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0013_delta_delta_then_prefix.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0014_delta_suffix_then_delta.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0015_delta_delta_then_suffix.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0016_delta_environment.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0017_delta_full_override.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0018_delta_sixel_switch.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0019_delta_byte_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0020_delta_float_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0021_delta_p3_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0022_delta_file_guard.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0023_delta_stdout_guard.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_delta_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0001_srgb_frame_precision.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0002_p3_frame_precision.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0003_byte_frame_control.c \
@@ -24308,6 +24383,56 @@ codec/png_snapshot/$(am__dirstamp):
 codec/png_snapshot/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) codec/png_snapshot/$(DEPDIR)
 	@: >>codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0010_delta_stdout_then_delta.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0011_delta_delta_then_stdout.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0012_delta_prefix_then_delta.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0013_delta_delta_then_prefix.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0014_delta_suffix_then_delta.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0015_delta_delta_then_suffix.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0016_delta_environment.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0017_delta_full_override.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0018_delta_sixel_switch.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0019_delta_byte_recovery.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0020_delta_float_recovery.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0021_delta_p3_recovery.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0022_delta_file_guard.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/png_snapshot/test_runner-0023_delta_stdout_guard.$(OBJEXT):  \
+	codec/png_snapshot/$(am__dirstamp) \
+	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/$(am__dirstamp):
+	@$(MKDIR_P) codec
+	@: >>codec/$(am__dirstamp)
+codec/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) codec/$(DEPDIR)
+	@: >>codec/$(DEPDIR)/$(am__dirstamp)
+codec/test_runner-png_delta_common.$(OBJEXT): codec/$(am__dirstamp) \
+	codec/$(DEPDIR)/$(am__dirstamp)
 codec/png_snapshot/test_runner-0001_srgb_frame_precision.$(OBJEXT):  \
 	codec/png_snapshot/$(am__dirstamp) \
 	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
@@ -24726,6 +24851,7 @@ mostlyclean-compile:
 	-rm -f cli/*.$(OBJEXT)
 	-rm -f cli/aborttrace/*.$(OBJEXT)
 	-rm -f cli/core/*.$(OBJEXT)
+	-rm -f codec/*.$(OBJEXT)
 	-rm -f codec/drcs/*.$(OBJEXT)
 	-rm -f codec/hls/*.$(OBJEXT)
 	-rm -f codec/macro/*.$(OBJEXT)
@@ -24855,6 +24981,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/$(DEPDIR)/test_runner-png_delta_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0001_srgb_float_center.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0002_p3_float_center.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0003_p3_c1_body.Po@am__quote@ # am--include-marker
@@ -24903,6 +25030,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0007_srgb_hls_pixels.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0008_p3_hls_pixels.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0010_delta_stdout_then_delta.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0011_delta_delta_then_stdout.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0012_delta_prefix_then_delta.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0013_delta_delta_then_prefix.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0014_delta_suffix_then_delta.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0015_delta_delta_then_suffix.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0016_delta_environment.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0017_delta_full_override.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0018_delta_sixel_switch.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0019_delta_byte_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0020_delta_float_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0021_delta_p3_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0022_delta_file_guard.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/png_snapshot/$(DEPDIR)/test_runner-0023_delta_stdout_guard.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po@am__quote@ # am--include-marker
@@ -66228,6 +66369,216 @@ codec/hls/test_runner-0015_serial_or.obj: codec/hls/0015_serial_or.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/hls/test_runner-0015_serial_or.obj `if test -f 'codec/hls/0015_serial_or.c'; then $(CYGPATH_W) 'codec/hls/0015_serial_or.c'; else $(CYGPATH_W) '$(srcdir)/codec/hls/0015_serial_or.c'; fi`
 
+codec/png_snapshot/test_runner-0010_delta_stdout_then_delta.o: codec/png_snapshot/0010_delta_stdout_then_delta.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0010_delta_stdout_then_delta.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0010_delta_stdout_then_delta.Tpo -c -o codec/png_snapshot/test_runner-0010_delta_stdout_then_delta.o `test -f 'codec/png_snapshot/0010_delta_stdout_then_delta.c' || echo '$(srcdir)/'`codec/png_snapshot/0010_delta_stdout_then_delta.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0010_delta_stdout_then_delta.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0010_delta_stdout_then_delta.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0010_delta_stdout_then_delta.c' object='codec/png_snapshot/test_runner-0010_delta_stdout_then_delta.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0010_delta_stdout_then_delta.o `test -f 'codec/png_snapshot/0010_delta_stdout_then_delta.c' || echo '$(srcdir)/'`codec/png_snapshot/0010_delta_stdout_then_delta.c
+
+codec/png_snapshot/test_runner-0010_delta_stdout_then_delta.obj: codec/png_snapshot/0010_delta_stdout_then_delta.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0010_delta_stdout_then_delta.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0010_delta_stdout_then_delta.Tpo -c -o codec/png_snapshot/test_runner-0010_delta_stdout_then_delta.obj `if test -f 'codec/png_snapshot/0010_delta_stdout_then_delta.c'; then $(CYGPATH_W) 'codec/png_snapshot/0010_delta_stdout_then_delta.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0010_delta_stdout_then_delta.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0010_delta_stdout_then_delta.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0010_delta_stdout_then_delta.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0010_delta_stdout_then_delta.c' object='codec/png_snapshot/test_runner-0010_delta_stdout_then_delta.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0010_delta_stdout_then_delta.obj `if test -f 'codec/png_snapshot/0010_delta_stdout_then_delta.c'; then $(CYGPATH_W) 'codec/png_snapshot/0010_delta_stdout_then_delta.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0010_delta_stdout_then_delta.c'; fi`
+
+codec/png_snapshot/test_runner-0011_delta_delta_then_stdout.o: codec/png_snapshot/0011_delta_delta_then_stdout.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0011_delta_delta_then_stdout.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0011_delta_delta_then_stdout.Tpo -c -o codec/png_snapshot/test_runner-0011_delta_delta_then_stdout.o `test -f 'codec/png_snapshot/0011_delta_delta_then_stdout.c' || echo '$(srcdir)/'`codec/png_snapshot/0011_delta_delta_then_stdout.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0011_delta_delta_then_stdout.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0011_delta_delta_then_stdout.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0011_delta_delta_then_stdout.c' object='codec/png_snapshot/test_runner-0011_delta_delta_then_stdout.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0011_delta_delta_then_stdout.o `test -f 'codec/png_snapshot/0011_delta_delta_then_stdout.c' || echo '$(srcdir)/'`codec/png_snapshot/0011_delta_delta_then_stdout.c
+
+codec/png_snapshot/test_runner-0011_delta_delta_then_stdout.obj: codec/png_snapshot/0011_delta_delta_then_stdout.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0011_delta_delta_then_stdout.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0011_delta_delta_then_stdout.Tpo -c -o codec/png_snapshot/test_runner-0011_delta_delta_then_stdout.obj `if test -f 'codec/png_snapshot/0011_delta_delta_then_stdout.c'; then $(CYGPATH_W) 'codec/png_snapshot/0011_delta_delta_then_stdout.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0011_delta_delta_then_stdout.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0011_delta_delta_then_stdout.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0011_delta_delta_then_stdout.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0011_delta_delta_then_stdout.c' object='codec/png_snapshot/test_runner-0011_delta_delta_then_stdout.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0011_delta_delta_then_stdout.obj `if test -f 'codec/png_snapshot/0011_delta_delta_then_stdout.c'; then $(CYGPATH_W) 'codec/png_snapshot/0011_delta_delta_then_stdout.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0011_delta_delta_then_stdout.c'; fi`
+
+codec/png_snapshot/test_runner-0012_delta_prefix_then_delta.o: codec/png_snapshot/0012_delta_prefix_then_delta.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0012_delta_prefix_then_delta.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0012_delta_prefix_then_delta.Tpo -c -o codec/png_snapshot/test_runner-0012_delta_prefix_then_delta.o `test -f 'codec/png_snapshot/0012_delta_prefix_then_delta.c' || echo '$(srcdir)/'`codec/png_snapshot/0012_delta_prefix_then_delta.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0012_delta_prefix_then_delta.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0012_delta_prefix_then_delta.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0012_delta_prefix_then_delta.c' object='codec/png_snapshot/test_runner-0012_delta_prefix_then_delta.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0012_delta_prefix_then_delta.o `test -f 'codec/png_snapshot/0012_delta_prefix_then_delta.c' || echo '$(srcdir)/'`codec/png_snapshot/0012_delta_prefix_then_delta.c
+
+codec/png_snapshot/test_runner-0012_delta_prefix_then_delta.obj: codec/png_snapshot/0012_delta_prefix_then_delta.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0012_delta_prefix_then_delta.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0012_delta_prefix_then_delta.Tpo -c -o codec/png_snapshot/test_runner-0012_delta_prefix_then_delta.obj `if test -f 'codec/png_snapshot/0012_delta_prefix_then_delta.c'; then $(CYGPATH_W) 'codec/png_snapshot/0012_delta_prefix_then_delta.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0012_delta_prefix_then_delta.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0012_delta_prefix_then_delta.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0012_delta_prefix_then_delta.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0012_delta_prefix_then_delta.c' object='codec/png_snapshot/test_runner-0012_delta_prefix_then_delta.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0012_delta_prefix_then_delta.obj `if test -f 'codec/png_snapshot/0012_delta_prefix_then_delta.c'; then $(CYGPATH_W) 'codec/png_snapshot/0012_delta_prefix_then_delta.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0012_delta_prefix_then_delta.c'; fi`
+
+codec/png_snapshot/test_runner-0013_delta_delta_then_prefix.o: codec/png_snapshot/0013_delta_delta_then_prefix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0013_delta_delta_then_prefix.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0013_delta_delta_then_prefix.Tpo -c -o codec/png_snapshot/test_runner-0013_delta_delta_then_prefix.o `test -f 'codec/png_snapshot/0013_delta_delta_then_prefix.c' || echo '$(srcdir)/'`codec/png_snapshot/0013_delta_delta_then_prefix.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0013_delta_delta_then_prefix.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0013_delta_delta_then_prefix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0013_delta_delta_then_prefix.c' object='codec/png_snapshot/test_runner-0013_delta_delta_then_prefix.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0013_delta_delta_then_prefix.o `test -f 'codec/png_snapshot/0013_delta_delta_then_prefix.c' || echo '$(srcdir)/'`codec/png_snapshot/0013_delta_delta_then_prefix.c
+
+codec/png_snapshot/test_runner-0013_delta_delta_then_prefix.obj: codec/png_snapshot/0013_delta_delta_then_prefix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0013_delta_delta_then_prefix.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0013_delta_delta_then_prefix.Tpo -c -o codec/png_snapshot/test_runner-0013_delta_delta_then_prefix.obj `if test -f 'codec/png_snapshot/0013_delta_delta_then_prefix.c'; then $(CYGPATH_W) 'codec/png_snapshot/0013_delta_delta_then_prefix.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0013_delta_delta_then_prefix.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0013_delta_delta_then_prefix.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0013_delta_delta_then_prefix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0013_delta_delta_then_prefix.c' object='codec/png_snapshot/test_runner-0013_delta_delta_then_prefix.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0013_delta_delta_then_prefix.obj `if test -f 'codec/png_snapshot/0013_delta_delta_then_prefix.c'; then $(CYGPATH_W) 'codec/png_snapshot/0013_delta_delta_then_prefix.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0013_delta_delta_then_prefix.c'; fi`
+
+codec/png_snapshot/test_runner-0014_delta_suffix_then_delta.o: codec/png_snapshot/0014_delta_suffix_then_delta.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0014_delta_suffix_then_delta.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0014_delta_suffix_then_delta.Tpo -c -o codec/png_snapshot/test_runner-0014_delta_suffix_then_delta.o `test -f 'codec/png_snapshot/0014_delta_suffix_then_delta.c' || echo '$(srcdir)/'`codec/png_snapshot/0014_delta_suffix_then_delta.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0014_delta_suffix_then_delta.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0014_delta_suffix_then_delta.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0014_delta_suffix_then_delta.c' object='codec/png_snapshot/test_runner-0014_delta_suffix_then_delta.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0014_delta_suffix_then_delta.o `test -f 'codec/png_snapshot/0014_delta_suffix_then_delta.c' || echo '$(srcdir)/'`codec/png_snapshot/0014_delta_suffix_then_delta.c
+
+codec/png_snapshot/test_runner-0014_delta_suffix_then_delta.obj: codec/png_snapshot/0014_delta_suffix_then_delta.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0014_delta_suffix_then_delta.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0014_delta_suffix_then_delta.Tpo -c -o codec/png_snapshot/test_runner-0014_delta_suffix_then_delta.obj `if test -f 'codec/png_snapshot/0014_delta_suffix_then_delta.c'; then $(CYGPATH_W) 'codec/png_snapshot/0014_delta_suffix_then_delta.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0014_delta_suffix_then_delta.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0014_delta_suffix_then_delta.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0014_delta_suffix_then_delta.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0014_delta_suffix_then_delta.c' object='codec/png_snapshot/test_runner-0014_delta_suffix_then_delta.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0014_delta_suffix_then_delta.obj `if test -f 'codec/png_snapshot/0014_delta_suffix_then_delta.c'; then $(CYGPATH_W) 'codec/png_snapshot/0014_delta_suffix_then_delta.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0014_delta_suffix_then_delta.c'; fi`
+
+codec/png_snapshot/test_runner-0015_delta_delta_then_suffix.o: codec/png_snapshot/0015_delta_delta_then_suffix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0015_delta_delta_then_suffix.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0015_delta_delta_then_suffix.Tpo -c -o codec/png_snapshot/test_runner-0015_delta_delta_then_suffix.o `test -f 'codec/png_snapshot/0015_delta_delta_then_suffix.c' || echo '$(srcdir)/'`codec/png_snapshot/0015_delta_delta_then_suffix.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0015_delta_delta_then_suffix.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0015_delta_delta_then_suffix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0015_delta_delta_then_suffix.c' object='codec/png_snapshot/test_runner-0015_delta_delta_then_suffix.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0015_delta_delta_then_suffix.o `test -f 'codec/png_snapshot/0015_delta_delta_then_suffix.c' || echo '$(srcdir)/'`codec/png_snapshot/0015_delta_delta_then_suffix.c
+
+codec/png_snapshot/test_runner-0015_delta_delta_then_suffix.obj: codec/png_snapshot/0015_delta_delta_then_suffix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0015_delta_delta_then_suffix.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0015_delta_delta_then_suffix.Tpo -c -o codec/png_snapshot/test_runner-0015_delta_delta_then_suffix.obj `if test -f 'codec/png_snapshot/0015_delta_delta_then_suffix.c'; then $(CYGPATH_W) 'codec/png_snapshot/0015_delta_delta_then_suffix.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0015_delta_delta_then_suffix.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0015_delta_delta_then_suffix.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0015_delta_delta_then_suffix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0015_delta_delta_then_suffix.c' object='codec/png_snapshot/test_runner-0015_delta_delta_then_suffix.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0015_delta_delta_then_suffix.obj `if test -f 'codec/png_snapshot/0015_delta_delta_then_suffix.c'; then $(CYGPATH_W) 'codec/png_snapshot/0015_delta_delta_then_suffix.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0015_delta_delta_then_suffix.c'; fi`
+
+codec/png_snapshot/test_runner-0016_delta_environment.o: codec/png_snapshot/0016_delta_environment.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0016_delta_environment.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0016_delta_environment.Tpo -c -o codec/png_snapshot/test_runner-0016_delta_environment.o `test -f 'codec/png_snapshot/0016_delta_environment.c' || echo '$(srcdir)/'`codec/png_snapshot/0016_delta_environment.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0016_delta_environment.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0016_delta_environment.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0016_delta_environment.c' object='codec/png_snapshot/test_runner-0016_delta_environment.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0016_delta_environment.o `test -f 'codec/png_snapshot/0016_delta_environment.c' || echo '$(srcdir)/'`codec/png_snapshot/0016_delta_environment.c
+
+codec/png_snapshot/test_runner-0016_delta_environment.obj: codec/png_snapshot/0016_delta_environment.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0016_delta_environment.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0016_delta_environment.Tpo -c -o codec/png_snapshot/test_runner-0016_delta_environment.obj `if test -f 'codec/png_snapshot/0016_delta_environment.c'; then $(CYGPATH_W) 'codec/png_snapshot/0016_delta_environment.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0016_delta_environment.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0016_delta_environment.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0016_delta_environment.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0016_delta_environment.c' object='codec/png_snapshot/test_runner-0016_delta_environment.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0016_delta_environment.obj `if test -f 'codec/png_snapshot/0016_delta_environment.c'; then $(CYGPATH_W) 'codec/png_snapshot/0016_delta_environment.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0016_delta_environment.c'; fi`
+
+codec/png_snapshot/test_runner-0017_delta_full_override.o: codec/png_snapshot/0017_delta_full_override.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0017_delta_full_override.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0017_delta_full_override.Tpo -c -o codec/png_snapshot/test_runner-0017_delta_full_override.o `test -f 'codec/png_snapshot/0017_delta_full_override.c' || echo '$(srcdir)/'`codec/png_snapshot/0017_delta_full_override.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0017_delta_full_override.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0017_delta_full_override.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0017_delta_full_override.c' object='codec/png_snapshot/test_runner-0017_delta_full_override.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0017_delta_full_override.o `test -f 'codec/png_snapshot/0017_delta_full_override.c' || echo '$(srcdir)/'`codec/png_snapshot/0017_delta_full_override.c
+
+codec/png_snapshot/test_runner-0017_delta_full_override.obj: codec/png_snapshot/0017_delta_full_override.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0017_delta_full_override.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0017_delta_full_override.Tpo -c -o codec/png_snapshot/test_runner-0017_delta_full_override.obj `if test -f 'codec/png_snapshot/0017_delta_full_override.c'; then $(CYGPATH_W) 'codec/png_snapshot/0017_delta_full_override.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0017_delta_full_override.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0017_delta_full_override.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0017_delta_full_override.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0017_delta_full_override.c' object='codec/png_snapshot/test_runner-0017_delta_full_override.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0017_delta_full_override.obj `if test -f 'codec/png_snapshot/0017_delta_full_override.c'; then $(CYGPATH_W) 'codec/png_snapshot/0017_delta_full_override.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0017_delta_full_override.c'; fi`
+
+codec/png_snapshot/test_runner-0018_delta_sixel_switch.o: codec/png_snapshot/0018_delta_sixel_switch.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0018_delta_sixel_switch.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0018_delta_sixel_switch.Tpo -c -o codec/png_snapshot/test_runner-0018_delta_sixel_switch.o `test -f 'codec/png_snapshot/0018_delta_sixel_switch.c' || echo '$(srcdir)/'`codec/png_snapshot/0018_delta_sixel_switch.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0018_delta_sixel_switch.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0018_delta_sixel_switch.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0018_delta_sixel_switch.c' object='codec/png_snapshot/test_runner-0018_delta_sixel_switch.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0018_delta_sixel_switch.o `test -f 'codec/png_snapshot/0018_delta_sixel_switch.c' || echo '$(srcdir)/'`codec/png_snapshot/0018_delta_sixel_switch.c
+
+codec/png_snapshot/test_runner-0018_delta_sixel_switch.obj: codec/png_snapshot/0018_delta_sixel_switch.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0018_delta_sixel_switch.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0018_delta_sixel_switch.Tpo -c -o codec/png_snapshot/test_runner-0018_delta_sixel_switch.obj `if test -f 'codec/png_snapshot/0018_delta_sixel_switch.c'; then $(CYGPATH_W) 'codec/png_snapshot/0018_delta_sixel_switch.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0018_delta_sixel_switch.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0018_delta_sixel_switch.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0018_delta_sixel_switch.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0018_delta_sixel_switch.c' object='codec/png_snapshot/test_runner-0018_delta_sixel_switch.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0018_delta_sixel_switch.obj `if test -f 'codec/png_snapshot/0018_delta_sixel_switch.c'; then $(CYGPATH_W) 'codec/png_snapshot/0018_delta_sixel_switch.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0018_delta_sixel_switch.c'; fi`
+
+codec/png_snapshot/test_runner-0019_delta_byte_recovery.o: codec/png_snapshot/0019_delta_byte_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0019_delta_byte_recovery.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0019_delta_byte_recovery.Tpo -c -o codec/png_snapshot/test_runner-0019_delta_byte_recovery.o `test -f 'codec/png_snapshot/0019_delta_byte_recovery.c' || echo '$(srcdir)/'`codec/png_snapshot/0019_delta_byte_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0019_delta_byte_recovery.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0019_delta_byte_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0019_delta_byte_recovery.c' object='codec/png_snapshot/test_runner-0019_delta_byte_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0019_delta_byte_recovery.o `test -f 'codec/png_snapshot/0019_delta_byte_recovery.c' || echo '$(srcdir)/'`codec/png_snapshot/0019_delta_byte_recovery.c
+
+codec/png_snapshot/test_runner-0019_delta_byte_recovery.obj: codec/png_snapshot/0019_delta_byte_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0019_delta_byte_recovery.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0019_delta_byte_recovery.Tpo -c -o codec/png_snapshot/test_runner-0019_delta_byte_recovery.obj `if test -f 'codec/png_snapshot/0019_delta_byte_recovery.c'; then $(CYGPATH_W) 'codec/png_snapshot/0019_delta_byte_recovery.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0019_delta_byte_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0019_delta_byte_recovery.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0019_delta_byte_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0019_delta_byte_recovery.c' object='codec/png_snapshot/test_runner-0019_delta_byte_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0019_delta_byte_recovery.obj `if test -f 'codec/png_snapshot/0019_delta_byte_recovery.c'; then $(CYGPATH_W) 'codec/png_snapshot/0019_delta_byte_recovery.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0019_delta_byte_recovery.c'; fi`
+
+codec/png_snapshot/test_runner-0020_delta_float_recovery.o: codec/png_snapshot/0020_delta_float_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0020_delta_float_recovery.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0020_delta_float_recovery.Tpo -c -o codec/png_snapshot/test_runner-0020_delta_float_recovery.o `test -f 'codec/png_snapshot/0020_delta_float_recovery.c' || echo '$(srcdir)/'`codec/png_snapshot/0020_delta_float_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0020_delta_float_recovery.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0020_delta_float_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0020_delta_float_recovery.c' object='codec/png_snapshot/test_runner-0020_delta_float_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0020_delta_float_recovery.o `test -f 'codec/png_snapshot/0020_delta_float_recovery.c' || echo '$(srcdir)/'`codec/png_snapshot/0020_delta_float_recovery.c
+
+codec/png_snapshot/test_runner-0020_delta_float_recovery.obj: codec/png_snapshot/0020_delta_float_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0020_delta_float_recovery.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0020_delta_float_recovery.Tpo -c -o codec/png_snapshot/test_runner-0020_delta_float_recovery.obj `if test -f 'codec/png_snapshot/0020_delta_float_recovery.c'; then $(CYGPATH_W) 'codec/png_snapshot/0020_delta_float_recovery.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0020_delta_float_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0020_delta_float_recovery.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0020_delta_float_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0020_delta_float_recovery.c' object='codec/png_snapshot/test_runner-0020_delta_float_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0020_delta_float_recovery.obj `if test -f 'codec/png_snapshot/0020_delta_float_recovery.c'; then $(CYGPATH_W) 'codec/png_snapshot/0020_delta_float_recovery.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0020_delta_float_recovery.c'; fi`
+
+codec/png_snapshot/test_runner-0021_delta_p3_recovery.o: codec/png_snapshot/0021_delta_p3_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0021_delta_p3_recovery.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0021_delta_p3_recovery.Tpo -c -o codec/png_snapshot/test_runner-0021_delta_p3_recovery.o `test -f 'codec/png_snapshot/0021_delta_p3_recovery.c' || echo '$(srcdir)/'`codec/png_snapshot/0021_delta_p3_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0021_delta_p3_recovery.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0021_delta_p3_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0021_delta_p3_recovery.c' object='codec/png_snapshot/test_runner-0021_delta_p3_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0021_delta_p3_recovery.o `test -f 'codec/png_snapshot/0021_delta_p3_recovery.c' || echo '$(srcdir)/'`codec/png_snapshot/0021_delta_p3_recovery.c
+
+codec/png_snapshot/test_runner-0021_delta_p3_recovery.obj: codec/png_snapshot/0021_delta_p3_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0021_delta_p3_recovery.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0021_delta_p3_recovery.Tpo -c -o codec/png_snapshot/test_runner-0021_delta_p3_recovery.obj `if test -f 'codec/png_snapshot/0021_delta_p3_recovery.c'; then $(CYGPATH_W) 'codec/png_snapshot/0021_delta_p3_recovery.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0021_delta_p3_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0021_delta_p3_recovery.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0021_delta_p3_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0021_delta_p3_recovery.c' object='codec/png_snapshot/test_runner-0021_delta_p3_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0021_delta_p3_recovery.obj `if test -f 'codec/png_snapshot/0021_delta_p3_recovery.c'; then $(CYGPATH_W) 'codec/png_snapshot/0021_delta_p3_recovery.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0021_delta_p3_recovery.c'; fi`
+
+codec/png_snapshot/test_runner-0022_delta_file_guard.o: codec/png_snapshot/0022_delta_file_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0022_delta_file_guard.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0022_delta_file_guard.Tpo -c -o codec/png_snapshot/test_runner-0022_delta_file_guard.o `test -f 'codec/png_snapshot/0022_delta_file_guard.c' || echo '$(srcdir)/'`codec/png_snapshot/0022_delta_file_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0022_delta_file_guard.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0022_delta_file_guard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0022_delta_file_guard.c' object='codec/png_snapshot/test_runner-0022_delta_file_guard.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0022_delta_file_guard.o `test -f 'codec/png_snapshot/0022_delta_file_guard.c' || echo '$(srcdir)/'`codec/png_snapshot/0022_delta_file_guard.c
+
+codec/png_snapshot/test_runner-0022_delta_file_guard.obj: codec/png_snapshot/0022_delta_file_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0022_delta_file_guard.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0022_delta_file_guard.Tpo -c -o codec/png_snapshot/test_runner-0022_delta_file_guard.obj `if test -f 'codec/png_snapshot/0022_delta_file_guard.c'; then $(CYGPATH_W) 'codec/png_snapshot/0022_delta_file_guard.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0022_delta_file_guard.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0022_delta_file_guard.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0022_delta_file_guard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0022_delta_file_guard.c' object='codec/png_snapshot/test_runner-0022_delta_file_guard.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0022_delta_file_guard.obj `if test -f 'codec/png_snapshot/0022_delta_file_guard.c'; then $(CYGPATH_W) 'codec/png_snapshot/0022_delta_file_guard.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0022_delta_file_guard.c'; fi`
+
+codec/png_snapshot/test_runner-0023_delta_stdout_guard.o: codec/png_snapshot/0023_delta_stdout_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0023_delta_stdout_guard.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0023_delta_stdout_guard.Tpo -c -o codec/png_snapshot/test_runner-0023_delta_stdout_guard.o `test -f 'codec/png_snapshot/0023_delta_stdout_guard.c' || echo '$(srcdir)/'`codec/png_snapshot/0023_delta_stdout_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0023_delta_stdout_guard.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0023_delta_stdout_guard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0023_delta_stdout_guard.c' object='codec/png_snapshot/test_runner-0023_delta_stdout_guard.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0023_delta_stdout_guard.o `test -f 'codec/png_snapshot/0023_delta_stdout_guard.c' || echo '$(srcdir)/'`codec/png_snapshot/0023_delta_stdout_guard.c
+
+codec/png_snapshot/test_runner-0023_delta_stdout_guard.obj: codec/png_snapshot/0023_delta_stdout_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0023_delta_stdout_guard.obj -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0023_delta_stdout_guard.Tpo -c -o codec/png_snapshot/test_runner-0023_delta_stdout_guard.obj `if test -f 'codec/png_snapshot/0023_delta_stdout_guard.c'; then $(CYGPATH_W) 'codec/png_snapshot/0023_delta_stdout_guard.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0023_delta_stdout_guard.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0023_delta_stdout_guard.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0023_delta_stdout_guard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_snapshot/0023_delta_stdout_guard.c' object='codec/png_snapshot/test_runner-0023_delta_stdout_guard.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0023_delta_stdout_guard.obj `if test -f 'codec/png_snapshot/0023_delta_stdout_guard.c'; then $(CYGPATH_W) 'codec/png_snapshot/0023_delta_stdout_guard.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0023_delta_stdout_guard.c'; fi`
+
+codec/test_runner-png_delta_common.o: codec/png_delta_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/test_runner-png_delta_common.o -MD -MP -MF codec/$(DEPDIR)/test_runner-png_delta_common.Tpo -c -o codec/test_runner-png_delta_common.o `test -f 'codec/png_delta_common.c' || echo '$(srcdir)/'`codec/png_delta_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/$(DEPDIR)/test_runner-png_delta_common.Tpo codec/$(DEPDIR)/test_runner-png_delta_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_delta_common.c' object='codec/test_runner-png_delta_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/test_runner-png_delta_common.o `test -f 'codec/png_delta_common.c' || echo '$(srcdir)/'`codec/png_delta_common.c
+
+codec/test_runner-png_delta_common.obj: codec/png_delta_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/test_runner-png_delta_common.obj -MD -MP -MF codec/$(DEPDIR)/test_runner-png_delta_common.Tpo -c -o codec/test_runner-png_delta_common.obj `if test -f 'codec/png_delta_common.c'; then $(CYGPATH_W) 'codec/png_delta_common.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_delta_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/$(DEPDIR)/test_runner-png_delta_common.Tpo codec/$(DEPDIR)/test_runner-png_delta_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/png_delta_common.c' object='codec/test_runner-png_delta_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/test_runner-png_delta_common.obj `if test -f 'codec/png_delta_common.c'; then $(CYGPATH_W) 'codec/png_delta_common.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_delta_common.c'; fi`
+
 codec/png_snapshot/test_runner-0001_srgb_frame_precision.o: codec/png_snapshot/0001_srgb_frame_precision.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/png_snapshot/test_runner-0001_srgb_frame_precision.o -MD -MP -MF codec/png_snapshot/$(DEPDIR)/test_runner-0001_srgb_frame_precision.Tpo -c -o codec/png_snapshot/test_runner-0001_srgb_frame_precision.o `test -f 'codec/png_snapshot/0001_srgb_frame_precision.c' || echo '$(srcdir)/'`codec/png_snapshot/0001_srgb_frame_precision.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/png_snapshot/$(DEPDIR)/test_runner-0001_srgb_frame_precision.Tpo codec/png_snapshot/$(DEPDIR)/test_runner-0001_srgb_frame_precision.Po
@@ -68239,6 +68590,8 @@ distclean-generic:
 	-$(am__rm_f) cli/aborttrace/$(am__dirstamp)
 	-$(am__rm_f) cli/core/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) cli/core/$(am__dirstamp)
+	-$(am__rm_f) codec/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) codec/$(am__dirstamp)
 	-$(am__rm_f) codec/drcs/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) codec/drcs/$(am__dirstamp)
 	-$(am__rm_f) codec/hls/$(DEPDIR)/$(am__dirstamp)

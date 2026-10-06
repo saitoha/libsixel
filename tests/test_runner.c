@@ -475,6 +475,20 @@ int test_export_capture_0003(int argc, char **argv);
 int test_export_capture_0004(int argc, char **argv);
 int test_export_capture_0005(int argc, char **argv);
 int test_export_capture_0006(int argc, char **argv);
+int test_png_snapshot_0010(int argc, char **argv);
+int test_png_snapshot_0011(int argc, char **argv);
+int test_png_snapshot_0012(int argc, char **argv);
+int test_png_snapshot_0013(int argc, char **argv);
+int test_png_snapshot_0014(int argc, char **argv);
+int test_png_snapshot_0015(int argc, char **argv);
+int test_png_snapshot_0016(int argc, char **argv);
+int test_png_snapshot_0017(int argc, char **argv);
+int test_png_snapshot_0018(int argc, char **argv);
+int test_png_snapshot_0019(int argc, char **argv);
+int test_png_snapshot_0020(int argc, char **argv);
+int test_png_snapshot_0021(int argc, char **argv);
+int test_png_snapshot_0022(int argc, char **argv);
+int test_png_snapshot_0023(int argc, char **argv);
 int test_png_snapshot_0001(int argc, char **argv);
 int test_png_snapshot_0002(int argc, char **argv);
 int test_png_snapshot_0003(int argc, char **argv);
@@ -3777,6 +3791,34 @@ static test_entry_t const test_entries[] = {
         test_export_capture_0005 },
     { "palette/export_capture/0006_encoder_isolation",
         test_export_capture_0006 },
+    { "codec/png_snapshot/0010_delta_stdout_then_delta",
+        test_png_snapshot_0010 },
+    { "codec/png_snapshot/0011_delta_delta_then_stdout",
+        test_png_snapshot_0011 },
+    { "codec/png_snapshot/0012_delta_prefix_then_delta",
+        test_png_snapshot_0012 },
+    { "codec/png_snapshot/0013_delta_delta_then_prefix",
+        test_png_snapshot_0013 },
+    { "codec/png_snapshot/0014_delta_suffix_then_delta",
+        test_png_snapshot_0014 },
+    { "codec/png_snapshot/0015_delta_delta_then_suffix",
+        test_png_snapshot_0015 },
+    { "codec/png_snapshot/0016_delta_environment",
+        test_png_snapshot_0016 },
+    { "codec/png_snapshot/0017_delta_full_override",
+        test_png_snapshot_0017 },
+    { "codec/png_snapshot/0018_delta_sixel_switch",
+        test_png_snapshot_0018 },
+    { "codec/png_snapshot/0019_delta_byte_recovery",
+        test_png_snapshot_0019 },
+    { "codec/png_snapshot/0020_delta_float_recovery",
+        test_png_snapshot_0020 },
+    { "codec/png_snapshot/0021_delta_p3_recovery",
+        test_png_snapshot_0021 },
+    { "codec/png_snapshot/0022_delta_file_guard",
+        test_png_snapshot_0022 },
+    { "codec/png_snapshot/0023_delta_stdout_guard",
+        test_png_snapshot_0023 },
     { "codec/png_snapshot/0001_srgb_frame_precision", test_png_snapshot_0001 },
     { "codec/png_snapshot/0002_p3_frame_precision", test_png_snapshot_0002 },
     { "codec/png_snapshot/0003_byte_frame_control", test_png_snapshot_0003 },

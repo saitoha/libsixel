@@ -183,6 +183,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    stdout while \"png:<path>\" saves the PNG next to the SIXEL "
         "output. Supplying\n"
         "    \"-o output.png\" writes the PNG directly to that path.\n"
+        "    PNG snapshots conflict with -Z delta; select -Z full first.\n"
     },
     {
         '=',
@@ -990,7 +991,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    requires exact RGB; later keeps compare palette error.\n"
         "    Larger thresholds trade freshness for fewer lookups.\n"
         "    full preserves the source-alpha policy.\n"
-        "    delta conflicts with -e, -O, -@, -u and -n.\n"
+        "    delta conflicts with -e, -O, -@, -u, -n and PNG snapshots.\n"
         "    Opaque -b gray1 is supported.\n"
     },
     {

@@ -431,6 +431,21 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0005_REUSE_COUNT \
     -DBUILD_TEST_0006_ENCODER_ISOLATION \
     -DBUILD_TEST_0009_TRANSPORT_REJECTION \
+    -DBUILD_TEST_0010_DELTA_STDOUT_THEN_DELTA \
+    -DBUILD_TEST_0011_DELTA_DELTA_THEN_STDOUT \
+    -DBUILD_TEST_0012_DELTA_PREFIX_THEN_DELTA \
+    -DBUILD_TEST_0013_DELTA_DELTA_THEN_PREFIX \
+    -DBUILD_TEST_0014_DELTA_SUFFIX_THEN_DELTA \
+    -DBUILD_TEST_0015_DELTA_DELTA_THEN_SUFFIX \
+    -DBUILD_TEST_0016_DELTA_ENVIRONMENT \
+    -DBUILD_TEST_0017_DELTA_FULL_OVERRIDE \
+    -DBUILD_TEST_0018_DELTA_SIXEL_SWITCH \
+    -DBUILD_TEST_0019_DELTA_BYTE_RECOVERY \
+    -DBUILD_TEST_0020_DELTA_FLOAT_RECOVERY \
+    -DBUILD_TEST_0021_DELTA_P3_RECOVERY \
+    -DBUILD_TEST_0022_DELTA_FILE_GUARD \
+    -DBUILD_TEST_0023_DELTA_STDOUT_GUARD \
+    -DBUILD_PNG_DELTA_COMMON \
     -DBUILD_TEST_0001_SRGB_FRAME_PRECISION \
     -DBUILD_TEST_0002_P3_FRAME_PRECISION \
     -DBUILD_TEST_0003_BYTE_FRAME_CONTROL \
@@ -5876,6 +5891,21 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.c \
     codec/hls/0014_byte_or_control.c \
     codec/hls/0015_serial_or.c \
+    codec/png_snapshot/0010_delta_stdout_then_delta.c \
+    codec/png_snapshot/0011_delta_delta_then_stdout.c \
+    codec/png_snapshot/0012_delta_prefix_then_delta.c \
+    codec/png_snapshot/0013_delta_delta_then_prefix.c \
+    codec/png_snapshot/0014_delta_suffix_then_delta.c \
+    codec/png_snapshot/0015_delta_delta_then_suffix.c \
+    codec/png_snapshot/0016_delta_environment.c \
+    codec/png_snapshot/0017_delta_full_override.c \
+    codec/png_snapshot/0018_delta_sixel_switch.c \
+    codec/png_snapshot/0019_delta_byte_recovery.c \
+    codec/png_snapshot/0020_delta_float_recovery.c \
+    codec/png_snapshot/0021_delta_p3_recovery.c \
+    codec/png_snapshot/0022_delta_file_guard.c \
+    codec/png_snapshot/0023_delta_stdout_guard.c \
+    codec/png_delta_common.c \
     codec/png_snapshot/0001_srgb_frame_precision.c \
     codec/png_snapshot/0002_p3_frame_precision.c \
     codec/png_snapshot/0003_byte_frame_control.c \

@@ -88,6 +88,8 @@ the ordinary native float palette path and the byte fast path.
 output definitions retain the existing sRGB interpretation. In particular,
 linear and SMPTE-C snapshots are numeric previews, not matching-profile
 renditions. Native snapshots exclude macro/DRCS envelopes and OR mode.
+PNG snapshots conflict with \fB-Z delta\fP because their decoder has no
+retained base image. Select \fB-Z full\fP before the PNG destination.
 High-color output is not
 an indexed-exact snapshot because it redefines palette registers while
 painting. \(dqpng:-\(dq writes to standard output, while
@@ -1109,6 +1111,8 @@ foreground pixels. It also conflicts with \fB-O\fP: OR mode's P2=5
 does not carry delta's omitted-pixel preservation. DRCS output via \fB-@\fP also conflicts because glyph definitions do not update the retained display plane. Opaque black-and-white output via \fB-b gray1\fP can
 paint both colors and remains supported.
 Macro output (\fB-u\fP or \fB-n\fP) also conflicts: definitions need not be invoked, and later invocations may have a different base surface.
+PNG snapshot destinations also conflict: the standalone decoder cannot
+reconstruct omitted pixels without the retained base.
 History must match the receiver's display and frame placement.
 .TP 5
 .B \-P, \-\-penetrate
