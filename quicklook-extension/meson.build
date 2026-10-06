@@ -53,6 +53,7 @@ srcs = files(
   '../src/status.c',
   '../src/allocator.c',
   '../src/fromsixel.c',
+  '../src/colorspace-hls.c',
   '../src/timer.c',
   '../src/timeline-logger.c',
   '../src/timeline-writer.c',

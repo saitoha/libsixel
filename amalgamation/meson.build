@@ -85,6 +85,7 @@ amalgamation_units = files(
   '../src/timeline-logger.c',
   '../src/timeline-writer.c',
   '../src/colorspace.c',
+  '../src/colorspace-hls.c',
   '../src/filter-clip.c',
   '../src/filter-colors.c',
   '../src/filter-dither.c',

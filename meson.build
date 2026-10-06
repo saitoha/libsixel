@@ -2086,6 +2086,7 @@ loader_helper_sources = files(
   'src/timer.c',
   'src/chunk.c',
   'src/colorspace.c',
+  'src/colorspace-hls.c',
   'src/dither-common-pipeline.c',
   'src/dither.c',
   'src/dither-interframe-method.h',

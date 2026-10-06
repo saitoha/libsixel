@@ -132,7 +132,8 @@ libsixelquicklookcore_a_LIBADD =
 am__libsixelquicklookcore_a_SOURCES_DIST =  \
 	Sources/SixelQuickLookStub.c $(top_srcdir)/src/status.c \
 	$(top_srcdir)/src/allocator.c $(top_srcdir)/src/fromsixel.c \
-	$(top_srcdir)/src/timer.c $(top_srcdir)/src/timeline-logger.c \
+	$(top_srcdir)/src/colorspace-hls.c $(top_srcdir)/src/timer.c \
+	$(top_srcdir)/src/timeline-logger.c \
 	$(top_srcdir)/src/timeline-writer.c \
 	$(top_srcdir)/src/compat_stub.c \
 	$(top_srcdir)/src/options-registry.c \
@@ -147,6 +148,7 @@ am_libsixelquicklookcore_a_OBJECTS =  \
 	$(top_builddir)/src/libsixelquicklookcore_a-status.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-allocator.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-fromsixel.$(OBJEXT) \
+	$(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-timer.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-timeline-logger.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-timeline-writer.$(OBJEXT) \
@@ -232,6 +234,7 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allocator.Po \
+	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-colorspace-hls.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-compat_stub.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po \
@@ -630,7 +633,8 @@ noinst_LIBRARIES = libsixelquicklookcore.a
 #
 libsixelquicklookcore_a_SOURCES = Sources/SixelQuickLookStub.c \
 	$(top_srcdir)/src/status.c $(top_srcdir)/src/allocator.c \
-	$(top_srcdir)/src/fromsixel.c $(top_srcdir)/src/timer.c \
+	$(top_srcdir)/src/fromsixel.c \
+	$(top_srcdir)/src/colorspace-hls.c $(top_srcdir)/src/timer.c \
 	$(top_srcdir)/src/timeline-logger.c \
 	$(top_srcdir)/src/timeline-writer.c \
 	$(top_srcdir)/src/compat_stub.c \
@@ -751,6 +755,9 @@ $(top_builddir)/src/libsixelquicklookcore_a-allocator.$(OBJEXT):  \
 $(top_builddir)/src/libsixelquicklookcore_a-fromsixel.$(OBJEXT):  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/src/libsixelquicklookcore_a-timer.$(OBJEXT):  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
@@ -841,6 +848,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allocator.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-colorspace-hls.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-compat_stub.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po@am__quote@ # am--include-marker
@@ -947,6 +955,20 @@ $(top_builddir)/src/libsixelquicklookcore_a-fromsixel.obj: $(top_builddir)/src/f
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/fromsixel.c' object='$(top_builddir)/src/libsixelquicklookcore_a-fromsixel.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-fromsixel.obj `if test -f '$(top_builddir)/src/fromsixel.c'; then $(CYGPATH_W) '$(top_builddir)/src/fromsixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/fromsixel.c'; fi`
+
+$(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.o: $(top_builddir)/src/colorspace-hls.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-colorspace-hls.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.o `test -f '$(top_builddir)/src/colorspace-hls.c' || echo '$(srcdir)/'`$(top_builddir)/src/colorspace-hls.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-colorspace-hls.Tpo $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-colorspace-hls.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/colorspace-hls.c' object='$(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.o `test -f '$(top_builddir)/src/colorspace-hls.c' || echo '$(srcdir)/'`$(top_builddir)/src/colorspace-hls.c
+
+$(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.obj: $(top_builddir)/src/colorspace-hls.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-colorspace-hls.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.obj `if test -f '$(top_builddir)/src/colorspace-hls.c'; then $(CYGPATH_W) '$(top_builddir)/src/colorspace-hls.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/colorspace-hls.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-colorspace-hls.Tpo $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-colorspace-hls.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/colorspace-hls.c' object='$(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.obj `if test -f '$(top_builddir)/src/colorspace-hls.c'; then $(CYGPATH_W) '$(top_builddir)/src/colorspace-hls.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/colorspace-hls.c'; fi`
 
 $(top_builddir)/src/libsixelquicklookcore_a-timer.o: $(top_builddir)/src/timer.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-timer.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-timer.o `test -f '$(top_builddir)/src/timer.c' || echo '$(srcdir)/'`$(top_builddir)/src/timer.c
@@ -1377,6 +1399,7 @@ clean-am: clean-generic clean-libtool clean-local \
 
 distclean: distclean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allocator.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-colorspace-hls.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-compat_stub.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po
@@ -1445,6 +1468,7 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allocator.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-colorspace-hls.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-compat_stub.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po

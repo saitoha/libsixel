@@ -112,6 +112,7 @@ srcs = [
   'timeline-writer.c',
   'timeline-writer.h',
   'colorspace.c',
+  'colorspace-hls.c',
   'frame.c',
   'cpu.c',
   'cpu.h',

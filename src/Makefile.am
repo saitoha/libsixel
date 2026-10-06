@@ -210,6 +210,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/timeline-writer.c \
                 $(srcdir)/timeline-writer.h \
                 $(srcdir)/colorspace.c \
+                $(srcdir)/colorspace-hls.c \
                 $(srcdir)/colorspace.h \
                 $(srcdir)/frame.c \
                 $(srcdir)/frame.h \
