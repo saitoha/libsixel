@@ -489,6 +489,20 @@ int test_png_snapshot_0020(int argc, char **argv);
 int test_png_snapshot_0021(int argc, char **argv);
 int test_png_snapshot_0022(int argc, char **argv);
 int test_png_snapshot_0023(int argc, char **argv);
+int test_highcolor_0001(int argc, char **argv);
+int test_highcolor_0002(int argc, char **argv);
+int test_highcolor_0003(int argc, char **argv);
+int test_highcolor_0004(int argc, char **argv);
+int test_highcolor_0005(int argc, char **argv);
+int test_highcolor_0006(int argc, char **argv);
+int test_highcolor_0007(int argc, char **argv);
+int test_highcolor_0008(int argc, char **argv);
+int test_highcolor_0009(int argc, char **argv);
+int test_highcolor_0010(int argc, char **argv);
+int test_highcolor_0011(int argc, char **argv);
+int test_highcolor_0012(int argc, char **argv);
+int test_highcolor_0013(int argc, char **argv);
+int test_highcolor_0014(int argc, char **argv);
 int test_png_snapshot_0001(int argc, char **argv);
 int test_png_snapshot_0002(int argc, char **argv);
 int test_png_snapshot_0003(int argc, char **argv);
@@ -3819,6 +3833,20 @@ static test_entry_t const test_entries[] = {
         test_png_snapshot_0022 },
     { "codec/png_snapshot/0023_delta_stdout_guard",
         test_png_snapshot_0023 },
+    { "codec/highcolor/0001_byte_identity", test_highcolor_0001 },
+    { "codec/highcolor/0002_byte_linear", test_highcolor_0002 },
+    { "codec/highcolor/0003_float_subbyte", test_highcolor_0003 },
+    { "codec/highcolor/0004_linear_gamma", test_highcolor_0004 },
+    { "codec/highcolor/0005_extended_smptec", test_highcolor_0005 },
+    { "codec/highcolor/0006_float_hls", test_highcolor_0006 },
+    { "codec/highcolor/0007_nan_recovery", test_highcolor_0007 },
+    { "codec/highcolor/0008_infinity_recovery", test_highcolor_0008 },
+    { "codec/highcolor/0009_rgba_linear", test_highcolor_0009 },
+    { "codec/highcolor/0010_frame_float", test_highcolor_0010 },
+    { "codec/highcolor/0011_frame_extended", test_highcolor_0011 },
+    { "codec/highcolor/0012_multipass_float", test_highcolor_0012 },
+    { "codec/highcolor/0013_lowlevel_diffusion", test_highcolor_0013 },
+    { "codec/highcolor/0014_context_reuse", test_highcolor_0014 },
     { "codec/png_snapshot/0001_srgb_frame_precision", test_png_snapshot_0001 },
     { "codec/png_snapshot/0002_p3_frame_precision", test_png_snapshot_0002 },
     { "codec/png_snapshot/0003_byte_frame_control", test_png_snapshot_0003 },

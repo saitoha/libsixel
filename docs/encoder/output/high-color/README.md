@@ -43,9 +43,19 @@ High color is an alternate encoding path, not a larger value for `-p`.
 
 - It bypasses fixed-palette construction and fixed-palette nearest-color lookup. `-p`, `-b`, `-m`, and `-e` select incompatible color modes and are rejected when combined with `-I`.
 - The current CLI resolves palette-space diffusion to `none` for `-I`. Supplying `-d fs` or another diffusion method does not recreate the historical high-color diffusion path described in the 2014 article.
-- It does not apply the output color conversion. Changing a legacy `-U` value currently leaves the emitted RGB numbers in their unconverted form, and `-U display-p3` rejects `-I`. See [Output color space](../output-colorspace.md#scope-and-current-gaps).
+- It converts source coordinates to the selected legacy `-U gamma`, `-U linear` or `-U smpte-c` destination before building lookup keys. `-U display-p3` still rejects `-I`. See [destination samples](#destination-samples-and-precision) and [Output color space](../output-colorspace.md#scope-and-current-gaps).
 - Register `#255` is an internal skip value for multi-pass painting. Transparent offset is supported as a separate geometry feature; source alpha semantics still follow the [alpha policy](../../../loader/alpha-policy/README.md).
 - Validation must use a direct decoder. A final indexed plane and final palette cannot represent the earlier colors painted before a register redefinition. Use `sixel2png --direct` (`-D`) rather than an indexed snapshot. See the [PNG writer boundary](../../../writers/png/README.md) for details.
+
+## Destination samples and precision
+
+High-color output uses the frame/core source color space independently of the destination selected by `-U`. Conversion uses the extended-coordinate helpers, including the primary matrix before clipping for SMPTE-C. Negative and above-one source components survive that conversion. Once the destination RGB is known, it is restricted to the representable destination gamut; this is channel clipping, not perceptual gamut mapping.
+
+The high-level encoder disables high-color diffusion. For float input or a nonidentity output conversion, this path retains float destination samples and float register representatives. A separate RGB888 projection supplies the existing 15bit lookup key. Multiple samples sharing that key still share its selected representative, but key quantization does not replace the representative. The writer rounds the representative directly to RGB101 or DEC HLS. This does not enable palette snap or change the first-encountered representative policy.
+
+RGB888 input with identical source and destination coordinates keeps the byte path, its historical wire rounding and its lack of a converted image buffer. Converted no-diffusion input uses a temporary RGB float32 plane (12 bytes per pixel), plus a 256-entry float register table (3,072 bytes); packed byte input can also require the existing 3-byte normalization plane. The conversion validates the whole input before output begins. Nonfinite input or an invalid transform fails without writing an image; the caller's pixel format is not replaced by the temporary format, so the context remains reusable.
+
+Low-level callers that explicitly enable the legacy 15bpp diffusion routines still receive a bounded RGB888 diffusion plane after destination conversion. Those routines are not the native float palette-diffusion implementation and do not provide its clamp-policy semantics. Their float migration, source-alpha handling, retained delta history, Display P3 admission, and pass-scheduling redesign are separate limitations; the destination handoff does not establish support for them.
 
 ## Parallelism: the current boundary
 
@@ -105,3 +115,28 @@ Retain this mode as an explicitly limited alternate path until it has a correctn
 The repeated-pass implementation is in [`encoder-core-highcolor.c`](../../../../src/encoder-core-highcolor.c), CLI mode selection and diffusion bypass are in [`encoder.c`](../../../../src/encoder.c), and paint-time palette resolution is in [`fromsixel.c`](../../../../src/fromsixel.c). Focused existing tests exercise the 255 paint-register boundary in [`0166_high_color_sixel_direct_palette_slots.t`](../../../../tests/quant/palette/usage/0166_high_color_sixel_direct_palette_slots.t), preservation across direct decoding in [`0023_decoder_high_color_dequantize_bypass.c`](../../../../tests/processing/decoder/0023_decoder_high_color_dequantize_bypass.c), and transparent-offset geometry in [`0175_transparent_offset_high_color_geometry.t`](../../../../tests/quant/palette/usage/0175_transparent_offset_high_color_geometry.t). These tests do not establish correctness for every palette-reuse or final-band case.
 
 The [study tool](../../../../tools/highcolor/study.py) verifies retained hashes, dimensions, painted color counts, histograms, register bounds, and timing-sample coverage. Its diagnostic measurements explicitly record existing failures; they are not a passing quality regression threshold. Regenerate the conceptual figures with `tools/reproduce_encoding_mode_figures.sh` and verify them with `--check`.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+The small value witnesses inspect direct-decoded pixels and opacity, including register redefinition. Their analytic transfer/matrix references and integer rounding margins are documented in `tests/codec/highcolor_output_common.c`. Nonfinite rejection and reuse are separate from finite approximation checks. These tests establish the destination handoff, not perceptual quality or exhaustive pass scheduling. The existing study's known key-reuse and final-band defects remain outside these assertions.
+
+| ID | Contract | Test |
+| --- | --- | --- |
+| HC-01 | Byte gamma identity retains the byte palette and original channel percentages. | [tests/codec/highcolor/0001_byte_identity.t](../../../../tests/codec/highcolor/0001_byte_identity.t) |
+| HC-02 | Byte gamma input converts to linear destination values before key selection. | [tests/codec/highcolor/0002_byte_linear.t](../../../../tests/codec/highcolor/0002_byte_linear.t) |
+| HC-03 | Float gamma representatives reach RGB101 without an intervening RGB888 store. | [tests/codec/highcolor/0003_float_subbyte.t](../../../../tests/codec/highcolor/0003_float_subbyte.t) |
+| HC-04 | Linear float input reaches gamma output with the transfer function applied. | [tests/codec/highcolor/0004_linear_gamma.t](../../../../tests/codec/highcolor/0004_linear_gamma.t) |
+| HC-05 | Negative working components contribute to the SMPTE-C primary matrix before final clipping. | [tests/codec/highcolor/0005_extended_smptec.t](../../../../tests/codec/highcolor/0005_extended_smptec.t) |
+| HC-06 | HLS output uses the float representative without intermediate byte rounding. | [tests/codec/highcolor/0006_float_hls.t](../../../../tests/codec/highcolor/0006_float_hls.t) |
+| HC-07 | NaN input rejects before output and the same float context remains reusable. | [tests/codec/highcolor/0007_nan_recovery.t](../../../../tests/codec/highcolor/0007_nan_recovery.t) |
+| HC-08 | Infinity input rejects before output and preserves the input format for reuse. | [tests/codec/highcolor/0008_infinity_recovery.t](../../../../tests/codec/highcolor/0008_infinity_recovery.t) |
+| HC-09 | Packed RGBA input converts to linear output without mutating the dither format. | [tests/codec/highcolor/0009_rgba_linear.t](../../../../tests/codec/highcolor/0009_rgba_linear.t) |
+| HC-10 | The high-level frame entry preserves subbyte samples through high-color output. | [tests/codec/highcolor/0010_frame_float.t](../../../../tests/codec/highcolor/0010_frame_float.t) |
+| HC-11 | The high-level frame entry preserves extended linear samples for SMPTE-C output. | [tests/codec/highcolor/0011_frame_extended.t](../../../../tests/codec/highcolor/0011_frame_extended.t) |
+| HC-12 | Float representatives remain attached to their keys across register redefinition passes. | [tests/codec/highcolor/0012_multipass_float.t](../../../../tests/codec/highcolor/0012_multipass_float.t) |
+| HC-13 | Low-level legacy byte diffusion converts output coordinates before its byte boundary. | [tests/codec/highcolor/0013_lowlevel_diffusion.t](../../../../tests/codec/highcolor/0013_lowlevel_diffusion.t) |
+| HC-14 | One high-color context supports repeated float and byte output conversions without stale format state. | [tests/codec/highcolor/0014_context_reuse.t](../../../../tests/codec/highcolor/0014_context_reuse.t) |

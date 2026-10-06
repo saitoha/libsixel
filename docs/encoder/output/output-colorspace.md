@@ -330,9 +330,9 @@ To inspect the wire definitions, replace `-M pal:- -o /dev/null` with `-o output
 
 ## Scope and current gaps
 
-The conversion described here belongs to `sixel_encode_dither`, including ordinary generated and supplied palette output. An option being accepted does not establish that every alternate encoder consumes it.
+Ordinary generated and supplied palette output applies destination conversion in `sixel_encode_dither`. High-color has its own destination-sample preparation; an option being accepted does not establish that every alternate encoder consumes it.
 
-The current `-I` [high-color path](high-color/README.md) dispatches to `sixel_encode_highcolor`, which normalizes pixel format and emits changing palette registers without the legacy `source_colorspace` to output `colorspace` conversion above. Changing only a legacy `-U` choice currently does not provide the requested output-space conversion on that path. This is an implementation gap. The P3 path explicitly rejects high-color output.
+The `-I` [high-color path](high-color/README.md#destination-samples-and-precision) converts source samples to gamma, linear or SMPTE-C before key selection, preserving float representatives through wire rounding on its no-diffusion path. Its precision and low-level byte-diffusion boundary are owned by that reference. The P3 path still explicitly rejects high-color output.
 
 `-U` does not embed a profile in the SIXEL stream, configure a separately invoked decoder, or change loader CMS. Encoder-owned [PNG snapshots](../../writers/png/README.md#native-float-snapshots) explicitly pass P3 interpretation to their decoder and PNG writer; other definitions retain the existing sRGB snapshot interpretation. The static-image stage explanation should not be extended to [delta encoding](delta-encoding.md) without accounting for its retained display-color state across frames.
 
@@ -1002,7 +1002,7 @@ The [automatic CLI cases](../../../tests/cli/color/session) also reject malforme
 
 The first five tests assert exact exported entries. OC-06 checks the output grid and export/wire agreement; it does not independently validate the SMPTE-C conversion matrix. OC-02 and OC-03 establish byte preservation for the named configurations, not perceptual correctness of all non-gamma fixed-palette combinations. OC-05 is not evidence that a CMS transform ran.
 
-P3 values, lookup and reuse are directly covered by OC-07 through OC-28. General defaults, alias and case handling, invalid values, legacy repeated-option precedence, unchanged legacy static index assignment, the numeric example, and the high-color gap are inspectable in the owning code or reproducible with CLI probes, but are not each covered by an independent `-U` regression in this inventory. Multi-input/animation reuse and cross-frame delta interactions also lack an exhaustive output-space matrix here. OC-29 through OC-55 exercise the actual CLI against scripted PTY replies for the selected libpng RGB16 route. P3 pixels use the existing independent wire oracle; gamma fallback/routing compares complete SIXEL frame bytes with an explicit gamma control, with terminal cleanup sequences checked separately. These scripted peers do not establish support in arbitrary terminal products or measure a physical display. C1/C2 transforms remain unimplemented. No image-quality threshold or terminal-compatibility result is inferred from the exact palette checks.
+P3 values, lookup and reuse are directly covered by OC-07 through OC-28. General defaults, alias and case handling, invalid values, legacy repeated-option precedence, unchanged legacy static index assignment, the numeric example are inspectable in the owning code or reproducible with CLI probes, but are not each covered by an independent `-U` regression in this inventory. High-color destination values and reuse have their own [behavioral coverage](high-color/README.md#test-coverage). Multi-input/animation reuse and cross-frame delta interactions also lack an exhaustive output-space matrix here. OC-29 through OC-55 exercise the actual CLI against scripted PTY replies for the selected libpng RGB16 route. P3 pixels use the existing independent wire oracle; gamma fallback/routing compares complete SIXEL frame bytes with an explicit gamma control, with terminal cleanup sequences checked separately. These scripted peers do not establish support in arbitrary terminal products or measure a physical display. C1/C2 transforms remain unimplemented. No image-quality threshold or terminal-compatibility result is inferred from the exact palette checks.
 
 ### Unsnapped linear and SMPTE-C native output
 
@@ -1047,7 +1047,7 @@ The two-color fixtures preserve one extended and one fractional sample in all fi
 - [`src/encoder.c`](../../../src/encoder.c): option defaults and parsing, palette-source preparation, output format handoff, and the separate `-M` capture conversion.
 - [`src/encoder-core-encode.c`](../../../src/encoder-core-encode.c): private byte/float palette copies, output conversion, exact-snap finalization, and RGB/HLS definitions.
 - [`src/colorspace.c`](../../../src/colorspace.c): transfer curves, SMPTE-C matrices, conversion through linear RGB, clipping, and byte/float dispatch.
-- [`src/encoder-core-highcolor.c`](../../../src/encoder-core-highcolor.c): the alternate high-color implementation and its current output-conversion gap.
+- [`src/encoder-core-highcolor.c`](../../../src/encoder-core-highcolor.c): the alternate high-color implementation and destination-sample conversion.
 - [Color-space handling](../colorspace-handling/README.md): the wider source-profile, working-space, and output-space model, building on [Color spaces](../../concepts/colorspace/README.md).
 
 The CIELAB export witness protects neutral float endpoints; see the [external-palette coverage boundary](../palette-construction/external-palettes.md#coverage-audit-boundary) for its scope.

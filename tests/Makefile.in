@@ -2932,7 +2932,21 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	codec/png_snapshot/0021_delta_p3_recovery.c \
 	codec/png_snapshot/0022_delta_file_guard.c \
 	codec/png_snapshot/0023_delta_stdout_guard.c \
-	codec/png_delta_common.c \
+	codec/highcolor/0001_byte_identity.c \
+	codec/highcolor/0002_byte_linear.c \
+	codec/highcolor/0003_float_subbyte.c \
+	codec/highcolor/0004_linear_gamma.c \
+	codec/highcolor/0005_extended_smptec.c \
+	codec/highcolor/0006_float_hls.c \
+	codec/highcolor/0007_nan_recovery.c \
+	codec/highcolor/0008_infinity_recovery.c \
+	codec/highcolor/0009_rgba_linear.c \
+	codec/highcolor/0010_frame_float.c \
+	codec/highcolor/0011_frame_extended.c \
+	codec/highcolor/0012_multipass_float.c \
+	codec/highcolor/0013_lowlevel_diffusion.c \
+	codec/highcolor/0014_context_reuse.c \
+	codec/highcolor_output_common.c codec/png_delta_common.c \
 	codec/png_snapshot/0001_srgb_frame_precision.c \
 	codec/png_snapshot/0002_p3_frame_precision.c \
 	codec/png_snapshot/0003_byte_frame_control.c \
@@ -5806,6 +5820,21 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0021_delta_p3_recovery.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0022_delta_file_guard.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0023_delta_stdout_guard.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/highcolor/test_runner-0001_byte_identity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/highcolor/test_runner-0002_byte_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/highcolor/test_runner-0003_float_subbyte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/highcolor/test_runner-0004_linear_gamma.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/highcolor/test_runner-0005_extended_smptec.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/highcolor/test_runner-0006_float_hls.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/highcolor/test_runner-0007_nan_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/highcolor/test_runner-0008_infinity_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/highcolor/test_runner-0009_rgba_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/highcolor/test_runner-0010_frame_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/highcolor/test_runner-0011_frame_extended.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/highcolor/test_runner-0012_multipass_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/highcolor/test_runner-0013_lowlevel_diffusion.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/highcolor/test_runner-0014_context_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	codec/test_runner-highcolor_output_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/test_runner-png_delta_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0001_srgb_frame_precision.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/png_snapshot/test_runner-0002_p3_frame_precision.$(OBJEXT) \
@@ -6015,6 +6044,7 @@ am__depfiles_remade =  \
 	cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po \
 	cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po \
 	cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po \
+	codec/$(DEPDIR)/test_runner-highcolor_output_common.Po \
 	codec/$(DEPDIR)/test_runner-png_delta_common.Po \
 	codec/drcs/$(DEPDIR)/test_runner-0001_srgb_float_center.Po \
 	codec/drcs/$(DEPDIR)/test_runner-0002_p3_float_center.Po \
@@ -6030,6 +6060,20 @@ am__depfiles_remade =  \
 	codec/drcs/$(DEPDIR)/test_runner-0012_output_reuse.Po \
 	codec/drcs/$(DEPDIR)/test_runner-0013_p3_pipeline.Po \
 	codec/drcs/$(DEPDIR)/test_runner-drcs_native_test_common.Po \
+	codec/highcolor/$(DEPDIR)/test_runner-0001_byte_identity.Po \
+	codec/highcolor/$(DEPDIR)/test_runner-0002_byte_linear.Po \
+	codec/highcolor/$(DEPDIR)/test_runner-0003_float_subbyte.Po \
+	codec/highcolor/$(DEPDIR)/test_runner-0004_linear_gamma.Po \
+	codec/highcolor/$(DEPDIR)/test_runner-0005_extended_smptec.Po \
+	codec/highcolor/$(DEPDIR)/test_runner-0006_float_hls.Po \
+	codec/highcolor/$(DEPDIR)/test_runner-0007_nan_recovery.Po \
+	codec/highcolor/$(DEPDIR)/test_runner-0008_infinity_recovery.Po \
+	codec/highcolor/$(DEPDIR)/test_runner-0009_rgba_linear.Po \
+	codec/highcolor/$(DEPDIR)/test_runner-0010_frame_float.Po \
+	codec/highcolor/$(DEPDIR)/test_runner-0011_frame_extended.Po \
+	codec/highcolor/$(DEPDIR)/test_runner-0012_multipass_float.Po \
+	codec/highcolor/$(DEPDIR)/test_runner-0013_lowlevel_diffusion.Po \
+	codec/highcolor/$(DEPDIR)/test_runner-0014_context_reuse.Po \
 	codec/hls/$(DEPDIR)/test_runner-0001_srgb_centroid.Po \
 	codec/hls/$(DEPDIR)/test_runner-0002_p3_centroid.Po \
 	codec/hls/$(DEPDIR)/test_runner-0003_srgb_rounding.Po \
@@ -9799,6 +9843,21 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_DELTA_P3_RECOVERY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_DELTA_FILE_GUARD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_DELTA_STDOUT_GUARD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_BYTE_IDENTITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_BYTE_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_FLOAT_SUBBYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_LINEAR_GAMMA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_EXTENDED_SMPTEC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_FLOAT_HLS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_NAN_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_INFINITY_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_RGBA_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_FRAME_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_FRAME_EXTENDED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_MULTIPASS_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_LOWLEVEL_DIFFUSION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_CONTEXT_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_HIGHCOLOR_OUTPUT_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PNG_DELTA_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SRGB_FRAME_PRECISION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_P3_FRAME_PRECISION \
@@ -15290,6 +15349,21 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0021_delta_p3_recovery.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0022_delta_file_guard.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0023_delta_stdout_guard.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/highcolor/0001_byte_identity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/highcolor/0002_byte_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/highcolor/0003_float_subbyte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/highcolor/0004_linear_gamma.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/highcolor/0005_extended_smptec.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/highcolor/0006_float_hls.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/highcolor/0007_nan_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/highcolor/0008_infinity_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/highcolor/0009_rgba_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/highcolor/0010_frame_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/highcolor/0011_frame_extended.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/highcolor/0012_multipass_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/highcolor/0013_lowlevel_diffusion.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/highcolor/0014_context_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    codec/highcolor_output_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_delta_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0001_srgb_frame_precision.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/png_snapshot/0002_p3_frame_precision.c \
@@ -24425,12 +24499,62 @@ codec/png_snapshot/test_runner-0022_delta_file_guard.$(OBJEXT):  \
 codec/png_snapshot/test_runner-0023_delta_stdout_guard.$(OBJEXT):  \
 	codec/png_snapshot/$(am__dirstamp) \
 	codec/png_snapshot/$(DEPDIR)/$(am__dirstamp)
+codec/highcolor/$(am__dirstamp):
+	@$(MKDIR_P) codec/highcolor
+	@: >>codec/highcolor/$(am__dirstamp)
+codec/highcolor/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) codec/highcolor/$(DEPDIR)
+	@: >>codec/highcolor/$(DEPDIR)/$(am__dirstamp)
+codec/highcolor/test_runner-0001_byte_identity.$(OBJEXT):  \
+	codec/highcolor/$(am__dirstamp) \
+	codec/highcolor/$(DEPDIR)/$(am__dirstamp)
+codec/highcolor/test_runner-0002_byte_linear.$(OBJEXT):  \
+	codec/highcolor/$(am__dirstamp) \
+	codec/highcolor/$(DEPDIR)/$(am__dirstamp)
+codec/highcolor/test_runner-0003_float_subbyte.$(OBJEXT):  \
+	codec/highcolor/$(am__dirstamp) \
+	codec/highcolor/$(DEPDIR)/$(am__dirstamp)
+codec/highcolor/test_runner-0004_linear_gamma.$(OBJEXT):  \
+	codec/highcolor/$(am__dirstamp) \
+	codec/highcolor/$(DEPDIR)/$(am__dirstamp)
+codec/highcolor/test_runner-0005_extended_smptec.$(OBJEXT):  \
+	codec/highcolor/$(am__dirstamp) \
+	codec/highcolor/$(DEPDIR)/$(am__dirstamp)
+codec/highcolor/test_runner-0006_float_hls.$(OBJEXT):  \
+	codec/highcolor/$(am__dirstamp) \
+	codec/highcolor/$(DEPDIR)/$(am__dirstamp)
+codec/highcolor/test_runner-0007_nan_recovery.$(OBJEXT):  \
+	codec/highcolor/$(am__dirstamp) \
+	codec/highcolor/$(DEPDIR)/$(am__dirstamp)
+codec/highcolor/test_runner-0008_infinity_recovery.$(OBJEXT):  \
+	codec/highcolor/$(am__dirstamp) \
+	codec/highcolor/$(DEPDIR)/$(am__dirstamp)
+codec/highcolor/test_runner-0009_rgba_linear.$(OBJEXT):  \
+	codec/highcolor/$(am__dirstamp) \
+	codec/highcolor/$(DEPDIR)/$(am__dirstamp)
+codec/highcolor/test_runner-0010_frame_float.$(OBJEXT):  \
+	codec/highcolor/$(am__dirstamp) \
+	codec/highcolor/$(DEPDIR)/$(am__dirstamp)
+codec/highcolor/test_runner-0011_frame_extended.$(OBJEXT):  \
+	codec/highcolor/$(am__dirstamp) \
+	codec/highcolor/$(DEPDIR)/$(am__dirstamp)
+codec/highcolor/test_runner-0012_multipass_float.$(OBJEXT):  \
+	codec/highcolor/$(am__dirstamp) \
+	codec/highcolor/$(DEPDIR)/$(am__dirstamp)
+codec/highcolor/test_runner-0013_lowlevel_diffusion.$(OBJEXT):  \
+	codec/highcolor/$(am__dirstamp) \
+	codec/highcolor/$(DEPDIR)/$(am__dirstamp)
+codec/highcolor/test_runner-0014_context_reuse.$(OBJEXT):  \
+	codec/highcolor/$(am__dirstamp) \
+	codec/highcolor/$(DEPDIR)/$(am__dirstamp)
 codec/$(am__dirstamp):
 	@$(MKDIR_P) codec
 	@: >>codec/$(am__dirstamp)
 codec/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) codec/$(DEPDIR)
 	@: >>codec/$(DEPDIR)/$(am__dirstamp)
+codec/test_runner-highcolor_output_common.$(OBJEXT):  \
+	codec/$(am__dirstamp) codec/$(DEPDIR)/$(am__dirstamp)
 codec/test_runner-png_delta_common.$(OBJEXT): codec/$(am__dirstamp) \
 	codec/$(DEPDIR)/$(am__dirstamp)
 codec/png_snapshot/test_runner-0001_srgb_frame_precision.$(OBJEXT):  \
@@ -24853,6 +24977,7 @@ mostlyclean-compile:
 	-rm -f cli/core/*.$(OBJEXT)
 	-rm -f codec/*.$(OBJEXT)
 	-rm -f codec/drcs/*.$(OBJEXT)
+	-rm -f codec/highcolor/*.$(OBJEXT)
 	-rm -f codec/hls/*.$(OBJEXT)
 	-rm -f codec/macro/*.$(OBJEXT)
 	-rm -f codec/png_snapshot/*.$(OBJEXT)
@@ -24981,6 +25106,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/core/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/$(DEPDIR)/test_runner-highcolor_output_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/$(DEPDIR)/test_runner-png_delta_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0001_srgb_float_center.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0002_p3_float_center.Po@am__quote@ # am--include-marker
@@ -24996,6 +25122,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0012_output_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-0013_p3_pipeline.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/drcs/$(DEPDIR)/test_runner-drcs_native_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/highcolor/$(DEPDIR)/test_runner-0001_byte_identity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/highcolor/$(DEPDIR)/test_runner-0002_byte_linear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/highcolor/$(DEPDIR)/test_runner-0003_float_subbyte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/highcolor/$(DEPDIR)/test_runner-0004_linear_gamma.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/highcolor/$(DEPDIR)/test_runner-0005_extended_smptec.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/highcolor/$(DEPDIR)/test_runner-0006_float_hls.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/highcolor/$(DEPDIR)/test_runner-0007_nan_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/highcolor/$(DEPDIR)/test_runner-0008_infinity_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/highcolor/$(DEPDIR)/test_runner-0009_rgba_linear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/highcolor/$(DEPDIR)/test_runner-0010_frame_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/highcolor/$(DEPDIR)/test_runner-0011_frame_extended.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/highcolor/$(DEPDIR)/test_runner-0012_multipass_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/highcolor/$(DEPDIR)/test_runner-0013_lowlevel_diffusion.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@codec/highcolor/$(DEPDIR)/test_runner-0014_context_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/hls/$(DEPDIR)/test_runner-0001_srgb_centroid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/hls/$(DEPDIR)/test_runner-0002_p3_centroid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@codec/hls/$(DEPDIR)/test_runner-0003_srgb_rounding.Po@am__quote@ # am--include-marker
@@ -66565,6 +66705,216 @@ codec/png_snapshot/test_runner-0023_delta_stdout_guard.obj: codec/png_snapshot/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/png_snapshot/test_runner-0023_delta_stdout_guard.obj `if test -f 'codec/png_snapshot/0023_delta_stdout_guard.c'; then $(CYGPATH_W) 'codec/png_snapshot/0023_delta_stdout_guard.c'; else $(CYGPATH_W) '$(srcdir)/codec/png_snapshot/0023_delta_stdout_guard.c'; fi`
 
+codec/highcolor/test_runner-0001_byte_identity.o: codec/highcolor/0001_byte_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0001_byte_identity.o -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0001_byte_identity.Tpo -c -o codec/highcolor/test_runner-0001_byte_identity.o `test -f 'codec/highcolor/0001_byte_identity.c' || echo '$(srcdir)/'`codec/highcolor/0001_byte_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0001_byte_identity.Tpo codec/highcolor/$(DEPDIR)/test_runner-0001_byte_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0001_byte_identity.c' object='codec/highcolor/test_runner-0001_byte_identity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0001_byte_identity.o `test -f 'codec/highcolor/0001_byte_identity.c' || echo '$(srcdir)/'`codec/highcolor/0001_byte_identity.c
+
+codec/highcolor/test_runner-0001_byte_identity.obj: codec/highcolor/0001_byte_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0001_byte_identity.obj -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0001_byte_identity.Tpo -c -o codec/highcolor/test_runner-0001_byte_identity.obj `if test -f 'codec/highcolor/0001_byte_identity.c'; then $(CYGPATH_W) 'codec/highcolor/0001_byte_identity.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0001_byte_identity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0001_byte_identity.Tpo codec/highcolor/$(DEPDIR)/test_runner-0001_byte_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0001_byte_identity.c' object='codec/highcolor/test_runner-0001_byte_identity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0001_byte_identity.obj `if test -f 'codec/highcolor/0001_byte_identity.c'; then $(CYGPATH_W) 'codec/highcolor/0001_byte_identity.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0001_byte_identity.c'; fi`
+
+codec/highcolor/test_runner-0002_byte_linear.o: codec/highcolor/0002_byte_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0002_byte_linear.o -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0002_byte_linear.Tpo -c -o codec/highcolor/test_runner-0002_byte_linear.o `test -f 'codec/highcolor/0002_byte_linear.c' || echo '$(srcdir)/'`codec/highcolor/0002_byte_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0002_byte_linear.Tpo codec/highcolor/$(DEPDIR)/test_runner-0002_byte_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0002_byte_linear.c' object='codec/highcolor/test_runner-0002_byte_linear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0002_byte_linear.o `test -f 'codec/highcolor/0002_byte_linear.c' || echo '$(srcdir)/'`codec/highcolor/0002_byte_linear.c
+
+codec/highcolor/test_runner-0002_byte_linear.obj: codec/highcolor/0002_byte_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0002_byte_linear.obj -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0002_byte_linear.Tpo -c -o codec/highcolor/test_runner-0002_byte_linear.obj `if test -f 'codec/highcolor/0002_byte_linear.c'; then $(CYGPATH_W) 'codec/highcolor/0002_byte_linear.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0002_byte_linear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0002_byte_linear.Tpo codec/highcolor/$(DEPDIR)/test_runner-0002_byte_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0002_byte_linear.c' object='codec/highcolor/test_runner-0002_byte_linear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0002_byte_linear.obj `if test -f 'codec/highcolor/0002_byte_linear.c'; then $(CYGPATH_W) 'codec/highcolor/0002_byte_linear.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0002_byte_linear.c'; fi`
+
+codec/highcolor/test_runner-0003_float_subbyte.o: codec/highcolor/0003_float_subbyte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0003_float_subbyte.o -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0003_float_subbyte.Tpo -c -o codec/highcolor/test_runner-0003_float_subbyte.o `test -f 'codec/highcolor/0003_float_subbyte.c' || echo '$(srcdir)/'`codec/highcolor/0003_float_subbyte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0003_float_subbyte.Tpo codec/highcolor/$(DEPDIR)/test_runner-0003_float_subbyte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0003_float_subbyte.c' object='codec/highcolor/test_runner-0003_float_subbyte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0003_float_subbyte.o `test -f 'codec/highcolor/0003_float_subbyte.c' || echo '$(srcdir)/'`codec/highcolor/0003_float_subbyte.c
+
+codec/highcolor/test_runner-0003_float_subbyte.obj: codec/highcolor/0003_float_subbyte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0003_float_subbyte.obj -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0003_float_subbyte.Tpo -c -o codec/highcolor/test_runner-0003_float_subbyte.obj `if test -f 'codec/highcolor/0003_float_subbyte.c'; then $(CYGPATH_W) 'codec/highcolor/0003_float_subbyte.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0003_float_subbyte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0003_float_subbyte.Tpo codec/highcolor/$(DEPDIR)/test_runner-0003_float_subbyte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0003_float_subbyte.c' object='codec/highcolor/test_runner-0003_float_subbyte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0003_float_subbyte.obj `if test -f 'codec/highcolor/0003_float_subbyte.c'; then $(CYGPATH_W) 'codec/highcolor/0003_float_subbyte.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0003_float_subbyte.c'; fi`
+
+codec/highcolor/test_runner-0004_linear_gamma.o: codec/highcolor/0004_linear_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0004_linear_gamma.o -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0004_linear_gamma.Tpo -c -o codec/highcolor/test_runner-0004_linear_gamma.o `test -f 'codec/highcolor/0004_linear_gamma.c' || echo '$(srcdir)/'`codec/highcolor/0004_linear_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0004_linear_gamma.Tpo codec/highcolor/$(DEPDIR)/test_runner-0004_linear_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0004_linear_gamma.c' object='codec/highcolor/test_runner-0004_linear_gamma.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0004_linear_gamma.o `test -f 'codec/highcolor/0004_linear_gamma.c' || echo '$(srcdir)/'`codec/highcolor/0004_linear_gamma.c
+
+codec/highcolor/test_runner-0004_linear_gamma.obj: codec/highcolor/0004_linear_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0004_linear_gamma.obj -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0004_linear_gamma.Tpo -c -o codec/highcolor/test_runner-0004_linear_gamma.obj `if test -f 'codec/highcolor/0004_linear_gamma.c'; then $(CYGPATH_W) 'codec/highcolor/0004_linear_gamma.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0004_linear_gamma.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0004_linear_gamma.Tpo codec/highcolor/$(DEPDIR)/test_runner-0004_linear_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0004_linear_gamma.c' object='codec/highcolor/test_runner-0004_linear_gamma.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0004_linear_gamma.obj `if test -f 'codec/highcolor/0004_linear_gamma.c'; then $(CYGPATH_W) 'codec/highcolor/0004_linear_gamma.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0004_linear_gamma.c'; fi`
+
+codec/highcolor/test_runner-0005_extended_smptec.o: codec/highcolor/0005_extended_smptec.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0005_extended_smptec.o -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0005_extended_smptec.Tpo -c -o codec/highcolor/test_runner-0005_extended_smptec.o `test -f 'codec/highcolor/0005_extended_smptec.c' || echo '$(srcdir)/'`codec/highcolor/0005_extended_smptec.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0005_extended_smptec.Tpo codec/highcolor/$(DEPDIR)/test_runner-0005_extended_smptec.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0005_extended_smptec.c' object='codec/highcolor/test_runner-0005_extended_smptec.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0005_extended_smptec.o `test -f 'codec/highcolor/0005_extended_smptec.c' || echo '$(srcdir)/'`codec/highcolor/0005_extended_smptec.c
+
+codec/highcolor/test_runner-0005_extended_smptec.obj: codec/highcolor/0005_extended_smptec.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0005_extended_smptec.obj -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0005_extended_smptec.Tpo -c -o codec/highcolor/test_runner-0005_extended_smptec.obj `if test -f 'codec/highcolor/0005_extended_smptec.c'; then $(CYGPATH_W) 'codec/highcolor/0005_extended_smptec.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0005_extended_smptec.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0005_extended_smptec.Tpo codec/highcolor/$(DEPDIR)/test_runner-0005_extended_smptec.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0005_extended_smptec.c' object='codec/highcolor/test_runner-0005_extended_smptec.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0005_extended_smptec.obj `if test -f 'codec/highcolor/0005_extended_smptec.c'; then $(CYGPATH_W) 'codec/highcolor/0005_extended_smptec.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0005_extended_smptec.c'; fi`
+
+codec/highcolor/test_runner-0006_float_hls.o: codec/highcolor/0006_float_hls.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0006_float_hls.o -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0006_float_hls.Tpo -c -o codec/highcolor/test_runner-0006_float_hls.o `test -f 'codec/highcolor/0006_float_hls.c' || echo '$(srcdir)/'`codec/highcolor/0006_float_hls.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0006_float_hls.Tpo codec/highcolor/$(DEPDIR)/test_runner-0006_float_hls.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0006_float_hls.c' object='codec/highcolor/test_runner-0006_float_hls.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0006_float_hls.o `test -f 'codec/highcolor/0006_float_hls.c' || echo '$(srcdir)/'`codec/highcolor/0006_float_hls.c
+
+codec/highcolor/test_runner-0006_float_hls.obj: codec/highcolor/0006_float_hls.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0006_float_hls.obj -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0006_float_hls.Tpo -c -o codec/highcolor/test_runner-0006_float_hls.obj `if test -f 'codec/highcolor/0006_float_hls.c'; then $(CYGPATH_W) 'codec/highcolor/0006_float_hls.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0006_float_hls.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0006_float_hls.Tpo codec/highcolor/$(DEPDIR)/test_runner-0006_float_hls.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0006_float_hls.c' object='codec/highcolor/test_runner-0006_float_hls.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0006_float_hls.obj `if test -f 'codec/highcolor/0006_float_hls.c'; then $(CYGPATH_W) 'codec/highcolor/0006_float_hls.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0006_float_hls.c'; fi`
+
+codec/highcolor/test_runner-0007_nan_recovery.o: codec/highcolor/0007_nan_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0007_nan_recovery.o -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0007_nan_recovery.Tpo -c -o codec/highcolor/test_runner-0007_nan_recovery.o `test -f 'codec/highcolor/0007_nan_recovery.c' || echo '$(srcdir)/'`codec/highcolor/0007_nan_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0007_nan_recovery.Tpo codec/highcolor/$(DEPDIR)/test_runner-0007_nan_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0007_nan_recovery.c' object='codec/highcolor/test_runner-0007_nan_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0007_nan_recovery.o `test -f 'codec/highcolor/0007_nan_recovery.c' || echo '$(srcdir)/'`codec/highcolor/0007_nan_recovery.c
+
+codec/highcolor/test_runner-0007_nan_recovery.obj: codec/highcolor/0007_nan_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0007_nan_recovery.obj -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0007_nan_recovery.Tpo -c -o codec/highcolor/test_runner-0007_nan_recovery.obj `if test -f 'codec/highcolor/0007_nan_recovery.c'; then $(CYGPATH_W) 'codec/highcolor/0007_nan_recovery.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0007_nan_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0007_nan_recovery.Tpo codec/highcolor/$(DEPDIR)/test_runner-0007_nan_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0007_nan_recovery.c' object='codec/highcolor/test_runner-0007_nan_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0007_nan_recovery.obj `if test -f 'codec/highcolor/0007_nan_recovery.c'; then $(CYGPATH_W) 'codec/highcolor/0007_nan_recovery.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0007_nan_recovery.c'; fi`
+
+codec/highcolor/test_runner-0008_infinity_recovery.o: codec/highcolor/0008_infinity_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0008_infinity_recovery.o -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0008_infinity_recovery.Tpo -c -o codec/highcolor/test_runner-0008_infinity_recovery.o `test -f 'codec/highcolor/0008_infinity_recovery.c' || echo '$(srcdir)/'`codec/highcolor/0008_infinity_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0008_infinity_recovery.Tpo codec/highcolor/$(DEPDIR)/test_runner-0008_infinity_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0008_infinity_recovery.c' object='codec/highcolor/test_runner-0008_infinity_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0008_infinity_recovery.o `test -f 'codec/highcolor/0008_infinity_recovery.c' || echo '$(srcdir)/'`codec/highcolor/0008_infinity_recovery.c
+
+codec/highcolor/test_runner-0008_infinity_recovery.obj: codec/highcolor/0008_infinity_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0008_infinity_recovery.obj -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0008_infinity_recovery.Tpo -c -o codec/highcolor/test_runner-0008_infinity_recovery.obj `if test -f 'codec/highcolor/0008_infinity_recovery.c'; then $(CYGPATH_W) 'codec/highcolor/0008_infinity_recovery.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0008_infinity_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0008_infinity_recovery.Tpo codec/highcolor/$(DEPDIR)/test_runner-0008_infinity_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0008_infinity_recovery.c' object='codec/highcolor/test_runner-0008_infinity_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0008_infinity_recovery.obj `if test -f 'codec/highcolor/0008_infinity_recovery.c'; then $(CYGPATH_W) 'codec/highcolor/0008_infinity_recovery.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0008_infinity_recovery.c'; fi`
+
+codec/highcolor/test_runner-0009_rgba_linear.o: codec/highcolor/0009_rgba_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0009_rgba_linear.o -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0009_rgba_linear.Tpo -c -o codec/highcolor/test_runner-0009_rgba_linear.o `test -f 'codec/highcolor/0009_rgba_linear.c' || echo '$(srcdir)/'`codec/highcolor/0009_rgba_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0009_rgba_linear.Tpo codec/highcolor/$(DEPDIR)/test_runner-0009_rgba_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0009_rgba_linear.c' object='codec/highcolor/test_runner-0009_rgba_linear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0009_rgba_linear.o `test -f 'codec/highcolor/0009_rgba_linear.c' || echo '$(srcdir)/'`codec/highcolor/0009_rgba_linear.c
+
+codec/highcolor/test_runner-0009_rgba_linear.obj: codec/highcolor/0009_rgba_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0009_rgba_linear.obj -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0009_rgba_linear.Tpo -c -o codec/highcolor/test_runner-0009_rgba_linear.obj `if test -f 'codec/highcolor/0009_rgba_linear.c'; then $(CYGPATH_W) 'codec/highcolor/0009_rgba_linear.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0009_rgba_linear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0009_rgba_linear.Tpo codec/highcolor/$(DEPDIR)/test_runner-0009_rgba_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0009_rgba_linear.c' object='codec/highcolor/test_runner-0009_rgba_linear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0009_rgba_linear.obj `if test -f 'codec/highcolor/0009_rgba_linear.c'; then $(CYGPATH_W) 'codec/highcolor/0009_rgba_linear.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0009_rgba_linear.c'; fi`
+
+codec/highcolor/test_runner-0010_frame_float.o: codec/highcolor/0010_frame_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0010_frame_float.o -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0010_frame_float.Tpo -c -o codec/highcolor/test_runner-0010_frame_float.o `test -f 'codec/highcolor/0010_frame_float.c' || echo '$(srcdir)/'`codec/highcolor/0010_frame_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0010_frame_float.Tpo codec/highcolor/$(DEPDIR)/test_runner-0010_frame_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0010_frame_float.c' object='codec/highcolor/test_runner-0010_frame_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0010_frame_float.o `test -f 'codec/highcolor/0010_frame_float.c' || echo '$(srcdir)/'`codec/highcolor/0010_frame_float.c
+
+codec/highcolor/test_runner-0010_frame_float.obj: codec/highcolor/0010_frame_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0010_frame_float.obj -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0010_frame_float.Tpo -c -o codec/highcolor/test_runner-0010_frame_float.obj `if test -f 'codec/highcolor/0010_frame_float.c'; then $(CYGPATH_W) 'codec/highcolor/0010_frame_float.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0010_frame_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0010_frame_float.Tpo codec/highcolor/$(DEPDIR)/test_runner-0010_frame_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0010_frame_float.c' object='codec/highcolor/test_runner-0010_frame_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0010_frame_float.obj `if test -f 'codec/highcolor/0010_frame_float.c'; then $(CYGPATH_W) 'codec/highcolor/0010_frame_float.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0010_frame_float.c'; fi`
+
+codec/highcolor/test_runner-0011_frame_extended.o: codec/highcolor/0011_frame_extended.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0011_frame_extended.o -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0011_frame_extended.Tpo -c -o codec/highcolor/test_runner-0011_frame_extended.o `test -f 'codec/highcolor/0011_frame_extended.c' || echo '$(srcdir)/'`codec/highcolor/0011_frame_extended.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0011_frame_extended.Tpo codec/highcolor/$(DEPDIR)/test_runner-0011_frame_extended.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0011_frame_extended.c' object='codec/highcolor/test_runner-0011_frame_extended.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0011_frame_extended.o `test -f 'codec/highcolor/0011_frame_extended.c' || echo '$(srcdir)/'`codec/highcolor/0011_frame_extended.c
+
+codec/highcolor/test_runner-0011_frame_extended.obj: codec/highcolor/0011_frame_extended.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0011_frame_extended.obj -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0011_frame_extended.Tpo -c -o codec/highcolor/test_runner-0011_frame_extended.obj `if test -f 'codec/highcolor/0011_frame_extended.c'; then $(CYGPATH_W) 'codec/highcolor/0011_frame_extended.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0011_frame_extended.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0011_frame_extended.Tpo codec/highcolor/$(DEPDIR)/test_runner-0011_frame_extended.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0011_frame_extended.c' object='codec/highcolor/test_runner-0011_frame_extended.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0011_frame_extended.obj `if test -f 'codec/highcolor/0011_frame_extended.c'; then $(CYGPATH_W) 'codec/highcolor/0011_frame_extended.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0011_frame_extended.c'; fi`
+
+codec/highcolor/test_runner-0012_multipass_float.o: codec/highcolor/0012_multipass_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0012_multipass_float.o -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0012_multipass_float.Tpo -c -o codec/highcolor/test_runner-0012_multipass_float.o `test -f 'codec/highcolor/0012_multipass_float.c' || echo '$(srcdir)/'`codec/highcolor/0012_multipass_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0012_multipass_float.Tpo codec/highcolor/$(DEPDIR)/test_runner-0012_multipass_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0012_multipass_float.c' object='codec/highcolor/test_runner-0012_multipass_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0012_multipass_float.o `test -f 'codec/highcolor/0012_multipass_float.c' || echo '$(srcdir)/'`codec/highcolor/0012_multipass_float.c
+
+codec/highcolor/test_runner-0012_multipass_float.obj: codec/highcolor/0012_multipass_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0012_multipass_float.obj -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0012_multipass_float.Tpo -c -o codec/highcolor/test_runner-0012_multipass_float.obj `if test -f 'codec/highcolor/0012_multipass_float.c'; then $(CYGPATH_W) 'codec/highcolor/0012_multipass_float.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0012_multipass_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0012_multipass_float.Tpo codec/highcolor/$(DEPDIR)/test_runner-0012_multipass_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0012_multipass_float.c' object='codec/highcolor/test_runner-0012_multipass_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0012_multipass_float.obj `if test -f 'codec/highcolor/0012_multipass_float.c'; then $(CYGPATH_W) 'codec/highcolor/0012_multipass_float.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0012_multipass_float.c'; fi`
+
+codec/highcolor/test_runner-0013_lowlevel_diffusion.o: codec/highcolor/0013_lowlevel_diffusion.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0013_lowlevel_diffusion.o -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0013_lowlevel_diffusion.Tpo -c -o codec/highcolor/test_runner-0013_lowlevel_diffusion.o `test -f 'codec/highcolor/0013_lowlevel_diffusion.c' || echo '$(srcdir)/'`codec/highcolor/0013_lowlevel_diffusion.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0013_lowlevel_diffusion.Tpo codec/highcolor/$(DEPDIR)/test_runner-0013_lowlevel_diffusion.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0013_lowlevel_diffusion.c' object='codec/highcolor/test_runner-0013_lowlevel_diffusion.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0013_lowlevel_diffusion.o `test -f 'codec/highcolor/0013_lowlevel_diffusion.c' || echo '$(srcdir)/'`codec/highcolor/0013_lowlevel_diffusion.c
+
+codec/highcolor/test_runner-0013_lowlevel_diffusion.obj: codec/highcolor/0013_lowlevel_diffusion.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0013_lowlevel_diffusion.obj -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0013_lowlevel_diffusion.Tpo -c -o codec/highcolor/test_runner-0013_lowlevel_diffusion.obj `if test -f 'codec/highcolor/0013_lowlevel_diffusion.c'; then $(CYGPATH_W) 'codec/highcolor/0013_lowlevel_diffusion.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0013_lowlevel_diffusion.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0013_lowlevel_diffusion.Tpo codec/highcolor/$(DEPDIR)/test_runner-0013_lowlevel_diffusion.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0013_lowlevel_diffusion.c' object='codec/highcolor/test_runner-0013_lowlevel_diffusion.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0013_lowlevel_diffusion.obj `if test -f 'codec/highcolor/0013_lowlevel_diffusion.c'; then $(CYGPATH_W) 'codec/highcolor/0013_lowlevel_diffusion.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0013_lowlevel_diffusion.c'; fi`
+
+codec/highcolor/test_runner-0014_context_reuse.o: codec/highcolor/0014_context_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0014_context_reuse.o -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0014_context_reuse.Tpo -c -o codec/highcolor/test_runner-0014_context_reuse.o `test -f 'codec/highcolor/0014_context_reuse.c' || echo '$(srcdir)/'`codec/highcolor/0014_context_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0014_context_reuse.Tpo codec/highcolor/$(DEPDIR)/test_runner-0014_context_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0014_context_reuse.c' object='codec/highcolor/test_runner-0014_context_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0014_context_reuse.o `test -f 'codec/highcolor/0014_context_reuse.c' || echo '$(srcdir)/'`codec/highcolor/0014_context_reuse.c
+
+codec/highcolor/test_runner-0014_context_reuse.obj: codec/highcolor/0014_context_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/highcolor/test_runner-0014_context_reuse.obj -MD -MP -MF codec/highcolor/$(DEPDIR)/test_runner-0014_context_reuse.Tpo -c -o codec/highcolor/test_runner-0014_context_reuse.obj `if test -f 'codec/highcolor/0014_context_reuse.c'; then $(CYGPATH_W) 'codec/highcolor/0014_context_reuse.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0014_context_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/highcolor/$(DEPDIR)/test_runner-0014_context_reuse.Tpo codec/highcolor/$(DEPDIR)/test_runner-0014_context_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor/0014_context_reuse.c' object='codec/highcolor/test_runner-0014_context_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/highcolor/test_runner-0014_context_reuse.obj `if test -f 'codec/highcolor/0014_context_reuse.c'; then $(CYGPATH_W) 'codec/highcolor/0014_context_reuse.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor/0014_context_reuse.c'; fi`
+
+codec/test_runner-highcolor_output_common.o: codec/highcolor_output_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/test_runner-highcolor_output_common.o -MD -MP -MF codec/$(DEPDIR)/test_runner-highcolor_output_common.Tpo -c -o codec/test_runner-highcolor_output_common.o `test -f 'codec/highcolor_output_common.c' || echo '$(srcdir)/'`codec/highcolor_output_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/$(DEPDIR)/test_runner-highcolor_output_common.Tpo codec/$(DEPDIR)/test_runner-highcolor_output_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor_output_common.c' object='codec/test_runner-highcolor_output_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/test_runner-highcolor_output_common.o `test -f 'codec/highcolor_output_common.c' || echo '$(srcdir)/'`codec/highcolor_output_common.c
+
+codec/test_runner-highcolor_output_common.obj: codec/highcolor_output_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/test_runner-highcolor_output_common.obj -MD -MP -MF codec/$(DEPDIR)/test_runner-highcolor_output_common.Tpo -c -o codec/test_runner-highcolor_output_common.obj `if test -f 'codec/highcolor_output_common.c'; then $(CYGPATH_W) 'codec/highcolor_output_common.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor_output_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/$(DEPDIR)/test_runner-highcolor_output_common.Tpo codec/$(DEPDIR)/test_runner-highcolor_output_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='codec/highcolor_output_common.c' object='codec/test_runner-highcolor_output_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/test_runner-highcolor_output_common.obj `if test -f 'codec/highcolor_output_common.c'; then $(CYGPATH_W) 'codec/highcolor_output_common.c'; else $(CYGPATH_W) '$(srcdir)/codec/highcolor_output_common.c'; fi`
+
 codec/test_runner-png_delta_common.o: codec/png_delta_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/test_runner-png_delta_common.o -MD -MP -MF codec/$(DEPDIR)/test_runner-png_delta_common.Tpo -c -o codec/test_runner-png_delta_common.o `test -f 'codec/png_delta_common.c' || echo '$(srcdir)/'`codec/png_delta_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/$(DEPDIR)/test_runner-png_delta_common.Tpo codec/$(DEPDIR)/test_runner-png_delta_common.Po
@@ -68594,6 +68944,8 @@ distclean-generic:
 	-$(am__rm_f) codec/$(am__dirstamp)
 	-$(am__rm_f) codec/drcs/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) codec/drcs/$(am__dirstamp)
+	-$(am__rm_f) codec/highcolor/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) codec/highcolor/$(am__dirstamp)
 	-$(am__rm_f) codec/hls/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) codec/hls/$(am__dirstamp)
 	-$(am__rm_f) codec/macro/$(DEPDIR)/$(am__dirstamp)

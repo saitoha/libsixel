@@ -28,6 +28,7 @@
 #endif
 
 #include <stdlib.h>
+#include <stdint.h>
 #if HAVE_STRING_H
 # include <string.h>
 #endif  /* HAVE_STRING_H */
@@ -38,6 +39,7 @@
 #include "timeline-logger.h"
 #include "encoder-core-private.h"
 #include "pixelformat.h"
+#include "colorspace.h"
 #include "encoder-core-highcolor.h"
 
 enum {
@@ -69,6 +71,91 @@ SIXELSTATUS sixel_encode_body(
     int pin_threads,
     sixel_timeline_logger_t *logger);
 SIXELSTATUS sixel_encode_footer(sixel_output_t *output);
+
+/* Prepare destination samples before emitting any bytes. The no-diffusion
+ * path retains float representatives; the bounded byte projection below is
+ * only a lookup key. Low-level 15bpp diffusion still owns byte samples.
+ * RGB888 with no color conversion never enters this allocation path. */
+static SIXELSTATUS
+sixel_highcolor_convert(unsigned char **prepared, int *stride,
+                        unsigned char const *pixels, size_t count,
+                        int pixelformat, sixel_dither_t *dither,
+                        sixel_output_t const *output)
+{
+    double source[3];
+    double target[3];
+    float sample[3];
+    unsigned char *buffer;
+    size_t i;
+    int c;
+    int source_float;
+    int target_float;
+    int source_stride;
+    int byte_format;
+
+    source_float = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat);
+    target_float = dither->method_for_diffuse == SIXEL_DIFFUSE_NONE;
+    source_stride = source_float ? (int)sizeof(sample) : 3;
+    *stride = target_float ? (int)sizeof(sample) : 3;
+    if (count > SIZE_MAX / (size_t)*stride) {
+        return SIXEL_BAD_INPUT;
+    }
+    buffer = sixel_allocator_malloc(dither->allocator,
+        count * (size_t)*stride);
+    if (buffer == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    byte_format = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    switch (output->source_colorspace) {
+    case SIXEL_COLORSPACE_OKLAB:
+        byte_format = SIXEL_PIXELFORMAT_OKLABFLOAT32;
+        break;
+    case SIXEL_COLORSPACE_CIELAB:
+        byte_format = SIXEL_PIXELFORMAT_CIELABFLOAT32;
+        break;
+    case SIXEL_COLORSPACE_DIN99D:
+        byte_format = SIXEL_PIXELFORMAT_DIN99DFLOAT32;
+        break;
+    default:
+        break;
+    }
+    for (i = 0; i < count; ++i) {
+        if (source_float) {
+            memcpy(sample, pixels + i * (size_t)source_stride,
+                sizeof(sample));
+        }
+        for (c = 0; c < 3; ++c) {
+            source[c] = source_float ? (double)sample[c] :
+                (double)sixel_pixelformat_byte_to_float(byte_format, c,
+                    pixels[i * 3U + (size_t)c]);
+        }
+        if (!sixel_color_convert_output(target, source,
+                output->source_colorspace, output->colorspace)) {
+            sixel_allocator_free(dither->allocator, buffer);
+            sixel_helper_set_additional_message(
+                "sixel_encode_highcolor: invalid color conversion.");
+            return SIXEL_BAD_INPUT;
+        }
+        /* This is the final destination gamut boundary, after all matrix
+         * and transfer operations. No source or working component is
+         * clipped. The writer alone rounds float representatives to RGB101
+         * (or HLS); key quantization must not replace those representatives. */
+        for (c = 0; c < 3; ++c) {
+            sample[c] = (float)(target[c] < 0.0 ? 0.0 :
+                target[c] > 1.0 ? 1.0 : target[c]);
+            if (!target_float) {
+                buffer[i * 3U + (size_t)c] =
+                    sixel_pixelformat_float_channel_to_byte(
+                        SIXEL_PIXELFORMAT_RGBFLOAT32, c, sample[c]);
+            }
+        }
+        if (target_float) {
+            memcpy(buffer + i * sizeof(sample), sample, sizeof(sample));
+        }
+    }
+    *prepared = buffer;
+    return SIXEL_OK;
+}
 
 /*
  * Normalize a channel value into the range representable by an unsigned char
@@ -761,6 +848,15 @@ sixel_encode_highcolor(
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_index_t *paletted_pixels = NULL;
     unsigned char *normalized_pixels = NULL;
+    unsigned char *converted_pixels = NULL;
+    float palette_float[SIXEL_PALETTE_MAX * 3];
+    float sample[3];
+    unsigned char key[3];
+    unsigned char *representative;
+    int stride;
+    int pixelformat;
+    int use_float;
+    int channel;
     /* Mark sixel line pixels which have been already drawn. */
     unsigned char *marks;
     unsigned char *rgbhit;
@@ -825,7 +921,11 @@ sixel_encode_highcolor(
         goto error;
     }
 
-    if (dither->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+    pixelformat = dither->pixelformat;
+    stride = 3;
+    use_float = 0;
+    if (pixelformat != SIXEL_PIXELFORMAT_RGB888 &&
+            !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         /* normalize pixelformat */
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(
             dither->allocator,
@@ -835,7 +935,7 @@ sixel_encode_highcolor(
         }
         status = sixel_helper_normalize_pixelformat(
             normalized_pixels,
-            &dither->pixelformat,
+            &pixelformat,
             pixels,
             dither->pixelformat,
             width,
@@ -845,6 +945,18 @@ sixel_encode_highcolor(
         }
         pixels = normalized_pixels;
     }
+
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ||
+            output->source_colorspace != output->colorspace) {
+        status = sixel_highcolor_convert(&converted_pixels, &stride, pixels,
+            (size_t)width * (size_t)height, pixelformat, dither, output);
+        if (SIXEL_FAILED(status)) {
+            goto error;
+        }
+        pixels = converted_pixels;
+        use_float = stride != 3;
+    }
+    memset(palette_float, 0, sizeof(palette_float));
 
     palette_entries = NULL;
     palette_obj = NULL;
@@ -894,20 +1006,27 @@ next:
     y = mod_y = 0;
 
     while (1) {
-        for (x = 0; x < width; x++, mptr++, dst++, pixels += 3) {
+        for (x = 0; x < width; x++, mptr++, dst++, pixels += stride) {
             if (*mptr) {
                 *dst = 255;
             } else {
-                sixel_apply_15bpp_dither(
-                    pixels,
-                    x,
-                    y,
-                    width,
-                    height,
-                    dither->method_for_diffuse);
-                pix = ((pixels[0] & 0xf8) << 7) |
-                      ((pixels[1] & 0xf8) << 2) |
-                      ((pixels[2] >> 3) & 0x1f);
+                representative = pixels;
+                if (use_float) {
+                    memcpy(sample, pixels, sizeof(sample));
+                    for (channel = 0; channel < 3; ++channel) {
+                        key[channel] =
+                            sixel_pixelformat_float_channel_to_byte(
+                                SIXEL_PIXELFORMAT_RGBFLOAT32, channel,
+                                sample[channel]);
+                    }
+                    representative = key;
+                } else {
+                    sixel_apply_15bpp_dither(pixels, x, y, width, height,
+                        dither->method_for_diffuse);
+                }
+                pix = ((representative[0] & 0xf8) << 7) |
+                      ((representative[1] & 0xf8) << 2) |
+                      ((representative[2] >> 3) & 0x1f);
 
                 if (!rgbhit[pix]) {
                     while (1) {
@@ -950,9 +1069,11 @@ next:
                         *mptr = 1;
                         palstate[*dst] = PALETTE_CHANGE;
                         palhitcount[*dst] = 1;
-                        *(pal++) = pixels[0];
-                        *(pal++) = pixels[1];
-                        *(pal++) = pixels[2];
+                        memcpy(pal, representative, 3U);
+                        if (use_float) {
+                            memcpy(palette_float + (size_t)*dst * 3U,
+                                sample, sizeof(sample));
+                        }
                     }
                 } else {
                     *dst = rgb2pal[pix];
@@ -992,7 +1113,7 @@ next:
                 width,
                 height,
                 palette_entries,
-                NULL,
+                use_float ? palette_float : NULL,
                 255,
                 255,
                 dither->bodyonly,
@@ -1008,7 +1129,7 @@ next:
             if (y >= orig_height) {
               goto end;
             }
-            pixels -= (6 * width * 3);
+            pixels -= (6 * width * stride);
             height = orig_height - height + 6;
             goto next;
         }
@@ -1034,7 +1155,7 @@ end:
         width,
         height,
         palette_entries,
-        NULL,
+        use_float ? palette_float : NULL,
         255,
         255,
         dither->bodyonly,
@@ -1059,6 +1180,7 @@ error:
     }
     sixel_allocator_free(dither->allocator, paletted_pixels);
     sixel_allocator_free(dither->allocator, normalized_pixels);
+    sixel_allocator_free(dither->allocator, converted_pixels);
 
     return status;
 }

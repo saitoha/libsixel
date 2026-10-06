@@ -445,6 +445,21 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0021_DELTA_P3_RECOVERY \
     -DBUILD_TEST_0022_DELTA_FILE_GUARD \
     -DBUILD_TEST_0023_DELTA_STDOUT_GUARD \
+    -DBUILD_TEST_0001_BYTE_IDENTITY \
+    -DBUILD_TEST_0002_BYTE_LINEAR \
+    -DBUILD_TEST_0003_FLOAT_SUBBYTE \
+    -DBUILD_TEST_0004_LINEAR_GAMMA \
+    -DBUILD_TEST_0005_EXTENDED_SMPTEC \
+    -DBUILD_TEST_0006_FLOAT_HLS \
+    -DBUILD_TEST_0007_NAN_RECOVERY \
+    -DBUILD_TEST_0008_INFINITY_RECOVERY \
+    -DBUILD_TEST_0009_RGBA_LINEAR \
+    -DBUILD_TEST_0010_FRAME_FLOAT \
+    -DBUILD_TEST_0011_FRAME_EXTENDED \
+    -DBUILD_TEST_0012_MULTIPASS_FLOAT \
+    -DBUILD_TEST_0013_LOWLEVEL_DIFFUSION \
+    -DBUILD_TEST_0014_CONTEXT_REUSE \
+    -DBUILD_HIGHCOLOR_OUTPUT_COMMON \
     -DBUILD_PNG_DELTA_COMMON \
     -DBUILD_TEST_0001_SRGB_FRAME_PRECISION \
     -DBUILD_TEST_0002_P3_FRAME_PRECISION \
@@ -5905,6 +5920,21 @@ test_runner_SOURCES = test_runner.c \
     codec/png_snapshot/0021_delta_p3_recovery.c \
     codec/png_snapshot/0022_delta_file_guard.c \
     codec/png_snapshot/0023_delta_stdout_guard.c \
+    codec/highcolor/0001_byte_identity.c \
+    codec/highcolor/0002_byte_linear.c \
+    codec/highcolor/0003_float_subbyte.c \
+    codec/highcolor/0004_linear_gamma.c \
+    codec/highcolor/0005_extended_smptec.c \
+    codec/highcolor/0006_float_hls.c \
+    codec/highcolor/0007_nan_recovery.c \
+    codec/highcolor/0008_infinity_recovery.c \
+    codec/highcolor/0009_rgba_linear.c \
+    codec/highcolor/0010_frame_float.c \
+    codec/highcolor/0011_frame_extended.c \
+    codec/highcolor/0012_multipass_float.c \
+    codec/highcolor/0013_lowlevel_diffusion.c \
+    codec/highcolor/0014_context_reuse.c \
+    codec/highcolor_output_common.c \
     codec/png_delta_common.c \
     codec/png_snapshot/0001_srgb_frame_precision.c \
     codec/png_snapshot/0002_p3_frame_precision.c \
