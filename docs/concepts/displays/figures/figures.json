@@ -1056,6 +1056,45 @@
     "print_white_reflectance": 0.85,
     "print_black_reflectance": 0.03
   },
+  "pixel_appearance": {
+    "samples_per_degree": 1080,
+    "field_degrees": [
+      1.0,
+      0.5
+    ],
+    "close_up_degrees": [
+      0.03,
+      0.31,
+      0.12,
+      0.47
+    ],
+    "models": {
+      "crt": {
+        "title": "CRT",
+        "ppd": 40,
+        "spot_sigma": 0.45,
+        "grille_pitch": 0.95,
+        "stripe_fill": 0.8,
+        "halation": 0.04,
+        "halation_sigma": 4.0
+      },
+      "lcd": {
+        "title": "1080p LCD",
+        "ppd": 36,
+        "fill_x": 0.8,
+        "fill_y": 0.85
+      },
+      "retina": {
+        "title": "High-density LCD",
+        "ppd": 90,
+        "fill_x": 0.8,
+        "fill_y": 0.85
+      }
+    },
+    "eye_luminance_fwhm_arcmin": 1.0,
+    "eye_chroma_fwhm_arcmin": 4.0,
+    "note": "Simulation in linear light. CRT: Gaussian beam spot per pixel, halation in the faceplate and an aperture-grille phosphor mask. LCD: three subpixel stripes per pixel inside a black matrix. Both rows conserve mean light. The lower row blurs luminance and opponent chroma with separate Gaussians as a rough model of optical blur and lower chromatic acuity; it is an illustration, not a model of visibility thresholds."
+  },
   "epaper_palettes": {
     "source": "images/snake.png at 240 x 180",
     "dither": "Pillow Floyd-Steinberg",

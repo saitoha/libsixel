@@ -141,6 +141,22 @@ The move to LCDs in the 2000s brought sharp, geometrically perfect pixels, but f
 
 Figure 6 marks two such steps. A 15-inch 1600 × 1200 notebook of 2006 offered 133 pixels per inch, or 46 pixels per degree at 50 cm; a typical 15.6-inch 1366 × 768 notebook of 2009 offered 100 pixels per inch, or 35 pixels per degree. Professional displays had already gone much further: IBM's T220 and T221 of 2001 put 3840 × 2400 pixels on a 22.2-inch LCD, 204 pixels per inch, but remained a niche product.
 
+### How the pixels looked
+
+Pixel density is not the whole story. Figure 7 simulates the same text, a thin line and a dithered gradient on three displays: a CRT at 40 pixels per degree, a mainstream 1080p LCD at 36 and a high-density LCD at 90. The upper row shows a close-up of the light leaving each screen; the lower row blurs it as a rough model of the eye, with less sharpness for color than for brightness.
+
+![Three columns. CRT at 40 pixels per degree: close-up of vertical red, green and blue phosphor stripes with soft dark shapes; seen by the eye, the text, line and dither dots look smooth and slightly soft, with faint vertical stripes. 1080p LCD at 36 pixels per degree: close-up of square pixels made of three subpixels inside a black grid; seen by the eye, the text and line show stair steps, the dither dots are square blocks and a fine dotted grid covers the image. High-density LCD at 90 pixels per degree: close-up of much smaller subpixels; seen by the eye, the text and line are crisp and the dither is a fine, even texture.](figures/pixel-appearance.svg)
+
+*Figure 7. Simulated appearance of a CRT, a 1080p LCD and a high-density LCD. The lower row is magnified for print, so fine stripes and grids appear more prominent than at real size. The model and its parameters are listed in the figures manifest.*
+
+At similar density the CRT and the LCD look different. The CRT reconstructs the image with soft spots, so edges and dither dots blend smoothly and no pixel grid appears; its phosphor stripes are finer than its pixels and do not follow the image. The LCD draws every pixel as a sharp square in a dark grid, so slanted edges show steps, dither dots become visible blocks, and the grid itself can be seen. The high-density LCD is both sharp and smooth.
+
+The claim that the change from CRTs to LCDs made images look worse in the early 2000s, not only in resolution, is therefore reasonable, with qualifications on both sides:
+
+- **Pixel structure.** At the same density an LCD shows its pixel grid and the steps of edges, where a CRT shows neither.
+- **Black and contrast.** Early LCDs could not block their backlight well. In a comparison of the time, the black of an LCD in a dark room was about 58 times brighter than that of a CRT, and colors shifted when the LCD was viewed from an angle (Sharma, 2002).
+- **What improved.** The same study found that under typical room light the LCD kept a much larger contrast range, mainly because it was much brighter, so reflected room light lifted its black less in proportion. LCDs were also free of flicker, geometric distortion and color misconvergence, and their sharp pixels made small text crisper than on most CRTs. The sharpness that shows the grid is the same sharpness that made text clearer.
+
 ### Retina: reaching the eye's resolution
 
 In 2010 Apple introduced the iPhone 4 with a 326 pixels per inch "Retina" display (Apple, 2010). Presenting it, Steve Jobs argued that about 300 pixels per inch, held 10 to 12 inches from the eye, was the limit of what the eye could resolve. At 30 cm this is about 68 pixels per degree, just above the 60 of 20/20 acuity. Notebooks, monitors and e-readers followed during the 2010s, as Figure 6 shows.
@@ -169,9 +185,9 @@ Electronic paper reverses these conditions. A monochrome panel shows 16 gray lev
 
 ![A photograph of a green and yellow snake in four versions: the original; dithered to 16 gray levels; dithered to an idealized six-color palette of black, white, red, yellow, blue and green, which shows strong colored noise; and dithered to an adaptive palette of 16 colors chosen for the image and rounded to 4 bits per channel, which keeps the natural colors with mild noise.](figures/epaper-palettes.svg)
 
-*Figure 7. One photograph prepared for different electronic paper constraints, with Floyd–Steinberg error diffusion. The six-color palette uses idealized saturated colors; real pigments are less saturated.*
+*Figure 8. One photograph prepared for different electronic paper constraints, with Floyd–Steinberg error diffusion. The six-color palette uses idealized saturated colors; real pigments are less saturated.*
 
-Figure 7 shows how much the choice of palette matters. A fixed palette of six vivid pigments must build the muted greens and browns of the photograph from widely separated colors, so the dither noise is strong. An adaptive palette of 16 colors chosen for this image keeps the dither noise low, even though each color is restricted to 16 levels per channel.
+Figure 8 shows how much the choice of palette matters. A fixed palette of six vivid pigments must build the muted greens and browns of the photograph from widely separated colors, so the dither noise is strong. An adaptive palette of 16 colors chosen for this image keeps the dither noise low, even though each color is restricted to 16 levels per channel.
 
 ### A return to "16 of 4,096"
 
@@ -225,7 +241,7 @@ No single setting is therefore best for every display and every image. The choic
 
 ## Figures and reproduction
 
-All figures are generated by [`tools/plot_display_concept_figures.py`](../../../tools/plot_display_concept_figures.py) with Matplotlib, NumPy and Pillow. Run it to regenerate them and with `--check` to verify that the committed files are current. Pixel densities in Figure 6 are computed from the nominal resolution and diagonal of each display, so a value can differ slightly from a manufacturer's figure; the viewing distances are typical assumptions. The optical values of Figure 2 are illustrative assumptions. Figure 7 dithers `images/snake.png` with Pillow, so it illustrates palette constraints and does not measure libsixel's quantizers. All parameters and computed values are recorded in [`figures/figures.json`](figures/figures.json).
+All figures are generated by [`tools/plot_display_concept_figures.py`](../../../tools/plot_display_concept_figures.py) with Matplotlib, NumPy and Pillow. Run it to regenerate them and with `--check` to verify that the committed files are current. Pixel densities in Figure 6 are computed from the nominal resolution and diagonal of each display, so a value can differ slightly from a manufacturer's figure; the viewing distances are typical assumptions. The optical values of Figure 2 are illustrative assumptions. Figure 7 is a simulation in linear light with a Gaussian beam spot, faceplate halation and an aperture-grille mask for the CRT, subpixel stripes in a black matrix for the LCDs, and separate Gaussian blurs of luminance and opponent chroma for the eye; it illustrates the differences and does not predict visibility thresholds. Figure 8 dithers `images/snake.png` with Pillow, so it illustrates palette constraints and does not measure libsixel's quantizers. All parameters and computed values are recorded in [`figures/figures.json`](figures/figures.json).
 
 ## References
 
@@ -238,6 +254,7 @@ All figures are generated by [`tools/plot_display_concept_figures.py`](../../../
 - FlatpanelsHD. ["TCL launches 8-series LCD TVs with miniLED."](https://www.flatpanelshd.com/news.php?subaction=showfull&id=1571225764) 2019.
 - Heilmeier, G. H., L. A. Zanoni, and L. A. Barton. "Dynamic scattering: a new electrooptic effect in certain classes of nematic liquid crystals." Proceedings of the IEEE 56(7):1162–1171, 1968. doi:[10.1109/PROC.1968.6513](https://doi.org/10.1109/PROC.1968.6513)
 - Jiang, H. X., S. X. Jin, J. Li, J. Shakya, and J. Y. Lin. "III-nitride blue microdisplays." Applied Physics Letters 78:1303, 2001. doi:[10.1063/1.1351521](https://doi.org/10.1063/1.1351521)
+- Sharma, G. "LCDs versus CRTs—color-calibration and gamut considerations." Proceedings of the IEEE 90(4):605–622, 2002. doi:[10.1109/JPROC.2002.1002530](https://doi.org/10.1109/JPROC.2002.1002530)
 - Schadt, M., and W. Helfrich. "Voltage-dependent optical activity of a twisted nematic liquid crystal." Applied Physics Letters 18(4):127–128, 1971. doi:[10.1063/1.1653593](https://doi.org/10.1063/1.1653593)
 - [DEC VT240](https://terminals-wiki.org/wiki/index.php/DEC_VT240). Terminals Wiki, for the VT240 and VT241 specifications.
 - [DECwriter](https://gunkies.org/wiki/DECwriter) and [DECwriter II](https://gunkies.org/wiki/DECwriter_II). Computer History Wiki, for the LA30 and LA36.

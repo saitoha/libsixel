@@ -681,6 +681,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/concepts/displays/figures/epaper-palettes.svg \
 	docs/concepts/displays/figures/figures.json \
 	docs/concepts/displays/figures/light-paths.svg \
+	docs/concepts/displays/figures/pixel-appearance.svg \
 	docs/concepts/displays/figures/pixel-density.svg \
 	docs/concepts/displays/figures/subpixels.svg \
 	docs/concepts/displays/figures/timeline.svg \
