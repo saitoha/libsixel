@@ -13,6 +13,7 @@ echo "1..1"
 set -v
 set +x
 
+# Use opaque black/white so this observes parsing, not the mono conflict.
 input_image="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 status_256=0
 status_negative=0
@@ -21,7 +22,7 @@ status_error_mode=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=keep --update-policy=delta:threshold=8 \
-    -L builtin -e -o - "${input_image}" >/dev/null || {
+    -L builtin -b gray1 -o - "${input_image}" >/dev/null || {
     echo "not ok" 1 - "valid update delta threshold was rejected"
     exit 0
 }
@@ -29,19 +30,19 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 set +e
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=keep --update-policy=delta:threshold=256 \
-    -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
+    -L builtin -b gray1 -o - "${input_image}" >/dev/null 2>/dev/null
 status_256=$?
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=keep --update-policy=delta:threshold=-1 \
-    -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
+    -L builtin -b gray1 -o - "${input_image}" >/dev/null 2>/dev/null
 status_negative=$?
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=keep --update-policy=delta:threshold=fast \
-    -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
+    -L builtin -b gray1 -o - "${input_image}" >/dev/null 2>/dev/null
 status_text=$?
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=keep --update-policy=delta:threshold=8:error=skip \
-    -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
+    -L builtin -b gray1 -o - "${input_image}" >/dev/null 2>/dev/null
 status_error_mode=$?
 set -e
 test "${status_256}" -ne 0 || {

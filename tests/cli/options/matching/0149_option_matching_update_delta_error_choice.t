@@ -12,19 +12,20 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
+# Use opaque black/white so this observes parsing, not the mono conflict.
 input_image="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 status_invalid=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=keep --update-policy=delta:error=diffuse \
-    -L builtin -e -o - "${input_image}" >/dev/null || {
+    -L builtin -b gray1 -o - "${input_image}" >/dev/null || {
     echo "not ok" 1 - "valid update delta error=diffuse was rejected"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=keep -Z delta:error=skip \
-    -L builtin -e -o - "${input_image}" >/dev/null || {
+    -L builtin -b gray1 -o - "${input_image}" >/dev/null || {
     echo "not ok" 1 - "valid -Z delta:error=skip was rejected"
     exit 0
 }
@@ -32,7 +33,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 set +e
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=keep --update-policy=delta:error=carry \
-    -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
+    -L builtin -b gray1 -o - "${input_image}" >/dev/null 2>/dev/null
 status_invalid=$?
 set -e
 

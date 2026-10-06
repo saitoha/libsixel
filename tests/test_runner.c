@@ -351,6 +351,12 @@ int test_delta_native_0197(int argc, char **argv);
 int test_delta_native_0198(int argc, char **argv);
 int test_delta_native_0199(int argc, char **argv);
 int test_delta_native_0200(int argc, char **argv);
+int test_delta_native_0201(int argc, char **argv);
+int test_delta_native_0202(int argc, char **argv);
+int test_delta_native_0203(int argc, char **argv);
+int test_delta_native_0204(int argc, char **argv);
+int test_delta_native_0205(int argc, char **argv);
+int test_delta_native_0206(int argc, char **argv);
 int test_delta_native_0101(int argc, char **argv);
 int test_delta_native_0102(int argc, char **argv);
 int test_delta_native_0103(int argc, char **argv);
@@ -3496,6 +3502,18 @@ static test_entry_t const test_entries[] = {
         test_delta_native_0199 },
     { "palette/delta_native/0200_delta_byte_hls_float_palette",
         test_delta_native_0200 },
+    { "palette/delta_native/0201_delta_mono_then_delta",
+        test_delta_native_0201 },
+    { "palette/delta_native/0202_delta_delta_then_mono",
+        test_delta_native_0202 },
+    { "palette/delta_native/0203_delta_mono_environment",
+        test_delta_native_0203 },
+    { "palette/delta_native/0204_delta_mono_full_override",
+        test_delta_native_0204 },
+    { "palette/delta_native/0205_delta_mono_output_reject",
+        test_delta_native_0205 },
+    { "palette/delta_native/0206_delta_opaque_bw_frames",
+        test_delta_native_0206 },
     { "palette/delta_native/0101_delta_p3_gamma_transform",
         test_delta_native_0101 },
     { "palette/delta_native/0102_delta_p3_linear_transform",

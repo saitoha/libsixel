@@ -352,6 +352,13 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0198_DELTA_BYTE_HLS_INSTANCES \
     -DBUILD_TEST_0199_DELTA_BYTE_HLS_SNAP \
     -DBUILD_TEST_0200_DELTA_BYTE_HLS_FLOAT_PALETTE \
+    -DBUILD_TEST_0201_DELTA_MONO_THEN_DELTA \
+    -DBUILD_TEST_0202_DELTA_DELTA_THEN_MONO \
+    -DBUILD_TEST_0203_DELTA_MONO_ENVIRONMENT \
+    -DBUILD_TEST_0204_DELTA_MONO_FULL_OVERRIDE \
+    -DBUILD_TEST_0205_DELTA_MONO_OUTPUT_REJECT \
+    -DBUILD_TEST_0206_DELTA_OPAQUE_BW_FRAMES \
+    -DBUILD_DELTA_MONO_COMMON \
     -DBUILD_DELTA_OUTPUT_COMMON \
     -DBUILD_DELTA_WORK_COMMON \
     -DBUILD_DELTA_BYTE_COMMON \
@@ -3190,6 +3197,13 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0198_delta_byte_hls_instances.c \
     quant/palette/delta_native/0199_delta_byte_hls_snap.c \
     quant/palette/delta_native/0200_delta_byte_hls_float_palette.c \
+    quant/palette/delta_native/0201_delta_mono_then_delta.c \
+    quant/palette/delta_native/0202_delta_delta_then_mono.c \
+    quant/palette/delta_native/0203_delta_mono_environment.c \
+    quant/palette/delta_native/0204_delta_mono_full_override.c \
+    quant/palette/delta_native/0205_delta_mono_output_reject.c \
+    quant/palette/delta_native/0206_delta_opaque_bw_frames.c \
+    quant/palette/delta_mono_common.c \
     quant/palette/delta_output_common.c \
     quant/palette/delta_work_common.c \
     quant/palette/delta_byte_common.c \

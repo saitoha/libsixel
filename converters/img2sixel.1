@@ -457,6 +457,8 @@ output monochrome sixel image.
 this option assumes the terminal background color is black.
 This option is mutually exclusive with \fB-b\fP, \fB-m\fP, and
 \fB-I\fP. Repeating \fB-e\fP is allowed.
+It also conflicts with \fB--update-policy=delta\fP: the unpainted background
+cannot erase foreground pixels from earlier frames under delta preservation.
 .TP 5
 .B \-k, \-\-insecure
 skip HTTPS server certificate verification where supported.
@@ -1098,6 +1100,9 @@ Otherwise, a pixel is kept when the retained color is at least as close to the c
 Larger thresholds trade freshness for fewer lookups; 255 keeps every valid retained RGB888 pixel.
 Diffuse propagates the error from retained RGB; skip omits kept-pixel diffusion.
 Delta requires \fB--alpha-policy=auto\fP or \fBkeep\fP.
+It conflicts with \fB-e\fP, whose unpainted background cannot erase earlier
+foreground pixels. Opaque black-and-white output via \fB-b gray1\fP can
+paint both colors and remains supported.
 History must match the receiver's display and frame placement.
 .TP 5
 .B \-P, \-\-penetrate

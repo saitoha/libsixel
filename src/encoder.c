@@ -6459,6 +6459,21 @@ sixel_encoder_set_output_transparent_offset(sixel_output_t *output,
 }
 
 static SIXELSTATUS
+sixel_encoder_validate_delta_palette(int enabled, int color_option)
+{
+    /* Monochrome omits background pixels instead of painting them.  P2=1
+     * cannot erase an earlier foreground pixel when it becomes background.
+     * This is distinct from an opaque two-color palette such as gray1. */
+    if (enabled && color_option == SIXEL_COLOR_OPTION_MONOCHROME) {
+        sixel_helper_set_additional_message(
+            "update-policy=delta conflicts with -e, --monochrome: "
+            "transparent background cannot erase previous pixels.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_encoder_validate_alpha_feature_policy(sixel_encoder_t const *encoder)
 {
     if (sixel_encoder_transparent_offset_enabled(encoder) != 0 &&
@@ -6478,7 +6493,8 @@ sixel_encoder_validate_alpha_feature_policy(sixel_encoder_t const *encoder)
         return SIXEL_BAD_ARGUMENT;
     }
 
-    return SIXEL_OK;
+    return sixel_encoder_validate_delta_palette(encoder->sixdelta_enabled,
+                                                encoder->color_option);
 }
 
 static SIXELSTATUS
@@ -6795,7 +6811,7 @@ sixel_encoder_palette_capacity(sixel_encoder_t const *encoder)
 /* Retained RGB888 describes emitted RGB in the selected representation.
  * Compare in output coordinates, then return kept colors to the workspace.
  * Output identity belongs to the plane; workspace/precision changes do not
- * invalidate a compatible plane. HLS rounding remains a separate boundary.
+ * invalidate a compatible plane. RGB and HLS use their emitted-color model.
  * Generated palettes can reserve an omission key after history exists.
  * Fixed tables use a separate mask without consuming a palette entry.
  * Alternate transports retain their separate migration boundaries. */
@@ -11307,6 +11323,14 @@ sixel_encoder_apply_update_policy_option(
         return status;
     }
 
+    status = sixel_encoder_validate_delta_palette(
+        resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA,
+        encoder->color_option);
+    if (SIXEL_FAILED(status)) {
+        sixel_option_free_argument_resolution(&resolution);
+        return status;
+    }
+
     /* Each selection starts from defaults, then environment, then suffixes. */
     encoder->sixdelta_threshold = 0u;
     encoder->sixdelta_threshold_override = 0;
@@ -12143,6 +12167,11 @@ sixel_encoder_setopt(
             encoder,
             SIXEL_COLOR_OPTION_MONOCHROME,
             "-e, --monochrome");
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        status = sixel_encoder_validate_delta_palette(
+            encoder->sixdelta_enabled, SIXEL_COLOR_OPTION_MONOCHROME);
         if (SIXEL_FAILED(status)) {
             goto end;
         }

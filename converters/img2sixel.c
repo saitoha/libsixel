@@ -484,6 +484,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    black\n"
         "    This option is mutually exclusive with -b, -m, and -I. Repeating\n"
         "    -e is allowed.\n"
+        "    Conflicts with update-policy=delta: unpainted background\n"
+        "    cannot erase previous foreground pixels.\n"
     },
     {
         'k',
@@ -988,6 +990,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    requires exact RGB; later keeps compare palette error.\n"
         "    Larger thresholds trade freshness for fewer lookups.\n"
         "    full preserves the source-alpha policy.\n"
+        "    delta conflicts with -e; opaque -b gray1 remains supported.\n"
     },
     {
         'P',
