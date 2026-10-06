@@ -2176,6 +2176,20 @@ sixel_palette_output_is_p3(sixel_palette_t const *palette)
 }
 
 int
+sixel_palette_output_is_gamma(sixel_palette_t const *palette)
+{
+    sixel_palette_storage_t const *storage;
+
+    if (palette == NULL) {
+        return 0;
+    }
+    storage = SIXEL_PALETTE_STORAGE_CONST(palette);
+    return storage->output_rgb101_count != 0U &&
+        storage->output_device == NULL &&
+        storage->output_colorspace == SIXEL_COLORSPACE_GAMMA;
+}
+
+int
 sixel_palette_to_output(sixel_palette_t const *palette, double out[3],
                         double const in[3], int workspace)
 {
@@ -2220,7 +2234,7 @@ sixel_palette_from_output(sixel_palette_t const *palette, double out[3],
         return 0;
     }
     if (storage->output_device == NULL) {
-        return sixel_color_convert(out, in, storage->output_colorspace,
+        return sixel_color_from_output(out, in, storage->output_colorspace,
             workspace);
     }
     /* Use the same immutable definitions in reverse. In particular, P3

@@ -129,6 +129,8 @@ For gamma, linear and SMPTE-C output, [native final snap](../palette-constructio
 
 The selected lookup classes consume the authoritative float palette even when its byte projection happens to be black and white. The default `certlut` and explicit `auto` (resolved to `6bit`) remain distinct choices. Their distance geometry and focused integration tests are owned by [Lookup policy](../palette-application/lookup-policy/README.md#extended-float-coordinates).
 
+Ordinary RGB [native delta](delta-encoding.md#linear-and-smpte-c-output-history) also supports these linear and SMPTE-C output representations, retaining the selected output interpretation for threshold comparisons and converting kept colors back into the working space. HLS delta and alternate delta transports remain outside that migration.
+
 ### Sampling and retained precision
 
 For generated palettes, the selected float path accepts all three sampling policies. `full-frame` builds from the preprocessed frame. `adaptive-grid` copies selected loaded-frame pixels before preprocessing and retains their typed float coordinates, including negative and above-one components. This copy does not normalize or clamp samples. The existing solid-region augmentation applies to byte RGB/RGBA input; it is not applied to typed float samples. `auto` retains the resource-aware choice described in the [execution map](../execution-map/README.md).

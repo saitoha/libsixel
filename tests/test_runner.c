@@ -269,6 +269,29 @@ int test_delta_native_0077(int argc, char **argv);
 int test_delta_native_0078(int argc, char **argv);
 int test_delta_native_0079(int argc, char **argv);
 int test_delta_native_0080(int argc, char **argv);
+int test_delta_native_0119(int argc, char **argv);
+int test_delta_native_0120(int argc, char **argv);
+int test_delta_native_0121(int argc, char **argv);
+int test_delta_native_0122(int argc, char **argv);
+int test_delta_native_0123(int argc, char **argv);
+int test_delta_native_0124(int argc, char **argv);
+int test_delta_native_0125(int argc, char **argv);
+int test_delta_native_0126(int argc, char **argv);
+int test_delta_native_0127(int argc, char **argv);
+int test_delta_native_0128(int argc, char **argv);
+int test_delta_native_0129(int argc, char **argv);
+int test_delta_native_0130(int argc, char **argv);
+int test_delta_native_0131(int argc, char **argv);
+int test_delta_native_0132(int argc, char **argv);
+int test_delta_native_0133(int argc, char **argv);
+int test_delta_native_0134(int argc, char **argv);
+int test_delta_native_0135(int argc, char **argv);
+int test_delta_native_0136(int argc, char **argv);
+int test_delta_native_0137(int argc, char **argv);
+int test_delta_native_0138(int argc, char **argv);
+int test_delta_native_0139(int argc, char **argv);
+int test_delta_native_0140(int argc, char **argv);
+int test_delta_native_0141(int argc, char **argv);
 int test_delta_native_0101(int argc, char **argv);
 int test_delta_native_0102(int argc, char **argv);
 int test_delta_native_0103(int argc, char **argv);
@@ -3250,6 +3273,52 @@ static test_entry_t const test_entries[] = {
         test_delta_native_0079 },
     { "palette/delta_native/0080_delta_byte_grid",
         test_delta_native_0080 },
+    { "palette/delta_native/0119_delta_linear_output_inverse",
+        test_delta_native_0119 },
+    { "palette/delta_native/0120_delta_linear_output_threshold",
+        test_delta_native_0120 },
+    { "palette/delta_native/0121_delta_linear_output_diffuse",
+        test_delta_native_0121 },
+    { "palette/delta_native/0122_delta_linear_output_skip",
+        test_delta_native_0122 },
+    { "palette/delta_native/0123_delta_linear_output_gamma_frames",
+        test_delta_native_0123 },
+    { "palette/delta_native/0124_delta_linear_output_linear_frames",
+        test_delta_native_0124 },
+    { "palette/delta_native/0125_delta_linear_output_oklab_frames",
+        test_delta_native_0125 },
+    { "palette/delta_native/0126_delta_linear_output_cielab_frames",
+        test_delta_native_0126 },
+    { "palette/delta_native/0127_delta_linear_output_din99d_frames",
+        test_delta_native_0127 },
+    { "palette/delta_native/0128_delta_linear_output_workers",
+        test_delta_native_0128 },
+    { "palette/delta_native/0129_delta_linear_output_identity",
+        test_delta_native_0129 },
+    { "palette/delta_native/0130_delta_smptec_output_inverse",
+        test_delta_native_0130 },
+    { "palette/delta_native/0131_delta_smptec_output_threshold",
+        test_delta_native_0131 },
+    { "palette/delta_native/0132_delta_smptec_output_diffuse",
+        test_delta_native_0132 },
+    { "palette/delta_native/0133_delta_smptec_output_skip",
+        test_delta_native_0133 },
+    { "palette/delta_native/0134_delta_smptec_output_gamma_frames",
+        test_delta_native_0134 },
+    { "palette/delta_native/0135_delta_smptec_output_linear_frames",
+        test_delta_native_0135 },
+    { "palette/delta_native/0136_delta_smptec_output_oklab_frames",
+        test_delta_native_0136 },
+    { "palette/delta_native/0137_delta_smptec_output_cielab_frames",
+        test_delta_native_0137 },
+    { "palette/delta_native/0138_delta_smptec_output_din99d_frames",
+        test_delta_native_0138 },
+    { "palette/delta_native/0139_delta_smptec_output_workers",
+        test_delta_native_0139 },
+    { "palette/delta_native/0140_delta_smptec_output_identity",
+        test_delta_native_0140 },
+    { "palette/delta_native/0141_delta_output_inverse_failure",
+        test_delta_native_0141 },
     { "palette/delta_native/0101_delta_p3_gamma_transform",
         test_delta_native_0101 },
     { "palette/delta_native/0102_delta_p3_linear_transform",

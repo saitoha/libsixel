@@ -3323,6 +3323,39 @@ sixel_color_convert_output(double out[3], double const in[3],
     return 1;
 }
 
+int
+sixel_color_from_output(double out[3], double const in[3],
+                        int source, int target)
+{
+    double decoded[3];
+    double linear[3];
+    int row;
+    int column;
+
+    if (source == SIXEL_COLORSPACE_GAMMA ||
+            source == SIXEL_COLORSPACE_LINEAR) {
+        return sixel_color_convert(out, in, source, target);
+    }
+    if (out == NULL || in == NULL || source != SIXEL_COLORSPACE_SMPTEC ||
+            !sixel_color_triplet_finite(in)) {
+        return 0;
+    }
+    for (column = 0; column < 3; ++column) {
+        decoded[column] = copysign(pow(fabs(in[column]), 2.2), in[column]);
+    }
+    for (row = 0; row < 3; ++row) {
+        linear[row] = 0.0;
+        for (column = 0; column < 3; ++column) {
+            linear[row] += sixel_linear_smptec_to_srgb_matrix[row][column]
+                * decoded[column];
+        }
+    }
+    /* Even bounded destination RGB can lie outside the sRGB cube. Keep
+     * that residual intact; the working converter validates every result
+     * before publishing, including overflow and invalid target spaces. */
+    return sixel_color_convert(out, linear, SIXEL_COLORSPACE_LINEAR, target);
+}
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_color_convert_rgbf32(float *pixels, size_t count,
                            int source, int target)

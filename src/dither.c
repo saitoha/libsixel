@@ -1804,7 +1804,7 @@ sixel_dither_6delta_keep_float(
     double emitted[3];
     double target[3];
     int colorspace;
-    int p3;
+    int output_transform;
     int within;
     int n;
 
@@ -1828,14 +1828,14 @@ sixel_dither_6delta_keep_float(
         return 0;
     }
     colorspace = sixel_pixelformat_get_colorspace(pixelformat);
-    p3 = dither->use_rgb101_palette &&
-        sixel_palette_output_is_p3(dither->palette);
+    output_transform = dither->use_rgb101_palette &&
+        !sixel_palette_output_is_gamma(dither->palette);
     for (n = 0; n < 3; ++n) {
         query[n] = rgb[n];
     }
-    /* A failed inverse cannot establish a safe keep. Repaint the chosen
+    /* A failed transform cannot establish a safe keep. Repaint the chosen
      * entry instead, without publishing a keep bit or a clipped query. */
-    if (p3) {
+    if (output_transform) {
         if (!sixel_palette_to_output(dither->palette, query, query,
                 colorspace)) {
             return 0;
@@ -1869,9 +1869,9 @@ sixel_dither_6delta_keep_float(
     if (!within && keep_distance > chosen_distance) {
         return 0;
     }
-    if (p3 || colorspace != SIXEL_COLORSPACE_GAMMA) {
-        if (p3 ? !sixel_palette_from_output(dither->palette, working,
-                history, colorspace) : !sixel_color_convert(working,
+    if (output_transform || colorspace != SIXEL_COLORSPACE_GAMMA) {
+        if (output_transform ? !sixel_palette_from_output(dither->palette,
+                working, history, colorspace) : !sixel_color_convert(working,
                 history, SIXEL_COLORSPACE_GAMMA, colorspace)) {
             return 0;
         }
@@ -1882,8 +1882,8 @@ sixel_dither_6delta_keep_float(
              * Compare both emitted colors in working units too; do not
              * clamp the query or substitute the unrounded centroid. The
              * explicit output threshold remains the approximation gate. */
-            if (p3 ? !sixel_palette_from_output(dither->palette, target,
-                    emitted, colorspace) : !sixel_color_convert(target,
+            if (output_transform ? !sixel_palette_from_output(dither->palette,
+                    target, emitted, colorspace) : !sixel_color_convert(target,
                     emitted, SIXEL_COLORSPACE_GAMMA, colorspace)) {
                 return 0;
             }

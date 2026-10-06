@@ -124,9 +124,12 @@ sixel_palette_get_output_rgb(sixel_palette_t const *palette,
 SIXEL_INTERNAL_API int
 sixel_palette_output_is_p3(sixel_palette_t const *palette);
 
+SIXEL_INTERNAL_API int
+sixel_palette_output_is_gamma(sixel_palette_t const *palette);
+
 /* Extended triplet conversions for native delta. Require a prepared output
  * cache; return 0 without changing out on failure. Exact aliasing is valid.
- * The inverse supports gamma sRGB, linear sRGB and Display P3. */
+ * The inverse supports gamma/linear sRGB, SMPTE-C and Display P3. */
 SIXEL_INTERNAL_API int
 sixel_palette_to_output(sixel_palette_t const *palette, double out[3],
                         double const in[3], int workspace);

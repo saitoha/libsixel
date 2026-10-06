@@ -59,6 +59,13 @@ SIXEL_INTERNAL_API int
 sixel_color_convert_output(double out[3], double const in[3],
                            int source, int target);
 
+/* Interpret retained wire RGB in the selected output representation and
+ * return extended working coordinates. SMPTE-C remains output-only; this
+ * inverse does not admit it as a working geometry. Atomic and alias-safe. */
+SIXEL_INTERNAL_API int
+sixel_color_from_output(double out[3], double const in[3],
+                        int source, int target);
+
 /*
  * Convert a nonempty packed RGB float32 buffer in place without gamut
  * clipping. Validate every result before writing any pixels, so a rejected

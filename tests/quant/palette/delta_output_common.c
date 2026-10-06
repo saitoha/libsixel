@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* P3 delta: output coordinates, independent references and plane ownership. */
+/* Delta output coordinates, independent references and plane ownership. */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/colorspace.h"
+#include "tests/data/color-numeric/output-native.h"
 #include "src/dither.h"
 #include "src/encoder.h"
 #include "src/palette.h"
@@ -345,7 +347,7 @@ pd_encoder(sixel_encoder_t **encoder, sixel_output_t **output,
 }
 
 /* Decode the actual wire and check every paint bit and painted triplet.
- * Expectations are independent P3 codes, not the encoder's palette view. */
+ * Expectations are independent output codes, not the encoder's palette view. */
 static int
 pd_decode(sixel_encoder_t *encoder, pd_stream_t *stream,
           int width, int height, int keep, unsigned char const color[3])
@@ -371,7 +373,7 @@ pd_decode(sixel_encoder_t *encoder, pd_stream_t *stream,
     for (i = 0; i < w * h; ++i) {
         if ((mask[i] != 0) == keep || (!keep &&
                 memcmp(palette + indexes[i] * 3, color, 3) != 0)) {
-            fprintf(stderr, "P3 pixel=%d mask=%d keep=%d\n", i, mask[i],
+            fprintf(stderr, "delta pixel=%d mask=%d keep=%d\n", i, mask[i],
                 keep);
             goto end;
         }
@@ -526,6 +528,341 @@ end:
         fprintf(stderr, "P3 identity seeded=%d pass=%d: %s\n", seeded,
             pass, sixel_helper_get_additional_message());
     }
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+/* Decimal inverse of the documented legacy output matrix and TRC. */
+static double const od_input[3][3] = {
+    { -0.25, 1.25, 0.5 },
+    { 0, 1, 0 },
+    { 0.501960784313725, 0, 0 },
+};
+static double const od_linear[2][3][3] = {
+    { { -0.25, 1.25, 0.5 },
+      { 0, 1, 0 },
+      { 0.501960784313725, 0, 0 } },
+    { { 0.0397109517371331, 1.58062160921521, 0.211826931114147 },
+      { 0.0501803604257027, 0.965770562665531, -0.00436969856687614 },
+      { 0.206283743391989, 0.00390204259140148, -0.000356045000672537 } },
+};
+static double const od_negative[2][3] = {
+    { -0.0760540039746224, 0, 0 },
+    { -0.000200271221733843, -3.78831033501505e-06, 3.45667409871548e-07 },
+};
+static double const od_retained[2][3] = {
+    { 0.0498400898450127, 0, 0 },
+    { 6.16404193025565e-05, 1.16598398650042e-06, -1.06391142467926e-07 },
+};
+
+static char const *const od_names[2] = {"linear", "smpte-c"};
+static int const od_spaces[2] = {
+    SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_SMPTEC
+};
+
+/* Independent destination coordinates above include signed, above-one and
+ * bounded values whose inverse leaves the sRGB cube. This is not a forward
+ * / inverse roundtrip oracle. The legacy matrix itself is the contract. */
+int
+test_delta_output_inverse(int output)
+{
+    sixel_dither_t *dither;
+    double result[3];
+    int color;
+    int channel;
+    int ok;
+
+    dither = NULL;
+    ok = 0;
+    if (!pd_palette(&dither, SIXEL_COLORSPACE_GAMMA) ||
+            SIXEL_FAILED(sixel_palette_prepare_output(dither->palette, 0,
+                SIXEL_PALETTE_OUTPUT_LEGACY, od_spaces[output]))) {
+        goto end;
+    }
+    for (color = 0; color < 3; ++color) {
+        memcpy(result, od_input[color], sizeof(result));
+        if (!sixel_palette_from_output(dither->palette, result, result,
+                SIXEL_COLORSPACE_LINEAR)) {
+            goto end;
+        }
+        for (channel = 0; channel < 3; ++channel) {
+            if (!isfinite(result[channel]) ||
+                    fabs(result[channel] - od_linear[output][color][channel])
+                        > 2e-12) {
+                goto end;
+            }
+        }
+    }
+    ok = 1;
+end:
+    sixel_dither_unref(dither);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_delta_output_failure(void)
+{
+    static double const invalid[3][3] = {
+        {NAN, 0, 0}, {0, INFINITY, 0}, {1e300, 0, 0}
+    };
+    double const sentinel[3] = {7, 8, 9};
+    double result[3];
+    int i;
+
+    for (i = 0; i < 3; ++i) {
+        memcpy(result, sentinel, sizeof(result));
+        if (sixel_color_from_output(result, invalid[i],
+                SIXEL_COLORSPACE_SMPTEC, SIXEL_COLORSPACE_LINEAR) ||
+                memcmp(result, sentinel, sizeof(result)) != 0) {
+            return EXIT_FAILURE;
+        }
+    }
+    /* This inverse must not make SMPTE-C a valid workspace, or admit
+     * working-space values as a wire interpretation. */
+    if (sixel_color_from_output(result, od_input[1],
+            SIXEL_COLORSPACE_SMPTEC, SIXEL_COLORSPACE_SMPTEC) ||
+            sixel_color_from_output(result, od_input[1],
+                SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_GAMMA) ||
+            memcmp(result, sentinel, sizeof(result)) != 0) {
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}
+
+int
+test_delta_output_threshold(int output)
+{
+    unsigned char history[3] = {1, 0, 0};
+    unsigned char valid[1] = {1};
+    float query[3];
+    float chosen[3] = {0};
+    float retained[3];
+    sixel_dither_t *dither;
+    int channel;
+    int threshold;
+    int keep;
+    int ok;
+
+    dither = NULL;
+    ok = 0;
+    if (!pd_palette(&dither, SIXEL_COLORSPACE_GAMMA) ||
+            SIXEL_FAILED(sixel_palette_prepare_output(dither->palette, 0,
+                SIXEL_PALETTE_OUTPUT_LEGACY, od_spaces[output]))) {
+        goto end;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        query[channel] = (float)od_negative[output][channel];
+    }
+    for (threshold = 2; threshold <= 3; ++threshold) {
+        sixel_dither_set_pipeline_accumulation_buffer_hint(dither,
+            history, sizeof(history), valid, sizeof(valid),
+            1, 1, 0, 0, 1, 1, 2, 1, (unsigned int)threshold,
+            SIXEL_6DELTA_ERROR_DIFFUSE);
+        keep = sixel_dither_6delta_keep_float(dither, 0, 0, 0,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, query, chosen, 0, 0, retained);
+        /* The output distance .0067+1/255 lies between T2 and T3.
+         * Gamma comparison or premature clipping changes this decision. */
+        if (keep != (threshold == 3)) {
+            goto end;
+        }
+        for (channel = 0; keep && channel < 3; ++channel) {
+            if (!isfinite(retained[channel]) || fabs(retained[channel] -
+                    od_retained[output][channel]) > 2e-8) {
+                goto end;
+            }
+        }
+    }
+    ok = 1;
+end:
+    sixel_dither_unref(dither);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_delta_output_residual(int output, int skip)
+{
+    unsigned char history[6] = {128, 0, 0, 0, 0, 0};
+    unsigned char valid[2] = {1, 0};
+    float values[9] = {0, 0, 0, 1, 0, 0, 0, 0, 0};
+    float pixels[6] = {0};
+    sixel_palette_float32_entries_request_t request;
+    sixel_dither_t *dither;
+    sixel_index_t *indexes;
+    int ok;
+
+    dither = NULL;
+    indexes = NULL;
+    ok = 0;
+    if (!pd_palette(&dither, SIXEL_COLORSPACE_GAMMA)) {
+        goto end;
+    }
+    memset(&request, 0, sizeof(request));
+    request.entries = values;
+    request.colors = 3;
+    request.depth = 3 * sizeof(float);
+    if (SIXEL_FAILED(dither->palette->vtbl->init_entries_float32(
+            dither->palette, &request)) ||
+            SIXEL_FAILED(sixel_palette_prepare_output(dither->palette, 0,
+                SIXEL_PALETTE_OUTPUT_LEGACY, od_spaces[output]))) {
+        goto end;
+    }
+    pixels[0] = output ? .45f : .65f;
+    pixels[3] = output ? .516f : .53f;
+    sixel_dither_set_pipeline_accumulation_buffer_hint(dither,
+        history, sizeof(history), valid, sizeof(valid),
+        2, 1, 0, 0, 2, 1, 2, 1, 64,
+        skip ? SIXEL_6DELTA_ERROR_SKIP : SIXEL_6DELTA_ERROR_DIFFUSE);
+    sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_RGBFLOAT32);
+    sixel_dither_set_diffusion_type(dither, SIXEL_DIFFUSE_FS);
+    sixel_dither_set_diffusion_scan(dither, SIXEL_SCAN_RASTER);
+    if (SIXEL_FAILED(sixel_dither_set_clamp_policy(dither,
+            SIXEL_DITHER_CLAMP_NONE, 1.01))) {
+        goto end;
+    }
+    indexes = sixel_dither_apply_palette(dither,
+        (unsigned char *)pixels, 2, 1);
+    /* Retained red in gamma units: .73664694 linear / .49152858 SMPTE-C.
+     * FS moves the next red to .49209196 / .49783125, below .5. Skip leaves
+     * it above .5. Green/blue residuals cancel in the black/red comparison. */
+    ok = indexes != NULL && indexes[0] == 2 && indexes[1] == (skip ? 1 : 0);
+end:
+    if (dither != NULL) {
+        sixel_allocator_free(dither->allocator, indexes);
+    }
+    sixel_dither_unref(dither);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_delta_output_frames(int space, int target, int workers)
+{
+    sixel_encoder_t *encoder;
+    sixel_output_t *output;
+    sixel_frame_t *frame;
+    sixel_dither_t *dither;
+    pd_stream_t stream;
+    float pixels[4 * 25 * 3];
+    unsigned char expected[3];
+    int rows;
+    int pass;
+    int color;
+    int i;
+    int ok;
+
+    encoder = NULL;
+    output = NULL;
+    frame = NULL;
+    ok = 0;
+    rows = workers ? 25 : 1;
+    if (!pd_encoder(&encoder, &output, &stream, 0) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
+                od_names[target])) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
+                pd_spaces[space])) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
+                workers ? "4" : "1"))) {
+        goto end;
+    }
+    for (pass = 0; pass < 5; ++pass) {
+        color = pass == 4 ? 1 : pass / 2;
+        for (i = 0; i < 4 * rows * 3; ++i) {
+            pixels[i] = (float)output_native[0].entries[color][i % 3];
+        }
+        for (i = 0; i < 3; ++i) {
+            expected[i] = (unsigned char)((255U *
+                output_native[0].wire[target][color][i] + 50U) / 100U);
+        }
+        if (pass == 4) {
+            sixel_encoder_invalidate_6delta_plane(encoder);
+        }
+        stream.size = 0;
+        if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+                SIXEL_FAILED(sixel_frame_init_borrowed(frame,
+                    (unsigned char *)pixels, 4, rows,
+                    SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1)) ||
+                SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame,
+                    output))) {
+            goto end;
+        }
+        dither = encoder->diagnostic_dither;
+        if (dither == NULL || !dither->use_rgb101_palette ||
+                dither->pixelformat != pd_formats[space] ||
+                (workers && dither->pipeline_last_encode_threads < 2) ||
+                !pd_decode(encoder, &stream, 4, rows, pass % 2, expected)) {
+            goto end;
+        }
+        for (i = 0; i < 4 * rows * 3; ++i) {
+            if (encoder->accumulation_pixels[i] != expected[i % 3]) {
+                goto end;
+            }
+        }
+        sixel_frame_unref(frame);
+        frame = NULL;
+    }
+    ok = 1;
+end:
+    if (!ok) {
+        fprintf(stderr, "output delta space=%d target=%d workers=%d\n",
+            space, target, workers);
+    }
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_delta_output_identity(int target)
+{
+    unsigned char black[12] = {0};
+    float pixels[12] = {0};
+    sixel_encoder_t *encoder;
+    sixel_output_t *output;
+    sixel_frame_t *frame;
+    pd_stream_t stream;
+    char const *definition;
+    int pass;
+    int ok;
+
+    encoder = NULL;
+    output = NULL;
+    frame = NULL;
+    ok = 0;
+    if (!pd_encoder(&encoder, &output, &stream, 1) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
+                od_names[target])) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'b', "gray1")) ||
+            SIXEL_FAILED(sixel_encoder_set_accumulation_buffer(encoder,
+                black, 4, 1, SIXEL_PIXELFORMAT_RGB888))) {
+        goto end;
+    }
+    for (pass = 0; pass < 8; ++pass) {
+        definition = pass < 2 ? od_names[target] :
+            pass < 4 ? od_names[1 - target] : pass < 6 ? "gamma" : "display-p3";
+        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', definition)) ||
+                (pass == 1 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
+                    'W', "linear")))) {
+            goto end;
+        }
+        memset(pixels, 0, sizeof(pixels));
+        stream.size = 0;
+        if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+                SIXEL_FAILED(sixel_frame_init_borrowed(frame,
+                    (unsigned char *)pixels, 4, 1,
+                    SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1)) ||
+                SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame,
+                    output)) ||
+                !pd_decode(encoder, &stream, 4, 1,
+                    pass == 0 || pass % 2, black)) {
+            goto end;
+        }
+        sixel_frame_unref(frame);
+        frame = NULL;
+    }
+    ok = 1;
+end:
     sixel_frame_unref(frame);
     sixel_output_unref(output);
     sixel_encoder_unref(encoder);

@@ -270,7 +270,30 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0116_DELTA_P3_WORKERS \
     -DBUILD_TEST_0117_DELTA_P3_DEFINITION_SWITCH \
     -DBUILD_TEST_0118_DELTA_P3_SEED_DEFINITION \
-    -DBUILD_DELTA_P3_COMMON \
+    -DBUILD_TEST_0119_DELTA_LINEAR_OUTPUT_INVERSE \
+    -DBUILD_TEST_0120_DELTA_LINEAR_OUTPUT_THRESHOLD \
+    -DBUILD_TEST_0121_DELTA_LINEAR_OUTPUT_DIFFUSE \
+    -DBUILD_TEST_0122_DELTA_LINEAR_OUTPUT_SKIP \
+    -DBUILD_TEST_0123_DELTA_LINEAR_OUTPUT_GAMMA_FRAMES \
+    -DBUILD_TEST_0124_DELTA_LINEAR_OUTPUT_LINEAR_FRAMES \
+    -DBUILD_TEST_0125_DELTA_LINEAR_OUTPUT_OKLAB_FRAMES \
+    -DBUILD_TEST_0126_DELTA_LINEAR_OUTPUT_CIELAB_FRAMES \
+    -DBUILD_TEST_0127_DELTA_LINEAR_OUTPUT_DIN99D_FRAMES \
+    -DBUILD_TEST_0128_DELTA_LINEAR_OUTPUT_WORKERS \
+    -DBUILD_TEST_0129_DELTA_LINEAR_OUTPUT_IDENTITY \
+    -DBUILD_TEST_0130_DELTA_SMPTEC_OUTPUT_INVERSE \
+    -DBUILD_TEST_0131_DELTA_SMPTEC_OUTPUT_THRESHOLD \
+    -DBUILD_TEST_0132_DELTA_SMPTEC_OUTPUT_DIFFUSE \
+    -DBUILD_TEST_0133_DELTA_SMPTEC_OUTPUT_SKIP \
+    -DBUILD_TEST_0134_DELTA_SMPTEC_OUTPUT_GAMMA_FRAMES \
+    -DBUILD_TEST_0135_DELTA_SMPTEC_OUTPUT_LINEAR_FRAMES \
+    -DBUILD_TEST_0136_DELTA_SMPTEC_OUTPUT_OKLAB_FRAMES \
+    -DBUILD_TEST_0137_DELTA_SMPTEC_OUTPUT_CIELAB_FRAMES \
+    -DBUILD_TEST_0138_DELTA_SMPTEC_OUTPUT_DIN99D_FRAMES \
+    -DBUILD_TEST_0139_DELTA_SMPTEC_OUTPUT_WORKERS \
+    -DBUILD_TEST_0140_DELTA_SMPTEC_OUTPUT_IDENTITY \
+    -DBUILD_TEST_0141_DELTA_OUTPUT_INVERSE_FAILURE \
+    -DBUILD_DELTA_OUTPUT_COMMON \
     -DBUILD_DELTA_WORK_COMMON \
     -DBUILD_DELTA_BYTE_COMMON \
     -DBUILD_DELTA_FIXED_COMMON \
@@ -3026,7 +3049,30 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0116_delta_p3_workers.c \
     quant/palette/delta_native/0117_delta_p3_definition_switch.c \
     quant/palette/delta_native/0118_delta_p3_seed_definition.c \
-    quant/palette/delta_p3_common.c \
+    quant/palette/delta_native/0119_delta_linear_output_inverse.c \
+    quant/palette/delta_native/0120_delta_linear_output_threshold.c \
+    quant/palette/delta_native/0121_delta_linear_output_diffuse.c \
+    quant/palette/delta_native/0122_delta_linear_output_skip.c \
+    quant/palette/delta_native/0123_delta_linear_output_gamma_frames.c \
+    quant/palette/delta_native/0124_delta_linear_output_linear_frames.c \
+    quant/palette/delta_native/0125_delta_linear_output_oklab_frames.c \
+    quant/palette/delta_native/0126_delta_linear_output_cielab_frames.c \
+    quant/palette/delta_native/0127_delta_linear_output_din99d_frames.c \
+    quant/palette/delta_native/0128_delta_linear_output_workers.c \
+    quant/palette/delta_native/0129_delta_linear_output_identity.c \
+    quant/palette/delta_native/0130_delta_smptec_output_inverse.c \
+    quant/palette/delta_native/0131_delta_smptec_output_threshold.c \
+    quant/palette/delta_native/0132_delta_smptec_output_diffuse.c \
+    quant/palette/delta_native/0133_delta_smptec_output_skip.c \
+    quant/palette/delta_native/0134_delta_smptec_output_gamma_frames.c \
+    quant/palette/delta_native/0135_delta_smptec_output_linear_frames.c \
+    quant/palette/delta_native/0136_delta_smptec_output_oklab_frames.c \
+    quant/palette/delta_native/0137_delta_smptec_output_cielab_frames.c \
+    quant/palette/delta_native/0138_delta_smptec_output_din99d_frames.c \
+    quant/palette/delta_native/0139_delta_smptec_output_workers.c \
+    quant/palette/delta_native/0140_delta_smptec_output_identity.c \
+    quant/palette/delta_native/0141_delta_output_inverse_failure.c \
+    quant/palette/delta_output_common.c \
     quant/palette/delta_work_common.c \
     quant/palette/delta_byte_common.c \
     quant/palette/delta_fixed_common.c \

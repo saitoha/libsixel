@@ -6792,17 +6792,19 @@ sixel_encoder_palette_capacity(sixel_encoder_t const *encoder)
     return encoder->reqcolors == -1 ? SIXEL_PALETTE_MAX : encoder->reqcolors;
 }
 
-/* Retained RGB888 describes emitted sRGB or P3. Native delta compares in
- * those output coordinates, then returns retained colors to the workspace.
+/* Retained RGB888 describes emitted RGB in the selected representation.
+ * Compare in output coordinates, then return kept colors to the workspace.
  * Output identity belongs to the plane; workspace/precision changes do not
- * invalidate a compatible plane. Other output definitions remain separate.
+ * invalidate a compatible plane. HLS rounding remains a separate boundary.
  * Generated palettes can reserve an omission key after history exists.
  * Fixed tables use a separate mask without consuming a palette entry.
  * Alternate transports retain their separate migration boundaries. */
 static int
 sixel_encoder_native_delta(sixel_encoder_t const *encoder)
 {
-    if (encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA ||
+    if ((encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA &&
+         encoder->output_colorspace != SIXEL_COLORSPACE_LINEAR &&
+         encoder->output_colorspace != SIXEL_COLORSPACE_SMPTEC) ||
             (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY &&
              encoder->output_color_definition !=
                 SIXEL_PALETTE_OUTPUT_DISPLAY_P3) ||
