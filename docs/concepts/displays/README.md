@@ -183,6 +183,35 @@ A picture pipeline for such devices may therefore return to small adaptive palet
 
 > **Try it.** Prepare an image the way a small-palette device would show it: `img2sixel -b gray4 image.png` uses 16 evenly spaced grays, like a monochrome e-reader, and `img2sixel -p 16 image.png` chooses 16 colors for the image, like a VT340. To match a particular panel, write its colors to a GPL palette file and use `img2sixel -m panel.gpl image.png`.
 
+## Outlook
+
+### Where density is heading
+
+The share of displays above 60 pixels per degree will probably keep growing. Phones already reach it at every price, and notebooks are moving toward it as higher-resolution panels become cheaper. Televisions passed it years ago at ordinary viewing distances.
+
+Displays with a visible pixel grid are nevertheless unlikely to disappear, for reasons that are not only about price:
+
+- **Cost grows with the number of pixels.** Panel manufacturing, the bandwidth to drive the panel and the work of drawing every frame all grow with the pixel count. An office 1080p monitor is the cheapest screen that does the job, and it is likely to remain common.
+- **Some users trade resolution for speed.** Games must draw every pixel of every frame, so players who value frame rate choose lower resolutions with higher refresh rates.
+- **Some displays cannot yet reach the density.** VR headsets stay near 25 to 35 pixels per degree because their optics spread a small panel over a wide field of view. Color electronic paper with color filters halves its color resolution, and large LED walls are built to be seen from far away.
+- **Returns diminish.** Beyond about 60 pixels per degree, more density brings little visible improvement, so mainstream products tend to stop at "good enough".
+
+### The effective density of a terminal image
+
+For images in a terminal, the density that matters is that of the image's own pixels, which can be lower than that of the screen. Whether one SIXEL pixel covers one device pixel or one logical pixel depends on the terminal and its configuration. On a display scaled by two, the second choice enlarges each image pixel to 2 × 2 device pixels and halves the effective pixels per degree. Larger fonts and zooming have a similar effect, and some terminals rescale images to keep their size in character cells.
+
+Bandwidth pulls in the same direction. Filling the same area of a screen with twice the density in each direction takes four times as many pixels, and the SIXEL stream and the time to encode and decode it grow accordingly. Applications therefore have reasons to send images at a lower resolution and let them be shown enlarged.
+
+### What density does and does not change for dithering
+
+It is tempting to conclude that low effective density simply calls for more dithering, or that high density makes dithering free. Neither follows. Density changes mainly how visible the *pattern* of dithering noise is; it changes neither what dithering is for nor most of what it costs.
+
+- **The benefit does not depend on density.** Without dithering, a smooth gradient reproduced with too few colors shows bands. Bands are a coarse, low-frequency artifact, visible at any pixel density, and dithering removes them by replacing them with fine noise.
+- **The visibility of the noise does.** Above about 60 pixels per degree the noise of good dithering is close to invisible. At 30 to 50 pixels per degree it can be seen in smooth areas, and when a terminal enlarges image pixels with nearest-neighbor scaling, each dot becomes a visible block. Smooth enlargement averages the dots away, but it also blurs edges.
+- **Other costs remain at any density.** Dithering makes SIXEL streams larger and slower to decode, as the [dithering chapter](../dithering/README.md#dithering-in-sixel) explains. In animation, noise that changes from frame to frame can shimmer, as described for [cover misses](../../encoder/palette-construction/cover-policy/README.md#what-a-cover-miss-looks-like-in-animation). On text, line art and flat interface graphics, noise around edges and in flat areas is a defect rather than an improvement, and no dithering or structure-preserving dithering serves such content better.
+
+No single setting is therefore best for every display and every image. The choice depends on the content (photograph, gradient, text or flat graphics), on the expected viewing conditions, and on bandwidth and animation. Comparisons between settings should state the viewing geometry they assume, and the [image quality metrics](../../quality/metrics.md) used to compare them should be read with that geometry in mind.
+
 ## In libsixel
 
 | Situation | libsixel control | Reference |
