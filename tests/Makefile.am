@@ -479,6 +479,22 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0032_P3_SNAP_RECOVERY \
     -DBUILD_TEST_0033_P3_NAN_RECOVERY \
     -DBUILD_TEST_0034_P3_ALPHA_RECOVERY \
+    -DBUILD_TEST_0035_FINAL_FULL \
+    -DBUILD_TEST_0036_FINAL_ONE \
+    -DBUILD_TEST_0037_FINAL_TWO \
+    -DBUILD_TEST_0038_FINAL_THREE \
+    -DBUILD_TEST_0039_FINAL_FOUR \
+    -DBUILD_TEST_0040_FINAL_FIVE \
+    -DBUILD_TEST_0041_SINGLE_ROW \
+    -DBUILD_TEST_0042_KEY_REVISIT \
+    -DBUILD_TEST_0043_FINAL_FLOAT \
+    -DBUILD_TEST_0044_FINAL_OFFSET \
+    -DBUILD_TEST_0045_SHORT_OFFSET \
+    -DBUILD_TEST_0046_FINAL_WORKERS \
+    -DBUILD_TEST_0047_SLOTS_255 \
+    -DBUILD_TEST_0048_SLOTS_256 \
+    -DBUILD_TEST_0049_SINGLE_OFFSET \
+    -DBUILD_HIGHCOLOR_BAND_COMMON \
     -DBUILD_HIGHCOLOR_OUTPUT_COMMON \
     -DBUILD_PNG_DELTA_COMMON \
     -DBUILD_TEST_0001_SRGB_FRAME_PRECISION \
@@ -5974,6 +5990,22 @@ test_runner_SOURCES = test_runner.c \
     codec/highcolor/0032_p3_snap_recovery.c \
     codec/highcolor/0033_p3_nan_recovery.c \
     codec/highcolor/0034_p3_alpha_recovery.c \
+    codec/highcolor/0035_final_full.c \
+    codec/highcolor/0036_final_one.c \
+    codec/highcolor/0037_final_two.c \
+    codec/highcolor/0038_final_three.c \
+    codec/highcolor/0039_final_four.c \
+    codec/highcolor/0040_final_five.c \
+    codec/highcolor/0041_single_row.c \
+    codec/highcolor/0042_key_revisit.c \
+    codec/highcolor/0043_final_float.c \
+    codec/highcolor/0044_final_offset.c \
+    codec/highcolor/0045_short_offset.c \
+    codec/highcolor/0046_final_workers.c \
+    codec/highcolor/0047_slots_255.c \
+    codec/highcolor/0048_slots_256.c \
+    codec/highcolor/0049_single_offset.c \
+    codec/highcolor_band_common.c \
     codec/highcolor_output_common.c \
     codec/png_delta_common.c \
     codec/png_snapshot/0001_srgb_frame_precision.c \

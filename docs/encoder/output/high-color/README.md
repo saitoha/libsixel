@@ -1,6 +1,6 @@
 # High-Color Output
 
-`img2sixel -I` enables the legacy high-color path. It can paint more than 256 colors by redefining palette registers during an image, but it is not a general quality upgrade. Its color assignment and pass scheduling remain serial, it does not benefit from the complete normal palette pipeline, and current measurements expose visible tone steps and a malformed-output stress case. Keeping this mode useful requires work on correctness, independent band encoding, and color representation together.
+`img2sixel -I` enables the legacy high-color path. It can paint more than 256 colors by redefining palette registers during an image, but it is not a general quality upgrade. Its color assignment and pass scheduling remain serial, it does not benefit from the complete normal palette pipeline, and the retained measurements expose visible tone steps and a historical malformed-output stress case. Keeping this mode useful requires independent band encoding and evidence about color representation and quality.
 
 ```console
 img2sixel -I image.png
@@ -63,6 +63,12 @@ Low-level callers that explicitly enable the legacy 15bpp diffusion routines sti
 
 The ordinary palette solver and lookup restrictions do not apply to high color because those stages are bypassed. High-level diffusion remains disabled, even if `-d` selects a method. GPU and active snap remain unsupported; a zero snap approach is inactive. The receiver must interpret these RGB or HLS definitions as Display P3, as described in [output interpretation](../output-colorspace.md). The low-level `sixel_encode()` API retains its existing legacy destination setup; the P3 intent is carried privately by the high-level encoder without changing public API signatures.
 
+## Pending final bands
+
+A pass that runs out of paint registers must return to the unfinished physical six-row band, including at end of input. End of input alone does not mean all pixels are painted. The body leaves the cursor at that band's origin; the next pass retains its completed-pixel marks and replaces registers to paint the remainder. Only a pass with no pending pixels emits the final body and footer.
+
+Rewinding uses the number of source rows actually present in that band, which can be one through six. With a transparent top margin, the first band's source rows can also be fewer than six. Repeated passes retain the starting row bit for that band without repeating whole bands of top padding. These rules apply to byte and float representatives and do not change palette-key selection or the 255 paint-register limit.
+
 ## Parallelism: the current boundary
 
 The high-color front end in [`sixel_encode_highcolor()`](../../../../src/encoder-core-highcolor.c) walks pixels and chooses register replacements serially. `rgbhit`, `rgb2pal`, palette representatives, and six-row `marks` carry information between passes; a pass can cover several bands and then return to an unfinished band. Clearing `palstate` and hit counters at `next:` is a **pass reset**, not an independently initialized image band.
@@ -110,7 +116,7 @@ Those samples remain useful as scheduling data. Speed comparisons in this docume
 
 ## Work needed before treating this as a quality mode
 
-The measured key-reuse diagnostic produces missing pixels and paints beyond its declared height. Those correctness failures need regression coverage and repair before performance work is accepted. A band-local encoder must not preserve such behavior for byte compatibility.
+The [retained key-reuse measurement](measurement.md#key-reuse-correctness-diagnostic) records missing pixels and painting beyond the declared height in revision `3c92b3a1cc`. Current pass scheduling completes a pending final band before ending the image. The final-band value tests below protect dimensions, complete painting, register lifetime and transparent margins; a future band-local encoder must preserve those contracts, rather than the malformed historical bytes.
 
 For color quality, distinguish the key from the representative. The current first-encountered RGB sample, its lifetime in a reused slot, and rounding to SIXEL's integer percentage channels can create biased steps. Candidate changes include deterministic representatives, perceptual or adaptive quantization, and a deliberate high-color diffusion policy; each requires a new quality/size/speed comparison. Restoring an old diffusion routine through `-d` without defining ownership and cross-band error propagation would reintroduce dependencies and is not a complete solution.
 
@@ -118,7 +124,7 @@ Retain this mode as an explicitly limited alternate path until it has a correctn
 
 ## Implementation and existing coverage
 
-The repeated-pass implementation is in [`encoder-core-highcolor.c`](../../../../src/encoder-core-highcolor.c), CLI mode selection and diffusion bypass are in [`encoder.c`](../../../../src/encoder.c), and paint-time palette resolution is in [`fromsixel.c`](../../../../src/fromsixel.c). Focused existing tests exercise the 255 paint-register boundary in [`0166_high_color_sixel_direct_palette_slots.t`](../../../../tests/quant/palette/usage/0166_high_color_sixel_direct_palette_slots.t), preservation across direct decoding in [`0023_decoder_high_color_dequantize_bypass.c`](../../../../tests/processing/decoder/0023_decoder_high_color_dequantize_bypass.c), and transparent-offset geometry in [`0175_transparent_offset_high_color_geometry.t`](../../../../tests/quant/palette/usage/0175_transparent_offset_high_color_geometry.t). These tests do not establish correctness for every palette-reuse or final-band case.
+The repeated-pass implementation is in [`encoder-core-highcolor.c`](../../../../src/encoder-core-highcolor.c), CLI mode selection and diffusion bypass are in [`encoder.c`](../../../../src/encoder.c), and paint-time palette resolution is in [`fromsixel.c`](../../../../src/fromsixel.c). Focused existing tests exercise the 255 paint-register boundary in [`0166_high_color_sixel_direct_palette_slots.t`](../../../../tests/quant/palette/usage/0166_high_color_sixel_direct_palette_slots.t), preservation across direct decoding in [`0023_decoder_high_color_dequantize_bypass.c`](../../../../tests/processing/decoder/0023_decoder_high_color_dequantize_bypass.c), and transparent-offset geometry in [`0175_transparent_offset_high_color_geometry.t`](../../../../tests/quant/palette/usage/0175_transparent_offset_high_color_geometry.t). The final-band tests below additionally cover pending passes at complete and partial image boundaries; they do not establish every possible palette-selection or alpha-policy combination.
 
 The [study tool](../../../../tools/highcolor/study.py) verifies retained hashes, dimensions, painted color counts, histograms, register bounds, and timing-sample coverage. Its diagnostic measurements explicitly record existing failures; they are not a passing quality regression threshold. Regenerate the conceptual figures with `tools/reproduce_encoding_mode_figures.sh` and verify them with `--check`.
 
@@ -128,7 +134,7 @@ The [study tool](../../../../tools/highcolor/study.py) verifies retained hashes,
 
 ### Behavioral contract tests
 
-The small value witnesses inspect direct-decoded pixels and opacity, including register redefinition. Their analytic transfer/matrix references, independent P3 primary coordinates and integer rounding margins are documented in `tests/codec/highcolor_output_common.c`. Nonfinite rejection and reuse are separate from finite approximation checks. These tests establish the destination handoff, not perceptual quality or exhaustive pass scheduling. The existing study's known key-reuse and final-band defects remain outside these assertions.
+The small value witnesses inspect direct-decoded pixels and opacity, including register redefinition. Their analytic transfer/matrix references, independent P3 primary coordinates and integer rounding margins are documented in `tests/codec/highcolor_output_common.c`. Nonfinite rejection and reuse are separate from finite approximation checks. These tests establish the destination handoff, not perceptual quality or exhaustive pass scheduling. Pending final-band tests check every decoded pixel, exact dimensions, opacity, 255/256 slot boundaries, key revisits and transparent margins. The float and P3 lifetime witnesses include a pending final band. Requested one- and four-thread budgets exercise the serial scheduler and shared body serializer, not independent high-color band scheduling.
 
 | ID | Contract | Test |
 | --- | --- | --- |
@@ -166,3 +172,18 @@ The small value witnesses inspect direct-decoded pixels and opacity, including r
 | HC-32 | High-color P3 active snap rejects before output and allows unsnapped reuse. | [tests/codec/highcolor/0032_p3_snap_recovery.t](../../../../tests/codec/highcolor/0032_p3_snap_recovery.t) |
 | HC-33 | High-color P3 nonfinite input rejects before output and allows finite reuse. | [tests/codec/highcolor/0033_p3_nan_recovery.t](../../../../tests/codec/highcolor/0033_p3_nan_recovery.t) |
 | HC-34 | High-color P3 packed alpha rejects before output and allows opaque RGB reuse. | [tests/codec/highcolor/0034_p3_alpha_recovery.t](../../../../tests/codec/highcolor/0034_p3_alpha_recovery.t) |
+| HC-35 | Full final band completes every pending color. | [tests/codec/highcolor/0035_final_full.t](../../../../tests/codec/highcolor/0035_final_full.t) |
+| HC-36 | One-row final band completes pending colors. | [tests/codec/highcolor/0036_final_one.t](../../../../tests/codec/highcolor/0036_final_one.t) |
+| HC-37 | Two-row final band completes pending colors. | [tests/codec/highcolor/0037_final_two.t](../../../../tests/codec/highcolor/0037_final_two.t) |
+| HC-38 | Three-row final band completes pending colors. | [tests/codec/highcolor/0038_final_three.t](../../../../tests/codec/highcolor/0038_final_three.t) |
+| HC-39 | Four-row final band completes pending colors. | [tests/codec/highcolor/0039_final_four.t](../../../../tests/codec/highcolor/0039_final_four.t) |
+| HC-40 | Five-row final band completes pending colors. | [tests/codec/highcolor/0040_final_five.t](../../../../tests/codec/highcolor/0040_final_five.t) |
+| HC-41 | A single row supports more than two palette passes. | [tests/codec/highcolor/0041_single_row.t](../../../../tests/codec/highcolor/0041_single_row.t) |
+| HC-42 | Repeated keys retain paint-time colors across pending passes. | [tests/codec/highcolor/0042_key_revisit.t](../../../../tests/codec/highcolor/0042_key_revisit.t) |
+| HC-43 | Float representatives complete the final band. | [tests/codec/highcolor/0043_final_float.t](../../../../tests/codec/highcolor/0043_final_float.t) |
+| HC-44 | An unaligned transparent margin preserves final-band placement. | [tests/codec/highcolor/0044_final_offset.t](../../../../tests/codec/highcolor/0044_final_offset.t) |
+| HC-45 | A multi-band top margin is emitted only once across short passes. | [tests/codec/highcolor/0045_short_offset.t](../../../../tests/codec/highcolor/0045_short_offset.t) |
+| HC-46 | A four-thread body budget preserves pending final-band pixels. | [tests/codec/highcolor/0046_final_workers.t](../../../../tests/codec/highcolor/0046_final_workers.t) |
+| HC-47 | Exactly 255 keys finish without a pending pass. | [tests/codec/highcolor/0047_slots_255.t](../../../../tests/codec/highcolor/0047_slots_255.t) |
+| HC-48 | The 256th key is painted by a pending final pass. | [tests/codec/highcolor/0048_slots_256.t](../../../../tests/codec/highcolor/0048_slots_256.t) |
+| HC-49 | A short offset image retains its row bit over repeated passes. | [tests/codec/highcolor/0049_single_offset.t](../../../../tests/codec/highcolor/0049_single_offset.t) |

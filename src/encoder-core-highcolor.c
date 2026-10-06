@@ -916,6 +916,7 @@ sixel_encode_highcolor(
     unsigned char *mptr;
     int dirty;
     int mod_y;
+    int band_rows;
     int nextpal;
     int threshold;
     int pix;
@@ -1044,7 +1045,9 @@ next:
     memset(palstate, 0, sizeof(palstate));
     /* Clear palette hit counters for each pass to avoid stale data. */
     memset(palhitcount, 0, sizeof(palhitcount));
-    y = mod_y = 0;
+    y = 0;
+    band_rows = 0;
+    mod_y = output->transparent_offset_top % 6;
 
     while (1) {
         for (x = 0; x < width; x++, mptr++, dst++, pixels += stride) {
@@ -1129,12 +1132,9 @@ next:
             }
         }
 
-        if (++y >= height) {
-            if (dirty) {
-                mod_y = 5;
-            } else {
-                goto end;
-            }
+        ++band_rows;
+        if (++y >= height && !dirty) {
+            goto end;
         }
         if (dirty && (mod_y == 5 || y >= height)) {
             orig_height = height;
@@ -1166,18 +1166,24 @@ next:
             if (SIXEL_FAILED(status)) {
                 goto error;
             }
-            output->transparent_offset_top = 0;
-            if (y >= orig_height) {
-              goto end;
-            }
-            pixels -= (6 * width * stride);
-            height = orig_height - height + 6;
+            /* The body leaves the cursor at the current band's origin.
+             * Even at EOF, unpainted pixels need another palette pass;
+             * jumping to end would duplicate this body and omit them.
+             * Rewind only the source rows in this physical band. A short
+             * final band or the first band after a top margin has fewer
+             * than six rows. Preserve its marks and its initial row bit,
+             * but never emit the whole top margin a second time. */
+            output->transparent_offset_top = y == band_rows ?
+                output->transparent_offset_top % 6 : 0;
+            pixels -= band_rows * width * stride;
+            height = orig_height - height + band_rows;
             goto next;
         }
 
         if (++mod_y == 6) {
             mptr = (unsigned char *)memset(marks, 0, (size_t)(width * 6));
             mod_y = 0;
+            band_rows = 0;
         }
     }
 

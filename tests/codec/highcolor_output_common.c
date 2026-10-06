@@ -163,12 +163,11 @@ test_highcolor_output(int scenario)
         expected = hls_rgb;
     } else if (scenario == 12) {
         width = 32;
-        height = 24;
+        height = 18;
         for (i = 0; i < width * height; ++i) {
-            /* A quiet last band avoids the separately documented legacy
-             * pending-pass/final-band defect. This test owns representative
-             * lifetime across completed passes, not scheduler repair. */
-            key_index = i < 576 ? i : 575;
+            /* The last band also needs palette reuse: every source pixel
+             * must retain its representative until it is actually painted. */
+            key_index = i;
             samples[i * 3] = (float)((key_index % 32) * 8 + 2) / 255.0f;
             samples[i * 3 + 1] = (float)((key_index / 32) * 8 + 2) / 255.0f;
             samples[i * 3 + 2] = .234f;
@@ -388,11 +387,10 @@ test_highcolor_p3(int scenario)
         }
         if (scenario == 23 || scenario == 24) {
             width = 32;
-            height = 24;
+            height = 18;
             for (i = 0; i < width * height; ++i) {
-                /* Keep the final band quiet, as in HC-12. Scheduling the
-                 * legacy pending final band is a separate known defect. */
-                k = i < 576 ? i : 575;
+                /* Include the final pending pass in the P3 lifetime check. */
+                k = i;
                 device[0] = ((k % 32) * 8 + 2) / 255.0;
                 device[1] = ((k / 32) * 8 + 2) / 255.0;
                 device[2] = .234;

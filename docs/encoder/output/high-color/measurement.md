@@ -91,7 +91,7 @@ Count these distinct quantities separately:
 | revisit | 65,536 | 32,768 | 57,656 | 57,656 | 64,770 |
 | snake-fhd | 334,428 | 4,008 | 31,215 | 31,215 | 57,885 |
 
-In particular, the revisit diagnostic exceeds 32,768 actual RGB colors. That does not imply uniform precision above 15bit; repeated representatives in a key do not restore all the source colors lost on cache hits. It also has correctness failures, described below. A raw indexed decoder's final palette would conceal this history and is unsuitable for this count.
+In particular, the revisit diagnostic exceeds 32,768 actual RGB colors. That does not imply uniform precision above 15bit; repeated representatives in a key do not restore all the source colors lost on cache hits. The retained revision also has correctness failures, described below. A raw indexed decoder's final palette would conceal this history and is unsuitable for this count.
 
 ![Histogram of the number of colors by their pixel occupancy, for snake, gradient, grayscale, and key revisits](study/color-occupancy.png)
 
@@ -101,9 +101,11 @@ Each occupancy histogram counts RGB colors with 1, 2–3, 4–7, and subsequent 
 
 ![A deliberate repeated-key lattice: 256-color policies and high-color output, including black gaps, with common-scale error maps](study/revisit-comparison.png)
 
-The 256×256 revisit input decodes from the high-color stream to **256×259**, leaves **1,021 pixels unpainted inside the source rectangle**, and paints beyond its bottom. These are reproducible correctness failures, not merely low-quality quantization. The original [SIXEL stream](study/revisit-high.six) and [unmodified RGBA PNG](study/revisit-high.png) retain them. The measurement tool checks both the CLI and the in-memory API, and high-color pixels match at one and eight requested encode threads.
+In recorded revision `3c92b3a1cc`, the 256×256 revisit input decodes from the high-color stream to **256×259**, leaves **1,021 pixels unpainted inside the source rectangle**, and paints beyond its bottom. These are reproducible correctness failures in that revision, not merely low-quality quantization. The original [SIXEL stream](study/revisit-high.six) and [unmodified RGBA PNG](study/revisit-high.png) retain them. The measurement tool checks both the CLI and the in-memory API, and high-color pixels match at one and eight requested encode threads.
 
 For the displayed comparison and `lsqa` only, the output is cropped to the 256×256 source rectangle and unpainted pixels are composited on black. This normalization is explicit and does not count as a successful dimension or coverage check. Its resulting MS-SSIM is 0.913880, mean ΔE00 is 1.363718, and size is 1,220,925 bytes. The full decoded dimensions, missing pixels, painted pixels outside the source, and the crop flag remain in the JSON record. The 57,656-color count excludes gaps and out-of-bounds pixels. This case must not be used to claim that the implementation correctly reproduces a full 15bit lattice.
+
+Current pending-band completion is covered by the [high-color value tests](README.md#behavioral-contract-tests). The archived SIXEL stream, PNG, metrics and charts above remain the results of the identified historical revision; they are not current-output expectations.
 
 ## Speed and thread budgets
 
