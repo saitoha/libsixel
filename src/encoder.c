@@ -6502,6 +6502,21 @@ sixel_encoder_validate_delta_drcs(int enabled, int drcs)
 }
 
 static SIXELSTATUS
+sixel_encoder_validate_delta_macro(int enabled, int use_macro, int number)
+{
+    /* Definitions need not be invoked, and cached macros may be invoked
+     * against a different base. The shared display history cannot describe
+     * an independently reusable macro's required surface context. */
+    if (enabled && (use_macro || number >= 0)) {
+        sixel_helper_set_additional_message(
+            "update-policy=delta conflicts with -u/-n macro output: "
+            "macro invocation has no tracked base surface.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_encoder_validate_alpha_feature_policy(sixel_encoder_t const *encoder)
 {
     SIXELSTATUS status;
@@ -6533,8 +6548,13 @@ sixel_encoder_validate_alpha_feature_policy(sixel_encoder_t const *encoder)
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    return sixel_encoder_validate_delta_drcs(encoder->sixdelta_enabled,
-                                             encoder->fdrcs);
+    status = sixel_encoder_validate_delta_drcs(encoder->sixdelta_enabled,
+                                               encoder->fdrcs);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    return sixel_encoder_validate_delta_macro(encoder->sixdelta_enabled,
+        encoder->fuse_macro, encoder->macro_number);
 }
 
 static SIXELSTATUS
@@ -11346,6 +11366,12 @@ sixel_encoder_apply_macro_number_option(
         parsed_value < 0L || parsed_value > (long)INT_MAX) {
         return SIXEL_BAD_ARGUMENT;
     }
+    /* Validate before replacing the existing ID or suppressing invocation. */
+    if (SIXEL_FAILED(sixel_encoder_validate_delta_macro(
+            encoder->sixdelta_enabled, encoder->fuse_macro,
+            (int)parsed_value))) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     encoder->macro_number = (int)parsed_value;
     return SIXEL_OK;
 }
@@ -11383,6 +11409,11 @@ sixel_encoder_apply_update_policy_option(
         status = sixel_encoder_validate_delta_drcs(
             resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA,
             encoder->fdrcs);
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_encoder_validate_delta_macro(
+            resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA,
+            encoder->fuse_macro, encoder->macro_number);
     }
     if (SIXEL_FAILED(status)) {
         sixel_option_free_argument_resolution(&resolution);
@@ -12575,6 +12606,11 @@ sixel_encoder_setopt(
         encoder->finvert = 1;
         break;
     case SIXEL_OPTFLAG_USE_MACRO:  /* u */
+        status = sixel_encoder_validate_delta_macro(encoder->sixdelta_enabled,
+            1, encoder->macro_number);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         encoder->fuse_macro = 1;
         break;
     case SIXEL_OPTFLAG_MACRO_NUMBER:  /* n */

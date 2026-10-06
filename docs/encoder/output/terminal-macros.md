@@ -170,6 +170,7 @@ DEC also defines a macro-space query, `CSI ? 62 n`, and a response, `CSI Pn * {`
 
 | Option or transport | Interaction |
 | --- | --- |
+| `-Z delta` | Rejected with `-u`, `-n` or both: stored deltas would require a known base at invocation. See [delta interactions](delta-encoding.md#execution-paths-and-interactions) for the current shared-history limit, rejection and explicit full override. |
 | `-g`, `--ignore-delay` | Suppresses host-side frame delays; it does not store timing in the macro. |
 | `-S`, `--static` | Selects a static frame from an animation and suppresses the animation delay path. For example, `-S -n7 animation.gif` preloads just one frame. |
 | `-l auto`, `-l disable`, `-l force` | Controls playback looping independently of macro selection. Fixed-ID preloading is normally paired with `-S`. |

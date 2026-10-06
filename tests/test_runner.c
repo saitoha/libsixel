@@ -372,6 +372,18 @@ int test_delta_native_0218(int argc, char **argv);
 int test_delta_native_0219(int argc, char **argv);
 int test_delta_native_0220(int argc, char **argv);
 int test_delta_native_0221(int argc, char **argv);
+int test_delta_native_0222(int argc, char **argv);
+int test_delta_native_0223(int argc, char **argv);
+int test_delta_native_0224(int argc, char **argv);
+int test_delta_native_0225(int argc, char **argv);
+int test_delta_native_0226(int argc, char **argv);
+int test_delta_native_0227(int argc, char **argv);
+int test_delta_native_0228(int argc, char **argv);
+int test_delta_native_0229(int argc, char **argv);
+int test_delta_native_0230(int argc, char **argv);
+int test_delta_native_0231(int argc, char **argv);
+int test_delta_native_0232(int argc, char **argv);
+int test_delta_native_0233(int argc, char **argv);
 int test_delta_native_0101(int argc, char **argv);
 int test_delta_native_0102(int argc, char **argv);
 int test_delta_native_0103(int argc, char **argv);
@@ -3559,6 +3571,30 @@ static test_entry_t const test_entries[] = {
         test_delta_native_0220 },
     { "palette/delta_native/0221_delta_drcs_p3_recovery",
         test_delta_native_0221 },
+    { "palette/delta_native/0222_delta_macro_use_then_delta",
+        test_delta_native_0222 },
+    { "palette/delta_native/0223_delta_delta_then_macro_use",
+        test_delta_native_0223 },
+    { "palette/delta_native/0224_delta_macro_number_then_delta",
+        test_delta_native_0224 },
+    { "palette/delta_native/0225_delta_delta_then_macro_number",
+        test_delta_native_0225 },
+    { "palette/delta_native/0226_delta_macro_use_environment",
+        test_delta_native_0226 },
+    { "palette/delta_native/0227_delta_macro_number_environment",
+        test_delta_native_0227 },
+    { "palette/delta_native/0228_delta_macro_use_full_override",
+        test_delta_native_0228 },
+    { "palette/delta_native/0229_delta_macro_number_full_override",
+        test_delta_native_0229 },
+    { "palette/delta_native/0230_delta_macro_byte_recovery",
+        test_delta_native_0230 },
+    { "palette/delta_native/0231_delta_macro_float_recovery",
+        test_delta_native_0231 },
+    { "palette/delta_native/0232_delta_macro_p3_recovery",
+        test_delta_native_0232 },
+    { "palette/delta_native/0233_delta_macro_combined_selection",
+        test_delta_native_0233 },
     { "palette/delta_native/0101_delta_p3_gamma_transform",
         test_delta_native_0101 },
     { "palette/delta_native/0102_delta_p3_linear_transform",

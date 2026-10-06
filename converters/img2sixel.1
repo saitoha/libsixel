@@ -493,6 +493,8 @@ terminal macros, and DECINVM to invoke them. Later animation passes
 reuse the stored definitions.
 Requires a receiver that supports both SIXEL and terminal macros.
 The loop policy is selected separately with \fB-l\fP.
+Conflicts with \fB-Z delta\fP: the current macro emitter does not track
+the base surface required by stored deltas. Select \fB-Z full\fP first.
 See TERMINAL MACROS for preloading and receiver requirements.
 .TP 5
 .B \-n \fIMACRONO\fP, \-\-macro-number=\fIMACRONO\fP
@@ -501,6 +503,8 @@ select a fixed DECDMAC ID and suppress automatic invocation, even with
 the receiver may support a smaller range. Repeating this option selects
 the last number. Multiple frames on the first pass redefine the same ID;
 use \fB-S\fP to preload one frame from an animation.
+Conflicts with \fB-Z delta\fP, including when \fB-u\fP is also present.
+Select \fB-Z full\fP first to disable delta.
 See TERMINAL MACROS for preloading examples and receiver requirements.
 .TP 5
 .B \-C \fICOMPLEXIONSCORE\fP, \-\-complexion-score=\fICOMPLEXIONSCORE\fP
@@ -1104,6 +1108,7 @@ It conflicts with \fB-e\fP, whose unpainted background cannot erase earlier
 foreground pixels. It also conflicts with \fB-O\fP: OR mode's P2=5
 does not carry delta's omitted-pixel preservation. DRCS output via \fB-@\fP also conflicts because glyph definitions do not update the retained display plane. Opaque black-and-white output via \fB-b gray1\fP can
 paint both colors and remains supported.
+Macro output (\fB-u\fP or \fB-n\fP) also conflicts: definitions need not be invoked, and later invocations may have a different base surface.
 History must match the receiver's display and frame placement.
 .TP 5
 .B \-P, \-\-penetrate

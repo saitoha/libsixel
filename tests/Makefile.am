@@ -376,6 +376,19 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0220_DELTA_DRCS_FLOAT_RECOVERY \
     -DBUILD_TEST_0221_DELTA_DRCS_P3_RECOVERY \
     -DBUILD_DELTA_DRCS_COMMON \
+    -DBUILD_TEST_0222_DELTA_MACRO_USE_THEN_DELTA \
+    -DBUILD_TEST_0223_DELTA_DELTA_THEN_MACRO_USE \
+    -DBUILD_TEST_0224_DELTA_MACRO_NUMBER_THEN_DELTA \
+    -DBUILD_TEST_0225_DELTA_DELTA_THEN_MACRO_NUMBER \
+    -DBUILD_TEST_0226_DELTA_MACRO_USE_ENVIRONMENT \
+    -DBUILD_TEST_0227_DELTA_MACRO_NUMBER_ENVIRONMENT \
+    -DBUILD_TEST_0228_DELTA_MACRO_USE_FULL_OVERRIDE \
+    -DBUILD_TEST_0229_DELTA_MACRO_NUMBER_FULL_OVERRIDE \
+    -DBUILD_TEST_0230_DELTA_MACRO_BYTE_RECOVERY \
+    -DBUILD_TEST_0231_DELTA_MACRO_FLOAT_RECOVERY \
+    -DBUILD_TEST_0232_DELTA_MACRO_P3_RECOVERY \
+    -DBUILD_TEST_0233_DELTA_MACRO_COMBINED_SELECTION \
+    -DBUILD_DELTA_MACRO_COMMON \
     -DBUILD_DELTA_OUTPUT_COMMON \
     -DBUILD_DELTA_WORK_COMMON \
     -DBUILD_DELTA_BYTE_COMMON \
@@ -3238,6 +3251,19 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0220_delta_drcs_float_recovery.c \
     quant/palette/delta_native/0221_delta_drcs_p3_recovery.c \
     quant/palette/delta_drcs_common.c \
+    quant/palette/delta_native/0222_delta_macro_use_then_delta.c \
+    quant/palette/delta_native/0223_delta_delta_then_macro_use.c \
+    quant/palette/delta_native/0224_delta_macro_number_then_delta.c \
+    quant/palette/delta_native/0225_delta_delta_then_macro_number.c \
+    quant/palette/delta_native/0226_delta_macro_use_environment.c \
+    quant/palette/delta_native/0227_delta_macro_number_environment.c \
+    quant/palette/delta_native/0228_delta_macro_use_full_override.c \
+    quant/palette/delta_native/0229_delta_macro_number_full_override.c \
+    quant/palette/delta_native/0230_delta_macro_byte_recovery.c \
+    quant/palette/delta_native/0231_delta_macro_float_recovery.c \
+    quant/palette/delta_native/0232_delta_macro_p3_recovery.c \
+    quant/palette/delta_native/0233_delta_macro_combined_selection.c \
+    quant/palette/delta_macro_common.c \
     quant/palette/delta_output_common.c \
     quant/palette/delta_work_common.c \
     quant/palette/delta_byte_common.c \

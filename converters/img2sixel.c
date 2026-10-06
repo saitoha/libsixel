@@ -517,7 +517,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "-u, --use-macro\n"
         "    define and invoke terminal macros; reuse animation frames on\n"
         "    later loops. Requires SIXEL and DECDMAC/DECINVM support.\n"
-        "    -n suppresses automatic invocation\n"
+        "    -n suppresses automatic invocation; conflicts with -Z delta\n"
     },
     {
         'n',
@@ -526,7 +526,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    define a SIXEL image at macro ID MACRONO without invoking it,\n"
         "    even with -u. Use -S to preload one frame from an animation.\n"
         "    MACRONO is 0..INT_MAX; the terminal may support a smaller range.\n"
-        "    Repeating -n selects the last ID\n"
+        "    Repeating -n selects the last ID; conflicts with -Z delta\n"
     },
     {
         'C',
@@ -990,7 +990,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    requires exact RGB; later keeps compare palette error.\n"
         "    Larger thresholds trade freshness for fewer lookups.\n"
         "    full preserves the source-alpha policy.\n"
-        "    delta conflicts with -e, -O and -@; -b gray1 is supported.\n"
+        "    delta conflicts with -e, -O, -@, -u and -n.\n"
+        "    Opaque -b gray1 is supported.\n"
     },
     {
         'P',
