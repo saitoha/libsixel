@@ -13,6 +13,7 @@ This document explains dithering as an idea: why an image drawn with few colors 
 - Every method leaves error; the methods differ in **where** they put it: at random, in a regular pattern, or pushed to the finest scales.
 - Error at fine scales, called **blue noise**, is the least visible, because the eye averages it away.
 - Averaging happens in **light**, not in encoded pixel values, and in SIXEL finer noise also costs **bytes**.
+- Pixels may or may not be visible on the viewer's screen, so a default method should keep **neighboring colors close** and reproduce **luminance** first, because the eye resolves luminance far more finely than color.
 
 ## Why dithering is needed
 
@@ -130,6 +131,37 @@ Several approaches follow this idea:
 
 Structure preservation and blue-noise tone reproduction can conflict. Sharpening edges or aligning dots with structure adds energy that is neither isotropic nor confined to high frequencies, and choosing colors to minimize luminance variation can increase chroma noise and per-pixel color difference. The [image-quality metrics](../../quality/metrics.md#combining-metrics-for-dithered-output) observe the trade-off from both sides. libsixel's current dither policies, listed in the [dithering reference](../../encoder/palette-application/dithering/README.md), do not include an explicit structural objective or a luminance-priority color choice; this section describes the idea, not an implemented mode.
 
+## Choosing a default when pixel size is unknown
+
+An image prepared by libsixel may be seen with its pixels far below the eye's resolution or clearly visible. [Display technologies](../displays/README.md#2018-and-later-a-split) shows that mainstream screens remain at 30 to 50 pixels per degree while premium screens exceed 60, and that a terminal can enlarge each image pixel further ([effective density of a terminal image](../displays/README.md#the-effective-density-of-a-terminal-image)). A default dithering method must therefore not assume either case. It should look right when the pixels are too small to see and remain acceptable when they are not.
+
+### Keep neighboring colors close
+
+When pixels are visible, the eye no longer averages a dither pattern; it sees the individual colors. A pattern that builds a mean color from widely separated colors, such as black and white for gray or two contrasting colors for an intermediate tone, then becomes a visible texture, as the two-color gradient of the [pixel appearance comparison](../displays/README.md#how-the-pixels-looked) shows. A pattern that alternates between nearby colors stays inconspicuous even with large pixels.
+
+The deciding quantity is the color difference between neighboring pixels, not the family of the method. Ordered dithering that thresholds between the two palette colors nearest to the target also keeps neighbors close, and error diffusion with a sparse palette can still place distant colors side by side. Error diffusion with nearest-color lookup, however, adapts to whatever palette is available and tends to choose colors near the target, so it meets the requirement without tuning. This is why error diffusion is libsixel's default: `-d auto` selects Floyd–Steinberg for palettes of more than 16 colors and Atkinson's method, which diffuses only three quarters of the error and keeps neighbors even closer, for smaller palettes. Ordered and blue-noise methods remain available because they have other strengths: they are temporally stable in animation and independent of scan order, so they parallelize well. The [dithering reference](../../encoder/palette-application/dithering/README.md) documents all methods.
+
+### Match luminance first
+
+The 30 cycles per degree used as the visibility boundary in [Display technologies](../displays/README.md#pixels-per-degree) is the detail of letters that a person with 20/20 acuity can just read: a limit of *luminance* vision. Color vision resolves much less. Isoluminant red-green and blue-yellow gratings reach their resolution limit at about 11 to 12 cycles per degree (Mullen, 1985), as described in [contrast sensitivity](../../quality/visual-perception/README.md#contrast-sensitivity).
+
+A one-pixel pattern has half the display's pixels per degree as its frequency, which gives two thresholds:
+
+| Pixel-scale error in | Invisible above about | Displays that reach it |
+| --- | --- | --- |
+| Luminance | 60 pixels per degree (30 cpd) | premium phones, notebooks and monitors |
+| Chroma only | 24 pixels per degree (12 cpd) | nearly every display, except head-mounted displays and strongly enlarged images |
+
+Dither error that changes chroma but not luminance is therefore hidden on almost every screen, while luminance error is visible on most of them. This supports the policy of [luminance priority](#structure-preserving-dithering-and-luminance-priority): reproduce luminance as closely as possible pixel by pixel, and let the remaining error appear as chroma or hue variation, which [luminance and chroma in spatial vision](../../quality/visual-perception/README.md#luminance-and-chroma-in-spatial-vision) explains the eye integrates away.
+
+The policy has limits:
+
+- **Enlargement.** When a terminal enlarges image pixels until a one-pixel pattern falls below about 12 cycles per degree, for example two device pixels per image pixel on a 36 pixels per degree screen, chroma noise becomes visible too.
+- **Low frequencies.** Moving error into chroma helps only if that error stays fine and averages to zero locally. A chroma error that accumulates over an area is a color cast, and color casts are visible at any density.
+- **The palette.** Matching luminance pixel by pixel requires palette colors of the right lightness near each target color. With a sparse palette, the best luminance match may have a large hue error, so the choice remains a trade-off measured by the [image quality metrics](../../quality/metrics.md#combining-metrics-for-dithered-output).
+
+libsixel's current error diffusion chooses the nearest palette color in the working color space; it does not yet implement an explicit luminance-priority choice. The reasoning above is the basis for treating luminance error as the more important target when such methods are developed and measured.
+
 ## Dithering in SIXEL
 
 Three properties of SIXEL output interact with dithering:
@@ -151,6 +183,7 @@ All figures are generated by [`tools/plot_dithering_concept_figures.py`](../../.
 - Jarvis, J. F., C. N. Judice, and W. H. Ninke. "A survey of techniques for the display of continuous tone pictures on bilevel displays." Computer Graphics and Image Processing 5:13–40, 1976.
 - Kite, T. D., B. L. Evans, and A. C. Bovik. "Modeling and quality assessment of halftoning by error diffusion." IEEE Transactions on Image Processing 9(5):909–922, 2000.
 - Kolpatzik, B. W., and C. A. Bouman. "Optimized error diffusion for image display." Journal of Electronic Imaging 1(3):277–292, 1992. doi:[10.1117/12.60027](https://doi.org/10.1117/12.60027)
+- Mullen, K. T. "The contrast sensitivity of human colour vision to red-green and blue-yellow chromatic gratings." Journal of Physiology 359:381–400, 1985. doi:[10.1113/jphysiol.1985.sp015591](https://doi.org/10.1113/jphysiol.1985.sp015591)
 - Pang, W.-M., Y. Qu, T.-T. Wong, D. Cohen-Or, and P.-A. Heng. "Structure-aware halftoning." ACM Transactions on Graphics 27(3), article 89, 2008. doi:[10.1145/1360612.1360688](https://doi.org/10.1145/1360612.1360688)
 - Shaked, D., N. Arad, A. Fitzhugh, and I. Sobel. "Color diffusion: error diffusion for color halftones." Proceedings of SPIE 3648:459–465, 1998. doi:[10.1117/12.334589](https://doi.org/10.1117/12.334589)
 - Stucki, P. "MECCA—a multiple-error correcting computation algorithm for bilevel image hardcopy reproduction." IBM Research Report RZ1060, IBM Zurich Research Laboratory, 1981.
