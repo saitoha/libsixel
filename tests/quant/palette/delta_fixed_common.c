@@ -52,8 +52,8 @@ df_wire(int value)
     return (((value * 100 + 127) / 255) * 255 + 50) / 100;
 }
 
-int
-test_delta_fixed_frames(int mode, int duplicates, char const *map)
+static int
+df_frames(int mode, int duplicates, char const *map, int hls)
 {
     static struct { int flag; char const *value; } const options[] = {
         {'=', "1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
@@ -132,6 +132,9 @@ test_delta_fixed_frames(int mode, int duplicates, char const *map)
                 sixel_encoder_setopt(encoder, '=', "4"))) ||
             (mode == 2 && SIXEL_FAILED(sixel_encoder_set_6delta_plane_size(
                 encoder, plane_width, rows)))) {
+        goto end;
+    }
+    if (hls && SIXEL_FAILED(sixel_encoder_setopt(encoder, 't', "hls"))) {
         goto end;
     }
     /* Keep the animation cache, but do not send cursor controls to stdout. */
@@ -341,11 +344,25 @@ end:
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+int
+test_delta_fixed_frames(int mode, int duplicates, char const *map)
+{
+    return df_frames(mode, duplicates, map, 0);
+}
+
+int
+test_delta_hls_fixed(int mode)
+{
+    /* Grays have identical RGB101/HLS lightness, allowing the original
+     * independent full-table, omission and origin oracle to be shared. */
+    return df_frames(mode, 0, NULL, 1);
+}
+
 /* After gray2 painted 67% gray, gray1 must be able to retain that displayed
  * color even though it is no longer in the palette. Its negative FS residual
  * changes the next .51 sample to black in diffuse mode; skip leaves white. */
-int
-test_delta_fixed_residual(int skip)
+static int
+df_residual(int skip, int hls)
 {
     static struct { int flag; char const *value; } const options[] = {
         {'=', "1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
@@ -385,6 +402,9 @@ test_delta_fixed_residual(int skip)
                 options[i].value))) {
             goto end;
         }
+    }
+    if (hls && SIXEL_FAILED(sixel_encoder_setopt(encoder, 't', "hls"))) {
+        goto end;
     }
     for (pass = 0; pass < 2; ++pass) {
         for (i = 0; i < 6; ++i) {
@@ -675,4 +695,16 @@ end:
     sixel_output_unref(output);
     sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_delta_fixed_residual(int skip)
+{
+    return df_residual(skip, 0);
+}
+
+int
+test_delta_hls_residual(int skip)
+{
+    return df_residual(skip, 1);
 }

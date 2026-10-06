@@ -1822,8 +1822,11 @@ sixel_dither_6delta_keep_float(
     wire = NULL;
     wire_count = 0U;
     if (dither->use_rgb101_palette &&
-            (SIXEL_FAILED(sixel_palette_get_rgb101(dither->palette,
-                &wire, &wire_count)) || wire == NULL || chosen_index < 0 ||
+            (SIXEL_FAILED(dither->pipeline_6delta_hls
+                ? sixel_palette_get_hls_rgb101(dither->palette,
+                    &wire, &wire_count)
+                : sixel_palette_get_rgb101(dither->palette,
+                    &wire, &wire_count)) || wire == NULL || chosen_index < 0 ||
              (unsigned int)chosen_index >= wire_count)) {
         return 0;
     }
@@ -2254,6 +2257,7 @@ sixel_dither_new(
     (*ppdither)->palette_snap_exact = 0;
     (*ppdither)->use_rgb101_palette = 0;
     (*ppdither)->pipeline_6delta_rgb101 = 0;
+    (*ppdither)->pipeline_6delta_hls = 0;
     (*ppdither)->allocator = allocator;
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->lut_policy_override = 0;

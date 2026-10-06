@@ -114,6 +114,16 @@ sixel_palette_get_rgb101(sixel_palette_t const *palette,
                          unsigned char const **entries, unsigned int *count);
 
 
+/* Prepare once before workers start, then borrow the HLS roundtrip model.
+ * Invalidated together with other output views. No working palette mutation. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_prepare_hls(sixel_palette_t *palette);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_get_hls_rgb101(sixel_palette_t const *palette,
+                             unsigned char const **entries,
+                             unsigned int *count);
+
 /* Borrow destination RGB before wire rounding, for the HLS serializer.
  * This is an output copy, not a new working-space palette or public API. */
 SIXEL_INTERNAL_API SIXELSTATUS

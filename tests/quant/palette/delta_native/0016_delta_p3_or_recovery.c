@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Verify delta p3 hls rejection recovery. */
+/* Verify delta p3 or rejection recovery. */
 int test_delta_native_scope(int);
 
 int

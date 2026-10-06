@@ -271,6 +271,9 @@ struct sixel_dither {
     int pipeline_6delta_enabled; /* non-zero enables early keep */
     /* Encode-call hint: chosen byte RGB competes after wire rounding. */
     int pipeline_6delta_rgb101;
+    /* Native comparison uses the prepared HLS roundtrip instead of RGB101.
+     * Bound by the output owner; immutable for the worker lifetime. */
+    int pipeline_6delta_hls;
     unsigned int pipeline_6delta_threshold; /* per-channel keep threshold */
     int pipeline_6delta_error_mode; /* kept-pixel error handling */
     unsigned char *pipeline_accumulation_result_mask; /* encoded keeps */

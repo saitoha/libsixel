@@ -182,7 +182,7 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0015_DELTA_SIGNED_THRESHOLD \
-    -DBUILD_TEST_0016_DELTA_P3_HLS_RECOVERY \
+    -DBUILD_TEST_0016_DELTA_P3_OR_RECOVERY \
     -DBUILD_TEST_0017_DELTA_SPATIAL_DISPATCH \
     -DBUILD_TEST_0018_DELTA_A_SOURCE \
     -DBUILD_TEST_0019_DELTA_X_SOURCE \
@@ -293,6 +293,39 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0139_DELTA_SMPTEC_OUTPUT_WORKERS \
     -DBUILD_TEST_0140_DELTA_SMPTEC_OUTPUT_IDENTITY \
     -DBUILD_TEST_0141_DELTA_OUTPUT_INVERSE_FAILURE \
+    -DBUILD_TEST_0142_DELTA_HLS_GAMMA_GAMMA_FRAMES \
+    -DBUILD_TEST_0143_DELTA_HLS_GAMMA_LINEAR_FRAMES \
+    -DBUILD_TEST_0144_DELTA_HLS_GAMMA_OKLAB_FRAMES \
+    -DBUILD_TEST_0145_DELTA_HLS_GAMMA_CIELAB_FRAMES \
+    -DBUILD_TEST_0146_DELTA_HLS_GAMMA_DIN99D_FRAMES \
+    -DBUILD_TEST_0147_DELTA_HLS_LINEAR_GAMMA_FRAMES \
+    -DBUILD_TEST_0148_DELTA_HLS_LINEAR_LINEAR_FRAMES \
+    -DBUILD_TEST_0149_DELTA_HLS_LINEAR_OKLAB_FRAMES \
+    -DBUILD_TEST_0150_DELTA_HLS_LINEAR_CIELAB_FRAMES \
+    -DBUILD_TEST_0151_DELTA_HLS_LINEAR_DIN99D_FRAMES \
+    -DBUILD_TEST_0152_DELTA_HLS_SMPTEC_GAMMA_FRAMES \
+    -DBUILD_TEST_0153_DELTA_HLS_SMPTEC_LINEAR_FRAMES \
+    -DBUILD_TEST_0154_DELTA_HLS_SMPTEC_OKLAB_FRAMES \
+    -DBUILD_TEST_0155_DELTA_HLS_SMPTEC_CIELAB_FRAMES \
+    -DBUILD_TEST_0156_DELTA_HLS_SMPTEC_DIN99D_FRAMES \
+    -DBUILD_TEST_0157_DELTA_HLS_P3_GAMMA_FRAMES \
+    -DBUILD_TEST_0158_DELTA_HLS_P3_LINEAR_FRAMES \
+    -DBUILD_TEST_0159_DELTA_HLS_P3_OKLAB_FRAMES \
+    -DBUILD_TEST_0160_DELTA_HLS_P3_CIELAB_FRAMES \
+    -DBUILD_TEST_0161_DELTA_HLS_P3_DIN99D_FRAMES \
+    -DBUILD_TEST_0162_DELTA_HLS_WORKERS \
+    -DBUILD_TEST_0163_DELTA_HLS_CANDIDATE_KEEP \
+    -DBUILD_TEST_0164_DELTA_HLS_CANDIDATE_REPAINT \
+    -DBUILD_TEST_0165_DELTA_HLS_CACHE_ISOLATION \
+    -DBUILD_TEST_0166_DELTA_HLS_CACHE_INVALIDATION \
+    -DBUILD_TEST_0167_DELTA_HLS_FIXED_MASK \
+    -DBUILD_TEST_0168_DELTA_HLS_FIXED_ORIGIN \
+    -DBUILD_TEST_0169_DELTA_HLS_FIXED_REUSE \
+    -DBUILD_TEST_0170_DELTA_HLS_RESIDUAL_DIFFUSE \
+    -DBUILD_TEST_0171_DELTA_HLS_RESIDUAL_SKIP \
+    -DBUILD_TEST_0172_DELTA_HLS_SYNTAX_REUSE \
+    -DBUILD_TEST_0173_DELTA_HLS_FAILURE_RECOVERY \
+    -DBUILD_TEST_0174_DELTA_HLS_FIELD_MODEL \
     -DBUILD_DELTA_OUTPUT_COMMON \
     -DBUILD_DELTA_WORK_COMMON \
     -DBUILD_DELTA_BYTE_COMMON \
@@ -2961,7 +2994,7 @@ endif
 
 test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0015_delta_signed_threshold.c \
-    quant/palette/delta_native/0016_delta_p3_hls_recovery.c \
+    quant/palette/delta_native/0016_delta_p3_or_recovery.c \
     quant/palette/delta_native/0017_delta_spatial_dispatch.c \
     quant/palette/delta_native/0018_delta_a_source.c \
     quant/palette/delta_native/0019_delta_x_source.c \
@@ -3072,6 +3105,39 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0139_delta_smptec_output_workers.c \
     quant/palette/delta_native/0140_delta_smptec_output_identity.c \
     quant/palette/delta_native/0141_delta_output_inverse_failure.c \
+    quant/palette/delta_native/0142_delta_hls_gamma_gamma_frames.c \
+    quant/palette/delta_native/0143_delta_hls_gamma_linear_frames.c \
+    quant/palette/delta_native/0144_delta_hls_gamma_oklab_frames.c \
+    quant/palette/delta_native/0145_delta_hls_gamma_cielab_frames.c \
+    quant/palette/delta_native/0146_delta_hls_gamma_din99d_frames.c \
+    quant/palette/delta_native/0147_delta_hls_linear_gamma_frames.c \
+    quant/palette/delta_native/0148_delta_hls_linear_linear_frames.c \
+    quant/palette/delta_native/0149_delta_hls_linear_oklab_frames.c \
+    quant/palette/delta_native/0150_delta_hls_linear_cielab_frames.c \
+    quant/palette/delta_native/0151_delta_hls_linear_din99d_frames.c \
+    quant/palette/delta_native/0152_delta_hls_smptec_gamma_frames.c \
+    quant/palette/delta_native/0153_delta_hls_smptec_linear_frames.c \
+    quant/palette/delta_native/0154_delta_hls_smptec_oklab_frames.c \
+    quant/palette/delta_native/0155_delta_hls_smptec_cielab_frames.c \
+    quant/palette/delta_native/0156_delta_hls_smptec_din99d_frames.c \
+    quant/palette/delta_native/0157_delta_hls_p3_gamma_frames.c \
+    quant/palette/delta_native/0158_delta_hls_p3_linear_frames.c \
+    quant/palette/delta_native/0159_delta_hls_p3_oklab_frames.c \
+    quant/palette/delta_native/0160_delta_hls_p3_cielab_frames.c \
+    quant/palette/delta_native/0161_delta_hls_p3_din99d_frames.c \
+    quant/palette/delta_native/0162_delta_hls_workers.c \
+    quant/palette/delta_native/0163_delta_hls_candidate_keep.c \
+    quant/palette/delta_native/0164_delta_hls_candidate_repaint.c \
+    quant/palette/delta_native/0165_delta_hls_cache_isolation.c \
+    quant/palette/delta_native/0166_delta_hls_cache_invalidation.c \
+    quant/palette/delta_native/0167_delta_hls_fixed_mask.c \
+    quant/palette/delta_native/0168_delta_hls_fixed_origin.c \
+    quant/palette/delta_native/0169_delta_hls_fixed_reuse.c \
+    quant/palette/delta_native/0170_delta_hls_residual_diffuse.c \
+    quant/palette/delta_native/0171_delta_hls_residual_skip.c \
+    quant/palette/delta_native/0172_delta_hls_syntax_reuse.c \
+    quant/palette/delta_native/0173_delta_hls_failure_recovery.c \
+    quant/palette/delta_native/0174_delta_hls_field_model.c \
     quant/palette/delta_output_common.c \
     quant/palette/delta_work_common.c \
     quant/palette/delta_byte_common.c \

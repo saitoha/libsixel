@@ -1057,6 +1057,7 @@ sixel_palette_clear_output(sixel_palette_storage_t *storage)
     storage->output_device = NULL;
     storage->output_colorspace = SIXEL_COLORSPACE_GAMMA;
     storage->output_rgb101_count = 0U;
+    storage->output_hls_ready = 0;
 }
 
 static void
@@ -1250,6 +1251,7 @@ sixel_palette_factory_new(sixel_allocator_t *allocator, void **object)
     storage->output_device = NULL;
     storage->output_colorspace = SIXEL_COLORSPACE_GAMMA;
     storage->output_rgb101_count = 0U;
+    storage->output_hls_ready = 0;
     sixel_allocator_ref(allocator);
 
     *object = &storage->palette_interface;
@@ -2139,6 +2141,58 @@ sixel_palette_get_rgb101(sixel_palette_t const *palette,
     }
     *entries = storage->output_rgb101;
     *count = storage->output_rgb101_count;
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_palette_prepare_hls(sixel_palette_t *palette)
+{
+    sixel_palette_storage_t *storage;
+    unsigned char const *codes;
+    unsigned int count;
+    unsigned int i;
+    int n;
+    int hls[3];
+    double rgb[3];
+    SIXELSTATUS status;
+
+    status = sixel_palette_get_rgb101(palette, &codes, &count);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    storage = SIXEL_PALETTE_STORAGE(palette);
+    if (!storage->output_hls_ready) {
+        for (i = 0U; i < count; ++i) {
+            for (n = 0; n < 3; ++n) {
+                rgb[n] = storage->output_rgb_float[i * 3U + n];
+            }
+            sixel_color_rgb_to_hls(hls, rgb);
+            sixel_color_hls_to_rgb101(storage->output_hls_rgb101 + i * 3U,
+                hls);
+        }
+        storage->output_hls_ready = 1;
+    }
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_palette_get_hls_rgb101(sixel_palette_t const *palette,
+                             unsigned char const **entries,
+                             unsigned int *count)
+{
+    SIXELSTATUS status;
+
+    status = sixel_palette_get_rgb101(palette, entries, count);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    *entries = NULL;
+    *count = 0U;
+    if (!SIXEL_PALETTE_STORAGE_CONST(palette)->output_hls_ready) {
+        return SIXEL_LOGIC_ERROR;
+    }
+    *entries = SIXEL_PALETTE_STORAGE_CONST(palette)->output_hls_rgb101;
+    *count = SIXEL_PALETTE_STORAGE_CONST(palette)->output_rgb101_count;
     return SIXEL_OK;
 }
 

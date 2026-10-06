@@ -6809,7 +6809,8 @@ sixel_encoder_native_delta(sixel_encoder_t const *encoder)
              encoder->output_color_definition !=
                 SIXEL_PALETTE_OUTPUT_DISPLAY_P3) ||
             (encoder->palette_type != SIXEL_PALETTETYPE_AUTO &&
-             encoder->palette_type != SIXEL_PALETTETYPE_RGB) ||
+             encoder->palette_type != SIXEL_PALETTETYPE_RGB &&
+             encoder->palette_type != SIXEL_PALETTETYPE_HLS) ||
             (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT &&
              encoder->color_option != SIXEL_COLOR_OPTION_BUILTIN &&
              encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE) ||

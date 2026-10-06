@@ -69,6 +69,9 @@ typedef struct sixel_palette_storage {
      * Both output views share the count/invalidation boundary below. */
     float output_rgb_float[SIXEL_PALETTE_MAX * 3];
     unsigned int output_rgb101_count;
+    /* Derived only for native HLS delta, before workers borrow the palette. */
+    unsigned char output_hls_rgb101[SIXEL_PALETTE_MAX * 3];
+    int output_hls_ready;
     /* Immutable definitions owned with the output cache, shared read-only
      * by palette-application workers. No per-pixel transform allocation. */
     struct sixel_color_def *output_srgb;

@@ -292,6 +292,39 @@ int test_delta_native_0138(int argc, char **argv);
 int test_delta_native_0139(int argc, char **argv);
 int test_delta_native_0140(int argc, char **argv);
 int test_delta_native_0141(int argc, char **argv);
+int test_delta_native_0142(int argc, char **argv);
+int test_delta_native_0143(int argc, char **argv);
+int test_delta_native_0144(int argc, char **argv);
+int test_delta_native_0145(int argc, char **argv);
+int test_delta_native_0146(int argc, char **argv);
+int test_delta_native_0147(int argc, char **argv);
+int test_delta_native_0148(int argc, char **argv);
+int test_delta_native_0149(int argc, char **argv);
+int test_delta_native_0150(int argc, char **argv);
+int test_delta_native_0151(int argc, char **argv);
+int test_delta_native_0152(int argc, char **argv);
+int test_delta_native_0153(int argc, char **argv);
+int test_delta_native_0154(int argc, char **argv);
+int test_delta_native_0155(int argc, char **argv);
+int test_delta_native_0156(int argc, char **argv);
+int test_delta_native_0157(int argc, char **argv);
+int test_delta_native_0158(int argc, char **argv);
+int test_delta_native_0159(int argc, char **argv);
+int test_delta_native_0160(int argc, char **argv);
+int test_delta_native_0161(int argc, char **argv);
+int test_delta_native_0162(int argc, char **argv);
+int test_delta_native_0163(int argc, char **argv);
+int test_delta_native_0164(int argc, char **argv);
+int test_delta_native_0165(int argc, char **argv);
+int test_delta_native_0166(int argc, char **argv);
+int test_delta_native_0167(int argc, char **argv);
+int test_delta_native_0168(int argc, char **argv);
+int test_delta_native_0169(int argc, char **argv);
+int test_delta_native_0170(int argc, char **argv);
+int test_delta_native_0171(int argc, char **argv);
+int test_delta_native_0172(int argc, char **argv);
+int test_delta_native_0173(int argc, char **argv);
+int test_delta_native_0174(int argc, char **argv);
 int test_delta_native_0101(int argc, char **argv);
 int test_delta_native_0102(int argc, char **argv);
 int test_delta_native_0103(int argc, char **argv);
@@ -3319,6 +3352,72 @@ static test_entry_t const test_entries[] = {
         test_delta_native_0140 },
     { "palette/delta_native/0141_delta_output_inverse_failure",
         test_delta_native_0141 },
+    { "palette/delta_native/0142_delta_hls_gamma_gamma_frames",
+        test_delta_native_0142 },
+    { "palette/delta_native/0143_delta_hls_gamma_linear_frames",
+        test_delta_native_0143 },
+    { "palette/delta_native/0144_delta_hls_gamma_oklab_frames",
+        test_delta_native_0144 },
+    { "palette/delta_native/0145_delta_hls_gamma_cielab_frames",
+        test_delta_native_0145 },
+    { "palette/delta_native/0146_delta_hls_gamma_din99d_frames",
+        test_delta_native_0146 },
+    { "palette/delta_native/0147_delta_hls_linear_gamma_frames",
+        test_delta_native_0147 },
+    { "palette/delta_native/0148_delta_hls_linear_linear_frames",
+        test_delta_native_0148 },
+    { "palette/delta_native/0149_delta_hls_linear_oklab_frames",
+        test_delta_native_0149 },
+    { "palette/delta_native/0150_delta_hls_linear_cielab_frames",
+        test_delta_native_0150 },
+    { "palette/delta_native/0151_delta_hls_linear_din99d_frames",
+        test_delta_native_0151 },
+    { "palette/delta_native/0152_delta_hls_smptec_gamma_frames",
+        test_delta_native_0152 },
+    { "palette/delta_native/0153_delta_hls_smptec_linear_frames",
+        test_delta_native_0153 },
+    { "palette/delta_native/0154_delta_hls_smptec_oklab_frames",
+        test_delta_native_0154 },
+    { "palette/delta_native/0155_delta_hls_smptec_cielab_frames",
+        test_delta_native_0155 },
+    { "palette/delta_native/0156_delta_hls_smptec_din99d_frames",
+        test_delta_native_0156 },
+    { "palette/delta_native/0157_delta_hls_p3_gamma_frames",
+        test_delta_native_0157 },
+    { "palette/delta_native/0158_delta_hls_p3_linear_frames",
+        test_delta_native_0158 },
+    { "palette/delta_native/0159_delta_hls_p3_oklab_frames",
+        test_delta_native_0159 },
+    { "palette/delta_native/0160_delta_hls_p3_cielab_frames",
+        test_delta_native_0160 },
+    { "palette/delta_native/0161_delta_hls_p3_din99d_frames",
+        test_delta_native_0161 },
+    { "palette/delta_native/0162_delta_hls_workers",
+        test_delta_native_0162 },
+    { "palette/delta_native/0163_delta_hls_candidate_keep",
+        test_delta_native_0163 },
+    { "palette/delta_native/0164_delta_hls_candidate_repaint",
+        test_delta_native_0164 },
+    { "palette/delta_native/0165_delta_hls_cache_isolation",
+        test_delta_native_0165 },
+    { "palette/delta_native/0166_delta_hls_cache_invalidation",
+        test_delta_native_0166 },
+    { "palette/delta_native/0167_delta_hls_fixed_mask",
+        test_delta_native_0167 },
+    { "palette/delta_native/0168_delta_hls_fixed_origin",
+        test_delta_native_0168 },
+    { "palette/delta_native/0169_delta_hls_fixed_reuse",
+        test_delta_native_0169 },
+    { "palette/delta_native/0170_delta_hls_residual_diffuse",
+        test_delta_native_0170 },
+    { "palette/delta_native/0171_delta_hls_residual_skip",
+        test_delta_native_0171 },
+    { "palette/delta_native/0172_delta_hls_syntax_reuse",
+        test_delta_native_0172 },
+    { "palette/delta_native/0173_delta_hls_failure_recovery",
+        test_delta_native_0173 },
+    { "palette/delta_native/0174_delta_hls_field_model",
+        test_delta_native_0174 },
     { "palette/delta_native/0101_delta_p3_gamma_transform",
         test_delta_native_0101 },
     { "palette/delta_native/0102_delta_p3_linear_transform",
@@ -3457,7 +3556,7 @@ static test_entry_t const test_entries[] = {
         test_delta_native_0032 },
     { "palette/delta_native/0015_delta_signed_threshold",
         test_delta_native_0015 },
-    { "palette/delta_native/0016_delta_p3_hls_recovery",
+    { "palette/delta_native/0016_delta_p3_or_recovery",
         test_delta_native_0016 },
     { "palette/delta_native/0017_delta_spatial_dispatch",
         test_delta_native_0017 },

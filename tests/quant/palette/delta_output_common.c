@@ -373,8 +373,10 @@ pd_decode(sixel_encoder_t *encoder, pd_stream_t *stream,
     for (i = 0; i < w * h; ++i) {
         if ((mask[i] != 0) == keep || (!keep &&
                 memcmp(palette + indexes[i] * 3, color, 3) != 0)) {
-            fprintf(stderr, "delta pixel=%d mask=%d keep=%d\n", i, mask[i],
-                keep);
+            fprintf(stderr, "delta pixel=%d mask=%d keep=%d "
+                "got=%d/%d/%d want=%d/%d/%d\n", i, mask[i], keep,
+                palette[indexes[i]*3], palette[indexes[i]*3+1],
+                palette[indexes[i]*3+2], color[0], color[1], color[2]);
             goto end;
         }
     }
@@ -870,3 +872,388 @@ end:
 }
 
 /* vim: set ts=4 sts=4 sw=4 et: */
+
+/* Decimal references use independently derived primaries/TRCs and a
+ * triangular-wave HSL inverse. Field margins exceed .005, except exact
+ * branches. RGB101 and history bytes are discrete expectations. */
+static int const hd_fields[4][2][3] = {
+    { { 332, 46, 70 }, { 97, 47, 52 } },
+    { { 344, 29, 94 }, { 106, 25, 84 } },
+    { { 329, 42, 83 }, { 96, 46, 56 } },
+    { { 337, 49, 54 }, { 98, 46, 43 } },
+};
+static unsigned char const hd_colors[4][2][3] = {
+    { { 36, 112, 199 }, { 181, 59, 105 } },
+    { { 5, 41, 143 }, { 117, 10, 36 } },
+    { { 18, 110, 196 }, { 184, 51, 105 } },
+    { { 59, 110, 191 }, { 168, 66, 105 } },
+};
+static float const hd_frame_samples[2][3] = {
+    {.137f, .437f, .781f}, {.71f, .223f, .41f}
+};
+static char const *const hd_outputs[4] = {
+    "gamma", "linear", "smpte-c", "display-p3"
+};
+static float const hd_samples[2][3] = {
+    {.123f, .456f, .789f}, {.7f, .2f, .4f}
+};
+
+static int
+hd_palette(sixel_dither_t **dither)
+{
+    float values[9] = {.123f, .456f, .789f, .7f, .2f, .4f, 0, 0, 0};
+    sixel_palette_float32_entries_request_t request;
+
+    if (!pd_palette(dither, SIXEL_COLORSPACE_GAMMA)) {
+        return 0;
+    }
+    memset(&request, 0, sizeof(request));
+    request.entries = values;
+    request.colors = 3;
+    request.depth = 3 * sizeof(float);
+    return SIXEL_SUCCEEDED((*dither)->palette->vtbl->init_entries_float32(
+        (*dither)->palette, &request)) &&
+        SIXEL_SUCCEEDED(sixel_palette_prepare_output((*dither)->palette,
+            SIXEL_COLORSPACE_GAMMA, SIXEL_PALETTE_OUTPUT_LEGACY,
+            SIXEL_COLORSPACE_GAMMA));
+}
+
+int
+test_delta_hls_cache(int mode)
+{
+    unsigned char const *codes;
+    unsigned char const *other;
+    unsigned char const expected[9] = {12, 46, 80, 70, 20, 40, 0, 0, 0};
+    unsigned char bytes[9] = {0};
+    float values[9] = {0};
+    sixel_palette_float32_entries_request_t request;
+    sixel_dither_t *dither;
+    sixel_dither_t *second;
+    unsigned int count;
+    int ok;
+
+    dither = second = NULL;
+    ok = 0;
+    if (!hd_palette(&dither) ||
+            SIXEL_SUCCEEDED(sixel_palette_get_hls_rgb101(dither->palette,
+                &codes, &count)) || codes != NULL || count != 0 ||
+            SIXEL_FAILED(sixel_palette_prepare_hls(dither->palette)) ||
+            SIXEL_FAILED(sixel_palette_get_hls_rgb101(dither->palette,
+                &codes, &count)) || count != 3 ||
+            memcmp(codes, expected, sizeof(expected)) != 0) {
+        goto end;
+    }
+    if (mode == 0) {
+        /* Independently prepared palettes cannot overwrite the borrowed view. */
+        if (!pd_palette(&second, SIXEL_COLORSPACE_GAMMA) ||
+                SIXEL_FAILED(sixel_palette_prepare_hls(second->palette)) ||
+                SIXEL_FAILED(sixel_palette_get_hls_rgb101(second->palette,
+                    &other, &count)) || codes == other || other[3] != 100 ||
+                memcmp(codes, expected, sizeof(expected)) != 0) {
+            goto end;
+        }
+    } else {
+        /* Reinitialization invalidates all derived output interpretations. */
+        request.entries = values;
+        request.colors = 3;
+        request.depth = 3 * sizeof(float);
+        if (SIXEL_FAILED(dither->palette->vtbl->init_entries_float32(
+                dither->palette, &request))) {
+            goto end;
+        }
+        if (SIXEL_SUCCEEDED(sixel_palette_prepare_hls(dither->palette)) ||
+                SIXEL_SUCCEEDED(sixel_palette_get_hls_rgb101(dither->palette,
+                    &codes, &count)) || codes != NULL || count != 0 ||
+                SIXEL_FAILED(sixel_palette_prepare_output(dither->palette,
+                    SIXEL_COLORSPACE_GAMMA, SIXEL_PALETTE_OUTPUT_LEGACY,
+                    SIXEL_COLORSPACE_GAMMA)) ||
+                SIXEL_FAILED(sixel_palette_prepare_hls(dither->palette)) ||
+                SIXEL_FAILED(sixel_palette_get_hls_rgb101(dither->palette,
+                    &codes, &count)) || count != 3 ||
+                memcmp(codes, bytes, sizeof(bytes)) != 0) {
+            goto end;
+        }
+    }
+    ok = 1;
+end:
+    sixel_dither_unref(dither);
+    sixel_dither_unref(second);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_delta_hls_candidate(int mode)
+{
+    unsigned char history[3] = {31, 117, 204};
+    unsigned char valid[1] = {1};
+    float query[3] = {.123f, .456f, .789f};
+    float retained[3];
+    sixel_dither_t *dither;
+    int hls;
+    int channel;
+    int keep;
+    int ok;
+
+    dither = NULL;
+    ok = 0;
+    if (!hd_palette(&dither) ||
+            SIXEL_FAILED(sixel_palette_prepare_hls(dither->palette))) {
+        goto end;
+    }
+    if (mode) {
+        history[2] = 201;
+        query[0] = .12f;
+        query[1] = .46f;
+        query[2] = .80f;
+    }
+    sixel_dither_set_pipeline_accumulation_buffer_hint(dither,
+        history, sizeof(history), valid, sizeof(valid),
+        1, 1, 0, 0, 1, 1, 2, 1, 0, SIXEL_6DELTA_ERROR_DIFFUSE);
+    for (hls = 0; hls < 2; ++hls) {
+        dither->pipeline_6delta_hls = hls;
+        keep = sixel_dither_6delta_keep_float(dither, 0, 0, 0,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, query, hd_samples[0], 0, 0,
+            retained);
+        /* Same centroid: RGB paints (31,117,201), HLS paints (31,117,204).
+         * The first case keeps only HLS; the second repaints only HLS.
+         * The source remains unrounded in both distance comparisons. */
+        if (keep != (mode ? !hls : hls)) {
+            goto end;
+        }
+        for (channel = 0; keep && channel < 3; ++channel) {
+            if (!isfinite(retained[channel]) ||
+                    fabs(retained[channel] - history[channel] / 255.0)
+                        > 3e-8) {
+                goto end;
+            }
+        }
+    }
+    ok = 1;
+end:
+    sixel_dither_unref(dither);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_delta_hls_frames(int target, int workspace, int workers)
+{
+    sixel_encoder_t *encoder;
+    sixel_output_t *output;
+    sixel_frame_t *frame;
+    sixel_dither_t *dither;
+    pd_stream_t stream;
+    float pixels[4 * 25 * 3];
+    char field[64];
+    int rows;
+    int pass;
+    int color;
+    int i;
+    int ok;
+
+    encoder = NULL;
+    output = NULL;
+    frame = NULL;
+    ok = 0;
+    pass = -1;
+    rows = workers ? 25 : 1;
+    if (!pd_encoder(&encoder, &output, &stream, 0) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
+                hd_outputs[target])) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
+                pd_spaces[workspace])) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 't', "hls")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
+                workers ? "4" : "1"))) {
+        goto end;
+    }
+    for (pass = 0; pass < 5; ++pass) {
+        color = pass < 2 ? 0 : 1;
+        for (i = 0; i < 4 * rows * 3; ++i) {
+            pixels[i] = hd_frame_samples[color][i % 3];
+        }
+        if (pass == 4) {
+            sixel_encoder_invalidate_6delta_plane(encoder);
+        }
+        stream.size = 0;
+        if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+                SIXEL_FAILED(sixel_frame_init_borrowed(frame,
+                    (unsigned char *)pixels, 4, rows,
+                    SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1)) ||
+                SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame,
+                    output))) {
+            goto end;
+        }
+        dither = encoder->diagnostic_dither;
+        stream.data[stream.size] = '\0';
+        snprintf(field, sizeof(field), ";1;%d;%d;%d",
+            hd_fields[target][color][0], hd_fields[target][color][1],
+            hd_fields[target][color][2]);
+        if (dither == NULL || !dither->use_rgb101_palette ||
+                dither->pipeline_6delta_hls != 0 ||
+                dither->pixelformat != pd_formats[workspace] ||
+                (workers && dither->pipeline_last_encode_threads < 2) ||
+                (!(pass % 2) &&
+                 strstr((char *)stream.data, field) == NULL) ||
+                !pd_decode(encoder, &stream, 4, rows, pass % 2,
+                    hd_colors[target][color])) {
+            fprintf(stderr, "wire: %s expected %s\n", stream.data, field);
+            goto end;
+        }
+        for (i = 0; i < 4 * rows * 3; ++i) {
+            if (encoder->accumulation_pixels[i] !=
+                    hd_colors[target][color][i % 3]) {
+                fprintf(stderr, "history %d=%d want=%d\n", i,
+                    encoder->accumulation_pixels[i],
+                    hd_colors[target][color][i % 3]);
+                goto end;
+            }
+        }
+        sixel_frame_unref(frame);
+        frame = NULL;
+    }
+    ok = 1;
+end:
+    if (!ok) {
+        fprintf(stderr, "HLS target=%d W=%d workers=%d pass=%d: %s\n",
+            target, workspace, workers, pass,
+            sixel_helper_get_additional_message());
+    }
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_delta_hls_reuse(void)
+{
+    unsigned char const rgb[3] = {31, 117, 201};
+    unsigned char const hls[3] = {31, 117, 204};
+    sixel_encoder_t *encoder;
+    sixel_output_t *output;
+    sixel_frame_t *frame;
+    pd_stream_t stream;
+    float pixels[3];
+    unsigned char const *expected;
+    int pass;
+    int keep;
+    int ok;
+
+    encoder = NULL;
+    output = NULL;
+    frame = NULL;
+    ok = 0;
+    if (!pd_encoder(&encoder, &output, &stream, 0) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma"))) {
+        goto end;
+    }
+    for (pass = 0; pass < 5; ++pass) {
+        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 't',
+                pass == 2 || pass == 3 ? "rgb" : "hls"))) {
+            goto end;
+        }
+        memcpy(pixels, hd_samples[0], sizeof(pixels));
+        stream.size = 0;
+        if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+                SIXEL_FAILED(sixel_frame_init_borrowed(frame,
+                    (unsigned char *)pixels, 1, 1,
+                    SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1)) ||
+                SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame,
+                    output))) {
+            goto end;
+        }
+        /* Switching syntax preserves compatible history. RGB repaints the
+         * closer blue 201; later HLS keeps it instead of repainting 204. */
+        keep = pass == 1 || pass >= 3;
+        expected = pass < 2 ? hls : rgb;
+        if (!pd_decode(encoder, &stream, 1, 1, keep, expected) ||
+                memcmp(encoder->accumulation_pixels, expected, 3) != 0) {
+            goto end;
+        }
+        sixel_frame_unref(frame);
+        frame = NULL;
+    }
+    ok = 1;
+end:
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_delta_hls_failure(void)
+{
+    unsigned char history[3] = {31, 117, 204};
+    unsigned char valid[1] = {1};
+    float pixels[3];
+    sixel_dither_t *dither;
+    sixel_output_t *output;
+    pd_stream_t stream;
+    SIXELSTATUS status;
+    int pass;
+    int ok;
+
+    dither = NULL;
+    output = NULL;
+    ok = 0;
+    if (!hd_palette(&dither) ||
+            SIXEL_FAILED(sixel_output_new(&output, pd_write, &stream, NULL))) {
+        goto end;
+    }
+    sixel_output_set_palette_type(output, SIXEL_PALETTETYPE_HLS);
+    sixel_dither_set_diffusion_type(dither, SIXEL_DIFFUSE_NONE);
+    for (pass = 0; pass < 2; ++pass) {
+        stream.size = 0;
+        memcpy(pixels, hd_samples[0], sizeof(pixels));
+        sixel_dither_set_pixelformat(dither, pass == 0 ? 0x7fffffff :
+            SIXEL_PIXELFORMAT_RGBFLOAT32);
+        sixel_dither_set_pipeline_accumulation_buffer_hint(dither,
+            history, sizeof(history), valid, sizeof(valid),
+            1, 1, 0, 0, 1, 1, 2, 1, 0, SIXEL_6DELTA_ERROR_SKIP);
+        status = sixel_encode((unsigned char *)pixels, 1, 1, 1, dither,
+            output);
+        if (dither->pipeline_6delta_hls ||
+                (pass == 0 ? SIXEL_SUCCEEDED(status) : SIXEL_FAILED(status))) {
+            goto end;
+        }
+    }
+    ok = 1;
+end:
+    sixel_output_unref(output);
+    sixel_dither_unref(dither);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_delta_hls_fields(void)
+{
+    static double const sources[8][3] = {
+        {.81, .31, .17}, {.31, .81, .17}, {.17, .81, .31},
+        {.17, .31, .81}, {.31, .17, .81}, {.81, .17, .31},
+        {.4, .4, .4}, {.123, .456, .789}
+    };
+    static int const fields[8][3] = {
+        {133, 49, 65}, {227, 49, 65}, {253, 49, 65},
+        {347, 49, 65}, {13, 49, 65}, {107, 49, 65},
+        {0, 40, 0}, {330, 46, 73}
+    };
+    static unsigned char const decoded[8][3] = {
+        {81, 31, 17}, {31, 81, 17}, {17, 81, 31},
+        {17, 31, 81}, {31, 17, 81}, {81, 17, 31},
+        {40, 40, 40}, {12, 46, 80}
+    };
+    int result[3];
+    unsigned char rgb[3];
+    int i;
+
+    for (i = 0; i < 8; ++i) {
+        sixel_color_rgb_to_hls(result, sources[i]);
+        sixel_color_hls_to_rgb101(rgb, fields[i]);
+        if (memcmp(result, fields[i], sizeof(result)) != 0 ||
+                memcmp(rgb, decoded[i], sizeof(rgb)) != 0) {
+            return EXIT_FAILURE;
+        }
+    }
+    return EXIT_SUCCESS;
+}

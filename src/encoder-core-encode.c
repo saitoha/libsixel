@@ -65,6 +65,7 @@
 #include "encoder-core-private.h"
 #include "output-factory.h"
 #include "dither.h"
+#include "colorspace.h"
 #include "options.h"
 #include "pixelformat.h"
 #include "palette-common-snap.h"
@@ -2945,8 +2946,8 @@ sixel_encode_delta_is_rgb(sixel_dither_t const *dither,
 /* Retained RGB must describe the serialized color, not its pre-wire table
  * value. Project a small capture-only copy through the same percentages as
  * the RGB writer. Lookup, diffusion and palette export keep their own values.
- * Native RGB already supplies this projection. Other wire interpretations
- * and receiver-defined colors retain their separate migration boundaries. */
+ * Native RGB/HLS already supplies its corresponding projection. Other wire
+ * interpretations retain their separate migration boundaries. */
 static SIXELSTATUS
 sixel_encode_capture_delta(sixel_dither_t *dither,
                             sixel_index_t const *indexes,
@@ -3066,94 +3067,18 @@ output_hls_palette_definition(
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    double r;
-    double g;
-    double b;
-    double maxc;
-    double minc;
-    double lightness;
-    double saturation;
-    double hue;
-    double diff;
-    int h;
-    int l;
-    int s;
+    double rgb[3];
+    int hls[3];
     int nwrite;
 
     if (n != keycolor) {
-        r = sixel_output_palette_channel_to_float(palette,
-                                                  palette_float,
-                                                  n,
-                                                  0);
-        g = sixel_output_palette_channel_to_float(palette,
-                                                  palette_float,
-                                                  n,
-                                                  1);
-        b = sixel_output_palette_channel_to_float(palette,
-                                                  palette_float,
-                                                  n,
-                                                  2);
-        maxc = r > g ? (r > b ? r : b) : (g > b ? g : b);
-        minc = r < g ? (r < b ? r : b) : (g < b ? g : b);
-        lightness = (maxc + minc) * 0.5;
-        saturation = 0.0;
-        hue = 0.0;
-        diff = maxc - minc;
-        if (diff <= 0.0) {
-            h = 0;
-            s = 0;
-        } else {
-            if (lightness < 0.5) {
-                saturation = diff / (maxc + minc);
-            } else {
-                saturation = diff / (2.0 - maxc - minc);
-            }
-            if (maxc == r) {
-                hue = (g - b) / diff;
-            } else if (maxc == g) {
-                hue = 2.0 + (b - r) / diff;
-            } else {
-                hue = 4.0 + (r - g) / diff;
-            }
-            hue *= 60.0;
-            if (hue < 0.0) {
-                hue += 360.0;
-            }
-            if (hue >= 360.0) {
-                hue -= 360.0;
-            }
-            /*
-             * The DEC HLS color wheel used by DECGCI considers
-             * hue==0 to be blue instead of red.  Rotate the hue by
-             * +120 degrees so that RGB primaries continue to match
-             * the historical img2sixel output and VT340 behavior.
-             */
-            hue += 120.0;
-            while (hue >= 360.0) {
-                hue -= 360.0;
-            }
-            while (hue < 0.0) {
-                hue += 360.0;
-            }
-            s = (int)(saturation * 100.0 + 0.5);
-            if (s < 0) {
-                s = 0;
-            } else if (s > 100) {
-                s = 100;
-            }
-            h = (int)(hue + 0.5);
-            if (h >= 360) {
-                h -= 360;
-            } else if (h < 0) {
-                h = 0;
-            }
-        }
-        l = (int)(lightness * 100.0 + 0.5);
-        if (l < 0) {
-            l = 0;
-        } else if (l > 100) {
-            l = 100;
-        }
+        rgb[0] = sixel_output_palette_channel_to_float(palette,
+            palette_float, n, 0);
+        rgb[1] = sixel_output_palette_channel_to_float(palette,
+            palette_float, n, 1);
+        rgb[2] = sixel_output_palette_channel_to_float(palette,
+            palette_float, n, 2);
+        sixel_color_rgb_to_hls(hls, rgb);
         /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
         sixel_putc(output->buffer + output->pos, '#');
         sixel_advance(output, 1);
@@ -3161,15 +3086,15 @@ output_hls_palette_definition(
         sixel_advance(output, nwrite);
         sixel_puts(output->buffer + output->pos, ";1;", 3);
         sixel_advance(output, 3);
-        nwrite = sixel_putnum((char *)output->buffer + output->pos, h);
+        nwrite = sixel_putnum((char *)output->buffer + output->pos, hls[0]);
         sixel_advance(output, nwrite);
         sixel_putc(output->buffer + output->pos, ';');
         sixel_advance(output, 1);
-        nwrite = sixel_putnum((char *)output->buffer + output->pos, l);
+        nwrite = sixel_putnum((char *)output->buffer + output->pos, hls[1]);
         sixel_advance(output, nwrite);
         sixel_putc(output->buffer + output->pos, ';');
         sixel_advance(output, 1);
-        nwrite = sixel_putnum((char *)output->buffer + output->pos, s);
+        nwrite = sixel_putnum((char *)output->buffer + output->pos, hls[2]);
         sixel_advance(output, nwrite);
     }
 
@@ -4648,6 +4573,7 @@ sixel_encode_dither(
         return SIXEL_BAD_ARGUMENT;
     }
     dither->pipeline_6delta_rgb101 = 0;
+    dither->pipeline_6delta_hls = 0;
     output_rgb101 = NULL;
     output_rgb_float = NULL;
     ormode_palette_float = NULL;
@@ -4750,6 +4676,19 @@ sixel_encode_dither(
         goto end;
     }
 
+    if (use_rgb101_palette &&
+            (dither->pipeline_6delta_enabled ||
+             dither->pipeline_accumulation_result_enabled) &&
+            output->palette_type == SIXEL_PALETTETYPE_HLS) {
+        /* Publish before workers, including the first frame: capture is
+         * enabled before valid history exists for a keep comparison. Both
+         * candidate comparison and captured history borrow this view. */
+        status = sixel_palette_prepare_hls(palette_obj);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        dither->pipeline_6delta_hls = 1;
+    }
     if (dither->pipeline_6delta_enabled &&
             sixel_encode_delta_is_rgb(dither, output) &&
             output->source_colorspace == SIXEL_COLORSPACE_GAMMA) {
@@ -5002,9 +4941,19 @@ sixel_encode_dither(
                 goto end;
             }
         }
+        if (dither->pipeline_6delta_hls) {
+            status = sixel_palette_get_hls_rgb101(palette_obj,
+                &output_rgb101, &output_rgb101_count);
+            if (SIXEL_FAILED(status) || output_rgb101_count != palette_count) {
+                status = SIXEL_LOGIC_ERROR;
+                goto end;
+            }
+        }
         /* Lookup used the unrounded working palette. RGB serialization uses
          * cached percentages; HLS uses destination RGB before rounding to
-         * avoid a second quantization. Neither copy feeds back into lookup. */
+         * avoid a second quantization. The byte copy models painted RGB;
+         * HLS delta uses its decoded percentage approximation. Neither copy
+         * feeds back into ordinary lookup or enables palette snapping. */
         for (palette_index = 0U; palette_index < palette_count * 3U;
                 ++palette_index) {
             palette_entries_float32[palette_index] =
@@ -5182,6 +5131,7 @@ sixel_encode_dither(
 
 end:
     dither->pipeline_6delta_rgb101 = 0;
+    dither->pipeline_6delta_hls = 0;
     if (image_started != 0 && SIXEL_FAILED(status)) {
         /*
          * Keep terminals from staying in DCS/SIXEL string state after a

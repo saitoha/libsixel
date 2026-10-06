@@ -66,6 +66,15 @@ SIXEL_INTERNAL_API int
 sixel_color_from_output(double out[3], double const in[3],
                         int source, int target);
 
+/* Private final-output helpers. RGB must be finite and bounded in [0,1].
+ * DEC fields are H=0..360, L/S=0..100. The inverse uses the decoder's
+ * established RGB percentage model; neither helper is a working transform. */
+SIXEL_INTERNAL_API void
+sixel_color_rgb_to_hls(int hls[3], double const rgb[3]);
+
+SIXEL_INTERNAL_API void
+sixel_color_hls_to_rgb101(unsigned char rgb[3], int const hls[3]);
+
 /*
  * Convert a nonempty packed RGB float32 buffer in place without gamut
  * clipping. Validate every result before writing any pixels, so a rejected
