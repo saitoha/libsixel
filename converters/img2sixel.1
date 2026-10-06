@@ -1101,7 +1101,8 @@ Larger thresholds trade freshness for fewer lookups; 255 keeps every valid retai
 Diffuse propagates the error from retained RGB; skip omits kept-pixel diffusion.
 Delta requires \fB--alpha-policy=auto\fP or \fBkeep\fP.
 It conflicts with \fB-e\fP, whose unpainted background cannot erase earlier
-foreground pixels. Opaque black-and-white output via \fB-b gray1\fP can
+foreground pixels. It also conflicts with \fB-O\fP: OR mode's P2=5
+does not carry delta's omitted-pixel preservation. Opaque black-and-white output via \fB-b gray1\fP can
 paint both colors and remains supported.
 History must match the receiver's display and frame placement.
 .TP 5
@@ -1321,6 +1322,7 @@ See \fBdocs/encoder/output/drcs.md\fP for mapping modes, cell layout, and curren
 experimental implementation defects.
 .TP 5
 .B \-O, \-\-ormode
+Conflicts with \fB--update-policy=delta\fP because P2=5 does not preserve omitted destination pixels.
 This option enables sixel output in "ormode". ormode is a SIXEL graphics
 dialect originating from the netbsd/x68k console \fIite\fP and the twitter
 client \fIsayaka\fP. It decomposes palette indices into bitplanes and

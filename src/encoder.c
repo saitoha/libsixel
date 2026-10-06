@@ -6474,8 +6474,24 @@ sixel_encoder_validate_delta_palette(int enabled, int color_option)
 }
 
 static SIXELSTATUS
+sixel_encoder_validate_delta_or(int enabled, int ormode)
+{
+    /* OR output reconstructs an index raster with P2=5. Zero bits do not
+     * carry the P2=1 operation that keeps an earlier destination RGB. */
+    if (enabled && ormode) {
+        sixel_helper_set_additional_message(
+            "update-policy=delta conflicts with -O, --ormode: "
+            "P2=5 does not preserve omitted destination pixels.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_encoder_validate_alpha_feature_policy(sixel_encoder_t const *encoder)
 {
+    SIXELSTATUS status;
+
     if (sixel_encoder_transparent_offset_enabled(encoder) != 0 &&
         encoder->transparent_policy_override != 0 &&
         encoder->transparent_policy != SIXEL_ALPHA_POLICY_AUTO &&
@@ -6493,8 +6509,13 @@ sixel_encoder_validate_alpha_feature_policy(sixel_encoder_t const *encoder)
         return SIXEL_BAD_ARGUMENT;
     }
 
-    return sixel_encoder_validate_delta_palette(encoder->sixdelta_enabled,
-                                                encoder->color_option);
+    status = sixel_encoder_validate_delta_palette(encoder->sixdelta_enabled,
+                                                  encoder->color_option);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    return sixel_encoder_validate_delta_or(encoder->sixdelta_enabled,
+                                           encoder->ormode);
 }
 
 static SIXELSTATUS
@@ -11326,6 +11347,11 @@ sixel_encoder_apply_update_policy_option(
     status = sixel_encoder_validate_delta_palette(
         resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA,
         encoder->color_option);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_encoder_validate_delta_or(
+            resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA,
+            encoder->ormode);
+    }
     if (SIXEL_FAILED(status)) {
         sixel_option_free_argument_resolution(&resolution);
         return status;
@@ -12703,6 +12729,10 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_ORMODE:  /* O */
+        status = sixel_encoder_validate_delta_or(encoder->sixdelta_enabled, 1);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         encoder->ormode = 1;
         break;
     case SIXEL_OPTFLAG_COMPLEXION_SCORE:  /* C */

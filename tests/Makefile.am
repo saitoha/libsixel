@@ -359,6 +359,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0205_DELTA_MONO_OUTPUT_REJECT \
     -DBUILD_TEST_0206_DELTA_OPAQUE_BW_FRAMES \
     -DBUILD_DELTA_MONO_COMMON \
+    -DBUILD_TEST_0207_DELTA_OR_THEN_DELTA \
+    -DBUILD_TEST_0208_DELTA_DELTA_THEN_OR \
+    -DBUILD_TEST_0209_DELTA_OR_ENVIRONMENT \
+    -DBUILD_TEST_0210_DELTA_OR_FULL_OVERRIDE \
+    -DBUILD_TEST_0211_DELTA_OR_BYTE_RECOVERY \
+    -DBUILD_TEST_0212_DELTA_OR_FLOAT_RECOVERY \
+    -DBUILD_TEST_0213_DELTA_OR_P3_RECOVERY \
+    -DBUILD_DELTA_OR_COMMON \
     -DBUILD_DELTA_OUTPUT_COMMON \
     -DBUILD_DELTA_WORK_COMMON \
     -DBUILD_DELTA_BYTE_COMMON \
@@ -3204,6 +3212,14 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0205_delta_mono_output_reject.c \
     quant/palette/delta_native/0206_delta_opaque_bw_frames.c \
     quant/palette/delta_mono_common.c \
+    quant/palette/delta_native/0207_delta_or_then_delta.c \
+    quant/palette/delta_native/0208_delta_delta_then_or.c \
+    quant/palette/delta_native/0209_delta_or_environment.c \
+    quant/palette/delta_native/0210_delta_or_full_override.c \
+    quant/palette/delta_native/0211_delta_or_byte_recovery.c \
+    quant/palette/delta_native/0212_delta_or_float_recovery.c \
+    quant/palette/delta_native/0213_delta_or_p3_recovery.c \
+    quant/palette/delta_or_common.c \
     quant/palette/delta_output_common.c \
     quant/palette/delta_work_common.c \
     quant/palette/delta_byte_common.c \

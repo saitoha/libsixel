@@ -990,7 +990,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    requires exact RGB; later keeps compare palette error.\n"
         "    Larger thresholds trade freshness for fewer lookups.\n"
         "    full preserves the source-alpha policy.\n"
-        "    delta conflicts with -e; opaque -b gray1 remains supported.\n"
+        "    delta conflicts with -e and -O; opaque -b gray1 is supported.\n"
     },
     {
         'P',
@@ -1156,6 +1156,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "ormode",
         "-O, --ormode\n"
         "    enables sixel output in \"ormode\"\n"
+        "    Conflicts with update-policy=delta: P2=5 does not carry\n"
+        "    the omitted-pixel preservation used by delta.\n"
     },
     {
         'X',

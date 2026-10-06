@@ -163,6 +163,7 @@ The encoder emits palette definitions and then visits the palette-index bit plan
 | `-E size` | Optimizes OR-plane serialization, including empty-plane omission; it does not enable ordinary overwrite-based repair. |
 | `--threads` | OR mode has a producer/writer pipeline with ordered band output. The serial body and pipeline have a byte-equivalence regression fixture. Scheduling and fallback details are in the [encoder threading guide](../../../threading/encoder.md). |
 | Transparent offset (`-+`) | The encoder expands the geometry and emits zero-bit padding. This alone does not guarantee that a receiver preserves the existing terminal image in that margin. |
+| `-Z delta` | Rejected before output because OR bit planes do not carry the retained-RGB omission operation. Select `-Z full` before `-O`; see [delta interactions](../delta-encoding.md#execution-paths-and-interactions) for option-state and retained-history rules. |
 | Alpha and index zero | libsixel decoding initializes the OR index raster to zero. Every cell in the decoded raster, including an untouched cell, has a palette index and is treated as painted. Direct RGBA decoding resolves entry zero to an opaque color. |
 | High color (`-I`) | High-color dispatch precedes the ordinary indexed encoder. It is a separate repeated-register technique, not an additional OR bit plane or a way to expand this eight-plane encoder. Combining `-I` with `-O` is not covered here as a supported composition. See [high-color output](../high-color/README.md). |
 
