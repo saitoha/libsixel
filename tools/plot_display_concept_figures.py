@@ -576,16 +576,19 @@ def density():
 # Pixel appearance
 
 SAMPLES_PER_DEGREE = 1080
-APPEARANCE_FIELD = (1.0, 0.5)  # degrees, shown
+APPEARANCE_FIELD = (1.0, 0.62)  # degrees, shown
 APPEARANCE_MARGIN = 0.08  # degrees of plain background rendered around the field
-APPEARANCE_ZOOM = (0.03, 0.31, 0.12, 0.47)  # x0, x1, y0, y1 in degrees of the field
+APPEARANCE_ZOOM = (0.03, 0.31, 0.12, 0.50)  # x0, x1, y0, y1 in degrees of the field
+NEAR_ZOOM = (0.30, 0.62, 0.50, 0.60)  # close-up of the nearby-color strip, as seen
+# A gradient dithered with four nearby colors, as in skies and skin tones.
+NEAR_COLORS = ((100, 145, 200), (130, 168, 214), (160, 190, 226), (190, 212, 238))
 APPEARANCE = {
     'crt': {'title': 'CRT', 'ppd': 40, 'spot_sigma': 0.45, 'grille_pitch': 0.95,
             'stripe_fill': 0.8, 'halation': 0.04, 'halation_sigma': 4.0},
     'lcd': {'title': '1080p LCD', 'ppd': 36, 'fill_x': 0.8, 'fill_y': 0.85},
     'retina': {'title': 'High-density LCD', 'ppd': 90, 'fill_x': 0.8, 'fill_y': 0.85},
 }
-EYE_LUMA_FWHM_ARCMIN = 1.0
+EYE_LUMA_FWHM_ARCMIN = 1.2
 EYE_CHROMA_FWHM_ARCMIN = 4.0
 # Rec. 709 luminance weights and a simple opponent basis for the eye model.
 OPPONENT = np.array([[0.2126, 0.7152, 0.0722], [1.0, -1.0, 0.0], [0.5, 0.5, -1.0]])
@@ -635,30 +638,34 @@ def appearance_content(ppd):
     draw.line([at(0.72, 0.05), at(0.97, 0.29)], fill=(25, 35, 50), width=line_width)
     pixels = np.asarray(canvas.resize((width, height), Image.Resampling.BOX),
                         dtype=float) / 255
-    top = round((m + 0.33) * ppd)
-    bottom = round((m + APPEARANCE_FIELD[1]) * ppd)
     left = round(m * ppd)
     right = round((m + APPEARANCE_FIELD[0]) * ppd)
-    dark = np.array([30, 50, 110]) / 255
-    light = np.array([245, 215, 120]) / 255
-    error = np.zeros((bottom - top, right - left))
-    error[:] = np.linspace(0, 1, right - left)
-    rows, cols = error.shape
-    for y in range(rows):
-        for x in range(cols):
-            old = error[y, x]
-            new = 1.0 if old >= 0.5 else 0.0
-            diff = old - new
-            error[y, x] = new
-            if x + 1 < cols:
-                error[y, x + 1] += diff * 7 / 16
-            if y + 1 < rows:
-                if x > 0:
-                    error[y + 1, x - 1] += diff * 3 / 16
-                error[y + 1, x] += diff * 5 / 16
+
+    def dither_strip(y0, y1, levels):
+        top, bottom = round((m + y0) * ppd), round((m + y1) * ppd)
+        error = np.zeros((bottom - top, right - left))
+        error[:] = np.linspace(0, 1, right - left)
+        rows, cols = error.shape
+        steps = len(levels) - 1
+        for y in range(rows):
+            for x in range(cols):
+                old = error[y, x]
+                new = min(steps, max(0, round(old * steps))) / steps
+                diff = old - new
+                error[y, x] = new
                 if x + 1 < cols:
-                    error[y + 1, x + 1] += diff * 1 / 16
-    pixels[top:bottom, left:right] = dark + error[..., None] * (light - dark)
+                    error[y, x + 1] += diff * 7 / 16
+                if y + 1 < rows:
+                    if x > 0:
+                        error[y + 1, x - 1] += diff * 3 / 16
+                    error[y + 1, x] += diff * 5 / 16
+                    if x + 1 < cols:
+                        error[y + 1, x + 1] += diff * 1 / 16
+        index = np.rint(error * steps).astype(int)
+        pixels[top:bottom, left:right] = np.asarray(levels)[index] / 255
+
+    dither_strip(0.33, 0.47, ((30, 50, 110), (245, 215, 120)))
+    dither_strip(0.48, APPEARANCE_FIELD[1], NEAR_COLORS)
     return pixels
 
 
@@ -721,9 +728,9 @@ def seen_by_eye(linear):
 
 def appearance():
     with plt.rc_context(RC):
-        fig, axes = plt.subplots(2, 3, figsize=(9.6, 5.4),
-                                 gridspec_kw={'wspace': 0.04, 'hspace': 0.08,
-                                              'height_ratios': (1.25, 1)})
+        fig, axes = plt.subplots(3, 3, figsize=(9.6, 7.0),
+                                 gridspec_kw={'wspace': 0.04, 'hspace': 0.1,
+                                              'height_ratios': (1.25, 1, 0.75)})
         for column, (kind, model) in enumerate(APPEARANCE.items()):
             pixels = appearance_content(model['ppd'])
             emitted, conserved = render_panel(kind, model, pixels)
@@ -733,8 +740,11 @@ def appearance():
             fx0, fy0 = round(m * SAMPLES_PER_DEGREE), round(m * SAMPLES_PER_DEGREE)
             fx1 = fx0 + round(APPEARANCE_FIELD[0] * SAMPLES_PER_DEGREE)
             fy1 = fy0 + round(APPEARANCE_FIELD[1] * SAMPLES_PER_DEGREE)
-            seen = seen_by_eye(conserved)[fy0:fy1, fx0:fx1][::3, ::3]
-            for row, image in enumerate((zoom, seen)):
+            seen_full = seen_by_eye(conserved)
+            seen = seen_full[fy0:fy1, fx0:fx1][::3, ::3]
+            nx0, nx1, ny0, ny1 = (round((m + v) * SAMPLES_PER_DEGREE) for v in NEAR_ZOOM)
+            near = seen_full[ny0:ny1, nx0:nx1][::2, ::2]
+            for row, image in enumerate((zoom, seen, near)):
                 ax = axes[row, column]
                 ax.imshow(linear_to_srgb(image), interpolation='none')
                 ax.set_xticks([])
@@ -745,6 +755,7 @@ def appearance():
                                       fontweight='bold')
         axes[0, 0].set_ylabel('screen, close-up')
         axes[1, 0].set_ylabel('seen by the eye')
+        axes[2, 0].set_ylabel('nearby colors,\nenlarged')
         return mpl_svg(fig)
 
 
@@ -831,6 +842,8 @@ def main():
         'pixel_appearance': {'samples_per_degree': SAMPLES_PER_DEGREE,
                              'field_degrees': list(APPEARANCE_FIELD),
                              'close_up_degrees': list(APPEARANCE_ZOOM),
+                             'near_colors_srgb': [list(c) for c in NEAR_COLORS],
+                             'near_close_up_degrees': list(NEAR_ZOOM),
                              'models': APPEARANCE,
                              'eye_luminance_fwhm_arcmin': EYE_LUMA_FWHM_ARCMIN,
                              'eye_chroma_fwhm_arcmin': EYE_CHROMA_FWHM_ARCMIN,

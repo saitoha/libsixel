@@ -1060,13 +1060,41 @@
     "samples_per_degree": 1080,
     "field_degrees": [
       1.0,
-      0.5
+      0.62
     ],
     "close_up_degrees": [
       0.03,
       0.31,
       0.12,
-      0.47
+      0.5
+    ],
+    "near_colors_srgb": [
+      [
+        100,
+        145,
+        200
+      ],
+      [
+        130,
+        168,
+        214
+      ],
+      [
+        160,
+        190,
+        226
+      ],
+      [
+        190,
+        212,
+        238
+      ]
+    ],
+    "near_close_up_degrees": [
+      0.3,
+      0.62,
+      0.5,
+      0.6
     ],
     "models": {
       "crt": {
@@ -1091,7 +1119,7 @@
         "fill_y": 0.85
       }
     },
-    "eye_luminance_fwhm_arcmin": 1.0,
+    "eye_luminance_fwhm_arcmin": 1.2,
     "eye_chroma_fwhm_arcmin": 4.0,
     "note": "Simulation in linear light. CRT: Gaussian beam spot per pixel, halation in the faceplate and an aperture-grille phosphor mask. LCD: three subpixel stripes per pixel inside a black matrix. Both rows conserve mean light. The lower row blurs luminance and opponent chroma with separate Gaussians as a rough model of optical blur and lower chromatic acuity; it is an illustration, not a model of visibility thresholds."
   },
