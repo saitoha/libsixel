@@ -165,6 +165,12 @@
       "detail": "2880 × 1800 at 220 ppi"
     },
     {
+      "year": 2019,
+      "family": "lcd",
+      "event": "Mini LED television",
+      "detail": "LCD with about 1,000 dimming zones, TCL"
+    },
+    {
       "year": 2022,
       "family": "epaper",
       "event": "Kaleido 3, Gallery 3",
@@ -175,6 +181,12 @@
       "family": "epaper",
       "event": "Spectra 6",
       "detail": "six-color pigment signage"
+    },
+    {
+      "year": 2025,
+      "family": "lcd",
+      "event": "RGB Mini LED",
+      "detail": "red, green and blue LEDs in each backlight zone"
     }
   ],
   "pixel_density": {

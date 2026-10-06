@@ -107,15 +107,17 @@ EVENTS = (
     (2010, 'density', 'iPhone 4 "Retina"', '326 ppi'),
     (2010, 'crt', 'SED abandoned', 'flat panel of tiny electron emitters'),
     (2012, 'density', 'Retina MacBook Pro', '2880 × 1800 at 220 ppi'),
+    (2019, 'lcd', 'Mini LED television', 'LCD with about 1,000 dimming zones, TCL'),
     (2022, 'epaper', 'Kaleido 3, Gallery 3', 'color filters; four-pigment ink'),
     (2023, 'epaper', 'Spectra 6', 'six-color pigment signage'),
+    (2025, 'lcd', 'RGB Mini LED', 'red, green and blue LEDs in each backlight zone'),
 )
 
 
 def timeline():
     width, row = 800, 27
     height = 124 + row * len(EVENTS)
-    body = [svg_text(width / 2, 30, 'Display technologies, 1881–2023', 17, INK, 700, 'middle')]
+    body = [svg_text(width / 2, 30, 'Display technologies, 1881–2025', 17, INK, 700, 'middle')]
     for index, (key, (label, color)) in enumerate(FAMILIES.items()):
         x = 20 + (index % 4) * 190
         y = 56 + (index // 4) * 22
@@ -135,8 +137,8 @@ def timeline():
                     f'<tspan font-weight="700">{html.escape(title)}</tspan>'
                     f'<tspan fill="{MUTED}"> — {html.escape(detail)}</tspan></text>')
     return svg_document(width, height, 'Display technology timeline',
-                        'A timeline from halftone printing in 1881 to color electronic '
-                        'paper in 2023, with each event colored by technology family.',
+                        'A timeline from halftone printing in 1881 to RGB Mini LED '
+                        'backlights in 2025, with each event colored by technology family.',
                         body)
 
 

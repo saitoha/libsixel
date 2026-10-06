@@ -2,7 +2,7 @@
 
 ## Scope
 
-This document looks at the devices that finally turn image data into light: printed paper and photographic film, cathode-ray tubes, liquid crystal, plasma and organic LED panels, projectors, and electronic paper. It follows their history, compares how each sends light to the eye and mixes color, traces how pixel density grew relative to the eye's resolution, and explains why electronic paper makes dithering and small palettes important again. It builds on [Visual perception](../../quality/visual-perception/README.md) and [Color spaces](../colorspace/README.md), and it prepares the [Palettes](../palettes/README.md) and [Dithering](../dithering/README.md) chapters.
+This document looks at the devices that finally turn image data into light: printed paper and photographic film, cathode-ray tubes, liquid crystal panels including Mini LED backlit ones, plasma and organic LED panels, projectors, and electronic paper. It follows their history, compares how each sends light to the eye and mixes color, traces how pixel density grew relative to the eye's resolution, and explains why electronic paper makes dithering and small palettes important again. It builds on [Visual perception](../../quality/visual-perception/README.md) and [Color spaces](../colorspace/README.md), and it prepares the [Palettes](../palettes/README.md) and [Dithering](../dithering/README.md) chapters.
 
 **Key ideas in one minute:**
 
@@ -26,7 +26,7 @@ The difference matters most when the room light changes. The figure below compar
 
 *Figure 2. Luminance of white and contrast ratio as the room gets brighter. The optical values are illustrative assumptions, not measurements of particular products.*
 
-- An emissive or backlit display has fixed brightness. Room light reflected from its surface adds to both its white and its black, so its contrast falls as the room gets brighter. In sunlight, the reflection can be brighter than the picture.
+- An emissive or backlit display has fixed brightness. Room light reflected from its surface adds to both its white and its black, so its contrast falls as the room gets brighter. In sunlight, the reflection can be brighter than the picture. Local dimming of a backlight, as in Mini LED LCDs, lowers the display's own black level, but not the reflected room light.
 - A reflective display reflects a fixed fraction of the light, so its contrast ratio does not depend on the room light at all, and its white becomes brighter as the room does. It is easiest to read in sunlight and impossible to read in the dark without a front light.
 - A transmissive display in a dark room, such as a slide projected in a darkened hall, combines a bright source with a dark surround and can show a very wide range of tones.
 
@@ -57,9 +57,9 @@ The arrangement of the colored elements differs between technologies. A shadow-m
 
 ## A timeline
 
-![A timeline from halftone printing in 1881 to color electronic paper in 2023, with each event colored by technology family: print and film, cathode-ray tubes, liquid crystal, plasma, OLED and LED, projection, electronic paper, and pixel-density milestones.](figures/timeline.svg)
+![A timeline from halftone printing in 1881 to RGB Mini LED backlights in 2025, with each event colored by technology family: print and film, cathode-ray tubes, liquid crystal, plasma, OLED and LED, projection, electronic paper, and pixel-density milestones.](figures/timeline.svg)
 
-*Figure 5. Display technologies from 1881 to 2023.*
+*Figure 5. Display technologies from 1881 to 2025.*
 
 ### Print and photography
 
@@ -82,6 +82,8 @@ The CRT was the computer display for half a century: the DEC VT340 and other SIX
 **Liquid crystal.** George Heilmeier's group at RCA demonstrated the first liquid crystal displays in 1968, using dynamic scattering (Heilmeier, Zanoni and Barton, 1968). The **twisted nematic** (TN) cell of Schadt and Helfrich (1971) needed little power and became the basis of watches, calculators and later of computer screens. Liquid crystal does not emit light: it rotates the polarization of light from a backlight, and polarizers turn this into brightness. Active-matrix panels with a thin-film transistor per subpixel made fast, high-resolution screens possible, and in-plane switching (IPS), commercialized by Hitachi in 1996, widened the viewing angle. LCD desktop monitors outshipped CRTs worldwide from the third quarter of 2004, and LCD televisions outsold CRT televisions from the fourth quarter of 2007.
 
 An LCD has a fixed **native resolution**: one transistor per subpixel. Any other resolution must be resampled, which blurs the picture. This simple fact shaped the pixel-density history below.
+
+**Mini LED backlights.** An LCD cannot block its backlight completely, so its black glows slightly and its native contrast is limited to about 1000:1 to a few thousand to one. **Local dimming** divides the backlight into zones and dims each zone behind dark parts of the picture. Mini LED backlights make the zones small by using thousands of tiny LEDs. TCL's 8-Series of 2019 brought the first Mini LED televisions, with about 1,000 zones in the 75-inch model, and Apple's 12.9-inch iPad Pro of 2021 lit its LCD with more than 10,000 mini LEDs in 2,596 zones. The picture is then the product of two images: a coarse backlight image, one value per zone, and the fine LCD image in front of it. Because a zone is much larger than a pixel, a small bright object on a dark background lights its whole zone, and a faint halo, called blooming, can appear around it. Since 2025, RGB Mini LED televisions also build the backlight itself from separate red, green and blue LEDs, so that each zone can change its color as well as its brightness.
 
 **Organic LED.** Ching Tang and Steven VanSlyke at Kodak reported efficient organic light-emitting diodes in 1987 (Tang and VanSlyke, 1987). OLED subpixels emit their own light and can switch off completely, so an OLED panel shows true black in a dark room. Sony's XEL-1 of 2007, with an 11-inch 960 × 540 screen, was the first OLED television; OLED panels later became common in phones.
 
@@ -181,13 +183,16 @@ All figures are generated by [`tools/plot_display_concept_figures.py`](../../../
 ## References
 
 - Apple Inc. ["Apple Presents iPhone 4."](https://www.apple.com/newsroom/2010/06/07Apple-Presents-iPhone-4/) Press release, 7 June 2010.
+- Apple Inc. ["Apple unveils new iPad Pro with M1 chip and stunning Liquid Retina XDR display."](https://www.apple.com/newsroom/2021/04/apple-unveils-new-ipad-pro-with-m1-chip-and-stunning-liquid-retina-xdr-display/) Press release, April 2021.
 - Bitzer, D. L., and H. G. Slottow. "The plasma display panel: a digitally addressable display with inherent memory." AFIPS Conference Proceedings 29 (Fall Joint Computer Conference), 541–547, 1966. doi:[10.1145/1464291.1464349](https://doi.org/10.1145/1464291.1464349)
 - Comiskey, B., J. D. Albert, H. Yoshizawa, and J. Jacobson. "An electrophoretic ink for all-printed reflective electronic displays." Nature 394:253–255, 1998. doi:[10.1038/28349](https://doi.org/10.1038/28349)
 - E Ink Holdings. "E Ink Launches E Ink Kaleido 3, the Next Generation of Print Color ePaper Technology." Press release, 7 April 2022.
 - E Ink Holdings. ["E Ink Launches E Ink Spectra 6, a Revolutionary New Color ePaper for Paper Sign Replacement."](https://www.eink.com/news/detail/E-Ink-Launches-E-Ink-Spectra-6-a-Revolutionary-New-Color-ePaper-for-Paper-Sign-Replacement) Press release, 6 April 2023.
+- FlatpanelsHD. ["TCL launches 8-series LCD TVs with miniLED."](https://www.flatpanelshd.com/news.php?subaction=showfull&id=1571225764) 2019.
 - Heilmeier, G. H., L. A. Zanoni, and L. A. Barton. "Dynamic scattering: a new electrooptic effect in certain classes of nematic liquid crystals." Proceedings of the IEEE 56(7):1162–1171, 1968. doi:[10.1109/PROC.1968.6513](https://doi.org/10.1109/PROC.1968.6513)
 - Jiang, H. X., S. X. Jin, J. Li, J. Shakya, and J. Y. Lin. "III-nitride blue microdisplays." Applied Physics Letters 78:1303, 2001. doi:[10.1063/1.1351521](https://doi.org/10.1063/1.1351521)
 - Schadt, M., and W. Helfrich. "Voltage-dependent optical activity of a twisted nematic liquid crystal." Applied Physics Letters 18(4):127–128, 1971. doi:[10.1063/1.1653593](https://doi.org/10.1063/1.1653593)
 - [DEC VT240](https://terminals-wiki.org/wiki/index.php/DEC_VT240). Terminals Wiki, for the VT240 and VT241 specifications.
 - Tang, C. W., and S. A. VanSlyke. "Organic electroluminescent diodes." Applied Physics Letters 51(12):913–915, 1987. doi:[10.1063/1.98799](https://doi.org/10.1063/1.98799)
+- Hisense. ["RGB MiniLED TV: The Pinnacle of Picture Technology."](https://www.hisense-usa.com/post/rgb-miniled-tv-the-pinnacle-of-picture-technology)
 - Digital Equipment Corporation. [*VT330/VT340 Programmer Reference Manual, Volume 2: Graphics Programming*](https://bitsavers.trailing-edge.com/pdf/dec/terminal/vt340/EK-VT3XX-GP-002_VT330_VT340_Graphics_Programming_198805.pdf), second edition, May 1988.

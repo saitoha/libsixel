@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="907" viewBox="0 0 800 907" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="961" viewBox="0 0 800 961" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
 <title id="title">Display technology timeline</title>
-<desc id="desc">A timeline from halftone printing in 1881 to color electronic paper in 2023, with each event colored by technology family.</desc>
-<rect x="0" y="0" width="800" height="907" fill="#ffffff"/>
-<text x="400" y="30" font-size="17" fill="#183247" font-weight="700" text-anchor="middle">Display technologies, 1881–2023</text>
+<desc id="desc">A timeline from halftone printing in 1881 to RGB Mini LED backlights in 2025, with each event colored by technology family.</desc>
+<rect x="0" y="0" width="800" height="961" fill="#ffffff"/>
+<text x="400" y="30" font-size="17" fill="#183247" font-weight="700" text-anchor="middle">Display technologies, 1881–2025</text>
 <circle cx="26" cy="56" r="6" fill="#8e5a2b"/>
 <text x="37" y="61" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Print and film</text>
 <circle cx="216" cy="56" r="6" fill="#7a4fa0"/>
@@ -17,7 +17,7 @@
 <text x="227" y="83" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Electronic paper</text>
 <circle cx="406" cy="78" r="6" fill="#b07d12"/>
 <text x="417" y="83" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Pixel density</text>
-<line x1="86" y1="102" x2="86" y2="897" stroke="#d9e1e7" stroke-width="2"/>
+<line x1="86" y1="102" x2="86" y2="951" stroke="#d9e1e7" stroke-width="2"/>
 <text x="70" y="117" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1881</text>
 <circle cx="86" cy="112" r="6" fill="#8e5a2b"/>
 <text x="104" y="117" font-size="14" fill="#183247"><tspan font-weight="700">Halftone printing</tspan><tspan fill="#4c6070"> — tones made of dots of varying size</tspan></text>
@@ -93,10 +93,16 @@
 <text x="70" y="819" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2012</text>
 <circle cx="86" cy="814" r="6" fill="#b07d12"/>
 <text x="104" y="819" font-size="14" fill="#183247"><tspan font-weight="700">Retina MacBook Pro</tspan><tspan fill="#4c6070"> — 2880 × 1800 at 220 ppi</tspan></text>
-<text x="70" y="846" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2022</text>
-<circle cx="86" cy="841" r="6" fill="#5f6b73"/>
-<text x="104" y="846" font-size="14" fill="#183247"><tspan font-weight="700">Kaleido 3, Gallery 3</tspan><tspan fill="#4c6070"> — color filters; four-pigment ink</tspan></text>
-<text x="70" y="873" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2023</text>
+<text x="70" y="846" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2019</text>
+<circle cx="86" cy="841" r="6" fill="#17618c"/>
+<text x="104" y="846" font-size="14" fill="#183247"><tspan font-weight="700">Mini LED television</tspan><tspan fill="#4c6070"> — LCD with about 1,000 dimming zones, TCL</tspan></text>
+<text x="70" y="873" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2022</text>
 <circle cx="86" cy="868" r="6" fill="#5f6b73"/>
-<text x="104" y="873" font-size="14" fill="#183247"><tspan font-weight="700">Spectra 6</tspan><tspan fill="#4c6070"> — six-color pigment signage</tspan></text>
+<text x="104" y="873" font-size="14" fill="#183247"><tspan font-weight="700">Kaleido 3, Gallery 3</tspan><tspan fill="#4c6070"> — color filters; four-pigment ink</tspan></text>
+<text x="70" y="900" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2023</text>
+<circle cx="86" cy="895" r="6" fill="#5f6b73"/>
+<text x="104" y="900" font-size="14" fill="#183247"><tspan font-weight="700">Spectra 6</tspan><tspan fill="#4c6070"> — six-color pigment signage</tspan></text>
+<text x="70" y="927" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2025</text>
+<circle cx="86" cy="922" r="6" fill="#17618c"/>
+<text x="104" y="927" font-size="14" fill="#183247"><tspan font-weight="700">RGB Mini LED</tspan><tspan fill="#4c6070"> — red, green and blue LEDs in each backlight zone</tspan></text>
 </svg>

@@ -56,7 +56,7 @@ The foundations the rest of the documentation builds on, in reading order: how v
 
 ### Display technologies
 
-- [Display technologies](concepts/displays/README.md) follows displays from halftone printing, color film and slides through cathode-ray tubes, plasma, LCD, OLED, microLED and projectors to electronic paper, and compares emissive, transmissive and reflective light, subtractive, spatial and temporal color mixing, pixels per degree from the CRT era through the 2000s step back to Retina displays, and why electronic paper makes small palettes and dithering important again.
+- [Display technologies](concepts/displays/README.md) follows displays from halftone printing, color film and slides through cathode-ray tubes, plasma, LCD with Mini LED local dimming, OLED, microLED and projectors to electronic paper, and compares emissive, transmissive and reflective light, subtractive, spatial and temporal color mixing, pixels per degree from the CRT era through the 2000s step back to Retina displays, and why electronic paper makes small palettes and dithering important again.
 
 ### Palettes and dithering
 
