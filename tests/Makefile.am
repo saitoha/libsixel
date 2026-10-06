@@ -182,7 +182,7 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0015_DELTA_SIGNED_THRESHOLD \
-    -DBUILD_TEST_0016_DELTA_P3_REJECTION_RECOVERY \
+    -DBUILD_TEST_0016_DELTA_P3_HLS_RECOVERY \
     -DBUILD_TEST_0017_DELTA_SPATIAL_DISPATCH \
     -DBUILD_TEST_0018_DELTA_A_SOURCE \
     -DBUILD_TEST_0019_DELTA_X_SOURCE \
@@ -252,6 +252,25 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0098_DELTA_WORKSPACE_LEGACY \
     -DBUILD_TEST_0099_DELTA_VIRTUAL_GUARD \
     -DBUILD_TEST_0100_DELTA_VIRTUAL_FS \
+    -DBUILD_TEST_0101_DELTA_P3_GAMMA_TRANSFORM \
+    -DBUILD_TEST_0102_DELTA_P3_LINEAR_TRANSFORM \
+    -DBUILD_TEST_0103_DELTA_P3_OKLAB_TRANSFORM \
+    -DBUILD_TEST_0104_DELTA_P3_CIELAB_TRANSFORM \
+    -DBUILD_TEST_0105_DELTA_P3_DIN99D_TRANSFORM \
+    -DBUILD_TEST_0106_DELTA_P3_THRESHOLD \
+    -DBUILD_TEST_0107_DELTA_P3_DIFFUSE \
+    -DBUILD_TEST_0108_DELTA_P3_SKIP \
+    -DBUILD_TEST_0109_DELTA_P3_CACHE_LIFETIME \
+    -DBUILD_TEST_0110_DELTA_P3_CACHE_FAILURE \
+    -DBUILD_TEST_0111_DELTA_P3_GAMMA_FRAMES \
+    -DBUILD_TEST_0112_DELTA_P3_LINEAR_FRAMES \
+    -DBUILD_TEST_0113_DELTA_P3_OKLAB_FRAMES \
+    -DBUILD_TEST_0114_DELTA_P3_CIELAB_FRAMES \
+    -DBUILD_TEST_0115_DELTA_P3_DIN99D_FRAMES \
+    -DBUILD_TEST_0116_DELTA_P3_WORKERS \
+    -DBUILD_TEST_0117_DELTA_P3_DEFINITION_SWITCH \
+    -DBUILD_TEST_0118_DELTA_P3_SEED_DEFINITION \
+    -DBUILD_DELTA_P3_COMMON \
     -DBUILD_DELTA_WORK_COMMON \
     -DBUILD_DELTA_BYTE_COMMON \
     -DBUILD_DELTA_FIXED_COMMON \
@@ -2919,7 +2938,7 @@ endif
 
 test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0015_delta_signed_threshold.c \
-    quant/palette/delta_native/0016_delta_p3_rejection_recovery.c \
+    quant/palette/delta_native/0016_delta_p3_hls_recovery.c \
     quant/palette/delta_native/0017_delta_spatial_dispatch.c \
     quant/palette/delta_native/0018_delta_a_source.c \
     quant/palette/delta_native/0019_delta_x_source.c \
@@ -2989,6 +3008,25 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0098_delta_workspace_legacy.c \
     quant/palette/delta_native/0099_delta_virtual_guard.c \
     quant/palette/delta_native/0100_delta_virtual_fs.c \
+    quant/palette/delta_native/0101_delta_p3_gamma_transform.c \
+    quant/palette/delta_native/0102_delta_p3_linear_transform.c \
+    quant/palette/delta_native/0103_delta_p3_oklab_transform.c \
+    quant/palette/delta_native/0104_delta_p3_cielab_transform.c \
+    quant/palette/delta_native/0105_delta_p3_din99d_transform.c \
+    quant/palette/delta_native/0106_delta_p3_threshold.c \
+    quant/palette/delta_native/0107_delta_p3_diffuse.c \
+    quant/palette/delta_native/0108_delta_p3_skip.c \
+    quant/palette/delta_native/0109_delta_p3_cache_lifetime.c \
+    quant/palette/delta_native/0110_delta_p3_cache_failure.c \
+    quant/palette/delta_native/0111_delta_p3_gamma_frames.c \
+    quant/palette/delta_native/0112_delta_p3_linear_frames.c \
+    quant/palette/delta_native/0113_delta_p3_oklab_frames.c \
+    quant/palette/delta_native/0114_delta_p3_cielab_frames.c \
+    quant/palette/delta_native/0115_delta_p3_din99d_frames.c \
+    quant/palette/delta_native/0116_delta_p3_workers.c \
+    quant/palette/delta_native/0117_delta_p3_definition_switch.c \
+    quant/palette/delta_native/0118_delta_p3_seed_definition.c \
+    quant/palette/delta_p3_common.c \
     quant/palette/delta_work_common.c \
     quant/palette/delta_byte_common.c \
     quant/palette/delta_fixed_common.c \

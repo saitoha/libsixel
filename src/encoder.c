@@ -2423,7 +2423,10 @@ sixel_encoder_6delta_accumulation_active(sixel_encoder_t const *encoder)
         return 0;
     }
 
-    return encoder->accumulation_valid != 0 ? 1 : 0;
+    return encoder->accumulation_valid != 0 &&
+        encoder->accumulation_color_definition ==
+            encoder->output_color_definition &&
+        encoder->accumulation_colorspace == encoder->output_colorspace;
 }
 
 static int
@@ -2855,6 +2858,9 @@ sixel_encoder_reset_6delta_plane(sixel_encoder_t *encoder,
     encoder->accumulation_width = plane_width;
     encoder->accumulation_height = plane_height;
     encoder->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    encoder->accumulation_color_definition =
+        encoder->output_color_definition;
+    encoder->accumulation_colorspace = encoder->output_colorspace;
 
     return SIXEL_OK;
 }
@@ -2996,6 +3002,9 @@ sixel_encoder_update_accumulation_from_frame(
     plane_matches =
         encoder->accumulation_pixels != NULL &&
         encoder->accumulation_valid != 0 &&
+        encoder->accumulation_color_definition ==
+            encoder->output_color_definition &&
+        encoder->accumulation_colorspace == encoder->output_colorspace &&
         encoder->accumulation_width == plane_width &&
         encoder->accumulation_height == plane_height &&
         encoder->accumulation_pixels_size == plane_rgb_size;
@@ -3077,6 +3086,9 @@ sixel_encoder_update_accumulation_from_frame(
         }
     }
     encoder->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    encoder->accumulation_color_definition =
+        encoder->output_color_definition;
+    encoder->accumulation_colorspace = encoder->output_colorspace;
     encoder->accumulation_valid = 1;
     status = SIXEL_OK;
 
@@ -6780,9 +6792,10 @@ sixel_encoder_palette_capacity(sixel_encoder_t const *encoder)
     return encoder->reqcolors == -1 ? SIXEL_PALETTE_MAX : encoder->reqcolors;
 }
 
-/* Retained RGB888 is an emitted sRGB view. Native delta compares in gamma
- * RGB and converts kept colors back to the selected workspace for diffusion.
- * Other output definitions need their own retained-color interpretation.
+/* Retained RGB888 describes emitted sRGB or P3. Native delta compares in
+ * those output coordinates, then returns retained colors to the workspace.
+ * Output identity belongs to the plane; workspace/precision changes do not
+ * invalidate a compatible plane. Other output definitions remain separate.
  * Generated palettes can reserve an omission key after history exists.
  * Fixed tables use a separate mask without consuming a palette entry.
  * Alternate transports retain their separate migration boundaries. */
@@ -6790,7 +6803,9 @@ static int
 sixel_encoder_native_delta(sixel_encoder_t const *encoder)
 {
     if (encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA ||
-            encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
+            (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY &&
+             encoder->output_color_definition !=
+                SIXEL_PALETTE_OUTPUT_DISPLAY_P3) ||
             (encoder->palette_type != SIXEL_PALETTETYPE_AUTO &&
              encoder->palette_type != SIXEL_PALETTETYPE_RGB) ||
             (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT &&
@@ -9639,6 +9654,9 @@ sixel_encoder_new(
     (*ppencoder)->accumulation_width    = 0;
     (*ppencoder)->accumulation_height   = 0;
     (*ppencoder)->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    (*ppencoder)->accumulation_color_definition =
+        SIXEL_PALETTE_OUTPUT_LEGACY;
+    (*ppencoder)->accumulation_colorspace = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->sixdelta_enabled      = 0;
     (*ppencoder)->sixdelta_threshold    = 0u;
     (*ppencoder)->sixdelta_threshold_override = 0;
@@ -10103,6 +10121,9 @@ sixel_encoder_invalidate_6delta_plane(
     encoder->accumulation_width = 0;
     encoder->accumulation_height = 0;
     encoder->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    encoder->accumulation_color_definition =
+        encoder->output_color_definition;
+    encoder->accumulation_colorspace = encoder->output_colorspace;
     encoder->accumulation_valid = 0;
     if (encoder->accumulation_valid_mask != NULL &&
             encoder->accumulation_valid_mask_size > 0u) {
@@ -10152,6 +10173,9 @@ sixel_encoder_set_accumulation_buffer(
         encoder->accumulation_width = 0;
         encoder->accumulation_height = 0;
         encoder->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        encoder->accumulation_color_definition =
+            encoder->output_color_definition;
+        encoder->accumulation_colorspace = encoder->output_colorspace;
         encoder->accumulation_valid = 0;
         return SIXEL_OK;
     }
@@ -10188,6 +10212,9 @@ sixel_encoder_set_accumulation_buffer(
     encoder->accumulation_width = width;
     encoder->accumulation_height = height;
     encoder->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    encoder->accumulation_color_definition =
+        encoder->output_color_definition;
+    encoder->accumulation_colorspace = encoder->output_colorspace;
     encoder->accumulation_valid = 1;
     /*
      * The supplied buffer is the retained plane, so it also defines the plane

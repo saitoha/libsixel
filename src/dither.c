@@ -1776,9 +1776,10 @@ sixel_dither_pipeline_6delta_try_keep_after_lookup(
 
 
 /* Compare without clipping or rounding the corrected sample. The native
- * caller admits sRGB gamma RGB wire output; keep comparisons stay in those
- * coordinates regardless of the workspace. Non-threshold keeps must also
- * avoid increasing emitted-color error in normalized working coordinates.
+ * caller admits sRGB or P3 gamma RGB output; keep comparisons stay in the
+ * selected output coordinates regardless of the workspace. Non-threshold
+ * keeps must also avoid increasing emitted-color error in normalized working
+ * coordinates.
  * Kept-color residuals use the transform back to the caller's workspace.
  * Compete with the emitted candidate in that case: comparing retained wire
  * RGB against an unrounded centroid would repaint even identical frames.
@@ -1803,6 +1804,7 @@ sixel_dither_6delta_keep_float(
     double emitted[3];
     double target[3];
     int colorspace;
+    int p3;
     int within;
     int n;
 
@@ -1826,12 +1828,19 @@ sixel_dither_6delta_keep_float(
         return 0;
     }
     colorspace = sixel_pixelformat_get_colorspace(pixelformat);
+    p3 = dither->use_rgb101_palette &&
+        sixel_palette_output_is_p3(dither->palette);
     for (n = 0; n < 3; ++n) {
         query[n] = rgb[n];
     }
     /* A failed inverse cannot establish a safe keep. Repaint the chosen
      * entry instead, without publishing a keep bit or a clipped query. */
-    if (colorspace != SIXEL_COLORSPACE_GAMMA &&
+    if (p3) {
+        if (!sixel_palette_to_output(dither->palette, query, query,
+                colorspace)) {
+            return 0;
+        }
+    } else if (colorspace != SIXEL_COLORSPACE_GAMMA &&
             !sixel_color_convert(query, query, colorspace,
                 SIXEL_COLORSPACE_GAMMA)) {
         return 0;
@@ -1860,20 +1869,22 @@ sixel_dither_6delta_keep_float(
     if (!within && keep_distance > chosen_distance) {
         return 0;
     }
-    if (colorspace != SIXEL_COLORSPACE_GAMMA) {
-        if (!sixel_color_convert(working, history,
-                SIXEL_COLORSPACE_GAMMA, colorspace)) {
+    if (p3 || colorspace != SIXEL_COLORSPACE_GAMMA) {
+        if (p3 ? !sixel_palette_from_output(dither->palette, working,
+                history, colorspace) : !sixel_color_convert(working,
+                history, SIXEL_COLORSPACE_GAMMA, colorspace)) {
             return 0;
         }
         if (!within) {
-            /* Virtual working colors can map far outside gamma RGB. A
-             * gamma-only comparison can then prefer bright history over
+            /* Virtual working colors can map far outside output RGB. An
+             * output-only comparison can then prefer bright history over
              * the dark candidate chosen in the actual diffusion geometry.
              * Compare both emitted colors in working units too; do not
              * clamp the query or substitute the unrounded centroid. The
-             * explicit gamma threshold remains the approximation gate. */
-            if (!sixel_color_convert(target, emitted,
-                    SIXEL_COLORSPACE_GAMMA, colorspace)) {
+             * explicit output threshold remains the approximation gate. */
+            if (p3 ? !sixel_palette_from_output(dither->palette, target,
+                    emitted, colorspace) : !sixel_color_convert(target,
+                    emitted, SIXEL_COLORSPACE_GAMMA, colorspace)) {
                 return 0;
             }
             keep_distance = 0.0;
@@ -1888,7 +1899,7 @@ sixel_dither_6delta_keep_float(
                 return 0;
             }
         }
-        /* History is bounded sRGB, so its working triplet fits float32.
+        /* Bounded output RGB maps to a working triplet that fits float32.
          * Do this only for a keep; ordinary palette residuals are unchanged. */
         for (n = 0; n < 3; ++n) {
             retained[n] = (float)working[n];

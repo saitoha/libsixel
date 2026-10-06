@@ -440,7 +440,7 @@ test_delta_native_scope(int unused)
     static struct { int flag; char const *value; } const options[] = {
         {'=', "1"}, {'~', "none"}, {'d', "none"}, {'Q', "heckbert"},
         {'F', "none"}, {'a', "off"}, {'_', "none"}, {'X', "gamma"},
-        {'W', "gamma"}, {'U', "display-p3"}, {'t', "rgb"},
+        {'W', "gamma"}, {'U', "display-p3"}, {'t', "hls"},
         {'.', "float32"}, {'p', "4"}, {'Z', "delta"}
     };
     float pixels[3] = { .2f, .4f, .6f };
@@ -471,11 +471,11 @@ test_delta_native_scope(int unused)
             goto end;
         }
     }
-    /* An unconnected destination must reject before emitting any bytes.
-     * Reuse the same encoder after selecting the connected interpretation. */
+    /* An unconnected HLS delta transport must reject before emitting any bytes.
+     * Reuse the same encoder after selecting connected RGB serialization. */
     if (sixel_encoder_encode_frame(encoder, frame, output) !=
             SIXEL_BAD_ARGUMENT || stream.size != 0 ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 't', "rgb")) ||
             SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, output)) ||
             stream.size == 0 || encoder->diagnostic_dither == NULL ||
             !((sixel_dither_t *)encoder->diagnostic_dither)->

@@ -334,6 +334,10 @@ struct sixel_encoder {
     int accumulation_width;
     int accumulation_height;
     int accumulation_pixelformat;
+    /* Interpretation of the emitted RGB retained above, not source/W space.
+     * Incompatible output settings cannot reuse this plane's valid bits. */
+    int accumulation_color_definition;
+    int accumulation_colorspace;
     int sixdelta_enabled;
     unsigned int sixdelta_threshold;
     int sixdelta_threshold_override;

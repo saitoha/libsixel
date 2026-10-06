@@ -120,6 +120,21 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_get_output_rgb(sixel_palette_t const *palette,
                              float const **entries, unsigned int *count);
 
+/* Cached output interpretation, independent of working coordinates. */
+SIXEL_INTERNAL_API int
+sixel_palette_output_is_p3(sixel_palette_t const *palette);
+
+/* Extended triplet conversions for native delta. Require a prepared output
+ * cache; return 0 without changing out on failure. Exact aliasing is valid.
+ * The inverse supports gamma sRGB, linear sRGB and Display P3. */
+SIXEL_INTERNAL_API int
+sixel_palette_to_output(sixel_palette_t const *palette, double out[3],
+                        double const in[3], int workspace);
+
+SIXEL_INTERNAL_API int
+sixel_palette_from_output(sixel_palette_t const *palette, double out[3],
+                          double const in[3], int workspace);
+
 #ifdef __cplusplus
 }
 #endif

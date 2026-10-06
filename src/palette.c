@@ -1045,6 +1045,20 @@ sixel_palette_resize_entries_float32(sixel_palette_t *palette,
                                      unsigned int depth,
                                      sixel_allocator_t *allocator);
 
+/* Invalidating working entries also invalidates their output interpretation.
+ * Workers only borrow a completed cache; preparation and disposal are owned
+ * by the palette's caller outside the parallel application interval. */
+static void
+sixel_palette_clear_output(sixel_palette_storage_t *storage)
+{
+    sixel_cdef_free(storage->output_srgb);
+    sixel_cdef_free(storage->output_device);
+    storage->output_srgb = NULL;
+    storage->output_device = NULL;
+    storage->output_colorspace = SIXEL_COLORSPACE_GAMMA;
+    storage->output_rgb101_count = 0U;
+}
+
 static void
 sixel_palette_dispose(sixel_palette_storage_t *storage)
 {
@@ -1055,6 +1069,7 @@ sixel_palette_dispose(sixel_palette_storage_t *storage)
     }
 
     allocator = storage->allocator;
+    sixel_palette_clear_output(storage);
     if (storage->entries != NULL) {
         sixel_allocator_free(allocator, storage->entries);
         storage->entries = NULL;
@@ -1231,6 +1246,9 @@ sixel_palette_factory_new(sixel_allocator_t *allocator, void **object)
     memset(&storage->build_attempt, 0, sizeof(storage->build_attempt));
     storage->build_attempt_active = 0;
     storage->build_context = NULL;
+    storage->output_srgb = NULL;
+    storage->output_device = NULL;
+    storage->output_colorspace = SIXEL_COLORSPACE_GAMMA;
     storage->output_rgb101_count = 0U;
     sixel_allocator_ref(allocator);
 
@@ -1441,7 +1459,7 @@ sixel_palette_resize(sixel_palette_t *palette,
     storage->entry_count = colors;
     storage->requested_colors = colors;
     storage->depth = depth;
-    storage->output_rgb101_count = 0U;
+    sixel_palette_clear_output(storage);
 
     return SIXEL_OK;
 }
@@ -1507,7 +1525,7 @@ sixel_palette_set_entries_float32(sixel_palette_t *palette,
     }
 
     if (colors == 0U || depth == 0 || entries == NULL) {
-        storage->output_rgb101_count = 0U;
+        sixel_palette_clear_output(storage);
         if (storage->entries_float32 != NULL) {
             sixel_allocator_free(work_allocator,
                                  storage->entries_float32);
@@ -1532,7 +1550,7 @@ sixel_palette_set_entries_float32(sixel_palette_t *palette,
     }
     storage->entries_float32_size = payload_size;
     storage->float_depth = depth;
-    storage->output_rgb101_count = 0U;
+    sixel_palette_clear_output(storage);
 
     return SIXEL_OK;
 }
@@ -1641,7 +1659,7 @@ sixel_palette_generate_internal(
         return SIXEL_BAD_ARGUMENT;
     }
     storage = SIXEL_PALETTE_STORAGE(palette);
-    storage->output_rgb101_count = 0U;
+    sixel_palette_clear_output(storage);
     if (storage->build_context != NULL) {
         sixel_helper_set_additional_message(
             "sixel_palette_generate: palette build is already active.");
@@ -2086,6 +2104,11 @@ sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
     /* Publish only after every transform succeeds. Keep both working views
      * unchanged, including extended coordinates and unsnapped centroids.
      * Cached codes retain the same indices; no later reordering is allowed. */
+    sixel_palette_clear_output(storage);
+    storage->output_srgb = srgb;
+    storage->output_device = p3;
+    storage->output_colorspace = output_colorspace;
+    srgb = p3 = NULL;
     memcpy(storage->output_rgb101, codes, storage->entry_count * 3U);
     memcpy(storage->output_rgb_float, output_rgb,
         storage->entry_count * 3U * sizeof(float));
@@ -2137,6 +2160,77 @@ sixel_palette_get_output_rgb(sixel_palette_t const *palette,
         *entries = SIXEL_PALETTE_STORAGE_CONST(palette)->output_rgb_float;
     }
     return status;
+}
+
+int
+sixel_palette_output_is_p3(sixel_palette_t const *palette)
+{
+    sixel_palette_storage_t const *storage;
+
+    if (palette == NULL) {
+        return 0;
+    }
+    storage = SIXEL_PALETTE_STORAGE_CONST(palette);
+    return storage->output_rgb101_count != 0U &&
+        storage->output_device != NULL;
+}
+
+int
+sixel_palette_to_output(sixel_palette_t const *palette, double out[3],
+                        double const in[3], int workspace)
+{
+    sixel_palette_storage_t const *storage;
+    double gamma[3];
+    double xyz[3];
+    double result[3];
+
+    if (palette == NULL || out == NULL || in == NULL) {
+        return 0;
+    }
+    storage = SIXEL_PALETTE_STORAGE_CONST(palette);
+    if (storage->output_rgb101_count == 0U) {
+        return 0;
+    }
+    if (storage->output_device == NULL) {
+        return sixel_color_convert_output(out, in, workspace,
+            storage->output_colorspace);
+    }
+    if (!sixel_color_convert(gamma, in, workspace, SIXEL_COLORSPACE_GAMMA) ||
+            !sixel_cdef_to_xyz(storage->output_srgb, gamma, xyz, 1) ||
+            !sixel_cdef_from_xyz(storage->output_device, xyz, result, 1)) {
+        return 0;
+    }
+    memcpy(out, result, sizeof(result));
+    return 1;
+}
+
+int
+sixel_palette_from_output(sixel_palette_t const *palette, double out[3],
+                          double const in[3], int workspace)
+{
+    sixel_palette_storage_t const *storage;
+    double xyz[3];
+    double gamma[3];
+
+    if (palette == NULL || out == NULL || in == NULL) {
+        return 0;
+    }
+    storage = SIXEL_PALETTE_STORAGE_CONST(palette);
+    if (storage->output_rgb101_count == 0U) {
+        return 0;
+    }
+    if (storage->output_device == NULL) {
+        return sixel_color_convert(out, in, storage->output_colorspace,
+            workspace);
+    }
+    /* Use the same immutable definitions in reverse. In particular, P3
+     * primaries may become negative/over-one sRGB: do not project to bytes
+     * or clamp before the working-space residual has been computed. */
+    if (!sixel_cdef_to_xyz(storage->output_device, in, xyz, 1) ||
+            !sixel_cdef_from_xyz(storage->output_srgb, xyz, gamma, 1)) {
+        return 0;
+    }
+    return sixel_color_convert(out, gamma, SIXEL_COLORSPACE_GAMMA, workspace);
 }
 
 /* emacs Local Variables:      */

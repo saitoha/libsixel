@@ -2005,7 +2005,12 @@ sixel_encoder_set_cancel_callback(
  * alpha-policy=keep/P2=1 does not need this buffer; it is only
  * consulted after 6delta is explicitly enabled, for example with
  * --update-policy=delta.  The buffer is copied as RGB888.  Pass NULL for PIXELS
- * to clear the retained 6delta buffer.
+ * to clear the retained 6delta buffer. Its normalized RGB values describe
+ * the output color interpretation selected when this function is called;
+ * this is not a loader/CMS conversion of a previous source image. For native
+ * RGB output, supply emitted RGB101 expanded to RGB888. Select -U before
+ * seeding. A later incompatible output interpretation cannot reuse this
+ * history; working-space or precision changes alone do not invalidate it.
  *
  * The supplied buffer becomes the retained plane, so it also defines the plane
  * geometry that sixel_encoder_set_6delta_plane_size() would otherwise declare.
