@@ -57,7 +57,7 @@ The arrangement of the colored elements differs between technologies. A shadow-m
 
 ## A timeline
 
-![A timeline from halftone printing in 1881 to RGB Mini LED backlights in 2025, with each event colored by technology family: print and film, cathode-ray tubes, liquid crystal, plasma, OLED and LED, projection, electronic paper, and pixel-density milestones.](figures/timeline.svg)
+![A timeline from halftone printing in 1881 to RGB Mini LED backlights in 2025, with each event colored by technology family: print and film, cathode-ray tubes, liquid crystal, plasma, OLED and LED, projection, electronic paper, pixel-density milestones, and DEC terminals and printers from the DECwriter LA30 of 1970 to the VT340 and LJ250 of 1987.](figures/timeline.svg)
 
 *Figure 5. Display technologies from 1881 to 2025.*
 
@@ -73,7 +73,17 @@ Ferdinand Braun built the first cathode-ray tube display in 1897. In a CRT, an e
 
 A CRT has no fixed pixel grid. The video signal sets how many pixels are drawn per line, and the same tube can show 640 × 480 or 1600 × 1200. The sharpness, however, is limited by the spot size of the beam and the pitch of the phosphor pattern, typically around 0.24 to 0.28 mm on later computer monitors. A resolution setting above what the phosphor pitch supports draws pixels that the tube cannot actually separate.
 
+A CRT pixel also has no sharp edge. The electron beam's spot is brightest in the middle and fades gradually, phosphors glow in all directions, and light spreads a little in the thick front glass. Neighboring pixels therefore blend into each other, and the screen acts as a gentle blur that smooths the pixel grid away. An LCD of the same pixel density draws each pixel as a sharp-edged rectangle separated by a thin dark line, so its grid stays visible where a CRT's had already disappeared. Many viewers of good CRTs never saw individual pixels, even at densities where an LCD's pixels are obvious. The same blur softened dither patterns, which is one reason why pixel art and dithered images made for CRTs can look harsher on modern flat panels.
+
 The CRT was the computer display for half a century: the DEC VT340 and other SIXEL terminals, and the PC graphics adapters of the [palette chapter](../palettes/README.md#personal-computers), all drew on CRTs. Flat displays that kept the CRT's principle, such as the surface-conduction electron-emitter display (SED) developed by Canon and Toshiba, did not reach the market: Canon ended SED development in 2010.
+
+### Terminals and printers of the SIXEL lineage
+
+Digital Equipment Corporation's terminals and printers carried the ideas that became SIXEL. The DECwriter LA30 of 1970 was a dot-matrix printing terminal that formed characters from 5 × 7 dots; the DECwriter II, LA36, of 1974 printed 7 × 7 dot characters at 10 characters per inch and became DEC's first widely successful keyboard terminal. The VT100 of 1978 moved the terminal onto a CRT.
+
+SIXEL itself began as a way to send bitmap graphics to DEC's dot-matrix printers such as the LA50 of 1983, which printed 144 × 72 dots per inch, and continued in the LA75 companion printer of 1986. Graphics terminals followed: the VT240 of 1984 drew 800 × 240 pixels in gray, and its color version, the VT241, showed 4 colors at a time from 64. The VT340 of 1987 drew 800 × 480 pixels with 16 colors from 4,096, and the LJ250 color inkjet printer of the same year printed SIXEL images at 180 dots per inch. The [SIXEL format](../../sixel-format/README.md) chapter describes the protocol these devices shared.
+
+The pixels of these devices were not square. The VT240's 800 × 240 pixels filled a 4:3 screen, so each pixel was about two and a half times as tall as it was wide, and the LA50 placed dots twice as densely across the line as down the page. Figure 6 below draws such devices as a bar from the vertical to the horizontal density.
 
 ### Flat panels
 
@@ -116,13 +126,13 @@ finest pattern    = pixels per degree / 2    cycles per degree (cpd)
 
 A one-pixel checkerboard on a display with 60 pixels per degree is a 30 cpd pattern. That is the detail of a letter that a person with normal 20/20 acuity can just resolve; the eye's absolute resolution limit lies near 50 to 60 cpd, or 100 to 120 pixels per degree.
 
-![A scatter chart of pixels per degree against year from 1987 to 2017. Cathode-ray tubes rise from 25 to 41 pixels per degree. Desktop and notebook LCDs stay between 34 and 46 in the 2000s, and two arrows mark falls: from a 17-inch to a 19-inch 1280 by 1024 LCD, and from a 15-inch 1600 by 1200 notebook to a 15.6-inch 1366 by 768 notebook. The IBM T221 reaches 84 in 2001. From 2010, phones, a Retina notebook, a 27-inch 5K display and an e-reader reach 68 to 95, above the 60 pixels per degree line that marks 20/20 acuity.](figures/pixel-density.svg)
+![A scatter chart of pixels per degree against year from 1983 to 2024, with numbered points listed below the chart. DEC terminals and printers of the 1980s span about 15 to 43 pixels per degree, drawn as bars because their pixels are not square. CRT monitors rise to about 50, with bars down to the limit set by their phosphor pitch. Desktop and notebook LCDs stay between 34 and 46 in the 2000s, and two arrows mark falls: from a 17-inch to a 19-inch 1280 by 1024 LCD, and from a 15-inch 1600 by 1200 notebook to a 15.6-inch 1366 by 768 notebook. The IBM T221 reaches 84 in 2001. From 2010, phones, notebooks, high-density monitors and e-readers reach 67 to 95, above the 60 pixels per degree line that marks 20/20 acuity; a 4K television at 2.5 m reaches 116 and a 643 pixels per inch phone 133, while a VR headset stays at 25, and a color e-reader spans 36 to 72.](figures/pixel-density.svg)
 
-*Figure 6. Pixels per degree of representative displays, computed from their resolution and diagonal at typical viewing distances: 60 cm for desktop monitors, 50 cm for notebooks, 35 cm for e-readers and 30 cm for phones. CRTs are drawn hollow because their addressable resolution exceeds what their phosphor pitch can show.*
+*Figure 6. Pixels per degree of representative displays, computed from their resolution and size at typical viewing distances: 60 cm for terminals and desktop monitors, 50 cm for notebooks, 35 cm for printed pages and e-readers, 30 cm for phones and 2.5 m for a television. Bars show a range: the horizontal and vertical density of non-square pixels, the addressable and phosphor-limited density of a CRT, or the monochrome and color density of a color e-reader. CRTs are drawn hollow.*
 
 ### The long plateau and the 2000s step back
 
-For two decades, desktop displays stayed between about 25 and 45 pixels per degree. CRT monitors grew larger and supported more lines, and a 21-inch CRT at 1600 × 1200 reached about 100 pixels per inch, or 41 pixels per degree at 60 cm. Professional 21- and 22-inch CRTs accepted 2048 × 1536, although their 0.24 mm phosphor pitch could not fully resolve it.
+For two decades, desktop displays stayed between about 25 and 45 pixels per degree. The VT340's 800 × 480 pixels on a 13-inch tube gave about 34 pixels per degree across and 27 down; a page from the LJ250 at reading distance gave about 43. CRT monitors grew larger and supported more lines, and a 21-inch CRT at 1600 × 1200 reached about 100 pixels per inch, or 41 pixels per degree at 60 cm. High-end 21- and 22-inch CRTs, such as Sony's Trinitron GDM-F520, accepted 2048 × 1536, and Sony's 24-inch widescreen GDM-FW900 of 2002 was specified for 2304 × 1440, about 50 pixels per degree; owners have also driven it at 2560 × 1600 with custom timings beyond its specification. Their phosphor pitch of about 0.24 mm, however, limited the detail they could separate to about 42 to 44 pixels per degree at 60 cm.
 
 The move to LCDs in the 2000s brought sharp, geometrically perfect pixels, but for many consumers it did not bring more of them, and in some common cases fewer:
 
@@ -134,6 +144,12 @@ Figure 6 marks two such steps. A 15-inch 1600 × 1200 notebook of 2006 offered 1
 ### Retina: reaching the eye's resolution
 
 In 2010 Apple introduced the iPhone 4 with a 960 × 640 display at 326 pixels per inch and called it a "Retina" display (Apple, 2010). Presenting it, Steve Jobs argued that about 300 pixels per inch, held 10 to 12 inches from the eye, was the limit of what the eye could resolve. At 30 cm this is about 68 pixels per degree, above the 60 pixels per degree of 20/20 acuity. The MacBook Pro with Retina display followed in 2012 with 2880 × 1800 pixels at 220 pixels per inch, and 27-inch 5K monitors reached about 218 pixels per inch in 2014. Phones of the late 2010s exceed 450 pixels per inch, about 95 pixels per degree at 30 cm. E-readers followed the same path, from about 167 pixels per inch for the first Kindle to 300 pixels per inch in later models.
+
+### 2018 and later
+
+Since 2018 high density has become ordinary. A 27-inch 4K monitor gives about 163 pixels per inch, or 67 pixels per degree at 60 cm; Apple's 32-inch Pro Display XDR of 2019 and 27-inch 5K displays give about 218 pixels per inch, or 89 pixels per degree; notebooks such as the 14-inch MacBook Pro of 2021 give about 254 pixels per inch, or 87 pixels per degree at 50 cm. Phones settled near 460 pixels per inch, about 95 pixels per degree at 30 cm, and Sony's Xperia 1 of 2019 put a 3840 × 1644 display on a 6.5-inch phone, 643 pixels per inch, or about 133 pixels per degree: beyond the eye's resolution limit. A 65-inch 4K television viewed from 2.5 m also gives about 116 pixels per degree, which is why higher television resolutions bring little visible gain at ordinary distances.
+
+Two kinds of display still fall below 60. A VR headset magnifies a small panel to fill a wide field of view: the Meta Quest 3 of 2023 has panels of 1,218 pixels per inch, yet the manufacturer gives about 25 pixels per degree, a density similar to a 1980s terminal. Color electronic paper with color filters trades resolution for color: the Kobo Libra Colour of 2024 shows text at 300 pixels per inch but color at 150, about 72 and 36 pixels per degree at 35 cm.
 
 At these densities, single pixels are no longer visible at normal distance. Fine details, such as the steps of a slightly slanted edge, can still be noticed beyond the resolution limit, because the eye compares positions more precisely than it resolves patterns. Operating systems therefore draw text and images at two or three device pixels per logical pixel instead of making everything smaller.
 
@@ -193,6 +209,12 @@ All figures are generated by [`tools/plot_display_concept_figures.py`](../../../
 - Jiang, H. X., S. X. Jin, J. Li, J. Shakya, and J. Y. Lin. "III-nitride blue microdisplays." Applied Physics Letters 78:1303, 2001. doi:[10.1063/1.1351521](https://doi.org/10.1063/1.1351521)
 - Schadt, M., and W. Helfrich. "Voltage-dependent optical activity of a twisted nematic liquid crystal." Applied Physics Letters 18(4):127–128, 1971. doi:[10.1063/1.1653593](https://doi.org/10.1063/1.1653593)
 - [DEC VT240](https://terminals-wiki.org/wiki/index.php/DEC_VT240). Terminals Wiki, for the VT240 and VT241 specifications.
+- [DECwriter](https://gunkies.org/wiki/DECwriter) and [DECwriter II](https://gunkies.org/wiki/DECwriter_II). Computer History Wiki, for the LA30 and LA36.
+- [Printer: DEC LA50](https://www.openprinting.org/printer/DEC/DEC-LA50), [DEC LA75](https://www.openprinting.org/printer/DEC/DEC-LA75) and [DEC LJ250](https://www.openprinting.org/printer/DEC/DEC-LJ250). OpenPrinting, for printer resolutions.
+- Digital Equipment Corporation. [*LJ250/LJ252 Companion Color Printer Programmer Reference Manual*](https://vt100.net/manx/part/dec/ek-lj250-rm/), August 1987.
+- Meta. ["Major News & Updates for VR & Mixed Reality Developers from Meta Connect 2023."](https://developers.meta.com/horizon/blog/news-updates-meta-connect-2023-developers-quest-3-state-of-union/) September 2023, for the Quest 3 pixel density.
+- Rakuten Kobo. [*Kobo Libra Colour*](https://us.kobobooks.com/products/kobo-libra-colour) product page.
+- Sony. [*GDM-F520*](https://crtdatabase.com/crts/sony/sony-gdm-f520) and [*GDM-FW900*](https://crtdatabase.com/crts/sony/sony-gdm-fw900) specifications, CRT Database.
 - Tang, C. W., and S. A. VanSlyke. "Organic electroluminescent diodes." Applied Physics Letters 51(12):913–915, 1987. doi:[10.1063/1.98799](https://doi.org/10.1063/1.98799)
 - Hisense. ["RGB MiniLED TV: The Pinnacle of Picture Technology."](https://www.hisense-usa.com/post/rgb-miniled-tv-the-pinnacle-of-picture-technology)
 - Digital Equipment Corporation. [*VT330/VT340 Programmer Reference Manual, Volume 2: Graphics Programming*](https://bitsavers.trailing-edge.com/pdf/dec/terminal/vt340/EK-VT3XX-GP-002_VT330_VT340_Graphics_Programming_198805.pdf), second edition, May 1988.

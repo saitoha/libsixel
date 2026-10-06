@@ -51,6 +51,12 @@
       "detail": "aperture grille and phosphor stripes"
     },
     {
+      "year": 1970,
+      "family": "dec",
+      "event": "DECwriter LA30",
+      "detail": "dot-matrix printing terminal, 5 × 7 glyphs"
+    },
+    {
       "year": 1971,
       "family": "lcd",
       "event": "Twisted nematic LCD",
@@ -61,6 +67,48 @@
       "family": "epaper",
       "event": "Gyricon",
       "detail": "rotating two-color beads, Xerox PARC"
+    },
+    {
+      "year": 1974,
+      "family": "dec",
+      "event": "DECwriter II LA36",
+      "detail": "7 × 7 dot characters, 10 per inch"
+    },
+    {
+      "year": 1978,
+      "family": "dec",
+      "event": "VT100",
+      "detail": "video text terminal"
+    },
+    {
+      "year": 1983,
+      "family": "dec",
+      "event": "LA50",
+      "detail": "dot-matrix printer for SIXEL graphics, 144 × 72 dpi"
+    },
+    {
+      "year": 1984,
+      "family": "dec",
+      "event": "VT240, VT241",
+      "detail": "800 × 240 graphics; VT241: 4 of 64 colors"
+    },
+    {
+      "year": 1986,
+      "family": "dec",
+      "event": "LA75",
+      "detail": "companion dot-matrix printer, 144 × 72 dpi"
+    },
+    {
+      "year": 1987,
+      "family": "dec",
+      "event": "VT340",
+      "detail": "800 × 480, 16 of 4,096 colors"
+    },
+    {
+      "year": 1987,
+      "family": "dec",
+      "event": "LJ250",
+      "detail": "color inkjet SIXEL printer, 180 dpi"
     },
     {
       "year": 1987,
@@ -191,245 +239,530 @@
   ],
   "pixel_density": {
     "formula": "ppd = distance * tan(1 degree) * ppi; cpd = ppd / 2",
-    "note": "CRT entries use the addressable resolution and the viewable diagonal; the phosphor pitch limits real sharpness.",
+    "note": "CRT entries use the addressable resolution and the viewable diagonal; where a phosphor pitch is given, ppd_low is the pitch-limited density. DEC terminal entries estimate the viewable diagonal as the nominal tube size minus one inch; their ppd and ppd_low are the horizontal and vertical densities of non-square pixels. Printer entries use horizontal and vertical dpi at 35 cm. Meta Quest 3 uses the manufacturer's published value.",
     "displays": [
+      {
+        "year": 1983,
+        "family": "decprint",
+        "label": "LA50",
+        "kind": "dpi",
+        "distance_cm": 35,
+        "dpi": [
+          144,
+          72
+        ],
+        "ppd": 34.6,
+        "ppd_low": 17.3,
+        "cpd": 17.3
+      },
+      {
+        "year": 1984,
+        "family": "dec",
+        "label": "VT240",
+        "kind": "aspect",
+        "distance_cm": 60,
+        "viewable_diagonal_in": 11.0,
+        "pixels": [
+          800,
+          240
+        ],
+        "ppi": [
+          90.9,
+          36.4
+        ],
+        "ppd": 37.5,
+        "ppd_low": 15.0,
+        "cpd": 18.7
+      },
+      {
+        "year": 1986,
+        "family": "decprint",
+        "label": "LA75",
+        "kind": "dpi",
+        "distance_cm": 35,
+        "dpi": [
+          144,
+          72
+        ],
+        "ppd": 34.6,
+        "ppd_low": 17.3,
+        "cpd": 17.3
+      },
+      {
+        "year": 1987,
+        "family": "dec",
+        "label": "VT340",
+        "kind": "aspect",
+        "distance_cm": 60,
+        "viewable_diagonal_in": 12.0,
+        "pixels": [
+          800,
+          480
+        ],
+        "ppi": [
+          83.3,
+          66.7
+        ],
+        "ppd": 34.4,
+        "ppd_low": 27.5,
+        "cpd": 17.2
+      },
+      {
+        "year": 1987,
+        "family": "decprint",
+        "label": "LJ250",
+        "kind": "dpi",
+        "distance_cm": 35,
+        "dpi": [
+          180,
+          180
+        ],
+        "ppd": 43.3,
+        "ppd_low": 43.3,
+        "cpd": 21.6
+      },
       {
         "year": 1987,
         "family": "crt",
-        "label": "14\" VGA CRT",
+        "label": "14\" VGA",
+        "kind": "panel",
+        "distance_cm": 60,
         "diagonal_in": 13.0,
         "pixels": [
           640,
           480
         ],
-        "distance_cm": 60,
         "ppi": 61.5,
         "ppd": 25.4,
+        "ppd_low": 25.4,
         "cpd": 12.7
       },
       {
         "year": 1995,
         "family": "crt",
-        "label": "17\" CRT 1024 × 768",
+        "label": "17\" CRT",
+        "kind": "panel",
+        "distance_cm": 60,
         "diagonal_in": 16.0,
         "pixels": [
           1024,
           768
         ],
-        "distance_cm": 60,
         "ppi": 80.0,
         "ppd": 33.0,
+        "ppd_low": 33.0,
         "cpd": 16.5
       },
       {
         "year": 1999,
         "family": "crt",
         "label": "21\" CRT 1600 × 1200",
+        "kind": "panel",
+        "distance_cm": 60,
         "diagonal_in": 20.0,
         "pixels": [
           1600,
           1200
         ],
-        "distance_cm": 60,
         "ppi": 100.0,
         "ppd": 41.2,
+        "ppd_low": 41.2,
         "cpd": 20.6
+      },
+      {
+        "year": 2002,
+        "family": "crt",
+        "label": "Sony FW900",
+        "kind": "crt",
+        "distance_cm": 60,
+        "viewable_diagonal_in": 22.5,
+        "pixels": [
+          2304,
+          1440
+        ],
+        "ppi": 120.8,
+        "phosphor_pitch_mm": 0.25,
+        "ppd": 49.8,
+        "ppd_low": 41.9,
+        "cpd": 24.9
+      },
+      {
+        "year": 2003,
+        "family": "crt",
+        "label": "22\" CRT 2048 × 1536",
+        "kind": "crt",
+        "distance_cm": 60,
+        "viewable_diagonal_in": 20.0,
+        "pixels": [
+          2048,
+          1536
+        ],
+        "ppi": 128.0,
+        "phosphor_pitch_mm": 0.24,
+        "ppd": 52.8,
+        "ppd_low": 43.6,
+        "cpd": 26.4
       },
       {
         "year": 2001,
         "family": "lcd",
-        "label": "15\" LCD 1024 × 768",
+        "label": "15\" LCD",
+        "kind": "panel",
+        "distance_cm": 60,
         "diagonal_in": 15.0,
         "pixels": [
           1024,
           768
         ],
-        "distance_cm": 60,
         "ppi": 85.3,
         "ppd": 35.2,
+        "ppd_low": 35.2,
         "cpd": 17.6
       },
       {
         "year": 2003,
         "family": "lcd",
-        "label": "17\" LCD 1280 × 1024",
+        "label": "17\" LCD",
+        "kind": "panel",
+        "distance_cm": 60,
         "diagonal_in": 17.0,
         "pixels": [
           1280,
           1024
         ],
-        "distance_cm": 60,
         "ppi": 96.4,
         "ppd": 39.8,
+        "ppd_low": 39.8,
         "cpd": 19.9
       },
       {
         "year": 2005,
         "family": "lcd",
-        "label": "19\" LCD 1280 × 1024",
+        "label": "19\" LCD",
+        "kind": "panel",
+        "distance_cm": 60,
         "diagonal_in": 19.0,
         "pixels": [
           1280,
           1024
         ],
-        "distance_cm": 60,
         "ppi": 86.3,
         "ppd": 35.6,
+        "ppd_low": 35.6,
         "cpd": 17.8
       },
       {
         "year": 2009,
         "family": "lcd",
-        "label": "21.5\" LCD 1920 × 1080",
+        "label": "21.5\" 1080p",
+        "kind": "panel",
+        "distance_cm": 60,
         "diagonal_in": 21.5,
         "pixels": [
           1920,
           1080
         ],
-        "distance_cm": 60,
         "ppi": 102.5,
         "ppd": 42.2,
+        "ppd_low": 42.2,
         "cpd": 21.1
-      },
-      {
-        "year": 2001,
-        "family": "density",
-        "label": "IBM T221",
-        "diagonal_in": 22.2,
-        "pixels": [
-          3840,
-          2400
-        ],
-        "distance_cm": 60,
-        "ppi": 204.0,
-        "ppd": 84.1,
-        "cpd": 42.1
-      },
-      {
-        "year": 2014,
-        "family": "density",
-        "label": "27\" 5K",
-        "diagonal_in": 27.0,
-        "pixels": [
-          5120,
-          2880
-        ],
-        "distance_cm": 60,
-        "ppi": 217.6,
-        "ppd": 89.7,
-        "cpd": 44.9
       },
       {
         "year": 2006,
         "family": "lcd",
-        "label": "15\" notebook 1600 × 1200",
+        "label": "15\" UXGA notebook",
+        "kind": "panel",
+        "distance_cm": 50,
         "diagonal_in": 15.0,
         "pixels": [
           1600,
           1200
         ],
-        "distance_cm": 50,
         "ppi": 133.3,
         "ppd": 45.8,
+        "ppd_low": 45.8,
         "cpd": 22.9
       },
       {
         "year": 2009,
         "family": "lcd",
-        "label": "15.6\" notebook 1366 × 768",
+        "label": "15.6\" 1366 × 768 notebook",
+        "kind": "panel",
+        "distance_cm": 50,
         "diagonal_in": 15.6,
         "pixels": [
           1366,
           768
         ],
-        "distance_cm": 50,
         "ppi": 100.5,
         "ppd": 34.5,
+        "ppd_low": 34.5,
         "cpd": 17.3
+      },
+      {
+        "year": 2001,
+        "family": "density",
+        "label": "IBM T221",
+        "kind": "panel",
+        "distance_cm": 60,
+        "diagonal_in": 22.2,
+        "pixels": [
+          3840,
+          2400
+        ],
+        "ppi": 204.0,
+        "ppd": 84.1,
+        "ppd_low": 84.1,
+        "cpd": 42.1
       },
       {
         "year": 2012,
         "family": "density",
-        "label": "15.4\" Retina notebook",
+        "label": "Retina MacBook Pro",
+        "kind": "panel",
+        "distance_cm": 50,
         "diagonal_in": 15.4,
         "pixels": [
           2880,
           1800
         ],
-        "distance_cm": 50,
         "ppi": 220.5,
         "ppd": 75.8,
+        "ppd_low": 75.8,
         "cpd": 37.9
+      },
+      {
+        "year": 2014,
+        "family": "density",
+        "label": "27\" 5K",
+        "kind": "panel",
+        "distance_cm": 60,
+        "diagonal_in": 27.0,
+        "pixels": [
+          5120,
+          2880
+        ],
+        "ppi": 217.6,
+        "ppd": 89.7,
+        "ppd_low": 89.7,
+        "cpd": 44.9
+      },
+      {
+        "year": 2018,
+        "family": "density",
+        "label": "27\" 4K",
+        "kind": "panel",
+        "distance_cm": 60,
+        "diagonal_in": 27.0,
+        "pixels": [
+          3840,
+          2160
+        ],
+        "ppi": 163.2,
+        "ppd": 67.3,
+        "ppd_low": 67.3,
+        "cpd": 33.6
+      },
+      {
+        "year": 2019,
+        "family": "density",
+        "label": "Pro Display XDR",
+        "kind": "panel",
+        "distance_cm": 60,
+        "diagonal_in": 32.0,
+        "pixels": [
+          6016,
+          3384
+        ],
+        "ppi": 215.7,
+        "ppd": 88.9,
+        "ppd_low": 88.9,
+        "cpd": 44.5
+      },
+      {
+        "year": 2021,
+        "family": "density",
+        "label": "MacBook Pro 14\"",
+        "kind": "panel",
+        "distance_cm": 50,
+        "diagonal_in": 14.2,
+        "pixels": [
+          3024,
+          1964
+        ],
+        "ppi": 253.9,
+        "ppd": 87.3,
+        "ppd_low": 87.3,
+        "cpd": 43.6
       },
       {
         "year": 2007,
         "family": "emissive",
         "label": "iPhone",
+        "kind": "panel",
+        "distance_cm": 30,
         "diagonal_in": 3.5,
         "pixels": [
           320,
           480
         ],
-        "distance_cm": 30,
         "ppi": 164.8,
         "ppd": 34.0,
+        "ppd_low": 34.0,
         "cpd": 17.0
       },
       {
         "year": 2010,
         "family": "emissive",
         "label": "iPhone 4",
+        "kind": "panel",
+        "distance_cm": 30,
         "diagonal_in": 3.5,
         "pixels": [
           640,
           960
         ],
-        "distance_cm": 30,
         "ppi": 329.7,
         "ppd": 68.0,
+        "ppd_low": 68.0,
         "cpd": 34.0
       },
       {
         "year": 2017,
         "family": "emissive",
         "label": "iPhone X",
+        "kind": "panel",
+        "distance_cm": 30,
         "diagonal_in": 5.8,
         "pixels": [
           1125,
           2436
         ],
-        "distance_cm": 30,
         "ppi": 462.6,
         "ppd": 95.4,
+        "ppd_low": 95.4,
         "cpd": 47.7
+      },
+      {
+        "year": 2019,
+        "family": "emissive",
+        "label": "Xperia 1",
+        "kind": "panel",
+        "distance_cm": 30,
+        "diagonal_in": 6.5,
+        "pixels": [
+          1644,
+          3840
+        ],
+        "ppi": 642.6,
+        "ppd": 132.5,
+        "ppd_low": 132.5,
+        "cpd": 66.2
+      },
+      {
+        "year": 2023,
+        "family": "emissive",
+        "label": "iPhone 15 Pro",
+        "kind": "panel",
+        "distance_cm": 30,
+        "diagonal_in": 6.1,
+        "pixels": [
+          1179,
+          2556
+        ],
+        "ppi": 461.4,
+        "ppd": 95.1,
+        "ppd_low": 95.1,
+        "cpd": 47.6
       },
       {
         "year": 2007,
         "family": "epaper",
         "label": "Kindle",
+        "kind": "panel",
+        "distance_cm": 35,
         "diagonal_in": 6.0,
         "pixels": [
           600,
           800
         ],
-        "distance_cm": 35,
         "ppi": 166.7,
         "ppd": 40.1,
+        "ppd_low": 40.1,
         "cpd": 20.0
       },
       {
         "year": 2015,
         "family": "epaper",
         "label": "Kindle Paperwhite",
+        "kind": "panel",
+        "distance_cm": 35,
         "diagonal_in": 6.0,
         "pixels": [
           1072,
           1448
         ],
-        "distance_cm": 35,
         "ppi": 300.3,
         "ppd": 72.2,
+        "ppd_low": 72.2,
         "cpd": 36.1
+      },
+      {
+        "year": 2021,
+        "family": "epaper",
+        "label": "Paperwhite 6.8\"",
+        "kind": "panel",
+        "distance_cm": 35,
+        "diagonal_in": 6.8,
+        "pixels": [
+          1236,
+          1648
+        ],
+        "ppi": 302.9,
+        "ppd": 72.9,
+        "ppd_low": 72.9,
+        "cpd": 36.4
+      },
+      {
+        "year": 2024,
+        "family": "epaper",
+        "label": "Kobo Libra Colour",
+        "kind": "dpi",
+        "distance_cm": 35,
+        "dpi": [
+          300,
+          150
+        ],
+        "ppd": 72.2,
+        "ppd_low": 36.1,
+        "cpd": 36.1
+      },
+      {
+        "year": 2018,
+        "family": "tv",
+        "label": "65\" 4K TV at 2.5 m",
+        "kind": "panel",
+        "distance_cm": 250,
+        "diagonal_in": 65.0,
+        "pixels": [
+          3840,
+          2160
+        ],
+        "ppi": 67.8,
+        "ppd": 116.5,
+        "ppd_low": 116.5,
+        "cpd": 58.2
+      },
+      {
+        "year": 2023,
+        "family": "vr",
+        "label": "Meta Quest 3",
+        "kind": "ppd",
+        "distance_cm": null,
+        "source": "published by the manufacturer",
+        "ppd": 25,
+        "ppd_low": 25,
+        "cpd": 12.5
       }
     ]
   },

@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="961" viewBox="0 0 800 961" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1177" viewBox="0 0 800 1177" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
 <title id="title">Display technology timeline</title>
 <desc id="desc">A timeline from halftone printing in 1881 to RGB Mini LED backlights in 2025, with each event colored by technology family.</desc>
-<rect x="0" y="0" width="800" height="961" fill="#ffffff"/>
+<rect x="0" y="0" width="800" height="1177" fill="#ffffff"/>
 <text x="400" y="30" font-size="17" fill="#183247" font-weight="700" text-anchor="middle">Display technologies, 1881–2025</text>
 <circle cx="26" cy="56" r="6" fill="#8e5a2b"/>
 <text x="37" y="61" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Print and film</text>
@@ -17,7 +17,9 @@
 <text x="227" y="83" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Electronic paper</text>
 <circle cx="406" cy="78" r="6" fill="#b07d12"/>
 <text x="417" y="83" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Pixel density</text>
-<line x1="86" y1="102" x2="86" y2="951" stroke="#d9e1e7" stroke-width="2"/>
+<circle cx="596" cy="78" r="6" fill="#0f7c80"/>
+<text x="607" y="83" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">DEC terminals and printers</text>
+<line x1="86" y1="102" x2="86" y2="1167" stroke="#d9e1e7" stroke-width="2"/>
 <text x="70" y="117" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1881</text>
 <circle cx="86" cy="112" r="6" fill="#8e5a2b"/>
 <text x="104" y="117" font-size="14" fill="#183247"><tspan font-weight="700">Halftone printing</tspan><tspan fill="#4c6070"> — tones made of dots of varying size</tspan></text>
@@ -41,68 +43,89 @@
 <text x="104" y="279" font-size="14" fill="#183247"><tspan font-weight="700">Liquid crystal display</tspan><tspan fill="#4c6070"> — dynamic scattering, RCA</tspan></text>
 <circle cx="86" cy="301" r="6" fill="#7a4fa0"/>
 <text x="104" y="306" font-size="14" fill="#183247"><tspan font-weight="700">Sony Trinitron</tspan><tspan fill="#4c6070"> — aperture grille and phosphor stripes</tspan></text>
-<text x="70" y="333" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1971</text>
-<circle cx="86" cy="328" r="6" fill="#17618c"/>
-<text x="104" y="333" font-size="14" fill="#183247"><tspan font-weight="700">Twisted nematic LCD</tspan><tspan fill="#4c6070"> — the basis of practical LCDs</tspan></text>
-<text x="70" y="360" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1974</text>
-<circle cx="86" cy="355" r="6" fill="#5f6b73"/>
-<text x="104" y="360" font-size="14" fill="#183247"><tspan font-weight="700">Gyricon</tspan><tspan fill="#4c6070"> — rotating two-color beads, Xerox PARC</tspan></text>
-<text x="70" y="387" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1987</text>
-<circle cx="86" cy="382" r="6" fill="#c0392b"/>
-<text x="104" y="387" font-size="14" fill="#183247"><tspan font-weight="700">Organic LED</tspan><tspan fill="#4c6070"> — Tang and VanSlyke, Kodak</tspan></text>
-<circle cx="86" cy="409" r="6" fill="#2f8f5b"/>
-<text x="104" y="414" font-size="14" fill="#183247"><tspan font-weight="700">Digital micromirror device</tspan><tspan fill="#4c6070"> — Hornbeck, Texas Instruments</tspan></text>
-<text x="70" y="441" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1989</text>
-<circle cx="86" cy="436" r="6" fill="#2f8f5b"/>
-<text x="104" y="441" font-size="14" fill="#183247"><tspan font-weight="700">Epson 3LCD projector</tspan><tspan fill="#4c6070"> — three LCD panels, one per primary</tspan></text>
-<text x="70" y="468" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1996</text>
-<circle cx="86" cy="463" r="6" fill="#17618c"/>
-<text x="104" y="468" font-size="14" fill="#183247"><tspan font-weight="700">IPS LCD</tspan><tspan fill="#4c6070"> — wide viewing angles, Hitachi</tspan></text>
-<text x="70" y="495" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1997</text>
-<circle cx="86" cy="490" r="6" fill="#c0392b"/>
-<text x="104" y="495" font-size="14" fill="#183247"><tspan font-weight="700">42-inch plasma TV</tspan><tspan fill="#4c6070"> — Fujitsu, 852 × 480</tspan></text>
-<circle cx="86" cy="517" r="6" fill="#2f8f5b"/>
-<text x="104" y="522" font-size="14" fill="#183247"><tspan font-weight="700">First DLP projector</tspan><tspan fill="#4c6070"> — color wheel and one mirror chip</tspan></text>
-<text x="70" y="549" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1998</text>
-<circle cx="86" cy="544" r="6" fill="#5f6b73"/>
-<text x="104" y="549" font-size="14" fill="#183247"><tspan font-weight="700">Electrophoretic ink</tspan><tspan fill="#4c6070"> — microcapsules of charged pigment, E Ink</tspan></text>
-<text x="70" y="576" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2000</text>
-<circle cx="86" cy="571" r="6" fill="#c0392b"/>
-<text x="104" y="576" font-size="14" fill="#183247"><tspan font-weight="700">MicroLED</tspan><tspan fill="#4c6070"> — Jiang and Lin, Kansas State University</tspan></text>
-<text x="70" y="603" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2001</text>
-<circle cx="86" cy="598" r="6" fill="#b07d12"/>
-<text x="104" y="603" font-size="14" fill="#183247"><tspan font-weight="700">IBM T220/T221</tspan><tspan fill="#4c6070"> — 3840 × 2400 at 204 ppi</tspan></text>
-<text x="70" y="630" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2004</text>
-<circle cx="86" cy="625" r="6" fill="#17618c"/>
-<text x="104" y="630" font-size="14" fill="#183247"><tspan font-weight="700">LCD monitors outsell CRTs</tspan><tspan fill="#4c6070"> — fixed native resolution</tspan></text>
-<circle cx="86" cy="652" r="6" fill="#5f6b73"/>
-<text x="104" y="657" font-size="14" fill="#183247"><tspan font-weight="700">Sony Librie</tspan><tspan fill="#4c6070"> — first E Ink e-reader</tspan></text>
-<text x="70" y="684" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2007</text>
-<circle cx="86" cy="679" r="6" fill="#5f6b73"/>
-<text x="104" y="684" font-size="14" fill="#183247"><tspan font-weight="700">Amazon Kindle</tspan><tspan fill="#4c6070"> — four gray levels</tspan></text>
+<text x="70" y="333" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1970</text>
+<circle cx="86" cy="328" r="6" fill="#0f7c80"/>
+<text x="104" y="333" font-size="14" fill="#183247"><tspan font-weight="700">DECwriter LA30</tspan><tspan fill="#4c6070"> — dot-matrix printing terminal, 5 × 7 glyphs</tspan></text>
+<text x="70" y="360" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1971</text>
+<circle cx="86" cy="355" r="6" fill="#17618c"/>
+<text x="104" y="360" font-size="14" fill="#183247"><tspan font-weight="700">Twisted nematic LCD</tspan><tspan fill="#4c6070"> — the basis of practical LCDs</tspan></text>
+<text x="70" y="387" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1974</text>
+<circle cx="86" cy="382" r="6" fill="#5f6b73"/>
+<text x="104" y="387" font-size="14" fill="#183247"><tspan font-weight="700">Gyricon</tspan><tspan fill="#4c6070"> — rotating two-color beads, Xerox PARC</tspan></text>
+<circle cx="86" cy="409" r="6" fill="#0f7c80"/>
+<text x="104" y="414" font-size="14" fill="#183247"><tspan font-weight="700">DECwriter II LA36</tspan><tspan fill="#4c6070"> — 7 × 7 dot characters, 10 per inch</tspan></text>
+<text x="70" y="441" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1978</text>
+<circle cx="86" cy="436" r="6" fill="#0f7c80"/>
+<text x="104" y="441" font-size="14" fill="#183247"><tspan font-weight="700">VT100</tspan><tspan fill="#4c6070"> — video text terminal</tspan></text>
+<text x="70" y="468" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1983</text>
+<circle cx="86" cy="463" r="6" fill="#0f7c80"/>
+<text x="104" y="468" font-size="14" fill="#183247"><tspan font-weight="700">LA50</tspan><tspan fill="#4c6070"> — dot-matrix printer for SIXEL graphics, 144 × 72 dpi</tspan></text>
+<text x="70" y="495" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1984</text>
+<circle cx="86" cy="490" r="6" fill="#0f7c80"/>
+<text x="104" y="495" font-size="14" fill="#183247"><tspan font-weight="700">VT240, VT241</tspan><tspan fill="#4c6070"> — 800 × 240 graphics; VT241: 4 of 64 colors</tspan></text>
+<text x="70" y="522" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1986</text>
+<circle cx="86" cy="517" r="6" fill="#0f7c80"/>
+<text x="104" y="522" font-size="14" fill="#183247"><tspan font-weight="700">LA75</tspan><tspan fill="#4c6070"> — companion dot-matrix printer, 144 × 72 dpi</tspan></text>
+<text x="70" y="549" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1987</text>
+<circle cx="86" cy="544" r="6" fill="#0f7c80"/>
+<text x="104" y="549" font-size="14" fill="#183247"><tspan font-weight="700">VT340</tspan><tspan fill="#4c6070"> — 800 × 480, 16 of 4,096 colors</tspan></text>
+<circle cx="86" cy="571" r="6" fill="#0f7c80"/>
+<text x="104" y="576" font-size="14" fill="#183247"><tspan font-weight="700">LJ250</tspan><tspan fill="#4c6070"> — color inkjet SIXEL printer, 180 dpi</tspan></text>
+<circle cx="86" cy="598" r="6" fill="#c0392b"/>
+<text x="104" y="603" font-size="14" fill="#183247"><tspan font-weight="700">Organic LED</tspan><tspan fill="#4c6070"> — Tang and VanSlyke, Kodak</tspan></text>
+<circle cx="86" cy="625" r="6" fill="#2f8f5b"/>
+<text x="104" y="630" font-size="14" fill="#183247"><tspan font-weight="700">Digital micromirror device</tspan><tspan fill="#4c6070"> — Hornbeck, Texas Instruments</tspan></text>
+<text x="70" y="657" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1989</text>
+<circle cx="86" cy="652" r="6" fill="#2f8f5b"/>
+<text x="104" y="657" font-size="14" fill="#183247"><tspan font-weight="700">Epson 3LCD projector</tspan><tspan fill="#4c6070"> — three LCD panels, one per primary</tspan></text>
+<text x="70" y="684" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1996</text>
+<circle cx="86" cy="679" r="6" fill="#17618c"/>
+<text x="104" y="684" font-size="14" fill="#183247"><tspan font-weight="700">IPS LCD</tspan><tspan fill="#4c6070"> — wide viewing angles, Hitachi</tspan></text>
+<text x="70" y="711" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1997</text>
 <circle cx="86" cy="706" r="6" fill="#c0392b"/>
-<text x="104" y="711" font-size="14" fill="#183247"><tspan font-weight="700">Sony XEL-1</tspan><tspan fill="#4c6070"> — first OLED television</tspan></text>
-<text x="70" y="738" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2009</text>
-<circle cx="86" cy="733" r="6" fill="#b07d12"/>
-<text x="104" y="738" font-size="14" fill="#183247"><tspan font-weight="700">16:9 notebook panels</tspan><tspan fill="#4c6070"> — 1366 × 768 replaces taller screens</tspan></text>
-<text x="70" y="765" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2010</text>
-<circle cx="86" cy="760" r="6" fill="#b07d12"/>
-<text x="104" y="765" font-size="14" fill="#183247"><tspan font-weight="700">iPhone 4 &quot;Retina&quot;</tspan><tspan fill="#4c6070"> — 326 ppi</tspan></text>
-<circle cx="86" cy="787" r="6" fill="#7a4fa0"/>
-<text x="104" y="792" font-size="14" fill="#183247"><tspan font-weight="700">SED abandoned</tspan><tspan fill="#4c6070"> — flat panel of tiny electron emitters</tspan></text>
-<text x="70" y="819" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2012</text>
+<text x="104" y="711" font-size="14" fill="#183247"><tspan font-weight="700">42-inch plasma TV</tspan><tspan fill="#4c6070"> — Fujitsu, 852 × 480</tspan></text>
+<circle cx="86" cy="733" r="6" fill="#2f8f5b"/>
+<text x="104" y="738" font-size="14" fill="#183247"><tspan font-weight="700">First DLP projector</tspan><tspan fill="#4c6070"> — color wheel and one mirror chip</tspan></text>
+<text x="70" y="765" font-size="14" fill="#183247" font-weight="700" text-anchor="end">1998</text>
+<circle cx="86" cy="760" r="6" fill="#5f6b73"/>
+<text x="104" y="765" font-size="14" fill="#183247"><tspan font-weight="700">Electrophoretic ink</tspan><tspan fill="#4c6070"> — microcapsules of charged pigment, E Ink</tspan></text>
+<text x="70" y="792" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2000</text>
+<circle cx="86" cy="787" r="6" fill="#c0392b"/>
+<text x="104" y="792" font-size="14" fill="#183247"><tspan font-weight="700">MicroLED</tspan><tspan fill="#4c6070"> — Jiang and Lin, Kansas State University</tspan></text>
+<text x="70" y="819" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2001</text>
 <circle cx="86" cy="814" r="6" fill="#b07d12"/>
-<text x="104" y="819" font-size="14" fill="#183247"><tspan font-weight="700">Retina MacBook Pro</tspan><tspan fill="#4c6070"> — 2880 × 1800 at 220 ppi</tspan></text>
-<text x="70" y="846" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2019</text>
+<text x="104" y="819" font-size="14" fill="#183247"><tspan font-weight="700">IBM T220/T221</tspan><tspan fill="#4c6070"> — 3840 × 2400 at 204 ppi</tspan></text>
+<text x="70" y="846" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2004</text>
 <circle cx="86" cy="841" r="6" fill="#17618c"/>
-<text x="104" y="846" font-size="14" fill="#183247"><tspan font-weight="700">Mini LED television</tspan><tspan fill="#4c6070"> — LCD with about 1,000 dimming zones, TCL</tspan></text>
-<text x="70" y="873" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2022</text>
+<text x="104" y="846" font-size="14" fill="#183247"><tspan font-weight="700">LCD monitors outsell CRTs</tspan><tspan fill="#4c6070"> — fixed native resolution</tspan></text>
 <circle cx="86" cy="868" r="6" fill="#5f6b73"/>
-<text x="104" y="873" font-size="14" fill="#183247"><tspan font-weight="700">Kaleido 3, Gallery 3</tspan><tspan fill="#4c6070"> — color filters; four-pigment ink</tspan></text>
-<text x="70" y="900" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2023</text>
+<text x="104" y="873" font-size="14" fill="#183247"><tspan font-weight="700">Sony Librie</tspan><tspan fill="#4c6070"> — first E Ink e-reader</tspan></text>
+<text x="70" y="900" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2007</text>
 <circle cx="86" cy="895" r="6" fill="#5f6b73"/>
-<text x="104" y="900" font-size="14" fill="#183247"><tspan font-weight="700">Spectra 6</tspan><tspan fill="#4c6070"> — six-color pigment signage</tspan></text>
-<text x="70" y="927" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2025</text>
-<circle cx="86" cy="922" r="6" fill="#17618c"/>
-<text x="104" y="927" font-size="14" fill="#183247"><tspan font-weight="700">RGB Mini LED</tspan><tspan fill="#4c6070"> — red, green and blue LEDs in each backlight zone</tspan></text>
+<text x="104" y="900" font-size="14" fill="#183247"><tspan font-weight="700">Amazon Kindle</tspan><tspan fill="#4c6070"> — four gray levels</tspan></text>
+<circle cx="86" cy="922" r="6" fill="#c0392b"/>
+<text x="104" y="927" font-size="14" fill="#183247"><tspan font-weight="700">Sony XEL-1</tspan><tspan fill="#4c6070"> — first OLED television</tspan></text>
+<text x="70" y="954" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2009</text>
+<circle cx="86" cy="949" r="6" fill="#b07d12"/>
+<text x="104" y="954" font-size="14" fill="#183247"><tspan font-weight="700">16:9 notebook panels</tspan><tspan fill="#4c6070"> — 1366 × 768 replaces taller screens</tspan></text>
+<text x="70" y="981" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2010</text>
+<circle cx="86" cy="976" r="6" fill="#b07d12"/>
+<text x="104" y="981" font-size="14" fill="#183247"><tspan font-weight="700">iPhone 4 &quot;Retina&quot;</tspan><tspan fill="#4c6070"> — 326 ppi</tspan></text>
+<circle cx="86" cy="1003" r="6" fill="#7a4fa0"/>
+<text x="104" y="1008" font-size="14" fill="#183247"><tspan font-weight="700">SED abandoned</tspan><tspan fill="#4c6070"> — flat panel of tiny electron emitters</tspan></text>
+<text x="70" y="1035" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2012</text>
+<circle cx="86" cy="1030" r="6" fill="#b07d12"/>
+<text x="104" y="1035" font-size="14" fill="#183247"><tspan font-weight="700">Retina MacBook Pro</tspan><tspan fill="#4c6070"> — 2880 × 1800 at 220 ppi</tspan></text>
+<text x="70" y="1062" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2019</text>
+<circle cx="86" cy="1057" r="6" fill="#17618c"/>
+<text x="104" y="1062" font-size="14" fill="#183247"><tspan font-weight="700">Mini LED television</tspan><tspan fill="#4c6070"> — LCD with about 1,000 dimming zones, TCL</tspan></text>
+<text x="70" y="1089" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2022</text>
+<circle cx="86" cy="1084" r="6" fill="#5f6b73"/>
+<text x="104" y="1089" font-size="14" fill="#183247"><tspan font-weight="700">Kaleido 3, Gallery 3</tspan><tspan fill="#4c6070"> — color filters; four-pigment ink</tspan></text>
+<text x="70" y="1116" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2023</text>
+<circle cx="86" cy="1111" r="6" fill="#5f6b73"/>
+<text x="104" y="1116" font-size="14" fill="#183247"><tspan font-weight="700">Spectra 6</tspan><tspan fill="#4c6070"> — six-color pigment signage</tspan></text>
+<text x="70" y="1143" font-size="14" fill="#183247" font-weight="700" text-anchor="end">2025</text>
+<circle cx="86" cy="1138" r="6" fill="#17618c"/>
+<text x="104" y="1143" font-size="14" fill="#183247"><tspan font-weight="700">RGB Mini LED</tspan><tspan fill="#4c6070"> — red, green and blue LEDs in each backlight zone</tspan></text>
 </svg>

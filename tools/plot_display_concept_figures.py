@@ -45,6 +45,19 @@ FAMILIES = {
     'projection': ('Projection', '#2f8f5b'),
     'epaper': ('Electronic paper', '#5f6b73'),
     'density': ('Pixel density', '#b07d12'),
+    'dec': ('DEC terminals and printers', '#0f7c80'),
+}
+# Families used only by the pixel-density figure.
+DENSITY_FAMILIES = {
+    'dec': ('DEC terminal', '#0f7c80'),
+    'decprint': ('DEC printer', '#8e5a2b'),
+    'crt': ('CRT monitor', '#7a4fa0'),
+    'lcd': ('LCD monitor or notebook', '#17618c'),
+    'density': ('High-density monitor or notebook', '#b07d12'),
+    'emissive': ('Phone', '#c0392b'),
+    'epaper': ('Electronic paper', '#5f6b73'),
+    'tv': ('Television', '#2f8f5b'),
+    'vr': ('VR headset', '#d35400'),
 }
 
 
@@ -88,8 +101,16 @@ EVENTS = (
     (1964, 'emissive', 'Plasma panel', 'built for the PLATO system'),
     (1968, 'lcd', 'Liquid crystal display', 'dynamic scattering, RCA'),
     (1968, 'crt', 'Sony Trinitron', 'aperture grille and phosphor stripes'),
+    (1970, 'dec', 'DECwriter LA30', 'dot-matrix printing terminal, 5 × 7 glyphs'),
     (1971, 'lcd', 'Twisted nematic LCD', 'the basis of practical LCDs'),
     (1974, 'epaper', 'Gyricon', 'rotating two-color beads, Xerox PARC'),
+    (1974, 'dec', 'DECwriter II LA36', '7 × 7 dot characters, 10 per inch'),
+    (1978, 'dec', 'VT100', 'video text terminal'),
+    (1983, 'dec', 'LA50', 'dot-matrix printer for SIXEL graphics, 144 × 72 dpi'),
+    (1984, 'dec', 'VT240, VT241', '800 × 240 graphics; VT241: 4 of 64 colors'),
+    (1986, 'dec', 'LA75', 'companion dot-matrix printer, 144 × 72 dpi'),
+    (1987, 'dec', 'VT340', '800 × 480, 16 of 4,096 colors'),
+    (1987, 'dec', 'LJ250', 'color inkjet SIXEL printer, 180 dpi'),
     (1987, 'emissive', 'Organic LED', 'Tang and VanSlyke, Kodak'),
     (1987, 'projection', 'Digital micromirror device', 'Hornbeck, Texas Instruments'),
     (1989, 'projection', 'Epson 3LCD projector', 'three LCD panels, one per primary'),
@@ -367,94 +388,159 @@ def subpixels():
 # --------------------------------------------------------------------------
 # Pixel density
 
-# (year, family, label, diagonal in inches, width px, height px, distance cm)
+TAN1 = math.tan(math.radians(1))
+
+
+def ppd_from_ppi(ppi, distance_cm):
+    return distance_cm / 2.54 * ppi * TAN1
+
+
+# Each entry: (year, family, label, kind, parameters, distance cm).
+#   panel: (diagonal in, width px, height px)
+#   aspect: (diagonal in, width px, height px, screen aspect) for non-square
+#           pixels; the range spans horizontal and vertical density
+#   crt: (viewable diagonal in, width px, height px, phosphor pitch mm); the
+#        range spans the addressable density and the phosphor-pitch limit
+#   dpi: (horizontal dpi, vertical dpi); a range when they differ
+#   ppd: (published pixels per degree,)
 DISPLAYS = (
-    (1987, 'crt', '14" VGA CRT', 13.0, 640, 480, 60),
-    (1995, 'crt', '17" CRT 1024 × 768', 16.0, 1024, 768, 60),
-    (1999, 'crt', '21" CRT 1600 × 1200', 20.0, 1600, 1200, 60),
-    (2001, 'lcd', '15" LCD 1024 × 768', 15.0, 1024, 768, 60),
-    (2003, 'lcd', '17" LCD 1280 × 1024', 17.0, 1280, 1024, 60),
-    (2005, 'lcd', '19" LCD 1280 × 1024', 19.0, 1280, 1024, 60),
-    (2009, 'lcd', '21.5" LCD 1920 × 1080', 21.5, 1920, 1080, 60),
-    (2001, 'density', 'IBM T221', 22.2, 3840, 2400, 60),
-    (2014, 'density', '27" 5K', 27.0, 5120, 2880, 60),
-    (2006, 'lcd', '15" notebook 1600 × 1200', 15.0, 1600, 1200, 50),
-    (2009, 'lcd', '15.6" notebook 1366 × 768', 15.6, 1366, 768, 50),
-    (2012, 'density', '15.4" Retina notebook', 15.4, 2880, 1800, 50),
-    (2007, 'emissive', 'iPhone', 3.5, 320, 480, 30),
-    (2010, 'emissive', 'iPhone 4', 3.5, 640, 960, 30),
-    (2017, 'emissive', 'iPhone X', 5.8, 1125, 2436, 30),
-    (2007, 'epaper', 'Kindle', 6.0, 600, 800, 35),
-    (2015, 'epaper', 'Kindle Paperwhite', 6.0, 1072, 1448, 35),
+    (1983, 'decprint', 'LA50', 'dpi', (144, 72), 35),
+    (1984, 'dec', 'VT240', 'aspect', (11.0, 800, 240, 4 / 3), 60),
+    (1986, 'decprint', 'LA75', 'dpi', (144, 72), 35),
+    (1987, 'dec', 'VT340', 'aspect', (12.0, 800, 480, 4 / 3), 60),
+    (1987, 'decprint', 'LJ250', 'dpi', (180, 180), 35),
+    (1987, 'crt', '14" VGA', 'panel', (13.0, 640, 480), 60),
+    (1995, 'crt', '17" CRT', 'panel', (16.0, 1024, 768), 60),
+    (1999, 'crt', '21" CRT 1600 × 1200', 'panel', (20.0, 1600, 1200), 60),
+    (2002, 'crt', 'Sony FW900', 'crt', (22.5, 2304, 1440, 0.25), 60),
+    (2003, 'crt', '22" CRT 2048 × 1536', 'crt', (20.0, 2048, 1536, 0.24), 60),
+    (2001, 'lcd', '15" LCD', 'panel', (15.0, 1024, 768), 60),
+    (2003, 'lcd', '17" LCD', 'panel', (17.0, 1280, 1024), 60),
+    (2005, 'lcd', '19" LCD', 'panel', (19.0, 1280, 1024), 60),
+    (2009, 'lcd', '21.5" 1080p', 'panel', (21.5, 1920, 1080), 60),
+    (2006, 'lcd', '15" UXGA notebook', 'panel', (15.0, 1600, 1200), 50),
+    (2009, 'lcd', '15.6" 1366 × 768 notebook', 'panel', (15.6, 1366, 768), 50),
+    (2001, 'density', 'IBM T221', 'panel', (22.2, 3840, 2400), 60),
+    (2012, 'density', 'Retina MacBook Pro', 'panel', (15.4, 2880, 1800), 50),
+    (2014, 'density', '27" 5K', 'panel', (27.0, 5120, 2880), 60),
+    (2018, 'density', '27" 4K', 'panel', (27.0, 3840, 2160), 60),
+    (2019, 'density', 'Pro Display XDR', 'panel', (32.0, 6016, 3384), 60),
+    (2021, 'density', 'MacBook Pro 14"', 'panel', (14.2, 3024, 1964), 50),
+    (2007, 'emissive', 'iPhone', 'panel', (3.5, 320, 480), 30),
+    (2010, 'emissive', 'iPhone 4', 'panel', (3.5, 640, 960), 30),
+    (2017, 'emissive', 'iPhone X', 'panel', (5.8, 1125, 2436), 30),
+    (2019, 'emissive', 'Xperia 1', 'panel', (6.5, 1644, 3840), 30),
+    (2023, 'emissive', 'iPhone 15 Pro', 'panel', (6.1, 1179, 2556), 30),
+    (2007, 'epaper', 'Kindle', 'panel', (6.0, 600, 800), 35),
+    (2015, 'epaper', 'Kindle Paperwhite', 'panel', (6.0, 1072, 1448), 35),
+    (2021, 'epaper', 'Paperwhite 6.8"', 'panel', (6.8, 1236, 1648), 35),
+    (2024, 'epaper', 'Kobo Libra Colour', 'dpi', (300, 150), 35),
+    (2018, 'tv', '65" 4K TV at 2.5 m', 'panel', (65.0, 3840, 2160), 250),
+    (2023, 'vr', 'Meta Quest 3', 'ppd', (25,), None),
 )
 
 
 def density_rows():
     rows = []
-    for year, family, label, diagonal, w, h, distance in DISPLAYS:
-        ppi = math.hypot(w, h) / diagonal
-        ppd = distance / 2.54 * ppi * math.tan(math.radians(1))
-        rows.append({'year': year, 'family': family, 'label': label, 'diagonal_in': diagonal,
-                     'pixels': [w, h], 'distance_cm': distance, 'ppi': round(ppi, 1),
-                     'ppd': round(ppd, 1), 'cpd': round(ppd / 2, 1)})
+    for year, family, label, kind, values, distance in DISPLAYS:
+        row = {'year': year, 'family': family, 'label': label, 'kind': kind,
+               'distance_cm': distance}
+        if kind == 'panel':
+            diagonal, w, h = values
+            ppi = math.hypot(w, h) / diagonal
+            row.update(diagonal_in=diagonal, pixels=[w, h], ppi=round(ppi, 1))
+            high = low = ppd_from_ppi(ppi, distance)
+        elif kind == 'aspect':
+            diagonal, w, h, aspect = values
+            height = diagonal / math.hypot(aspect, 1)
+            width = height * aspect
+            row.update(viewable_diagonal_in=diagonal, pixels=[w, h],
+                       ppi=[round(w / width, 1), round(h / height, 1)])
+            high, low = (ppd_from_ppi(w / width, distance), ppd_from_ppi(h / height, distance))
+        elif kind == 'crt':
+            diagonal, w, h, pitch = values
+            ppi = math.hypot(w, h) / diagonal
+            row.update(viewable_diagonal_in=diagonal, pixels=[w, h], ppi=round(ppi, 1),
+                       phosphor_pitch_mm=pitch)
+            high = ppd_from_ppi(ppi, distance)
+            low = min(high, distance * 10 * TAN1 / pitch)
+        elif kind == 'dpi':
+            row.update(dpi=list(values))
+            high, low = (ppd_from_ppi(values[0], distance), ppd_from_ppi(values[1], distance))
+        else:
+            high = low = values[0]
+            row.update(source='published by the manufacturer')
+        row.update(ppd=round(high, 1), ppd_low=round(low, 1), cpd=round(high / 2, 1))
+        rows.append(row)
     return rows
 
 
+# Offsets in points for numbers that would otherwise collide.
+NUMBER_OFFSETS = {'LA50': (-6, 0), 'VT240': (-6, 4), 'LA75': (6, -6), 'VT340': (6, 6),
+                  '14" VGA': (6, -2), '22" CRT 2048 × 1536': (6, 4),
+                  'Sony FW900': (-11, 2), '15" UXGA notebook': (-8, 7), 'Kindle': (-12, 2),
+                  '15.6" 1366 × 768 notebook': (6, -5), '21.5" 1080p': (6, 4),
+                  'iPhone 15 Pro': (6, 4), 'MacBook Pro 14"': (6, -6),
+                  'Pro Display XDR': (-11, 5), '27" 5K': (-11, 3)}
+
+
 def density():
-    rows = density_rows()
+    rows = sorted(density_rows(), key=lambda r: (r['year'], r['label']))
     with plt.rc_context(RC):
-        fig, ax = plt.subplots(figsize=(8.4, 5.0))
-        ax.axhspan(60, 125, color='#eef4ea', zorder=0)
+        fig = plt.figure(figsize=(9.6, 8.6))
+        grid = fig.add_gridspec(2, 1, height_ratios=(2.2, 1), hspace=0.32)
+        ax = fig.add_subplot(grid[0])
+        key = fig.add_subplot(grid[1])
+        key.axis('off')
+        ax.axhspan(60, 140, color='#eef4ea', zorder=0)
+        ax.axhspan(100, 120, color='#dcebd5', zorder=0)
         ax.axhline(60, color='#5a8f4a', lw=1.2, ls='--')
-        ax.text(2019.5, 61.5, '60 pixels/degree ≈ 30 cpd: 20/20 acuity', color='#3d6b31',
-                fontsize=9.5, va='bottom', ha='right')
-        ax.text(2019.5, 119, 'resolution limit near 50–60 cpd (100–120 pixels/degree)',
-                color='#3d6b31', fontsize=9.5, va='top', ha='right')
-        # Labels of the crowded 2000s cluster sit below it, joined by leader lines.
-        below = {'15" LCD 1024 × 768': (1996.5, 17), '17" LCD 1280 × 1024': (1999.6, 8),
-                 '19" LCD 1280 × 1024': (2002.7, 17), '15" notebook 1600 × 1200': (2005.8, 8),
-                 'iPhone': (2008.9, 17), 'Kindle': (2011.2, 8),
-                 '21.5" LCD 1920 × 1080': (2014.0, 17), '15.6" notebook 1366 × 768': (2018.2, 5)}
-        beside = {'14" VGA CRT': (6, -4), '17" CRT 1024 × 768': (6, -4),
-                  '21" CRT 1600 × 1200': (-6, 6), 'IBM T221': (6, 4), '27" 5K': (-6, 6),
-                  'iPhone X': (-6, 6), '15.4" Retina notebook': (-6, 6), 'iPhone 4': (-6, 6),
-                  'Kindle Paperwhite': (6, -12)}
-        for row in rows:
-            color = FAMILIES[row['family']][1]
+        ax.text(1981, 61.5, '60 pixels/degree ≈ 30 cpd: 20/20 acuity', color='#3d6b31',
+                fontsize=9, va='bottom')
+        ax.text(1981, 101.5, 'resolution limit near 50–60 cpd', color='#3d6b31', fontsize=9,
+                va='bottom')
+        lines = []
+        for number, row in enumerate(rows, 1):
+            color = DENSITY_FAMILIES[row['family']][1]
             hollow = row['family'] == 'crt'
-            ax.scatter(row['year'], row['ppd'], s=46, zorder=3,
-                       facecolor='white' if hollow else color, edgecolor=color, lw=1.8)
-            label = row['label'].replace(' 1', '\n1', 1) if row['label'] in below else row['label']
-            if row['label'] in below:
-                ax.annotate(label, (row['year'], row['ppd']), xytext=below[row['label']],
-                            textcoords='data', fontsize=8.5, color=INK, ha='center',
-                            va='center', arrowprops={'arrowstyle': '-', 'color': '#9aa8b2',
-                                                     'lw': 0.8, 'shrinkA': 9, 'shrinkB': 4})
-            else:
-                dx, dy = beside[row['label']]
-                ax.annotate(label, (row['year'], row['ppd']), xytext=(dx, dy),
-                            textcoords='offset points', fontsize=8.5, color=INK,
-                            ha='left' if dx > 0 else 'right')
-        for a, b in (('15" notebook 1600 × 1200', '15.6" notebook 1366 × 768'),
-                     ('17" LCD 1280 × 1024', '19" LCD 1280 × 1024')):
+            x, high, low = row['year'], row['ppd'], row['ppd_low']
+            if low < high:
+                ax.plot([x, x], [low, high], color=color, lw=3, alpha=0.5,
+                        solid_capstyle='round', zorder=2)
+            ax.scatter(x, high, s=40, zorder=3, facecolor='white' if hollow else color,
+                       edgecolor=color, lw=1.8)
+            dx, dy = NUMBER_OFFSETS.get(row['label'], (6, 0))
+            ax.annotate(str(number), (x, high), xytext=(dx, dy), textcoords='offset points',
+                        fontsize=8, color=INK, fontweight='bold', va='center',
+                        ha='left' if dx > 0 else 'right')
+            lines.append((number, row, color))
+        for a, b in (('15" UXGA notebook', '15.6" 1366 × 768 notebook'),
+                     ('17" LCD', '19" LCD')):
             ra = next(r for r in rows if r['label'] == a)
             rb = next(r for r in rows if r['label'] == b)
             ax.annotate('', xy=(rb['year'], rb['ppd']), xytext=(ra['year'], ra['ppd']),
                         arrowprops={'arrowstyle': '->', 'color': ACCENT, 'lw': 1.6})
-        ax.set_xlim(1985, 2020)
-        ax.set_ylim(0, 125)
+        ax.set_xlim(1980, 2027)
+        ax.set_ylim(0, 140)
         ax.set_xlabel('year')
         ax.set_ylabel('pixels per degree at a typical distance')
         secondary = ax.secondary_yaxis('right', functions=(lambda v: v / 2, lambda v: v * 2))
         secondary.set_ylabel('finest pattern (cycles per degree)')
         ax.grid(True, color=GRID, lw=0.8)
-        handles = [plt.Line2D([], [], marker='o', ls='', color=FAMILIES[key][1],
-                              markerfacecolor='white' if key == 'crt' else FAMILIES[key][1],
-                              label=FAMILIES[key][0] if key != 'density' else 'High-density LCD')
-                   for key in ('crt', 'lcd', 'density', 'emissive', 'epaper')]
-        handles[3].set_label('Phone')
-        ax.legend(handles=handles, frameon=False, fontsize=9, loc='upper left')
-        ax.set_title('Pixels per degree of visual angle, 1987–2017', fontweight='bold')
+        ax.set_title('Pixels per degree of visual angle, 1983–2024', fontweight='bold')
+        handles = [plt.Line2D([], [], marker='o', ls='', color=color,
+                              markerfacecolor='white' if family == 'crt' else color, label=label)
+                   for family, (label, color) in DENSITY_FAMILIES.items()]
+        ax.legend(handles=handles, frameon=False, fontsize=8.5, ncol=3, loc='upper left',
+                  bbox_to_anchor=(0.0, 0.97))
+        rows_per_column = math.ceil(len(lines) / 3)
+        for index, (number, row, color) in enumerate(lines):
+            column, line = divmod(index, rows_per_column)
+            y = 1.0 - line / rows_per_column
+            key.text(0.03 + column * 0.34, y, f'{number}', transform=key.transAxes, fontsize=8.5,
+                     fontweight='bold', color=color, ha='right', va='top')
+            key.text(0.045 + column * 0.34, y, f"{row['label']} ({row['year']})",
+                     transform=key.transAxes, fontsize=8.5, color=INK, va='top')
         return mpl_svg(fig)
 
 
@@ -526,8 +612,13 @@ def main():
                      for y, f, t, d in EVENTS],
         'pixel_density': {'formula': 'ppd = distance * tan(1 degree) * ppi; cpd = ppd / 2',
                           'note': 'CRT entries use the addressable resolution and the '
-                                  'viewable diagonal; the phosphor pitch limits real '
-                                  'sharpness.',
+                                  'viewable diagonal; where a phosphor pitch is given, '
+                                  'ppd_low is the pitch-limited density. DEC terminal '
+                                  'entries estimate the viewable diagonal as the nominal '
+                                  'tube size minus one inch; their ppd and ppd_low are the '
+                                  'horizontal and vertical densities of non-square pixels. '
+                                  'Printer entries use horizontal and vertical dpi at 35 cm. '
+                                  'Meta Quest 3 uses the manufacturer\'s published value.',
                           'displays': density_rows()},
         'ambient_light_assumptions': AMBIENT,
         'epaper_palettes': {'source': 'images/snake.png at 240 x 180',
