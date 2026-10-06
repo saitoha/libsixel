@@ -2264,6 +2264,7 @@ sixel_dither_new(
     (*ppdither)->clamp_promoted_rgb888 = 0;
     (*ppdither)->palette_snap_exact = 0;
     (*ppdither)->use_rgb101_palette = 0;
+    (*ppdither)->highcolor_output_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
     (*ppdither)->pipeline_6delta_rgb101 = 0;
     (*ppdither)->pipeline_6delta_hls = 0;
     (*ppdither)->pipeline_6delta_hls_bytes = NULL;

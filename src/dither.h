@@ -296,6 +296,10 @@ struct sixel_dither {
     /* Keep extended working values and separate RGB101/HLS output views.
      * This algorithm contract is independent of the output primaries. */
     int use_rgb101_palette;
+    /* High-color skips palette preparation. Its per-encoder destination
+     * definition is refreshed on every frame, including cached contexts.
+     * The core prepares one local transform before any band workers start. */
+    int highcolor_output_definition;
 };
 
 #ifdef __cplusplus

@@ -459,6 +459,26 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0012_MULTIPASS_FLOAT \
     -DBUILD_TEST_0013_LOWLEVEL_DIFFUSION \
     -DBUILD_TEST_0014_CONTEXT_REUSE \
+    -DBUILD_TEST_0015_P3_GAMMA \
+    -DBUILD_TEST_0016_P3_LINEAR \
+    -DBUILD_TEST_0017_P3_OKLAB \
+    -DBUILD_TEST_0018_P3_CIELAB \
+    -DBUILD_TEST_0019_P3_DIN99D \
+    -DBUILD_TEST_0020_P3_BYTE \
+    -DBUILD_TEST_0021_P3_SUBBYTE \
+    -DBUILD_TEST_0022_P3_HLS \
+    -DBUILD_TEST_0023_P3_MULTIPASS \
+    -DBUILD_TEST_0024_P3_WORKERS \
+    -DBUILD_TEST_0025_P3_REUSE \
+    -DBUILD_TEST_0026_P3_MASK_RECOVERY \
+    -DBUILD_TEST_0027_P3_DELTA_RECOVERY \
+    -DBUILD_TEST_0028_P3_OR_RECOVERY \
+    -DBUILD_TEST_0029_P3_DRCS_RECOVERY \
+    -DBUILD_TEST_0030_P3_MACRO_RECOVERY \
+    -DBUILD_TEST_0031_P3_PNG_RECOVERY \
+    -DBUILD_TEST_0032_P3_SNAP_RECOVERY \
+    -DBUILD_TEST_0033_P3_NAN_RECOVERY \
+    -DBUILD_TEST_0034_P3_ALPHA_RECOVERY \
     -DBUILD_HIGHCOLOR_OUTPUT_COMMON \
     -DBUILD_PNG_DELTA_COMMON \
     -DBUILD_TEST_0001_SRGB_FRAME_PRECISION \
@@ -5934,6 +5954,26 @@ test_runner_SOURCES = test_runner.c \
     codec/highcolor/0012_multipass_float.c \
     codec/highcolor/0013_lowlevel_diffusion.c \
     codec/highcolor/0014_context_reuse.c \
+    codec/highcolor/0015_p3_gamma.c \
+    codec/highcolor/0016_p3_linear.c \
+    codec/highcolor/0017_p3_oklab.c \
+    codec/highcolor/0018_p3_cielab.c \
+    codec/highcolor/0019_p3_din99d.c \
+    codec/highcolor/0020_p3_byte.c \
+    codec/highcolor/0021_p3_subbyte.c \
+    codec/highcolor/0022_p3_hls.c \
+    codec/highcolor/0023_p3_multipass.c \
+    codec/highcolor/0024_p3_workers.c \
+    codec/highcolor/0025_p3_reuse.c \
+    codec/highcolor/0026_p3_mask_recovery.c \
+    codec/highcolor/0027_p3_delta_recovery.c \
+    codec/highcolor/0028_p3_or_recovery.c \
+    codec/highcolor/0029_p3_drcs_recovery.c \
+    codec/highcolor/0030_p3_macro_recovery.c \
+    codec/highcolor/0031_p3_png_recovery.c \
+    codec/highcolor/0032_p3_snap_recovery.c \
+    codec/highcolor/0033_p3_nan_recovery.c \
+    codec/highcolor/0034_p3_alpha_recovery.c \
     codec/highcolor_output_common.c \
     codec/png_delta_common.c \
     codec/png_snapshot/0001_srgb_frame_precision.c \

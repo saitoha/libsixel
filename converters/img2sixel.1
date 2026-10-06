@@ -1386,7 +1386,7 @@ linear  -> linear RGB output
 .br
 smpte-c -> SMPTE-C gamma encoded output
 .br
-display-p3 -> Display P3 output for the limited CPU float palette path
+display-p3 -> Display P3 output for selected CPU palette or high-color paths
 .br
 auto[:timeout_ms=N] -> negotiate with the image destination on stdout
 .br
@@ -1410,7 +1410,8 @@ silence or a valid unavailable response permits unconfirmed gamma fallback;
 partial or malformed replies fail before image output. Timeout retires
 further queries; restoration then uses a bounded write without verification.
 .br
-Display P3 requires effective float precision; clustering and working
+For ordinary palettes, Display P3 requires effective float precision;
+clustering and working
 coordinates accept gamma, linear, Oklab, CIELAB or DIN99d independently.
 It accepts K-means, K-center, K-medoids or Heckbert (including auto selection),
 any sampling policy,
@@ -1427,6 +1428,13 @@ Supported spatial methods are FS, Atkinson, JJN, Stucki, Burkes, the Sierra
 variants, and LSO2. Positional a_dither, x_dither, and bluenoise are supported;
 interframe dithering remains unsupported.
 The P3 float requirement overrides an explicit byte preference.
+For high-color \fB-I\fP, P3 accepts opaque RGB input and ordinary RGB/HLS
+SIXEL output. Gamma, linear, Oklab, CIELAB and DIN99d working coordinates
+retain extended values until destination conversion. Palette construction,
+lookup and diffusion are bypassed. Active snap, GPU, preserved transparency,
+OR mode, DRCS, macros, PNG snapshots and delta remain unsupported on this
+high-color path and fail before output. The receiver must interpret the
+resulting color definitions as Display P3.
 Palette input with \fB-m\fP supports the same CPU solver choices, including AUTO.
 Structured palette files remain sRGB. Lookup and diffusion retain their
 unrounded working coordinates; separate P3 RGB101 codes serve only output. Image mapfiles retain loader/CMS

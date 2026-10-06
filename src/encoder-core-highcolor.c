@@ -40,6 +40,7 @@
 #include "encoder-core-private.h"
 #include "pixelformat.h"
 #include "colorspace.h"
+#include "cms.h"
 #include "encoder-core-highcolor.h"
 
 enum {
@@ -82,7 +83,12 @@ sixel_highcolor_convert(unsigned char **prepared, int *stride,
                         int pixelformat, sixel_dither_t *dither,
                         sixel_output_t const *output)
 {
+    sixel_color_def_t *srgb;
+    sixel_color_def_t *p3;
+    sixel_color_xform_t *forward;
+    SIXELSTATUS status;
     double source[3];
+    double gamma[3];
     double target[3];
     float sample[3];
     unsigned char *buffer;
@@ -104,6 +110,24 @@ sixel_highcolor_convert(unsigned char **prepared, int *stride,
         count * (size_t)*stride);
     if (buffer == NULL) {
         return SIXEL_BAD_ALLOCATION;
+    }
+    srgb = p3 = NULL;
+    forward = NULL;
+    status = SIXEL_BAD_ALLOCATION;
+    /* Build once for this frame, never per pixel or register replacement.
+     * Working coordinates retain their original primaries and may extend
+     * outside sRGB. Only the final destination samples become bounded. */
+    if (dither->highcolor_output_definition ==
+            SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+        srgb = sixel_cdef_name("srgb");
+        p3 = sixel_cdef_name("display-p3");
+        if (srgb == NULL || p3 == NULL) {
+            goto end;
+        }
+        forward = sixel_cxform_new(srgb, p3, 1);
+        if (forward == NULL) {
+            goto end;
+        }
     }
     byte_format = SIXEL_PIXELFORMAT_RGBFLOAT32;
     switch (output->source_colorspace) {
@@ -129,12 +153,16 @@ sixel_highcolor_convert(unsigned char **prepared, int *stride,
                 (double)sixel_pixelformat_byte_to_float(byte_format, c,
                     pixels[i * 3U + (size_t)c]);
         }
-        if (!sixel_color_convert_output(target, source,
-                output->source_colorspace, output->colorspace)) {
-            sixel_allocator_free(dither->allocator, buffer);
-            sixel_helper_set_additional_message(
-                "sixel_encode_highcolor: invalid color conversion.");
-            return SIXEL_BAD_INPUT;
+        status = SIXEL_BAD_INPUT;
+        if (forward != NULL) {
+            if (!sixel_color_convert(gamma, source,
+                    output->source_colorspace, SIXEL_COLORSPACE_GAMMA) ||
+                    !sixel_cxform_apply(forward, gamma, target)) {
+                goto end;
+            }
+        } else if (!sixel_color_convert_output(target, source,
+                       output->source_colorspace, output->colorspace)) {
+            goto end;
         }
         /* This is the final destination gamut boundary, after all matrix
          * and transfer operations. No source or working component is
@@ -154,7 +182,18 @@ sixel_highcolor_convert(unsigned char **prepared, int *stride,
         }
     }
     *prepared = buffer;
-    return SIXEL_OK;
+    buffer = NULL;
+    status = SIXEL_OK;
+end:
+    if (status == SIXEL_BAD_INPUT) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_highcolor: invalid color conversion.");
+    }
+    sixel_cxform_free(forward);
+    sixel_cdef_free(srgb);
+    sixel_cdef_free(p3);
+    sixel_allocator_free(dither->allocator, buffer);
+    return status;
 }
 
 /*
@@ -947,7 +986,9 @@ sixel_encode_highcolor(
     }
 
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ||
-            output->source_colorspace != output->colorspace) {
+            output->source_colorspace != output->colorspace ||
+            dither->highcolor_output_definition ==
+                SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
         status = sixel_highcolor_convert(&converted_pixels, &stride, pixels,
             (size_t)width * (size_t)height, pixelformat, dither, output);
         if (SIXEL_FAILED(status)) {

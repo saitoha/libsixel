@@ -43,19 +43,25 @@ High color is an alternate encoding path, not a larger value for `-p`.
 
 - It bypasses fixed-palette construction and fixed-palette nearest-color lookup. `-p`, `-b`, `-m`, and `-e` select incompatible color modes and are rejected when combined with `-I`.
 - The current CLI resolves palette-space diffusion to `none` for `-I`. Supplying `-d fs` or another diffusion method does not recreate the historical high-color diffusion path described in the 2014 article.
-- It converts source coordinates to the selected legacy `-U gamma`, `-U linear` or `-U smpte-c` destination before building lookup keys. `-U display-p3` still rejects `-I`. See [destination samples](#destination-samples-and-precision) and [Output color space](../output-colorspace.md#scope-and-current-gaps).
+- It converts source coordinates to the selected `-U gamma`, `-U linear`, `-U smpte-c` or `-U display-p3` destination before building lookup keys. Display P3 accepts opaque RGB frames with ordinary CPU RGB or HLS SIXEL output. See [destination samples](#destination-samples-and-precision) and [Output color space](../output-colorspace.md#scope-and-current-gaps).
 - Register `#255` is an internal skip value for multi-pass painting. Transparent offset is supported as a separate geometry feature; source alpha semantics still follow the [alpha policy](../../../loader/alpha-policy/README.md).
 - Validation must use a direct decoder. A final indexed plane and final palette cannot represent the earlier colors painted before a register redefinition. Use `sixel2png --direct` (`-D`) rather than an indexed snapshot. See the [PNG writer boundary](../../../writers/png/README.md) for details.
 
 ## Destination samples and precision
 
-High-color output uses the frame/core source color space independently of the destination selected by `-U`. Conversion uses the extended-coordinate helpers, including the primary matrix before clipping for SMPTE-C. Negative and above-one source components survive that conversion. Once the destination RGB is known, it is restricted to the representable destination gamut; this is channel clipping, not perceptual gamut mapping.
+High-color output uses the frame/core source color space independently of the destination selected by `-U`. Conversion uses the extended-coordinate helpers, including the primary matrix before clipping for SMPTE-C or Display P3. Negative and above-one source components survive that conversion. Once the destination RGB is known, it is restricted to the representable destination gamut; this is channel clipping, not perceptual gamut mapping.
 
 The high-level encoder disables high-color diffusion. For float input or a nonidentity output conversion, this path retains float destination samples and float register representatives. A separate RGB888 projection supplies the existing 15bit lookup key. Multiple samples sharing that key still share its selected representative, but key quantization does not replace the representative. The writer rounds the representative directly to RGB101 or DEC HLS. This does not enable palette snap or change the first-encountered representative policy.
 
 RGB888 input with identical source and destination coordinates keeps the byte path, its historical wire rounding and its lack of a converted image buffer. Converted no-diffusion input uses a temporary RGB float32 plane (12 bytes per pixel), plus a 256-entry float register table (3,072 bytes); packed byte input can also require the existing 3-byte normalization plane. The conversion validates the whole input before output begins. Nonfinite input or an invalid transform fails without writing an image; the caller's pixel format is not replaced by the temporary format, so the context remains reusable.
 
-Low-level callers that explicitly enable the legacy 15bpp diffusion routines still receive a bounded RGB888 diffusion plane after destination conversion. Those routines are not the native float palette-diffusion implementation and do not provide its clamp-policy semantics. Their float migration, source-alpha handling, retained delta history, Display P3 admission, and pass-scheduling redesign are separate limitations; the destination handoff does not establish support for them.
+Low-level callers that explicitly enable the legacy 15bpp diffusion routines still receive a bounded RGB888 diffusion plane after destination conversion. Those routines are not the native float palette-diffusion implementation and do not provide its clamp-policy semantics. Their float migration, source-alpha handling, retained delta history, and pass-scheduling redesign are separate limitations; the destination handoff does not establish support for them.
+
+### Display P3 boundary
+
+`-I -U display-p3` keeps the frame's source definition separate from the destination. It accepts RGB888 or typed float32 gamma, linear, Oklab, CIELAB or DIN99d frames and `-W` in those five spaces. One common sRGB-to-Display-P3 transform is prepared per frame; no profile is parsed per pixel or register replacement. Source alpha must already have been resolved to opaque RGB. Packed-alpha storage, preserved masks, delta, OR mode, DRCS, terminal macros and PNG snapshots reject before output. These are implementation boundaries of this high-color path, not limitations of the P3 definition.
+
+The ordinary palette solver and lookup restrictions do not apply to high color because those stages are bypassed. High-level diffusion remains disabled, even if `-d` selects a method. GPU and active snap remain unsupported; a zero snap approach is inactive. The receiver must interpret these RGB or HLS definitions as Display P3, as described in [output interpretation](../output-colorspace.md). The low-level `sixel_encode()` API retains its existing legacy destination setup; the P3 intent is carried privately by the high-level encoder without changing public API signatures.
 
 ## Parallelism: the current boundary
 
@@ -122,7 +128,7 @@ The [study tool](../../../../tools/highcolor/study.py) verifies retained hashes,
 
 ### Behavioral contract tests
 
-The small value witnesses inspect direct-decoded pixels and opacity, including register redefinition. Their analytic transfer/matrix references and integer rounding margins are documented in `tests/codec/highcolor_output_common.c`. Nonfinite rejection and reuse are separate from finite approximation checks. These tests establish the destination handoff, not perceptual quality or exhaustive pass scheduling. The existing study's known key-reuse and final-band defects remain outside these assertions.
+The small value witnesses inspect direct-decoded pixels and opacity, including register redefinition. Their analytic transfer/matrix references, independent P3 primary coordinates and integer rounding margins are documented in `tests/codec/highcolor_output_common.c`. Nonfinite rejection and reuse are separate from finite approximation checks. These tests establish the destination handoff, not perceptual quality or exhaustive pass scheduling. The existing study's known key-reuse and final-band defects remain outside these assertions.
 
 | ID | Contract | Test |
 | --- | --- | --- |
@@ -140,3 +146,23 @@ The small value witnesses inspect direct-decoded pixels and opacity, including r
 | HC-12 | Float representatives remain attached to their keys across register redefinition passes. | [tests/codec/highcolor/0012_multipass_float.t](../../../../tests/codec/highcolor/0012_multipass_float.t) |
 | HC-13 | Low-level legacy byte diffusion converts output coordinates before its byte boundary. | [tests/codec/highcolor/0013_lowlevel_diffusion.t](../../../../tests/codec/highcolor/0013_lowlevel_diffusion.t) |
 | HC-14 | One high-color context supports repeated float and byte output conversions without stale format state. | [tests/codec/highcolor/0014_context_reuse.t](../../../../tests/codec/highcolor/0014_context_reuse.t) |
+| HC-15 | Extended gamma coordinates retain P3 red, green and a mixed color. | [tests/codec/highcolor/0015_p3_gamma.t](../../../../tests/codec/highcolor/0015_p3_gamma.t) |
+| HC-16 | Extended linear coordinates retain P3 red, green and a mixed color. | [tests/codec/highcolor/0016_p3_linear.t](../../../../tests/codec/highcolor/0016_p3_linear.t) |
+| HC-17 | Oklab coordinates retain P3 red, green and a mixed color. | [tests/codec/highcolor/0017_p3_oklab.t](../../../../tests/codec/highcolor/0017_p3_oklab.t) |
+| HC-18 | CIELAB coordinates retain P3 red, green and a mixed color. | [tests/codec/highcolor/0018_p3_cielab.t](../../../../tests/codec/highcolor/0018_p3_cielab.t) |
+| HC-19 | DIN99d coordinates retain P3 red, green and a mixed color. | [tests/codec/highcolor/0019_p3_din99d.t](../../../../tests/codec/highcolor/0019_p3_din99d.t) |
+| HC-20 | Byte sRGB input is converted to the P3 destination. | [tests/codec/highcolor/0020_p3_byte.t](../../../../tests/codec/highcolor/0020_p3_byte.t) |
+| HC-21 | P3 output keeps a neutral subbyte representative through RGB101. | [tests/codec/highcolor/0021_p3_subbyte.t](../../../../tests/codec/highcolor/0021_p3_subbyte.t) |
+| HC-22 | P3 HLS uses a float representative without RGB888 projection. | [tests/codec/highcolor/0022_p3_hls.t](../../../../tests/codec/highcolor/0022_p3_hls.t) |
+| HC-23 | P3 representatives survive register redefinition across completed passes. | [tests/codec/highcolor/0023_p3_multipass.t](../../../../tests/codec/highcolor/0023_p3_multipass.t) |
+| HC-24 | P3 representatives survive completed passes with a four-thread body budget. | [tests/codec/highcolor/0024_p3_workers.t](../../../../tests/codec/highcolor/0024_p3_workers.t) |
+| HC-25 | Output definition and byte or float input switch safely between encoder contexts. | [tests/codec/highcolor/0025_p3_reuse.t](../../../../tests/codec/highcolor/0025_p3_reuse.t) |
+| HC-26 | A preserved source mask rejects before output and allows opaque reuse. | [tests/codec/highcolor/0026_p3_mask_recovery.t](../../../../tests/codec/highcolor/0026_p3_mask_recovery.t) |
+| HC-27 | High-color P3 delta rejects before output and allows full-frame reuse. | [tests/codec/highcolor/0027_p3_delta_recovery.t](../../../../tests/codec/highcolor/0027_p3_delta_recovery.t) |
+| HC-28 | High-color P3 OR mode rejects before output and allows ordinary reuse. | [tests/codec/highcolor/0028_p3_or_recovery.t](../../../../tests/codec/highcolor/0028_p3_or_recovery.t) |
+| HC-29 | High-color P3 DRCS rejects before output and allows ordinary reuse. | [tests/codec/highcolor/0029_p3_drcs_recovery.t](../../../../tests/codec/highcolor/0029_p3_drcs_recovery.t) |
+| HC-30 | High-color P3 macro output rejects before output and allows ordinary reuse. | [tests/codec/highcolor/0030_p3_macro_recovery.t](../../../../tests/codec/highcolor/0030_p3_macro_recovery.t) |
+| HC-31 | High-color P3 PNG snapshots reject before output and allow SIXEL reuse. | [tests/codec/highcolor/0031_p3_png_recovery.t](../../../../tests/codec/highcolor/0031_p3_png_recovery.t) |
+| HC-32 | High-color P3 active snap rejects before output and allows unsnapped reuse. | [tests/codec/highcolor/0032_p3_snap_recovery.t](../../../../tests/codec/highcolor/0032_p3_snap_recovery.t) |
+| HC-33 | High-color P3 nonfinite input rejects before output and allows finite reuse. | [tests/codec/highcolor/0033_p3_nan_recovery.t](../../../../tests/codec/highcolor/0033_p3_nan_recovery.t) |
+| HC-34 | High-color P3 packed alpha rejects before output and allows opaque RGB reuse. | [tests/codec/highcolor/0034_p3_alpha_recovery.t](../../../../tests/codec/highcolor/0034_p3_alpha_recovery.t) |
