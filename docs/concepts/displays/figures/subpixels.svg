@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="250" viewBox="0 0 800 250" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Subpixel layouts</title>
+<desc id="desc">Five schematic tiles: CRT shadow-mask phosphor triads, CRT aperture-grille stripes, LCD RGB stripes, OLED RGBG layout with shared subpixels, and a color filter array over gray electronic ink.</desc>
+<rect x="0" y="0" width="800" height="250" fill="#ffffff"/>
+<text x="80" y="24" font-size="14" fill="#183247" font-weight="700" text-anchor="middle">Shadow mask</text>
+<text x="80" y="42" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">CRT phosphor triads</text>
+<rect x="20" y="50" width="120" height="120" fill="#111820"/>
+<circle cx="30.0" cy="61.0" r="6.5" fill="#e0453a"/>
+<circle cx="47.0" cy="61.0" r="6.5" fill="#3b6fd8"/>
+<circle cx="64.0" cy="61.0" r="6.5" fill="#3cb44b"/>
+<circle cx="81.0" cy="61.0" r="6.5" fill="#e0453a"/>
+<circle cx="98.0" cy="61.0" r="6.5" fill="#3b6fd8"/>
+<circle cx="115.0" cy="61.0" r="6.5" fill="#3cb44b"/>
+<circle cx="132.0" cy="61.0" r="6.5" fill="#e0453a"/>
+<circle cx="38.5" cy="80.5" r="6.5" fill="#3cb44b"/>
+<circle cx="55.5" cy="80.5" r="6.5" fill="#e0453a"/>
+<circle cx="72.5" cy="80.5" r="6.5" fill="#3b6fd8"/>
+<circle cx="89.5" cy="80.5" r="6.5" fill="#3cb44b"/>
+<circle cx="106.5" cy="80.5" r="6.5" fill="#e0453a"/>
+<circle cx="123.5" cy="80.5" r="6.5" fill="#3b6fd8"/>
+<circle cx="30.0" cy="100.0" r="6.5" fill="#3b6fd8"/>
+<circle cx="47.0" cy="100.0" r="6.5" fill="#3cb44b"/>
+<circle cx="64.0" cy="100.0" r="6.5" fill="#e0453a"/>
+<circle cx="81.0" cy="100.0" r="6.5" fill="#3b6fd8"/>
+<circle cx="98.0" cy="100.0" r="6.5" fill="#3cb44b"/>
+<circle cx="115.0" cy="100.0" r="6.5" fill="#e0453a"/>
+<circle cx="132.0" cy="100.0" r="6.5" fill="#3b6fd8"/>
+<circle cx="38.5" cy="119.5" r="6.5" fill="#e0453a"/>
+<circle cx="55.5" cy="119.5" r="6.5" fill="#3b6fd8"/>
+<circle cx="72.5" cy="119.5" r="6.5" fill="#3cb44b"/>
+<circle cx="89.5" cy="119.5" r="6.5" fill="#e0453a"/>
+<circle cx="106.5" cy="119.5" r="6.5" fill="#3b6fd8"/>
+<circle cx="123.5" cy="119.5" r="6.5" fill="#3cb44b"/>
+<circle cx="30.0" cy="139.0" r="6.5" fill="#3cb44b"/>
+<circle cx="47.0" cy="139.0" r="6.5" fill="#e0453a"/>
+<circle cx="64.0" cy="139.0" r="6.5" fill="#3b6fd8"/>
+<circle cx="81.0" cy="139.0" r="6.5" fill="#3cb44b"/>
+<circle cx="98.0" cy="139.0" r="6.5" fill="#e0453a"/>
+<circle cx="115.0" cy="139.0" r="6.5" fill="#3b6fd8"/>
+<circle cx="132.0" cy="139.0" r="6.5" fill="#3cb44b"/>
+<circle cx="38.5" cy="158.5" r="6.5" fill="#3b6fd8"/>
+<circle cx="55.5" cy="158.5" r="6.5" fill="#3cb44b"/>
+<circle cx="72.5" cy="158.5" r="6.5" fill="#e0453a"/>
+<circle cx="89.5" cy="158.5" r="6.5" fill="#3b6fd8"/>
+<circle cx="106.5" cy="158.5" r="6.5" fill="#3cb44b"/>
+<circle cx="123.5" cy="158.5" r="6.5" fill="#e0453a"/>
+<rect x="20" y="50" width="120" height="120" fill="none" stroke="#4c6070"/>
+<text x="236" y="24" font-size="14" fill="#183247" font-weight="700" text-anchor="middle">Aperture grille</text>
+<text x="236" y="42" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">CRT stripes</text>
+<rect x="176" y="50" width="120" height="120" fill="#111820"/>
+<rect x="178" y="50" width="7" height="120" fill="#e0453a"/>
+<rect x="188" y="50" width="7" height="120" fill="#3cb44b"/>
+<rect x="198" y="50" width="7" height="120" fill="#3b6fd8"/>
+<rect x="208" y="50" width="7" height="120" fill="#e0453a"/>
+<rect x="218" y="50" width="7" height="120" fill="#3cb44b"/>
+<rect x="228" y="50" width="7" height="120" fill="#3b6fd8"/>
+<rect x="238" y="50" width="7" height="120" fill="#e0453a"/>
+<rect x="248" y="50" width="7" height="120" fill="#3cb44b"/>
+<rect x="258" y="50" width="7" height="120" fill="#3b6fd8"/>
+<rect x="268" y="50" width="7" height="120" fill="#e0453a"/>
+<rect x="278" y="50" width="7" height="120" fill="#3cb44b"/>
+<rect x="288" y="50" width="7" height="120" fill="#3b6fd8"/>
+<line x1="176" y1="90" x2="296" y2="90" stroke="#111820" stroke-width="1.5"/>
+<rect x="176" y="50" width="120" height="120" fill="none" stroke="#4c6070"/>
+<text x="392" y="24" font-size="14" fill="#183247" font-weight="700" text-anchor="middle">RGB stripe</text>
+<text x="392" y="42" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">LCD</text>
+<rect x="332" y="50" width="120" height="120" fill="#111820"/>
+<rect x="333.5" y="52" width="7" height="26" fill="#e0453a"/>
+<rect x="343.5" y="52" width="7" height="26" fill="#3cb44b"/>
+<rect x="353.5" y="52" width="7" height="26" fill="#3b6fd8"/>
+<rect x="363.5" y="52" width="7" height="26" fill="#e0453a"/>
+<rect x="373.5" y="52" width="7" height="26" fill="#3cb44b"/>
+<rect x="383.5" y="52" width="7" height="26" fill="#3b6fd8"/>
+<rect x="393.5" y="52" width="7" height="26" fill="#e0453a"/>
+<rect x="403.5" y="52" width="7" height="26" fill="#3cb44b"/>
+<rect x="413.5" y="52" width="7" height="26" fill="#3b6fd8"/>
+<rect x="423.5" y="52" width="7" height="26" fill="#e0453a"/>
+<rect x="433.5" y="52" width="7" height="26" fill="#3cb44b"/>
+<rect x="443.5" y="52" width="7" height="26" fill="#3b6fd8"/>
+<rect x="333.5" y="82" width="7" height="26" fill="#e0453a"/>
+<rect x="343.5" y="82" width="7" height="26" fill="#3cb44b"/>
+<rect x="353.5" y="82" width="7" height="26" fill="#3b6fd8"/>
+<rect x="363.5" y="82" width="7" height="26" fill="#e0453a"/>
+<rect x="373.5" y="82" width="7" height="26" fill="#3cb44b"/>
+<rect x="383.5" y="82" width="7" height="26" fill="#3b6fd8"/>
+<rect x="393.5" y="82" width="7" height="26" fill="#e0453a"/>
+<rect x="403.5" y="82" width="7" height="26" fill="#3cb44b"/>
+<rect x="413.5" y="82" width="7" height="26" fill="#3b6fd8"/>
+<rect x="423.5" y="82" width="7" height="26" fill="#e0453a"/>
+<rect x="433.5" y="82" width="7" height="26" fill="#3cb44b"/>
+<rect x="443.5" y="82" width="7" height="26" fill="#3b6fd8"/>
+<rect x="333.5" y="112" width="7" height="26" fill="#e0453a"/>
+<rect x="343.5" y="112" width="7" height="26" fill="#3cb44b"/>
+<rect x="353.5" y="112" width="7" height="26" fill="#3b6fd8"/>
+<rect x="363.5" y="112" width="7" height="26" fill="#e0453a"/>
+<rect x="373.5" y="112" width="7" height="26" fill="#3cb44b"/>
+<rect x="383.5" y="112" width="7" height="26" fill="#3b6fd8"/>
+<rect x="393.5" y="112" width="7" height="26" fill="#e0453a"/>
+<rect x="403.5" y="112" width="7" height="26" fill="#3cb44b"/>
+<rect x="413.5" y="112" width="7" height="26" fill="#3b6fd8"/>
+<rect x="423.5" y="112" width="7" height="26" fill="#e0453a"/>
+<rect x="433.5" y="112" width="7" height="26" fill="#3cb44b"/>
+<rect x="443.5" y="112" width="7" height="26" fill="#3b6fd8"/>
+<rect x="333.5" y="142" width="7" height="26" fill="#e0453a"/>
+<rect x="343.5" y="142" width="7" height="26" fill="#3cb44b"/>
+<rect x="353.5" y="142" width="7" height="26" fill="#3b6fd8"/>
+<rect x="363.5" y="142" width="7" height="26" fill="#e0453a"/>
+<rect x="373.5" y="142" width="7" height="26" fill="#3cb44b"/>
+<rect x="383.5" y="142" width="7" height="26" fill="#3b6fd8"/>
+<rect x="393.5" y="142" width="7" height="26" fill="#e0453a"/>
+<rect x="403.5" y="142" width="7" height="26" fill="#3cb44b"/>
+<rect x="413.5" y="142" width="7" height="26" fill="#3b6fd8"/>
+<rect x="423.5" y="142" width="7" height="26" fill="#e0453a"/>
+<rect x="433.5" y="142" width="7" height="26" fill="#3cb44b"/>
+<rect x="443.5" y="142" width="7" height="26" fill="#3b6fd8"/>
+<rect x="332" y="50" width="120" height="120" fill="none" stroke="#4c6070"/>
+<text x="548" y="24" font-size="14" fill="#183247" font-weight="700" text-anchor="middle">RGBG</text>
+<text x="548" y="42" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">OLED, shared subpixels</text>
+<rect x="488" y="50" width="120" height="120" fill="#111820"/>
+<rect x="489.5" y="53.5" width="13" height="13" rx="2" fill="#e0453a"/>
+<rect x="506.5" y="55.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="519.5" y="53.5" width="13" height="13" rx="2" fill="#3b6fd8"/>
+<rect x="536.5" y="55.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="549.5" y="53.5" width="13" height="13" rx="2" fill="#e0453a"/>
+<rect x="566.5" y="55.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="579.5" y="53.5" width="13" height="13" rx="2" fill="#3b6fd8"/>
+<rect x="596.5" y="55.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="489.5" y="73.5" width="13" height="13" rx="2" fill="#3b6fd8"/>
+<rect x="506.5" y="75.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="519.5" y="73.5" width="13" height="13" rx="2" fill="#e0453a"/>
+<rect x="536.5" y="75.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="549.5" y="73.5" width="13" height="13" rx="2" fill="#3b6fd8"/>
+<rect x="566.5" y="75.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="579.5" y="73.5" width="13" height="13" rx="2" fill="#e0453a"/>
+<rect x="596.5" y="75.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="489.5" y="93.5" width="13" height="13" rx="2" fill="#e0453a"/>
+<rect x="506.5" y="95.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="519.5" y="93.5" width="13" height="13" rx="2" fill="#3b6fd8"/>
+<rect x="536.5" y="95.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="549.5" y="93.5" width="13" height="13" rx="2" fill="#e0453a"/>
+<rect x="566.5" y="95.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="579.5" y="93.5" width="13" height="13" rx="2" fill="#3b6fd8"/>
+<rect x="596.5" y="95.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="489.5" y="113.5" width="13" height="13" rx="2" fill="#3b6fd8"/>
+<rect x="506.5" y="115.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="519.5" y="113.5" width="13" height="13" rx="2" fill="#e0453a"/>
+<rect x="536.5" y="115.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="549.5" y="113.5" width="13" height="13" rx="2" fill="#3b6fd8"/>
+<rect x="566.5" y="115.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="579.5" y="113.5" width="13" height="13" rx="2" fill="#e0453a"/>
+<rect x="596.5" y="115.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="489.5" y="133.5" width="13" height="13" rx="2" fill="#e0453a"/>
+<rect x="506.5" y="135.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="519.5" y="133.5" width="13" height="13" rx="2" fill="#3b6fd8"/>
+<rect x="536.5" y="135.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="549.5" y="133.5" width="13" height="13" rx="2" fill="#e0453a"/>
+<rect x="566.5" y="135.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="579.5" y="133.5" width="13" height="13" rx="2" fill="#3b6fd8"/>
+<rect x="596.5" y="135.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="489.5" y="153.5" width="13" height="13" rx="2" fill="#3b6fd8"/>
+<rect x="506.5" y="155.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="519.5" y="153.5" width="13" height="13" rx="2" fill="#e0453a"/>
+<rect x="536.5" y="155.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="549.5" y="153.5" width="13" height="13" rx="2" fill="#3b6fd8"/>
+<rect x="566.5" y="155.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="579.5" y="153.5" width="13" height="13" rx="2" fill="#e0453a"/>
+<rect x="596.5" y="155.5" width="9" height="9" rx="2" fill="#3cb44b"/>
+<rect x="488" y="50" width="120" height="120" fill="none" stroke="#4c6070"/>
+<text x="704" y="24" font-size="14" fill="#183247" font-weight="700" text-anchor="middle">Color filter</text>
+<text x="704" y="42" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">over gray electronic ink</text>
+<rect x="644" y="50" width="120" height="120" fill="#111820"/>
+<rect x="644" y="50" width="29" height="29" fill="#deb4b4"/>
+<rect x="674" y="50" width="29" height="29" fill="#718571"/>
+<rect x="704" y="50" width="29" height="29" fill="#b4bcde"/>
+<rect x="734" y="50" width="29" height="29" fill="#453838"/>
+<rect x="644" y="80" width="29" height="29" fill="#b4d4b4"/>
+<rect x="674" y="80" width="29" height="29" fill="#8e94ae"/>
+<rect x="704" y="80" width="29" height="29" fill="#deb4b4"/>
+<rect x="734" y="80" width="29" height="29" fill="#718571"/>
+<rect x="644" y="110" width="29" height="29" fill="#b4bcde"/>
+<rect x="674" y="110" width="29" height="29" fill="#453838"/>
+<rect x="704" y="110" width="29" height="29" fill="#b4d4b4"/>
+<rect x="734" y="110" width="29" height="29" fill="#8e94ae"/>
+<rect x="644" y="140" width="29" height="29" fill="#deb4b4"/>
+<rect x="674" y="140" width="29" height="29" fill="#718571"/>
+<rect x="704" y="140" width="29" height="29" fill="#b4bcde"/>
+<rect x="734" y="140" width="29" height="29" fill="#453838"/>
+<rect x="644" y="50" width="120" height="120" fill="none" stroke="#4c6070"/>
+<text x="400" y="210" font-size="13" fill="#4c6070" font-weight="400" text-anchor="middle">Each display builds color from small red, green and blue elements; the eye averages them when they are fine enough.</text>
+<text x="400" y="232" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">Schematic patterns, not to scale.</text>
+</svg>

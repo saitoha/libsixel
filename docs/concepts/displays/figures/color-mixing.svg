@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="497.358956pt" height="169.09865pt" viewBox="0 0 497.358956 169.09865" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 169.09865 
+L 497.358956 169.09865 
+L 497.358956 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 10.8 133.422712 
+L 118.304587 133.422712 
+L 118.304587 25.918125 
+L 10.8 25.918125 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g clip-path="url(#p8990622758)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAFpElEQVR4nO3d23LTShBAUSnF//+yqBRQUIlp27pNT/daj3AA92i2Rj6BeN22bVuAhz4e/zAgEHjCCQIBgUBAIBAQCAQEAgGBQEAgEBAIBAQCAYFAQCAQEAgEBAIBgUBAIBAQCAQEAoEf0U9yjXXnr/PNA+4nkKQxvPp7ieZaAkkcxJ4/TzDnEsiEUbz6WsRynECKhBG9PqHsJ5CCYXwllP0EUjiMr4TyPoE0COMrobzOFwqbxdFltrM4QZpvHqdJzAnSOI7uM7/CCfKP7pvEafKdE+S37nH8y1r8JRAb4iGR/NI+EBvh/9bg57poHYgNYI2eaRuIOKzVK1oGIg5r9qp2gYjD2r2jVSDisIbvahUIvKtNIE4Pa7lHi0DEYU33ahEI7FU+EKeHtT2idCDisMZHlQ4EjiobiNPDWp+hbCBwhpKBOD2s+VlKBgJnKReI08Pan6lcIHCmUoE4PcZbl1pKBQJnEwh0CKTa0T6zdamjTCBwBYFAQCBQPZBKz7xVrEsNJQKBqwgEAgKBgECgciBV3gxWtC7zmz4QuJJAICAQCAgEAj4G+si7yW2ZRPkBL9MvkPXi32v4nio/4K3qB7IO/vMu30/lBxyqZiBr0tdy2l4qP2AatQLJtG+i17d7H5UfMJ0agWTfN4f3UfkB05o7kNn2zdv7qPyA6c0ZyOz75uk+Kj/gNOb7QmG1vfNttvIDTuXH7Gu7Tbnsj6yz32y/eTzCXAPOcYLUKOC9ATvOnFDuE2SONbxuwLlutjvkHzDvCdI9jp3/6ZzWJaucgeRdr3EDWpMh8gWyYyPkPaBP3ukTRbIVGTBXIPnWJ9+A1qhpIC68tUq4GXIEkmc95hnQmjUJ5KQLnfd9yIU7OWkkW6EBxwYyfv75B7SGxU8QSGxcIBfc+XI9Zt14a090imzFBhwTSKILWmZAa3qJco9YuU6RXralnvsDcaezthNtno+K8427kyWof9BL2IoOWO4RC+YM5OY729bx9PjDWp/GCQLDA/FcfD/v905R/gSp+L8es9iW+j46PZq3GzDxS5tlwPInSJc73d22pYePLnewan9H6GX+ztshLU4Q2KtVIF0eC660Lb1cF0jSp49K/9rtZf7V5m6tTpCud8EzbEtPLQPpfMH32Ja+2gbS/cK/alt6uyaQiR7Pq3wHwKd8x8pdWp8gf3S/Sz5iTX4RyG82xF/WYpbPBxm0MSZ8gDqFML5zgjzQcaN0nHlMIGudDRN/xt6E1nfmnNH518YJ8kSdzdNrtrN4D9LwvYkwXieQRqEI430CaRCKMPYTSOFQhHGcQE7eiKNjEcW5BHKyrxv06mAEcS2BDNjAe6MRw/0EMoCNPg9fKISAQCAgEAgIBG4NpPw70IkHnPiljxrQCQIBgUBAIBAQCNweiDeD+bgmuzhBICAQCAgEhgTimTcP12I3JwgEBALDAnG0j+caHOIEgaGBuIONY+0Pc4LA8EDcye5nzU/hBIEUgbij3cdan8YJAmkCcWezxpNtovtPEJFY24k2j0csSBeIU8SaTrJpxp0gIrGWE2wWj1iQNhCniDVMvknGnyAisXaJN8f4QHKsw3wDWrNGgXxywa1Vws2QJ5Bc65J3QGvUOJBPNoC1SSRfIJ9EYk2SyBnIJ5FYiwRyfwz0dvCDxdN7MqCbxHB5T5DuG6XjzAnlPkE6niZb2QGnCmOuE2Te9d0xW/kBpzLPCVL5NNnaDTiNOQOpso+e7pvyA6Y3dyCz7qO39035AdOqEcgs++jwvik/YDq1Anl0ndaKe6b8gGnUDCS6fmu1/VJ+wKHqB/LK9V0r7ZXyA96qXyAt90H5AS8z3xcK4UYCgYBAICAQCAgEAgKBgEAgIBAICAQCAoGAQCAgEAgIBAICgYBAICAQCAgEAgKBgEAgIBAICAQCAoGAQCAgEAgIBJb/+wmHqdzVRMyBMQAAAABJRU5ErkJggg==" id="imageac38da9b15" transform="matrix(0.537523 0 0 0.537523 10.8 25.918125)" style="image-rendering:crisp-edges;image-rendering:pixelated" width="200" height="200"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="text_1">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Arial', sans-serif; fill: #4c6070" transform="translate(21.4187 145.02115)">inks absorb light:</text>
+     <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Arial', sans-serif; fill: #4c6070" transform="translate(26.995262 156.218962)">print, slide film</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2"/>
+   <g id="patch_3">
+    <path d="M 10.8 133.422712 
+L 10.8 25.918125 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 118.304587 133.422712 
+L 118.304587 25.918125 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 10.8 133.422712 
+L 118.304587 133.422712 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 10.8 25.918125 
+L 118.304587 25.918125 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_2">
+    <text style="font-weight: 700; font-size: 12px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: middle; fill: #183247" x="64.552294" y="19.918125" transform="rotate(-0 64.552294 19.918125)">Subtractive</text>
+   </g>
+  </g>
+  <g id="axes_2">
+   <g id="patch_7">
+    <path d="M 131.205138 133.422712 
+L 238.709725 133.422712 
+L 238.709725 25.918125 
+L 131.205138 25.918125 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g clip-path="url(#p58a8e8592c)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAFnklEQVR4nO3d0U7bQBBAURv1/3/ZFaIIlIYhcWzv7Mw5j6VqPZu9XqdQWJdl2Rbgrrf7vwwIBH7hBIGAQCAgEAgIBAICgYBAICAQCAgEAgKBgEAgIBAICAQCAoGAQCAgEAgIBAICgcCf6IOcY+83AVgPvg4eW3PftOFEZy+uaM4lkIONvtsI5lgCKRDFT8TyOoEUDOOWUPYTSOEwbgnleQJpEMYtoTxOII3CuCWU3/lEYdM4qs92FCfID7ptHqfJfU6QO7rF0XXmRzhBvrFJvjYFH5wg/4jji7X4IhAb4i6RfGgfiI3wsy34WBetA7EBrNFv2gYiDmv1iJaBiMOaPapdIOKwds9oFYg4rOGzWgUCz2oTiNPDWu7RIhBxWNO9WgQCe5UPxOlhbV9ROhBxWONXlQ4EXlU2EKeHtT5C2UDgCCUDcXpY86OUDASOUi4Qp4e1P1K5QOBIpQJxeoy3LbWUCgSOJhDoEEi1o31m21JHmUDgDAKBgECgeiCVnnmr2JYaSgQCZxEIBAQCAYFA5UCqvBmsaFvmN30gcCaBQEAgEBAIBP5EH2xjq/7zkssPeJp+gWwn/1nD91T5AS9VP5Bt8N93+n4qP+BQNQPZkl7LYXup/IBp1Aok076Jrm/3Pio/YDo1Asm+b17eR+UHTGvuQGbbN0/vo/IDpjdnILPvm1/3UfkBpzHfJwqr7Z3/Zis/4FTWaa46uMo5BvjNzRTz3Wz/E48wx4BznCA1CnhuwI4zJ5T7Pcgca3jegPM+uj8o/4B5T5Ducez8rXPalqxyBpJ3vcYNaE2GyBfIjo2Q94A+eKdPFMlaZMBcgeRbn3wDWqOmgXjhrVXCzZAjkDzrMc+A1qxJIAe90Hnfh5y4k5NGshYacGwg4+eff0BrWPwEgcTGBXLCnS/XY9aFt/ZEp8habMAxgSR6QcsMaE1PUe4RK9cp0su61HN9IO501naizfNWcb5xd7IE9Q+6hLXogOUesWDOQC6+s60dT49P1vowThAYHojn4ut5v3eI8idIxX96zGJd6nvr9GjebsDElzbLgOVPkC53uqutSw9vXe5g1b5G6GG+5u0lLU4Q2KtVIF0eC860Lr2cF0jSp49K/9vtYf7X5m6tTpCud8EjrEtPLQPp/ILvsS59tQ2k+wv/qHXp7ZxAJno8r/IdAH/lO1bu0voE+dT9LnmPNfkgkH9siC/WYpafDzJoY0z4AHUIYfzPCXJHx43SceYxP6Ow2O13qzbgWj2M9dA/zQly6XLnUnm2o3gP0vC9iTAeJ5BGoQjjeQJpEIow9hNI4VCE8TqBHLwRR8ciimMJ5GC3G/TsYARxLoEM2MB7oxHD9QQygI0+D58ohIBAICAQCAgELg2k/DvQiQec+NJHDegEgYBAICAQCAgELg/Em8F8vCa7OEEgIBAICASGBOKZNw+vxW5OEAgIBIYF4mgfz2vwEicIDA3EHWwca/8yJwgMD8Sd7HrW/BBOEEgRiDvadaz1YZwgkCYQdzZrPNkmuv4EEYm1nWjzeMSCdIE4RazpJJtm3AkiEms5wWbxiAVpA3GKWMPkm2T8CSISa5d4c4wPJMc6zDegNWsUyDsvuLVKuBnyBJJrXfIOaI0aB/LOBrA2ieQL5J1IrEkSOQN5JxJrkWQbnv2z7l+X/wrPGdBNYri8J0j3jdJx5oTmOEG+m+tqn7eWH3CZyRwnyLzru2O28gNOZb4T5Lt5r/zBfVN+wPTmDuTTVn3flB8wrRqBfNqq75vyA6ZTK5BPW/V9U37ANGoG8t1Wfc+UH3Co+oHc2qrvl/IDXqpfIPds1fdK+QFPIxAo9YlCuJBAICAQCAgEAgKBgEAgIBAICAQCAoGAQCAgEAgIBAICgYBAICAQCAgEAgKBgEAgIBAICAQCAoGAQCAgEAgIBAICgeVnfwGJAN2GVC+fewAAAABJRU5ErkJggg==" id="imagea21aed878b" transform="matrix(0.537523 0 0 0.537523 131.205138 25.918125)" style="image-rendering:crisp-edges;image-rendering:pixelated" width="200" height="200"/>
+   </g>
+   <g id="matplotlib.axis_3">
+    <g id="text_3">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Arial', sans-serif; fill: #4c6070" transform="translate(150.653525 145.02115)">lights add up:</text>
+     <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Arial', sans-serif; fill: #4c6070" transform="translate(128.6129 156.218962)">overlapping projectors</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_4"/>
+   <g id="patch_8">
+    <path d="M 131.205138 133.422712 
+L 131.205138 25.918125 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 238.709725 133.422712 
+L 238.709725 25.918125 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 131.205138 133.422712 
+L 238.709725 133.422712 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 131.205138 25.918125 
+L 238.709725 25.918125 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_4">
+    <text style="font-weight: 700; font-size: 12px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: middle; fill: #183247" x="184.957431" y="19.918125" transform="rotate(-0 184.957431 19.918125)">Additive</text>
+   </g>
+  </g>
+  <g id="axes_3">
+   <g id="patch_12">
+    <path d="M 251.610275 133.422712 
+L 359.114862 133.422712 
+L 359.114862 25.918125 
+L 251.610275 25.918125 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g clip-path="url(#p4d86a6b0a3)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAACOUlEQVR4nO3XMQ7CMBAAwTPiCfz/hfwhiAIK5Cw9zFRWbLmIsjplzcwxwNZl/xgQCHxhgkC4zuYnZL0WpxtPt4/N+3vlPu/vV74XEwSCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEgkAgCASCQCAIBIJAIAgEwpqZow7APzNBIAgEgkBgzj0A1tkhj8Kk9fAAAAAASUVORK5CYII=" id="image39bb05afb9" transform="matrix(0.537523 0 0 0.537523 251.610275 25.918125)" style="image-rendering:crisp-edges;image-rendering:pixelated" width="200" height="200"/>
+   </g>
+   <g id="matplotlib.axis_5">
+    <g id="text_5">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Arial', sans-serif; fill: #4c6070" transform="translate(245.171163 145.02115)">red and green subpixels</text>
+     <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Arial', sans-serif; fill: #4c6070" transform="translate(252.653194 156.218962)">look yellow from afar</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_6"/>
+   <g id="patch_13">
+    <path d="M 251.610275 133.422712 
+L 251.610275 25.918125 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_14">
+    <path d="M 359.114862 133.422712 
+L 359.114862 25.918125 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_15">
+    <path d="M 251.610275 133.422712 
+L 359.114862 133.422712 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_16">
+    <path d="M 251.610275 25.918125 
+L 359.114862 25.918125 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_6">
+    <text style="font-weight: 700; font-size: 12px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: middle; fill: #183247" x="305.362569" y="19.918125" transform="rotate(-0 305.362569 19.918125)">Spatial additive</text>
+   </g>
+  </g>
+  <g id="axes_4">
+   <g id="patch_17">
+    <path d="M 372.015413 133.422712 
+L 479.52 133.422712 
+L 479.52 25.918125 
+L 372.015413 25.918125 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g clip-path="url(#pb84af8bc7e)">
+    <image xlink:href="data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAACG0lEQVR4nO3TsQnAMBAEwZf771nOLBB4K5iJLj7YtWf2MMsLhzM+z5nATSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQCQSAQBAJBIBAEAkEgEAQC8+8FG4QFjogWkbsAAAAASUVORK5CYII=" id="imageb6b1c61986" transform="matrix(0.537523 0 0 0.537523 372.015413 25.918125)" style="image-rendering:crisp-edges;image-rendering:pixelated" width="200" height="200"/>
+   </g>
+   <g id="matplotlib.axis_7">
+    <g id="text_7">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Arial', sans-serif; fill: #4c6070" transform="translate(367.968488 145.02115)">red, green, blue in turn</text>
+     <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Arial', sans-serif; fill: #4c6070" transform="translate(387.167706 156.218962)">look white: DLP</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_8"/>
+   <g id="patch_18">
+    <path d="M 372.015413 133.422712 
+L 372.015413 25.918125 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_19">
+    <path d="M 479.52 133.422712 
+L 479.52 25.918125 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_20">
+    <path d="M 372.015413 133.422712 
+L 479.52 133.422712 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_21">
+    <path d="M 372.015413 25.918125 
+L 479.52 25.918125 
+" style="fill: none; stroke: #d9e1e7; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 10px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: middle; fill: #ffffff" x="426.036468" y="129.461694" transform="rotate(-0 426.036468 129.461694)">time →</text>
+   </g>
+   <g id="text_9">
+    <text style="font-weight: 700; font-size: 12px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: middle; fill: #183247" x="425.767706" y="19.918125" transform="rotate(-0 425.767706 19.918125)">Temporal additive</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p8990622758">
+   <rect x="10.8" y="25.918125" width="107.504587" height="107.504587"/>
+  </clipPath>
+  <clipPath id="p58a8e8592c">
+   <rect x="131.205138" y="25.918125" width="107.504587" height="107.504587"/>
+  </clipPath>
+  <clipPath id="p4d86a6b0a3">
+   <rect x="251.610275" y="25.918125" width="107.504587" height="107.504587"/>
+  </clipPath>
+  <clipPath id="pb84af8bc7e">
+   <rect x="372.015413" y="25.918125" width="107.504587" height="107.504587"/>
+  </clipPath>
+ </defs>
+</svg>

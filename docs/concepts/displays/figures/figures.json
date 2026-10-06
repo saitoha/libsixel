@@ -1,0 +1,553 @@
+{
+  "generator": "tools/plot_display_concept_figures.py",
+  "plot_dependency": "matplotlib 3.10, numpy, Pillow",
+  "timeline": [
+    {
+      "year": 1881,
+      "family": "print",
+      "event": "Halftone printing",
+      "detail": "tones made of dots of varying size"
+    },
+    {
+      "year": 1897,
+      "family": "crt",
+      "event": "Braun tube",
+      "detail": "the first cathode-ray tube display"
+    },
+    {
+      "year": 1907,
+      "family": "print",
+      "event": "Autochrome",
+      "detail": "additive color from a mosaic of dyed starch grains"
+    },
+    {
+      "year": 1935,
+      "family": "print",
+      "event": "Kodachrome",
+      "detail": "subtractive color slide film"
+    },
+    {
+      "year": 1954,
+      "family": "crt",
+      "event": "RCA CT-100",
+      "detail": "mass-produced shadow-mask color television"
+    },
+    {
+      "year": 1964,
+      "family": "emissive",
+      "event": "Plasma panel",
+      "detail": "built for the PLATO system"
+    },
+    {
+      "year": 1968,
+      "family": "lcd",
+      "event": "Liquid crystal display",
+      "detail": "dynamic scattering, RCA"
+    },
+    {
+      "year": 1968,
+      "family": "crt",
+      "event": "Sony Trinitron",
+      "detail": "aperture grille and phosphor stripes"
+    },
+    {
+      "year": 1971,
+      "family": "lcd",
+      "event": "Twisted nematic LCD",
+      "detail": "the basis of practical LCDs"
+    },
+    {
+      "year": 1974,
+      "family": "epaper",
+      "event": "Gyricon",
+      "detail": "rotating two-color beads, Xerox PARC"
+    },
+    {
+      "year": 1987,
+      "family": "emissive",
+      "event": "Organic LED",
+      "detail": "Tang and VanSlyke, Kodak"
+    },
+    {
+      "year": 1987,
+      "family": "projection",
+      "event": "Digital micromirror device",
+      "detail": "Hornbeck, Texas Instruments"
+    },
+    {
+      "year": 1989,
+      "family": "projection",
+      "event": "Epson 3LCD projector",
+      "detail": "three LCD panels, one per primary"
+    },
+    {
+      "year": 1996,
+      "family": "lcd",
+      "event": "IPS LCD",
+      "detail": "wide viewing angles, Hitachi"
+    },
+    {
+      "year": 1997,
+      "family": "emissive",
+      "event": "42-inch plasma TV",
+      "detail": "Fujitsu, 852 × 480"
+    },
+    {
+      "year": 1997,
+      "family": "projection",
+      "event": "First DLP projector",
+      "detail": "color wheel and one mirror chip"
+    },
+    {
+      "year": 1998,
+      "family": "epaper",
+      "event": "Electrophoretic ink",
+      "detail": "microcapsules of charged pigment, E Ink"
+    },
+    {
+      "year": 2000,
+      "family": "emissive",
+      "event": "MicroLED",
+      "detail": "Jiang and Lin, Kansas State University"
+    },
+    {
+      "year": 2001,
+      "family": "density",
+      "event": "IBM T220/T221",
+      "detail": "3840 × 2400 at 204 ppi"
+    },
+    {
+      "year": 2004,
+      "family": "lcd",
+      "event": "LCD monitors outsell CRTs",
+      "detail": "fixed native resolution"
+    },
+    {
+      "year": 2004,
+      "family": "epaper",
+      "event": "Sony Librie",
+      "detail": "first E Ink e-reader"
+    },
+    {
+      "year": 2007,
+      "family": "epaper",
+      "event": "Amazon Kindle",
+      "detail": "four gray levels"
+    },
+    {
+      "year": 2007,
+      "family": "emissive",
+      "event": "Sony XEL-1",
+      "detail": "first OLED television"
+    },
+    {
+      "year": 2009,
+      "family": "density",
+      "event": "16:9 notebook panels",
+      "detail": "1366 × 768 replaces taller screens"
+    },
+    {
+      "year": 2010,
+      "family": "density",
+      "event": "iPhone 4 \"Retina\"",
+      "detail": "326 ppi"
+    },
+    {
+      "year": 2010,
+      "family": "crt",
+      "event": "SED abandoned",
+      "detail": "flat panel of tiny electron emitters"
+    },
+    {
+      "year": 2012,
+      "family": "density",
+      "event": "Retina MacBook Pro",
+      "detail": "2880 × 1800 at 220 ppi"
+    },
+    {
+      "year": 2022,
+      "family": "epaper",
+      "event": "Kaleido 3, Gallery 3",
+      "detail": "color filters; four-pigment ink"
+    },
+    {
+      "year": 2023,
+      "family": "epaper",
+      "event": "Spectra 6",
+      "detail": "six-color pigment signage"
+    }
+  ],
+  "pixel_density": {
+    "formula": "ppd = distance * tan(1 degree) * ppi; cpd = ppd / 2",
+    "note": "CRT entries use the addressable resolution and the viewable diagonal; the phosphor pitch limits real sharpness.",
+    "displays": [
+      {
+        "year": 1987,
+        "family": "crt",
+        "label": "14\" VGA CRT",
+        "diagonal_in": 13.0,
+        "pixels": [
+          640,
+          480
+        ],
+        "distance_cm": 60,
+        "ppi": 61.5,
+        "ppd": 25.4,
+        "cpd": 12.7
+      },
+      {
+        "year": 1995,
+        "family": "crt",
+        "label": "17\" CRT 1024 × 768",
+        "diagonal_in": 16.0,
+        "pixels": [
+          1024,
+          768
+        ],
+        "distance_cm": 60,
+        "ppi": 80.0,
+        "ppd": 33.0,
+        "cpd": 16.5
+      },
+      {
+        "year": 1999,
+        "family": "crt",
+        "label": "21\" CRT 1600 × 1200",
+        "diagonal_in": 20.0,
+        "pixels": [
+          1600,
+          1200
+        ],
+        "distance_cm": 60,
+        "ppi": 100.0,
+        "ppd": 41.2,
+        "cpd": 20.6
+      },
+      {
+        "year": 2001,
+        "family": "lcd",
+        "label": "15\" LCD 1024 × 768",
+        "diagonal_in": 15.0,
+        "pixels": [
+          1024,
+          768
+        ],
+        "distance_cm": 60,
+        "ppi": 85.3,
+        "ppd": 35.2,
+        "cpd": 17.6
+      },
+      {
+        "year": 2003,
+        "family": "lcd",
+        "label": "17\" LCD 1280 × 1024",
+        "diagonal_in": 17.0,
+        "pixels": [
+          1280,
+          1024
+        ],
+        "distance_cm": 60,
+        "ppi": 96.4,
+        "ppd": 39.8,
+        "cpd": 19.9
+      },
+      {
+        "year": 2005,
+        "family": "lcd",
+        "label": "19\" LCD 1280 × 1024",
+        "diagonal_in": 19.0,
+        "pixels": [
+          1280,
+          1024
+        ],
+        "distance_cm": 60,
+        "ppi": 86.3,
+        "ppd": 35.6,
+        "cpd": 17.8
+      },
+      {
+        "year": 2009,
+        "family": "lcd",
+        "label": "21.5\" LCD 1920 × 1080",
+        "diagonal_in": 21.5,
+        "pixels": [
+          1920,
+          1080
+        ],
+        "distance_cm": 60,
+        "ppi": 102.5,
+        "ppd": 42.2,
+        "cpd": 21.1
+      },
+      {
+        "year": 2001,
+        "family": "density",
+        "label": "IBM T221",
+        "diagonal_in": 22.2,
+        "pixels": [
+          3840,
+          2400
+        ],
+        "distance_cm": 60,
+        "ppi": 204.0,
+        "ppd": 84.1,
+        "cpd": 42.1
+      },
+      {
+        "year": 2014,
+        "family": "density",
+        "label": "27\" 5K",
+        "diagonal_in": 27.0,
+        "pixels": [
+          5120,
+          2880
+        ],
+        "distance_cm": 60,
+        "ppi": 217.6,
+        "ppd": 89.7,
+        "cpd": 44.9
+      },
+      {
+        "year": 2006,
+        "family": "lcd",
+        "label": "15\" notebook 1600 × 1200",
+        "diagonal_in": 15.0,
+        "pixels": [
+          1600,
+          1200
+        ],
+        "distance_cm": 50,
+        "ppi": 133.3,
+        "ppd": 45.8,
+        "cpd": 22.9
+      },
+      {
+        "year": 2009,
+        "family": "lcd",
+        "label": "15.6\" notebook 1366 × 768",
+        "diagonal_in": 15.6,
+        "pixels": [
+          1366,
+          768
+        ],
+        "distance_cm": 50,
+        "ppi": 100.5,
+        "ppd": 34.5,
+        "cpd": 17.3
+      },
+      {
+        "year": 2012,
+        "family": "density",
+        "label": "15.4\" Retina notebook",
+        "diagonal_in": 15.4,
+        "pixels": [
+          2880,
+          1800
+        ],
+        "distance_cm": 50,
+        "ppi": 220.5,
+        "ppd": 75.8,
+        "cpd": 37.9
+      },
+      {
+        "year": 2007,
+        "family": "emissive",
+        "label": "iPhone",
+        "diagonal_in": 3.5,
+        "pixels": [
+          320,
+          480
+        ],
+        "distance_cm": 30,
+        "ppi": 164.8,
+        "ppd": 34.0,
+        "cpd": 17.0
+      },
+      {
+        "year": 2010,
+        "family": "emissive",
+        "label": "iPhone 4",
+        "diagonal_in": 3.5,
+        "pixels": [
+          640,
+          960
+        ],
+        "distance_cm": 30,
+        "ppi": 329.7,
+        "ppd": 68.0,
+        "cpd": 34.0
+      },
+      {
+        "year": 2017,
+        "family": "emissive",
+        "label": "iPhone X",
+        "diagonal_in": 5.8,
+        "pixels": [
+          1125,
+          2436
+        ],
+        "distance_cm": 30,
+        "ppi": 462.6,
+        "ppd": 95.4,
+        "cpd": 47.7
+      },
+      {
+        "year": 2007,
+        "family": "epaper",
+        "label": "Kindle",
+        "diagonal_in": 6.0,
+        "pixels": [
+          600,
+          800
+        ],
+        "distance_cm": 35,
+        "ppi": 166.7,
+        "ppd": 40.1,
+        "cpd": 20.0
+      },
+      {
+        "year": 2015,
+        "family": "epaper",
+        "label": "Kindle Paperwhite",
+        "diagonal_in": 6.0,
+        "pixels": [
+          1072,
+          1448
+        ],
+        "distance_cm": 35,
+        "ppi": 300.3,
+        "ppd": 72.2,
+        "cpd": 36.1
+      }
+    ]
+  },
+  "ambient_light_assumptions": {
+    "emissive_white_cd_m2": 300,
+    "lcd_native_contrast": 1000,
+    "oled_black_cd_m2": 0.0005,
+    "screen_reflectance": 0.02,
+    "epaper_white_reflectance": 0.4,
+    "epaper_black_reflectance": 0.03,
+    "print_white_reflectance": 0.85,
+    "print_black_reflectance": 0.03
+  },
+  "epaper_palettes": {
+    "source": "images/snake.png at 240 x 180",
+    "dither": "Pillow Floyd-Steinberg",
+    "gray_levels": 16,
+    "six_inks_idealized_srgb": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        255,
+        255,
+        255
+      ],
+      [
+        255,
+        0,
+        0
+      ],
+      [
+        255,
+        255,
+        0
+      ],
+      [
+        0,
+        0,
+        255
+      ],
+      [
+        0,
+        255,
+        0
+      ]
+    ],
+    "adaptive_16_snapped_to_4_bits": [
+      [
+        187,
+        170,
+        68
+      ],
+      [
+        153,
+        153,
+        51
+      ],
+      [
+        153,
+        136,
+        85
+      ],
+      [
+        136,
+        136,
+        85
+      ],
+      [
+        136,
+        119,
+        85
+      ],
+      [
+        136,
+        119,
+        68
+      ],
+      [
+        119,
+        102,
+        85
+      ],
+      [
+        119,
+        119,
+        51
+      ],
+      [
+        119,
+        102,
+        68
+      ],
+      [
+        119,
+        102,
+        34
+      ],
+      [
+        102,
+        85,
+        51
+      ],
+      [
+        102,
+        85,
+        34
+      ],
+      [
+        102,
+        85,
+        34
+      ],
+      [
+        85,
+        68,
+        17
+      ],
+      [
+        68,
+        51,
+        0
+      ],
+      [
+        34,
+        34,
+        17
+      ]
+    ]
+  }
+}

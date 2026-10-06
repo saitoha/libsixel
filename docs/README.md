@@ -33,7 +33,7 @@ Supported platforms and command-line behavior that needs no background in color 
 
 ## Concepts and theory
 
-The foundations the rest of the documentation builds on, in reading order: how vision works, how colors are represented as numbers, how color differences are judged, how pixels and precision are stored, and how images are drawn with a limited palette.
+The foundations the rest of the documentation builds on, in reading order: how vision works, how colors are represented as numbers, how color differences are judged, how pixels and precision are stored, how displays turn them into light, and how images are drawn with a limited palette.
 
 ### Visual perception
 
@@ -53,6 +53,10 @@ The foundations the rest of the documentation builds on, in reading order: how v
 
 - [Pixel formats and alpha representation](concepts/pixelformat.md) separates input memory layouts, frame storage, alpha-zero metadata, and what can be represented in a SIXEL stream.
 - [Pixel-format precision](concepts/pixelformat-precision/README.md) explains the `RGB888` and typed float32 storage contracts, implicit promotion by resize, CMS, and color-space conversion, memory cost, and measured resize quality.
+
+### Display technologies
+
+- [Display technologies](concepts/displays/README.md) follows displays from halftone printing, color film and slides through cathode-ray tubes, plasma, LCD, OLED, microLED and projectors to electronic paper, and compares emissive, transmissive and reflective light, subtractive, spatial and temporal color mixing, pixels per degree from the CRT era through the 2000s step back to Retina displays, and why electronic paper makes small palettes and dithering important again.
 
 ### Palettes and dithering
 

@@ -22,6 +22,7 @@ docs/concepts/color-management/README.md	explanation	user
 docs/concepts/colorspace/README.md	explanation	user	
 docs/concepts/clustering/README.md	explanation	both	
 docs/concepts/dithering/README.md	explanation	both	
+docs/concepts/displays/README.md	explanation	both	
 docs/concepts/palettes/README.md	explanation	both	
 docs/concepts/din99d/README.md	explanation	user	color-distance intuition + measured reference and reproduction how-to
 docs/concepts/pixelformat-precision/README.md	explanation	both	storage model + numeric contracts and large contributor test ledger

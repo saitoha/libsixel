@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="270" viewBox="0 0 780 270" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Emissive, transmissive and reflective displays</title>
+<desc id="desc">Three diagrams. An emissive pixel sends its own light to the eye. A transmissive display filters light from a backlight. A reflective surface returns part of the room light.</desc>
+<rect x="0" y="0" width="780" height="270" fill="#ffffff"/>
+<text x="130" y="28" font-size="16" fill="#183247" font-weight="700" text-anchor="middle">Emissive</text>
+<text x="130" y="48" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">CRT, plasma, OLED, LED</text>
+<rect x="60" y="80" width="22" height="120" fill="#e9eef2" stroke="#4c6070"/>
+<ellipse cx="220" cy="140" rx="18" ry="11" fill="#ffffff" stroke="#183247" stroke-width="2"/>
+<circle cx="216" cy="140" r="6" fill="#183247"/>
+<circle cx="71" cy="140" r="9" fill="#f2c94c"/>
+<line x1="84" y1="140" x2="196" y2="140" stroke="#d39b00" stroke-width="2.5"/>
+<polygon points="196.0,140.0 186.8,143.9 186.8,136.1" fill="#d39b00"/>
+<text x="130" y="240" font-size="13" fill="#183247" font-weight="400" text-anchor="middle">The pixel itself emits light.</text>
+<text x="390" y="28" font-size="16" fill="#183247" font-weight="700" text-anchor="middle">Transmissive</text>
+<text x="390" y="48" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">LCD, slide film, LCD projector</text>
+<rect x="320" y="80" width="22" height="120" fill="#e9eef2" stroke="#4c6070"/>
+<ellipse cx="480" cy="140" rx="18" ry="11" fill="#ffffff" stroke="#183247" stroke-width="2"/>
+<circle cx="476" cy="140" r="6" fill="#183247"/>
+<rect x="282" y="80" width="14" height="120" fill="#f2c94c"/>
+<text x="289" y="216" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">backlight</text>
+<line x1="298" y1="140" x2="318" y2="140" stroke="#d39b00" stroke-width="2.5"/>
+<polygon points="318.0,140.0 308.8,143.9 308.8,136.1" fill="#d39b00"/>
+<line x1="344" y1="140" x2="456" y2="140" stroke="#b5651d" stroke-width="2.5"/>
+<polygon points="456.0,140.0 446.8,143.9 446.8,136.1" fill="#b5651d"/>
+<text x="390" y="240" font-size="13" fill="#183247" font-weight="400" text-anchor="middle">A backlight shines through a filter.</text>
+<text x="650" y="28" font-size="16" fill="#183247" font-weight="700" text-anchor="middle">Reflective</text>
+<text x="650" y="48" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">Print, electronic paper</text>
+<rect x="580" y="80" width="22" height="120" fill="#e9eef2" stroke="#4c6070"/>
+<ellipse cx="740" cy="140" rx="18" ry="11" fill="#ffffff" stroke="#183247" stroke-width="2"/>
+<circle cx="736" cy="140" r="6" fill="#183247"/>
+<circle cx="700" cy="80" r="12" fill="#f2c94c"/>
+<text x="700" y="112" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">room light</text>
+<line x1="688" y1="88" x2="606" y2="128" stroke="#d39b00" stroke-width="2.5" stroke-dasharray="6 4"/>
+<polygon points="606.0,128.0 612.6,120.5 616.0,127.5" fill="#d39b00"/>
+<line x1="606" y1="150" x2="716" y2="146" stroke="#b5651d" stroke-width="2.5"/>
+<polygon points="716.0,146.0 706.9,150.2 706.7,142.4" fill="#b5651d"/>
+<text x="650" y="240" font-size="13" fill="#183247" font-weight="400" text-anchor="middle">Room light bounces off the surface.</text>
+</svg>
