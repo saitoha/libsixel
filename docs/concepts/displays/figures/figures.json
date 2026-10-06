@@ -500,6 +500,86 @@
         "cpd": 17.3
       },
       {
+        "year": 2015,
+        "family": "mainstream",
+        "label": "15.6\" HD notebook",
+        "kind": "panel",
+        "distance_cm": 50,
+        "diagonal_in": 15.6,
+        "pixels": [
+          1366,
+          768
+        ],
+        "ppi": 100.5,
+        "ppd": 34.5,
+        "ppd_low": 34.5,
+        "cpd": 17.3
+      },
+      {
+        "year": 2018,
+        "family": "mainstream",
+        "label": "24\" 1080p monitor",
+        "kind": "panel",
+        "distance_cm": 60,
+        "diagonal_in": 24.0,
+        "pixels": [
+          1920,
+          1080
+        ],
+        "ppi": 91.8,
+        "ppd": 37.8,
+        "ppd_low": 37.8,
+        "cpd": 18.9
+      },
+      {
+        "year": 2020,
+        "family": "mainstream",
+        "label": "15.6\" 1080p notebook",
+        "kind": "panel",
+        "distance_cm": 50,
+        "diagonal_in": 15.6,
+        "pixels": [
+          1920,
+          1080
+        ],
+        "ppi": 141.2,
+        "ppd": 48.5,
+        "ppd_low": 48.5,
+        "cpd": 24.3
+      },
+      {
+        "year": 2022,
+        "family": "mainstream",
+        "label": "27\" 1080p monitor",
+        "kind": "panel",
+        "distance_cm": 60,
+        "diagonal_in": 27.0,
+        "pixels": [
+          1920,
+          1080
+        ],
+        "ppi": 81.6,
+        "ppd": 33.6,
+        "ppd_low": 33.6,
+        "cpd": 16.8
+      },
+      {
+        "year": 2024,
+        "family": "mainstream",
+        "label": "14\" 1080p notebook",
+        "kind": "panel",
+        "distance_cm": 50,
+        "diagonal_in": 14.0,
+        "pixels": [
+          1920,
+          1080
+        ],
+        "ppi": 157.4,
+        "ppd": 54.1,
+        "ppd_low": 54.1,
+        "cpd": 27.0
+      },
+      {
         "year": 2001,
         "family": "density",
         "label": "IBM T221",
