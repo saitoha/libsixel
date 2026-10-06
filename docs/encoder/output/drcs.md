@@ -135,7 +135,8 @@ The native DRCS path excludes preserved alpha-zero masks, `-e`, OR output, nonze
 | Loader choice, `-S`, `-T`, `-l`, `-g` | Loading, frame selection, and host pacing still run. Animated input redefines glyphs and can emit character grids per frame; it does not preload an autonomous terminal animation. Use `-S` for a reusable still image. |
 | Crop/resize, quantization, palette, dithering | Still process the image body before the terminal divides it into cells. DRCS does not remove quantization loss or create vector glyphs. |
 | `-A` / `-B` | Alpha and background processing still matter, but the ordinary SIXEL `P2` header is suppressed. An explicit opaque background with `-Acomposite -B...` gives a simpler baseline than relying on receiver-specific transparent glyph behavior. |
-| `-Z delta` / transparent offsets | The ordinary retained-display-plane `P2=1` contract is not established by DRCS output. The v2 extension specification does not support that preservation meaning. Treat these as unverified combinations, not a supported DRCS optimization. |
+| `-Z delta` | Rejected for all output interpretations. Glyph definitions do not perform retained-display-plane updates; see [delta interactions](delta-encoding.md#execution-paths-and-interactions) for rejection timing and full-output override. |
+| Transparent offsets | The ordinary retained-display-plane `P2=1` contract is not established by DRCS output. The native path excludes nonzero offsets; legacy acceptance does not establish receiver support. |
 | `-O` / high-color output | Separate SIXEL dialect and receiver assumptions remain. In particular, `-O` normally signals OR behavior in the suppressed `P2` header. Acceptance of an option combination is not evidence that the glyph receiver can interpret it. |
 | Multiple images or repeated playback | Each definition starts from the configured charset again. The converter does not preserve earlier images by choosing new slots. |
 

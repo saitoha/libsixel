@@ -990,7 +990,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    requires exact RGB; later keeps compare palette error.\n"
         "    Larger thresholds trade freshness for fewer lookups.\n"
         "    full preserves the source-alpha policy.\n"
-        "    delta conflicts with -e and -O; opaque -b gray1 is supported.\n"
+        "    delta conflicts with -e, -O and -@; -b gray1 is supported.\n"
     },
     {
         'P',
@@ -1150,6 +1150,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    PATH receives display characters, not glyph definitions.\n"
         "    Use \"-\" for stdout; blank/omitted suppresses character output.\n"
         "    Requires /dev/tty pixel geometry; incompatible with -u/-n.\n"
+        "    Conflicts with update-policy=delta: glyph definitions do not\n"
+        "    perform retained-display-plane updates.\n"
     },
     {
         'O',

@@ -1102,7 +1102,7 @@ Diffuse propagates the error from retained RGB; skip omits kept-pixel diffusion.
 Delta requires \fB--alpha-policy=auto\fP or \fBkeep\fP.
 It conflicts with \fB-e\fP, whose unpainted background cannot erase earlier
 foreground pixels. It also conflicts with \fB-O\fP: OR mode's P2=5
-does not carry delta's omitted-pixel preservation. Opaque black-and-white output via \fB-b gray1\fP can
+does not carry delta's omitted-pixel preservation. DRCS output via \fB-@\fP also conflicts because glyph definitions do not update the retained display plane. Opaque black-and-white output via \fB-b gray1\fP can
 paint both colors and remains supported.
 History must match the receiver's display and frame placement.
 .TP 5
@@ -1317,7 +1317,9 @@ charsets for successive images or restore mapping modes afterward.
 .br
 This option requires a controlling \fB/dev/tty\fP reporting both character
 and pixel dimensions via \fBTIOCGWINSZ\fP, even with file output.
-It is incompatible with \fB\-u\fP and \fB\-n\fP.
+It is incompatible with \fB\-u\fP, \fB\-n\fP and \fB-Z delta\fP.
+Delta conflicts are rejected before applying DRCS settings or opening PATH.
+Select \fB-Z full\fP before DRCS to disable delta.
 See \fBdocs/encoder/output/drcs.md\fP for mapping modes, cell layout, and current
 experimental implementation defects.
 .TP 5

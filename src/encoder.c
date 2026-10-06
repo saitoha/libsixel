@@ -6488,6 +6488,20 @@ sixel_encoder_validate_delta_or(int enabled, int ormode)
 }
 
 static SIXELSTATUS
+sixel_encoder_validate_delta_drcs(int enabled, int drcs)
+{
+    /* A glyph definition has no P2=1 retained-display-plane operation.
+     * Missing glyph bits cannot represent keeps from the previous image. */
+    if (enabled && drcs) {
+        sixel_helper_set_additional_message(
+            "update-policy=delta conflicts with -@, --drcs: "
+            "glyph definitions do not preserve destination pixels.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_encoder_validate_alpha_feature_policy(sixel_encoder_t const *encoder)
 {
     SIXELSTATUS status;
@@ -6514,8 +6528,13 @@ sixel_encoder_validate_alpha_feature_policy(sixel_encoder_t const *encoder)
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    return sixel_encoder_validate_delta_or(encoder->sixdelta_enabled,
-                                           encoder->ormode);
+    status = sixel_encoder_validate_delta_or(encoder->sixdelta_enabled,
+                                             encoder->ormode);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    return sixel_encoder_validate_delta_drcs(encoder->sixdelta_enabled,
+                                             encoder->fdrcs);
 }
 
 static SIXELSTATUS
@@ -9110,6 +9129,14 @@ sixel_encoder_encode_frame_internal(
         sixel_encoding_planner_reset_for_frame(planner);
     }
 
+    /* Reject before palette work can query the controlling terminal for
+     * DRCS geometry. The initialized context owns normal failure cleanup. */
+    status = sixel_encoder_validate_delta_drcs(encoder->sixdelta_enabled,
+                                               encoder->fdrcs);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
     /* Resolve packed storage before sampling, geometry or P3 application.
      * Keep unsupported modes on their existing path. Alpha metadata, rather
      * than the output clear/keep request, owns source interpretation. The
@@ -11352,6 +11379,11 @@ sixel_encoder_apply_update_policy_option(
             resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA,
             encoder->ormode);
     }
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_encoder_validate_delta_drcs(
+            resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA,
+            encoder->fdrcs);
+    }
     if (SIXEL_FAILED(status)) {
         sixel_option_free_argument_resolution(&resolution);
         return status;
@@ -11893,7 +11925,11 @@ sixel_encoder_apply_drcs_option(
     long drcs_charset_value;
     unsigned int drcs_charset_limit;
 
-    status = SIXEL_OK;
+    /* Reject before changing glyph settings or opening/truncating PATH. */
+    status = sixel_encoder_validate_delta_drcs(encoder->sixdelta_enabled, 1);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     drcs_arg_delim = NULL;
     drcs_arg_charset = NULL;
     drcs_arg_second_delim = NULL;

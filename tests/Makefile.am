@@ -367,6 +367,15 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0212_DELTA_OR_FLOAT_RECOVERY \
     -DBUILD_TEST_0213_DELTA_OR_P3_RECOVERY \
     -DBUILD_DELTA_OR_COMMON \
+    -DBUILD_TEST_0214_DELTA_DRCS_THEN_DELTA \
+    -DBUILD_TEST_0215_DELTA_DELTA_THEN_DRCS \
+    -DBUILD_TEST_0216_DELTA_DRCS_ENVIRONMENT \
+    -DBUILD_TEST_0217_DELTA_DRCS_FULL_OVERRIDE \
+    -DBUILD_TEST_0218_DELTA_DRCS_TILE_UNTOUCHED \
+    -DBUILD_TEST_0219_DELTA_DRCS_BYTE_RECOVERY \
+    -DBUILD_TEST_0220_DELTA_DRCS_FLOAT_RECOVERY \
+    -DBUILD_TEST_0221_DELTA_DRCS_P3_RECOVERY \
+    -DBUILD_DELTA_DRCS_COMMON \
     -DBUILD_DELTA_OUTPUT_COMMON \
     -DBUILD_DELTA_WORK_COMMON \
     -DBUILD_DELTA_BYTE_COMMON \
@@ -3220,6 +3229,15 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0212_delta_or_float_recovery.c \
     quant/palette/delta_native/0213_delta_or_p3_recovery.c \
     quant/palette/delta_or_common.c \
+    quant/palette/delta_native/0214_delta_drcs_then_delta.c \
+    quant/palette/delta_native/0215_delta_delta_then_drcs.c \
+    quant/palette/delta_native/0216_delta_drcs_environment.c \
+    quant/palette/delta_native/0217_delta_drcs_full_override.c \
+    quant/palette/delta_native/0218_delta_drcs_tile_untouched.c \
+    quant/palette/delta_native/0219_delta_drcs_byte_recovery.c \
+    quant/palette/delta_native/0220_delta_drcs_float_recovery.c \
+    quant/palette/delta_native/0221_delta_drcs_p3_recovery.c \
+    quant/palette/delta_drcs_common.c \
     quant/palette/delta_output_common.c \
     quant/palette/delta_work_common.c \
     quant/palette/delta_byte_common.c \
