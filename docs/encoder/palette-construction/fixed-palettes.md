@@ -33,6 +33,8 @@ Choosing fewer available colors can reduce representation quality. Diffusion can
 
 `-e` prepares black then white and marks entry zero as the non-painted color. `-e -i` prepares white then black, again omitting entry zero. The monochrome wire path emits no palette-slot definitions or selections. The `-A` policy still chooses whether omitted pixels request clearing (`P2=0`) or preservation (`P2=1`); use `-Akeep` when the foreground mask must overlay existing content. The terminal's monochrome/current foreground behavior therefore matters; this mode does not install a portable black/white palette in the receiver.
 
+`-e` and `-e -i` conflict with `-Z delta`; preserving omitted pixels cannot restore the background over an earlier foreground pixel. For opaque black-and-white delta updates, use `-b gray1`. See [delta interactions](../output/delta-encoding.md#execution-paths-and-interactions) for the rejection, policy-selection and retained-surface contracts.
+
 | Command | Mapping assumption | Wire behavior |
 | --- | --- | --- |
 | `-b gray1` | Two available colors, black and white. | Ordinary indexed SIXEL with palette commands; neither entry is made transparent merely by selecting this palette. |
