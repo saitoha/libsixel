@@ -1687,6 +1687,7 @@ sixel_dither_pipeline_6delta_try_keep_after_lookup(
     int y,
     unsigned char const *rgb,
     unsigned char const *chosen_rgb,
+    int chosen_index,
     int record_result,
     unsigned char const **accumulation_rgb_out,
     int *keycolor_out)
@@ -1737,10 +1738,10 @@ sixel_dither_pipeline_6delta_try_keep_after_lookup(
     /*
      * Treat what the terminal is already showing as one more candidate in the
      * same nearest-color contest the palette just went through.  If it is at
-     * least as close as the entry the lookup picked, keeping the pixel is
-     * strictly better than painting it: the color is nearer to what was asked
-     * for and it costs no output at all.  Ties go to keeping for the same
-     * reason.
+     * least as close as the entry the lookup picked, keeping does not
+     * increase this local RGB error and avoids painting. This local decision
+     * does not guarantee better perceptual quality after later diffusion.
+     * Ties go to keeping for the same local-error reason.
      *
      * Because the candidate is the plane's own per-pixel color, this cannot
      * repeat the failure of giving the transparency key a fixed color and
@@ -1749,7 +1750,14 @@ sixel_dither_pipeline_6delta_try_keep_after_lookup(
     /* Only the output owner can establish these byte gamma wire semantics.
      * Round the selected candidate, never the corrected source query. The
      * working palette still owns lookup and newly painted-pixel residuals. */
-    if (dither->pipeline_6delta_rgb101) {
+    if (dither->pipeline_6delta_hls_bytes != NULL) {
+        if (chosen_index < 0 || (unsigned int)chosen_index >=
+                dither->pipeline_6delta_hls_count) {
+            return 0;
+        }
+        chosen_rgb = dither->pipeline_6delta_hls_bytes +
+            (size_t)chosen_index * 3U;
+    } else if (dither->pipeline_6delta_rgb101) {
         for (channel = 0; channel < 3; ++channel) {
             wire[channel] = wire_byte[chosen_rgb[channel]];
         }
@@ -2258,6 +2266,8 @@ sixel_dither_new(
     (*ppdither)->use_rgb101_palette = 0;
     (*ppdither)->pipeline_6delta_rgb101 = 0;
     (*ppdither)->pipeline_6delta_hls = 0;
+    (*ppdither)->pipeline_6delta_hls_bytes = NULL;
+    (*ppdither)->pipeline_6delta_hls_count = 0U;
     (*ppdither)->allocator = allocator;
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->lut_policy_override = 0;

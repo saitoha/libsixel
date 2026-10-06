@@ -223,7 +223,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0069_DELTA_BYTE_X_DITHER_KEEP \
     -DBUILD_TEST_0070_DELTA_BYTE_BLUENOISE_DITHER_KEEP \
     -DBUILD_TEST_0071_DELTA_BYTE_COMPARE \
-    -DBUILD_TEST_0072_DELTA_BYTE_SCOPE_HLS \
+    -DBUILD_TEST_0072_DELTA_BYTE_SYNTAX_REUSE \
     -DBUILD_TEST_0073_DELTA_BYTE_SCOPE_OR \
     -DBUILD_TEST_0074_DELTA_BYTE_SCOPE_BODY \
     -DBUILD_TEST_0075_DELTA_BYTE_SCOPE_SOURCE \
@@ -326,6 +326,32 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0172_DELTA_HLS_SYNTAX_REUSE \
     -DBUILD_TEST_0173_DELTA_HLS_FAILURE_RECOVERY \
     -DBUILD_TEST_0174_DELTA_HLS_FIELD_MODEL \
+    -DBUILD_TEST_0175_DELTA_BYTE_HLS_NONE \
+    -DBUILD_TEST_0176_DELTA_BYTE_HLS_FS \
+    -DBUILD_TEST_0177_DELTA_BYTE_HLS_ATKINSON \
+    -DBUILD_TEST_0178_DELTA_BYTE_HLS_JAJUNI \
+    -DBUILD_TEST_0179_DELTA_BYTE_HLS_STUCKI \
+    -DBUILD_TEST_0180_DELTA_BYTE_HLS_BURKES \
+    -DBUILD_TEST_0181_DELTA_BYTE_HLS_SIERRA1 \
+    -DBUILD_TEST_0182_DELTA_BYTE_HLS_SIERRA2 \
+    -DBUILD_TEST_0183_DELTA_BYTE_HLS_SIERRA3 \
+    -DBUILD_TEST_0184_DELTA_BYTE_HLS_LSO2 \
+    -DBUILD_TEST_0185_DELTA_BYTE_HLS_A_DITHER \
+    -DBUILD_TEST_0186_DELTA_BYTE_HLS_X_DITHER \
+    -DBUILD_TEST_0187_DELTA_BYTE_HLS_BLUENOISE \
+    -DBUILD_TEST_0188_DELTA_BYTE_HLS_CANDIDATE_KEEP \
+    -DBUILD_TEST_0189_DELTA_BYTE_HLS_CANDIDATE_REPAINT \
+    -DBUILD_TEST_0190_DELTA_BYTE_HLS_FRAMES \
+    -DBUILD_TEST_0191_DELTA_BYTE_HLS_WORKERS \
+    -DBUILD_TEST_0192_DELTA_BYTE_HLS_BYTE_FLOAT \
+    -DBUILD_TEST_0193_DELTA_BYTE_HLS_FLOAT_BYTE \
+    -DBUILD_TEST_0194_DELTA_BYTE_HLS_MASK \
+    -DBUILD_TEST_0195_DELTA_BYTE_HLS_ORIGIN \
+    -DBUILD_TEST_0196_DELTA_BYTE_HLS_INVALIDATION \
+    -DBUILD_TEST_0197_DELTA_BYTE_HLS_FAILURE \
+    -DBUILD_TEST_0198_DELTA_BYTE_HLS_INSTANCES \
+    -DBUILD_TEST_0199_DELTA_BYTE_HLS_SNAP \
+    -DBUILD_TEST_0200_DELTA_BYTE_HLS_FLOAT_PALETTE \
     -DBUILD_DELTA_OUTPUT_COMMON \
     -DBUILD_DELTA_WORK_COMMON \
     -DBUILD_DELTA_BYTE_COMMON \
@@ -3035,7 +3061,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0069_delta_byte_x_dither_keep.c \
     quant/palette/delta_native/0070_delta_byte_bluenoise_dither_keep.c \
     quant/palette/delta_native/0071_delta_byte_compare.c \
-    quant/palette/delta_native/0072_delta_byte_scope_hls.c \
+    quant/palette/delta_native/0072_delta_byte_syntax_reuse.c \
     quant/palette/delta_native/0073_delta_byte_scope_or.c \
     quant/palette/delta_native/0074_delta_byte_scope_body.c \
     quant/palette/delta_native/0075_delta_byte_scope_source.c \
@@ -3138,6 +3164,32 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0172_delta_hls_syntax_reuse.c \
     quant/palette/delta_native/0173_delta_hls_failure_recovery.c \
     quant/palette/delta_native/0174_delta_hls_field_model.c \
+    quant/palette/delta_native/0175_delta_byte_hls_none.c \
+    quant/palette/delta_native/0176_delta_byte_hls_fs.c \
+    quant/palette/delta_native/0177_delta_byte_hls_atkinson.c \
+    quant/palette/delta_native/0178_delta_byte_hls_jajuni.c \
+    quant/palette/delta_native/0179_delta_byte_hls_stucki.c \
+    quant/palette/delta_native/0180_delta_byte_hls_burkes.c \
+    quant/palette/delta_native/0181_delta_byte_hls_sierra1.c \
+    quant/palette/delta_native/0182_delta_byte_hls_sierra2.c \
+    quant/palette/delta_native/0183_delta_byte_hls_sierra3.c \
+    quant/palette/delta_native/0184_delta_byte_hls_lso2.c \
+    quant/palette/delta_native/0185_delta_byte_hls_a_dither.c \
+    quant/palette/delta_native/0186_delta_byte_hls_x_dither.c \
+    quant/palette/delta_native/0187_delta_byte_hls_bluenoise.c \
+    quant/palette/delta_native/0188_delta_byte_hls_candidate_keep.c \
+    quant/palette/delta_native/0189_delta_byte_hls_candidate_repaint.c \
+    quant/palette/delta_native/0190_delta_byte_hls_frames.c \
+    quant/palette/delta_native/0191_delta_byte_hls_workers.c \
+    quant/palette/delta_native/0192_delta_byte_hls_byte_float.c \
+    quant/palette/delta_native/0193_delta_byte_hls_float_byte.c \
+    quant/palette/delta_native/0194_delta_byte_hls_mask.c \
+    quant/palette/delta_native/0195_delta_byte_hls_origin.c \
+    quant/palette/delta_native/0196_delta_byte_hls_invalidation.c \
+    quant/palette/delta_native/0197_delta_byte_hls_failure.c \
+    quant/palette/delta_native/0198_delta_byte_hls_instances.c \
+    quant/palette/delta_native/0199_delta_byte_hls_snap.c \
+    quant/palette/delta_native/0200_delta_byte_hls_float_palette.c \
     quant/palette/delta_output_common.c \
     quant/palette/delta_work_common.c \
     quant/palette/delta_byte_common.c \

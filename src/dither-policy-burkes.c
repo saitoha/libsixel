@@ -288,6 +288,7 @@ sixel_dither_apply_burkes_8bit(
                         absolute_y,
                         source_pixel,
                         palette + (size_t)color_index * (size_t)depth,
+                        color_index,
                         record_result,
                         &accumulation_pixel,
                         &accumulation_keycolor);

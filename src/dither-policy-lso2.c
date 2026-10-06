@@ -468,8 +468,8 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
 
             /*
              * Let the displayed color compete with LSO2's palette choice.
-             * Keeping wins ties because it preserves quality while emitting
-             * no pixel data.
+             * Keeping wins ties in the local RGB metric and avoids painting.
+             * Later diffusion and perceptual quality are separate concerns.
              */
             if (absolute_y >= 0 && depth >= 3) {
                 is_6delta_keep =
@@ -480,6 +480,7 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
                         absolute_y,
                         source_pixel,
                         palette + (size_t)color_index * (size_t)depth,
+                        color_index,
                         record_result,
                         &accumulation_pixel,
                         &accumulation_keycolor);

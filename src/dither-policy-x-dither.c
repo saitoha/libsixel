@@ -331,6 +331,7 @@ sixel_dither_apply_x_dither_8bit(sixel_dither_t *dither,
                         source_pixel,
                         context->palette
                             + (size_t)color_index * (size_t)context->depth,
+                        color_index,
                         record_result,
                         &accumulation_pixel,
                         &accumulation_keycolor);

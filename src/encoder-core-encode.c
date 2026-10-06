@@ -125,8 +125,8 @@ typedef struct sixel_band_state {
 } sixel_band_state_t;
 
 static int
-sixel_encode_delta_is_rgb(sixel_dither_t const *dither,
-                          sixel_output_t const *output);
+sixel_encode_delta_is_legacy(sixel_dither_t const *dither,
+                             sixel_output_t const *output);
 
 static SIXELSTATUS
 sixel_encode_capture_delta(sixel_dither_t *dither,
@@ -2933,50 +2933,13 @@ sixel_output_palette_channel_to_pct(unsigned char const *palette,
 /* The history projection and byte comparison must agree on wire semantics.
  * Source coordinates are checked separately before binding comparison. */
 static int
-sixel_encode_delta_is_rgb(sixel_dither_t const *dither,
-                          sixel_output_t const *output)
+sixel_encode_delta_is_legacy(sixel_dither_t const *dither,
+                             sixel_output_t const *output)
 {
     return !dither->use_rgb101_palette && !output->ormode &&
         !dither->bodyonly && output->colorspace == SIXEL_COLORSPACE_GAMMA &&
-        output->palette_type != SIXEL_PALETTETYPE_HLS &&
         !(dither->ncolors == 2 && dither->keycolor >= 0 &&
           !dither->keycolor_reserved);
-}
-
-/* Retained RGB must describe the serialized color, not its pre-wire table
- * value. Project a small capture-only copy through the same percentages as
- * the RGB writer. Lookup, diffusion and palette export keep their own values.
- * Native RGB/HLS already supplies its corresponding projection. Other wire
- * interpretations retain their separate migration boundaries. */
-static SIXELSTATUS
-sixel_encode_capture_delta(sixel_dither_t *dither,
-                            sixel_index_t const *indexes,
-                            size_t pixel_count,
-                            unsigned char const *palette,
-                            float const *palette_float,
-                            size_t palette_count,
-                            sixel_output_t const *output)
-{
-    unsigned char emitted[SIXEL_PALETTE_MAX * 3];
-    size_t i;
-    int percent;
-
-    if (dither == NULL || output == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (sixel_encode_delta_is_rgb(dither, output)) {
-        if (palette == NULL || palette_count > SIXEL_PALETTE_MAX) {
-            return SIXEL_BAD_ARGUMENT;
-        }
-        for (i = 0U; i < palette_count * 3U; ++i) {
-            percent = sixel_output_palette_channel_to_pct(palette,
-                palette_float, (int)(i / 3U), (int)(i % 3U));
-            emitted[i] = (unsigned char)((percent * 255 + 50) / 100);
-        }
-        palette = emitted;
-    }
-    return sixel_dither_set_pipeline_accumulation_result_rgb(dither,
-        indexes, pixel_count, palette, palette_count);
 }
 
 static double
@@ -3003,6 +2966,75 @@ sixel_output_palette_channel_to_float(unsigned char const *palette,
 
     return value;
 }
+
+/* Match the HLS writer and the established decoder's integer-percentage
+ * reconstruction. Work per palette entry, never per source pixel. */
+static void
+sixel_encode_hls_history(unsigned char *emitted,
+                         unsigned char const *palette,
+                         float const *palette_float, size_t count)
+{
+    size_t i;
+    int channel;
+    int hls[3];
+    unsigned char codes[3];
+    double rgb[3];
+
+    for (i = 0U; i < count; ++i) {
+        for (channel = 0; channel < 3; ++channel) {
+            rgb[channel] = sixel_output_palette_channel_to_float(palette,
+                palette_float, (int)i, channel);
+        }
+        sixel_color_rgb_to_hls(hls, rgb);
+        sixel_color_hls_to_rgb101(codes, hls);
+        for (channel = 0; channel < 3; ++channel) {
+            emitted[i * 3U + channel] =
+                (unsigned char)((codes[channel] * 255U + 50U) / 100U);
+        }
+    }
+}
+
+/* Retained RGB must describe the serialized color, not its pre-wire table
+ * value. Project a small capture-only copy through the same percentages as
+ * the RGB/HLS writer. Lookup and diffusion keep their own working values.
+ * Native RGB/HLS already supplies its corresponding projection. Other wire
+ * interpretations retain their separate migration boundaries. */
+static SIXELSTATUS
+sixel_encode_capture_delta(sixel_dither_t *dither,
+                            sixel_index_t const *indexes,
+                            size_t pixel_count,
+                            unsigned char const *palette,
+                            float const *palette_float,
+                            size_t palette_count,
+                            sixel_output_t const *output)
+{
+    unsigned char emitted[SIXEL_PALETTE_MAX * 3];
+    size_t i;
+    int percent;
+
+    if (dither == NULL || output == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (sixel_encode_delta_is_legacy(dither, output)) {
+        if (palette == NULL || palette_count > SIXEL_PALETTE_MAX) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        if (output->palette_type == SIXEL_PALETTETYPE_HLS) {
+            sixel_encode_hls_history(emitted, palette, palette_float,
+                palette_count);
+        } else {
+            for (i = 0U; i < palette_count * 3U; ++i) {
+                percent = sixel_output_palette_channel_to_pct(palette,
+                    palette_float, (int)(i / 3U), (int)(i % 3U));
+                emitted[i] = (unsigned char)((percent * 255 + 50) / 100);
+            }
+        }
+        palette = emitted;
+    }
+    return sixel_dither_set_pipeline_accumulation_result_rgb(dither,
+        indexes, pixel_count, palette, palette_count);
+}
+
 
 static SIXELSTATUS
 output_rgb_palette_definition(
@@ -4568,12 +4600,15 @@ sixel_encode_dither(
     float const *ormode_palette_float;
     unsigned int output_rgb101_count;
     int use_rgb101_palette;
+    unsigned char hls_bytes[SIXEL_PALETTE_MAX * 3];
 
     if (output == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     dither->pipeline_6delta_rgb101 = 0;
     dither->pipeline_6delta_hls = 0;
+    dither->pipeline_6delta_hls_bytes = NULL;
+    dither->pipeline_6delta_hls_count = 0U;
     output_rgb101 = NULL;
     output_rgb_float = NULL;
     ormode_palette_float = NULL;
@@ -4690,18 +4725,42 @@ sixel_encode_dither(
         dither->pipeline_6delta_hls = 1;
     }
     if (dither->pipeline_6delta_enabled &&
-            sixel_encode_delta_is_rgb(dither, output) &&
+            sixel_encode_delta_is_legacy(dither, output) &&
             output->source_colorspace == SIXEL_COLORSPACE_GAMMA) {
         status = palette_obj->vtbl->get_entries_float32(palette_obj,
             &palette_float_view);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        /* Byte entries alone determine these wire percentages. Legacy
+        /* Byte entries alone determine these emitted colors. Legacy
          * float-backed palettes need a separate authoritative comparison.
          * Bind before either serial application or worker copies, and clear
          * after their lifetime even if encoding fails. */
-        dither->pipeline_6delta_rgb101 = palette_float_view.entries == NULL;
+        if (palette_float_view.entries == NULL &&
+                output->palette_type == SIXEL_PALETTETYPE_HLS) {
+            status = palette_obj->vtbl->get_entries(palette_obj, &palette_view);
+            if (SIXEL_FAILED(status) || palette_view.entries == NULL ||
+                    palette_view.depth != 3 ||
+                    palette_view.entry_count > SIXEL_PALETTE_MAX) {
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+            memcpy(hls_bytes, palette_view.entries,
+                (size_t)palette_view.entry_count * 3U);
+            /* Exact snap, if requested, also runs on the writer's copy.
+             * Do not change the lookup table or enable snap implicitly. */
+            if (dither->palette_snap_exact) {
+                sixel_palette_snap_output(hls_bytes, NULL,
+                    palette_view.entry_count);
+            }
+            sixel_encode_hls_history(hls_bytes, hls_bytes, NULL,
+                palette_view.entry_count);
+            dither->pipeline_6delta_hls_bytes = hls_bytes;
+            dither->pipeline_6delta_hls_count = palette_view.entry_count;
+        } else {
+            dither->pipeline_6delta_rgb101 =
+                palette_float_view.entries == NULL;
+        }
     }
 
     pipeline_active = 0;
@@ -5132,6 +5191,8 @@ sixel_encode_dither(
 end:
     dither->pipeline_6delta_rgb101 = 0;
     dither->pipeline_6delta_hls = 0;
+    dither->pipeline_6delta_hls_bytes = NULL;
+    dither->pipeline_6delta_hls_count = 0U;
     if (image_started != 0 && SIXEL_FAILED(status)) {
         /*
          * Keep terminals from staying in DCS/SIXEL string state after a

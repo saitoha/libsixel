@@ -67,7 +67,7 @@ test_delta_native_0080(int argc, char **argv)
         for (endpoint = 0; endpoint <= 1; ++endpoint) {
             memset(query, endpoint * 255, sizeof(query));
             if (!sixel_dither_pipeline_6delta_try_keep_after_lookup(dither,
-                    0, 0, 0, query, chosen, 0, NULL, NULL)) {
+                    0, 0, 0, query, chosen, 0, 0, NULL, NULL)) {
                 fprintf(stderr, "byte grid=%d expected=%d endpoint=%d\n",
                     value, expected, endpoint);
                 goto end;

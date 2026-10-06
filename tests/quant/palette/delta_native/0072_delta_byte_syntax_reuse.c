@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Verify delta byte scope hls. */
+/* Verify delta byte syntax reuse. */
 #include <sixel.h>
 int test_delta_byte_scope(int);
 

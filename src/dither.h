@@ -274,6 +274,9 @@ struct sixel_dither {
     /* Native comparison uses the prepared HLS roundtrip instead of RGB101.
      * Bound by the output owner; immutable for the worker lifetime. */
     int pipeline_6delta_hls;
+    /* Output-owned byte HLS table; borrowed only during one encode call. */
+    unsigned char const *pipeline_6delta_hls_bytes;
+    unsigned int pipeline_6delta_hls_count;
     unsigned int pipeline_6delta_threshold; /* per-channel keep threshold */
     int pipeline_6delta_error_mode; /* kept-pixel error handling */
     unsigned char *pipeline_accumulation_result_mask; /* encoded keeps */
@@ -403,7 +406,8 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
 /*
  * Post-lookup keep.  CHOSEN_RGB is the palette color the nearest-color lookup
  * settled on for this pixel. The output owner can bind RGB101 comparison
- * for byte gamma palettes; the query and palette itself remain unchanged.
+ * or an indexed HLS reconstruction for byte gamma palettes. CHOSEN_INDEX
+ * identifies that derived entry; the query and palette remain unchanged.
  * The retained plane's color at the same position
  * competes against it in the same metric, and wins ties, because emitting
  * nothing is free.  This is what makes keeping principled rather than a
@@ -418,6 +422,7 @@ sixel_dither_pipeline_6delta_try_keep_after_lookup(
     int y,
     unsigned char const *rgb,
     unsigned char const *chosen_rgb,
+    int chosen_index,
     int record_result,
     unsigned char const **accumulation_rgb_out,
     int *keycolor_out);

@@ -273,8 +273,8 @@ sixel_dither_apply_atkinson_8bit(
              * Now that the palette has had its say, let the color already on
              * screen compete with it.  Keeping wins ties because it costs no
              * output at all, and it can only be chosen when it is at least as
-             * close to the source as the entry the lookup picked -- so this
-             * never trades quality for bytes.
+             * close in this local RGB metric as the selected emitted entry.
+             * Later diffusion and perceptual quality are separate concerns.
              */
             if (absolute_y >= 0 && depth >= 3) {
                 is_6delta_keep =
@@ -285,6 +285,7 @@ sixel_dither_apply_atkinson_8bit(
                         absolute_y,
                         source_pixel,
                         palette + (size_t)color_index * (size_t)depth,
+                        color_index,
                         record_result,
                         &accumulation_pixel,
                         &accumulation_keycolor);
