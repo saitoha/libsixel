@@ -239,7 +239,7 @@
   ],
   "pixel_density": {
     "formula": "ppd = distance * tan(1 degree) * ppi; cpd = ppd / 2",
-    "note": "CRT entries use the addressable resolution and the viewable diagonal; where a phosphor pitch is given, ppd_low is the pitch-limited density. DEC terminal entries estimate the viewable diagonal as the nominal tube size minus one inch; their ppd and ppd_low are the horizontal and vertical densities of non-square pixels. Printer entries use horizontal and vertical dpi at 35 cm. Meta Quest 3 uses the manufacturer's published value.",
+    "note": "CRT entries use the addressable resolution and the viewable diagonal; where a phosphor pitch is given, ppd_low is the pitch-limited density. DEC terminal entries estimate the viewable diagonal as the nominal tube size minus one inch; their ppd and ppd_low are the horizontal and vertical densities of non-square pixels. Printer entries use horizontal and vertical dpi at 35 cm. Head-mounted displays use published or estimated pixels per degree as noted in each entry. The projector assumes an 80-inch image seen from 2.5 m.",
     "displays": [
       {
         "year": 1983,
@@ -660,6 +660,54 @@
         "cpd": 44.5
       },
       {
+        "year": 2018,
+        "family": "density",
+        "label": "iiyama ProLite XB2779QQS",
+        "kind": "panel",
+        "distance_cm": 60,
+        "diagonal_in": 27.0,
+        "pixels": [
+          5120,
+          2880
+        ],
+        "ppi": 217.6,
+        "ppd": 89.7,
+        "ppd_low": 89.7,
+        "cpd": 44.9
+      },
+      {
+        "year": 2022,
+        "family": "density",
+        "label": "EIZO ColorEdge CG2700X",
+        "kind": "panel",
+        "distance_cm": 60,
+        "diagonal_in": 27.0,
+        "pixels": [
+          3840,
+          2160
+        ],
+        "ppi": 163.2,
+        "ppd": 67.3,
+        "ppd_low": 67.3,
+        "cpd": 33.6
+      },
+      {
+        "year": 2022,
+        "family": "density",
+        "label": "EIZO ColorEdge CG3100X",
+        "kind": "panel",
+        "distance_cm": 60,
+        "diagonal_in": 30.5,
+        "pixels": [
+          4096,
+          2160
+        ],
+        "ppi": 151.8,
+        "ppd": 62.6,
+        "ppd_low": 62.6,
+        "cpd": 31.3
+      },
+      {
         "year": 2021,
         "family": "density",
         "label": "MacBook Pro 14\"",
@@ -834,15 +882,167 @@
         "cpd": 58.2
       },
       {
+        "year": 2017,
+        "family": "tablet",
+        "label": "Surface Pro",
+        "kind": "panel",
+        "distance_cm": 40,
+        "diagonal_in": 12.3,
+        "pixels": [
+          2736,
+          1824
+        ],
+        "ppi": 267.3,
+        "ppd": 73.5,
+        "ppd_low": 73.5,
+        "cpd": 36.7
+      },
+      {
+        "year": 2024,
+        "family": "tablet",
+        "label": "Surface Pro 11",
+        "kind": "panel",
+        "distance_cm": 40,
+        "diagonal_in": 13.0,
+        "pixels": [
+          2880,
+          1920
+        ],
+        "ppi": 266.3,
+        "ppd": 73.2,
+        "ppd_low": 73.2,
+        "cpd": 36.6
+      },
+      {
+        "year": 2018,
+        "family": "emissive",
+        "label": "iPhone XR",
+        "kind": "panel",
+        "distance_cm": 30,
+        "diagonal_in": 6.1,
+        "pixels": [
+          828,
+          1792
+        ],
+        "ppi": 323.6,
+        "ppd": 66.7,
+        "ppd_low": 66.7,
+        "cpd": 33.4
+      },
+      {
+        "year": 2018,
+        "family": "projector",
+        "label": "popIn Aladdin, 80\" at 2.5 m",
+        "kind": "panel",
+        "distance_cm": 250,
+        "diagonal_in": 80.0,
+        "pixels": [
+          1280,
+          720
+        ],
+        "ppi": 18.4,
+        "ppd": 31.5,
+        "ppd_low": 31.5,
+        "cpd": 15.8
+      },
+      {
+        "year": 2013,
+        "family": "vr",
+        "label": "Oculus Rift DK1",
+        "kind": "ppd",
+        "distance_cm": null,
+        "source": "estimate, Road to VR",
+        "ppd": 7,
+        "ppd_low": 7,
+        "cpd": 3.5
+      },
+      {
+        "year": 2016,
+        "family": "vr",
+        "label": "Oculus Rift CV1",
+        "kind": "ppd",
+        "distance_cm": null,
+        "source": "estimate, VRcompare",
+        "ppd": 13.6,
+        "ppd_low": 13.6,
+        "cpd": 6.8
+      },
+      {
+        "year": 2018,
+        "family": "vr",
+        "label": "Oculus Go",
+        "kind": "ppd",
+        "distance_cm": null,
+        "source": "estimate, VRcompare",
+        "ppd": 12.7,
+        "ppd_low": 12.7,
+        "cpd": 6.3
+      },
+      {
+        "year": 2020,
+        "family": "vr",
+        "label": "Quest 2",
+        "kind": "ppd",
+        "distance_cm": null,
+        "source": "manufacturer",
+        "ppd": 20,
+        "ppd_low": 20,
+        "cpd": 10.0
+      },
+      {
+        "year": 2022,
+        "family": "vr",
+        "label": "Quest Pro",
+        "kind": "ppd",
+        "distance_cm": null,
+        "source": "manufacturer",
+        "ppd": 22,
+        "ppd_low": 22,
+        "cpd": 11.0
+      },
+      {
         "year": 2023,
         "family": "vr",
         "label": "Meta Quest 3",
         "kind": "ppd",
         "distance_cm": null,
-        "source": "published by the manufacturer",
+        "source": "manufacturer",
         "ppd": 25,
         "ppd_low": 25,
         "cpd": 12.5
+      },
+      {
+        "year": 2024,
+        "family": "vr",
+        "label": "Apple Vision Pro",
+        "kind": "ppd",
+        "distance_cm": null,
+        "source": "estimate, iFixit",
+        "ppd": 34,
+        "ppd_low": 34,
+        "cpd": 17.0
+      },
+      {
+        "year": 2025,
+        "family": "glasses",
+        "label": "Meta Ray-Ban Display",
+        "kind": "ppd",
+        "distance_cm": null,
+        "source": "manufacturer",
+        "ppd": 42,
+        "ppd_low": 42,
+        "cpd": 21.0
+      },
+      {
+        "year": 2026,
+        "family": "vr",
+        "label": "Meta VR Glasses (announced)",
+        "kind": "ppd",
+        "distance_cm": null,
+        "source": "manufacturer",
+        "ppd": 37,
+        "ppd_low": 37,
+        "cpd": 18.5
       }
     ]
   },

@@ -58,7 +58,10 @@ DENSITY_FAMILIES = {
     'emissive': ('Phone', '#c0392b'),
     'epaper': ('Electronic paper', '#5f6b73'),
     'tv': ('Television', '#2f8f5b'),
+    'tablet': ('Tablet', '#8e44ad'),
+    'projector': ('Ceiling-light projector', '#16a085'),
     'vr': ('VR headset', '#d35400'),
+    'glasses': ('Display glasses', '#e67e22'),
 }
 
 
@@ -431,6 +434,9 @@ DISPLAYS = (
     (2014, 'density', '27" 5K', 'panel', (27.0, 5120, 2880), 60),
     (2018, 'density', '27" 4K', 'panel', (27.0, 3840, 2160), 60),
     (2019, 'density', 'Pro Display XDR', 'panel', (32.0, 6016, 3384), 60),
+    (2018, 'density', 'iiyama ProLite XB2779QQS', 'panel', (27.0, 5120, 2880), 60),
+    (2022, 'density', 'EIZO ColorEdge CG2700X', 'panel', (27.0, 3840, 2160), 60),
+    (2022, 'density', 'EIZO ColorEdge CG3100X', 'panel', (30.5, 4096, 2160), 60),
     (2021, 'density', 'MacBook Pro 14"', 'panel', (14.2, 3024, 1964), 50),
     (2007, 'emissive', 'iPhone', 'panel', (3.5, 320, 480), 30),
     (2010, 'emissive', 'iPhone 4', 'panel', (3.5, 640, 960), 30),
@@ -442,7 +448,19 @@ DISPLAYS = (
     (2021, 'epaper', 'Paperwhite 6.8"', 'panel', (6.8, 1236, 1648), 35),
     (2024, 'epaper', 'Kobo Libra Colour', 'dpi', (300, 150), 35),
     (2018, 'tv', '65" 4K TV at 2.5 m', 'panel', (65.0, 3840, 2160), 250),
-    (2023, 'vr', 'Meta Quest 3', 'ppd', (25,), None),
+    (2017, 'tablet', 'Surface Pro', 'panel', (12.3, 2736, 1824), 40),
+    (2024, 'tablet', 'Surface Pro 11', 'panel', (13.0, 2880, 1920), 40),
+    (2018, 'emissive', 'iPhone XR', 'panel', (6.1, 828, 1792), 30),
+    (2018, 'projector', 'popIn Aladdin, 80" at 2.5 m', 'panel', (80.0, 1280, 720), 250),
+    (2013, 'vr', 'Oculus Rift DK1', 'ppd', (7, 'estimate, Road to VR'), None),
+    (2016, 'vr', 'Oculus Rift CV1', 'ppd', (13.6, 'estimate, VRcompare'), None),
+    (2018, 'vr', 'Oculus Go', 'ppd', (12.7, 'estimate, VRcompare'), None),
+    (2020, 'vr', 'Quest 2', 'ppd', (20, 'manufacturer'), None),
+    (2022, 'vr', 'Quest Pro', 'ppd', (22, 'manufacturer'), None),
+    (2023, 'vr', 'Meta Quest 3', 'ppd', (25, 'manufacturer'), None),
+    (2024, 'vr', 'Apple Vision Pro', 'ppd', (34, 'estimate, iFixit'), None),
+    (2025, 'glasses', 'Meta Ray-Ban Display', 'ppd', (42, 'manufacturer'), None),
+    (2026, 'vr', 'Meta VR Glasses (announced)', 'ppd', (37, 'manufacturer'), None),
 )
 
 
@@ -475,7 +493,7 @@ def density_rows():
             high, low = (ppd_from_ppi(values[0], distance), ppd_from_ppi(values[1], distance))
         else:
             high = low = values[0]
-            row.update(source='published by the manufacturer')
+            row.update(source=values[1])
         row.update(ppd=round(high, 1), ppd_low=round(low, 1), cpd=round(high / 2, 1))
         rows.append(row)
     return rows
@@ -487,14 +505,18 @@ NUMBER_OFFSETS = {'LA50': (-6, 0), 'VT240': (-6, 4), 'LA75': (6, -6), 'VT340': (
                   'Sony FW900': (-11, 2), '15" UXGA notebook': (-8, 7), 'Kindle': (-12, 2),
                   '15.6" 1366 × 768 notebook': (6, -5), '21.5" 1080p': (6, 4),
                   'iPhone 15 Pro': (6, 4), 'MacBook Pro 14"': (6, -6),
-                  'Pro Display XDR': (-11, 5), '27" 5K': (-11, 3)}
+                  'Pro Display XDR': (6, -7), '27" 5K': (-11, 3), 'iPhone XR': (-11, -5),
+                  '27" 4K': (6, 4), 'iiyama ProLite XB2779QQS': (-11, -2),
+                  'Surface Pro 11': (-11, 4), 'Kobo Libra Colour': (6, -5),
+                  'Apple Vision Pro': (6, -7), 'Meta Ray-Ban Display': (-11, 4),
+                  'Meta VR Glasses (announced)': (6, 0), '65" 4K TV at 2.5 m': (6, 0)}
 
 
 def density():
     rows = sorted(density_rows(), key=lambda r: (r['year'], r['label']))
     with plt.rc_context(RC):
-        fig = plt.figure(figsize=(9.6, 8.6))
-        grid = fig.add_gridspec(2, 1, height_ratios=(2.2, 1), hspace=0.32)
+        fig = plt.figure(figsize=(9.6, 10.8))
+        grid = fig.add_gridspec(2, 1, height_ratios=(2.0, 1.15), hspace=0.42)
         ax = fig.add_subplot(grid[0])
         key = fig.add_subplot(grid[1])
         key.axis('off')
@@ -526,19 +548,19 @@ def density():
             rb = next(r for r in rows if r['label'] == b)
             ax.annotate('', xy=(rb['year'], rb['ppd']), xytext=(ra['year'], ra['ppd']),
                         arrowprops={'arrowstyle': '->', 'color': ACCENT, 'lw': 1.6})
-        ax.set_xlim(1980, 2027)
+        ax.set_xlim(1980, 2028)
         ax.set_ylim(0, 140)
         ax.set_xlabel('year')
         ax.set_ylabel('pixels per degree at a typical distance')
         secondary = ax.secondary_yaxis('right', functions=(lambda v: v / 2, lambda v: v * 2))
         secondary.set_ylabel('finest pattern (cycles per degree)')
         ax.grid(True, color=GRID, lw=0.8)
-        ax.set_title('Pixels per degree of visual angle, 1983–2024', fontweight='bold')
+        ax.set_title('Pixels per degree of visual angle, 1983–2026', fontweight='bold')
         handles = [plt.Line2D([], [], marker='o', ls='', color=color,
                               markerfacecolor='white' if family == 'crt' else color, label=label)
                    for family, (label, color) in DENSITY_FAMILIES.items()]
-        ax.legend(handles=handles, frameon=False, fontsize=8.5, ncol=3, loc='upper left',
-                  bbox_to_anchor=(0.0, 0.97))
+        ax.legend(handles=handles, frameon=False, fontsize=8.5, ncol=4, loc='upper center',
+                  bbox_to_anchor=(0.5, -0.09))
         rows_per_column = math.ceil(len(lines) / 3)
         for index, (number, row, color) in enumerate(lines):
             column, line = divmod(index, rows_per_column)
@@ -624,7 +646,9 @@ def main():
                                   'tube size minus one inch; their ppd and ppd_low are the '
                                   'horizontal and vertical densities of non-square pixels. '
                                   'Printer entries use horizontal and vertical dpi at 35 cm. '
-                                  'Meta Quest 3 uses the manufacturer\'s published value.',
+                                  'Head-mounted displays use published or estimated '
+                                  'pixels per degree as noted in each entry. The '
+                                  'projector assumes an 80-inch image seen from 2.5 m.',
                           'displays': density_rows()},
         'ambient_light_assumptions': AMBIENT,
         'epaper_palettes': {'source': 'images/snake.png at 240 x 180',
