@@ -94,7 +94,7 @@ Plain formats are not inherently safe merely because their grammar is simple: de
 - Parser, sample decode, compatibility policy, and alpha composition: [`frompnm.c`](../../../src/frompnm.c)
 - Builtin signature routing and frame initialization: [`loader-builtin.c`](../../../src/loader-builtin.c)
 - Broader non-owning compatibility suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
-- Shared frame meanings: [Pixel Formats and Alpha Representation](../../concepts/pixelformat.md) and [Color Spaces and Loader Color Management](../../concepts/colorspace/README.md)
+- Shared frame meanings: [Pixel Formats and Alpha Representation](../../concepts/pixelformat.md) and [Color Spaces](../../concepts/colorspace/README.md)
 
 ## Test coverage
 

@@ -1046,7 +1046,7 @@ The two-color fixtures preserve one extended and one fractional sample in all fi
 - [`src/encoder-core-encode.c`](../../../src/encoder-core-encode.c): private byte/float palette copies, output conversion, exact-snap finalization, and RGB/HLS definitions.
 - [`src/colorspace.c`](../../../src/colorspace.c): transfer curves, SMPTE-C matrices, conversion through linear RGB, clipping, and byte/float dispatch.
 - [`src/encoder-core-highcolor.c`](../../../src/encoder-core-highcolor.c): the alternate high-color implementation and its current output-conversion gap.
-- [Color spaces and loader color management](../../concepts/colorspace/README.md): the wider source-profile, working-space, and output-space model.
+- [Color-space handling](../colorspace-handling/README.md): the wider source-profile, working-space, and output-space model, building on [Color spaces](../../concepts/colorspace/README.md).
 
 The CIELAB export witness protects neutral float endpoints; see the [external-palette coverage boundary](../palette-construction/external-palettes.md#coverage-audit-boundary) for its scope.
 

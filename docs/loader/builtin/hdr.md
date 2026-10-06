@@ -116,7 +116,7 @@ Header lengths, dimensions, scanline markers, and RLE counts are attacker-contro
 
 - Header, orientation, RGBE/XYZE, RLE, profile synthesis, and controls: [`fromhdr.c`](../../../src/fromhdr.c)
 - Builtin recognition and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
-- Shared colorspace model: [Color Spaces and Loader Color Management](../../concepts/colorspace/README.md)
+- Shared colorspace model: [Color Spaces](../../concepts/colorspace/README.md) and [Color-Space Handling](../../encoder/colorspace-handling/README.md)
 - Precision behavior: [Pixel-format Precision](../../concepts/pixelformat-precision/README.md)
 - Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
 

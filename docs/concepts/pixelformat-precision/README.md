@@ -4,7 +4,7 @@ For backend representation, color/alpha preservation and byte-path eligibility, 
 
 Pixel-format precision describes how a decoded or intermediate color sample is stored. It is distinct from the color space that gives the sample meaning, the number of colors in the final palette, and the number of palette indices used by a packed pixel format. In libsixel, the important encoder distinction is between three unsigned 8-bit channels (`rgb888`) and three float32 channels (`rgb-f32` or a color-space-specific float format).
 
-This document explains the storage contract and the operations that can promote a nominally 8-bit pipeline to float32. The broader effect of `--precision` on quantization, dithering, lookup, speed, and SIXEL size is measured in [Encoder working precision](../../encoder/precision/README.md). The interpretation of gamma, linear RGB, Oklab, CIELAB, DIN99d, and ICC profiles is defined in [Color spaces and loader color management](../colorspace/README.md).
+This document explains the storage contract and the operations that can promote a nominally 8-bit pipeline to float32. The broader effect of `--precision` on quantization, dithering, lookup, speed, and SIXEL size is measured in [Encoder working precision](../../encoder/precision/README.md). The interpretation of gamma, linear RGB, Oklab, CIELAB, DIN99d, and ICC profiles is defined in [Color spaces](../colorspace/README.md) and [Color management basics](../color-management/README.md).
 
 ## Storage and meaning are separate
 
@@ -114,7 +114,7 @@ palette application/dither --> output-space conversion --> SIXEL palette + indic
 
 The `source`, resize input/output, main `work`, and clustering palette view need not share one format. Reporting only the command-line request loses information about the path that actually ran.
 
-For why linear RGB is needed and when the planner inserts or skips conversions, see [Lazy conversion at operation boundaries](../colorspace/README.md#lazy-conversion-at-operation-boundaries). A mathematical linear RGB or XYZ intermediate can exist inside a single-pixel transform without allocating a separate image buffer; precision promotion describes the storage that a processing stage actually requires.
+For why linear RGB is needed and when the planner inserts or skips conversions, see [Lazy conversion at operation boundaries](../../encoder/colorspace-handling/README.md#lazy-conversion-at-operation-boundaries). A mathematical linear RGB or XYZ intermediate can exist inside a single-pixel transform without allocating a separate image buffer; precision promotion describes the storage that a processing stage actually requires.
 
 ## Operations that promote to float32
 

@@ -84,6 +84,11 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/project-history.md \
 	docs/sixel-format/README.md \
 	docs/protocols/graphics-color-management.md \
+	docs/encoder/colorspace-handling/README.md \
+	docs/encoder/colorspace-handling/figures/encoding-pipeline-mobile.svg \
+	docs/encoder/colorspace-handling/figures/encoding-pipeline-wide.svg \
+	docs/encoder/colorspace-handling/figures/resize-boundaries-mobile.svg \
+	docs/encoder/colorspace-handling/figures/resize-boundaries-wide.svg \
 	docs/encoder/output/high-color/README.md \
 	docs/encoder/output/high-color/measurement.md \
 	docs/encoder/output/high-color/measurements/high-color-comparison.csv \
@@ -236,6 +241,9 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/misc/platforms/solaris.md \
 	docs/misc/platforms/windows-paths.md \
 	docs/misc/platforms/windows.md \
+	docs/concepts/color-management/README.md \
+	docs/concepts/color-management/figures/pcs-connection-mobile.svg \
+	docs/concepts/color-management/figures/pcs-connection-wide.svg \
 	docs/concepts/colorspace/README.md \
 	docs/concepts/din99d/README.md \
 	docs/concepts/din99d/figures/nearest-color-wide.svg \
@@ -247,17 +255,11 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	tools/evaluate.py \
 	docs/concepts/colorspace/figures/conversion-routes-mobile.svg \
 	docs/concepts/colorspace/figures/conversion-routes-wide.svg \
-	docs/concepts/colorspace/figures/encoding-pipeline-mobile.svg \
-	docs/concepts/colorspace/figures/encoding-pipeline-wide.svg \
 	docs/concepts/colorspace/figures/figures.json \
 	docs/concepts/colorspace/figures/mixing-mobile.svg \
 	docs/concepts/colorspace/figures/mixing-wide.svg \
-	docs/concepts/colorspace/figures/pcs-connection-mobile.svg \
-	docs/concepts/colorspace/figures/pcs-connection-wide.svg \
 	docs/concepts/colorspace/figures/primaries-whitepoints-mobile.svg \
 	docs/concepts/colorspace/figures/primaries-whitepoints-wide.svg \
-	docs/concepts/colorspace/figures/resize-boundaries-mobile.svg \
-	docs/concepts/colorspace/figures/resize-boundaries-wide.svg \
 	tools/plot_colorspace_figures.py \
 	docs/concepts/pixelformat-precision/README.md \
 	docs/concepts/pixelformat-precision/measurements/pixelformat-precision-paths.csv \

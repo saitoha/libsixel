@@ -1,6 +1,6 @@
 # DIN99d: using distance to compare colors
 
-DIN99d is designed so that ordinary three-dimensional distance follows perceived color difference more closely than uncorrected RGB distance. This is useful when a palette algorithm must repeatedly decide which colors are close: clustering samples into representative colors, choosing a palette entry for a pixel, or comparing nearby candidate palette tones. It does not replace linear RGB for adding light or compositing a foreground over a background; see [color conversion hubs and lazy processing](../colorspace/README.md#linear-rgb-and-xyz-as-conversion-hubs).
+DIN99d is designed so that ordinary three-dimensional distance follows perceived color difference more closely than uncorrected RGB distance. This is useful when a palette algorithm must repeatedly decide which colors are close: clustering samples into representative colors, choosing a palette entry for a pixel, or comparing nearby candidate palette tones. It does not replace linear RGB for adding light or compositing a foreground over a background; see [color conversion hubs](../colorspace/README.md#linear-rgb-and-xyz-as-conversion-hubs).
 
 ## A nearest-color decision you can see
 
@@ -27,7 +27,7 @@ In libsixel, two independently selectable stages can use this geometry:
 | Palette application | `-Xgamma -Wdin99d` | Palette construction stays in gamma RGB; pixel lookup and any error diffusion use DIN99d coordinates. |
 | Both stages | `-Xdin99d -Wdin99d` | Construction and application use the same perceptual coordinates. |
 
-Set both options when isolating a stage: a lone `-W` can also resolve the clustering space when `-X` was not explicit. DIN99d processing uses typed float32 coordinates. `-Ugamma` controls conversion of the final palette entries to the output RGB representation; it does not redo pixel assignments. These conversions happen at the relevant processing boundaries, as explained in the [encoding pipeline](../colorspace/README.md#end-to-end-pipeline).
+Set both options when isolating a stage: a lone `-W` can also resolve the clustering space when `-X` was not explicit. DIN99d processing uses typed float32 coordinates. `-Ugamma` controls conversion of the final palette entries to the output RGB representation; it does not redo pixel assignments. These conversions happen at the relevant processing boundaries, as explained in the [encoding pipeline](../../encoder/colorspace-handling/README.md#end-to-end-pipeline).
 
 ## Coordinates and normalization
 

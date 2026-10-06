@@ -18,7 +18,8 @@ docs/cli/diagnostics.md	how-to	both	diagnostic capture workflow + option referen
 docs/cli/prefix-matching.md	reference	both	choice syntax + contributor algorithm map and test ledger
 docs/cli/runtime-policy.md	reference	both	runtime option contracts + contributor implementation map and test ledger
 docs/cli/suboptions.md	reference	both	public grammar + contributor registry architecture and test ledger
-docs/concepts/colorspace/README.md	explanation	user	explanation + option reference and configuration examples
+docs/concepts/color-management/README.md	explanation	user	
+docs/concepts/colorspace/README.md	explanation	user	
 docs/concepts/clustering/README.md	explanation	both	
 docs/concepts/dithering/README.md	explanation	both	
 docs/concepts/palettes/README.md	explanation	both	
@@ -26,6 +27,7 @@ docs/concepts/din99d/README.md	explanation	user	color-distance intuition + measu
 docs/concepts/pixelformat-precision/README.md	explanation	both	storage model + numeric contracts and large contributor test ledger
 docs/concepts/pixelformat.md	reference	both	pixel representations + explanatory model and contributor test ledger
 docs/encoder/animation.md	reference	both	playback matrix + usage/diagnosis how-to and contributor test ledger
+docs/encoder/colorspace-handling/README.md	reference	both	color-space contracts + configuration how-to and implementation references
 docs/encoder/palette-construction/clustering-colorspace/README.md	reference	both	color-space choices + mathematical explanation and measurement reproduction
 docs/encoder/palette-construction/cover-policy/README.md	reference	both	policy contract + reachability/history explanation and contributor test ledger
 docs/encoder/preprocessing/crop-resize/README.md	reference	both	geometry/precision contracts + measurements and reproduction how-to

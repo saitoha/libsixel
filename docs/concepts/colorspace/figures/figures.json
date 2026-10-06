@@ -381,6 +381,11 @@
     "wide",
     "mobile"
   ],
+  "outputs": {
+    "encoding-pipeline": "docs/encoder/colorspace-handling/figures",
+    "pcs-connection": "docs/concepts/color-management/figures",
+    "resize-boundaries": "docs/encoder/colorspace-handling/figures"
+  },
   "color_roles": {
     "blue": "conversion hub or sRGB outline",
     "gold": "Display P3 outline",

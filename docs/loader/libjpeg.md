@@ -20,7 +20,7 @@ The trailing `!` prevents fallback and is useful when comparing this adapter wit
 | Exif orientation | Enabled by default. `orientation=0` retains the stored raster orientation; applied rotations can exchange width and height before shared crop/resize. |
 | Alpha and animation | JPEG has no source alpha in this adapter and produces one frame. `-S` does not expose another JPEG frame sequence. |
 
-Backend-specific suboptions are `orientation=0|1` (`O`) and `cms_engine=auto|lcms2|colorsync|builtin|none` (`E`, subject to build availability). Their environment fallbacks are `SIXEL_LOADER_LIBJPEG_ORIENTATION` and `SIXEL_LOADER_LIBJPEG_CMS_ENGINE`, followed by the corresponding shared loader settings. Common loader CMS target, rendering-intent, and `prefer_8bit` controls are described in [color management](color-management/README.md) and [color spaces](../concepts/colorspace/README.md).
+Backend-specific suboptions are `orientation=0|1` (`O`) and `cms_engine=auto|lcms2|colorsync|builtin|none` (`E`, subject to build availability). Their environment fallbacks are `SIXEL_LOADER_LIBJPEG_ORIENTATION` and `SIXEL_LOADER_LIBJPEG_CMS_ENGINE`, followed by the corresponding shared loader settings. Common loader CMS target, rendering-intent, and `prefer_8bit` controls are described in [color management](color-management/README.md) and [color-space handling](../encoder/colorspace-handling/README.md#loader-color-management).
 
 Float storage preserves the values supplied by the decode/conversion route; it does not reverse JPEG loss or establish that an 8-bit JPEG contains higher-depth source information. Likewise, disabling CMS does not disable Exif orientation. Keep those controls fixed when comparing the external and builtin paths.
 

@@ -13,7 +13,9 @@ Start from the [documentation index](README.md). Read the relevant document befo
 - [Project history and lineage](project-history.md): origin, development milestones, contribution history, and attribution sources.
 - [SIXEL format overview](sixel-format/README.md): wire syntax, control functions, rendering semantics, interoperability, and implementation references.
 - [Build, runtime, and platform support](platform-support.md): build and runtime requirements, CI-backed support tiers, and platform matrix.
-- [Color spaces and loader color management](concepts/colorspace/README.md): color interpretation, transfer functions, encoder color-space boundaries, and loader ICC/CMS behavior.
+- [Color spaces](concepts/colorspace/README.md): color interpretation, primaries, white points, transfer functions, conversion hubs, gamut, and linear-light mixing.
+- [Color management basics](concepts/color-management/README.md): ICC profiles, the profile connection space, chromatic adaptation, and rendering intents.
+- [Color-space handling](encoder/colorspace-handling/README.md): implicit conversions, the `-X`, `-W`, and `-U` boundaries, loader ICC/CMS settings, and extended-coordinate preservation.
 - [Loader precision, gamut, and fast paths](loader/precision-policy.md): backend representation, preservation boundaries, byte eligibility, and validation.
 - [Pixel-format precision](concepts/pixelformat-precision/README.md): byte and float32 storage, implicit promotion boundaries, resize precision, and focused quality measurements.
 - [Pixel formats and alpha representation](concepts/pixelformat.md): input memory layouts, frame storage, transparency metadata, and the SIXEL wire boundary.

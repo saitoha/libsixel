@@ -24,8 +24,8 @@ palette values, or choose the space used by all later image processing.
 For a generated palette, the relevant path is:
 
 <picture>
-  <source media="(max-width: 640px)" srcset="../../../concepts/colorspace/figures/encoding-pipeline-mobile.svg">
-  <img src="../../../concepts/colorspace/figures/encoding-pipeline-wide.svg" alt="Generated-palette pipeline: palette-building colors enter clustering space, main-image pixels enter working space, and both meet for lookup and dithering before final palette output conversion." loading="lazy">
+  <source media="(max-width: 640px)" srcset="../../colorspace-handling/figures/encoding-pipeline-mobile.svg">
+  <img src="../../colorspace-handling/figures/encoding-pipeline-wide.svg" alt="Generated-palette pipeline: palette-building colors enter clustering space, main-image pixels enter working space, and both meet for lookup and dithering before final palette output conversion." loading="lazy">
 </picture>
 
 The encoder clones the frame when palette construction needs a different

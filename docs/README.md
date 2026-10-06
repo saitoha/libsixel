@@ -41,7 +41,8 @@ The foundations the rest of the documentation builds on, in reading order: how v
 
 ### Color spaces
 
-- [Color spaces and loader color management](concepts/colorspace/README.md) explains linear RGB/XYZ conversion hubs, ICC PCS and reference whites, linear-light mixing, and when implicit conversions occur, then connects loader output with the `-X`, `-W`, and `-U` encoder boundaries and shows how to inspect the effective path.
+- [Color spaces](concepts/colorspace/README.md) explains what numbers, layouts, color spaces and profiles each mean, primaries, white points and transfer functions, gamma encoding and linear light, linear RGB and XYZ as conversion hubs, out-of-gamut and imaginary colors, and why mixing needs linear light.
+- [Color management basics](concepts/color-management/README.md) explains why images carry color profiles, what an ICC profile contains, the profile connection space, chromatic adaptation between D50 and D65, rendering intents, and where color management happens in libsixel.
 
 ### Color difference
 
@@ -81,6 +82,7 @@ The encoder and decoder in data-flow order, from loading an image to writing SIX
 
 - [Encoding pipeline](encoder/pipeline/README.md) connects loading, palette construction, palette application, SIXEL byte generation, and their composed cost model.
 - [Encoder execution map](encoder/execution-map/README.md) expands the implementation path through loader fallback, preprocessing, scheduler overlap, quantizer-specific work, lookup and dither application, and palette serialization.
+- [Color-space handling](encoder/colorspace-handling/README.md) describes the implicit conversions in loading, resize and composition, the `-X`, `-W`, and `-U` boundaries, lazy conversion and how to inspect the effective path, loader CMS engines and settings, extended-coordinate preservation, common configurations, and common mistakes.
 - [Encoder working precision](encoder/precision/README.md) explains the cross-cutting `--precision` axis, effective 8-bit and float32 paths, and the shared quality, speed, and size comparison across processing policies.
 
 ### Image loading

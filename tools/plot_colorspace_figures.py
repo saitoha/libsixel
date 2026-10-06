@@ -14,6 +14,12 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'docs/concepts/colorspace/figures'
+# Figures owned by other documents of the color-space series.
+FIGURE_DIRS = {
+    'pcs-connection': ROOT / 'docs/concepts/color-management/figures',
+    'encoding-pipeline': ROOT / 'docs/encoder/colorspace-handling/figures',
+    'resize-boundaries': ROOT / 'docs/encoder/colorspace-handling/figures',
+}
 INK = '#183247'
 MUTED = '#4c6070'
 BLUE = '#17618c'
@@ -607,14 +613,16 @@ def main():
                     'https://bottosson.github.io/posts/oklab/',
                     'https://www.color.org/specifications/ICC.1-2022-05.pdf'],
         'layouts': ['wide', 'mobile'],
+        'outputs': {name: str(path.relative_to(ROOT))
+                    for name, path in sorted(FIGURE_DIRS.items())},
         'color_roles': {'blue': 'conversion hub or sRGB outline',
                         'gold': 'Display P3 outline',
                         'mixing_swatches': 'calculated sRGB output colors'},
     }, indent=2, ensure_ascii=False) + '\n'
-    if not args.check:
-        OUT.mkdir(parents=True, exist_ok=True)
     for name, content in assets.items():
-        path = OUT / name
+        path = FIGURE_DIRS.get(name.rsplit('-', 1)[0], OUT) / name
+        if not args.check:
+            path.parent.mkdir(parents=True, exist_ok=True)
         if args.check:
             if not path.exists() or path.read_text() != content:
                 raise SystemExit(f'Stale figure: {path}')

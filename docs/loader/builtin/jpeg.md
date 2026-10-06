@@ -119,7 +119,7 @@ JPEG entropy decode and high-depth prediction operate on attacker-controlled sym
 
 - Entropy, DCT/progressive/lossless decode and component conversion: [`stb_image.h`](../../../src/stb_image.h)
 - Precision selection, ICC assembly, orientation, and frame creation: [`loader-builtin.c`](../../../src/loader-builtin.c)
-- Loader color contract: [Color Spaces and Loader Color Management](../../concepts/colorspace/README.md)
+- Loader color contract: [Color-Space Handling](../../encoder/colorspace-handling/README.md)
 - Broader non-owning JPEG regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
 
 ## Test coverage

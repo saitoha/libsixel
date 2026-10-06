@@ -13,7 +13,7 @@ The accepted values are `gamma`, `linear`, `oklab`, `cielab`, and `din99d`. The 
 
 The working color space changes the geometry used by palette lookup and the components in which dithering error is calculated and propagated. It can therefore change visible structure, pointwise color error, runtime, memory use, and SIXEL stream size even when palette construction returns exactly the same palette colors.
 
-`-W` does not describe the source image profile and does not select the RGB coordinates serialized into the SIXEL palette. Loader color management and the complete `-X` / `-W` / `-U` model are introduced in [Color spaces and loader color management](../../../concepts/colorspace/README.md).
+`-W` does not describe the source image profile and does not select the RGB coordinates serialized into the SIXEL palette. Loader color management and the complete `-X` / `-W` / `-U` model are described in [Color-space handling](../../colorspace-handling/README.md).
 
 [Dither clamp policy](../clamp-policy.md) governs added error feedback in these coordinates. Its limits do not apply to working-space conversion itself.
 
@@ -22,8 +22,8 @@ The working color space changes the geometry used by palette lookup and the comp
 For a generated palette, the relevant path is:
 
 <picture>
-  <source media="(max-width: 640px)" srcset="../../../concepts/colorspace/figures/encoding-pipeline-mobile.svg">
-  <img src="../../../concepts/colorspace/figures/encoding-pipeline-wide.svg" alt="Generated-palette pipeline: palette-building colors enter clustering space, main-image pixels enter working space, and both meet for lookup and dithering before final palette output conversion." loading="lazy">
+  <source media="(max-width: 640px)" srcset="../../colorspace-handling/figures/encoding-pipeline-mobile.svg">
+  <img src="../../colorspace-handling/figures/encoding-pipeline-wide.svg" alt="Generated-palette pipeline: palette-building colors enter clustering space, main-image pixels enter working space, and both meet for lookup and dithering before final palette output conversion." loading="lazy">
 </picture>
 
 The three encoder color-space controls own different boundaries:
