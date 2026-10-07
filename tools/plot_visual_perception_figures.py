@@ -263,11 +263,65 @@ def dark_adaptation():
         return mpl_svg(fig)
 
 
+CSF_GRID = np.logspace(-1, np.log10(60), 400)
+
+
+def luminance_csf(f):
+    """Mannos and Sakrison (1974) model, scaled to its peak on CSF_GRID."""
+    def raw(x):
+        return 2.6 * (0.0192 + 0.114 * x) * np.exp(-(0.114 * x) ** 1.1)
+    return raw(np.asarray(f, dtype=float)) / raw(CSF_GRID).max()
+
+
+def chroma_csf(f):
+    """Schematic chroma low-pass after Mullen (1985), scaled to its peak."""
+    return 1.0 / (1.0 + (np.asarray(f, dtype=float) / 1.5) ** 2.2)
+
+
+# Frequencies tabulated in figures.json for the comparison of luminance and
+# chroma sensitivity in the visual perception guide.
+CSF_SAMPLE_CPD = (0.5, 1, 2, 3, 4, 8, 12, 17, 30)
+
+# The character-cell example of the visual perception guide: a 100 ppi
+# display viewed at 50 cm, with 8 x 16 pixel character cells.
+CELL_EXAMPLE = {'ppi': 100, 'distance_mm': 500, 'cell_px': (8, 16)}
+
+
+def csf_samples():
+    """Return the tabulated luminance and chroma sensitivities."""
+    rows = []
+    for f in CSF_SAMPLE_CPD:
+        lum = float(luminance_csf(f))
+        chroma = float(chroma_csf(f))
+        rows.append({'cpd': f, 'luminance': round(lum, 4),
+                     'chroma': round(chroma, 4),
+                     'luminance_over_chroma': round(lum / chroma, 2)})
+    return rows
+
+
+def character_cell_examples():
+    """Return the finest pattern frequency of common character renderings."""
+    pitch = 25.4 / CELL_EXAMPLE['ppi']
+    ppd = CELL_EXAMPLE['distance_mm'] * math.tan(math.radians(1)) / pitch
+    width, height = CELL_EXAMPLE['cell_px']
+    units = (
+        ('character cell', width, height),
+        ('half block', width, height / 2),
+        ('chafa 8 x 8 sub-cell', width / 8, height / 8),
+    )
+    rows = []
+    for name, unit_w, unit_h in units:
+        rows.append({'unit': name, 'unit_px': [float(unit_w), float(unit_h)],
+                     'horizontal_cpd': round(ppd / (2 * unit_w), 2),
+                     'vertical_cpd': round(ppd / (2 * unit_h), 2)})
+    return {'display': CELL_EXAMPLE, 'pixels_per_degree': round(ppd, 2),
+            'units': rows}
+
+
 def contrast_sensitivity():
-    f = np.logspace(-1, np.log10(60), 400)
-    lum = 2.6 * (0.0192 + 0.114 * f) * np.exp(-(0.114 * f) ** 1.1)
-    lum = lum / lum.max()
-    chroma = 1.0 / (1.0 + (f / 1.5) ** 2.2)
+    f = CSF_GRID
+    lum = luminance_csf(f)
+    chroma = chroma_csf(f)
     with plt.rc_context(RC):
         fig, ax = plt.subplots(figsize=(7.2, 3.9))
         ax.loglog(f, lum, color=INK, lw=2.6, label='Light–dark (luminance)')
@@ -692,6 +746,8 @@ def main():
             'luma-chroma.svg': 'images/snake.png, BT.601 YCbCr on encoded values',
             'dither-integration.svg': 'Floyd-Steinberg and seeded random threshold dither',
         },
+        'contrast_sensitivity_samples': csf_samples(),
+        'character_cell_examples': character_cell_examples(),
         'external': EXTERNAL,
     }, indent=2, ensure_ascii=False) + '\n'
     if not args.check:

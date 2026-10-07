@@ -27,6 +27,102 @@
     "luma-chroma.svg": "images/snake.png, BT.601 YCbCr on encoded values",
     "dither-integration.svg": "Floyd-Steinberg and seeded random threshold dither"
   },
+  "contrast_sensitivity_samples": [
+    {
+      "cpd": 0.5,
+      "luminance": 0.1935,
+      "chroma": 0.9181,
+      "luminance_over_chroma": 0.21
+    },
+    {
+      "cpd": 1,
+      "luminance": 0.3221,
+      "chroma": 0.7093,
+      "luminance_over_chroma": 0.45
+    },
+    {
+      "cpd": 2,
+      "luminance": 0.5383,
+      "chroma": 0.3469,
+      "luminance_over_chroma": 1.55
+    },
+    {
+      "cpd": 3,
+      "luminance": 0.7042,
+      "chroma": 0.1787,
+      "luminance_over_chroma": 3.94
+    },
+    {
+      "cpd": 4,
+      "luminance": 0.8264,
+      "chroma": 0.1036,
+      "luminance_over_chroma": 7.98
+    },
+    {
+      "cpd": 8,
+      "luminance": 0.9999,
+      "chroma": 0.0245,
+      "luminance_over_chroma": 40.75
+    },
+    {
+      "cpd": 12,
+      "luminance": 0.8964,
+      "chroma": 0.0102,
+      "luminance_over_chroma": 87.85
+    },
+    {
+      "cpd": 17,
+      "luminance": 0.6543,
+      "chroma": 0.0048,
+      "luminance_over_chroma": 137.23
+    },
+    {
+      "cpd": 30,
+      "luminance": 0.1906,
+      "chroma": 0.0014,
+      "luminance_over_chroma": 139.02
+    }
+  ],
+  "character_cell_examples": {
+    "display": {
+      "ppi": 100,
+      "distance_mm": 500,
+      "cell_px": [
+        8,
+        16
+      ]
+    },
+    "pixels_per_degree": 34.36,
+    "units": [
+      {
+        "unit": "character cell",
+        "unit_px": [
+          8.0,
+          16.0
+        ],
+        "horizontal_cpd": 2.15,
+        "vertical_cpd": 1.07
+      },
+      {
+        "unit": "half block",
+        "unit_px": [
+          8.0,
+          8.0
+        ],
+        "horizontal_cpd": 2.15,
+        "vertical_cpd": 2.15
+      },
+      {
+        "unit": "chafa 8 x 8 sub-cell",
+        "unit_px": [
+          1.0,
+          2.0
+        ],
+        "horizontal_cpd": 17.18,
+        "vertical_cpd": 8.59
+      }
+    ]
+  },
   "external": {
     "eye-anatomy.jpg": {
       "title": "1413 Structure of the Eye",

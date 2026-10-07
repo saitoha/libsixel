@@ -220,6 +220,52 @@ Fine chromatic error is attenuated far more than fine luminance error, which is 
 
 Chroma still matters at low spatial frequencies. Large areas are judged as colors, and color casts, banding in colored gradients, and tinted neutrals are visible even though fine chroma detail is not. Perception therefore favors luminance for *spatial structure* and chroma for *area color*, which is the division the metrics follow; see [why luminance is currently emphasized](../metrics.md#why-luminance-is-currently-emphasized).
 
+## Character cells and mosaics
+
+Programs that draw images with text, such as AAlib, libcaca, chafa and the half-block and Braille modes of terminal image viewers, use the character cell as their picture element. A cell can show one glyph in one foreground and one background color, so a character renderer behaves like a display device with a very coarse grid and a strongly restricted set of pixel patterns. Its history and the methods of these programs are described under [pictures made of characters](../../sixel-format/terminal-graphics-history/README.md#pictures-made-of-characters); this section looks at the cell from the side of the viewer.
+
+### Where a character cell falls on the sensitivity curves
+
+With the geometry of [the previous example](#from-pixels-to-cycles-per-degree), 100 ppi at 50 cm or about 34 pixels per degree, a cell of 8 × 16 pixels spans about a quarter of a degree in width and half a degree in height. A pattern that alternates from one cell to the next therefore has a frequency of only about 1 to 2 cpd:
+
+| Picture element | Size in pixels | Horizontal cpd | Vertical cpd |
+| --- | --- | ---: | ---: |
+| Character cell | 8 × 16 | 2.15 | 1.07 |
+| Half block (two per cell) | 8 × 8 | 2.15 | 2.15 |
+| chafa 8 × 8 sub-cell bitmap | 1 × 2 | 17.18 | 8.59 |
+
+*Table 1. Nyquist frequency of each picture element at 100 ppi and 50 cm. A larger font or a closer view moves every row to lower frequencies.*
+
+The two sensitivity curves of [Figure 14](#contrast-sensitivity) weight these frequencies very differently:
+
+| cpd | Luminance (relative) | Chroma (relative) | Luminance / chroma |
+| ---: | ---: | ---: | ---: |
+| 0.5 | 0.19 | 0.92 | 0.21 |
+| 1 | 0.32 | 0.71 | 0.45 |
+| 2 | 0.54 | 0.35 | 1.55 |
+| 3 | 0.70 | 0.18 | 3.94 |
+| 4 | 0.83 | 0.10 | 7.98 |
+| 8 | 1.00 | 0.025 | 40.75 |
+| 12 | 0.90 | 0.010 | 87.85 |
+| 17 | 0.65 | 0.0048 | 137.23 |
+| 30 | 0.19 | 0.0014 | 139.02 |
+
+*Table 2. Relative contrast sensitivity of the luminance model (Mannos and Sakrison 1974) and the schematic chroma curve (after Mullen 1985), each scaled to its own peak. The ratio compares the two shapes, not absolute thresholds, and is reliable only in its order of magnitude, because the chroma curve is schematic.*
+
+At the frequency of the cell grid, around 1 to 2 cpd, luminance and chroma are about equally effective, and below 1 cpd chroma is relatively the stronger of the two. At the frequency of the shapes inside a cell, around 8 to 17 cpd, luminance dominates by more than an order of magnitude and chroma detail is close to invisible. Seen this way the usual design of character renderers is well matched to vision: the glyph inside a cell is read mainly as a pattern of luminance coverage, and the colors of the cell are read mainly as area colors. It also follows that the color assigned to each cell carries as much weight as the choice of glyph, so that matching cell colors in a perceptually uniform space, as chafa does with DIN99d, matters more for a character renderer than for a pixel display.
+
+### Research on coarse mosaics
+
+The perception of block-quantized, or pixelated, images has been studied since the 1970s, mostly with faces:
+
+- **Block edges mask the image.** Harmon and Julesz (1973) found that a portrait reduced to large uniform blocks is hard to recognize largely because the sharp block edges add spurious high-frequency energy close to the low frequencies that carry the face, and that removing that energy by blurring restores recognition. Morrone, Burr and Ross (1983) showed that adding noise can likewise restore the recognizability of coarsely quantized images.
+- **A small number of elements suffices.** Bachmann (1991) found that faces remain identifiable down to about 16 blocks across the face, about 8 cycles per face. Costen, Parker and Craw (1994) placed the band most important for face recognition at about 8 to 16 cycles per face. Bachmann and Kahusk (1997) studied how the coarseness of quantization interacts with exposure time and attention. Bachmann (2016) reviews the field in a book-length treatment.
+- **Size and distance decide between tiles and image.** Pelli (1999) studied the portraits of Chuck Close, which are built from tiles: whether the viewer sees a face or an array of tiles depends on the number of tiles per face and on the angular size of the picture.
+- **Color helps when shape is degraded.** Yip and Sinha (2002) found that color contributes to face recognition mainly when shape information is degraded, for example by blur. Oliva and Schyns (2000) found that diagnostic colors speed scene recognition, especially at coarse scales. Schyns and Oliva (1994) and Oliva and Schyns (1997) showed that the spatial scale used for recognition depends on the task, rather than always proceeding from coarse to fine.
+- **Glyphs as structure.** Xu, Zhang and Wong (2010) chose glyphs for line drawings by structural similarity rather than by tone, an approach that treats glyphs as small images, as later character renderers do.
+
+These results support three practical rules for a character renderer: preserve coarse luminance structure, because it carries recognition at the few cycles per object that a cell grid can show; set the colors of each cell to match the local average in a perceptual space, because at these frequencies color contributes to recognition; and avoid making the cell grid itself conspicuous, because sharp, regular block edges mask the image, while texture, dithering inside cells or a small amount of noise can reduce that masking. The numbers in Tables 1 and 2 are computed by [`tools/plot_visual_perception_figures.py`](../../../tools/plot_visual_perception_figures.py) and recorded in [`figures/figures.json`](figures/figures.json).
+
 ## Figures and reproduction
 
 Figures 2 and 5 to 17 are generated by [`tools/plot_visual_perception_figures.py`](../../../tools/plot_visual_perception_figures.py) with Matplotlib, NumPy and Pillow. Run it to regenerate them and with `--check` to verify that the committed files are current. Their data sources are recorded in [`figures/figures.json`](figures/figures.json): the cone and rod curves use the photopigment template of Govardovskii et al. (2000); the luminous efficiency curves are the CIE 1924 and 1951 tables; the receptor density, dark adaptation and chroma sensitivity curves are schematic; the luminance sensitivity curve is the Mannos and Sakrison (1974) model; and Figure 17 uses the repository image `images/snake.png`. Figures 1, 3 and 4 are reproduced from Wikimedia Commons under the licenses stated in their captions and recorded in the same file.
@@ -227,14 +273,26 @@ Figures 2 and 5 to 17 are generated by [`tools/plot_visual_perception_figures.py
 ## References
 
 - Aguilar, M., and W. S. Stiles. "Saturation of the rod mechanism of the retina at high levels of stimulation." Optica Acta 1(1), 1954.
+- Bachmann, T. "Identification of spatially quantised tachistoscopic images of faces: How many pixels does it take to carry identity?" European Journal of Cognitive Psychology 3(1):87–103, 1991. doi:[10.1080/09541449108406221](https://doi.org/10.1080/09541449108406221)
+- Bachmann, T. *Perception of Pixelated Images*. Academic Press, 2016. Reviewed by V. Goffaux in Frontiers in Psychology 7:1151, 2016. doi:[10.3389/fpsyg.2016.01151](https://doi.org/10.3389/fpsyg.2016.01151)
+- Bachmann, T., and N. Kahusk. "The effects of coarseness of quantisation, exposure duration, and selective spatial attention on the perception of spatially quantised ('blocked') visual images." Perception 26(9):1181–1196, 1997. doi:[10.1068/p261181](https://doi.org/10.1068/p261181)
 - Campbell, F. W., and J. G. Robson. "Application of Fourier analysis to the visibility of gratings." Journal of Physiology 197, 1968.
 - CIE Publication 191. Recommended system for mesopic photometry based on visual performance, 2010.
+- Costen, N. P., D. M. Parker, and I. Craw. "Spatial content and spatial quantisation effects in face recognition." Perception 23(2):129–146, 1994. doi:[10.1068/p230129](https://doi.org/10.1068/p230129)
 - Curcio, C. A., K. R. Sloan, R. E. Kalina, and A. E. Hendrickson. "Human photoreceptor topography." Journal of Comparative Neurology 292(4):497–523, 1990. doi:[10.1002/cne.902920402](https://doi.org/10.1002/cne.902920402)
 - Fairchild, M. D., and G. M. Johnson. "iCAM framework for image appearance, differences, and quality." Journal of Electronic Imaging 13(1), 2004.
 - Govardovskii, V. I., N. Fyhrquist, T. Reuter, D. G. Kuzmin, and K. Donner. "In search of the visual pigment template." Visual Neuroscience 17(4):509–528, 2000. doi:[10.1017/S0952523800174036](https://doi.org/10.1017/S0952523800174036)
+- Harmon, L. D., and B. Julesz. "Masking in visual recognition: effects of two-dimensional filtered noise." Science 180(4091):1194–1197, 1973. doi:[10.1126/science.180.4091.1194](https://doi.org/10.1126/science.180.4091.1194)
 - Hurvich, L. M., and D. Jameson. "An opponent-process theory of color vision." Psychological Review 64(6), 1957.
 - ITU-R Recommendation BT.500. Methodologies for the subjective assessment of the quality of television images.
 - Mannos, J. L., and D. J. Sakrison. "The effects of a visual fidelity criterion on the encoding of images." IEEE Transactions on Information Theory 20(4), 1974.
+- Morrone, M. C., D. C. Burr, and J. Ross. "Added noise restores recognizability of coarse quantized images." Nature 305:226–228, 1983. doi:[10.1038/305226a0](https://doi.org/10.1038/305226a0)
 - Mullen, K. T. "The contrast sensitivity of human colour vision to red-green and blue-yellow chromatic gratings." Journal of Physiology 359:381–400, 1985. doi:[10.1113/jphysiol.1985.sp015591](https://doi.org/10.1113/jphysiol.1985.sp015591)
+- Oliva, A., and P. G. Schyns. "Coarse blobs or fine edges? Evidence that information diagnosticity changes the perception of complex visual stimuli." Cognitive Psychology 34(1):72–107, 1997. doi:[10.1006/cogp.1997.0667](https://doi.org/10.1006/cogp.1997.0667)
+- Oliva, A., and P. G. Schyns. "Diagnostic colors mediate scene recognition." Cognitive Psychology 41(2):176–210, 2000. doi:[10.1006/cogp.1999.0728](https://doi.org/10.1006/cogp.1999.0728)
 - OpenStax College. *Anatomy & Physiology*. Rice University, 2013. <https://cnx.org/content/col11496/1.6/>
+- Pelli, D. G. "Close encounters: an artist shows that size affects shape." Science 285(5429):844–846, 1999. doi:[10.1126/science.285.5429.844](https://doi.org/10.1126/science.285.5429.844)
+- Schyns, P. G., and A. Oliva. "From blobs to boundary edges: evidence for time- and spatial-scale-dependent scene recognition." Psychological Science 5(4):195–200, 1994. doi:[10.1111/j.1467-9280.1994.tb00500.x](https://doi.org/10.1111/j.1467-9280.1994.tb00500.x)
 - von Kries, J. "Chromatic adaptation." Festschrift der Albrecht-Ludwigs-Universität, Freiburg, 1902. English translation in D. L. MacAdam, ed., *Sources of Color Science*, MIT Press, 1970.
+- Xu, X., L. Zhang, and T.-T. Wong. "Structure-based ASCII art." ACM Transactions on Graphics 29(4):52, 2010. doi:[10.1145/1778765.1778789](https://doi.org/10.1145/1778765.1778789)
+- Yip, A. W., and P. Sinha. "Contribution of color to face recognition." Perception 31(8):995–1003, 2002. doi:[10.1068/p3376](https://doi.org/10.1068/p3376)

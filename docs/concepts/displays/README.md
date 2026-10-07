@@ -218,6 +218,8 @@ For images in a terminal, the density that matters is that of the image's own pi
 
 Bandwidth pulls in the same direction. Filling the same area of a screen with twice the density in each direction takes four times as many pixels, and the SIXEL stream and the time to encode and decode it grow accordingly. Applications therefore have reasons to send images at a lower resolution and let them be shown enlarged.
 
+Character-based image renderers, such as AAlib, libcaca, chafa and the half-block or Braille modes of terminal image viewers, can be treated as one more display device of this kind, whose picture element is the character cell. A cell of 8 × 16 pixels on a 100 ppi screen at 50 cm puts the cell grid at only about 1 to 2 cycles per degree, a range where luminance and chroma are seen about equally well, while the shapes inside a cell fall where luminance dominates. [Character cells and mosaics](../../quality/visual-perception/README.md#character-cells-and-mosaics) works through these numbers and summarizes research on the perception of coarse mosaics.
+
 ### What density does and does not change for dithering
 
 It is tempting to conclude that low effective density simply calls for more dithering, or that high density makes dithering free. Neither follows. Density changes mainly how visible the *pattern* of dithering noise is; it changes neither what dithering is for nor most of what it costs.
