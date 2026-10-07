@@ -27,10 +27,29 @@ The same thread notes that "sixel" names three related things: a column of six v
 SIXEL has no definition as an image or interchange format. In particular:
 
 - there is no file signature, container, directory, or checksum; `file(1)` reports a `.six` file as ASCII text with escape sequences;
-- the IANA media-type registry contains no SIXEL type;
+- the IANA media-type registry contains no SIXEL type, and neither do the common media-type and file-identification databases (see [media types in use](#media-types-in-use));
 - nothing defines how a file containing several DCS strings, surrounding text, or other terminal controls is to be interpreted as an image;
 - color register values are percentages of device primaries with no stated color space, so colorimetric meaning is device-dependent (see the [graphics color-management proposal](../protocols/graphics-color-management.md) for one way to supply it outside the stream);
 - placement, scrolling, and the result of mixing graphics with text are terminal behaviors rather than properties of the stream.
+
+### Media types in use
+
+No media type for SIXEL has been registered with IANA. In October 2026 there was also no SIXEL entry in freedesktop.org's shared-mime-info database, the jshttp `mime-db` database used by many web servers and libraries, Apache httpd's `mime.types`, or the `file(1)` magic database.
+
+A small number of projects nevertheless label SIXEL data with an unregistered media type. `image/x-sixel` is the more common form:
+
+| Project | Use of `image/x-sixel` |
+| --- | --- |
+| [Wikidata, item Q7532980](https://www.wikidata.org/wiki/Q7532980) | Lists `image/x-sixel` as the media type of the Sixel format, with the extensions `six` and `sixel`. |
+| [chawan](https://git.sr.ht/~bptato/chawan) | This terminal web browser labels the SIXEL data it produces for display as an `image/x-sixel` blob. |
+| [clifm](https://github.com/leo-arch/clifm) | The terminal file manager maps `six` and `sixel` to `image/x-sixel` in its `mime.types` and returns that type from its built-in content sniffer when it recognizes a SIXEL introducer. |
+| [vv](https://github.com/hackerb9/vv) | This SIXEL image viewer assigns `image/x-sixel` to files named `*.six` or `*.sixel`, with a comment that the magic database does not recognize the format. |
+| [dexvert](https://github.com/Sembiance/dexvert) | The file-format identification and conversion tool declares `image/x-sixel` for its Sixel format. |
+| [Casciian](https://github.com/crramirez/casciian) | The Java text user interface library registers its SIXEL image decoder for `image/x-sixel`. |
+
+`image/sixel` without the prefix appears less often. The Julia package [TerminalGraphics.jl](https://github.com/m-j-w/TerminalGraphics.jl) documents `display(MIME"image/sixel", image)` for its SIXEL display, and the Neovim Jupyter integration [Jove.nvim](https://github.com/AM-I-Human/Jove.nvim) registers an IPython display formatter under `image/sixel`.
+
+libsixel's own integrations follow the same practice: its GdkPixbuf loader, Quick Look extension, and Freedesktop thumbnailer declare `image/x-sixel`, and the GdkPixbuf loader and thumbnailer also accept `image/sixel`. These labels are conventions among individual projects, not a registration. Both forms are unregistered. [RFC 6838](https://www.rfc-editor.org/rfc/rfc6838) section 3.4 strongly discourages unregistered types, and [RFC 6648](https://www.rfc-editor.org/rfc/rfc6648) deprecates the `x-` convention; RFC 6838 also allows a generally useful and widely deployed type that ended up with an `x-` prefix to be registered under its existing name by the procedure in its Appendix A. A label also does not resolve the questions in the previous section, such as how a file containing several DCS strings or other terminal controls is to be interpreted.
 
 ## De facto use as an image file
 
