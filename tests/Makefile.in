@@ -3035,6 +3035,21 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	codec/drcs/0008_mono_reject.c codec/drcs/0009_or_reject.c \
 	codec/drcs/0010_offset_reject.c codec/drcs/0011_macro_reject.c \
 	codec/drcs/0012_output_reuse.c codec/drcs/0013_p3_pipeline.c \
+	quant/palette/cluster_precision/cluster_precision_common.c \
+	quant/palette/cluster_precision/0001_linear_mean.c \
+	quant/palette/cluster_precision/0002_oklab_mean.c \
+	quant/palette/cluster_precision/0003_cielab_negative.c \
+	quant/palette/cluster_precision/0004_din99d_mean.c \
+	quant/palette/cluster_precision/0005_heckbert_mean.c \
+	quant/palette/cluster_precision/0006_center_endpoints.c \
+	quant/palette/cluster_precision/0007_medoids_endpoints.c \
+	quant/palette/cluster_precision/0008_auto_mean.c \
+	quant/palette/cluster_precision/0009_gamma_byte_control.c \
+	quant/palette/cluster_precision/0010_builtin_byte_control.c \
+	quant/palette/cluster_precision/0011_byte_request.c \
+	quant/palette/cluster_precision/0012_workspace_reuse.c \
+	quant/palette/cluster_precision/0013_gamma_soft_control.c \
+	quant/palette/cluster_precision/0014_linear_output.c \
 	codec/drcs/highcolor_drcs_common.c \
 	codec/drcs/0014_highcolor_p3_final_band.c \
 	codec/drcs/0015_highcolor_p3_c1.c \
@@ -6023,6 +6038,21 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0011_macro_reject.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0012_output_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0013_p3_pipeline.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-cluster_precision_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0001_linear_mean.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0002_oklab_mean.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0003_cielab_negative.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0004_din99d_mean.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0005_heckbert_mean.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0006_center_endpoints.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0007_medoids_endpoints.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0008_auto_mean.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0009_gamma_byte_control.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0010_builtin_byte_control.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0011_byte_request.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0012_workspace_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0013_gamma_soft_control.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0014_linear_output.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-highcolor_drcs_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0014_highcolor_p3_final_band.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0015_highcolor_p3_c1.$(OBJEXT) \
@@ -8601,6 +8631,21 @@ am__depfiles_remade =  \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0024_p3_export.Po \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0025_positive_fs.Po \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0026_negative_fs.Po \
+	quant/palette/cluster_precision/$(DEPDIR)/test_runner-0001_linear_mean.Po \
+	quant/palette/cluster_precision/$(DEPDIR)/test_runner-0002_oklab_mean.Po \
+	quant/palette/cluster_precision/$(DEPDIR)/test_runner-0003_cielab_negative.Po \
+	quant/palette/cluster_precision/$(DEPDIR)/test_runner-0004_din99d_mean.Po \
+	quant/palette/cluster_precision/$(DEPDIR)/test_runner-0005_heckbert_mean.Po \
+	quant/palette/cluster_precision/$(DEPDIR)/test_runner-0006_center_endpoints.Po \
+	quant/palette/cluster_precision/$(DEPDIR)/test_runner-0007_medoids_endpoints.Po \
+	quant/palette/cluster_precision/$(DEPDIR)/test_runner-0008_auto_mean.Po \
+	quant/palette/cluster_precision/$(DEPDIR)/test_runner-0009_gamma_byte_control.Po \
+	quant/palette/cluster_precision/$(DEPDIR)/test_runner-0010_builtin_byte_control.Po \
+	quant/palette/cluster_precision/$(DEPDIR)/test_runner-0011_byte_request.Po \
+	quant/palette/cluster_precision/$(DEPDIR)/test_runner-0012_workspace_reuse.Po \
+	quant/palette/cluster_precision/$(DEPDIR)/test_runner-0013_gamma_soft_control.Po \
+	quant/palette/cluster_precision/$(DEPDIR)/test_runner-0014_linear_output.Po \
+	quant/palette/cluster_precision/$(DEPDIR)/test_runner-cluster_precision_common.Po \
 	quant/palette/color_space/$(DEPDIR)/test_runner-0001_space_contract.Po \
 	quant/palette/cover_float/$(DEPDIR)/test_runner-0001_cover_contract.Po \
 	quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Po \
@@ -10827,6 +10872,21 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_HIGHCOLOR_MACRO_RECOVERY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_HIGHCOLOR_PNG_RECOVERY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_HIGHCOLOR_WRITER_RESTORE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLUSTER_PRECISION_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LINEAR_MEAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_OKLAB_MEAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_CIELAB_NEGATIVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_DIN99D_MEAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_HECKBERT_MEAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_CENTER_ENDPOINTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_MEDOIDS_ENDPOINTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_AUTO_MEAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_GAMMA_BYTE_CONTROL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_BUILTIN_BYTE_CONTROL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_BYTE_REQUEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_WORKSPACE_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_GAMMA_SOFT_CONTROL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_LINEAR_OUTPUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SRGB_FLOAT_CENTER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_P3_FLOAT_CENTER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_P3_C1_BODY \
@@ -15813,6 +15873,21 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0011_macro_reject.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0012_output_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0013_p3_pipeline.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/cluster_precision_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0001_linear_mean.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0002_oklab_mean.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0003_cielab_negative.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0004_din99d_mean.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0005_heckbert_mean.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0006_center_endpoints.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0007_medoids_endpoints.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0008_auto_mean.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0009_gamma_byte_control.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0010_builtin_byte_control.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0011_byte_request.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0012_workspace_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0013_gamma_soft_control.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0014_linear_output.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/highcolor_drcs_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0014_highcolor_p3_final_band.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0015_highcolor_p3_c1.c \
@@ -25282,6 +25357,57 @@ codec/drcs/test_runner-0012_output_reuse.$(OBJEXT):  \
 codec/drcs/test_runner-0013_p3_pipeline.$(OBJEXT):  \
 	codec/drcs/$(am__dirstamp) \
 	codec/drcs/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/cluster_precision
+	@: >>quant/palette/cluster_precision/$(am__dirstamp)
+quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/cluster_precision/$(DEPDIR)
+	@: >>quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/test_runner-cluster_precision_common.$(OBJEXT):  \
+	quant/palette/cluster_precision/$(am__dirstamp) \
+	quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/test_runner-0001_linear_mean.$(OBJEXT):  \
+	quant/palette/cluster_precision/$(am__dirstamp) \
+	quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/test_runner-0002_oklab_mean.$(OBJEXT):  \
+	quant/palette/cluster_precision/$(am__dirstamp) \
+	quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/test_runner-0003_cielab_negative.$(OBJEXT):  \
+	quant/palette/cluster_precision/$(am__dirstamp) \
+	quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/test_runner-0004_din99d_mean.$(OBJEXT):  \
+	quant/palette/cluster_precision/$(am__dirstamp) \
+	quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/test_runner-0005_heckbert_mean.$(OBJEXT):  \
+	quant/palette/cluster_precision/$(am__dirstamp) \
+	quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/test_runner-0006_center_endpoints.$(OBJEXT):  \
+	quant/palette/cluster_precision/$(am__dirstamp) \
+	quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/test_runner-0007_medoids_endpoints.$(OBJEXT):  \
+	quant/palette/cluster_precision/$(am__dirstamp) \
+	quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/test_runner-0008_auto_mean.$(OBJEXT):  \
+	quant/palette/cluster_precision/$(am__dirstamp) \
+	quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/test_runner-0009_gamma_byte_control.$(OBJEXT):  \
+	quant/palette/cluster_precision/$(am__dirstamp) \
+	quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/test_runner-0010_builtin_byte_control.$(OBJEXT):  \
+	quant/palette/cluster_precision/$(am__dirstamp) \
+	quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/test_runner-0011_byte_request.$(OBJEXT):  \
+	quant/palette/cluster_precision/$(am__dirstamp) \
+	quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/test_runner-0012_workspace_reuse.$(OBJEXT):  \
+	quant/palette/cluster_precision/$(am__dirstamp) \
+	quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/test_runner-0013_gamma_soft_control.$(OBJEXT):  \
+	quant/palette/cluster_precision/$(am__dirstamp) \
+	quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+quant/palette/cluster_precision/test_runner-0014_linear_output.$(OBJEXT):  \
+	quant/palette/cluster_precision/$(am__dirstamp) \
+	quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
 codec/drcs/test_runner-highcolor_drcs_common.$(OBJEXT):  \
 	codec/drcs/$(am__dirstamp) \
 	codec/drcs/$(DEPDIR)/$(am__dirstamp)
@@ -25739,6 +25865,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/auto_float/*.$(OBJEXT)
 	-rm -f quant/palette/binning_float/*.$(OBJEXT)
 	-rm -f quant/palette/builtin_float/*.$(OBJEXT)
+	-rm -f quant/palette/cluster_precision/*.$(OBJEXT)
 	-rm -f quant/palette/color_space/*.$(OBJEXT)
 	-rm -f quant/palette/cover_float/*.$(OBJEXT)
 	-rm -f quant/palette/cover_mask/*.$(OBJEXT)
@@ -28179,6 +28306,21 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0024_p3_export.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0025_positive_fs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0026_negative_fs.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cluster_precision/$(DEPDIR)/test_runner-0001_linear_mean.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cluster_precision/$(DEPDIR)/test_runner-0002_oklab_mean.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cluster_precision/$(DEPDIR)/test_runner-0003_cielab_negative.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cluster_precision/$(DEPDIR)/test_runner-0004_din99d_mean.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cluster_precision/$(DEPDIR)/test_runner-0005_heckbert_mean.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cluster_precision/$(DEPDIR)/test_runner-0006_center_endpoints.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cluster_precision/$(DEPDIR)/test_runner-0007_medoids_endpoints.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cluster_precision/$(DEPDIR)/test_runner-0008_auto_mean.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cluster_precision/$(DEPDIR)/test_runner-0009_gamma_byte_control.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cluster_precision/$(DEPDIR)/test_runner-0010_builtin_byte_control.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cluster_precision/$(DEPDIR)/test_runner-0011_byte_request.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cluster_precision/$(DEPDIR)/test_runner-0012_workspace_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cluster_precision/$(DEPDIR)/test_runner-0013_gamma_soft_control.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cluster_precision/$(DEPDIR)/test_runner-0014_linear_output.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cluster_precision/$(DEPDIR)/test_runner-cluster_precision_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/color_space/$(DEPDIR)/test_runner-0001_space_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cover_float/$(DEPDIR)/test_runner-0001_cover_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Po@am__quote@ # am--include-marker
@@ -69132,6 +69274,216 @@ codec/drcs/test_runner-0013_p3_pipeline.obj: codec/drcs/0013_p3_pipeline.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0013_p3_pipeline.obj `if test -f 'codec/drcs/0013_p3_pipeline.c'; then $(CYGPATH_W) 'codec/drcs/0013_p3_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0013_p3_pipeline.c'; fi`
 
+quant/palette/cluster_precision/test_runner-cluster_precision_common.o: quant/palette/cluster_precision/cluster_precision_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-cluster_precision_common.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-cluster_precision_common.Tpo -c -o quant/palette/cluster_precision/test_runner-cluster_precision_common.o `test -f 'quant/palette/cluster_precision/cluster_precision_common.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/cluster_precision_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-cluster_precision_common.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-cluster_precision_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/cluster_precision_common.c' object='quant/palette/cluster_precision/test_runner-cluster_precision_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-cluster_precision_common.o `test -f 'quant/palette/cluster_precision/cluster_precision_common.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/cluster_precision_common.c
+
+quant/palette/cluster_precision/test_runner-cluster_precision_common.obj: quant/palette/cluster_precision/cluster_precision_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-cluster_precision_common.obj -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-cluster_precision_common.Tpo -c -o quant/palette/cluster_precision/test_runner-cluster_precision_common.obj `if test -f 'quant/palette/cluster_precision/cluster_precision_common.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/cluster_precision_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/cluster_precision_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-cluster_precision_common.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-cluster_precision_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/cluster_precision_common.c' object='quant/palette/cluster_precision/test_runner-cluster_precision_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-cluster_precision_common.obj `if test -f 'quant/palette/cluster_precision/cluster_precision_common.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/cluster_precision_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/cluster_precision_common.c'; fi`
+
+quant/palette/cluster_precision/test_runner-0001_linear_mean.o: quant/palette/cluster_precision/0001_linear_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0001_linear_mean.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0001_linear_mean.Tpo -c -o quant/palette/cluster_precision/test_runner-0001_linear_mean.o `test -f 'quant/palette/cluster_precision/0001_linear_mean.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0001_linear_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0001_linear_mean.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0001_linear_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0001_linear_mean.c' object='quant/palette/cluster_precision/test_runner-0001_linear_mean.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0001_linear_mean.o `test -f 'quant/palette/cluster_precision/0001_linear_mean.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0001_linear_mean.c
+
+quant/palette/cluster_precision/test_runner-0001_linear_mean.obj: quant/palette/cluster_precision/0001_linear_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0001_linear_mean.obj -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0001_linear_mean.Tpo -c -o quant/palette/cluster_precision/test_runner-0001_linear_mean.obj `if test -f 'quant/palette/cluster_precision/0001_linear_mean.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0001_linear_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0001_linear_mean.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0001_linear_mean.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0001_linear_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0001_linear_mean.c' object='quant/palette/cluster_precision/test_runner-0001_linear_mean.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0001_linear_mean.obj `if test -f 'quant/palette/cluster_precision/0001_linear_mean.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0001_linear_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0001_linear_mean.c'; fi`
+
+quant/palette/cluster_precision/test_runner-0002_oklab_mean.o: quant/palette/cluster_precision/0002_oklab_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0002_oklab_mean.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0002_oklab_mean.Tpo -c -o quant/palette/cluster_precision/test_runner-0002_oklab_mean.o `test -f 'quant/palette/cluster_precision/0002_oklab_mean.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0002_oklab_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0002_oklab_mean.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0002_oklab_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0002_oklab_mean.c' object='quant/palette/cluster_precision/test_runner-0002_oklab_mean.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0002_oklab_mean.o `test -f 'quant/palette/cluster_precision/0002_oklab_mean.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0002_oklab_mean.c
+
+quant/palette/cluster_precision/test_runner-0002_oklab_mean.obj: quant/palette/cluster_precision/0002_oklab_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0002_oklab_mean.obj -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0002_oklab_mean.Tpo -c -o quant/palette/cluster_precision/test_runner-0002_oklab_mean.obj `if test -f 'quant/palette/cluster_precision/0002_oklab_mean.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0002_oklab_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0002_oklab_mean.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0002_oklab_mean.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0002_oklab_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0002_oklab_mean.c' object='quant/palette/cluster_precision/test_runner-0002_oklab_mean.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0002_oklab_mean.obj `if test -f 'quant/palette/cluster_precision/0002_oklab_mean.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0002_oklab_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0002_oklab_mean.c'; fi`
+
+quant/palette/cluster_precision/test_runner-0003_cielab_negative.o: quant/palette/cluster_precision/0003_cielab_negative.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0003_cielab_negative.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0003_cielab_negative.Tpo -c -o quant/palette/cluster_precision/test_runner-0003_cielab_negative.o `test -f 'quant/palette/cluster_precision/0003_cielab_negative.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0003_cielab_negative.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0003_cielab_negative.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0003_cielab_negative.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0003_cielab_negative.c' object='quant/palette/cluster_precision/test_runner-0003_cielab_negative.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0003_cielab_negative.o `test -f 'quant/palette/cluster_precision/0003_cielab_negative.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0003_cielab_negative.c
+
+quant/palette/cluster_precision/test_runner-0003_cielab_negative.obj: quant/palette/cluster_precision/0003_cielab_negative.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0003_cielab_negative.obj -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0003_cielab_negative.Tpo -c -o quant/palette/cluster_precision/test_runner-0003_cielab_negative.obj `if test -f 'quant/palette/cluster_precision/0003_cielab_negative.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0003_cielab_negative.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0003_cielab_negative.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0003_cielab_negative.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0003_cielab_negative.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0003_cielab_negative.c' object='quant/palette/cluster_precision/test_runner-0003_cielab_negative.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0003_cielab_negative.obj `if test -f 'quant/palette/cluster_precision/0003_cielab_negative.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0003_cielab_negative.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0003_cielab_negative.c'; fi`
+
+quant/palette/cluster_precision/test_runner-0004_din99d_mean.o: quant/palette/cluster_precision/0004_din99d_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0004_din99d_mean.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0004_din99d_mean.Tpo -c -o quant/palette/cluster_precision/test_runner-0004_din99d_mean.o `test -f 'quant/palette/cluster_precision/0004_din99d_mean.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0004_din99d_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0004_din99d_mean.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0004_din99d_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0004_din99d_mean.c' object='quant/palette/cluster_precision/test_runner-0004_din99d_mean.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0004_din99d_mean.o `test -f 'quant/palette/cluster_precision/0004_din99d_mean.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0004_din99d_mean.c
+
+quant/palette/cluster_precision/test_runner-0004_din99d_mean.obj: quant/palette/cluster_precision/0004_din99d_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0004_din99d_mean.obj -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0004_din99d_mean.Tpo -c -o quant/palette/cluster_precision/test_runner-0004_din99d_mean.obj `if test -f 'quant/palette/cluster_precision/0004_din99d_mean.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0004_din99d_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0004_din99d_mean.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0004_din99d_mean.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0004_din99d_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0004_din99d_mean.c' object='quant/palette/cluster_precision/test_runner-0004_din99d_mean.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0004_din99d_mean.obj `if test -f 'quant/palette/cluster_precision/0004_din99d_mean.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0004_din99d_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0004_din99d_mean.c'; fi`
+
+quant/palette/cluster_precision/test_runner-0005_heckbert_mean.o: quant/palette/cluster_precision/0005_heckbert_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0005_heckbert_mean.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0005_heckbert_mean.Tpo -c -o quant/palette/cluster_precision/test_runner-0005_heckbert_mean.o `test -f 'quant/palette/cluster_precision/0005_heckbert_mean.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0005_heckbert_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0005_heckbert_mean.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0005_heckbert_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0005_heckbert_mean.c' object='quant/palette/cluster_precision/test_runner-0005_heckbert_mean.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0005_heckbert_mean.o `test -f 'quant/palette/cluster_precision/0005_heckbert_mean.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0005_heckbert_mean.c
+
+quant/palette/cluster_precision/test_runner-0005_heckbert_mean.obj: quant/palette/cluster_precision/0005_heckbert_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0005_heckbert_mean.obj -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0005_heckbert_mean.Tpo -c -o quant/palette/cluster_precision/test_runner-0005_heckbert_mean.obj `if test -f 'quant/palette/cluster_precision/0005_heckbert_mean.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0005_heckbert_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0005_heckbert_mean.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0005_heckbert_mean.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0005_heckbert_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0005_heckbert_mean.c' object='quant/palette/cluster_precision/test_runner-0005_heckbert_mean.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0005_heckbert_mean.obj `if test -f 'quant/palette/cluster_precision/0005_heckbert_mean.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0005_heckbert_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0005_heckbert_mean.c'; fi`
+
+quant/palette/cluster_precision/test_runner-0006_center_endpoints.o: quant/palette/cluster_precision/0006_center_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0006_center_endpoints.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0006_center_endpoints.Tpo -c -o quant/palette/cluster_precision/test_runner-0006_center_endpoints.o `test -f 'quant/palette/cluster_precision/0006_center_endpoints.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0006_center_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0006_center_endpoints.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0006_center_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0006_center_endpoints.c' object='quant/palette/cluster_precision/test_runner-0006_center_endpoints.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0006_center_endpoints.o `test -f 'quant/palette/cluster_precision/0006_center_endpoints.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0006_center_endpoints.c
+
+quant/palette/cluster_precision/test_runner-0006_center_endpoints.obj: quant/palette/cluster_precision/0006_center_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0006_center_endpoints.obj -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0006_center_endpoints.Tpo -c -o quant/palette/cluster_precision/test_runner-0006_center_endpoints.obj `if test -f 'quant/palette/cluster_precision/0006_center_endpoints.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0006_center_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0006_center_endpoints.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0006_center_endpoints.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0006_center_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0006_center_endpoints.c' object='quant/palette/cluster_precision/test_runner-0006_center_endpoints.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0006_center_endpoints.obj `if test -f 'quant/palette/cluster_precision/0006_center_endpoints.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0006_center_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0006_center_endpoints.c'; fi`
+
+quant/palette/cluster_precision/test_runner-0007_medoids_endpoints.o: quant/palette/cluster_precision/0007_medoids_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0007_medoids_endpoints.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0007_medoids_endpoints.Tpo -c -o quant/palette/cluster_precision/test_runner-0007_medoids_endpoints.o `test -f 'quant/palette/cluster_precision/0007_medoids_endpoints.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0007_medoids_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0007_medoids_endpoints.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0007_medoids_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0007_medoids_endpoints.c' object='quant/palette/cluster_precision/test_runner-0007_medoids_endpoints.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0007_medoids_endpoints.o `test -f 'quant/palette/cluster_precision/0007_medoids_endpoints.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0007_medoids_endpoints.c
+
+quant/palette/cluster_precision/test_runner-0007_medoids_endpoints.obj: quant/palette/cluster_precision/0007_medoids_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0007_medoids_endpoints.obj -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0007_medoids_endpoints.Tpo -c -o quant/palette/cluster_precision/test_runner-0007_medoids_endpoints.obj `if test -f 'quant/palette/cluster_precision/0007_medoids_endpoints.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0007_medoids_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0007_medoids_endpoints.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0007_medoids_endpoints.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0007_medoids_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0007_medoids_endpoints.c' object='quant/palette/cluster_precision/test_runner-0007_medoids_endpoints.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0007_medoids_endpoints.obj `if test -f 'quant/palette/cluster_precision/0007_medoids_endpoints.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0007_medoids_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0007_medoids_endpoints.c'; fi`
+
+quant/palette/cluster_precision/test_runner-0008_auto_mean.o: quant/palette/cluster_precision/0008_auto_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0008_auto_mean.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0008_auto_mean.Tpo -c -o quant/palette/cluster_precision/test_runner-0008_auto_mean.o `test -f 'quant/palette/cluster_precision/0008_auto_mean.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0008_auto_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0008_auto_mean.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0008_auto_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0008_auto_mean.c' object='quant/palette/cluster_precision/test_runner-0008_auto_mean.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0008_auto_mean.o `test -f 'quant/palette/cluster_precision/0008_auto_mean.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0008_auto_mean.c
+
+quant/palette/cluster_precision/test_runner-0008_auto_mean.obj: quant/palette/cluster_precision/0008_auto_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0008_auto_mean.obj -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0008_auto_mean.Tpo -c -o quant/palette/cluster_precision/test_runner-0008_auto_mean.obj `if test -f 'quant/palette/cluster_precision/0008_auto_mean.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0008_auto_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0008_auto_mean.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0008_auto_mean.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0008_auto_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0008_auto_mean.c' object='quant/palette/cluster_precision/test_runner-0008_auto_mean.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0008_auto_mean.obj `if test -f 'quant/palette/cluster_precision/0008_auto_mean.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0008_auto_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0008_auto_mean.c'; fi`
+
+quant/palette/cluster_precision/test_runner-0009_gamma_byte_control.o: quant/palette/cluster_precision/0009_gamma_byte_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0009_gamma_byte_control.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0009_gamma_byte_control.Tpo -c -o quant/palette/cluster_precision/test_runner-0009_gamma_byte_control.o `test -f 'quant/palette/cluster_precision/0009_gamma_byte_control.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0009_gamma_byte_control.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0009_gamma_byte_control.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0009_gamma_byte_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0009_gamma_byte_control.c' object='quant/palette/cluster_precision/test_runner-0009_gamma_byte_control.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0009_gamma_byte_control.o `test -f 'quant/palette/cluster_precision/0009_gamma_byte_control.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0009_gamma_byte_control.c
+
+quant/palette/cluster_precision/test_runner-0009_gamma_byte_control.obj: quant/palette/cluster_precision/0009_gamma_byte_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0009_gamma_byte_control.obj -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0009_gamma_byte_control.Tpo -c -o quant/palette/cluster_precision/test_runner-0009_gamma_byte_control.obj `if test -f 'quant/palette/cluster_precision/0009_gamma_byte_control.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0009_gamma_byte_control.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0009_gamma_byte_control.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0009_gamma_byte_control.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0009_gamma_byte_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0009_gamma_byte_control.c' object='quant/palette/cluster_precision/test_runner-0009_gamma_byte_control.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0009_gamma_byte_control.obj `if test -f 'quant/palette/cluster_precision/0009_gamma_byte_control.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0009_gamma_byte_control.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0009_gamma_byte_control.c'; fi`
+
+quant/palette/cluster_precision/test_runner-0010_builtin_byte_control.o: quant/palette/cluster_precision/0010_builtin_byte_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0010_builtin_byte_control.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0010_builtin_byte_control.Tpo -c -o quant/palette/cluster_precision/test_runner-0010_builtin_byte_control.o `test -f 'quant/palette/cluster_precision/0010_builtin_byte_control.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0010_builtin_byte_control.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0010_builtin_byte_control.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0010_builtin_byte_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0010_builtin_byte_control.c' object='quant/palette/cluster_precision/test_runner-0010_builtin_byte_control.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0010_builtin_byte_control.o `test -f 'quant/palette/cluster_precision/0010_builtin_byte_control.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0010_builtin_byte_control.c
+
+quant/palette/cluster_precision/test_runner-0010_builtin_byte_control.obj: quant/palette/cluster_precision/0010_builtin_byte_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0010_builtin_byte_control.obj -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0010_builtin_byte_control.Tpo -c -o quant/palette/cluster_precision/test_runner-0010_builtin_byte_control.obj `if test -f 'quant/palette/cluster_precision/0010_builtin_byte_control.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0010_builtin_byte_control.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0010_builtin_byte_control.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0010_builtin_byte_control.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0010_builtin_byte_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0010_builtin_byte_control.c' object='quant/palette/cluster_precision/test_runner-0010_builtin_byte_control.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0010_builtin_byte_control.obj `if test -f 'quant/palette/cluster_precision/0010_builtin_byte_control.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0010_builtin_byte_control.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0010_builtin_byte_control.c'; fi`
+
+quant/palette/cluster_precision/test_runner-0011_byte_request.o: quant/palette/cluster_precision/0011_byte_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0011_byte_request.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0011_byte_request.Tpo -c -o quant/palette/cluster_precision/test_runner-0011_byte_request.o `test -f 'quant/palette/cluster_precision/0011_byte_request.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0011_byte_request.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0011_byte_request.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0011_byte_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0011_byte_request.c' object='quant/palette/cluster_precision/test_runner-0011_byte_request.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0011_byte_request.o `test -f 'quant/palette/cluster_precision/0011_byte_request.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0011_byte_request.c
+
+quant/palette/cluster_precision/test_runner-0011_byte_request.obj: quant/palette/cluster_precision/0011_byte_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0011_byte_request.obj -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0011_byte_request.Tpo -c -o quant/palette/cluster_precision/test_runner-0011_byte_request.obj `if test -f 'quant/palette/cluster_precision/0011_byte_request.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0011_byte_request.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0011_byte_request.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0011_byte_request.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0011_byte_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0011_byte_request.c' object='quant/palette/cluster_precision/test_runner-0011_byte_request.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0011_byte_request.obj `if test -f 'quant/palette/cluster_precision/0011_byte_request.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0011_byte_request.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0011_byte_request.c'; fi`
+
+quant/palette/cluster_precision/test_runner-0012_workspace_reuse.o: quant/palette/cluster_precision/0012_workspace_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0012_workspace_reuse.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0012_workspace_reuse.Tpo -c -o quant/palette/cluster_precision/test_runner-0012_workspace_reuse.o `test -f 'quant/palette/cluster_precision/0012_workspace_reuse.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0012_workspace_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0012_workspace_reuse.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0012_workspace_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0012_workspace_reuse.c' object='quant/palette/cluster_precision/test_runner-0012_workspace_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0012_workspace_reuse.o `test -f 'quant/palette/cluster_precision/0012_workspace_reuse.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0012_workspace_reuse.c
+
+quant/palette/cluster_precision/test_runner-0012_workspace_reuse.obj: quant/palette/cluster_precision/0012_workspace_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0012_workspace_reuse.obj -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0012_workspace_reuse.Tpo -c -o quant/palette/cluster_precision/test_runner-0012_workspace_reuse.obj `if test -f 'quant/palette/cluster_precision/0012_workspace_reuse.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0012_workspace_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0012_workspace_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0012_workspace_reuse.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0012_workspace_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0012_workspace_reuse.c' object='quant/palette/cluster_precision/test_runner-0012_workspace_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0012_workspace_reuse.obj `if test -f 'quant/palette/cluster_precision/0012_workspace_reuse.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0012_workspace_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0012_workspace_reuse.c'; fi`
+
+quant/palette/cluster_precision/test_runner-0013_gamma_soft_control.o: quant/palette/cluster_precision/0013_gamma_soft_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0013_gamma_soft_control.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0013_gamma_soft_control.Tpo -c -o quant/palette/cluster_precision/test_runner-0013_gamma_soft_control.o `test -f 'quant/palette/cluster_precision/0013_gamma_soft_control.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0013_gamma_soft_control.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0013_gamma_soft_control.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0013_gamma_soft_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0013_gamma_soft_control.c' object='quant/palette/cluster_precision/test_runner-0013_gamma_soft_control.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0013_gamma_soft_control.o `test -f 'quant/palette/cluster_precision/0013_gamma_soft_control.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0013_gamma_soft_control.c
+
+quant/palette/cluster_precision/test_runner-0013_gamma_soft_control.obj: quant/palette/cluster_precision/0013_gamma_soft_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0013_gamma_soft_control.obj -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0013_gamma_soft_control.Tpo -c -o quant/palette/cluster_precision/test_runner-0013_gamma_soft_control.obj `if test -f 'quant/palette/cluster_precision/0013_gamma_soft_control.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0013_gamma_soft_control.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0013_gamma_soft_control.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0013_gamma_soft_control.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0013_gamma_soft_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0013_gamma_soft_control.c' object='quant/palette/cluster_precision/test_runner-0013_gamma_soft_control.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0013_gamma_soft_control.obj `if test -f 'quant/palette/cluster_precision/0013_gamma_soft_control.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0013_gamma_soft_control.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0013_gamma_soft_control.c'; fi`
+
+quant/palette/cluster_precision/test_runner-0014_linear_output.o: quant/palette/cluster_precision/0014_linear_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0014_linear_output.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0014_linear_output.Tpo -c -o quant/palette/cluster_precision/test_runner-0014_linear_output.o `test -f 'quant/palette/cluster_precision/0014_linear_output.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0014_linear_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0014_linear_output.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0014_linear_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0014_linear_output.c' object='quant/palette/cluster_precision/test_runner-0014_linear_output.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0014_linear_output.o `test -f 'quant/palette/cluster_precision/0014_linear_output.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/0014_linear_output.c
+
+quant/palette/cluster_precision/test_runner-0014_linear_output.obj: quant/palette/cluster_precision/0014_linear_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-0014_linear_output.obj -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-0014_linear_output.Tpo -c -o quant/palette/cluster_precision/test_runner-0014_linear_output.obj `if test -f 'quant/palette/cluster_precision/0014_linear_output.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0014_linear_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0014_linear_output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-0014_linear_output.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-0014_linear_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/cluster_precision/0014_linear_output.c' object='quant/palette/cluster_precision/test_runner-0014_linear_output.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/cluster_precision/test_runner-0014_linear_output.obj `if test -f 'quant/palette/cluster_precision/0014_linear_output.c'; then $(CYGPATH_W) 'quant/palette/cluster_precision/0014_linear_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/cluster_precision/0014_linear_output.c'; fi`
+
 codec/drcs/test_runner-highcolor_drcs_common.o: codec/drcs/highcolor_drcs_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/drcs/test_runner-highcolor_drcs_common.o -MD -MP -MF codec/drcs/$(DEPDIR)/test_runner-highcolor_drcs_common.Tpo -c -o codec/drcs/test_runner-highcolor_drcs_common.o `test -f 'codec/drcs/highcolor_drcs_common.c' || echo '$(srcdir)/'`codec/drcs/highcolor_drcs_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) codec/drcs/$(DEPDIR)/test_runner-highcolor_drcs_common.Tpo codec/drcs/$(DEPDIR)/test_runner-highcolor_drcs_common.Po
@@ -71085,6 +71437,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/binning_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/builtin_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/builtin_float/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/cluster_precision/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/cluster_precision/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/color_space/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/color_space/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/cover_float/$(DEPDIR)/$(am__dirstamp)

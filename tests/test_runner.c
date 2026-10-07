@@ -635,6 +635,21 @@ int test_drcs_highcolor_0021(int argc, char **argv);
 int test_drcs_highcolor_0022(int argc, char **argv);
 int test_drcs_highcolor_0023(int argc, char **argv);
 int test_drcs_highcolor_0024(int argc, char **argv);
+int test_cluster_precision_0001(int argc, char **argv);
+int test_cluster_precision_0002(int argc, char **argv);
+int test_cluster_precision_0003(int argc, char **argv);
+int test_cluster_precision_0004(int argc, char **argv);
+int test_cluster_precision_0005(int argc, char **argv);
+int test_cluster_precision_0006(int argc, char **argv);
+int test_cluster_precision_0007(int argc, char **argv);
+int test_cluster_precision_0008(int argc, char **argv);
+int test_cluster_precision_0009(int argc, char **argv);
+int test_cluster_precision_0010(int argc, char **argv);
+int test_cluster_precision_0011(int argc, char **argv);
+int test_cluster_precision_0012(int argc, char **argv);
+int test_cluster_precision_0013(int argc, char **argv);
+int test_cluster_precision_0014(int argc, char **argv);
+
 int test_clamp_0047(int argc, char **argv);
 int test_clamp_0032(int argc, char **argv);
 int test_filter_0015_filter_dither_6delta_lso2(int argc, char **argv);
@@ -4032,6 +4047,35 @@ static test_entry_t const test_entries[] = {
     { "codec/drcs/0022_highcolor_macro_recovery", test_drcs_highcolor_0022 },
     { "codec/drcs/0023_highcolor_png_recovery", test_drcs_highcolor_0023 },
     { "codec/drcs/0024_highcolor_writer_restore", test_drcs_highcolor_0024 },
+    { "palette/cluster_precision/0001_linear_mean",
+      test_cluster_precision_0001 },
+    { "palette/cluster_precision/0002_oklab_mean",
+      test_cluster_precision_0002 },
+    { "palette/cluster_precision/0003_cielab_negative",
+      test_cluster_precision_0003 },
+    { "palette/cluster_precision/0004_din99d_mean",
+      test_cluster_precision_0004 },
+    { "palette/cluster_precision/0005_heckbert_mean",
+      test_cluster_precision_0005 },
+    { "palette/cluster_precision/0006_center_endpoints",
+      test_cluster_precision_0006 },
+    { "palette/cluster_precision/0007_medoids_endpoints",
+      test_cluster_precision_0007 },
+    { "palette/cluster_precision/0008_auto_mean",
+      test_cluster_precision_0008 },
+    { "palette/cluster_precision/0009_gamma_byte_control",
+      test_cluster_precision_0009 },
+    { "palette/cluster_precision/0010_builtin_byte_control",
+      test_cluster_precision_0010 },
+    { "palette/cluster_precision/0011_byte_request",
+      test_cluster_precision_0011 },
+    { "palette/cluster_precision/0012_workspace_reuse",
+      test_cluster_precision_0012 },
+    { "palette/cluster_precision/0013_gamma_soft_control",
+      test_cluster_precision_0013 },
+    { "palette/cluster_precision/0014_linear_output",
+      test_cluster_precision_0014 },
+
     { "dither/clamp/0047_snapshot_allocation", test_clamp_0047 },
     { "dither/clamp/0032_kernel_interframe", test_clamp_0032 },
     { "filter/0015_filter_dither_6delta_lso2",

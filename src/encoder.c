@@ -7213,9 +7213,14 @@ sixel_encoder_rgb101_frame(sixel_encoder_t const *encoder,
     if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
         return 1;
     }
-    /* Never promote a byte-eligible job merely to enable this path. */
+    /* A non-gamma clustering view already requires float arithmetic even
+     * when the image stays RGB888 for gamma application. Retain its native
+     * palette instead of returning through bytes. Fixed palettes bypass
+     * clustering, so an unused -X choice must not promote them. */
     return (encoder->prefer_float32 || SIXEL_PIXELFORMAT_IS_FLOAT32(
-                sixel_frame_get_pixelformat(frame))) &&
+                sixel_frame_get_pixelformat(frame)) ||
+            (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
+             encoder->clustering_colorspace != SIXEL_COLORSPACE_GAMMA)) &&
         sixel_encoder_rgb101_candidate(encoder, frame);
 }
 

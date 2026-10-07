@@ -1170,6 +1170,21 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0022_HIGHCOLOR_MACRO_RECOVERY \
     -DBUILD_TEST_0023_HIGHCOLOR_PNG_RECOVERY \
     -DBUILD_TEST_0024_HIGHCOLOR_WRITER_RESTORE \
+    -DBUILD_CLUSTER_PRECISION_COMMON \
+    -DBUILD_TEST_0001_LINEAR_MEAN \
+    -DBUILD_TEST_0002_OKLAB_MEAN \
+    -DBUILD_TEST_0003_CIELAB_NEGATIVE \
+    -DBUILD_TEST_0004_DIN99D_MEAN \
+    -DBUILD_TEST_0005_HECKBERT_MEAN \
+    -DBUILD_TEST_0006_CENTER_ENDPOINTS \
+    -DBUILD_TEST_0007_MEDOIDS_ENDPOINTS \
+    -DBUILD_TEST_0008_AUTO_MEAN \
+    -DBUILD_TEST_0009_GAMMA_BYTE_CONTROL \
+    -DBUILD_TEST_0010_BUILTIN_BYTE_CONTROL \
+    -DBUILD_TEST_0011_BYTE_REQUEST \
+    -DBUILD_TEST_0012_WORKSPACE_REUSE \
+    -DBUILD_TEST_0013_GAMMA_SOFT_CONTROL \
+    -DBUILD_TEST_0014_LINEAR_OUTPUT \
     -DBUILD_TEST_0001_SRGB_FLOAT_CENTER \
     -DBUILD_TEST_0002_P3_FLOAT_CENTER \
     -DBUILD_TEST_0003_P3_C1_BODY \
@@ -6125,6 +6140,21 @@ test_runner_SOURCES = test_runner.c \
     codec/drcs/0011_macro_reject.c \
     codec/drcs/0012_output_reuse.c \
     codec/drcs/0013_p3_pipeline.c \
+    quant/palette/cluster_precision/cluster_precision_common.c \
+    quant/palette/cluster_precision/0001_linear_mean.c \
+    quant/palette/cluster_precision/0002_oklab_mean.c \
+    quant/palette/cluster_precision/0003_cielab_negative.c \
+    quant/palette/cluster_precision/0004_din99d_mean.c \
+    quant/palette/cluster_precision/0005_heckbert_mean.c \
+    quant/palette/cluster_precision/0006_center_endpoints.c \
+    quant/palette/cluster_precision/0007_medoids_endpoints.c \
+    quant/palette/cluster_precision/0008_auto_mean.c \
+    quant/palette/cluster_precision/0009_gamma_byte_control.c \
+    quant/palette/cluster_precision/0010_builtin_byte_control.c \
+    quant/palette/cluster_precision/0011_byte_request.c \
+    quant/palette/cluster_precision/0012_workspace_reuse.c \
+    quant/palette/cluster_precision/0013_gamma_soft_control.c \
+    quant/palette/cluster_precision/0014_linear_output.c \
     codec/drcs/highcolor_drcs_common.c \
     codec/drcs/0014_highcolor_p3_final_band.c \
     codec/drcs/0015_highcolor_p3_c1.c \

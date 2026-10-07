@@ -1,5 +1,5 @@
 #!/bin/sh
-# A byte-eligible sRGB image must not select the extended palette migration.
+# Gamma-only byte work must not select the extended palette migration.
 # Policy: docs/encoder/output/output-colorspace.md
 set -eux
 
@@ -19,7 +19,7 @@ set -v
 
 trace=$(SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 -L'libpng:cms_engine=none:cms_target=gamma:prefer_8bit=1!' \
-    --precision=8bit -Qkmeans:seed=1 -Xlinear -Wgamma -Ugamma \
+    --precision=8bit -Qkmeans:seed=1 -Xgamma -Wgamma -Ugamma \
     -Fnone -aoff -_none '-~none' -dnone -trgb \
     --binning-policy=none --sampling-policy=full-frame \
     "${TOP_SRCDIR}/tests/data/color-numeric/png-p3-8-rgb.png" 2>&1) || {
