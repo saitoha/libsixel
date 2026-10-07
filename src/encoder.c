@@ -4304,13 +4304,18 @@ load_image_callback_for_palette(
     /* get callback context object from the private data */
     callback_context = (sixel_callback_context_for_mapfile_t *)data;
 
-    /* The map is an independent precision source. Inspect the loader's
-     * representation before workspace conversion can narrow it to bytes.
-     * This does not change the encoder's base preference or promote maps
-     * whose loader actually returned sufficient byte samples. */
+    /* The map is an independent precision source. Inspect its loader
+     * representation and clustering requirement before workspace conversion
+     * can narrow it to bytes. Even a byte map needs the native builder for
+     * non-gamma clustering, preserving sub-byte and extended centroids when
+     * they return to gamma working coordinates. This local promotion changes
+     * neither the source image's plan nor the encoder's base preference.
+     * Structured palettes never enter this callback and have no -X work. */
     if (callback_context->allow_float_palette &&
-            SIXEL_PIXELFORMAT_IS_FLOAT32(
-                sixel_frame_get_pixelformat(frame))) {
+            (SIXEL_PIXELFORMAT_IS_FLOAT32(
+                sixel_frame_get_pixelformat(frame)) ||
+             callback_context->encoder->clustering_colorspace !=
+                SIXEL_COLORSPACE_GAMMA)) {
         callback_context->prefer_float32 = 1;
         callback_context->preserve_float_palette = 1;
     }

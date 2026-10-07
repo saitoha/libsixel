@@ -1170,6 +1170,20 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0022_HIGHCOLOR_MACRO_RECOVERY \
     -DBUILD_TEST_0023_HIGHCOLOR_PNG_RECOVERY \
     -DBUILD_TEST_0024_HIGHCOLOR_WRITER_RESTORE \
+    -DBUILD_MAP_CLUSTER_COMMON \
+    -DBUILD_TEST_0001_MAP_LINEAR_MEAN \
+    -DBUILD_TEST_0002_MAP_OKLAB_MEAN \
+    -DBUILD_TEST_0003_MAP_CIELAB_NEGATIVE \
+    -DBUILD_TEST_0004_MAP_DIN99D_MEAN \
+    -DBUILD_TEST_0005_MAP_HECKBERT_MEAN \
+    -DBUILD_TEST_0006_MAP_CENTER_ENDPOINTS \
+    -DBUILD_TEST_0007_MAP_MEDOIDS_ENDPOINTS \
+    -DBUILD_TEST_0008_MAP_AUTO_MEAN \
+    -DBUILD_TEST_0009_MAP_BYTE_REQUEST \
+    -DBUILD_TEST_0010_MAP_GAMMA_BYTE \
+    -DBUILD_TEST_0011_MAP_STRUCTURED_BYTE \
+    -DBUILD_TEST_0012_MAP_CLUSTERING_REUSE \
+    -DBUILD_TEST_0013_MAP_ANIMATION_CACHE \
     -DBUILD_CLUSTER_PRECISION_COMMON \
     -DBUILD_TEST_0001_LINEAR_MEAN \
     -DBUILD_TEST_0002_OKLAB_MEAN \
@@ -6140,6 +6154,20 @@ test_runner_SOURCES = test_runner.c \
     codec/drcs/0011_macro_reject.c \
     codec/drcs/0012_output_reuse.c \
     codec/drcs/0013_p3_pipeline.c \
+    quant/palette/map_cluster/map_cluster_common.c \
+    quant/palette/map_cluster/0001_map_linear_mean.c \
+    quant/palette/map_cluster/0002_map_oklab_mean.c \
+    quant/palette/map_cluster/0003_map_cielab_negative.c \
+    quant/palette/map_cluster/0004_map_din99d_mean.c \
+    quant/palette/map_cluster/0005_map_heckbert_mean.c \
+    quant/palette/map_cluster/0006_map_center_endpoints.c \
+    quant/palette/map_cluster/0007_map_medoids_endpoints.c \
+    quant/palette/map_cluster/0008_map_auto_mean.c \
+    quant/palette/map_cluster/0009_map_byte_request.c \
+    quant/palette/map_cluster/0010_map_gamma_byte.c \
+    quant/palette/map_cluster/0011_map_structured_byte.c \
+    quant/palette/map_cluster/0012_map_clustering_reuse.c \
+    quant/palette/map_cluster/0013_map_animation_cache.c \
     quant/palette/cluster_precision/cluster_precision_common.c \
     quant/palette/cluster_precision/0001_linear_mean.c \
     quant/palette/cluster_precision/0002_oklab_mean.c \

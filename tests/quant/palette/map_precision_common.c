@@ -104,6 +104,12 @@ test_map_precision_run(int mode, int space, char const *precision,
     }
     requested_float = encoder->prefer_float32;
     requested_model = encoder->quantize_model;
+    /* Isolate the map loader's precision requirement. Non-gamma clustering
+     * independently requires native palette construction, even without CMS. */
+    if ((mode == 1 || mode == 2 || mode == 3) &&
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "gamma"))) {
+        goto end;
+    }
     passes = mode == 2 || mode == 3 ? 3 : mode == 8 ? 2 : 1;
     if (animated) {
         passes = 3;

@@ -3035,6 +3035,20 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	codec/drcs/0008_mono_reject.c codec/drcs/0009_or_reject.c \
 	codec/drcs/0010_offset_reject.c codec/drcs/0011_macro_reject.c \
 	codec/drcs/0012_output_reuse.c codec/drcs/0013_p3_pipeline.c \
+	quant/palette/map_cluster/map_cluster_common.c \
+	quant/palette/map_cluster/0001_map_linear_mean.c \
+	quant/palette/map_cluster/0002_map_oklab_mean.c \
+	quant/palette/map_cluster/0003_map_cielab_negative.c \
+	quant/palette/map_cluster/0004_map_din99d_mean.c \
+	quant/palette/map_cluster/0005_map_heckbert_mean.c \
+	quant/palette/map_cluster/0006_map_center_endpoints.c \
+	quant/palette/map_cluster/0007_map_medoids_endpoints.c \
+	quant/palette/map_cluster/0008_map_auto_mean.c \
+	quant/palette/map_cluster/0009_map_byte_request.c \
+	quant/palette/map_cluster/0010_map_gamma_byte.c \
+	quant/palette/map_cluster/0011_map_structured_byte.c \
+	quant/palette/map_cluster/0012_map_clustering_reuse.c \
+	quant/palette/map_cluster/0013_map_animation_cache.c \
 	quant/palette/cluster_precision/cluster_precision_common.c \
 	quant/palette/cluster_precision/0001_linear_mean.c \
 	quant/palette/cluster_precision/0002_oklab_mean.c \
@@ -6038,6 +6052,20 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0011_macro_reject.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0012_output_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/drcs/test_runner-0013_p3_pipeline.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_cluster/test_runner-map_cluster_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_cluster/test_runner-0001_map_linear_mean.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_cluster/test_runner-0002_map_oklab_mean.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_cluster/test_runner-0003_map_cielab_negative.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_cluster/test_runner-0004_map_din99d_mean.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_cluster/test_runner-0005_map_heckbert_mean.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_cluster/test_runner-0006_map_center_endpoints.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_cluster/test_runner-0007_map_medoids_endpoints.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_cluster/test_runner-0008_map_auto_mean.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_cluster/test_runner-0009_map_byte_request.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_cluster/test_runner-0010_map_gamma_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_cluster/test_runner-0011_map_structured_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_cluster/test_runner-0012_map_clustering_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/map_cluster/test_runner-0013_map_animation_cache.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-cluster_precision_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0001_linear_mean.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cluster_precision/test_runner-0002_oklab_mean.$(OBJEXT) \
@@ -9017,6 +9045,20 @@ am__depfiles_remade =  \
 	quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0010_mah_din99d_p3.Po \
 	quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0011_mah_byte_eligibility.Po \
 	quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0012_mah_bands_private.Po \
+	quant/palette/map_cluster/$(DEPDIR)/test_runner-0001_map_linear_mean.Po \
+	quant/palette/map_cluster/$(DEPDIR)/test_runner-0002_map_oklab_mean.Po \
+	quant/palette/map_cluster/$(DEPDIR)/test_runner-0003_map_cielab_negative.Po \
+	quant/palette/map_cluster/$(DEPDIR)/test_runner-0004_map_din99d_mean.Po \
+	quant/palette/map_cluster/$(DEPDIR)/test_runner-0005_map_heckbert_mean.Po \
+	quant/palette/map_cluster/$(DEPDIR)/test_runner-0006_map_center_endpoints.Po \
+	quant/palette/map_cluster/$(DEPDIR)/test_runner-0007_map_medoids_endpoints.Po \
+	quant/palette/map_cluster/$(DEPDIR)/test_runner-0008_map_auto_mean.Po \
+	quant/palette/map_cluster/$(DEPDIR)/test_runner-0009_map_byte_request.Po \
+	quant/palette/map_cluster/$(DEPDIR)/test_runner-0010_map_gamma_byte.Po \
+	quant/palette/map_cluster/$(DEPDIR)/test_runner-0011_map_structured_byte.Po \
+	quant/palette/map_cluster/$(DEPDIR)/test_runner-0012_map_clustering_reuse.Po \
+	quant/palette/map_cluster/$(DEPDIR)/test_runner-0013_map_animation_cache.Po \
+	quant/palette/map_cluster/$(DEPDIR)/test_runner-map_cluster_common.Po \
 	quant/palette/map_float/$(DEPDIR)/test_runner-0001_map_palette_gamma.Po \
 	quant/palette/map_float/$(DEPDIR)/test_runner-0002_map_palette_linear.Po \
 	quant/palette/map_float/$(DEPDIR)/test_runner-0003_map_palette_oklab.Po \
@@ -10872,6 +10914,20 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_HIGHCOLOR_MACRO_RECOVERY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_HIGHCOLOR_PNG_RECOVERY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_HIGHCOLOR_WRITER_RESTORE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_MAP_CLUSTER_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_MAP_LINEAR_MEAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_MAP_OKLAB_MEAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_MAP_CIELAB_NEGATIVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_MAP_DIN99D_MEAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_MAP_HECKBERT_MEAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_MAP_CENTER_ENDPOINTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_MAP_MEDOIDS_ENDPOINTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_MAP_AUTO_MEAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_MAP_BYTE_REQUEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_MAP_GAMMA_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_MAP_STRUCTURED_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_MAP_CLUSTERING_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_MAP_ANIMATION_CACHE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLUSTER_PRECISION_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LINEAR_MEAN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_OKLAB_MEAN \
@@ -15873,6 +15929,20 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0011_macro_reject.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0012_output_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/drcs/0013_p3_pipeline.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_cluster/map_cluster_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_cluster/0001_map_linear_mean.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_cluster/0002_map_oklab_mean.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_cluster/0003_map_cielab_negative.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_cluster/0004_map_din99d_mean.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_cluster/0005_map_heckbert_mean.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_cluster/0006_map_center_endpoints.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_cluster/0007_map_medoids_endpoints.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_cluster/0008_map_auto_mean.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_cluster/0009_map_byte_request.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_cluster/0010_map_gamma_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_cluster/0011_map_structured_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_cluster/0012_map_clustering_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_cluster/0013_map_animation_cache.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/cluster_precision_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0001_linear_mean.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cluster_precision/0002_oklab_mean.c \
@@ -25357,6 +25427,54 @@ codec/drcs/test_runner-0012_output_reuse.$(OBJEXT):  \
 codec/drcs/test_runner-0013_p3_pipeline.$(OBJEXT):  \
 	codec/drcs/$(am__dirstamp) \
 	codec/drcs/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_cluster/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/map_cluster
+	@: >>quant/palette/map_cluster/$(am__dirstamp)
+quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/map_cluster/$(DEPDIR)
+	@: >>quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_cluster/test_runner-map_cluster_common.$(OBJEXT):  \
+	quant/palette/map_cluster/$(am__dirstamp) \
+	quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_cluster/test_runner-0001_map_linear_mean.$(OBJEXT):  \
+	quant/palette/map_cluster/$(am__dirstamp) \
+	quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_cluster/test_runner-0002_map_oklab_mean.$(OBJEXT):  \
+	quant/palette/map_cluster/$(am__dirstamp) \
+	quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_cluster/test_runner-0003_map_cielab_negative.$(OBJEXT):  \
+	quant/palette/map_cluster/$(am__dirstamp) \
+	quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_cluster/test_runner-0004_map_din99d_mean.$(OBJEXT):  \
+	quant/palette/map_cluster/$(am__dirstamp) \
+	quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_cluster/test_runner-0005_map_heckbert_mean.$(OBJEXT):  \
+	quant/palette/map_cluster/$(am__dirstamp) \
+	quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_cluster/test_runner-0006_map_center_endpoints.$(OBJEXT):  \
+	quant/palette/map_cluster/$(am__dirstamp) \
+	quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_cluster/test_runner-0007_map_medoids_endpoints.$(OBJEXT):  \
+	quant/palette/map_cluster/$(am__dirstamp) \
+	quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_cluster/test_runner-0008_map_auto_mean.$(OBJEXT):  \
+	quant/palette/map_cluster/$(am__dirstamp) \
+	quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_cluster/test_runner-0009_map_byte_request.$(OBJEXT):  \
+	quant/palette/map_cluster/$(am__dirstamp) \
+	quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_cluster/test_runner-0010_map_gamma_byte.$(OBJEXT):  \
+	quant/palette/map_cluster/$(am__dirstamp) \
+	quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_cluster/test_runner-0011_map_structured_byte.$(OBJEXT):  \
+	quant/palette/map_cluster/$(am__dirstamp) \
+	quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_cluster/test_runner-0012_map_clustering_reuse.$(OBJEXT):  \
+	quant/palette/map_cluster/$(am__dirstamp) \
+	quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
+quant/palette/map_cluster/test_runner-0013_map_animation_cache.$(OBJEXT):  \
+	quant/palette/map_cluster/$(am__dirstamp) \
+	quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
 quant/palette/cluster_precision/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette/cluster_precision
 	@: >>quant/palette/cluster_precision/$(am__dirstamp)
@@ -25879,6 +25997,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/heckbert_float/*.$(OBJEXT)
 	-rm -f quant/palette/lookup_float/*.$(OBJEXT)
 	-rm -f quant/palette/mahalanobis_float/*.$(OBJEXT)
+	-rm -f quant/palette/map_cluster/*.$(OBJEXT)
 	-rm -f quant/palette/map_float/*.$(OBJEXT)
 	-rm -f quant/palette/map_precision/*.$(OBJEXT)
 	-rm -f quant/palette/map_solver/*.$(OBJEXT)
@@ -28692,6 +28811,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0010_mah_din99d_p3.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0011_mah_byte_eligibility.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0012_mah_bands_private.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_cluster/$(DEPDIR)/test_runner-0001_map_linear_mean.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_cluster/$(DEPDIR)/test_runner-0002_map_oklab_mean.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_cluster/$(DEPDIR)/test_runner-0003_map_cielab_negative.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_cluster/$(DEPDIR)/test_runner-0004_map_din99d_mean.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_cluster/$(DEPDIR)/test_runner-0005_map_heckbert_mean.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_cluster/$(DEPDIR)/test_runner-0006_map_center_endpoints.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_cluster/$(DEPDIR)/test_runner-0007_map_medoids_endpoints.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_cluster/$(DEPDIR)/test_runner-0008_map_auto_mean.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_cluster/$(DEPDIR)/test_runner-0009_map_byte_request.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_cluster/$(DEPDIR)/test_runner-0010_map_gamma_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_cluster/$(DEPDIR)/test_runner-0011_map_structured_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_cluster/$(DEPDIR)/test_runner-0012_map_clustering_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_cluster/$(DEPDIR)/test_runner-0013_map_animation_cache.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_cluster/$(DEPDIR)/test_runner-map_cluster_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_float/$(DEPDIR)/test_runner-0001_map_palette_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_float/$(DEPDIR)/test_runner-0002_map_palette_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/map_float/$(DEPDIR)/test_runner-0003_map_palette_oklab.Po@am__quote@ # am--include-marker
@@ -69274,6 +69407,202 @@ codec/drcs/test_runner-0013_p3_pipeline.obj: codec/drcs/0013_p3_pipeline.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o codec/drcs/test_runner-0013_p3_pipeline.obj `if test -f 'codec/drcs/0013_p3_pipeline.c'; then $(CYGPATH_W) 'codec/drcs/0013_p3_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/codec/drcs/0013_p3_pipeline.c'; fi`
 
+quant/palette/map_cluster/test_runner-map_cluster_common.o: quant/palette/map_cluster/map_cluster_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-map_cluster_common.o -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-map_cluster_common.Tpo -c -o quant/palette/map_cluster/test_runner-map_cluster_common.o `test -f 'quant/palette/map_cluster/map_cluster_common.c' || echo '$(srcdir)/'`quant/palette/map_cluster/map_cluster_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-map_cluster_common.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-map_cluster_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/map_cluster_common.c' object='quant/palette/map_cluster/test_runner-map_cluster_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-map_cluster_common.o `test -f 'quant/palette/map_cluster/map_cluster_common.c' || echo '$(srcdir)/'`quant/palette/map_cluster/map_cluster_common.c
+
+quant/palette/map_cluster/test_runner-map_cluster_common.obj: quant/palette/map_cluster/map_cluster_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-map_cluster_common.obj -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-map_cluster_common.Tpo -c -o quant/palette/map_cluster/test_runner-map_cluster_common.obj `if test -f 'quant/palette/map_cluster/map_cluster_common.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/map_cluster_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/map_cluster_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-map_cluster_common.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-map_cluster_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/map_cluster_common.c' object='quant/palette/map_cluster/test_runner-map_cluster_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-map_cluster_common.obj `if test -f 'quant/palette/map_cluster/map_cluster_common.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/map_cluster_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/map_cluster_common.c'; fi`
+
+quant/palette/map_cluster/test_runner-0001_map_linear_mean.o: quant/palette/map_cluster/0001_map_linear_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0001_map_linear_mean.o -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0001_map_linear_mean.Tpo -c -o quant/palette/map_cluster/test_runner-0001_map_linear_mean.o `test -f 'quant/palette/map_cluster/0001_map_linear_mean.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0001_map_linear_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0001_map_linear_mean.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0001_map_linear_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0001_map_linear_mean.c' object='quant/palette/map_cluster/test_runner-0001_map_linear_mean.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0001_map_linear_mean.o `test -f 'quant/palette/map_cluster/0001_map_linear_mean.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0001_map_linear_mean.c
+
+quant/palette/map_cluster/test_runner-0001_map_linear_mean.obj: quant/palette/map_cluster/0001_map_linear_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0001_map_linear_mean.obj -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0001_map_linear_mean.Tpo -c -o quant/palette/map_cluster/test_runner-0001_map_linear_mean.obj `if test -f 'quant/palette/map_cluster/0001_map_linear_mean.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0001_map_linear_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0001_map_linear_mean.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0001_map_linear_mean.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0001_map_linear_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0001_map_linear_mean.c' object='quant/palette/map_cluster/test_runner-0001_map_linear_mean.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0001_map_linear_mean.obj `if test -f 'quant/palette/map_cluster/0001_map_linear_mean.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0001_map_linear_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0001_map_linear_mean.c'; fi`
+
+quant/palette/map_cluster/test_runner-0002_map_oklab_mean.o: quant/palette/map_cluster/0002_map_oklab_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0002_map_oklab_mean.o -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0002_map_oklab_mean.Tpo -c -o quant/palette/map_cluster/test_runner-0002_map_oklab_mean.o `test -f 'quant/palette/map_cluster/0002_map_oklab_mean.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0002_map_oklab_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0002_map_oklab_mean.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0002_map_oklab_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0002_map_oklab_mean.c' object='quant/palette/map_cluster/test_runner-0002_map_oklab_mean.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0002_map_oklab_mean.o `test -f 'quant/palette/map_cluster/0002_map_oklab_mean.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0002_map_oklab_mean.c
+
+quant/palette/map_cluster/test_runner-0002_map_oklab_mean.obj: quant/palette/map_cluster/0002_map_oklab_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0002_map_oklab_mean.obj -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0002_map_oklab_mean.Tpo -c -o quant/palette/map_cluster/test_runner-0002_map_oklab_mean.obj `if test -f 'quant/palette/map_cluster/0002_map_oklab_mean.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0002_map_oklab_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0002_map_oklab_mean.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0002_map_oklab_mean.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0002_map_oklab_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0002_map_oklab_mean.c' object='quant/palette/map_cluster/test_runner-0002_map_oklab_mean.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0002_map_oklab_mean.obj `if test -f 'quant/palette/map_cluster/0002_map_oklab_mean.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0002_map_oklab_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0002_map_oklab_mean.c'; fi`
+
+quant/palette/map_cluster/test_runner-0003_map_cielab_negative.o: quant/palette/map_cluster/0003_map_cielab_negative.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0003_map_cielab_negative.o -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0003_map_cielab_negative.Tpo -c -o quant/palette/map_cluster/test_runner-0003_map_cielab_negative.o `test -f 'quant/palette/map_cluster/0003_map_cielab_negative.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0003_map_cielab_negative.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0003_map_cielab_negative.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0003_map_cielab_negative.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0003_map_cielab_negative.c' object='quant/palette/map_cluster/test_runner-0003_map_cielab_negative.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0003_map_cielab_negative.o `test -f 'quant/palette/map_cluster/0003_map_cielab_negative.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0003_map_cielab_negative.c
+
+quant/palette/map_cluster/test_runner-0003_map_cielab_negative.obj: quant/palette/map_cluster/0003_map_cielab_negative.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0003_map_cielab_negative.obj -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0003_map_cielab_negative.Tpo -c -o quant/palette/map_cluster/test_runner-0003_map_cielab_negative.obj `if test -f 'quant/palette/map_cluster/0003_map_cielab_negative.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0003_map_cielab_negative.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0003_map_cielab_negative.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0003_map_cielab_negative.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0003_map_cielab_negative.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0003_map_cielab_negative.c' object='quant/palette/map_cluster/test_runner-0003_map_cielab_negative.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0003_map_cielab_negative.obj `if test -f 'quant/palette/map_cluster/0003_map_cielab_negative.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0003_map_cielab_negative.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0003_map_cielab_negative.c'; fi`
+
+quant/palette/map_cluster/test_runner-0004_map_din99d_mean.o: quant/palette/map_cluster/0004_map_din99d_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0004_map_din99d_mean.o -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0004_map_din99d_mean.Tpo -c -o quant/palette/map_cluster/test_runner-0004_map_din99d_mean.o `test -f 'quant/palette/map_cluster/0004_map_din99d_mean.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0004_map_din99d_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0004_map_din99d_mean.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0004_map_din99d_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0004_map_din99d_mean.c' object='quant/palette/map_cluster/test_runner-0004_map_din99d_mean.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0004_map_din99d_mean.o `test -f 'quant/palette/map_cluster/0004_map_din99d_mean.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0004_map_din99d_mean.c
+
+quant/palette/map_cluster/test_runner-0004_map_din99d_mean.obj: quant/palette/map_cluster/0004_map_din99d_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0004_map_din99d_mean.obj -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0004_map_din99d_mean.Tpo -c -o quant/palette/map_cluster/test_runner-0004_map_din99d_mean.obj `if test -f 'quant/palette/map_cluster/0004_map_din99d_mean.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0004_map_din99d_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0004_map_din99d_mean.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0004_map_din99d_mean.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0004_map_din99d_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0004_map_din99d_mean.c' object='quant/palette/map_cluster/test_runner-0004_map_din99d_mean.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0004_map_din99d_mean.obj `if test -f 'quant/palette/map_cluster/0004_map_din99d_mean.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0004_map_din99d_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0004_map_din99d_mean.c'; fi`
+
+quant/palette/map_cluster/test_runner-0005_map_heckbert_mean.o: quant/palette/map_cluster/0005_map_heckbert_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0005_map_heckbert_mean.o -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0005_map_heckbert_mean.Tpo -c -o quant/palette/map_cluster/test_runner-0005_map_heckbert_mean.o `test -f 'quant/palette/map_cluster/0005_map_heckbert_mean.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0005_map_heckbert_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0005_map_heckbert_mean.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0005_map_heckbert_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0005_map_heckbert_mean.c' object='quant/palette/map_cluster/test_runner-0005_map_heckbert_mean.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0005_map_heckbert_mean.o `test -f 'quant/palette/map_cluster/0005_map_heckbert_mean.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0005_map_heckbert_mean.c
+
+quant/palette/map_cluster/test_runner-0005_map_heckbert_mean.obj: quant/palette/map_cluster/0005_map_heckbert_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0005_map_heckbert_mean.obj -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0005_map_heckbert_mean.Tpo -c -o quant/palette/map_cluster/test_runner-0005_map_heckbert_mean.obj `if test -f 'quant/palette/map_cluster/0005_map_heckbert_mean.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0005_map_heckbert_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0005_map_heckbert_mean.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0005_map_heckbert_mean.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0005_map_heckbert_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0005_map_heckbert_mean.c' object='quant/palette/map_cluster/test_runner-0005_map_heckbert_mean.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0005_map_heckbert_mean.obj `if test -f 'quant/palette/map_cluster/0005_map_heckbert_mean.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0005_map_heckbert_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0005_map_heckbert_mean.c'; fi`
+
+quant/palette/map_cluster/test_runner-0006_map_center_endpoints.o: quant/palette/map_cluster/0006_map_center_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0006_map_center_endpoints.o -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0006_map_center_endpoints.Tpo -c -o quant/palette/map_cluster/test_runner-0006_map_center_endpoints.o `test -f 'quant/palette/map_cluster/0006_map_center_endpoints.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0006_map_center_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0006_map_center_endpoints.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0006_map_center_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0006_map_center_endpoints.c' object='quant/palette/map_cluster/test_runner-0006_map_center_endpoints.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0006_map_center_endpoints.o `test -f 'quant/palette/map_cluster/0006_map_center_endpoints.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0006_map_center_endpoints.c
+
+quant/palette/map_cluster/test_runner-0006_map_center_endpoints.obj: quant/palette/map_cluster/0006_map_center_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0006_map_center_endpoints.obj -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0006_map_center_endpoints.Tpo -c -o quant/palette/map_cluster/test_runner-0006_map_center_endpoints.obj `if test -f 'quant/palette/map_cluster/0006_map_center_endpoints.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0006_map_center_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0006_map_center_endpoints.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0006_map_center_endpoints.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0006_map_center_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0006_map_center_endpoints.c' object='quant/palette/map_cluster/test_runner-0006_map_center_endpoints.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0006_map_center_endpoints.obj `if test -f 'quant/palette/map_cluster/0006_map_center_endpoints.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0006_map_center_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0006_map_center_endpoints.c'; fi`
+
+quant/palette/map_cluster/test_runner-0007_map_medoids_endpoints.o: quant/palette/map_cluster/0007_map_medoids_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0007_map_medoids_endpoints.o -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0007_map_medoids_endpoints.Tpo -c -o quant/palette/map_cluster/test_runner-0007_map_medoids_endpoints.o `test -f 'quant/palette/map_cluster/0007_map_medoids_endpoints.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0007_map_medoids_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0007_map_medoids_endpoints.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0007_map_medoids_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0007_map_medoids_endpoints.c' object='quant/palette/map_cluster/test_runner-0007_map_medoids_endpoints.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0007_map_medoids_endpoints.o `test -f 'quant/palette/map_cluster/0007_map_medoids_endpoints.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0007_map_medoids_endpoints.c
+
+quant/palette/map_cluster/test_runner-0007_map_medoids_endpoints.obj: quant/palette/map_cluster/0007_map_medoids_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0007_map_medoids_endpoints.obj -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0007_map_medoids_endpoints.Tpo -c -o quant/palette/map_cluster/test_runner-0007_map_medoids_endpoints.obj `if test -f 'quant/palette/map_cluster/0007_map_medoids_endpoints.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0007_map_medoids_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0007_map_medoids_endpoints.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0007_map_medoids_endpoints.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0007_map_medoids_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0007_map_medoids_endpoints.c' object='quant/palette/map_cluster/test_runner-0007_map_medoids_endpoints.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0007_map_medoids_endpoints.obj `if test -f 'quant/palette/map_cluster/0007_map_medoids_endpoints.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0007_map_medoids_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0007_map_medoids_endpoints.c'; fi`
+
+quant/palette/map_cluster/test_runner-0008_map_auto_mean.o: quant/palette/map_cluster/0008_map_auto_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0008_map_auto_mean.o -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0008_map_auto_mean.Tpo -c -o quant/palette/map_cluster/test_runner-0008_map_auto_mean.o `test -f 'quant/palette/map_cluster/0008_map_auto_mean.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0008_map_auto_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0008_map_auto_mean.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0008_map_auto_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0008_map_auto_mean.c' object='quant/palette/map_cluster/test_runner-0008_map_auto_mean.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0008_map_auto_mean.o `test -f 'quant/palette/map_cluster/0008_map_auto_mean.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0008_map_auto_mean.c
+
+quant/palette/map_cluster/test_runner-0008_map_auto_mean.obj: quant/palette/map_cluster/0008_map_auto_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0008_map_auto_mean.obj -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0008_map_auto_mean.Tpo -c -o quant/palette/map_cluster/test_runner-0008_map_auto_mean.obj `if test -f 'quant/palette/map_cluster/0008_map_auto_mean.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0008_map_auto_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0008_map_auto_mean.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0008_map_auto_mean.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0008_map_auto_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0008_map_auto_mean.c' object='quant/palette/map_cluster/test_runner-0008_map_auto_mean.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0008_map_auto_mean.obj `if test -f 'quant/palette/map_cluster/0008_map_auto_mean.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0008_map_auto_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0008_map_auto_mean.c'; fi`
+
+quant/palette/map_cluster/test_runner-0009_map_byte_request.o: quant/palette/map_cluster/0009_map_byte_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0009_map_byte_request.o -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0009_map_byte_request.Tpo -c -o quant/palette/map_cluster/test_runner-0009_map_byte_request.o `test -f 'quant/palette/map_cluster/0009_map_byte_request.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0009_map_byte_request.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0009_map_byte_request.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0009_map_byte_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0009_map_byte_request.c' object='quant/palette/map_cluster/test_runner-0009_map_byte_request.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0009_map_byte_request.o `test -f 'quant/palette/map_cluster/0009_map_byte_request.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0009_map_byte_request.c
+
+quant/palette/map_cluster/test_runner-0009_map_byte_request.obj: quant/palette/map_cluster/0009_map_byte_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0009_map_byte_request.obj -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0009_map_byte_request.Tpo -c -o quant/palette/map_cluster/test_runner-0009_map_byte_request.obj `if test -f 'quant/palette/map_cluster/0009_map_byte_request.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0009_map_byte_request.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0009_map_byte_request.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0009_map_byte_request.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0009_map_byte_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0009_map_byte_request.c' object='quant/palette/map_cluster/test_runner-0009_map_byte_request.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0009_map_byte_request.obj `if test -f 'quant/palette/map_cluster/0009_map_byte_request.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0009_map_byte_request.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0009_map_byte_request.c'; fi`
+
+quant/palette/map_cluster/test_runner-0010_map_gamma_byte.o: quant/palette/map_cluster/0010_map_gamma_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0010_map_gamma_byte.o -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0010_map_gamma_byte.Tpo -c -o quant/palette/map_cluster/test_runner-0010_map_gamma_byte.o `test -f 'quant/palette/map_cluster/0010_map_gamma_byte.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0010_map_gamma_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0010_map_gamma_byte.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0010_map_gamma_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0010_map_gamma_byte.c' object='quant/palette/map_cluster/test_runner-0010_map_gamma_byte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0010_map_gamma_byte.o `test -f 'quant/palette/map_cluster/0010_map_gamma_byte.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0010_map_gamma_byte.c
+
+quant/palette/map_cluster/test_runner-0010_map_gamma_byte.obj: quant/palette/map_cluster/0010_map_gamma_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0010_map_gamma_byte.obj -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0010_map_gamma_byte.Tpo -c -o quant/palette/map_cluster/test_runner-0010_map_gamma_byte.obj `if test -f 'quant/palette/map_cluster/0010_map_gamma_byte.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0010_map_gamma_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0010_map_gamma_byte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0010_map_gamma_byte.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0010_map_gamma_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0010_map_gamma_byte.c' object='quant/palette/map_cluster/test_runner-0010_map_gamma_byte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0010_map_gamma_byte.obj `if test -f 'quant/palette/map_cluster/0010_map_gamma_byte.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0010_map_gamma_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0010_map_gamma_byte.c'; fi`
+
+quant/palette/map_cluster/test_runner-0011_map_structured_byte.o: quant/palette/map_cluster/0011_map_structured_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0011_map_structured_byte.o -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0011_map_structured_byte.Tpo -c -o quant/palette/map_cluster/test_runner-0011_map_structured_byte.o `test -f 'quant/palette/map_cluster/0011_map_structured_byte.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0011_map_structured_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0011_map_structured_byte.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0011_map_structured_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0011_map_structured_byte.c' object='quant/palette/map_cluster/test_runner-0011_map_structured_byte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0011_map_structured_byte.o `test -f 'quant/palette/map_cluster/0011_map_structured_byte.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0011_map_structured_byte.c
+
+quant/palette/map_cluster/test_runner-0011_map_structured_byte.obj: quant/palette/map_cluster/0011_map_structured_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0011_map_structured_byte.obj -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0011_map_structured_byte.Tpo -c -o quant/palette/map_cluster/test_runner-0011_map_structured_byte.obj `if test -f 'quant/palette/map_cluster/0011_map_structured_byte.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0011_map_structured_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0011_map_structured_byte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0011_map_structured_byte.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0011_map_structured_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0011_map_structured_byte.c' object='quant/palette/map_cluster/test_runner-0011_map_structured_byte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0011_map_structured_byte.obj `if test -f 'quant/palette/map_cluster/0011_map_structured_byte.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0011_map_structured_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0011_map_structured_byte.c'; fi`
+
+quant/palette/map_cluster/test_runner-0012_map_clustering_reuse.o: quant/palette/map_cluster/0012_map_clustering_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0012_map_clustering_reuse.o -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0012_map_clustering_reuse.Tpo -c -o quant/palette/map_cluster/test_runner-0012_map_clustering_reuse.o `test -f 'quant/palette/map_cluster/0012_map_clustering_reuse.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0012_map_clustering_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0012_map_clustering_reuse.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0012_map_clustering_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0012_map_clustering_reuse.c' object='quant/palette/map_cluster/test_runner-0012_map_clustering_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0012_map_clustering_reuse.o `test -f 'quant/palette/map_cluster/0012_map_clustering_reuse.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0012_map_clustering_reuse.c
+
+quant/palette/map_cluster/test_runner-0012_map_clustering_reuse.obj: quant/palette/map_cluster/0012_map_clustering_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0012_map_clustering_reuse.obj -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0012_map_clustering_reuse.Tpo -c -o quant/palette/map_cluster/test_runner-0012_map_clustering_reuse.obj `if test -f 'quant/palette/map_cluster/0012_map_clustering_reuse.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0012_map_clustering_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0012_map_clustering_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0012_map_clustering_reuse.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0012_map_clustering_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0012_map_clustering_reuse.c' object='quant/palette/map_cluster/test_runner-0012_map_clustering_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0012_map_clustering_reuse.obj `if test -f 'quant/palette/map_cluster/0012_map_clustering_reuse.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0012_map_clustering_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0012_map_clustering_reuse.c'; fi`
+
+quant/palette/map_cluster/test_runner-0013_map_animation_cache.o: quant/palette/map_cluster/0013_map_animation_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0013_map_animation_cache.o -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0013_map_animation_cache.Tpo -c -o quant/palette/map_cluster/test_runner-0013_map_animation_cache.o `test -f 'quant/palette/map_cluster/0013_map_animation_cache.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0013_map_animation_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0013_map_animation_cache.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0013_map_animation_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0013_map_animation_cache.c' object='quant/palette/map_cluster/test_runner-0013_map_animation_cache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0013_map_animation_cache.o `test -f 'quant/palette/map_cluster/0013_map_animation_cache.c' || echo '$(srcdir)/'`quant/palette/map_cluster/0013_map_animation_cache.c
+
+quant/palette/map_cluster/test_runner-0013_map_animation_cache.obj: quant/palette/map_cluster/0013_map_animation_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/map_cluster/test_runner-0013_map_animation_cache.obj -MD -MP -MF quant/palette/map_cluster/$(DEPDIR)/test_runner-0013_map_animation_cache.Tpo -c -o quant/palette/map_cluster/test_runner-0013_map_animation_cache.obj `if test -f 'quant/palette/map_cluster/0013_map_animation_cache.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0013_map_animation_cache.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0013_map_animation_cache.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/map_cluster/$(DEPDIR)/test_runner-0013_map_animation_cache.Tpo quant/palette/map_cluster/$(DEPDIR)/test_runner-0013_map_animation_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/map_cluster/0013_map_animation_cache.c' object='quant/palette/map_cluster/test_runner-0013_map_animation_cache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/map_cluster/test_runner-0013_map_animation_cache.obj `if test -f 'quant/palette/map_cluster/0013_map_animation_cache.c'; then $(CYGPATH_W) 'quant/palette/map_cluster/0013_map_animation_cache.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/map_cluster/0013_map_animation_cache.c'; fi`
+
 quant/palette/cluster_precision/test_runner-cluster_precision_common.o: quant/palette/cluster_precision/cluster_precision_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/cluster_precision/test_runner-cluster_precision_common.o -MD -MP -MF quant/palette/cluster_precision/$(DEPDIR)/test_runner-cluster_precision_common.Tpo -c -o quant/palette/cluster_precision/test_runner-cluster_precision_common.o `test -f 'quant/palette/cluster_precision/cluster_precision_common.c' || echo '$(srcdir)/'`quant/palette/cluster_precision/cluster_precision_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/cluster_precision/$(DEPDIR)/test_runner-cluster_precision_common.Tpo quant/palette/cluster_precision/$(DEPDIR)/test_runner-cluster_precision_common.Po
@@ -71465,6 +71794,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/lookup_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/mahalanobis_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/mahalanobis_float/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/map_cluster/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/map_cluster/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/map_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/map_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/map_precision/$(DEPDIR)/$(am__dirstamp)

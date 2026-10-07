@@ -635,6 +635,19 @@ int test_drcs_highcolor_0021(int argc, char **argv);
 int test_drcs_highcolor_0022(int argc, char **argv);
 int test_drcs_highcolor_0023(int argc, char **argv);
 int test_drcs_highcolor_0024(int argc, char **argv);
+int test_map_cluster_0001(int argc, char **argv);
+int test_map_cluster_0002(int argc, char **argv);
+int test_map_cluster_0003(int argc, char **argv);
+int test_map_cluster_0004(int argc, char **argv);
+int test_map_cluster_0005(int argc, char **argv);
+int test_map_cluster_0006(int argc, char **argv);
+int test_map_cluster_0007(int argc, char **argv);
+int test_map_cluster_0008(int argc, char **argv);
+int test_map_cluster_0009(int argc, char **argv);
+int test_map_cluster_0010(int argc, char **argv);
+int test_map_cluster_0011(int argc, char **argv);
+int test_map_cluster_0012(int argc, char **argv);
+int test_map_cluster_0013(int argc, char **argv);
 int test_cluster_precision_0001(int argc, char **argv);
 int test_cluster_precision_0002(int argc, char **argv);
 int test_cluster_precision_0003(int argc, char **argv);
@@ -4047,6 +4060,32 @@ static test_entry_t const test_entries[] = {
     { "codec/drcs/0022_highcolor_macro_recovery", test_drcs_highcolor_0022 },
     { "codec/drcs/0023_highcolor_png_recovery", test_drcs_highcolor_0023 },
     { "codec/drcs/0024_highcolor_writer_restore", test_drcs_highcolor_0024 },
+    { "palette/map_cluster/0001_map_linear_mean",
+      test_map_cluster_0001 },
+    { "palette/map_cluster/0002_map_oklab_mean",
+      test_map_cluster_0002 },
+    { "palette/map_cluster/0003_map_cielab_negative",
+      test_map_cluster_0003 },
+    { "palette/map_cluster/0004_map_din99d_mean",
+      test_map_cluster_0004 },
+    { "palette/map_cluster/0005_map_heckbert_mean",
+      test_map_cluster_0005 },
+    { "palette/map_cluster/0006_map_center_endpoints",
+      test_map_cluster_0006 },
+    { "palette/map_cluster/0007_map_medoids_endpoints",
+      test_map_cluster_0007 },
+    { "palette/map_cluster/0008_map_auto_mean",
+      test_map_cluster_0008 },
+    { "palette/map_cluster/0009_map_byte_request",
+      test_map_cluster_0009 },
+    { "palette/map_cluster/0010_map_gamma_byte",
+      test_map_cluster_0010 },
+    { "palette/map_cluster/0011_map_structured_byte",
+      test_map_cluster_0011 },
+    { "palette/map_cluster/0012_map_clustering_reuse",
+      test_map_cluster_0012 },
+    { "palette/map_cluster/0013_map_animation_cache",
+      test_map_cluster_0013 },
     { "palette/cluster_precision/0001_linear_mean",
       test_cluster_precision_0001 },
     { "palette/cluster_precision/0002_oklab_mean",

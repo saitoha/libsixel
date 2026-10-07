@@ -1,5 +1,6 @@
 #!/bin/sh
-# Verify -X does not change encoded output with PNG tRNS mapfile palettes.
+# Verify required clustering precision for a PNG tRNS image map.
+# Policy: docs/encoder/palette-construction/external-palettes.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -15,7 +16,8 @@ mapfile_png="${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-pal8-trns.png"
 
 expected_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -L builtin! -m "${mapfile_png}" -o - "${input_image}"
+        -Lbuiltin:cms_engine=none! --precision=float -Xoklab \
+        -Wgamma -Fnone -_none -m "${mapfile_png}" -o - "${input_image}"
 ) || {
     echo "not ok" 1 - "PNG tRNS mapfile baseline encode failed"
     exit 0
@@ -28,16 +30,17 @@ test -n "${expected_output}" || {
 
 actual_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -L builtin! -X oklab -m "${mapfile_png}" -o - "${input_image}"
+        -Lbuiltin:cms_engine=none! --precision=8bit -Xoklab \
+        -Wgamma -Fnone -_none -m "${mapfile_png}" -o - "${input_image}"
 ) || {
     echo "not ok" 1 - "PNG tRNS mapfile encode failed with -X oklab"
     exit 0
 }
 
 test "${actual_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "PNG tRNS mapfile output changed under -X oklab"
+    echo "not ok" 1 - "PNG tRNS mapfile lost float clustering precision"
     exit 0
 }
 
-echo "ok" 1 - "PNG tRNS mapfile output ignores clustering colorspace"
+echo "ok" 1 - "PNG tRNS mapfile retains required clustering precision"
 exit 0

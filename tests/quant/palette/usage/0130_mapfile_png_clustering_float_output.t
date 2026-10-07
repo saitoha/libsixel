@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify legacy byte PNG map construction ignores clustering colorspace.
+# Verify a byte preference preserves required PNG map clustering precision.
 # Policy: docs/encoder/palette-construction/external-palettes.md
 set -eux
 
@@ -11,18 +11,18 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-# Pin the byte path: a CMS-retained float map uses native construction
-# controls and may reorder entries when the clustering space changes.
+# Compare required map-only promotion against the existing explicit float
+# path; independent color values are asserted by the map_cluster tests.
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 mapfile_png="${TOP_SRCDIR}/images/map8-palette.png"
 
 expected_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -Lbuiltin:cms_engine=none! --precision=8bit -Wgamma -0hard \
+        -Lbuiltin:cms_engine=none! --precision=float -Xoklab -Wgamma -0hard \
         -m "${mapfile_png}" -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "byte PNG mapfile baseline encode failed"
+    echo "not ok" 1 - "explicit float PNG mapfile baseline encode failed"
     exit 0
 }
 
@@ -36,9 +36,9 @@ actual_output=$(
 }
 
 test "${actual_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "byte PNG mapfile output changed under -X oklab"
+    echo "not ok" 1 - "PNG mapfile lost required float clustering precision"
     exit 0
 }
 
-echo "ok" 1 - "byte PNG mapfile output ignores clustering colorspace"
+echo "ok" 1 - "PNG mapfile clustering overrides byte preference"
 exit 0
