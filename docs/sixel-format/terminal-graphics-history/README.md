@@ -171,7 +171,7 @@ With sextants and octants, teletext's 1974 cell grid became part of the universa
 
 ### Palettes and direct color
 
-Color in character cells was first chosen by number. ECMA-48 selects eight colors with SGR 30–37 and 40–47, aixterm added bright variants, and xterm's 256-color mode selects entries with SGR `38;5;n` and `48;5;n` from a palette of the 16 basic colors, a 6 × 6 × 6 color cube and a 24-step gray ramp. The palette can be changed: OSC 4 (`ESC ] 4 ; c ; spec ST`) redefines entry *c*, and curses offers the same through `init_color` and the terminfo `initc` string. In the X/Open curses interface, color numbers and color-pair numbers are `short` values. Direct color, SGR `38:2:…:r:g:b` and `48:2:…:r:g:b`, comes from ITU-T T.416 (ISO/IEC 8613-6); ECMA-48 marks those parameter values as reserved for future standardization, and xterm accepts both the standard colon separators and the semicolons that many programs emit.
+Color in character cells was first chosen by number. ECMA-48 selects eight colors with SGR 30–37 and 40–47, aixterm added bright variants, and xterm's 256-color mode selects entries with SGR `38;5;n` and `48;5;n` from a palette of the 16 basic colors, a 6 × 6 × 6 color cube and a 24-step gray ramp. The palette can be changed: OSC 4 (`ESC ] 4 ; c ; spec ST`) redefines entry *c*, and curses offers the same through `init_color` and the terminfo `initc` string. In the X/Open curses interface, color numbers and color-pair numbers are `short` values. Direct color is selected with SGR `38:2:…:r:g:b` and `48:2:…:r:g:b`; ECMA-48 marks those parameter values as reserved for future standardization, and xterm accepts both colon separators and the semicolons that many programs emit.
 
 A palette that a picture can redefine is in principle enough to show photographs: a picture of 120 × 45 half-block cells has at most 10,800 color units, and 256 colors chosen for that picture reproduce it closely, as [Figure 19 of the visual perception chapter](../../quality/visual-perception/README.md#color-precision-for-character-cells) shows. Programs that draw images with characters nevertheless leave the palette alone:
 
@@ -234,8 +234,7 @@ No single protocol has displaced the others. SIXEL remains the most widely imple
 ## References
 
 - Tektronix 4010 series, VT320 series, ReGIS, Videotex, NAPLPS, Captain, Prestel, Minitel, Telidon, Bildschirmtext, RIPscrip, and Tera Term articles on Wikipedia, with their cited sources.
-- Thomas E. Dickey, [*XTerm Control Sequences*](https://invisible-island.net/xterm/ctlseqs/ctlseqs.html): OSC 4, XTPUSHCOLORS and XTPOPCOLORS, private mode 1070, and the ISO 8613-6 direct-color controls.
-- ITU-T Recommendation T.416 (ISO/IEC 8613-6), *Open Document Architecture (ODA) and interchange format: Character content architectures*.
+- Thomas E. Dickey, [*XTerm Control Sequences*](https://invisible-island.net/xterm/ctlseqs/ctlseqs.html): OSC 4, XTPUSHCOLORS and XTPOPCOLORS, private mode 1070, and the direct-color controls.
 - Digital Equipment Corporation, [*VT330/VT340 Programmer Reference Manual, Volume 2*](https://vt100.net/docs/vt3xx-gp/), Chapter 14 (sixel graphics).
 - István Sebestyén, [*JPEG 25 years celebration presentation*](https://www.ecma-international.org/wp-content/uploads/IS-presentation-to-JTC1SC29WG1-regarding-JPEG25-celebration.pdf), Ecma International.
 - [*ISO/IEC 10918-1 (1986–1993)*](https://www.itu.int/dms_pub/itu-s/opb/journal/S-JOURNAL-ICTS.V3I1-2020-13-PDF-E.pdf), ITU Journal: ICT Discoveries, 2020.
