@@ -1,6 +1,6 @@
 # libwebp image loader
 
-The `libwebp` loader uses the linked WebP codec/demux APIs for static images and animation, then normalizes frames through libsixel's metadata, alpha, and CMS policies. This is a separate implementation from [builtin WebP](builtin/webp.md); success or coverage in one path does not prove the other path behaves identically.
+The `libwebp` loader uses the linked WebP codec/demux APIs for static images and animation, then normalizes frames through libsixel's metadata, alpha, and CMS policies. The builtin loader has no WebP decoder and declines WebP input, so this loader, or a platform loader, is the WebP path; the [loader patent notes](patents.md#webp) explain why.
 
 ```sh
 img2sixel -L 'libwebp!' image.webp
@@ -14,7 +14,7 @@ Use the trailing `!` when backend identity matters. Available compressed formats
 
 Static lossless input and alpha-preserving cases can use byte RGB/RGBA decoding. An eligible static lossy image instead follows a YUV-to-float path: the current selector requires lossy input, no forced RGB decode, either no alpha or an explicit composition background, and a float precision request, an enabled embedded-profile conversion, or alpha/background composition. This preserves intermediate conversion precision; it does not turn the source into a higher-bit-depth WebP file. Without these requirements, ordinary unmanaged static lossy input uses the RGB8 API. Unmanaged lossless RGB8 output is not unconditionally promoted during frame finalization. CMS and `prefer_8bit` can further change the emitted representation.
 
-Animated input uses `WebPAnimDecoder` composed canvases and timestamps. libsixel derives delays from timestamp differences, applies frame selection and repetition, and can cache finalized first-pass frames for reuse. Blend/disposal composition is therefore owned differently from the builtin decoder's WebP container/codec implementation. See [animation playback](../encoder/animation.md) for loop counts, timing units, `-S`, `-T`, and the current one-frame-tail replay boundary.
+Animated input uses `WebPAnimDecoder` composed canvases and timestamps. libsixel derives delays from timestamp differences, applies frame selection and repetition, and can cache finalized first-pass frames for reuse. Blend/disposal composition is therefore owned by libwebp rather than by libsixel. See [animation playback](../encoder/animation.md) for loop counts, timing units, `-S`, `-T`, and the current one-frame-tail replay boundary.
 
 | Control | Meaning |
 | --- | --- |

@@ -160,7 +160,7 @@ img2sixel -x code:psd_trace=1:psd_header_only=1 -Lbuiltin! document.psb
 | `-x ...:trace_topic=psd_decode` or `SIXEL_TRACE_TOPIC=psd_decode` | Selects topic-scoped decode detail; this is diagnostic output, not a change to accepted pixels. |
 | `builtin:orientation`, `-S`, `-T`, `-l`, `-g` | No effect. PSD is emitted as one image and Exif orientation is not interpreted by this path. |
 | `-p COLORS`, resize, crop, sampling, and encoder color modes | Run after the typed PSD frame is returned. PSD Indexed mode is already expanded, so these controls do not recover its original indices. |
-| PNG, HDR, PNM, BMP, and WebP-specific suboptions | No effect. |
+| PNG, HDR, PNM, and BMP-specific suboptions | No effect. |
 
 ## Unsupported behavior and security boundary
 

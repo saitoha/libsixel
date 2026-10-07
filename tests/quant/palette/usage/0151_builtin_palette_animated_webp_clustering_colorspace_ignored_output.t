@@ -7,7 +7,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 test "${HAVE_WEBP-}" = 1 || {
-    printf "1..0 # SKIP WebP support is disabled in this build\n"
+    printf "1..0 # SKIP libwebp loader is unavailable\n"
     exit 0
 }
 
@@ -18,7 +18,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2fram
 
 expected_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -g -L builtin! -ldisable -bxterm16 -o - "${input_image}"
+        -g -L libwebp! -ldisable -bxterm16 -o - "${input_image}"
 ) || {
     echo "not ok" 1 - "built-in palette WebP baseline encode failed"
     exit 0
@@ -31,7 +31,7 @@ test -n "${expected_output}" || {
 
 actual_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -g -L builtin! -ldisable -X oklab -bxterm16 -o - "${input_image}"
+        -g -L libwebp! -ldisable -X oklab -bxterm16 -o - "${input_image}"
 ) || {
     echo "not ok" 1 - "built-in palette WebP encode failed with -X oklab"
     exit 0

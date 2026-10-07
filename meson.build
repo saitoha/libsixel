@@ -2096,7 +2096,6 @@ loader_helper_sources = files(
   'src/timeline-writer.h',
   'src/frame.c',
   'src/fromgif.c',
-  'src/fromwebp.c',
   'src/frompnm.c',
   'src/fromsixel.c',
   'src/loader.c',

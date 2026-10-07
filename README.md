@@ -1274,73 +1274,11 @@ what is available):
 - `quicklook`
 - `gnome-thumbnailer`
 
-The `builtin` loader includes an internal WebP MVP path. The current scope is
-static decode for `VP8L`, `VP8`, and a first `VP8+ALPH` subset.
-For `VP8+ALPH`, the builtin path currently supports `compression=0/1` with
-`filter=0..3` and `preprocess=0/1`; `compression=2/3` and `preprocess=2/3`
-are treated as malformed input. Animation supports an MVP path that reuses the
-existing static decoders
-(`VP8L`/`VP8`/`VP8+ALPH`) per frame with `ANMF` rectangle composition,
-blend-over/replace, and dispose-to-background handling. ANMF rectangles must
-stay inside the declared animation canvas; out-of-canvas rectangles are treated
-as malformed input. Top-level chunk strictness is enforced for deterministic
-error contracts: duplicate `VP8`/`VP8X`/`VP8L`/`ALPH`/`ANIM`/`ICCP`/`EXIF`/`XMP`
-chunks are rejected, and static `VP8+VP8L` or `VP8L+ALPH` coexistence is
-treated as malformed input. `VP8X` metadata flag mismatches
-(`ICCP`/`EXIF`/`XMP`/`ANIM`) are also treated as malformed input. In static decode,
-`ALPH` chunk usage is validated strictly as malformed input when `VP8X` alpha
-flags or `VP8` payload presence are inconsistent.
-In animation decode, alpha consistency is validated as malformed input when
-`ANMF` frames carry alpha while the `VP8X` alpha flag is clear, and top-level
-`ALPH` chunks are rejected for animated streams.
-In current builtin WebP scope, VP8 interframe tags and `show_frame=0` are
-also treated as malformed input and map to stream error contracts.
-VP8 and `VP8+ALPH` decode failures are normalized to `W_ERR_VP8_STREAM`.
-`W_UNSUP_ANIM` is reserved for animation policy limits
-(`frame_count`/canvas ceilings) only.
-Limit reasons are exposed as `W_UNSUP_ANIM_FRAME_LIMIT`,
-`W_UNSUP_ANIM_DIMENSION_LIMIT`, and `W_UNSUP_ANIM_PIXEL_LIMIT`.
-Thresholds are inclusive: `frame_count==1024`, canvas dimensions up to
-`32767`, and pixel count up to `268435456` stay supported. Only values above
-those limits map to `W_UNSUP_ANIM_*` limit reasons.
-For animation timing diagnostics, builtin WebP also emits timing-observation
-codes without changing decode behavior:
-`W_ANIM_DURATION_ZERO_SEEN`, `W_ANIM_DURATION_NONZERO_SEEN`,
-`W_ANIM_LOOPCOUNT_FINITE_SEEN`, and `W_ANIM_LOOPCOUNT_INFINITE_SEEN`.
-For static decode,
-embedded `ICCP` is applied when builtin CMS is enabled and embedded `EXIF`
-orientation is applied when builtin orientation handling is enabled.
-When `EXIF` metadata is absent, builtin WebP also tries a minimal
-`XMP` orientation fallback (`tiff:Orientation`) for values `2..8`.
-`EXIF` always takes precedence over `XMP` when both are present.
-EXIF payload parsing is capped at `1 MiB`; oversized EXIF metadata is
-ignored non-fatally and emits `W_META_EXIF_SIZE_LIMIT_IGNORED`.
-When EXIF metadata exists, builtin WebP keeps `EXIF > XMP` precedence even
-if EXIF is oversized, so XMP orientation fallback is not evaluated.
-For color management, builtin WebP applies embedded `ICCP` first.
-When `ICCP` is absent and builtin CMS is enabled, builtin WebP also accepts a
-minimal `XMP` color profile name fallback from `ICCProfile` properties
-(prefixed or unprefixed, attribute or element form) for
-`sRGB IEC61966-2.1`, `Display P3`, and `Adobe RGB (1998)`.
-When builtin CMS is enabled and embedded `ICCP` exceeds `1 MiB`, builtin WebP
-ignores that profile non-fatally (`W_META_ICCP_SIZE_LIMIT_IGNORED`) and may
-fall back to XMP CMS resolution.
-The profile-name resolver also accepts compact aliases such as `sRGB`,
-`IEC61966-2.1`, `DisplayP3`, `AdobeRGB1998`, and `AdobeRGB`.
-Alias matching is ASCII case-insensitive and treats contiguous ASCII
-whitespace equivalently (for example, `Display P3` and `Display\tP3`).
-It also normalizes profile-name separators so variants that use
-whitespace, `-`, `_`, `(`, or `)` stay compatible.
-For robustness, XMP CMS detection inspects tag/attribute contexts and ignores
-`ICCProfile` string hits in comments, CDATA sections, processing instructions,
-and plain text nodes. Legacy payloads that contain only one bare prefixed
-`ICCProfile="..."` assignment are still accepted for compatibility and emit
-`W_META_XMP_CMS_BARE_FALLBACK_USED` when that fallback path is used.
-Unknown XMP color profile names are ignored.
-XMP payload parsing is capped at `256 KiB` for orientation and CMS fallback.
-When this cap is exceeded, builtin WebP treats XMP metadata as non-fatal
-ignored input and emits `W_META_XMP_SIZE_LIMIT_IGNORED` and/or
-`W_META_XMP_CMS_SIZE_LIMIT_IGNORED` diagnostics.
+The `builtin` loader does not decode WebP. WebP and other RIFF inputs are
+declined so that the next loader in the chain can handle them; use `libwebp`
+or a platform loader such as `coregraphics` or `wic`. An independent VP8
+decoder is not covered by Google's patent grant; see
+[Patent status of loader formats](docs/loader/patents.md).
 
 `librsvg` always returns raster frames as `RGB888` or `RGBA8888`.
 Without `-B` and with any non-opaque pixel, alpha is preserved

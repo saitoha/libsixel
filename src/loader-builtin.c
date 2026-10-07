@@ -72,7 +72,6 @@
 #include "frompsd.h"
 #include "loader-psd-color.h"
 #include "loader-psd-process.h"
-#include "fromwebp.h"
 #include "frompnm.h"
 #include "pixelformat.h"
 #include "loader-builtin.h"
@@ -4164,7 +4163,7 @@ typedef struct sixel_builtin_load_context {
     int start_frame_no;
     int resolved_start_frame_no;
     int gif_frame_count;
-    int nonwebp_orientation;
+    int orientation;
 } sixel_builtin_load_context_t;
 
 typedef struct sixel_builtin_frame_callback_context {
@@ -4177,12 +4176,18 @@ typedef enum sixel_builtin_decode_path {
     SIXEL_BUILTIN_DECODE_PATH_SIXEL = 0,
     SIXEL_BUILTIN_DECODE_PATH_PNM,
     SIXEL_BUILTIN_DECODE_PATH_GIF,
-    SIXEL_BUILTIN_DECODE_PATH_WEBP,
+    SIXEL_BUILTIN_DECODE_PATH_RIFF,
     SIXEL_BUILTIN_DECODE_PATH_STBI
 } sixel_builtin_decode_path_t;
 
+/*
+ * The builtin loader does not decode WebP: an independent VP8 decoder is not
+ * covered by Google's patent grant (see docs/loader/patents.md).  WebP and
+ * other RIFF inputs are recognized here only so that they are declined as a
+ * recoverable mismatch instead of being guessed as a weak-signature format.
+ */
 static int
-sixel_builtin_chunk_is_webp_candidate(sixel_chunk_t const *chunk)
+sixel_builtin_chunk_is_riff(sixel_chunk_t const *chunk)
 {
     sixel_chunk_bytes_view_t view;
 
@@ -4196,10 +4201,6 @@ sixel_builtin_chunk_is_webp_candidate(sixel_chunk_t const *chunk)
         return 1;
     }
 
-    /*
-     * Route RIFF-like inputs to fromwebp so malformed WebP headers still
-     * produce deterministic LSXWEBP1 error contracts instead of stbi fallback.
-     */
     if (view.size >= 4u &&
         view.bytes[0] == 'R' &&
         view.bytes[1] == 'I' &&
@@ -4223,8 +4224,8 @@ sixel_builtin_detect_decode_path(sixel_chunk_t const *chunk)
     if (chunk != NULL && chunk_is_gif(chunk)) {
         return SIXEL_BUILTIN_DECODE_PATH_GIF;
     }
-    if (sixel_builtin_chunk_is_webp_candidate(chunk)) {
-        return SIXEL_BUILTIN_DECODE_PATH_WEBP;
+    if (sixel_builtin_chunk_is_riff(chunk)) {
+        return SIXEL_BUILTIN_DECODE_PATH_RIFF;
     }
     return SIXEL_BUILTIN_DECODE_PATH_STBI;
 }
@@ -4239,8 +4240,8 @@ sixel_builtin_decode_path_name(sixel_builtin_decode_path_t path)
         return "pnm";
     case SIXEL_BUILTIN_DECODE_PATH_GIF:
         return "gif";
-    case SIXEL_BUILTIN_DECODE_PATH_WEBP:
-        return "webp";
+    case SIXEL_BUILTIN_DECODE_PATH_RIFF:
+        return "riff";
     case SIXEL_BUILTIN_DECODE_PATH_STBI:
     default:
         return "stbi";
@@ -4380,15 +4381,12 @@ sixel_builtin_parse_png_exif_orientation(unsigned char const *buffer,
 }
 
 /*
- * Resolve EXIF orientation for builtin paths except WebP.
- *
- * WebP orientation is already handled inside fromwebp to keep WebP trace
- * contracts local to that decode layer.
+ * Resolve EXIF orientation for the builtin JPEG, PNG, and TIFF metadata paths.
  */
 static int
-sixel_builtin_resolve_nonwebp_orientation(sixel_chunk_t const *chunk,
-                                          int enable_orientation,
-                                          int *orientation_out)
+sixel_builtin_resolve_orientation(sixel_chunk_t const *chunk,
+                                  int enable_orientation,
+                                  int *orientation_out)
 {
     sixel_chunk_bytes_view_t view;
     int parsed_orientation;
@@ -4404,10 +4402,6 @@ sixel_builtin_resolve_nonwebp_orientation(sixel_chunk_t const *chunk,
         view.bytes == NULL) {
         return 0;
     }
-    if (chunk_is_webp(chunk)) {
-        return 0;
-    }
-
     if (chunk_is_jpeg(chunk)) {
         found = sixel_builtin_parse_jpeg_exif_orientation(view.bytes,
                                                           view.size,
@@ -4451,13 +4445,13 @@ sixel_builtin_prepare_load_context(
     load_context->start_frame_no = INT_MIN;
     load_context->resolved_start_frame_no = -1;
     load_context->gif_frame_count = 0;
-    load_context->nonwebp_orientation = 1;
+    load_context->orientation = 1;
 
-    if (sixel_builtin_resolve_nonwebp_orientation(
+    if (sixel_builtin_resolve_orientation(
             request->chunk,
             request->enable_orientation,
-            &load_context->nonwebp_orientation) == 0) {
-        load_context->nonwebp_orientation = 1;
+            &load_context->orientation) == 0) {
+        load_context->orientation = 1;
     }
 
     if (apply_start_frame == 0) {
@@ -4490,12 +4484,11 @@ sixel_builtin_finalize_loaded_frame(
         return SIXEL_BAD_ARGUMENT;
     }
     if (load_context != NULL) {
-        orientation = load_context->nonwebp_orientation;
+        orientation = load_context->orientation;
     }
 
     if (request->enable_orientation != 0 &&
         request->chunk != NULL &&
-        !chunk_is_webp(request->chunk) &&
         orientation >= 2 &&
         orientation <= 8) {
         status = loader_frame_apply_orientation(frame, orientation);
@@ -6884,9 +6877,7 @@ sixel_builtin_load_with_builtin_impl(
     sixel_builtin_decode_path_t decode_path;
     sixel_builtin_stbi_route_options_t stbi_route;
     sixel_builtin_png_header_info_t png_header_info;
-    sixel_builtin_frame_callback_context_t webp_callback_context;
     int animation_handled;
-    int webp_animation_handled;
     int apply_start_frame;
     int pnm_pixelformat;
 
@@ -6946,10 +6937,8 @@ sixel_builtin_load_with_builtin_impl(
     memset(&stbi_route, 0, sizeof(stbi_route));
     memset(&png_header_info, 0, sizeof(png_header_info));
     png_header_info.color_type = (-1);
-    memset(&webp_callback_context, 0, sizeof(webp_callback_context));
     decode_path = SIXEL_BUILTIN_DECODE_PATH_STBI;
     animation_handled = 0;
-    webp_animation_handled = 0;
     apply_start_frame = 0;
     pnm_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     is_tiff = 0;
@@ -7087,46 +7076,12 @@ sixel_builtin_load_with_builtin_impl(
         }
         goto end;
 
-    case SIXEL_BUILTIN_DECODE_PATH_WEBP:
-        webp_callback_context.request = &load_request;
-        webp_callback_context.load_context = &load_context;
-        webp_callback_context.cancel_context = context;
-        status = sixel_fromwebp_load_animation(
-            pchunk,
-            allocator,
-            fstatic,
-            load_request.loop_control,
-            load_request.start_frame_no_set,
-            load_request.start_frame_no_override,
-            load_request.enable_cms,
-            load_request.enable_orientation,
-            sixel_builtin_finalize_frame_callback,
-            &webp_callback_context,
-            context,
-            &webp_animation_handled);
-        if (status != SIXEL_OK) {
-            goto end;
-        }
-        if (webp_animation_handled != 0) {
-            status = SIXEL_OK;
-            goto end;
-        }
-        status = sixel_builtin_prepare_frame_and_chunk_size(pchunk,
-                                                            allocator,
-                                                            &frame,
-                                                            &chunk_size);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        status = sixel_fromwebp_load(pchunk,
-                                     allocator,
-                                     load_request.enable_cms,
-                                     load_request.enable_orientation,
-                                     frame);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        break;
+    case SIXEL_BUILTIN_DECODE_PATH_RIFF:
+        sixel_helper_set_additional_message(
+            "builtin: WebP and other RIFF images are not decoded by the "
+            "builtin loader; use the libwebp loader or a platform loader.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
 
     case SIXEL_BUILTIN_DECODE_PATH_STBI:
     default:

@@ -23,8 +23,7 @@
       "src/frompnm.c",
       "src/fromhdr.c",
       "src/frompsd.c",
-      "src/frombmp.c",
-      "src/fromwebp.c"
+      "src/frombmp.c"
     ],
     "chain": [
       "src/loader-manager.c:g_sixel_loader_entries",

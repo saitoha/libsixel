@@ -80,7 +80,7 @@ Premultiplied alpha (`Attributes Type = 4`) is rejected on the managed path beca
 
 ## Builtin decode and output pipeline
 
-1. Residual dispatch reaches the weak-signature TGA predicate only after strong signatures such as PNG, JPEG, GIF, PSD, HDR, BMP, PIC, and WebP have had their dedicated routing.
+1. Residual dispatch reaches the weak-signature TGA predicate only after strong signatures such as PNG, JPEG, GIF, PSD, HDR, BMP, and PIC have had their dedicated routing, and RIFF containers have been declined.
 2. An active TGA 2.0 color definition selects bounded RGBA decoding followed by table/gamma interpretation, common CMS, float composition, and final target negotiation. Without it, palette fusion first attempts the narrow indexed-8 path and creates `PAL8` when it succeeds.
 3. On the unmanaged fallback, stb decodes raw/RLE samples and converts them to a requested three-component buffer, except that recognized 32-bit direct truecolor requests four components.
 4. BGR ordering and vertical origin are normalized by the raster reader. The managed path performs its color conversion before alpha composition; metadata does not add an orientation stage.

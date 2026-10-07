@@ -4,7 +4,7 @@
 
 Softimage PIC is the raster format associated with early Softimage 3D systems. It is unrelated to Radiance files that also commonly use the `.pic` suffix. Historical descriptions such as Paul Bourke's [Softimage image format](https://paulbourke.net/dataformats/softimagepic/index.html) document the characteristic magic, fixed header, channel packets, and scanline RLE, but the libsixel contract is the implemented subset below.
 
-PIC remains in the adapted stb-derived core imported by commit [`81375f0bd`](https://github.com/saitoha/libsixel/commit/81375f0bd). libsixel's wrapper requests a four-component intermediate so alpha packets can reach common finalization. Dedicated regression coverage was added in commit [`813c8e08e`](https://github.com/saitoha/libsixel/commit/813c8e08e) in 2026. Unlike PSD, HDR, BMP, or WebP, PIC has not been split into a separately maintained format module.
+PIC remains in the adapted stb-derived core imported by commit [`81375f0bd`](https://github.com/saitoha/libsixel/commit/81375f0bd). libsixel's wrapper requests a four-component intermediate so alpha packets can reach common finalization. Dedicated regression coverage was added in commit [`813c8e08e`](https://github.com/saitoha/libsixel/commit/813c8e08e) in 2026. Unlike PSD, HDR, or BMP, PIC has not been split into a separately maintained format module.
 
 ## Header and recognition
 

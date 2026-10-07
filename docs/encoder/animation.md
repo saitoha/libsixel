@@ -19,10 +19,10 @@ img2sixel -Lbuiltin! -lauto animation.gif
 img2sixel -Lbuiltin! -S -T-1 animation.png -o last-frame.six
 
 # Convert a single pass without presentation waits.
-img2sixel -Lbuiltin! -g -ldisable animation.webp -o frames.six
+img2sixel -Lbuiltin! -g -ldisable animation.gif -o frames.six
 ```
 
-Optional loader names require the corresponding build dependency. Check `img2sixel --version` for the available loaders. `-Lbuiltin!` is useful when a reproducible in-tree GIF/APNG/WebP path is needed. The final `!` prevents another loader from being appended; `-Lbuiltin` only changes priority. The [loader architecture](../loader/README.md) explains the registry and fallback rules.
+Optional loader names require the corresponding build dependency. Check `img2sixel --version` for the available loaders. `-Lbuiltin!` is useful when a reproducible in-tree GIF/APNG path is needed. The final `!` prevents another loader from being appended; `-Lbuiltin` only changes priority. The [loader architecture](../loader/README.md) explains the registry and fallback rules.
 
 A saved `frames.six` contains terminal control bytes, not a container with a portable animation timeline. SIXEL does not carry the source frame durations or loop count. Redirecting output can still incur host-side waits unless `-g` is supplied, but those waits are not stored in the file: `cat frames.six` cannot reconstruct the original cadence. `-g` also leaves repetition enabled, so pair it with `-ldisable` when a finite conversion is required.
 
@@ -32,7 +32,7 @@ This table describes libsixel's adapters, rather than the maximum capabilities a
 
 | Loader | Animated inputs handled by this adapter | Timing and repetition | Frame selection and boundary |
 | --- | --- | --- | --- |
-| `builtin` | GIF, APNG, animated WebP with VP8/VP8L frame payloads. | Parses format-specific delay, loop, blend, and disposal metadata. Supports `-l`, with the GIF exception below. | `-S` and `-T`; earlier dependent rectangles are composed before the selected frame is emitted. |
+| `builtin` | GIF and APNG. WebP is declined and handled by a later loader. | Parses format-specific delay, loop, blend, and disposal metadata. Supports `-l`, with the GIF exception below. | `-S` and `-T`; earlier dependent rectangles are composed before the selected frame is emitted. |
 | `libpng` | APNG as well as static PNG. | libsixel parses APNG control chunks, reconstructs rectangle PNGs for libpng, composes canvases, and applies the play count. An APNG-patched libpng API is not required. | `-S` and `-T`; a separate non-animation default image is excluded from animation numbering. |
 | `libwebp` | Animated WebP. | `WebPAnimDecoder` supplies composed frames and timestamps; libsixel applies the loop count and an output-frame limit. | `-S` and `-T`; selecting a one-frame first-pass tail currently prevents further loops. |
 | `coregraphics` | ImageIO sources exposing GIF, APNG, WebP, or HEICS animation dictionaries. Actual decode support depends on the host framework. | Reads framework delay and loop properties; prefers unclamped delay. Missing loop metadata means one pass in `auto`. | `-S` and `-T` on recognized animations. Other multi-image containers are treated as still-image sources. A static HEIC file is not evidence of HEICS animation support. |
@@ -51,7 +51,7 @@ The current [`gdkpixbuf_emit_animation_frames()`](../../src/loader-gdk-pixbuf2.c
 
 Traversal itself has a weaker contract than explicit container frame parsing. The adapter uses `on_currently_loading_frame()` and a false return from `advance()` as stopping conditions. The upstream documentation defines these as a [loading/last-frame predicate](https://docs.gtk.org/gdk-pixbuf/method.PixbufAnimationIter.on_currently_loading_frame.html) and a [display-update indication](https://docs.gtk.org/gdk-pixbuf/method.PixbufAnimationIter.advance.html), respectively. They are not a generic indexed-frame enumeration API. Exact traversal length, the final frame, and negative-index resolution must therefore be checked with the actual module; `-ldisable` stops after one adapter traversal, not a proven portable enumeration of every container frame.
 
-There is also a current `-S` interaction: it stops the inner traversal after a selected callback, but the outer restart condition does not test `fstatic`. With a nonzero start index, that can produce an additional callback on the next traversal unless `-ldisable` is also selected. Use `-Lbuiltin! -S -T N` for exact GIF/APNG/WebP still extraction, or explicitly combine `-S -T N -ldisable` when evaluating GdkPixbuf. These iterator limitations are code-inspected gaps; the existing GdkPixbuf smoke tests do not establish exact finite-loop or last-frame behavior across modules.
+There is also a current `-S` interaction: it stops the inner traversal after a selected callback, but the outer restart condition does not test `fstatic`. With a nonzero start index, that can produce an additional callback on the next traversal unless `-ldisable` is also selected. Use `-Lbuiltin! -S -T N` for exact GIF/APNG still extraction, or explicitly combine `-S -T N -ldisable` when evaluating GdkPixbuf. These iterator limitations are code-inspected gaps; the existing GdkPixbuf smoke tests do not establish exact finite-loop or last-frame behavior across modules.
 
 ## Playback controls and interactions
 
@@ -83,11 +83,11 @@ For a two-frame source played twice, callback metadata normally proceeds as foll
 
 The builtin GIF implementation interprets a positive `NETSCAPE2.0` value `N` as `N` total passes, including the first; it does not add an initial pass to that number. A value of 2 therefore yields four callbacks for a two-frame file. Zero allows indefinite playback. Without a recognized Netscape extension, `gif_advance_loop_and_should_stop()` ends after one pass even under `force`. This is the current libsixel behavior, not a claim that every GIF viewer interprets the extension identically.
 
-APNG's [`acTL.num_plays`](https://www.w3.org/TR/png-3/#11acTL) and WebP's [`ANIM` loop count](https://developers.google.com/speed/webp/docs/riff_container#animation) specify playback counts, with zero indicating indefinite repetition. The corresponding in-tree/libpng/libwebp paths consume those fields rather than a generic image-framework loop query. ImageIO paths consume the values supplied by their framework dictionaries.
+APNG's [`acTL.num_plays`](https://www.w3.org/TR/png-3/#11acTL) and WebP's [`ANIM` loop count](https://developers.google.com/speed/webp/docs/riff_container#animation) specify playback counts, with zero indicating indefinite repetition. The corresponding in-tree, libpng, and libwebp paths consume those fields rather than a generic image-framework loop query. ImageIO paths consume the values supplied by their framework dictionaries.
 
 `-T` normally applies only to the first pass; subsequent passes start at source frame zero. The first emitted frame is renumbered to zero so cursor setup and output state start correctly. It does not imply random-access decoding: disposal and blending may depend on every preceding frame. Negative indices can also require an initial counting scan. Attach a negative value to the option (`-T-1` or `--start-frame=-1`); a separate `-1` token is parsed as an option by the current CLI.
 
-The libwebp adapter has a narrower stopping condition than the builtin WebP path: after a pass it stops if only one frame was emitted. Consequently, `-T-1` can terminate after that selected frame even with `-lauto` or `-lforce`, without `-S`. Also, libwebp caps cumulative emitted frames at 262144 by default; `-Llibwebp:max_output_frames=N!` and `SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES` configure that backend's guard. This is not a universal `img2sixel` frame limit or a substitute for `-l`.
+The libwebp adapter has a narrower stopping condition than the builtin GIF and APNG paths: after a pass it stops if only one frame was emitted. Consequently, `-T-1` can terminate after that selected frame even with `-lauto` or `-lforce`, without `-S`. Also, libwebp caps cumulative emitted frames at 262144 by default; `-Llibwebp:max_output_frames=N!` and `SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES` configure that backend's guard. This is not a universal `img2sixel` frame limit or a substitute for `-l`.
 
 ## Format-specific timing and composition
 
@@ -97,13 +97,13 @@ The frame handoff stores delay in integer centiseconds (10 ms). Conversion to th
 | --- | --- | --- |
 | Builtin GIF | Graphic Control Extension centiseconds. | Preserved directly; a missing control block uses a 1 cs default, while an explicit zero remains zero. |
 | Builtin/libpng APNG | `fcTL.delay_num / delay_den` seconds. | Zero denominator becomes 100; multiply by 100 and truncate, then raise a positive fraction that became zero to 1 cs. |
-| Builtin/libwebp WebP | Milliseconds; libwebp exposes cumulative timestamps. | Integer division by 10; libwebp first takes the difference between successive timestamps. A duration below 10 ms can become zero. |
+| libwebp WebP | Cumulative timestamps in milliseconds. | The difference between successive timestamps is divided by 10 with integer division. A duration below 10 ms can become zero. |
 | GdkPixbuf | Iterator delay in milliseconds. | Negative delay becomes zero in this adapter, then integer division by 10. Upstream `-1` means display indefinitely, so the conversion does not preserve that meaning by itself. |
 | CoreGraphics | Framework delay in seconds, preferring the unclamped property. | Multiply by 100 and truncate; a positive value that became zero is raised to 1 cs. |
 
 Ordinary output checks the delay before encoding/writing the frame, accounting for elapsed host time. Macro output checks after invocation. Neither path is a video presentation clock: decode/quantization cost, queueing, terminal transport, and receiver rendering affect cadence. The encoder does not attach timestamps to SIXEL for the receiver to schedule. `-g` removes its deliberate waiting but cannot remove those processing costs.
 
-GIF, APNG, and WebP can encode subrectangles whose meaning depends on earlier frames. A full animation loader applies blend and disposal rules to a canvas before passing the image to the encoder. GIF has binary transparency and local/global palettes; APNG has `SOURCE`/`OVER` and `NONE`/`BACKGROUND`/`PREVIOUS`; WebP has replace/blend and keep/background disposal. See the [GIF](../loader/builtin/gif.md), [PNG/APNG](../loader/builtin/png/README.md), [libpng APNG](../loader/libpng.md#apng-semantics), and [WebP](../loader/builtin/webp.md) references for composition, precision, and metadata details.
+GIF, APNG, and WebP can encode subrectangles whose meaning depends on earlier frames. A full animation loader applies blend and disposal rules to a canvas before passing the image to the encoder. GIF has binary transparency and local/global palettes; APNG has `SOURCE`/`OVER` and `NONE`/`BACKGROUND`/`PREVIOUS`; WebP has replace/blend and keep/background disposal. See the [GIF](../loader/builtin/gif.md), [PNG/APNG](../loader/builtin/png/README.md), [libpng APNG](../loader/libpng.md#apng-semantics), and [libwebp](../loader/libwebp.md) references for composition, precision, and metadata details.
 
 For APNG, the PNG default image belongs to the animation only if `fcTL` precedes its `IDAT`. Otherwise an animation-aware path omits that image from frame numbering, whereas a static-only PNG reader can show it as the file's still image. Thus two loaders may both successfully decode the same PNG yet display different first images.
 
@@ -147,7 +147,7 @@ If an animation runs forever, check `auto` with a zero source count, `force`, an
 | --- | --- |
 | GIF parsing, composition, loop exception, and replay | [`fromgif.c`](../../src/fromgif.c), especially `gif_advance_loop_and_should_stop()`. |
 | APNG classification, composition, and frame delivery | [`loader-builtin.c`](../../src/loader-builtin.c) and [`loader-libpng.c`](../../src/loader-libpng.c). |
-| WebP animation and loop guards | [`fromwebp.c`](../../src/fromwebp.c) and `webp_decode_and_emit_multiframe_animation()` in [`loader-libwebp.c`](../../src/loader-libwebp.c). |
+| WebP animation and loop guards | `webp_decode_and_emit_multiframe_animation()` in [`loader-libwebp.c`](../../src/loader-libwebp.c). |
 | Framework adapters | [`loader-gdk-pixbuf2.c`](../../src/loader-gdk-pixbuf2.c), [`loader-coregraphics.c`](../../src/loader-coregraphics.c), and [`loader-wic.c`](../../src/loader-wic.c). |
 | Frame delay, cursor setup, macros, and ordered handoff | [`encoder.c`](../../src/encoder.c), [`encoder-core.c`](../../src/encoder-core.c), and [`tty.c`](../../src/tty.c). |
 
@@ -161,7 +161,6 @@ If an animation runs forever, check `auto` with a zero source count, `force`, an
 | --- | --- | --- |
 | AN-01 | Builtin GIF emits two callbacks with exact 7/23 cs delays, frame indices, loop indices, and multiframe flags. | [tests/loader/builtin/1993_loader_builtin_gif_animation_metadata_numeric.t](../../tests/loader/builtin/1993_loader_builtin_gif_animation_metadata_numeric.t) |
 | AN-02 | Builtin APNG's zero-denominator fixture emits two callbacks with exact 1 cs delays and sequence metadata. | [tests/loader/builtin/1994_loader_builtin_apng_animation_metadata_numeric.t](../../tests/loader/builtin/1994_loader_builtin_apng_animation_metadata_numeric.t) |
-| AN-03 | Builtin WebP converts the fixture's millisecond durations to exact 1 cs delays and retains frame/loop metadata. | [tests/loader/builtin/1995_loader_builtin_webp_animation_metadata_numeric.t](../../tests/loader/builtin/1995_loader_builtin_webp_animation_metadata_numeric.t) |
 | AN-04 | Builtin GIF `disable` produces one pass even when the source loop count is zero. | [tests/loader/builtin/0257_loader_builtin_gif_loop_disable_loop0_once.t](../../tests/loader/builtin/0257_loader_builtin_gif_loop_disable_loop0_once.t) |
 | AN-05 | Builtin GIF `auto` interprets a source count of 2 as two total passes. | [tests/loader/builtin/0265_loader_builtin_gif_loop_auto_loop2.t](../../tests/loader/builtin/0265_loader_builtin_gif_loop_auto_loop2.t) |
 | AN-06 | Builtin GIF `force` continues beyond a source count of 1 until the test cancels callback delivery. | [tests/loader/builtin/0268_loader_builtin_gif_loop_force_loop1_unbounded.t](../../tests/loader/builtin/0268_loader_builtin_gif_loop_force_loop1_unbounded.t) |
@@ -173,7 +172,7 @@ If an animation runs forever, check `auto` with a zero source count, `force`, an
 
 ### Quality regression tests
 
-The format-specific [GIF](../loader/builtin/gif.md#test-coverage), [APNG](../loader/builtin/png/README.md#test-coverage), and [WebP](../loader/builtin/webp.md#test-coverage) documents identify composition and image-quality coverage. Still-frame MS-SSIM thresholds do not establish correct repetition, timing, temporal stability, or absence of trails on a terminal.
+The format-specific [GIF](../loader/builtin/gif.md#test-coverage) and [APNG](../loader/builtin/png/README.md#test-coverage) documents identify composition and image-quality coverage. Still-frame MS-SSIM thresholds do not establish correct repetition, timing, temporal stability, or absence of trails on a terminal.
 
 ### Defensive and malformed-input tests
 

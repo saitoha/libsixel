@@ -16,7 +16,6 @@ test_loader_0155_loader_builtin_allocator_failure_matrix(int argc,
         { "JPEG", "/tests/data/inputs/formats/"
                   "snake-jpeg-8bit-rgb-seq444.jpg" },
         { "GIF", "/tests/data/inputs/snake_64.gif" },
-        { "WebP", "/tests/data/inputs/snake_16.webp" },
         { "HDR", "/tests/data/inputs/formats/stbi_minimal.hdr" },
         { "PSD", "/tests/data/inputs/formats/stbi_minimal.psd" },
         { "BMP", "/tests/data/inputs/formats/"

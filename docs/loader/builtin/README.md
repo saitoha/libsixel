@@ -18,11 +18,10 @@ The diagram-linked tests are pipeline landmarks, not the complete regression sui
 | Radiance HDR | [Radiance HDR](hdr.md) | [`fromhdr.c`](../../../src/fromhdr.c) |
 | PSD and PSB | [PSD/PSB](psd.md) | [`frompsd.c`](../../../src/frompsd.c) and the `frompsd-*` modules |
 | BMP and DIB variants | [BMP](bmp.md) | [`frombmp.c`](../../../src/frombmp.c) and [`frombmp-parser.c`](../../../src/frombmp-parser.c) |
-| WebP | [WebP](webp.md) | [`fromwebp.c`](../../../src/fromwebp.c) and the `fromwebp-*` modules |
 | TGA | [TGA](tga.md) | Adapted TGA code in [`stb_image.h`](../../../src/stb_image.h), with independent color-metadata reading in [`fromtga.c`](../../../src/fromtga.c) and CMS/palette/alpha routing in [`loader-builtin.c`](../../../src/loader-builtin.c) |
 | Softimage PIC | [Softimage PIC](pic.md) | Adapted PIC code in [`stb_image.h`](../../../src/stb_image.h), with alpha routing in [`loader-builtin.c`](../../../src/loader-builtin.c) |
 
-TIFF is intentionally absent. It is handled by the optional `libtiff` loader component when compiled; the current builtin component has no TIFF pixel decoder. Metadata helper code in `loader-builtin.c` must not be read as a builtin TIFF support promise.
+WebP is intentionally absent. The dispatcher recognizes RIFF containers only to decline them with a recoverable status, so that `libwebp` or a platform loader can decode WebP; see the [loader patent notes](../patents.md#webp). TIFF is also intentionally absent. It is handled by the optional `libtiff` loader component when compiled; the current builtin component has no TIFF pixel decoder. Metadata helper code in `loader-builtin.c` must not be read as a builtin TIFF support promise.
 
 These pages describe the format-specific boundary before common loader finalization. Background composition, alpha normalization, orientation, and callback delivery may change the concrete frame after a decoder has produced its initial pixels. See [Alpha Policy](../alpha-policy/README.md), [Background Policy](../background-policy.md), [Pixel Formats and Alpha Representation](../../concepts/pixelformat.md), and [Color-Space Handling](../../encoder/colorspace-handling/README.md).
 

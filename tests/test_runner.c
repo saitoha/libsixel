@@ -1885,8 +1885,6 @@ int test_loader_0056_loader_factory_predicate_gate(int argc, char **argv);
 int test_loader_0057_loader_gd_can_try_policy(int argc, char **argv);
 int test_loader_0058_loader_gd_status_policy(int argc, char **argv);
 int test_loader_0059_loader_gd_pixelpolicy_detail(int argc, char **argv);
-int test_loader_0060_loader_builtin_webp_anim_policy_limits_plan(int argc,
-                                                                  char **argv);
 int test_loader_0061_loader_tty_cpr_parser(int argc, char **argv);
 int test_loader_0062_loader_animation_hide_cursor_environment(int argc,
                                                                char **argv);
@@ -1978,9 +1976,6 @@ int test_loader_0095_loader_builtin_jpeg_ycck8_rgb_digest(
 int test_loader_0096_builtin_psd_missing_composite_rgb8_digest(
     int argc,
     char **argv);
-int test_loader_0097_loader_builtin_webp_vp8l_transform_rgb_digest(
-    int argc,
-    char **argv);
 int test_loader_0098_loader_builtin_pic_raw_rgb_numeric(
     int argc,
     char **argv);
@@ -2017,13 +2012,6 @@ int test_loader_0108_loader_builtin_jpeg_rgb8_sequential_digest(
 int test_loader_0109_loader_builtin_png_icc_numeric(int argc, char **argv);
 int test_loader_0110_loader_builtin_jpeg_icc_numeric(int argc, char **argv);
 int test_loader_0111_loader_builtin_psd_icc_digest(int argc, char **argv);
-int test_loader_0112_loader_builtin_webp_vp8_digest(int argc, char **argv);
-int test_loader_0113_loader_builtin_webp_lossy_animation_digest(
-    int argc,
-    char **argv);
-int test_loader_0114_loader_builtin_webp_vp8_alpha_numeric(
-    int argc,
-    char **argv);
 int test_loader_0115_loader_builtin_jpeg_rgb16_lossless_numeric(
     int argc,
     char **argv);
@@ -2058,9 +2046,6 @@ int test_loader_0127_loader_builtin_gif_animation_metadata_numeric(
     int argc,
     char **argv);
 int test_loader_0128_loader_builtin_apng_animation_metadata_numeric(
-    int argc,
-    char **argv);
-int test_loader_0129_loader_builtin_webp_animation_metadata_numeric(
     int argc,
     char **argv);
 int test_loader_0130_loader_builtin_hdr_new_rle_zero_count_reject(
@@ -2108,21 +2093,6 @@ int test_loader_0143_loader_builtin_jpeg_ycbcr444_digest(
 int test_loader_0144_loader_builtin_jpeg_cmyk8_digest(
     int argc,
     char **argv);
-int test_loader_0145_webp_vp8_token_partitions_digest(
-    int argc,
-    char **argv);
-int test_loader_0146_loader_builtin_webp_alph_filter1_numeric(
-    int argc,
-    char **argv);
-int test_loader_0147_loader_builtin_webp_alph_filter2_numeric(
-    int argc,
-    char **argv);
-int test_loader_0148_loader_builtin_webp_alph_filter3_numeric(
-    int argc,
-    char **argv);
-int test_loader_0149_loader_builtin_webp_animation_subrect_digest(
-    int argc,
-    char **argv);
 int test_loader_0150_loader_builtin_psd_rgb8_alpha_mask_digest(
     int argc,
     char **argv);
@@ -2162,9 +2132,6 @@ int test_loader_0161_loader_builtin_psd_effect_digest(
 int test_loader_0162_loader_builtin_apng_cancel_boundaries(
     int argc,
     char **argv);
-int test_loader_0163_loader_builtin_webp_cancel_boundaries(
-    int argc,
-    char **argv);
 int test_loader_0164_loader_builtin_jpeg_lossless_preds_numeric(
     int argc,
     char **argv);
@@ -2174,22 +2141,10 @@ int test_loader_0165_loader_builtin_jpeg_rgb_restart_numeric(
 int test_loader_0166_loader_builtin_apng_allocation_failures(
     int argc,
     char **argv);
-int test_loader_0167_loader_builtin_webp_animation_alloc_failures(
-    int argc,
-    char **argv);
 int test_loader_0168_loader_builtin_psd_effect_allocation_failures(
     int argc,
     char **argv);
 int test_loader_0169_loader_builtin_png_icc_allocation_failures(
-    int argc,
-    char **argv);
-int test_loader_0170_loader_builtin_webp_vp8l_color_cache_digest(
-    int argc,
-    char **argv);
-int test_loader_0171_loader_builtin_webp_vp8l_color_index_digest(
-    int argc,
-    char **argv);
-int test_loader_0172_loader_builtin_webp_alpha_background_digest(
     int argc,
     char **argv);
 int test_loader_0173_loader_builtin_tga_header_collision_reject(
@@ -6146,8 +6101,6 @@ static test_entry_t const test_entries[] = {
       test_loader_0058_loader_gd_status_policy },
     { "loader/0059_loader_gd_pixelpolicy_detail",
       test_loader_0059_loader_gd_pixelpolicy_detail },
-    { "loader/0060_loader_builtin_webp_anim_policy_limits_plan",
-      test_loader_0060_loader_builtin_webp_anim_policy_limits_plan },
     { "loader/0061_loader_tty_cpr_parser",
       test_loader_0061_loader_tty_cpr_parser },
     { "loader/0062_loader_animation_hide_cursor_environment",
@@ -6220,8 +6173,6 @@ static test_entry_t const test_entries[] = {
       test_loader_0095_loader_builtin_jpeg_ycck8_rgb_digest },
     { "loader/0096_loader_builtin_psd_missing_composite_rgb8_digest",
       test_loader_0096_builtin_psd_missing_composite_rgb8_digest },
-    { "loader/0097_loader_builtin_webp_vp8l_transform_rgb_digest",
-      test_loader_0097_loader_builtin_webp_vp8l_transform_rgb_digest },
     { "loader/0098_loader_builtin_pic_raw_rgb_numeric",
       test_loader_0098_loader_builtin_pic_raw_rgb_numeric },
     { "loader/0099_loader_builtin_pic_mixed_rle_extended_numeric",
@@ -6250,12 +6201,6 @@ static test_entry_t const test_entries[] = {
       test_loader_0110_loader_builtin_jpeg_icc_numeric },
     { "loader/0111_loader_builtin_psd_icc_digest",
       test_loader_0111_loader_builtin_psd_icc_digest },
-    { "loader/0112_loader_builtin_webp_vp8_digest",
-      test_loader_0112_loader_builtin_webp_vp8_digest },
-    { "loader/0113_loader_builtin_webp_lossy_animation_digest",
-      test_loader_0113_loader_builtin_webp_lossy_animation_digest },
-    { "loader/0114_loader_builtin_webp_vp8_alpha_numeric",
-      test_loader_0114_loader_builtin_webp_vp8_alpha_numeric },
     { "loader/0115_loader_builtin_jpeg_rgb16_lossless_numeric",
       test_loader_0115_loader_builtin_jpeg_rgb16_lossless_numeric },
     { "loader/0116_loader_builtin_psd_rgb16_zip_pred_numeric",
@@ -6284,8 +6229,6 @@ static test_entry_t const test_entries[] = {
       test_loader_0127_loader_builtin_gif_animation_metadata_numeric },
     { "loader/0128_loader_builtin_apng_animation_metadata_numeric",
       test_loader_0128_loader_builtin_apng_animation_metadata_numeric },
-    { "loader/0129_loader_builtin_webp_animation_metadata_numeric",
-      test_loader_0129_loader_builtin_webp_animation_metadata_numeric },
     { "loader/0130_loader_builtin_hdr_new_rle_zero_count_reject",
       test_loader_0130_loader_builtin_hdr_new_rle_zero_count_reject },
     { "loader/0131_loader_builtin_hdr_new_rle_overrun_reject",
@@ -6316,16 +6259,6 @@ static test_entry_t const test_entries[] = {
       test_loader_0143_loader_builtin_jpeg_ycbcr444_digest },
     { "loader/0144_loader_builtin_jpeg_cmyk8_digest",
       test_loader_0144_loader_builtin_jpeg_cmyk8_digest },
-    { "loader/0145_loader_builtin_webp_vp8_token_partitions_digest",
-      test_loader_0145_webp_vp8_token_partitions_digest },
-    { "loader/0146_loader_builtin_webp_alph_filter1_numeric",
-      test_loader_0146_loader_builtin_webp_alph_filter1_numeric },
-    { "loader/0147_loader_builtin_webp_alph_filter2_numeric",
-      test_loader_0147_loader_builtin_webp_alph_filter2_numeric },
-    { "loader/0148_loader_builtin_webp_alph_filter3_numeric",
-      test_loader_0148_loader_builtin_webp_alph_filter3_numeric },
-    { "loader/0149_loader_builtin_webp_animation_subrect_digest",
-      test_loader_0149_loader_builtin_webp_animation_subrect_digest },
     { "loader/0150_loader_builtin_psd_rgb8_alpha_mask_digest",
       test_loader_0150_loader_builtin_psd_rgb8_alpha_mask_digest },
     { "loader/0151_loader_builtin_psd_rgb8_alpha_white_digest",
@@ -6352,26 +6285,16 @@ static test_entry_t const test_entries[] = {
       test_loader_0161_loader_builtin_psd_effect_digest },
     { "loader/0162_loader_builtin_apng_cancel_boundaries",
       test_loader_0162_loader_builtin_apng_cancel_boundaries },
-    { "loader/0163_loader_builtin_webp_cancel_boundaries",
-      test_loader_0163_loader_builtin_webp_cancel_boundaries },
     { "loader/0164_loader_builtin_jpeg_lossless_predictors_numeric",
       test_loader_0164_loader_builtin_jpeg_lossless_preds_numeric },
     { "loader/0165_loader_builtin_jpeg_rgb_restart_numeric",
       test_loader_0165_loader_builtin_jpeg_rgb_restart_numeric },
     { "loader/0166_loader_builtin_apng_allocation_failures",
       test_loader_0166_loader_builtin_apng_allocation_failures },
-    { "loader/0167_loader_builtin_webp_animation_allocation_failures",
-      test_loader_0167_loader_builtin_webp_animation_alloc_failures },
     { "loader/0168_loader_builtin_psd_effect_allocation_failures",
       test_loader_0168_loader_builtin_psd_effect_allocation_failures },
     { "loader/0169_loader_builtin_png_icc_allocation_failures",
       test_loader_0169_loader_builtin_png_icc_allocation_failures },
-    { "loader/0170_loader_builtin_webp_vp8l_color_cache_digest",
-      test_loader_0170_loader_builtin_webp_vp8l_color_cache_digest },
-    { "loader/0171_loader_builtin_webp_vp8l_color_index_digest",
-      test_loader_0171_loader_builtin_webp_vp8l_color_index_digest },
-    { "loader/0172_loader_builtin_webp_alpha_background_digest",
-      test_loader_0172_loader_builtin_webp_alpha_background_digest },
     { "loader/0173_loader_builtin_tga_header_collision_reject",
       test_loader_0173_loader_builtin_tga_header_collision_reject },
     { "loader/0174_loader_builtin_png_chrm_gama_float_numeric",

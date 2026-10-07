@@ -79,7 +79,6 @@ docs/loader/builtin/png/README.md	reference	both	PNG/APNG contracts + history, b
 docs/loader/builtin/psd.md	reference	both	PSD/PSB contracts + format history and contributor pipeline/test ledger
 docs/loader/builtin/sixel.md	reference	both	SIXEL input contracts + history and contributor pipeline/test ledger
 docs/loader/builtin/tga.md	reference	both	TGA contracts + format history and contributor pipeline/test ledger
-docs/loader/builtin/webp.md	reference	both	WebP contracts + format history and contributor pipeline/test ledger
 docs/loader/color-management/README.md	reference	both	CMS user guidance + visual explanation, migration record and large contributor test ledger
 docs/loader/coregraphics.md	reference	both	ImageIO adapter contracts + contributor numerical validation/test ledger
 docs/loader/gd.md	reference	user	""

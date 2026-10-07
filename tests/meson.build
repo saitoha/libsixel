@@ -888,12 +888,6 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
-    'staticcheck-fromwebp-chunk-view-bind',
-    [meson.current_source_dir()
-      / '_static/sh/staticcheck-fromwebp-chunk-view-bind.sh',
-      meson.project_source_root()],
-  ],
-  [
     'staticcheck-frombmp-chunk-view-bind',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-frombmp-chunk-view-bind.sh',

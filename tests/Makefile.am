@@ -1830,7 +1830,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0057_LOADER_GD_CAN_TRY_POLICY \
     -DBUILD_TEST_0058_LOADER_GD_STATUS_POLICY \
     -DBUILD_TEST_0059_LOADER_GD_PIXELPOLICY_DETAIL \
-    -DBUILD_TEST_0060_LOADER_BUILTIN_WEBP_ANIM_POLICY_LIMITS_PLAN \
     -DBUILD_TEST_0061_LOADER_TTY_CPR_PARSER \
     -DBUILD_TEST_0062_LOADER_ANIMATION_HIDE_CURSOR_ENVIRONMENT \
     -DBUILD_TEST_0063_LOADER_BUILTIN_RGBA_ALPHA_MASK \
@@ -1871,7 +1870,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0094_LOADER_BUILTIN_PNG_APNG_DISPOSE_PREVIOUS_NUMERIC \
     -DBUILD_TEST_0095_LOADER_BUILTIN_JPEG_YCCK8_RGB_DIGEST \
     -DBUILD_TEST_0096_LOADER_BUILTIN_PSD_MISSING_COMPOSITE_RGB8_DIGEST \
-    -DBUILD_TEST_0097_LOADER_BUILTIN_WEBP_VP8L_TRANSFORM_RGB_DIGEST \
     -DBUILD_TEST_0098_LOADER_BUILTIN_PIC_RAW_RGB_NUMERIC \
     -DBUILD_TEST_0099_LOADER_BUILTIN_PIC_MIXED_RLE_EXTENDED_NUMERIC \
     -DBUILD_TEST_0100_LOADER_BUILTIN_TGA_TRUECOLOR24_NUMERIC \
@@ -1886,9 +1884,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0109_LOADER_BUILTIN_PNG_ICC_NUMERIC \
     -DBUILD_TEST_0110_LOADER_BUILTIN_JPEG_ICC_NUMERIC \
     -DBUILD_TEST_0111_LOADER_BUILTIN_PSD_ICC_DIGEST \
-    -DBUILD_TEST_0112_LOADER_BUILTIN_WEBP_VP8_DIGEST \
-    -DBUILD_TEST_0113_LOADER_BUILTIN_WEBP_LOSSY_ANIMATION_DIGEST \
-    -DBUILD_TEST_0114_LOADER_BUILTIN_WEBP_VP8_ALPHA_NUMERIC \
     -DBUILD_TEST_0115_LOADER_BUILTIN_JPEG_RGB16_LOSSLESS_NUMERIC \
     -DBUILD_TEST_0116_LOADER_BUILTIN_PSD_RGB16_ZIP_PRED_NUMERIC \
     -DBUILD_TEST_0117_LOADER_BUILTIN_PSD_RGB32_RLE_NUMERIC \
@@ -1903,7 +1898,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0126_LOADER_MANAGER_FALLBACK_STATUS \
     -DBUILD_TEST_0127_LOADER_BUILTIN_GIF_ANIMATION_METADATA_NUMERIC \
     -DBUILD_TEST_0128_LOADER_BUILTIN_APNG_ANIMATION_METADATA_NUMERIC \
-    -DBUILD_TEST_0129_LOADER_BUILTIN_WEBP_ANIMATION_METADATA_NUMERIC \
     -DBUILD_TEST_0130_LOADER_BUILTIN_HDR_NEW_RLE_ZERO_COUNT_REJECT \
     -DBUILD_TEST_0131_LOADER_BUILTIN_HDR_NEW_RLE_OVERRUN_REJECT \
     -DBUILD_TEST_0132_LOADER_BUILTIN_HDR_NEW_RLE_TRUNCATED_REJECT \
@@ -1919,11 +1913,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0142_LOADER_BUILTIN_JPEG_GRAY16_RESTART_NUMERIC \
     -DBUILD_TEST_0143_LOADER_BUILTIN_JPEG_YCBCR444_DIGEST \
     -DBUILD_TEST_0144_LOADER_BUILTIN_JPEG_CMYK8_DIGEST \
-    -DBUILD_TEST_0145_LOADER_BUILTIN_WEBP_VP8_TOKEN_PARTITIONS_DIGEST \
-    -DBUILD_TEST_0146_LOADER_BUILTIN_WEBP_ALPH_FILTER1_NUMERIC \
-    -DBUILD_TEST_0147_LOADER_BUILTIN_WEBP_ALPH_FILTER2_NUMERIC \
-    -DBUILD_TEST_0148_LOADER_BUILTIN_WEBP_ALPH_FILTER3_NUMERIC \
-    -DBUILD_TEST_0149_LOADER_BUILTIN_WEBP_ANIMATION_SUBRECT_DIGEST \
     -DBUILD_TEST_0150_LOADER_BUILTIN_PSD_RGB8_ALPHA_MASK_DIGEST \
     -DBUILD_TEST_0151_LOADER_BUILTIN_PSD_RGB8_ALPHA_WHITE_DIGEST \
     -DBUILD_TEST_0152_LOADER_BUILTIN_PSD_CMYK16_ZIP_PRED_NUMERIC \
@@ -1937,16 +1926,11 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0160_LOADER_BUILTIN_PSD_MASK_DIGEST \
     -DBUILD_TEST_0161_LOADER_BUILTIN_PSD_EFFECT_DIGEST \
     -DBUILD_TEST_0162_LOADER_BUILTIN_APNG_CANCEL_BOUNDARIES \
-    -DBUILD_TEST_0163_LOADER_BUILTIN_WEBP_CANCEL_BOUNDARIES \
     -DBUILD_TEST_0164_LOADER_BUILTIN_JPEG_LOSSLESS_PREDICTORS_NUMERIC \
     -DBUILD_TEST_0165_LOADER_BUILTIN_JPEG_RGB_RESTART_NUMERIC \
     -DBUILD_TEST_0166_LOADER_BUILTIN_APNG_ALLOCATION_FAILURES \
-    -DBUILD_TEST_0167_LOADER_BUILTIN_WEBP_ANIMATION_ALLOCATION_FAILURES \
     -DBUILD_TEST_0168_LOADER_BUILTIN_PSD_EFFECT_ALLOCATION_FAILURES \
     -DBUILD_TEST_0169_LOADER_BUILTIN_PNG_ICC_ALLOCATION_FAILURES \
-    -DBUILD_TEST_0170_LOADER_BUILTIN_WEBP_VP8L_COLOR_CACHE_DIGEST \
-    -DBUILD_TEST_0171_LOADER_BUILTIN_WEBP_VP8L_COLOR_INDEX_DIGEST \
-    -DBUILD_TEST_0172_LOADER_BUILTIN_WEBP_ALPHA_BACKGROUND_DIGEST \
     -DBUILD_TEST_0173_LOADER_BUILTIN_TGA_HEADER_COLLISION_REJECT \
     -DBUILD_TEST_0174_LOADER_BUILTIN_PNG_CHRM_GAMA_FLOAT_NUMERIC \
     -DBUILD_TEST_0175_LOADER_BUILTIN_PNG_SINGULAR_CHRM_FALLBACK_NUMERIC \
@@ -4866,7 +4850,6 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0094_loader_builtin_png_apng_dispose_previous_numeric.c \
     loader/builtin/0095_loader_builtin_jpeg_ycck8_rgb_digest.c \
     loader/builtin/0096_loader_builtin_psd_missing_composite_rgb8_digest.c \
-    loader/builtin/0097_loader_builtin_webp_vp8l_transform_rgb_digest.c \
     loader/builtin/0098_loader_builtin_pic_raw_rgb_numeric.c \
     loader/builtin/0099_loader_builtin_pic_mixed_rle_extended_numeric.c \
     loader/builtin/0100_loader_builtin_tga_truecolor24_numeric.c \
@@ -4881,9 +4864,6 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0109_loader_builtin_png_icc_numeric.c \
     loader/builtin/0110_loader_builtin_jpeg_icc_numeric.c \
     loader/builtin/0111_loader_builtin_psd_icc_digest.c \
-    loader/builtin/0112_loader_builtin_webp_vp8_digest.c \
-    loader/builtin/0113_loader_builtin_webp_lossy_animation_digest.c \
-    loader/builtin/0114_loader_builtin_webp_vp8_alpha_numeric.c \
     loader/builtin/0115_loader_builtin_jpeg_rgb16_lossless_numeric.c \
     loader/builtin/0116_loader_builtin_psd_rgb16_zip_pred_numeric.c \
     loader/builtin/0117_loader_builtin_psd_rgb32_rle_numeric.c \
@@ -4898,7 +4878,6 @@ test_runner_SOURCES = test_runner.c \
     loader/0126_loader_manager_fallback_status.c \
     loader/builtin/0127_loader_builtin_gif_animation_metadata_numeric.c \
     loader/builtin/0128_loader_builtin_apng_animation_metadata_numeric.c \
-    loader/builtin/0129_loader_builtin_webp_animation_metadata_numeric.c \
     loader/builtin/0130_loader_builtin_hdr_new_rle_zero_count_reject.c \
     loader/builtin/0131_loader_builtin_hdr_new_rle_overrun_reject.c \
     loader/builtin/0132_loader_builtin_hdr_new_rle_truncated_reject.c \
@@ -4914,11 +4893,6 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c \
     loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c \
     loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c \
-    loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c \
-    loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c \
-    loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c \
-    loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c \
-    loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c \
     loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c \
     loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c \
     loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c \
@@ -4932,16 +4906,11 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0160_loader_builtin_psd_mask_digest.c \
     loader/builtin/0161_loader_builtin_psd_effect_digest.c \
     loader/builtin/0162_loader_builtin_apng_cancel_boundaries.c \
-    loader/builtin/0163_loader_builtin_webp_cancel_boundaries.c \
     loader/builtin/0164_loader_builtin_jpeg_lossless_predictors_numeric.c \
     loader/builtin/0165_loader_builtin_jpeg_rgb_restart_numeric.c \
     loader/builtin/0166_loader_builtin_apng_allocation_failures.c \
-    loader/builtin/0167_loader_builtin_webp_animation_allocation_failures.c \
     loader/builtin/0168_loader_builtin_psd_effect_allocation_failures.c \
     loader/builtin/0169_loader_builtin_png_icc_allocation_failures.c \
-    loader/builtin/0170_loader_builtin_webp_vp8l_color_cache_digest.c \
-    loader/builtin/0171_loader_builtin_webp_vp8l_color_index_digest.c \
-    loader/builtin/0172_loader_builtin_webp_alpha_background_digest.c \
     loader/builtin/0173_loader_builtin_tga_header_collision_reject.c \
     loader/builtin/0174_loader_builtin_png_chrm_gama_float_numeric.c \
     loader/builtin/0175_loader_builtin_png_singular_chrm_fallback_numeric.c \
@@ -5320,7 +5289,6 @@ test_runner_SOURCES = test_runner.c \
     loader/0068_loader_background_colorspace_gamma.c \
     loader/0069_loader_background_colorspace_reset.c \
     loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c \
-    loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c \
     loader/chunk_test_common.h \
     loader/gif_bgcolor_canvas_fill_test_common.c \
     loader/gif_bgcolor_canvas_fill_test_common.h \
@@ -6304,7 +6272,6 @@ staticcheck-loader-cms-boundary \
 	staticcheck-palette-component-boundary \
 	staticcheck-chunk-factory-vtbl-guard \
 	staticcheck-chunk-source-path-format-guard \
-	staticcheck-fromwebp-chunk-view-bind \
 	staticcheck-frombmp-chunk-view-bind \
 	staticcheck-deprecated-diagnostic-guard \
 	staticcheck-lookup-policy-no-backend-includes \
@@ -6331,7 +6298,6 @@ staticcheck-loader-cms-boundary \
 	staticcheck-aborttrace-wine-skip \
 	staticcheck-test-plan-single \
 	staticcheck-test-executable \
-	staticcheck-test-webp-serial-unique \
 	staticcheck-test-no-grep-awk \
 	staticcheck-test-pattern-match \
 	staticcheck-test-no-for-until \
@@ -6382,7 +6348,6 @@ staticcheck-chunk-component-boundary \
 staticcheck-palette-component-boundary \
 staticcheck-chunk-factory-vtbl-guard \
 staticcheck-chunk-source-path-format-guard \
-staticcheck-fromwebp-chunk-view-bind \
 staticcheck-frombmp-chunk-view-bind \
 staticcheck-deprecated-diagnostic-guard \
 staticcheck-lookup-policy-no-backend-includes \
@@ -6411,7 +6376,6 @@ staticcheck-interframe-no-compat-getenv-symbol \
 staticcheck-aborttrace-wine-skip \
 staticcheck-test-plan-single \
 	staticcheck-test-executable \
-staticcheck-test-webp-serial-unique \
 staticcheck-test-no-grep-awk \
 staticcheck-test-pattern-match \
 staticcheck-test-no-for-until \
@@ -6716,16 +6680,6 @@ staticcheck-chunk-source-path-format-guard:
 		"$(top_srcdir)/tests/_static/sh/staticcheck-chunk-source-path-format-guard.sh" \
 		"$(abs_top_srcdir)"
 
-staticcheck-fromwebp-chunk-view-bind:
-	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
-	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
-	$(T_LOG_DRIVER) --test-name "staticcheck-fromwebp-chunk-view-bind" \
-		--log-file staticcheck-fromwebp-chunk-view-bind.log \
-		--trs-file staticcheck-fromwebp-chunk-view-bind.trs \
-		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
-		"$(top_srcdir)/tests/_static/sh/staticcheck-fromwebp-chunk-view-bind.sh" \
-		"$(abs_top_srcdir)"
-
 staticcheck-frombmp-chunk-view-bind:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
@@ -7008,16 +6962,6 @@ staticcheck-test-executable:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-test-executable.sh" \
 		"$(abs_top_srcdir)" "$(PYTHON)"
-
-staticcheck-test-webp-serial-unique:
-	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
-	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
-	$(T_LOG_DRIVER) --test-name "staticcheck-test-webp-serial-unique" \
-		--log-file staticcheck-test-webp-serial-unique.log \
-		--trs-file staticcheck-test-webp-serial-unique.trs \
-		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
-		"$(top_srcdir)/tests/_static/sh/staticcheck-test-webp-serial-unique.sh" \
-		"$(abs_top_srcdir)"
 
 staticcheck-test-no-grep-awk:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
@@ -8143,7 +8087,6 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
 			_static/sh/staticcheck-palette-component-boundary.sh \
 			_static/sh/staticcheck-chunk-factory-vtbl-guard.sh \
 		_static/sh/staticcheck-chunk-source-path-format-guard.sh \
-		_static/sh/staticcheck-fromwebp-chunk-view-bind.sh \
 		_static/sh/staticcheck-frombmp-chunk-view-bind.sh \
 		_static/sh/staticcheck-deprecated-diagnostic-guard.sh \
 		_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
@@ -8176,7 +8119,6 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     _static/sh/staticcheck-aborttrace-wine-skip.sh \
     _static/sh/staticcheck-test-plan-single.sh \
     _static/sh/staticcheck-test-executable.sh \
-    _static/sh/staticcheck-test-webp-serial-unique.sh \
     _static/sh/staticcheck-test-no-grep-awk.sh \
     _static/sh/staticcheck-test-pattern-match.sh \
     _static/python/test_pattern_match.py \

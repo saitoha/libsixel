@@ -95,13 +95,6 @@ FAMILIES = (
         ("bmp", "dib"),
     ),
     Family(
-        "webp",
-        "WebP",
-        "docs/loader/builtin/webp.md",
-        "WebP builtin component",
-        ("webp",),
-    ),
-    Family(
         "sixel",
         "SIXEL",
         "docs/loader/builtin/sixel.md",
@@ -129,7 +122,6 @@ FAMILIES = (
 # "psd_..._reference_pnm" therefore stays with the PSD decoder it exercises.
 CLASSIFICATION_ORDER = (
     "psd",
-    "webp",
     "sixel",
     "hdr",
     "bmp",

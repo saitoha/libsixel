@@ -306,7 +306,6 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/loader/builtin/psd.md \
 	docs/loader/builtin/sixel.md \
 	docs/loader/builtin/tga.md \
-	docs/loader/builtin/webp.md \
 	docs/loader/builtin/figures/bmp.svg \
 	docs/loader/builtin/figures/builtin-loader-pipelines.json \
 	docs/loader/builtin/figures/gif.svg \
@@ -318,7 +317,6 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/loader/builtin/figures/psd.svg \
 	docs/loader/builtin/figures/sixel.svg \
 	docs/loader/builtin/figures/tga.svg \
-	docs/loader/builtin/figures/webp.svg \
 	docs/loader/alpha-policy/figures/alpha-policy-comparison.gif \
 	docs/loader/alpha-policy/figures/alpha-policy-comparison.png \
 	docs/loader/figures/builtin-lineage-mobile.svg \

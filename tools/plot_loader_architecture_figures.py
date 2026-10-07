@@ -277,7 +277,7 @@ def builtin_lineage_wide() -> str:
         (80, 260, "2014", "stb_image 1.33", ("dependency-free", "multi-format baseline"), BLUE, BLUE_LIGHT),
         (430, 280, "2015", "fromgif", ("multi-frame GIF", "timing + disposal"), PURPLE, PURPLE_LIGHT),
         (830, 330, "2026", "precision work", ("PNG16 + JPEG float", "explicit colorspaces"), GOLD, GOLD_LIGHT),
-        (1270, 380, "2026", "format subsystems", ("HDR / PSD / BMP / WebP", "metadata + animation"), PURPLE, PURPLE_LIGHT),
+        (1270, 380, "2026", "format subsystems", ("HDR / PSD / BMP", "metadata + layers"), PURPLE, PURPLE_LIGHT),
     )
     for x, box_width, year, title_value, details, accent, fill in timeline:
         body.append(text(x, 178, year, 15, 800, accent))
@@ -293,7 +293,7 @@ def builtin_lineage_wide() -> str:
                     ("byte-based dispatch", "common options + finalization"),
                     BLUE, BLUE_LIGHT, 20, 14))
     body.append(box(465, 420, 315, 155, "Direct top-level families",
-                    ("SIXEL", "PNM / PAM", "GIF -> fromgif", "WebP -> fromwebp"),
+                    ("SIXEL", "PNM / PAM", "GIF -> fromgif", "RIFF / WebP declined"),
                     PURPLE, PURPLE_LIGHT, 20, 14))
     body.append(box(465, 625, 315, 155, "Adapted stb route",
                     ("recognition + shared helpers", "JPEG modified float core", "TGA / PIC", "selected PNG / zlib helpers"),
@@ -302,7 +302,7 @@ def builtin_lineage_wide() -> str:
     body.append(arrow("M 380 520 H 425 V 702 H 465", BLUE))
 
     modules = (
-        (870, 415, 330, 120, "fromgif / fromwebp",
+        (870, 415, 330, 120, "fromgif",
          ("animation state + metadata", "palette / ICC / alpha"), PURPLE),
         (1265, 415, 380, 120, "frompng",
          ("16-bit + APNG", "PNG metadata + background"), PURPLE),
@@ -349,7 +349,7 @@ def builtin_lineage_wide() -> str:
         width,
         height,
         "Builtin evolved beyond one stb_image wrapper",
-        "The builtin loader started from stb_image 1.33, then extracted animated GIF and later high-depth or metadata-sensitive PNG, HDR, PSD, BMP, and WebP paths. JPEG keeps a modified stb-derived float core, while TGA, PIC, and shared helpers remain adapted. In-tree control preserves precision and semantics but expands the parser attack surface.",
+        "The builtin loader started from stb_image 1.33, then extracted animated GIF and later high-depth or metadata-sensitive PNG, HDR, PSD, and BMP paths. WebP is declined and left to the libwebp or platform loaders. JPEG keeps a modified stb-derived float core, while TGA, PIC, and shared helpers remain adapted. In-tree control preserves precision and semantics but expands the parser attack surface.",
         "\n".join(body),
     )
 
@@ -368,7 +368,7 @@ def builtin_lineage_mobile() -> str:
         (180, "2014 — stb_image 1.33", ("dependency-free multi-format baseline",), BLUE, BLUE_LIGHT),
         (325, "2015 — fromgif", ("multi-frame animation + disposal",), PURPLE, PURPLE_LIGHT),
         (470, "2026 — precision paths", ("PNG16 + modified JPEG float",), GOLD, GOLD_LIGHT),
-        (615, "2026 — format subsystems", ("HDR / PSD / BMP / WebP",), PURPLE, PURPLE_LIGHT),
+        (615, "2026 — format subsystems", ("HDR / PSD / BMP",), PURPLE, PURPLE_LIGHT),
     )
     for y, title_value, details, accent, fill in events:
         body.append(box(105, y, 550, 100, title_value,
@@ -385,7 +385,7 @@ def builtin_lineage_mobile() -> str:
                      PURPLE, PURPLE_LIGHT))
     current = (
         (1080, "Direct SIXEL + PNM/PAM", ("format-owned palette and alpha semantics",), PURPLE, PURPLE_LIGHT),
-        (1225, "fromgif + fromwebp", ("animation, metadata, ICC, alpha",), PURPLE, PURPLE_LIGHT),
+        (1225, "fromgif", ("animation, metadata, ICC, alpha",), PURPLE, PURPLE_LIGHT),
         (1370, "frompng", ("16-bit, APNG, metadata, background",), PURPLE, PURPLE_LIGHT),
         (1515, "Modified JPEG core", ("float path before color transforms",), BLUE, BLUE_LIGHT),
         (1660, "fromhdr + frompsd", ("radiance float; depth, modes, layers",), PURPLE, PURPLE_LIGHT),
@@ -444,7 +444,6 @@ def manifest() -> dict[str, object]:
                 "src/fromhdr.c",
                 "src/frompsd.c",
                 "src/frombmp.c",
-                "src/fromwebp.c",
             ],
             "history": [
                 "81375f0bd",

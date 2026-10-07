@@ -79,7 +79,7 @@ The registry order below is also the automatic priority order for components pre
 | [`libwebp`](libwebp.md) | With libwebp | Static and animated WebP | RGB/RGBA or indexed animation frames; float32 after supported color management. |
 | [`libtiff`](libtiff.md) | With libtiff | TIFF | Selected high-precision paths and an RGBA8 fallback; embedded ICC is not connected for every photometric type. See the [format/CMS support table](libtiff.md#format-and-color-management-support). |
 | [`librsvg`](librsvg.md) | With librsvg | SVG and permitted SVGZ/resource modes | Rasterized gamma RGB or RGBA frames. |
-| [`builtin`](builtin.md) | Always | In-tree SIXEL, PNM/PAM, GIF, WebP, PNG/APNG, JPEG, HDR, PSD, BMP, TGA, and PIC paths | Indexed, byte RGB/RGBA, generic float32, or typed float32 depending on format and policy. |
+| [`builtin`](builtin.md) | Always | In-tree SIXEL, PNM/PAM, GIF, PNG/APNG, JPEG, HDR, PSD, BMP, TGA, and PIC paths; WebP is declined | Indexed, byte RGB/RGBA, generic float32, or typed float32 depending on format and policy. |
 | [`wic`](wic.md) | Windows Imaging Component build | Windows codecs and containers, including ICO selection | Framework-decoded RGBA frames followed by common normalization. |
 | [`coregraphics`](coregraphics.md) | CoreGraphics/ImageIO build | Apple platform image sources | Indexed, byte RGB, or linear float32 according to source and conversion path. |
 | [`gdk-pixbuf2`](gdk-pixbuf2.md) | With GdkPixbuf | Formats supplied by installed GdkPixbuf modules | RGB or linear float32 frames after loader normalization. |

@@ -12,7 +12,7 @@ The cost is substantial. In-tree file-format parsers increase libsixel's own att
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/builtin-lineage-mobile.svg">
-  <img alt="The builtin loader started by importing stb_image 1.33 in 2014. Animated GIF moved to fromgif in 2015. During 2026, PNG high-depth and metadata work moved to frompng, the stb-derived JPEG path gained float precision handling, PSD expanded into frompsd, HDR was replaced by a custom fromhdr path, and BMP and WebP gained dedicated implementations. The present dispatcher also has direct SIXEL and PNM families while retaining an adapted stb core for JPEG, PNG helpers, TGA, PIC, and shared zlib machinery." src="figures/builtin-lineage-wide.svg">
+  <img alt="The builtin loader started by importing stb_image 1.33 in 2014. Animated GIF moved to fromgif in 2015. During 2026, PNG high-depth and metadata work moved to frompng, the stb-derived JPEG path gained float precision handling, PSD expanded into frompsd, HDR was replaced by a custom fromhdr path, and BMP gained a dedicated implementation. WebP and other RIFF inputs are declined by the dispatcher. The present dispatcher also has direct SIXEL and PNM families while retaining an adapted stb core for JPEG, PNG helpers, TGA, PIC, and shared zlib machinery." src="figures/builtin-lineage-wide.svg">
 </picture>
 
 *Figure 1. Evolution of the builtin component. Purple branches are dedicated format families; blue marks the retained and modified stb-derived core; amber labels quality or feature pressure; red records the security cost that grows with in-tree parsing.*
@@ -21,14 +21,13 @@ The history is better understood as incremental replacement and extraction than 
 
 ## Current dispatch and output character
 
-The top-level builtin dispatcher first separates SIXEL, PNM/PAM, GIF, WebP, and the remaining stb-routed family. The stb-routed family then diverts PNG, JPEG, PSD, HDR, and BMP into specialized code as needed. Compile-time `STBI_NO_GIF`, `STBI_NO_PNM`, `STBI_NO_PSD`, `STBI_NO_BMP`, and `STBI_NO_HDR` prevent those formats from silently falling back to their old stock stb decoders. The [Builtin Format Components](builtin/README.md) index gives the exact accepted variants, interpreted metadata, output character, and exclusions for every family.
+The top-level builtin dispatcher first separates SIXEL, PNM/PAM, GIF, RIFF containers, and the remaining stb-routed family. RIFF input, including WebP, is declined with a recoverable `SIXEL_BAD_INPUT` status so that the next loader in the chain, such as `libwebp`, can decode it; the [loader patent notes](patents.md#webp) explain why the builtin component has no WebP decoder. The stb-routed family then diverts PNG, JPEG, PSD, HDR, and BMP into specialized code as needed. Compile-time `STBI_NO_GIF`, `STBI_NO_PNM`, `STBI_NO_PSD`, `STBI_NO_BMP`, and `STBI_NO_HDR` prevent those formats from silently falling back to their old stock stb decoders. The [Builtin Format Components](builtin/README.md) index gives the exact accepted variants, interpreted metadata, output character, and exclusions for every family.
 
 | Family | Current implementation | Why it is separate | Representative frame result |
 | --- | --- | --- | --- |
 | SIXEL | libsixel decoder path in [`loader-builtin.c`](../../src/loader-builtin.c) | Accept SIXEL as an input image and preserve its palette semantics where possible. | Indexed or RGB data according to the decoded stream and request. |
 | PBM/PGM/PPM/PAM | [`frompnm.c`](../../src/frompnm.c) | Cover ASCII and binary Netpbm forms, PAM tuple/alpha policy, bounded headers, and explicit compatibility controls. | Gamma RGB byte/float, or linear RGB float after PAM alpha composition. |
 | GIF | [`fromgif.c`](../../src/fromgif.c), with CMS owned by the builtin adapter | Deliver multiple frames, disposal, timing, loop count, local/global palettes, transparency, background policy, and embedded RGB ICC interpretation. | ICC input uses a linear float palette/canvas; untagged or CMS-disabled input retains byte palette/RGB paths. See [GIF color profiles](builtin/gif.md#embedded-color-profiles). |
-| WebP | [`fromwebp.c`](../../src/fromwebp.c) | Handle RIFF structure, static and animated decode, metadata precedence, orientation, ICC, and alpha in-tree. | Gamma `RGBA8888` intermediate, followed by common alpha/background finalization; supported metadata CMS converts its RGB channels to eight-bit sRGB. |
 | PNG/APNG | [`frompng.c`](../../src/frompng.c) plus adapted stb PNG/zlib helpers in [`loader-builtin.c`](../../src/loader-builtin.c) | Preserve 16-bit samples, handle APNG, indexed palettes, `bKGD`/`tRNS`, ICC/gamma metadata, and background policy without an 8-bit-only boundary. | Indexed, RGB/RGBA byte, RGB float32, or typed CMS float32. |
 | JPEG | Modified stb-derived JPEG core in [`stb_image.h`](../../src/stb_image.h) with routing and CMS work in [`loader-builtin.c`](../../src/loader-builtin.c) | Decode through a float path when required and avoid truncating values before later color transforms. | Unmanaged gamma RGB byte/float; matching RGB ICC uses gamma float, while Gray and CMYK/YCCK ICC consume preserved source components and produce extended linear float RGB. |
 | Radiance HDR | [`fromhdr.c`](../../src/fromhdr.c) | Parse RGBE/XYZE and relevant header metadata directly, retain float values, and apply explicit exposure/profile/tonemap policy. | Linear or target-space float32. |
@@ -72,7 +71,7 @@ Calling it “the stb PSD loader” would now be misleading. It is architectural
 
 ## Other extractions
 
-The same pressure applies beyond the headline formats. The builtin PNM/PAM reader is separate from stb. Commit [`379c90cf5`](https://github.com/saitoha/libsixel/commit/379c90cf5) replaced the stock BMP path with the in-tree BMP decoder on 2026-04-10. WebP is handled by a dedicated static/animation family. These are not cosmetic file moves: each extraction makes more format policy visible to libsixel, but also transfers more parser ownership to the project.
+The same pressure applies beyond the headline formats. The builtin PNM/PAM reader is separate from stb. Commit [`379c90cf5`](https://github.com/saitoha/libsixel/commit/379c90cf5) replaced the stock BMP path with the in-tree BMP decoder on 2026-04-10. These are not cosmetic file moves: each extraction makes more format policy visible to libsixel, but also transfers more parser ownership to the project.
 
 ## Precision, colorspace, and finalization
 
@@ -101,7 +100,6 @@ Selecting `-Lbuiltin!` limits decoding to this component and avoids passing the 
 | Radiance HDR | [`fromhdr.c`](../../src/fromhdr.c) |
 | PSD/PSB | [`frompsd.c`](../../src/frompsd.c) and the `frompsd-*` modules |
 | BMP | [`frombmp.c`](../../src/frombmp.c) and the `frombmp-*` modules |
-| WebP | [`fromwebp.c`](../../src/fromwebp.c) and the `fromwebp-*` modules |
 | Functional and regression coverage | [`tests/loader/builtin`](../../tests/loader/builtin) |
 | General and structural fuzz coverage | [`fuzz/Makefile.am`](../../fuzz/Makefile.am) and the `fuzz-loader-builtin*` targets |
 
@@ -114,6 +112,6 @@ The format pages own byte-level decode contracts. These tests instead protect be
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
 | BLT-01 | Deterministic allocation injection across one static specimen per builtin format either fails before callback without leaking or produces the exact baseline frame. | [tests/loader/builtin/2021_loader_builtin_allocator_failure_matrix.t](../../tests/loader/builtin/2021_loader_builtin_allocator_failure_matrix.t) |
-| BLT-02 | PNG, JPEG, GIF, WebP, HDR, PSD, BMP, TGA, PIC, PNM, and SIXEL routes return an interrupted frame callback unchanged. | [tests/loader/builtin/2022_loader_builtin_callback_status_matrix.t](../../tests/loader/builtin/2022_loader_builtin_callback_status_matrix.t) |
+| BLT-02 | PNG, JPEG, GIF, HDR, PSD, BMP, TGA, PIC, PNM, and SIXEL routes return an interrupted frame callback unchanged. | [tests/loader/builtin/2022_loader_builtin_callback_status_matrix.t](../../tests/loader/builtin/2022_loader_builtin_callback_status_matrix.t) |
 
 The shared static allocation test intentionally accepts retained stb paths that report an injected allocation failure through their historical format-error status, but it does not accept a partial frame, a leak, or changed output. Animation, reconstruction, and optional metadata paths have additional targeted tests in their format pages: an animation failure may follow a valid emitted prefix, while an optional ICC allocation may fall back to unmanaged decoding. Those scoped contracts must not be weakened into a claim that every internal decoder distinguishes out-of-memory from malformed compressed data.
