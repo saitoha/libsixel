@@ -7150,7 +7150,7 @@ sixel_encoder_highcolor_options(sixel_encoder_t const *encoder)
          encoder->snap_policy_approach_rate <= 0.0) &&
         !encoder->sixdelta_enabled && !encoder->ormode &&
         !encoder->fdrcs && !encoder->fuse_macro &&
-        encoder->macro_number < 0 && !encoder->output_is_png;
+        encoder->macro_number < 0;
 }
 
 /* Resolve packed storage only within the admitted frame/output scope. */
@@ -7221,9 +7221,10 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             return SIXEL_OK;
         }
         sixel_helper_set_additional_message(
-            "display-p3 high-color requires ordinary CPU RGB/HLS SIXEL, "
+            "display-p3 high-color requires ordinary CPU RGB/HLS SIXEL "
+            "or a PNG snapshot, "
             "-W gamma|linear|oklab|cielab|din99d and inactive snap; "
-            "delta, OR, DRCS, macros and PNG snapshots are unsupported.");
+            "delta, OR, DRCS and macros are unsupported.");
         return SIXEL_BAD_ARGUMENT;
     }
     if (!sixel_encoder_rgb101_options(encoder)) {
@@ -14403,6 +14404,17 @@ write_png_from_sixel(char const *sixel_path,
         goto end;
     }
 
+    /* High color redefines registers after earlier pixels use them. An
+     * indexed plane plus the final palette cannot represent that history;
+     * resolve colors at paint time, including omitted source pixels. Keep
+     * ordinary stable-palette snapshots on the indexed decoder path. */
+    if (encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
+        status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_DIRECT, NULL);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+
     /* Interpret the emitted values, not the source image's profile. This
      * only tags the decoded snapshot; applying another transform would
      * convert an already converted palette twice. Legacy linear/SMPTE-C
@@ -14502,6 +14514,7 @@ sixel_encoder_encode(
     int force_auto_lut_for_psd;
     int psd_trace_only;
     int prefer_loader_float32;
+    int loader_reqcolors;
 
     clipboard_input_format[0] = '\0';
     clipboard_input_path = NULL;
@@ -14526,6 +14539,7 @@ sixel_encoder_encode(
     force_auto_lut_for_psd = 0;
     psd_trace_only = 0;
     prefer_loader_float32 = 0;
+    loader_reqcolors = SIXEL_PALETTE_MAX;
     memset(&load_context, 0, sizeof(load_context));
     logger = NULL;
     if (encoder == NULL) {
@@ -14832,14 +14846,17 @@ sixel_encoder_encode(
         }
     }
 
-    /* if required color is not set, set the max value */
-    if (encoder->reqcolors == (-1)) {
-        encoder->reqcolors = SIXEL_PALETTE_MAX;
-    }
-
-    /* if required color is less then 2, set the min value */
-    if (encoder->reqcolors < 2) {
-        encoder->reqcolors = SIXEL_PALETTE_MIN;
+    /* High color has no requested fixed-palette size. Give the loader a
+     * valid default without turning the unset selector into an explicit
+     * -p request: that would reject subsequent setopt calls on reuse. */
+    if (encoder->color_option != SIXEL_COLOR_OPTION_HIGHCOLOR) {
+        if (encoder->reqcolors == (-1)) {
+            encoder->reqcolors = SIXEL_PALETTE_MAX;
+        }
+        if (encoder->reqcolors < 2) {
+            encoder->reqcolors = SIXEL_PALETTE_MIN;
+        }
+        loader_reqcolors = encoder->reqcolors;
     }
 
     /* if color space option is not set, choose RGB color space */
@@ -14889,7 +14906,7 @@ reload:
 
     status = sixel_loader_setopt(loader,
                                  SIXEL_LOADER_OPTION_REQCOLORS,
-                                 &encoder->reqcolors);
+                                 &loader_reqcolors);
     if (SIXEL_FAILED(status)) {
         goto load_end;
     }

@@ -489,6 +489,14 @@ int test_png_snapshot_0020(int argc, char **argv);
 int test_png_snapshot_0021(int argc, char **argv);
 int test_png_snapshot_0022(int argc, char **argv);
 int test_png_snapshot_0023(int argc, char **argv);
+int test_png_snapshot_0030(int argc, char **argv);
+int test_png_snapshot_0031(int argc, char **argv);
+int test_png_snapshot_0029(int argc, char **argv);
+int test_png_snapshot_0028(int argc, char **argv);
+int test_png_snapshot_0027(int argc, char **argv);
+int test_png_snapshot_0026(int argc, char **argv);
+int test_png_snapshot_0025(int argc, char **argv);
+int test_png_snapshot_0024(int argc, char **argv);
 int test_highcolor_0001(int argc, char **argv);
 int test_highcolor_0002(int argc, char **argv);
 int test_highcolor_0003(int argc, char **argv);
@@ -571,6 +579,7 @@ int test_highcolor_0079(int argc, char **argv);
 int test_highcolor_0080(int argc, char **argv);
 int test_highcolor_0081(int argc, char **argv);
 int test_highcolor_0082(int argc, char **argv);
+int test_highcolor_0083(int argc, char **argv);
 int test_png_snapshot_0001(int argc, char **argv);
 int test_png_snapshot_0002(int argc, char **argv);
 int test_png_snapshot_0003(int argc, char **argv);
@@ -3931,7 +3940,7 @@ static test_entry_t const test_entries[] = {
     { "codec/highcolor/0028_p3_or_recovery", test_highcolor_0028 },
     { "codec/highcolor/0029_p3_drcs_recovery", test_highcolor_0029 },
     { "codec/highcolor/0030_p3_macro_recovery", test_highcolor_0030 },
-    { "codec/highcolor/0031_p3_png_recovery", test_highcolor_0031 },
+    { "codec/highcolor/0031_p3_png_sixel_reuse", test_highcolor_0031 },
     { "codec/highcolor/0032_p3_snap_recovery", test_highcolor_0032 },
     { "codec/highcolor/0033_p3_nan_recovery", test_highcolor_0033 },
     { "codec/highcolor/0034_p3_alpha_space_recovery", test_highcolor_0034 },
@@ -3983,6 +3992,15 @@ static test_entry_t const test_entries[] = {
     { "codec/highcolor/0080_packed_pixel_retry", test_highcolor_0080 },
     { "codec/highcolor/0081_packed_mask_retry", test_highcolor_0081 },
     { "codec/highcolor/0082_packed_handoff_plan", test_highcolor_0082 },
+    { "codec/highcolor/0083_packed_png_p3", test_highcolor_0083 },
+    { "codec/png_snapshot/0024_highcolor_srgb_byte", test_png_snapshot_0024 },
+    { "codec/png_snapshot/0025_highcolor_srgb_float", test_png_snapshot_0025 },
+    { "codec/png_snapshot/0026_highcolor_p3_rgb", test_png_snapshot_0026 },
+    { "codec/png_snapshot/0027_highcolor_p3_hls", test_png_snapshot_0027 },
+    { "codec/png_snapshot/0028_highcolor_p3_mask", test_png_snapshot_0028 },
+    { "codec/png_snapshot/0029_highcolor_reuse", test_png_snapshot_0029 },
+    { "codec/png_snapshot/0030_highcolor_suffix", test_png_snapshot_0030 },
+    { "codec/png_snapshot/0031_highcolor_stdout", test_png_snapshot_0031 },
     { "codec/png_snapshot/0001_srgb_frame_precision", test_png_snapshot_0001 },
     { "codec/png_snapshot/0002_p3_frame_precision", test_png_snapshot_0002 },
     { "codec/png_snapshot/0003_byte_frame_control", test_png_snapshot_0003 },

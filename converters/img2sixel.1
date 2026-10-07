@@ -1439,9 +1439,12 @@ lookup and diffusion are bypassed. Gamma-coordinate packed alpha uses common
 frame normalization before geometry and working-space conversion. Fractional
 composition retains float precision; binary alpha alone does not force float.
 Active snap, GPU,
-OR mode, DRCS, macros, PNG snapshots and delta remain unsupported on this
+OR mode, DRCS, macros and delta remain unsupported on this
 high-color path and fail before output. The receiver must interpret the
 resulting color definitions as Display P3.
+High-color PNG snapshots use direct decoding to preserve colors across
+register redefinitions and transparent source pixels, and carry P3 metadata.
+Ordinary stable-palette snapshots retain indexed decoding.
 Palette input with \fB-m\fP supports the same CPU solver choices, including AUTO.
 Structured palette files remain sRGB. Lookup and diffusion retain their
 unrounded working coordinates; separate P3 RGB101 codes serve only output. Image mapfiles retain loader/CMS

@@ -419,7 +419,7 @@ test_highcolor_p3(int scenario)
                 expected[0] = 100; expected[1] = expected[2] = 0;
             }
         }
-        reject = scenario >= 26 && phase == 0;
+        reject = scenario >= 26 && scenario != 31 && phase == 0;
         if (reject && scenario == 33) {
             samples[0] = NAN;
         }
@@ -462,7 +462,7 @@ test_highcolor_p3(int scenario)
         encoder->ormode = reject && scenario == 28;
         encoder->fdrcs = reject && scenario == 29;
         encoder->fuse_macro = reject && scenario == 30;
-        encoder->output_is_png = reject && scenario == 31;
+        encoder->output_is_png = scenario == 31 && phase == 0;
         if (scenario == 32 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 '_', reject ? "nearest" : "none"))) {
             goto end;

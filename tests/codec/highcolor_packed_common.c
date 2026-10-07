@@ -155,8 +155,9 @@ test_highcolor_packed(int scenario)
              SIXEL_FAILED(sixel_encoder_setopt(encoder, 'r', "nearest")))) {
         goto end;
     }
+    encoder->output_is_png = scenario == 83;
     for (phase = 0; phase < (scenario == 79 ? 3 : 1); ++phase) {
-        p3 = (scenario >= 67 && scenario <= 71) ||
+        p3 = scenario == 83 || (scenario >= 67 && scenario <= 71) ||
             (scenario == 79 && phase != 1);
         interpret = scenario != 74 && !(scenario == 79 && phase == 1);
         want_float = p3 || scenario == 73 || (interpret && !binary);

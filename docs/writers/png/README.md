@@ -21,7 +21,7 @@ img2sixel with -o output.png, -o png:<path>, or -o png:-
   -> load source image
   -> resize, quantize, apply the selected palette, and dither
   -> generate the normal SIXEL byte stream into a temporary file
-  -> decode that generated SIXEL with the standard decoder defaults
+  -> decode that generated SIXEL (direct for high color, indexed otherwise)
   -> shared color-aware PNG writer (sRGB or explicit interpretation)
   -> selected PNG backend
 ```
@@ -36,7 +36,7 @@ The snapshot decoder interprets `-U display-p3` output as Display P3 and writes 
 
 PNG snapshots conflict with `-Z delta`: decoding a standalone SIXEL image cannot recover pixels omitted against an external retained base. See the [delta interaction contract](../../encoder/output/delta-encoding.md#execution-paths-and-interactions) for target spellings, rejection timing and explicit full override. The snapshot reads the first terminated SIXEL image in the staging stream; it does not compose animation frames or serialize the encoder's final history.
 
-Native PNG admission covers ordinary SIXEL, excluding macro and DRCS envelopes and OR composition. Explicit P3 rejects those combinations before emitting the SIXEL body. This does not add APNG output, change high-color register handling, or change the default indexed decoder's transparency behavior. PNG snapshots decode the emitted SIXEL stream; the palette-only `-M` export buffer is not their image source.
+Native PNG admission covers ordinary SIXEL, excluding macro and DRCS envelopes and OR composition. Explicit P3 rejects those combinations before emitting the SIXEL body. This does not add APNG output or change the default indexed decoder's transparency behavior. PNG snapshots decode the emitted SIXEL stream; the palette-only `-M` export buffer is not their image source.
 
 The decoder selects the writer representation as follows:
 
@@ -44,10 +44,10 @@ The decoder selects the writer representation as follows:
 | --- | --- | --- |
 | Default stable-palette decode, with no dequantizer and no resizing promotion | `PAL8` plus palette | Indexed 8-bit |
 | Palette decode followed by `k_undither`, `selective_blur`, or another RGB-producing reconstruction | `RGB888` | Direct RGB8 |
-| `sixel2png -D`, including direct output after dequantization | `RGBA8888` | Direct RGBA8 |
+| `sixel2png -D`, including direct output after dequantization, or an `img2sixel -I` snapshot | `RGBA8888` | Direct RGBA8 |
 | Resize or another frame operation that promotes the decoded representation | Promoted frame format, normally `RGB888` or `RGBA8888` | Matching direct 8-bit class |
 
-High-color SIXEL is a boundary of the indexed snapshot contract. High-color output can redefine a color register after earlier pixels have used it, so no single indexed plane plus final palette can preserve every painted color. The current `img2sixel` PNG snapshot invokes the decoder's default indexed path and must not be treated as an exact high-color reference. Use direct decoder output when validating a register-redefining SIXEL stream. Animation also passes through the decoder's existing output behavior; this document does not define the PNG target as an APNG writer.
+High-color (`-I`) snapshots select direct decoding automatically: each pixel retains the color defined when it was painted, including after a palette register is redefined. The PNG is RGBA8; omitted source pixels remain transparent. Ordinary CPU high-color snapshots support sRGB and Display P3 with the same interpretation rules above. Stable-palette snapshots retain the indexed path. As with other snapshots, animation selects the first terminated SIXEL image rather than producing APNG. High-color diffusion and alternate transport limits remain defined by the [high-color output contract](../../encoder/output/high-color/README.md#display-p3-boundary).
 
 ## Decoded-input interpretation option
 
@@ -213,6 +213,14 @@ The first four cases exercise PNG destination selection with in-memory SIXEL cap
 | PN-07 | Actual HLS snapshot retains decoded sRGB primary values and explicit sRGB interpretation. | [tests/codec/png_snapshot/0007_srgb_hls_pixels.t](../../../tests/codec/png_snapshot/0007_srgb_hls_pixels.t) |
 | PN-08 | Actual HLS snapshot retains independently derived P3 HLS-decoded values and P3 ICC interpretation. | [tests/codec/png_snapshot/0008_p3_hls_pixels.t](../../../tests/codec/png_snapshot/0008_p3_hls_pixels.t) |
 | PN-09 | P3 PNG rejects macro/DRCS envelopes and OR mode before any body bytes. | [tests/codec/png_snapshot/0009_transport_rejection.t](../../../tests/codec/png_snapshot/0009_transport_rejection.t) |
+| PN-10 | Byte-eligible high-color preserves all 320 independently specified paint colors through register redefinition and writes RGBA8 with sRGB metadata. | [tests/codec/png_snapshot/0024_highcolor_srgb_byte.t](../../../tests/codec/png_snapshot/0024_highcolor_srgb_byte.t) |
+| PN-11 | Float high-color preserves the same independently specified sRGB paint colors and float routing. | [tests/codec/png_snapshot/0025_highcolor_srgb_float.t](../../../tests/codec/png_snapshot/0025_highcolor_srgb_float.t) |
+| PN-12 | High-color P3 RGB snapshots preserve independent converted values after register redefinition and attach the P3 ICC definition. | [tests/codec/png_snapshot/0026_highcolor_p3_rgb.t](../../../tests/codec/png_snapshot/0026_highcolor_p3_rgb.t) |
+| PN-13 | High-color HLS snapshots retain independent P3 primary values and the P3 ICC definition. | [tests/codec/png_snapshot/0027_highcolor_p3_hls.t](../../../tests/codec/png_snapshot/0027_highcolor_p3_hls.t) |
+| PN-14 | High-color P3 snapshots preserve source-alpha holes alongside the other painted colors. | [tests/codec/png_snapshot/0028_highcolor_p3_mask.t](../../../tests/codec/png_snapshot/0028_highcolor_p3_mask.t) |
+| PN-15 | One high-color encoder changes P3 to sRGB and back without stale snapshot pixels or metadata. | [tests/codec/png_snapshot/0029_highcolor_reuse.t](../../../tests/codec/png_snapshot/0029_highcolor_reuse.t) |
+| PN-16 | The automatic .png suffix target preserves high-color P3 values and metadata. | [tests/codec/png_snapshot/0030_highcolor_suffix.t](../../../tests/codec/png_snapshot/0030_highcolor_suffix.t) |
+| PN-17 | Actual high-color CLI stdout PNG has direct primary pixels and P3 metadata despite an inherited sRGB decoder setting. | [tests/codec/png_snapshot/0031_highcolor_stdout.t](../../../tests/codec/png_snapshot/0031_highcolor_stdout.t) |
 
 ### Coverage audit and boundary
 
@@ -220,4 +228,4 @@ Before the dedicated writer tests, existing coverage established that PNG target
 
 The focused suite now covers the three writer output classes used by the decoder, both command entry routes, all documented `img2sixel` PNG target forms, the builtin CRC regression, and the post-SIXEL dither snapshot contract. The same format tests are backend-neutral and run in both libpng and builtin CI configurations; PW-08 is intentionally builtin-only.
 
-The suite does not currently enumerate every public input normalization format, assert the derived `PLTE` extent, inject allocator or stream failures, validate every dynamically sized chunk CRC independently, or define high-color and animation snapshots as indexed-exact output. Those are explicit coverage gaps rather than implied guarantees. Compressed PNG byte identity across the two backends is deliberately outside the contract.
+The suite does not currently enumerate every public input normalization format, assert the derived `PLTE` extent, inject allocator or stream failures, validate every dynamically sized chunk CRC independently, or define composed animation snapshots. High-color value tests cover a 320-key final-band image, selected HLS primaries and a source-mask hole; they do not certify every possible register schedule or receiver. Those are explicit coverage gaps rather than implied guarantees. Compressed PNG byte identity across the two backends is deliberately outside the contract.

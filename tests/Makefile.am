@@ -445,6 +445,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0021_DELTA_P3_RECOVERY \
     -DBUILD_TEST_0022_DELTA_FILE_GUARD \
     -DBUILD_TEST_0023_DELTA_STDOUT_GUARD \
+    -DBUILD_TEST_0024_HIGHCOLOR_SRGB_BYTE \
+    -DBUILD_TEST_0025_HIGHCOLOR_SRGB_FLOAT \
+    -DBUILD_TEST_0026_HIGHCOLOR_P3_RGB \
+    -DBUILD_TEST_0027_HIGHCOLOR_P3_HLS \
+    -DBUILD_TEST_0028_HIGHCOLOR_P3_MASK \
+    -DBUILD_TEST_0029_HIGHCOLOR_REUSE \
+    -DBUILD_TEST_0030_HIGHCOLOR_SUFFIX \
+    -DBUILD_TEST_0031_HIGHCOLOR_STDOUT \
     -DBUILD_TEST_0001_BYTE_IDENTITY \
     -DBUILD_TEST_0002_BYTE_LINEAR \
     -DBUILD_TEST_0003_FLOAT_SUBBYTE \
@@ -475,7 +483,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0028_P3_OR_RECOVERY \
     -DBUILD_TEST_0029_P3_DRCS_RECOVERY \
     -DBUILD_TEST_0030_P3_MACRO_RECOVERY \
-    -DBUILD_TEST_0031_P3_PNG_RECOVERY \
+    -DBUILD_TEST_0031_P3_PNG_SIXEL_REUSE \
     -DBUILD_TEST_0032_P3_SNAP_RECOVERY \
     -DBUILD_TEST_0033_P3_NAN_RECOVERY \
     -DBUILD_TEST_0034_P3_ALPHA_SPACE_RECOVERY \
@@ -527,7 +535,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0080_PACKED_PIXEL_RETRY \
     -DBUILD_TEST_0081_PACKED_MASK_RETRY \
     -DBUILD_TEST_0082_PACKED_HANDOFF_PLAN \
+    -DBUILD_TEST_0083_PACKED_PNG_P3 \
     -DBUILD_HIGHCOLOR_PACKED_COMMON \
+    -DBUILD_HIGHCOLOR_PNG_COMMON \
     -DBUILD_HIGHCOLOR_MASK_COMMON \
     -DBUILD_HIGHCOLOR_BAND_COMMON \
     -DBUILD_HIGHCOLOR_OUTPUT_COMMON \
@@ -5991,6 +6001,14 @@ test_runner_SOURCES = test_runner.c \
     codec/png_snapshot/0021_delta_p3_recovery.c \
     codec/png_snapshot/0022_delta_file_guard.c \
     codec/png_snapshot/0023_delta_stdout_guard.c \
+    codec/png_snapshot/0024_highcolor_srgb_byte.c \
+    codec/png_snapshot/0025_highcolor_srgb_float.c \
+    codec/png_snapshot/0026_highcolor_p3_rgb.c \
+    codec/png_snapshot/0027_highcolor_p3_hls.c \
+    codec/png_snapshot/0028_highcolor_p3_mask.c \
+    codec/png_snapshot/0029_highcolor_reuse.c \
+    codec/png_snapshot/0030_highcolor_suffix.c \
+    codec/png_snapshot/0031_highcolor_stdout.c \
     codec/highcolor/0001_byte_identity.c \
     codec/highcolor/0002_byte_linear.c \
     codec/highcolor/0003_float_subbyte.c \
@@ -6021,7 +6039,7 @@ test_runner_SOURCES = test_runner.c \
     codec/highcolor/0028_p3_or_recovery.c \
     codec/highcolor/0029_p3_drcs_recovery.c \
     codec/highcolor/0030_p3_macro_recovery.c \
-    codec/highcolor/0031_p3_png_recovery.c \
+    codec/highcolor/0031_p3_png_sixel_reuse.c \
     codec/highcolor/0032_p3_snap_recovery.c \
     codec/highcolor/0033_p3_nan_recovery.c \
     codec/highcolor/0034_p3_alpha_space_recovery.c \
@@ -6073,7 +6091,9 @@ test_runner_SOURCES = test_runner.c \
     codec/highcolor/0080_packed_pixel_retry.c \
     codec/highcolor/0081_packed_mask_retry.c \
     codec/highcolor/0082_packed_handoff_plan.c \
+    codec/highcolor/0083_packed_png_p3.c \
     codec/highcolor_packed_common.c \
+    codec/highcolor_png_common.c \
     codec/highcolor_mask_common.c \
     codec/highcolor_band_common.c \
     codec/highcolor_output_common.c \

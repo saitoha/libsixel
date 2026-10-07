@@ -117,19 +117,12 @@ pc_profile(unsigned char const *profile, size_t length)
     return 1;
 }
 
-static int
-pc_check(int expected_space, int direct, int sample_case,
-         unsigned char const *expected)
+/* Shared metadata assertion; callers independently check PNG pixels. */
+int
+png_color_metadata(unsigned char const *data, size_t length, int space)
 {
-    unsigned char data[8192];
-    unsigned char *pixels;
     unsigned char const *payload;
     sixel_icc_profile_t profile;
-    edge_frame_probe_t *probe;
-    edge_loader_options_t options;
-    SIXELSTATUS status;
-    unsigned char rgba[6 * 6 * 4];
-    size_t length;
     size_t offset;
     size_t size;
     size_t key;
@@ -137,18 +130,9 @@ pc_check(int expected_space, int direct, int sample_case,
     int icc_count;
     int saw_pixels;
     int ok;
-    int width;
-    int height;
     int i;
     int j;
 
-    (void)sixel_compat_set_binary(0);
-    length = fread(data, 1u, sizeof(data), stdin);
-    if (length < 45u || length == sizeof(data) ||
-        memcmp(data, "\211PNG\r\n\032\n", 8u) != 0 ||
-        data[24] != 8u || data[25] != (direct == 2 ? 2u : direct ? 6u : 3u)) {
-        return EXIT_FAILURE;
-    }
     srgb_count = 0;
     icc_count = 0;
     saw_pixels = 0;
@@ -156,7 +140,7 @@ pc_check(int expected_space, int direct, int sample_case,
     for (offset = 8u; offset + 12u <= length; offset += size + 12u) {
         size = pc_read32(data + offset);
         if (size > length - offset - 12u) {
-            return EXIT_FAILURE;
+            return 0;
         }
         payload = data + offset + 8u;
         if (memcmp(data + offset + 4u, "sRGB", 4u) == 0) {
@@ -169,7 +153,7 @@ pc_check(int expected_space, int direct, int sample_case,
                 ++key;
             }
             if (key + 2u >= size || payload[key + 1u] != 0u) {
-                return EXIT_FAILURE;
+                return 0;
             }
             memset(&profile, 0, sizeof(profile));
             ok &= !saw_pixels &&
@@ -193,8 +177,35 @@ pc_check(int expected_space, int direct, int sample_case,
             saw_pixels = 1;
         }
     }
-    ok &= srgb_count == (expected_space == 0) &&
-        icc_count == (expected_space == 1);
+    ok &= srgb_count == (space == 0) &&
+        icc_count == (space == 1);
+    return ok;
+}
+
+static int
+pc_check(int expected_space, int direct, int sample_case,
+         unsigned char const *expected)
+{
+    unsigned char data[8192];
+    unsigned char *pixels;
+    edge_frame_probe_t *probe;
+    edge_loader_options_t options;
+    SIXELSTATUS status;
+    unsigned char rgba[6 * 6 * 4];
+    size_t length;
+    int ok;
+    int width;
+    int height;
+    int i;
+
+    (void)sixel_compat_set_binary(0);
+    length = fread(data, 1u, sizeof(data), stdin);
+    if (length < 45u || length == sizeof(data) ||
+        memcmp(data, "\211PNG\r\n\032\n", 8u) != 0 ||
+        data[24] != 8u || data[25] != (direct == 2 ? 2u : direct ? 6u : 3u)) {
+        return EXIT_FAILURE;
+    }
+    ok = png_color_metadata(data, length, expected_space);
     probe = calloc(1u, sizeof(*probe));
     if (probe == NULL) {
         return EXIT_FAILURE;
@@ -261,8 +272,8 @@ png_color_check(int expected_space, int direct, int sample_case)
  * these RGB8 samples. HLS decoding rounds reconstructed RGB to percent
  * before expansion to bytes; the P3 green blue-channel is 29, not 30.
  * The closest HLS field margin is .0176, versus a .002 error budget. */
-int
-png_snapshot_check(int p3, int hls)
+static int
+pc_snapshot_check(int p3, int hls, int direct)
 {
     static unsigned char const rgb[3][9] = {
         {255, 0, 0, 0, 255, 0, 0, 0, 255},
@@ -270,7 +281,19 @@ png_snapshot_check(int p3, int hls)
         {235, 51, 36, 117, 252, 74, 0, 0, 245}
     };
 
-    return pc_check(p3, 0, 0, rgb[p3 ? 1 + hls : 0]);
+    return pc_check(p3, direct, 0, rgb[p3 ? 1 + hls : 0]);
+}
+
+int
+png_snapshot_check(int p3, int hls)
+{
+    return pc_snapshot_check(p3, hls, 0);
+}
+
+int
+png_snapshot_direct_check(int p3, int hls)
+{
+    return pc_snapshot_check(p3, hls, 1);
 }
 
 int
