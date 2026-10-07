@@ -25,11 +25,18 @@ typedef struct colorspec_success_case {
 static int
 run_colorspec_success_cases(void)
 {
+    /* Distinct nibbles expose a repeated digit or a wrong channel offset.
+     * Longer forms retain their most significant byte; #RGB zero-fills. */
     static colorspec_success_case_t const cases[] = {
         { "#123", 0x10u, 0x20u, 0x30u },
-        { "#112233", 0x11u, 0x22u, 0x33u },
+        { "#3D81e9", 0x3du, 0x81u, 0xe9u },
+        { "#01aBf0", 0x01u, 0xabu, 0xf0u },
+        { "#3df81fe9f", 0x3du, 0x81u, 0xe9u },
+        { "#3dff81ffe9ff", 0x3du, 0x81u, 0xe9u },
         { "rgb:f/0/8", 0xf0u, 0x00u, 0x80u },
-        { "rgb:ff/00/aa", 0xffu, 0x00u, 0xaau },
+        { "rgb:3d/81/e9", 0x3du, 0x81u, 0xe9u },
+        { "rgb:3df/81f/e9f", 0x3du, 0x81u, 0xe9u },
+        { "rgb:3dff/81ff/e9ff", 0x3du, 0x81u, 0xe9u },
         { "black", 0x00u, 0x00u, 0x00u }
     };
     size_t index;

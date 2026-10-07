@@ -27,8 +27,8 @@ static int
 run_osc11_success_cases(void)
 {
     static osc11_success_case_t const cases[] = {
-        { "\033]11;#112233\007", 0x11u, 0x22u, 0x33u },
-        { "noise\033]11;rgb:aa/bb/cc\033\\tail", 0xaau, 0xbbu, 0xccu }
+        { "\033]11;#3d81e9\007", 0x3du, 0x81u, 0xe9u },
+        { "noise\033]11;rgb:3d/81/e9\033\\tail", 0x3du, 0x81u, 0xe9u }
     };
     size_t index;
     SIXELSTATUS status;

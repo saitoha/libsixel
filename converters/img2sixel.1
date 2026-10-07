@@ -1059,6 +1059,10 @@ rgb:rr/gg/bb
 rgb:rrr/ggg/bbb
 .br
 rgb:rrrr/gggg/bbbb
+.br
+Hexadecimal digits are case-insensitive. Each component keeps its most
+significant eight bits without rounding; a single digit is zero-filled
+in the low nibble (for example, #123 means RGB 16,32,48).
 .TP 5
 .B \-N \fIPOLICY\fP, \-\-background\-policy=\fIPOLICY\fP
 choose the background source used for alpha composition.

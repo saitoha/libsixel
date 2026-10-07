@@ -468,6 +468,8 @@ sixel_tty_parse_colorspec(unsigned char *bgcolor, char const *text)
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
+        /* Keep the most significant byte of each component. A single
+         * digit is zero-filled in the low nibble, not repeated. */
         switch (endptr - p) {
         case 3:
             bgcolor[0] = (unsigned char)(p[0] << 4);
@@ -477,7 +479,7 @@ sixel_tty_parse_colorspec(unsigned char *bgcolor, char const *text)
         case 6:
             bgcolor[0] = (unsigned char)(p[0] << 4 | p[1]);
             bgcolor[1] = (unsigned char)(p[2] << 4 | p[3]);
-            bgcolor[2] = (unsigned char)(p[4] << 4 | p[4]);
+            bgcolor[2] = (unsigned char)(p[4] << 4 | p[5]);
             break;
         case 9:
             bgcolor[0] = (unsigned char)(p[0] << 4 | p[1]);

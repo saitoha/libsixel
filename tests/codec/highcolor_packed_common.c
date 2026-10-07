@@ -140,8 +140,9 @@ test_highcolor_packed(int scenario)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "cielab"))) {
         goto end;
     }
+    /* Exercise -B parsing with unequal nibbles against the byte oracle. */
     if (use_bg && SIXEL_FAILED(sixel_encoder_setopt(encoder, 'B',
-            "rgb:3d/81/e9"))) {
+            "#3d81e9"))) {
         goto end;
     }
     if (scenario == 77 && SIXEL_FAILED(sixel_encoder_setopt(encoder, 'c',
