@@ -4350,96 +4350,40 @@ load_image_callback_for_palette(
             frame, &callback_context->dither, &state, 0, NULL, 1);
     }
 
-    switch (sixel_frame_get_pixelformat(frame)) {
-    case SIXEL_PIXELFORMAT_PAL1:
-    case SIXEL_PIXELFORMAT_PAL2:
-    case SIXEL_PIXELFORMAT_PAL4:
-    case SIXEL_PIXELFORMAT_PAL8:
-        if (sixel_frame_get_palette(frame) == NULL) {
-            status = SIXEL_LOGIC_ERROR;
-            goto end;
-        }
-        /* create new dither object */
-        status = sixel_dither_new(
-            &callback_context->dither,
-            sixel_frame_get_ncolors(frame),
-            callback_context->allocator);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-
-        sixel_encoder_copy_lookup_options(callback_context->encoder,
-                                          callback_context->dither);
-        callback_context->dither->gpu_policy = callback_context->gpu_policy;
-        callback_context->dither->gpu_palette_threshold =
-            callback_context->gpu_palette_threshold;
-
-        /* use palette which is extracted from the image */
-        sixel_dither_set_palette(callback_context->dither,
-                                 sixel_frame_get_palette(frame));
-        /* success */
-        status = SIXEL_OK;
-        break;
-    case SIXEL_PIXELFORMAT_G1:
-        /* use 1bpp grayscale builtin palette */
-        callback_context->dither = sixel_dither_get(SIXEL_BUILTIN_G1);
-        /* success */
-        status = SIXEL_OK;
-        break;
-    case SIXEL_PIXELFORMAT_G2:
-        /* use 2bpp grayscale builtin palette */
-        callback_context->dither = sixel_dither_get(SIXEL_BUILTIN_G1);
-        callback_context->dither = sixel_dither_get(SIXEL_BUILTIN_G2);
-        /* success */
-        status = SIXEL_OK;
-        break;
-    case SIXEL_PIXELFORMAT_G4:
-        /* use 4bpp grayscale builtin palette */
-        callback_context->dither = sixel_dither_get(SIXEL_BUILTIN_G4);
-        /* success */
-        status = SIXEL_OK;
-        break;
-    case SIXEL_PIXELFORMAT_G8:
-        /* use 8bpp grayscale builtin palette */
-        callback_context->dither = sixel_dither_get(SIXEL_BUILTIN_G8);
-        /* success */
-        status = SIXEL_OK;
-        break;
-    default:
-        /* create new dither object */
-        status = sixel_dither_new(
-            &callback_context->dither,
-            callback_context->reqcolors,
-            callback_context->allocator);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-
-        sixel_encoder_copy_lookup_options(callback_context->encoder,
-                                          callback_context->dither);
-        callback_context->dither->gpu_policy = callback_context->gpu_policy;
-        callback_context->dither->gpu_palette_threshold =
-            callback_context->gpu_palette_threshold;
-
-        /* create adaptive palette from given frame object */
-        status = sixel_dither_initialize(callback_context->dither,
-                                         sixel_frame_get_pixels(frame),
-                                         sixel_frame_get_width(frame),
-                                         sixel_frame_get_height(frame),
-                                         sixel_frame_get_pixelformat(frame),
-                                         SIXEL_LARGE_NORM,
-                                         SIXEL_REP_CENTER_BOX,
-                                         SIXEL_QUALITY_HIGH);
-        if (SIXEL_FAILED(status)) {
-            sixel_dither_unref(callback_context->dither);
-            goto end;
-        }
-
-        /* success */
-        status = SIXEL_OK;
-
-        break;
+    /* Normalization above guarantees RGB888 or a typed float format here.
+     * Indexed and grayscale image maps therefore contribute decoded pixels,
+     * not their original palette slots or a built-in grayscale table. Keep
+     * adaptive reconstruction for jobs outside the native float builder. */
+    status = sixel_dither_new(
+        &callback_context->dither,
+        callback_context->reqcolors,
+        callback_context->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
+
+    sixel_encoder_copy_lookup_options(callback_context->encoder,
+                                      callback_context->dither);
+    callback_context->dither->gpu_policy = callback_context->gpu_policy;
+    callback_context->dither->gpu_palette_threshold =
+        callback_context->gpu_palette_threshold;
+
+    /* create adaptive palette from given frame object */
+    status = sixel_dither_initialize(callback_context->dither,
+                                     sixel_frame_get_pixels(frame),
+                                     sixel_frame_get_width(frame),
+                                     sixel_frame_get_height(frame),
+                                     sixel_frame_get_pixelformat(frame),
+                                     SIXEL_LARGE_NORM,
+                                     SIXEL_REP_CENTER_BOX,
+                                     SIXEL_QUALITY_HIGH);
+    if (SIXEL_FAILED(status)) {
+        sixel_dither_unref(callback_context->dither);
+        goto end;
+    }
+
+    /* success */
+    status = SIXEL_OK;
 
 end:
     return status;
