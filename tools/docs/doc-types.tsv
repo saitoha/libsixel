@@ -122,6 +122,7 @@ docs/sixel-format/README.md	reference	both	wire specification + encoding explana
 docs/sixel-format/comparison/README.md	explanation	both	codec tradeoff explanation + measured reference and reproduction how-to
 docs/sixel-format/patents-and-royalties.md	explanation	user	intellectual-property evidence summary, not legal advice
 docs/sixel-format/specification-layers.md	explanation	both	specification standing and historical evidence + libsixel interpretation policy
+docs/sixel-format/terminal-graphics-history.md	explanation	both	historical survey with timeline
 docs/testing/builtin-loader-coverage.md	reference	contributor	""
 docs/testing/guide.md	how-to	contributor	test-writing workflow + normative assertion and harness reference
 docs/testing/mapfile-parser-coverage.md	reference	contributor	""

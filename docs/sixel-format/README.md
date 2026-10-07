@@ -13,6 +13,8 @@ this implementation. It is not a substitute for the device manual: historical
 printers, DEC terminals, and modern terminal emulators differ in limits,
 palette lifetime, aspect-ratio handling, scrolling, and error recovery.
 
+[Terminal graphics history](terminal-graphics-history.md) places SIXEL among the other ways pictures have been sent through terminals.
+
 SIXEL is defined only by the ECMA-48 control-string envelope and DEC's device documentation, not by an image-format standard. [SIXEL specification status and interpretation layers](specification-layers.md) explains that standing, the format's de facto history as `.six` files, and how formal rules, emulation of DEC hardware, and modern interpretation together determine implementation behavior.
 
 [SIXEL patents and royalties](patents-and-royalties.md) summarizes the evidence that implementing the format requires no license or royalty.

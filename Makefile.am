@@ -86,6 +86,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/sixel-format/patents-and-royalties.md \
 	docs/misc/algorithm-patents.md \
 	docs/sixel-format/specification-layers.md \
+	docs/sixel-format/terminal-graphics-history.md \
 	docs/protocols/graphics-color-management.md \
 	docs/encoder/colorspace-handling/README.md \
 	docs/encoder/colorspace-handling/figures/encoding-pipeline-mobile.svg \
