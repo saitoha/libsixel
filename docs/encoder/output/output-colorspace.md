@@ -133,6 +133,12 @@ The selected lookup classes consume the authoritative float palette even when it
 
 Ordinary RGB/HLS [native delta](delta-encoding.md#linear-and-smpte-c-output-history) also supports these linear and SMPTE-C output representations, retaining the selected output interpretation for threshold comparisons and converting kept colors back into the working space. Alternate delta transports remain outside that migration.
 
+### Library entry points
+
+The selected native palette path is coordinated by `sixel_encoder_t` for CLI, file, frame and byte-buffer encoding, subject to the admission conditions above. Accepting a float pixel format does not by itself establish that path. Standalone `sixel_dither_new()` → `sixel_dither_initialize()` → `sixel_encode()` does not perform the encoder's native-path selection or prepare its separate output palette. With snap disabled, initialization discards the generated float view, and palette application reconstructs working entries from the compatibility byte palette. This can lose sub-byte precision before SIXEL serialization, even with RGBFLOAT32 input and no dithering.
+
+This is a remaining implementation limit of the low-level path, distinct from the intentional byte storage exposed by `sixel_dither_set_palette()` and `sixel_dither_get_palette()`. Integrators needing the selected native contract can supply a typed frame through `sixel_encoder_encode_frame()`. The relevant implementation boundaries are in [`src/dither.c`](../../../src/dither.c) and [`src/encoder-core-encode.c`](../../../src/encoder-core-encode.c); the internal native-path flag alone is not a complete palette initialization contract.
+
 ### Sampling and retained precision
 
 For generated palettes, the selected float path accepts all three sampling policies. `full-frame` builds from the preprocessed frame. `adaptive-grid` copies selected loaded-frame pixels before preprocessing and retains their typed float coordinates, including negative and above-one components. This copy does not normalize or clamp samples. The existing solid-region augmentation applies to byte RGB/RGBA input; it is not applied to typed float samples. `auto` retains the resource-aware choice described in the [execution map](../execution-map/README.md).
