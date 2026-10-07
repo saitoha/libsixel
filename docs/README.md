@@ -46,6 +46,8 @@ The foundations the rest of the documentation builds on, in reading order: how v
 ### Color spaces
 
 - [Color spaces](concepts/colorspace/README.md) explains what numbers, layouts, color spaces and profiles each mean, primaries, white points and transfer functions, gamma encoding and linear light, linear RGB and XYZ as conversion hubs, out-of-gamut and imaginary colors, and why mixing needs linear light.
+- [Transfer functions and gamma](concepts/colorspace/transfer-functions.md) shows why images are gamma-encoded, what 8 bits can and cannot do, the sRGB, power-law and broadcast curves and where they came from, the OETF, EOTF and OOTF, the many meanings of "gamma", and when arithmetic needs linear light.
+- [Primaries and white points](concepts/colorspace/primaries-and-white-points.md) explains chromaticity diagrams, the gamuts of NTSC, SMPTE-C, sRGB, Adobe RGB, Display P3, BT.2020 and ProPhoto RGB, the white points D65, D50, C, DCI and E, and how primaries and a white point determine the RGB-to-XYZ matrix.
 - [Color management basics](concepts/color-management/README.md) explains why images carry color profiles, what an ICC profile contains, the profile connection space, chromatic adaptation between D50 and D65, rendering intents, and where color management happens in libsixel.
 
 ### Color difference

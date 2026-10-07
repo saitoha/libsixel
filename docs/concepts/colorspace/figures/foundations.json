@@ -1,0 +1,271 @@
+{
+  "generator": "tools/plot_colorspace_foundation_figures.py",
+  "plot_dependency": "numpy, Pillow",
+  "generated": [
+    "pw-barycenter.svg",
+    "pw-chromaticity.svg",
+    "pw-gamuts-mobile.svg",
+    "pw-gamuts-wide.svg",
+    "pw-misread-mobile.svg",
+    "pw-misread-wide.svg",
+    "pw-whites-mobile.svg",
+    "pw-whites-wide.svg",
+    "tf-chain-mobile.svg",
+    "tf-chain-wide.svg",
+    "tf-curves-mobile.svg",
+    "tf-curves-wide.svg",
+    "tf-dark-banding.svg",
+    "tf-lightness.svg",
+    "tf-mixing-mobile.svg",
+    "tf-mixing-wide.svg",
+    "tf-ramps.svg",
+    "tf-step-size.svg"
+  ],
+  "sources": {
+    "cmf": "CIE 1931 2-degree standard observer, 5 nm, CIE 015:2018 as tabulated by CVRL",
+    "primaries": "CSS Color 4 (sRGB, Display P3, a98-rgb, prophoto-rgb, rec2020), SMPTE RP 145 (SMPTE-C), FCC 1953 (NTSC)",
+    "whites": "CSS Color 4 (D50, D65); CIE Illuminant C; SMPTE RP 431-2 (DCI)",
+    "daylight_locus": "CIE 015 daylight chromaticity formula",
+    "photograph": "images/snake.png"
+  },
+  "spaces": {
+    "NTSC 1953": {
+      "primaries": [
+        [
+          0.67,
+          0.33
+        ],
+        [
+          0.21,
+          0.71
+        ],
+        [
+          0.14,
+          0.08
+        ]
+      ],
+      "white": "C"
+    },
+    "SMPTE-C": {
+      "primaries": [
+        [
+          0.63,
+          0.34
+        ],
+        [
+          0.31,
+          0.595
+        ],
+        [
+          0.155,
+          0.07
+        ]
+      ],
+      "white": "D65"
+    },
+    "sRGB / BT.709": {
+      "primaries": [
+        [
+          0.64,
+          0.33
+        ],
+        [
+          0.3,
+          0.6
+        ],
+        [
+          0.15,
+          0.06
+        ]
+      ],
+      "white": "D65"
+    },
+    "Adobe RGB (1998)": {
+      "primaries": [
+        [
+          0.64,
+          0.33
+        ],
+        [
+          0.21,
+          0.71
+        ],
+        [
+          0.15,
+          0.06
+        ]
+      ],
+      "white": "D65"
+    },
+    "Display P3": {
+      "primaries": [
+        [
+          0.68,
+          0.32
+        ],
+        [
+          0.265,
+          0.69
+        ],
+        [
+          0.15,
+          0.06
+        ]
+      ],
+      "white": "D65"
+    },
+    "BT.2020": {
+      "primaries": [
+        [
+          0.708,
+          0.292
+        ],
+        [
+          0.17,
+          0.797
+        ],
+        [
+          0.131,
+          0.046
+        ]
+      ],
+      "white": "D65"
+    },
+    "ProPhoto RGB": {
+      "primaries": [
+        [
+          0.734699,
+          0.265301
+        ],
+        [
+          0.159597,
+          0.840403
+        ],
+        [
+          0.036598,
+          0.000105
+        ]
+      ],
+      "white": "D50"
+    }
+  },
+  "whites": {
+    "D65": [
+      0.3127,
+      0.329
+    ],
+    "D50": [
+      0.3457,
+      0.3585
+    ],
+    "C": [
+      0.3101,
+      0.3162
+    ],
+    "DCI": [
+      0.314,
+      0.351
+    ],
+    "E": [
+      0.3333333333333333,
+      0.3333333333333333
+    ]
+  },
+  "numbers": {
+    "srgb_to_xyz_d65": [
+      [
+        0.4124,
+        0.3576,
+        0.1805
+      ],
+      [
+        0.2126,
+        0.7152,
+        0.0722
+      ],
+      [
+        0.0193,
+        0.1192,
+        0.9505
+      ]
+    ],
+    "linear_srgb_to_smpte_c": [
+      [
+        1.06538,
+        -0.0554,
+        -0.00998
+      ],
+      [
+        -0.01963,
+        1.03636,
+        -0.01673
+      ],
+      [
+        0.00163,
+        0.00441,
+        0.99396
+      ]
+    ],
+    "display_p3_red_in_linear_srgb": [
+      1.22494,
+      -0.04206,
+      -0.01964
+    ],
+    "srgb_white_weights_xyz_sum": [
+      0.212,
+      0.392,
+      0.396
+    ],
+    "srgb_white_luminance_shares": [
+      0.2126,
+      0.7152,
+      0.0722
+    ],
+    "delta_l_linear": {
+      "first_step": 3.54,
+      "max": 3.54,
+      "last_step": 0.152
+    },
+    "levels_below_5_percent_linear": 13,
+    "delta_l_srgb": {
+      "first_step": 0.27,
+      "max": 0.51,
+      "last_step": 0.345
+    },
+    "levels_below_5_percent_srgb": 64,
+    "mid_gray": {
+      "stored_average": 128,
+      "light_average": 188
+    },
+    "srgb_vs_2_2_at_code": {
+      "5": {
+        "srgb": 0.00152,
+        "2.2": 0.00018
+      },
+      "10": {
+        "srgb": 0.00304,
+        "2.2": 0.0008
+      },
+      "20": {
+        "srgb": 0.007,
+        "2.2": 0.0037
+      },
+      "64": {
+        "srgb": 0.05127,
+        "2.2": 0.04778
+      },
+      "128": {
+        "srgb": 0.21586,
+        "2.2": 0.21952
+      }
+    },
+    "daylight_6504k_xy": [
+      0.3127,
+      0.3291
+    ],
+    "planck_6500k_xy": [
+      0.3135,
+      0.3237
+    ]
+  }
+}

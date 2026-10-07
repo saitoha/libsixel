@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="648" height="296" viewBox="0 0 648 296" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Two gray ramps</title>
+<desc id="desc">Two rows of eleven gray patches from black to white. The upper row steps evenly in stored sRGB values and looks evenly spaced. The lower row steps evenly in light; most of its patches look light and the jump from black to the second patch is large. Numbers under the patches are the stored 8-bit values.</desc>
+<rect x="0" y="0" width="648" height="296" fill="#ffffff"/>
+<g transform="translate(18 18)">
+<text x="20" y="20" font-size="14" fill="#183247" font-weight="700" text-anchor="start">Equal steps in stored sRGB values</text>
+<rect x="20" y="30" width="52" height="56" fill="#000000" stroke="#d9e1e7"/>
+<text x="46" y="104" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">0</text>
+<rect x="72" y="30" width="52" height="56" fill="#1a1a1a" stroke="#d9e1e7"/>
+<text x="98" y="104" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">26</text>
+<rect x="124" y="30" width="52" height="56" fill="#333333" stroke="#d9e1e7"/>
+<text x="150" y="104" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">51</text>
+<rect x="176" y="30" width="52" height="56" fill="#4d4d4d" stroke="#d9e1e7"/>
+<text x="202" y="104" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">77</text>
+<rect x="228" y="30" width="52" height="56" fill="#666666" stroke="#d9e1e7"/>
+<text x="254" y="104" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">102</text>
+<rect x="280" y="30" width="52" height="56" fill="#808080" stroke="#d9e1e7"/>
+<text x="306" y="104" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">128</text>
+<rect x="332" y="30" width="52" height="56" fill="#999999" stroke="#d9e1e7"/>
+<text x="358" y="104" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">153</text>
+<rect x="384" y="30" width="52" height="56" fill="#b3b3b3" stroke="#d9e1e7"/>
+<text x="410" y="104" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">179</text>
+<rect x="436" y="30" width="52" height="56" fill="#cccccc" stroke="#d9e1e7"/>
+<text x="462" y="104" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">204</text>
+<rect x="488" y="30" width="52" height="56" fill="#e6e6e6" stroke="#d9e1e7"/>
+<text x="514" y="104" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">230</text>
+<rect x="540" y="30" width="52" height="56" fill="#ffffff" stroke="#d9e1e7"/>
+<text x="566" y="104" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">255</text>
+<text x="20" y="135" font-size="14" fill="#183247" font-weight="700" text-anchor="start">Equal steps in light (linear values, encoded for display)</text>
+<rect x="20" y="145" width="52" height="56" fill="#000000" stroke="#d9e1e7"/>
+<text x="46" y="219" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">0</text>
+<rect x="72" y="145" width="52" height="56" fill="#595959" stroke="#d9e1e7"/>
+<text x="98" y="219" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">89</text>
+<rect x="124" y="145" width="52" height="56" fill="#7c7c7c" stroke="#d9e1e7"/>
+<text x="150" y="219" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">124</text>
+<rect x="176" y="145" width="52" height="56" fill="#959595" stroke="#d9e1e7"/>
+<text x="202" y="219" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">149</text>
+<rect x="228" y="145" width="52" height="56" fill="#aaaaaa" stroke="#d9e1e7"/>
+<text x="254" y="219" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">170</text>
+<rect x="280" y="145" width="52" height="56" fill="#bcbcbc" stroke="#d9e1e7"/>
+<text x="306" y="219" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">188</text>
+<rect x="332" y="145" width="52" height="56" fill="#cbcbcb" stroke="#d9e1e7"/>
+<text x="358" y="219" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">203</text>
+<rect x="384" y="145" width="52" height="56" fill="#dadada" stroke="#d9e1e7"/>
+<text x="410" y="219" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">218</text>
+<rect x="436" y="145" width="52" height="56" fill="#e7e7e7" stroke="#d9e1e7"/>
+<text x="462" y="219" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">231</text>
+<rect x="488" y="145" width="52" height="56" fill="#f3f3f3" stroke="#d9e1e7"/>
+<text x="514" y="219" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">243</text>
+<rect x="540" y="145" width="52" height="56" fill="#ffffff" stroke="#d9e1e7"/>
+<text x="566" y="219" font-size="11" fill="#4c6070" font-weight="400" text-anchor="middle">255</text>
+</g>
+</svg>

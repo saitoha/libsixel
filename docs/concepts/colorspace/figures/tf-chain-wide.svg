@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1016" height="246" viewBox="0 0 1016 246" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">OETF, EOTF and OOTF</title>
+<desc id="desc">Scene light passes through a camera opto-electronic transfer function into stored values, and a display electro-optical transfer function turns them back into light. The end-to-end opto-optical transfer function connects scene light to screen light.</desc>
+<rect x="0" y="0" width="1016" height="246" fill="#ffffff"/>
+<g transform="translate(18 18)">
+<rect x="10" y="80" width="160" height="64" fill="#eef2f6" stroke="#183247"/>
+<text x="90" y="108" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Scene light</text>
+<text x="90" y="128" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">what the camera saw</text>
+<path d="M 170.0 112.0 L 205.0 112.0" stroke="#183247" stroke-width="1.5" fill="none"/>
+<rect x="205" y="80" width="160" height="64" fill="#fdf1e7" stroke="#183247"/>
+<text x="285" y="108" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Camera OETF</text>
+<text x="285" y="128" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">e.g. BT.709</text>
+<path d="M 365.0 112.0 L 400.0 112.0" stroke="#183247" stroke-width="1.5" fill="none"/>
+<rect x="400" y="80" width="160" height="64" fill="#ffffff" stroke="#183247"/>
+<text x="480" y="108" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Stored values</text>
+<text x="480" y="128" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">pixels, files</text>
+<path d="M 560.0 112.0 L 595.0 112.0" stroke="#183247" stroke-width="1.5" fill="none"/>
+<rect x="595" y="80" width="160" height="64" fill="#fdf1e7" stroke="#183247"/>
+<text x="675" y="108" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Display EOTF</text>
+<text x="675" y="128" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">e.g. BT.1886, sRGB</text>
+<path d="M 755.0 112.0 L 790.0 112.0" stroke="#183247" stroke-width="1.5" fill="none"/>
+<rect x="790" y="80" width="160" height="64" fill="#eef2f6" stroke="#183247"/>
+<text x="870" y="108" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Screen light</text>
+<text x="870" y="128" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">what the viewer sees</text>
+<path d="M 90 76 C 300 30, 660 30, 870 76" stroke="#c0392b" stroke-width="2" stroke-dasharray="5 4" fill="none"/>
+<text x="480" y="26" font-size="13" fill="#c0392b" font-weight="700" text-anchor="middle">OOTF: scene light to screen light</text>
+<text x="480" y="180" font-size="13" fill="#4c6070" font-weight="400" text-anchor="middle">The product of the two curves is the end-to-end response, deliberately not exactly 1.</text>
+</g>
+</svg>

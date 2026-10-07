@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="834" height="436" viewBox="0 0 834 436" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">White points</title>
+<desc id="desc">The black-body locus with color temperatures, the CIE daylight locus, and the white points D65, D50, C, DCI and E, together with swatches showing how each white looks when shown without adaptation on a display whose white is D65: D50 and DCI look warm, E looks pinkish.</desc>
+<rect x="0" y="0" width="834" height="436" fill="#ffffff"/>
+<g transform="translate(18 18)">
+<rect x="60" y="20" width="420" height="330" fill="#ffffff" stroke="#d9e1e7"/>
+<path d="M 60.0 20.0 L 60.0 350.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="60" y="368" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">0.26</text>
+<path d="M 144.0 20.0 L 144.0 350.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="144" y="368" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">0.30</text>
+<path d="M 228.0 20.0 L 228.0 350.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="228" y="368" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">0.34</text>
+<path d="M 312.0 20.0 L 312.0 350.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="312" y="368" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">0.38</text>
+<path d="M 396.0 20.0 L 396.0 350.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="396" y="368" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">0.42</text>
+<path d="M 480.0 20.0 L 480.0 350.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="480" y="368" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">0.46</text>
+<path d="M 60.0 350.0 L 480.0 350.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="53" y="354" font-size="12" fill="#4c6070" font-weight="400" text-anchor="end">0.26</text>
+<path d="M 60.0 267.5 L 480.0 267.5" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="53" y="271.5" font-size="12" fill="#4c6070" font-weight="400" text-anchor="end">0.30</text>
+<path d="M 60.0 185.0 L 480.0 185.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="53" y="189" font-size="12" fill="#4c6070" font-weight="400" text-anchor="end">0.34</text>
+<path d="M 60.0 102.5 L 480.0 102.5" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="53" y="106.5" font-size="12" fill="#4c6070" font-weight="400" text-anchor="end">0.38</text>
+<path d="M 60.0 20.0 L 480.0 20.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="53" y="24" font-size="12" fill="#4c6070" font-weight="400" text-anchor="end">0.42</text>
+<text x="270" y="390" font-size="13" fill="#183247" font-weight="400" text-anchor="middle">x</text>
+<text transform="rotate(-90 14 185)" x="14" y="185" font-size="13" fill="#183247" font-weight="400" text-anchor="middle">y</text>
+<polyline points="446.9,48.0 433.7,52.1 421.0,56.5 408.9,61.1 397.2,65.8 386.0,70.6 375.3,75.5 365.0,80.5 355.1,85.4 345.6,90.4 336.5,95.4 327.8,100.3 319.4,105.3 311.4,110.1 303.6,115.0 296.2,119.7 289.1,124.4 282.2,129.1 275.6,133.6 269.3,138.1 263.2,142.5 257.3,146.8 251.7,151.0 246.2,155.2 241.0,159.2 235.9,163.2 231.1,167.1 226.4,170.9 221.8,174.7 217.4,178.3 213.2,181.9 209.1,185.4 205.2,188.8 201.4,192.1 197.7,195.4 194.1,198.6 190.7,201.7 187.3,204.7 184.1,207.7 181.0,210.6 177.9,213.5 175.0,216.2 172.1,219.0 169.4,221.6 166.7,224.2 164.1,226.7 161.6,229.2 159.1,231.6 156.8,234.0 154.4,236.3 152.2,238.6 150.0,240.8 147.9,243.0 145.8,245.1 143.8,247.2 141.9,249.2 140.0,251.2 138.1,253.1 136.3,255.1 134.5,256.9 132.8,258.7 131.2,260.5 129.5,262.3 128.0,264.0 126.4,265.7 124.9,267.3 123.4,268.9 122.0,270.5 120.6,272.0 119.2,273.6 117.9,275.0 116.6,276.5 115.3,277.9 114.1,279.3 112.8,280.7 111.6,282.1 110.5,283.4 109.3,284.7 108.2,285.9 107.1,287.2 106.1,288.4 105.0,289.6 104.0,290.8 103.0,292.0 102.0,293.1 101.1,294.2 100.1,295.3 99.2,296.4 98.3,297.4 97.4,298.5 96.6,299.5 95.7,300.5 94.9,301.5 94.1,302.5 93.3,303.4 92.5,304.4 91.7,305.3 90.9,306.2 90.2,307.1 89.5,308.0 88.8,308.8 88.1,309.7 87.4,310.5 86.7,311.3 86.0,312.1 85.4,312.9 84.7,313.7 84.1,314.5 83.5,315.2 82.9,316.0 82.3,316.7 81.7,317.4 81.1,318.2 80.5,318.9 80.0,319.5 79.4,320.2 78.9,320.9 78.4,321.6 77.8,322.2 77.3,322.9 76.8,323.5 76.3,324.1 75.8,324.7 75.3,325.3 74.9,325.9 74.4,326.5 73.9,327.1 73.5,327.7 73.0,328.2 72.6,328.8 72.2,329.3 71.7,329.9 71.3,330.4 70.9,330.9 70.5,331.5 70.1,332.0 69.7,332.5 69.3,333.0 68.9,333.5 68.5,334.0 68.1,334.4 67.8,334.9 67.4,335.4 67.0,335.8 66.7,336.3 66.3,336.7 66.0,337.2 65.6,337.6 65.3,338.1 65.0,338.5 64.7,338.9 64.3,339.3 64.0,339.7 63.7,340.2 63.4,340.6 63.1,341.0 62.8,341.4 62.5,341.7 62.2,342.1 61.9,342.5 61.6,342.9 61.3,343.2 61.0,343.6 60.8,344.0 60.5,344.3 60.2,344.7" fill="none" stroke="#7a8793" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="431.6" cy="52.8" r="2.5" fill="#7a8793"/>
+<text x="425.567" y="68.8298" font-size="11" fill="#4c6070" font-weight="400" text-anchor="end">3000 K</text>
+<circle cx="312.9" cy="109.2" r="2.5" fill="#7a8793"/>
+<text x="306.946" y="125.17" font-size="11" fill="#4c6070" font-weight="400" text-anchor="end">4000 K</text>
+<circle cx="238.7" cy="161.0" r="2.5" fill="#7a8793"/>
+<circle cx="172.4" cy="218.7" r="2.5" fill="#7a8793"/>
+<circle cx="103.4" cy="291.5" r="2.5" fill="#7a8793"/>
+<text x="97.3813" y="307.523" font-size="11" fill="#4c6070" font-weight="400" text-anchor="end">10000 K</text>
+<polyline points="316.9,94.7 304.6,101.9 292.9,109.1 281.9,116.3 271.5,123.3 261.7,130.2 252.5,137.0 243.7,143.7 235.5,150.1 227.7,156.4 220.3,162.5 213.3,168.4 206.7,174.1 200.4,179.7 194.5,185.0 188.9,190.2 183.5,195.2 178.4,200.0 173.6,204.6 169.0,209.1 164.6,213.4 160.4,217.6 156.5,221.6 152.6,225.5 149.0,229.3 145.5,232.9 142.2,236.4 139.0,239.8 136.0,243.0 133.0,246.2 130.2,249.2 127.5,252.2 125.0,255.0 122.5,257.8 120.1,260.4 117.8,263.0 115.6,265.5 113.4,267.9 111.4,270.3 109.4,272.5 107.5,274.7 105.7,276.9 103.9,278.9 102.2,280.9 100.5,282.9 98.9,284.8 97.3,286.6 95.8,288.4 94.4,290.1 92.9,291.8 91.6,293.5 90.2,295.1 89.0,296.6 87.7,298.1 86.5,299.6 85.3,301.0 84.2,302.4 83.0,303.8 82.0,305.1 80.9,306.4 79.9,307.7 78.9,308.9 77.9,310.1 77.0,311.2 76.0,312.4 75.1,313.5 74.3,314.6 73.4,315.7 72.6,316.7 71.8,317.7 71.0,318.7 70.2,319.7 69.5,320.6 68.7,321.5 68.0,322.5 67.3,323.3 66.6,324.2 66.0,325.1 65.3,325.9 64.7,326.7 64.0,327.5 63.4,328.3 62.8,329.1 62.2,329.8 61.7,330.5 61.1,331.3 60.5,332.0 60.0,332.7" fill="none" stroke="#d9822b" stroke-width="2" stroke-dasharray="5 3" stroke-linejoin="round"/>
+<circle cx="170.7" cy="207.7" r="4.5" fill="#183247"/>
+<text x="178.67" y="222.687" font-size="12" fill="#183247" font-weight="700" text-anchor="start">D65</text>
+<circle cx="240.0" cy="146.8" r="4.5" fill="#183247"/>
+<text x="247.97" y="161.844" font-size="12" fill="#183247" font-weight="700" text-anchor="start">D50</text>
+<circle cx="165.2" cy="234.1" r="4.5" fill="#183247"/>
+<text x="173.21" y="249.088" font-size="12" fill="#183247" font-weight="700" text-anchor="start">C</text>
+<circle cx="173.4" cy="162.3" r="4.5" fill="#183247"/>
+<text x="181.4" y="177.313" font-size="12" fill="#183247" font-weight="700" text-anchor="start">DCI</text>
+<circle cx="214.0" cy="198.8" r="4.5" fill="#183247"/>
+<text x="222" y="213.75" font-size="12" fill="#183247" font-weight="700" text-anchor="start">E</text>
+<path d="M 260.0 286.0 L 286.0 286.0" stroke="#7a8793" stroke-width="3" fill="none"/>
+<text x="294" y="290" font-size="12" fill="#183247" font-weight="400" text-anchor="start">Black-body (Planckian) locus</text>
+<path d="M 260.0 305.0 L 286.0 305.0" stroke="#d9822b" stroke-width="3" stroke-dasharray="5 3" fill="none"/>
+<text x="294" y="309" font-size="12" fill="#183247" font-weight="400" text-anchor="start">CIE daylight locus</text>
+</g>
+<g transform="translate(546 18)">
+<text x="0" y="16" font-size="14" fill="#183247" font-weight="700" text-anchor="start">Each white on a D65 sRGB display</text>
+<rect x="0" y="34" width="120" height="48" fill="#ffffff" stroke="#d9e1e7"/>
+<text x="132" y="63" font-size="14" fill="#183247" font-weight="700" text-anchor="start">D65</text>
+<rect x="0" y="96" width="120" height="48" fill="#ffebcd" stroke="#d9e1e7"/>
+<text x="132" y="125" font-size="14" fill="#183247" font-weight="700" text-anchor="start">D50</text>
+<rect x="0" y="158" width="120" height="48" fill="#faf2ff" stroke="#d9e1e7"/>
+<text x="132" y="187" font-size="14" fill="#183247" font-weight="700" text-anchor="start">C</text>
+<rect x="0" y="220" width="120" height="48" fill="#edffe9" stroke="#d9e1e7"/>
+<text x="132" y="249" font-size="14" fill="#183247" font-weight="700" text-anchor="start">DCI</text>
+<rect x="0" y="282" width="120" height="48" fill="#ffe5e1" stroke="#d9e1e7"/>
+<text x="132" y="311" font-size="14" fill="#183247" font-weight="700" text-anchor="start">E</text>
+</g>
+</svg>

@@ -253,6 +253,8 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/concepts/color-management/figures/pcs-connection-mobile.svg \
 	docs/concepts/color-management/figures/pcs-connection-wide.svg \
 	docs/concepts/colorspace/README.md \
+	docs/concepts/colorspace/primaries-and-white-points.md \
+	docs/concepts/colorspace/transfer-functions.md \
 	docs/concepts/din99d/README.md \
 	docs/concepts/din99d/figures/nearest-color-wide.svg \
 	docs/concepts/din99d/figures/nearest-color-mobile.svg \
@@ -264,6 +266,25 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/concepts/colorspace/figures/conversion-routes-mobile.svg \
 	docs/concepts/colorspace/figures/conversion-routes-wide.svg \
 	docs/concepts/colorspace/figures/figures.json \
+	docs/concepts/colorspace/figures/foundations.json \
+	docs/concepts/colorspace/figures/pw-barycenter.svg \
+	docs/concepts/colorspace/figures/pw-chromaticity.svg \
+	docs/concepts/colorspace/figures/pw-gamuts-mobile.svg \
+	docs/concepts/colorspace/figures/pw-gamuts-wide.svg \
+	docs/concepts/colorspace/figures/pw-misread-mobile.svg \
+	docs/concepts/colorspace/figures/pw-misread-wide.svg \
+	docs/concepts/colorspace/figures/pw-whites-mobile.svg \
+	docs/concepts/colorspace/figures/pw-whites-wide.svg \
+	docs/concepts/colorspace/figures/tf-chain-mobile.svg \
+	docs/concepts/colorspace/figures/tf-chain-wide.svg \
+	docs/concepts/colorspace/figures/tf-curves-mobile.svg \
+	docs/concepts/colorspace/figures/tf-curves-wide.svg \
+	docs/concepts/colorspace/figures/tf-dark-banding.svg \
+	docs/concepts/colorspace/figures/tf-lightness.svg \
+	docs/concepts/colorspace/figures/tf-mixing-mobile.svg \
+	docs/concepts/colorspace/figures/tf-mixing-wide.svg \
+	docs/concepts/colorspace/figures/tf-ramps.svg \
+	docs/concepts/colorspace/figures/tf-step-size.svg \
 	docs/concepts/colorspace/figures/mixing-mobile.svg \
 	docs/concepts/colorspace/figures/mixing-wide.svg \
 	docs/concepts/colorspace/figures/primaries-whitepoints-mobile.svg \

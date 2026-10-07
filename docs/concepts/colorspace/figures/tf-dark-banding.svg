@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="716" height="336" viewBox="0 0 716 336" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Dark gradient in 8 bits</title>
+<desc id="desc">A ramp from black to five percent of white luminance stored in 8 bits. Stored as linear values it has 13 levels and shows wide bands; stored as sRGB values it has 64 levels and looks smooth.</desc>
+<rect x="0" y="0" width="716" height="336" fill="#ffffff"/>
+<g transform="translate(18 18)">
+<text x="20" y="20" font-size="14" fill="#183247" font-weight="700" text-anchor="start">8-bit linear values: 13 levels</text>
+<image x="20" y="30" width="640" height="70" preserveAspectRatio="none" image-rendering="optimizeSpeed" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAABGCAIAAADTgbL0AAABHElEQVR42u3WsQnAMAxFQUU2Bhfaf12vkMIEBe4m+Kh5euKqqop+9t4NV621rHppzmmVVdeNMaKlnsN6rsrM/94qAwD4/ntwAgAQYAAQYABAgAFAgAEAAQYAAQYABBgABBgAEGAAEGAAEGAAQIABQIABAAEGAAEGAAQYAAQYABBgABBgABBgAECAAUCAAQABBgABBgAEGAAEGAAQYAAQYAAQYABAgAFAgAEAAQYAAQYABBgABBgAEGAAEGAAEGAAQIABQIABAAEGAAEGAAQYAAQYABBgABBgABBgAECAAUCAAQABBgABBgAEGAAEGAAQYAAQYAAQYABAgAFAgAEAAQYAAQYABBgABBgAEGAAEGAAEGAAQIABQIABgMsOsmoBTLPpKCUAAAAASUVORK5CYII="/>
+<text x="20" y="140" font-size="14" fill="#183247" font-weight="700" text-anchor="start">8-bit sRGB values: 64 levels</text>
+<image x="20" y="150" width="640" height="70" preserveAspectRatio="none" image-rendering="optimizeSpeed" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAABGCAIAAADTgbL0AAABLElEQVR42u3VORKAIBBFwY/3P7SRsSCbVHVHCkNN+EqSJKWUPIZ/tz6sv3r9HXhSP1b/fM35jKupt/3P+1esn9k1tn3y0OEP8/9c8f9FB61rfXsFAFhOgAFAgAFAgAEAAQYAAQYABBgABBgAEGAAEGAAQIABQIABQIABAAEGAAEGAAQYAAQYABBgABBgAECAAUCAAUCAAQABBgABBgAEGAAEGAAQYAAQYABAgAFAgAFAgAEAAQYAAQYABBgABBgAEGAAEGAAQIABQIABQIABAAEGAAEGAAQYAAQYABBgABBgAECAAUCAAUCAAQABBgABBgAEGAAEGAAQYAAQYABAgAFAgAFAgAEAAQYAAQYABBgABBgAEGAAEGAAQIABQIABQIABAAEGAAEGAEa7AaB8AUl1Lu16AAAAAElFTkSuQmCC"/>
+<text x="20" y="275" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Both ramps run from black to 5% of white luminance.</text>
+</g>
+</svg>

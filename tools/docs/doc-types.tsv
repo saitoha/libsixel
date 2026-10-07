@@ -20,6 +20,8 @@ docs/cli/runtime-policy.md	reference	both	runtime option contracts + contributor
 docs/cli/suboptions.md	reference	both	public grammar + contributor registry architecture and test ledger
 docs/concepts/color-management/README.md	explanation	user	
 docs/concepts/colorspace/README.md	explanation	user	
+docs/concepts/colorspace/primaries-and-white-points.md	explanation	user	
+docs/concepts/colorspace/transfer-functions.md	explanation	user	
 docs/concepts/clustering/README.md	explanation	both	
 docs/concepts/dithering/README.md	explanation	both	
 docs/concepts/displays/README.md	explanation	both	

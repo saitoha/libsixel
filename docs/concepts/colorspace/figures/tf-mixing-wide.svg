@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="874" height="296" viewBox="0 0 874 296" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Averaging stored values and light</title>
+<desc id="desc">Left: red and green averaged as stored values give a dark olive, (128, 128, 0), while averaged as light they give the yellow that a fine red and green pattern shows from a distance, (188, 188, 0). Right: a grid of thin white lines and a red and green stripe pattern shrunk by four; averaging stored values makes the lines and stripes darker than averaging light.</desc>
+<rect x="0" y="0" width="874" height="296" fill="#ffffff"/>
+<g transform="translate(18 18)">
+<text x="0" y="16" font-size="15" fill="#183247" font-weight="700" text-anchor="start">Averaging red and green</text>
+<rect x="0" y="32" width="190" height="70" fill="#ff0000" stroke="#d9e1e7"/>
+<text x="0" y="120" font-size="13" fill="#183247" font-weight="700" text-anchor="start">Red</text>
+<text x="0" y="137" font-size="12" fill="#4c6070" font-weight="400" text-anchor="start">(255, 0, 0)</text>
+<rect x="210" y="32" width="190" height="70" fill="#00ff00" stroke="#d9e1e7"/>
+<text x="210" y="120" font-size="13" fill="#183247" font-weight="700" text-anchor="start">Green</text>
+<text x="210" y="137" font-size="12" fill="#4c6070" font-weight="400" text-anchor="start">(0, 255, 0)</text>
+<rect x="0" y="152" width="190" height="70" fill="#808000" stroke="#d9e1e7"/>
+<text x="0" y="240" font-size="13" fill="#183247" font-weight="700" text-anchor="start">Average of stored values</text>
+<text x="0" y="257" font-size="12" fill="#4c6070" font-weight="400" text-anchor="start">(128, 128, 0)</text>
+<rect x="210" y="152" width="190" height="70" fill="#bcbc00" stroke="#d9e1e7"/>
+<text x="210" y="240" font-size="13" fill="#183247" font-weight="700" text-anchor="start">Average of light</text>
+<text x="210" y="257" font-size="12" fill="#4c6070" font-weight="400" text-anchor="start">(188, 188, 0)</text>
+</g>
+<g transform="translate(446 18)">
+<text x="0" y="16" font-size="15" fill="#183247" font-weight="700" text-anchor="start">Shrinking fine detail by 4</text>
+<image x="0" y="32" width="128" height="128" preserveAspectRatio="none" image-rendering="optimizeSpeed" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAAAM0lEQVR42mP8//8/A1UAskGUsJkYqASoZhDjaBiNhhFVvMbAwPCfCuTg89qoQaMGDSqDAMXoVs9HfWx8AAAAAElFTkSuQmCC"/>
+<rect x="0" y="32" width="128" height="128" fill="none" stroke="#d9e1e7"/>
+<text x="0" y="180" font-size="12" fill="#183247" font-weight="700" text-anchor="start">Original</text>
+<text x="0" y="197" font-size="12" fill="#183247" font-weight="400" text-anchor="start">enlarged</text>
+<image x="140" y="32" width="128" height="128" preserveAspectRatio="none" image-rendering="optimizeSpeed" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAMUlEQVR42u3QQQ0AIAwEwUL41+pJQTIm6G/WwCS7ktRku4YDAAAAwI9O97UIAAAAAA+h3gJAVqVP0wAAAABJRU5ErkJggg=="/>
+<rect x="140" y="32" width="128" height="128" fill="none" stroke="#d9e1e7"/>
+<text x="140" y="180" font-size="12" fill="#183247" font-weight="700" text-anchor="start">Stored values</text>
+<text x="140" y="197" font-size="12" fill="#183247" font-weight="400" text-anchor="start">averaged</text>
+<image x="280" y="32" width="128" height="128" preserveAspectRatio="none" image-rendering="optimizeSpeed" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAMUlEQVR42u3QQQ0AIAwEwUL4VRxazyEm6G/WwCS7ktRku4YDAAAAwI9O97UIAAAAAA8jbwK6yg/+GAAAAABJRU5ErkJggg=="/>
+<rect x="280" y="32" width="128" height="128" fill="none" stroke="#d9e1e7"/>
+<text x="280" y="180" font-size="12" fill="#183247" font-weight="700" text-anchor="start">Light</text>
+<text x="280" y="197" font-size="12" fill="#183247" font-weight="400" text-anchor="start">averaged</text>
+<text x="0" y="236" font-size="12" fill="#4c6070" font-weight="400" text-anchor="start">Top: thin white lines on black. Bottom: red and green stripes.</text>
+</g>
+</svg>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="794" height="601" viewBox="0 0 794 601" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Gamuts of common RGB spaces</title>
+<desc id="desc">Triangles of the primaries of NTSC 1953, SMPTE-C, sRGB and BT.709, Adobe RGB (1998), Display P3, BT.2020 and ProPhoto RGB inside the spectral locus. The ProPhoto blue and green primaries lie outside the locus.</desc>
+<rect x="0" y="0" width="794" height="601" fill="#ffffff"/>
+<g transform="translate(18 18)">
+<rect x="60" y="20" width="440" height="495" fill="#ffffff" stroke="#d9e1e7"/>
+<path d="M 60.0 20.0 L 60.0 515.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="60" y="533" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">0</text>
+<path d="M 170.0 20.0 L 170.0 515.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="170" y="533" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">0.2</text>
+<path d="M 280.0 20.0 L 280.0 515.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="280" y="533" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">0.4</text>
+<path d="M 390.0 20.0 L 390.0 515.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="390" y="533" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">0.6</text>
+<path d="M 500.0 20.0 L 500.0 515.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="500" y="533" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">0.8</text>
+<path d="M 60.0 515.0 L 500.0 515.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="53" y="519" font-size="12" fill="#4c6070" font-weight="400" text-anchor="end">0</text>
+<path d="M 60.0 405.0 L 500.0 405.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="53" y="409" font-size="12" fill="#4c6070" font-weight="400" text-anchor="end">0.2</text>
+<path d="M 60.0 295.0 L 500.0 295.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="53" y="299" font-size="12" fill="#4c6070" font-weight="400" text-anchor="end">0.4</text>
+<path d="M 60.0 185.0 L 500.0 185.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="53" y="189" font-size="12" fill="#4c6070" font-weight="400" text-anchor="end">0.6</text>
+<path d="M 60.0 75.0 L 500.0 75.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="53" y="79" font-size="12" fill="#4c6070" font-weight="400" text-anchor="end">0.8</text>
+<text x="280" y="555" font-size="13" fill="#183247" font-weight="400" text-anchor="middle">x</text>
+<text transform="rotate(-90 14 267.5)" x="14" y="267.5" font-size="13" fill="#183247" font-weight="400" text-anchor="middle">y</text>
+<polygon points="155.8,512.3 155.7,512.3 155.6,512.3 155.5,512.3 155.3,512.4 155.2,512.4 154.9,512.4 154.6,512.3 154.3,512.2 153.7,511.8 152.9,511.2 151.8,510.3 150.4,509.0 148.6,507.4 146.2,505.3 143.0,502.5 139.2,498.7 134.5,493.1 128.3,483.2 120.3,467.2 110.2,442.0 97.8,404.6 85.0,352.8 72.9,288.0 64.5,218.9 62.1,154.8 67.6,102.4 81.4,68.4 100.9,56.4 122.8,60.6 145.1,71.8 166.1,85.1 186.3,100.1 206.2,116.6 225.9,134.2 245.5,152.6 265.2,171.6 284.8,190.7 304.2,209.9 323.3,228.9 341.9,247.4 359.6,265.1 376.3,281.7 391.6,296.9 404.9,310.1 416.5,321.7 426.2,331.3 434.0,339.1 440.3,345.4 445.3,350.4 449.4,354.4 452.7,357.7 455.5,360.5 457.7,362.7 459.3,364.3 460.5,365.5 461.5,366.5 462.1,367.1 462.6,367.6 463.0,368.0 463.4,368.4 463.7,368.7 463.9,368.9 464.0,369.0 464.1,369.1" fill="none" stroke="#183247" stroke-width="1.5" stroke-linejoin="round"/>
+<polygon points="428.5,333.5 175.5,124.5 137.0,471.0" fill="none" stroke="#7a8793" stroke-width="2.2" stroke-dasharray="2 3" stroke-linejoin="round"/>
+<polygon points="406.5,328.0 230.5,187.8 145.2,476.5" fill="none" stroke="#d9822b" stroke-width="2.2" stroke-linejoin="round"/>
+<polygon points="412.0,333.5 225.0,185.0 142.5,482.0" fill="none" stroke="#183247" stroke-width="2.2" stroke-linejoin="round"/>
+<polygon points="412.0,333.5 175.5,124.5 142.5,482.0" fill="none" stroke="#2e8b57" stroke-width="2.2" stroke-dasharray="6 3" stroke-linejoin="round"/>
+<polygon points="434.0,339.0 205.8,135.5 142.5,482.0" fill="none" stroke="#c0392b" stroke-width="2.2" stroke-linejoin="round"/>
+<polygon points="449.4,354.4 153.5,76.7 132.1,489.7" fill="none" stroke="#2f5fb3" stroke-width="2.2" stroke-linejoin="round"/>
+<polygon points="464.1,369.1 147.8,52.8 80.1,514.9" fill="none" stroke="#7b4fa0" stroke-width="2.2" stroke-dasharray="6 3" stroke-linejoin="round"/>
+<circle cx="232.0" cy="334.0" r="3" fill="#183247"/>
+<circle cx="250.1" cy="317.8" r="3" fill="#183247"/>
+<circle cx="230.6" cy="341.1" r="3" fill="#183247"/>
+<text x="223.985" y="338.05" font-size="11" fill="#183247" font-weight="400" text-anchor="end">D65</text>
+<text x="258.135" y="321.825" font-size="11" fill="#183247" font-weight="400" text-anchor="start">D50</text>
+<text x="222.555" y="353.09" font-size="11" fill="#183247" font-weight="400" text-anchor="end">C</text>
+</g>
+<g transform="translate(556 18)">
+<path d="M 10.0 16.0 L 36.0 16.0" stroke="#7a8793" stroke-width="3" stroke-dasharray="2 3" fill="none"/>
+<text x="44" y="20" font-size="13" fill="#183247" font-weight="400" text-anchor="start">NTSC 1953</text>
+<path d="M 10.0 40.0 L 36.0 40.0" stroke="#d9822b" stroke-width="3" fill="none"/>
+<text x="44" y="44" font-size="13" fill="#183247" font-weight="400" text-anchor="start">SMPTE-C</text>
+<path d="M 10.0 64.0 L 36.0 64.0" stroke="#183247" stroke-width="3" fill="none"/>
+<text x="44" y="68" font-size="13" fill="#183247" font-weight="400" text-anchor="start">sRGB / BT.709</text>
+<path d="M 10.0 88.0 L 36.0 88.0" stroke="#2e8b57" stroke-width="3" stroke-dasharray="6 3" fill="none"/>
+<text x="44" y="92" font-size="13" fill="#183247" font-weight="400" text-anchor="start">Adobe RGB (1998)</text>
+<path d="M 10.0 112.0 L 36.0 112.0" stroke="#c0392b" stroke-width="3" fill="none"/>
+<text x="44" y="116" font-size="13" fill="#183247" font-weight="400" text-anchor="start">Display P3</text>
+<path d="M 10.0 136.0 L 36.0 136.0" stroke="#2f5fb3" stroke-width="3" fill="none"/>
+<text x="44" y="140" font-size="13" fill="#183247" font-weight="400" text-anchor="start">BT.2020</text>
+<path d="M 10.0 160.0 L 36.0 160.0" stroke="#7b4fa0" stroke-width="3" stroke-dasharray="6 3" fill="none"/>
+<text x="44" y="164" font-size="13" fill="#183247" font-weight="400" text-anchor="start">ProPhoto RGB</text>
+</g>
+</svg>

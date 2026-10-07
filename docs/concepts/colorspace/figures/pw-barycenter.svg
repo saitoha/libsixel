@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="596" height="596" viewBox="0 0 596 596" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">White as the balance point of the primaries</title>
+<desc id="desc">The sRGB primaries in the xy diagram with circles sized by the share of X + Y + Z each contributes to white. D65 is their weighted center: blue contributes the largest share of X + Y + Z although it adds the least luminance.</desc>
+<rect x="0" y="0" width="596" height="596" fill="#ffffff"/>
+<g transform="translate(18 18)">
+<rect x="60" y="20" width="460" height="498.33" fill="#ffffff" stroke="#d9e1e7"/>
+<path d="M 60.0 20.0 L 60.0 518.3" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="60" y="536.333" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">0.1</text>
+<path d="M 213.3 20.0 L 213.3 518.3" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="213.333" y="536.333" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">0.3</text>
+<path d="M 366.7 20.0 L 366.7 518.3" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="366.667" y="536.333" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">0.5</text>
+<path d="M 520.0 20.0 L 520.0 518.3" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="520" y="536.333" font-size="12" fill="#4c6070" font-weight="400" text-anchor="middle">0.7</text>
+<path d="M 60.0 518.3 L 520.0 518.3" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="53" y="522.333" font-size="12" fill="#4c6070" font-weight="400" text-anchor="end">0</text>
+<path d="M 60.0 365.0 L 520.0 365.0" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="53" y="369" font-size="12" fill="#4c6070" font-weight="400" text-anchor="end">0.2</text>
+<path d="M 60.0 211.7 L 520.0 211.7" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="53" y="215.667" font-size="12" fill="#4c6070" font-weight="400" text-anchor="end">0.4</text>
+<path d="M 60.0 58.3 L 520.0 58.3" stroke="#d9e1e7" stroke-width="1" fill="none"/>
+<text x="53" y="62.3333" font-size="12" fill="#4c6070" font-weight="400" text-anchor="end">0.6</text>
+<text x="290" y="558.333" font-size="13" fill="#183247" font-weight="400" text-anchor="middle">x</text>
+<text transform="rotate(-90 14 269.17)" x="14" y="269.167" font-size="13" fill="#183247" font-weight="400" text-anchor="middle">y</text>
+<polygon points="474.0,265.3 213.3,58.3 98.3,472.3" fill="none" stroke="#183247" stroke-width="1.5" stroke-linejoin="round"/>
+<circle cx="474.0" cy="265.3" r="32.0" fill="#d33" fill-opacity="0.35" stroke="#d33"/>
+<path d="M 474.0 265.3 L 223.1 266.1" stroke="#d33" stroke-width="1" stroke-dasharray="4 3" fill="none"/>
+<text x="474" y="227.379" font-size="12" fill="#183247" font-weight="700" text-anchor="middle">R: weight 0.21</text>
+<circle cx="213.3" cy="58.3" r="39.9" fill="#2a2" fill-opacity="0.35" stroke="#2a2"/>
+<path d="M 213.3 58.3 L 223.1 266.1" stroke="#2a2" stroke-width="1" stroke-dasharray="4 3" fill="none"/>
+<text x="213.333" y="12.474" font-size="12" fill="#183247" font-weight="700" text-anchor="middle">G: weight 0.39</text>
+<circle cx="98.3" cy="472.3" r="40.0" fill="#33d" fill-opacity="0.35" stroke="#33d"/>
+<path d="M 98.3 472.3 L 223.1 266.1" stroke="#33d" stroke-width="1" stroke-dasharray="4 3" fill="none"/>
+<text x="98.3333" y="426.333" font-size="12" fill="#183247" font-weight="700" text-anchor="middle">B: weight 0.40</text>
+<circle cx="223.1" cy="266.1" r="5" fill="#183247"/>
+<text x="233.07" y="270.1" font-size="12" fill="#183247" font-weight="700" text-anchor="start">D65 white</text>
+</g>
+</svg>

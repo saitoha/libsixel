@@ -4,7 +4,7 @@
 
 A three-component pixel value is not a complete color description. The same numeric triplet can represent different light depending on its primaries, white point and transfer function. This document explains what a color space specifies, why gamma-encoded and linear-light values differ, how conversions connect spaces through linear RGB and XYZ, what out-of-gamut and imaginary colors are, and why mixing colors needs linear light. It builds on [Visual perception](../../quality/visual-perception/README.md).
 
-[Color management basics](../color-management/README.md) continues with ICC profiles, the profile connection space and rendering intents. [Color-space handling](../../encoder/colorspace-handling/README.md) describes where libsixel converts between spaces and what its `-X`, `-W` and `-U` options control.
+Two companion pages go deeper: [transfer functions and gamma](transfer-functions.md) explains why images are gamma-encoded, which curves are in use and what the word "gamma" can mean, and [primaries and white points](primaries-and-white-points.md) explains chromaticity diagrams, the gamuts and whites of common standards and how a conversion matrix follows from them. [Color management basics](../color-management/README.md) continues with ICC profiles, the profile connection space and rendering intents. [Color-space handling](../../encoder/colorspace-handling/README.md) describes where libsixel converts between spaces and what its `-X`, `-W` and `-U` options control.
 
 **Key ideas in one minute:**
 
@@ -27,7 +27,7 @@ The [pixel-format guide](../pixelformat.md) describes memory layout. A pixel-for
 
 ## Primaries, white point, and transfer function
 
-An RGB value gives amounts of three basis colors, but the letters R, G, and B do not specify which red, green, and blue those are. A color-space definition supplies the missing information:
+An RGB value gives amounts of three basis colors, but the letters R, G, and B do not specify which red, green, and blue those are. A color-space definition supplies the missing information. This section summarizes the three properties; [primaries and white points](primaries-and-white-points.md) and [transfer functions and gamma](transfer-functions.md) treat them in depth.
 
 | Property | Meaning | Why conversion needs it |
 | --- | --- | --- |
@@ -54,7 +54,7 @@ For matrix-based RGB conversion, the primaries and white point determine a matri
 
 ## Gamma encoding and linear light
 
-The eye is more sensitive to differences between dark tones than between bright ones, so stored image values are spaced for the eye rather than in proportion to light. This **gamma encoding** lets 256 levels per channel look smooth from black to white. For a normalized sRGB component `C` in `[0, 1]`, libsixel decodes the channel to linear light as:
+The eye is more sensitive to differences between dark tones than between bright ones, so stored image values are spaced for the eye rather than in proportion to light. [Transfer functions and gamma](transfer-functions.md) shows this with examples, compares the curves in use and untangles the meanings of "gamma"; this section gives the definition that libsixel implements. This **gamma encoding** lets 256 levels per channel look smooth from black to white. For a normalized sRGB component `C` in `[0, 1]`, libsixel decodes the channel to linear light as:
 
 ```text
 C_linear = C / 12.92                         when C <= 0.04045
