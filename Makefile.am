@@ -712,6 +712,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/quality/visual-perception/figures/luma-chroma.svg \
 	docs/quality/visual-perception/figures/luminosity-functions.svg \
 	docs/quality/visual-perception/figures/opponent-channels.svg \
+	docs/quality/visual-perception/figures/palette-direct.svg \
 	docs/quality/visual-perception/figures/receptor-density.svg \
 	docs/quality/visual-perception/figures/retina-layers.jpg \
 	docs/quality/visual-perception/figures/retina-mosaic.jpg \

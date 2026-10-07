@@ -273,15 +273,15 @@ A viewer of a terminal image has no original to compare with. The judgment is *n
 
 Harmon and Julesz point the same way: what defeated recognition was the spurious structure of the block edges, not the error of the block averages. Measures of blocking artifacts in compressed images likewise work without a reference by measuring discontinuities at block boundaries (Wang, Bovik and Evans 2000; Wang, Sheikh and Bovik 2002).
 
-![Six panels in two rows. Top row, one color per pixel: a photograph of a green and yellow snake; the same photograph dithered with the xterm 256-color palette, which looks almost like the original; and the same palette without dithering, which shows flat bands of color. Bottom row, one color per 9 by 9 tile: the exact mean color of each tile, a blocky but smooth picture; the tiles dithered with the palette, a checkerboard of mismatched colors in which the snake is hard to see; and the tiles without dithering, blocky with broad flat areas but calm.](figures/tile-dithering.svg)
+![Six panels in two rows. Top row, one color per pixel: a photograph of a green and yellow snake; the same photograph dithered with 512 uniformly spaced colors, which looks close to the original; and the same colors without dithering, which shows flat bands. Bottom row, one color per 9 by 9 tile: the exact mean color of each tile; the tiles dithered with the same 512 colors, a mottled checkerboard; and the tiles without dithering, blocky with broad flat areas.](figures/tile-dithering.svg)
 
-*Figure 18. The same palette and the same Floyd–Steinberg dithering on a fine grid and on coarse tiles. On the fine grid dithering is the better choice; on the tiles it breaks smooth areas into conspicuous tile-to-tile noise. ΔE tile is the mean CIELAB difference between each tile and the tile's mean in the original, ΔE 3 × 3 the same after averaging over 3 × 3 tiles, and jumps the share of neighboring tile pairs whose difference exceeds the original's by more than 6 ΔE. Dithering minimizes the averaged error but produces almost three times as many jumps, which is what the eye notices.*
+*Figure 18. The same 512 colors (3 bits per channel) and the same Floyd–Steinberg dithering on a fine grid and on coarse tiles. Visible error is the estimate described under [color precision for character cells](#color-precision-for-character-cells), for 192 ppi at 50 cm. On the fine grid dithering cuts it from 6.5 to 2.0; on the tiles it changes it only from 8.1 to 7.1, and replaces bands with a mottled pattern of tiles.*
 
-This reverses a usual assumption about dithering. On a fine pixel grid, dithering moves quantization error to frequencies that the eye does not resolve. On a cell grid, error diffused from cell to cell lands at the cell frequency, where it is seen as exactly the neighbor-to-neighbor fluctuation described above. Figure 18 shows both cases with the same palette. For a character renderer, leaving cells undithered can therefore look better than dithering them, and the answer depends on the palette:
+This reverses a usual assumption about dithering. On a fine pixel grid, dithering moves quantization error to frequencies that the eye does not resolve. On a cell grid, error diffused from cell to cell lands at the cell frequency, where it is seen as exactly the neighbor-to-neighbor fluctuation described above. Figure 18 shows both cases with the same palette, and Table 4 below measures the effect for several palettes: the benefit of dithering largely disappears on a grid of tiles. For a character renderer, leaving cells undithered can therefore look better than dithering them, and the answer depends on the palette:
 
 - **24-bit color.** The colors of a cell can match the local mean almost exactly, so the only remaining quantization is the shape of the glyph. There is little reason to dither color.
-- **256 colors.** Steps between palette colors are moderate. Without dithering, smooth gradients show a few broad bands; with dithering, they show cell-scale fluctuation. Which is less visible depends on the image, and a dither, if used, is better placed inside cells.
-- **16 colors or fewer.** Steps are large, and bands are strengthened by Mach bands into prominent contours, which are themselves a structure a natural image does not have. Some dithering is needed, but preferably at a sub-cell grain and with a pattern fixed in position, such as ordered or blue-noise dithering, rather than error diffusion between cells.
+- **256 colors.** Steps between palette colors are moderate. Without dithering, smooth gradients show a few broad bands; with dithering between cells, they show cell-scale fluctuation of about the same visibility. A dither, if used, is better placed inside cells.
+- **16 colors or fewer.** Steps are large, and bands are strengthened by Mach bands into prominent contours, which are themselves a structure a natural image does not have. Dithering between cells still reduces the visible error slightly for such coarse palettes, but much less than on a pixel grid, so a sub-cell grain and a pattern fixed in position, such as ordered or blue-noise dithering, are preferable to error diffusion between cells.
 
 A pattern fixed in position also keeps its decision stable: error diffusion propagates each decision to the following cells, so a small change of input can flip a whole run of cells, which in animation is seen as shimmer.
 
@@ -306,6 +306,57 @@ None of the three has an explicit term for consistency between neighboring cells
 
 An informal check with chafa 1.18.2 agrees. A horizontal gradient, constant in the vertical direction, was rendered as 80 × 20 cells. Any difference between vertically adjacent cells is therefore structure that the image does not contain. Of the 1,520 vertically adjacent pairs, none differed without dithering in the 16-color, 256-color and 24-bit modes, while with dithering in the 16-color mode 721 differed with ordered dithering, 781 with blue noise and 1,285 with Floyd–Steinberg. The count records any change of glyph or color and not its visibility, so it shows where dithering creates cell-scale structure rather than how conspicuous that structure is.
 
+### Color precision for character cells
+
+Comparisons of terminal color modes often set a fixed 256-color palette against 24-bit color and conclude that 24-bit color is needed. Such a comparison changes several things at once: the choice of palette colors, whether and where dithering can hide the steps between them, the precision of each color, and the number of colors that can be shown together. This section separates them.
+
+*Method.* Visible error is estimated in the manner of S-CIELAB (Zhang and Wandell 1997). The original and the rendition are converted to the opponent space of S-CIELAB, using the matrix of its reference implementation, filtered with the sensitivity curves of [Figure 14](#contrast-sensitivity) for a given viewing geometry, with the luminance curve held flat below its peak so that it acts as a low-pass filter, then converted to CIELAB and compared pixel by pixel. Tables give the mean and, where noted, the 99th percentile of the difference. The geometry is 192 ppi at 50 cm, about 66 pixels per degree, with tiles of 9 × 9 pixels. For tiles, the reference is the 24-bit mean color of each tile, so that the tables measure color quantization rather than the loss of detail inside tiles. Palettes are applied with averages and dithering errors in linear light and nearest colors by DIN99d. The estimate is a model: it accounts for spatial sensitivity but not for the no-reference judgment described above, which penalizes cell-to-cell structure more than a mean difference does.
+
+| Image | Palette | Pixels, not dithered | Pixels, dithered | Gain | Tiles, not dithered | Tiles, dithered | Gain |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Snake | Uniform 3 bits per channel | 6.48 | 2.02 | 3.21 | 8.09 | 7.14 | 1.13 |
+| Snake | Uniform 4 bits per channel | 2.29 | 1.00 | 2.29 | 3.14 | 3.26 | 0.96 |
+| Snake | Uniform 5 bits per channel | 0.93 | 0.49 | 1.90 | 1.49 | 1.60 | 0.93 |
+| Snake | Adaptive 64 | 1.59 | 1.60 | 0.99 | 1.85 | 2.22 | 0.83 |
+| Snake | Adaptive 256 | 0.81 | 0.70 | 1.16 | 1.07 | 1.25 | 0.86 |
+| Gradient | Uniform 3 bits per channel | 6.33 | 1.37 | 4.62 | 6.32 | 5.39 | 1.17 |
+| Gradient | Uniform 4 bits per channel | 2.67 | 0.63 | 4.24 | 2.68 | 2.45 | 1.09 |
+| Gradient | Uniform 5 bits per channel | 1.09 | 0.31 | 3.52 | 1.10 | 1.08 | 1.02 |
+| Gradient | Adaptive 64 | 1.19 | 0.57 | 2.09 | 1.20 | 1.26 | 0.95 |
+| Gradient | Adaptive 256 | 0.58 | 0.27 | 2.15 | 0.60 | 0.63 | 0.95 |
+
+*Table 4. Visible error with and without Floyd–Steinberg dithering, for the same palette on pixels and on tiles. Gain is the error without dithering divided by the error with it.*
+
+On pixels, dithering divides the visible error by 1.9 to 4.6 for uniform palettes. On tiles, the gain ranges from 0.83 to 1.17: coarse uniform palettes gain a little, and finer or image-specific palettes lose slightly. Dithering does not remove error; it moves it to higher spatial frequencies, and on a grid of tiles the highest available frequency is the tile frequency, where sensitivity is still high. A grid of character cells therefore cannot trade spatial resolution for color precision, and each color must be precise enough by itself.
+
+| Colors per tile | Snake | Gradient | Dark gradient |
+| --- | --- | --- | --- |
+| 5 bits per channel (32,768 colors) | 1.32 / 3.80 | 0.98 / 2.57 | 1.84 / 3.77 |
+| 5, 6 and 5 bits (65,536 colors) | 0.87 / 2.42 | 0.64 / 1.81 | 1.21 / 2.27 |
+| 6 bits per channel | 0.60 / 1.71 | 0.54 / 1.30 | 0.67 / 1.26 |
+| 7 bits per channel | 0.29 / 0.88 | 0.27 / 0.60 | 0.31 / 0.72 |
+| 8 bits per channel (24-bit) | 0.15 / 0.43 | 0.12 / 0.29 | 0.17 / 0.39 |
+| 256 colors chosen for the image | 0.82 / 4.14 | 0.63 / 1.98 | 0.17 / 0.39 |
+
+*Table 5. Visible error, mean / 99th percentile, of tile colors rounded to a given precision in sRGB-encoded values or mapped to 256 colors chosen for the image, without dithering.*
+
+Rounding to 5 bits per channel, the precision of 15-bit color, leaves errors of 2.6 to 3.8 in the worst one percent of the picture, and 5, 6 and 5 bits leave 1.8 to 2.4. With 7 bits per channel the 99th percentile stays below 1 and with 8 bits below 0.5, so under this model the precision needed per color lies between 6 and 7 bits per channel. A palette of 256 colors chosen for the image comes close on average but leaves a tail of larger errors where small but distinctive colors are merged into their neighbors.
+
+The second requirement is the number of colors shown together, and it is bounded by the screen rather than by the color space:
+
+![Two rows of four panels. Top row: a photograph of a snake drawn as 120 by 45 half-block cells with 24-bit color and with 256 palette colors chosen for the image, nearly indistinguishable at full size, and an enlarged region of the head in which the 256-color version merges bluish and yellowish accents into a flatter green. Bottom row: a synthetic sunset with the same comparison, where the enlarged region shows faint contours near the sun in the 256-color version.](figures/palette-direct.svg)
+
+*Figure 19. 24-bit direct color and 256 palette colors chosen for the image and set with OSC 4, for 120 × 45 half-block cells without dithering. The palette is a median cut refined with k-means in OKLab, the most favorable case for a palette: one image owns all 256 entries.*
+
+| Image | Color units | Distinct colors, 8 bits | Distinct colors, 7 bits | ΔE of 256 colors, mean / 99th pct. | Bytes, direct color | Bytes, indexed + palette |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Snake | 10,800 | 8,072 | 5,427 | 2.01 / 8.62 | 186,961 | 91,146 + 5,522 |
+| Sunset gradient | 10,800 | 7,300 | 3,697 | 1.19 / 3.53 | 154,367 | 41,678 + 5,522 |
+
+*Table 6. Requirements of a 120 × 45 half-block picture. Color units are the upper and lower halves of the cells. ΔE is the CIELAB difference per color unit between 24-bit color and the 256-color palette, without spatial filtering. Bytes count SGR sequences emitted only where a color changes, with semicolon separators, plus the half-block characters and line ends; the palette is uploaded with one OSC 4 sequence per entry.*
+
+A screen of this size never needs more colors than it has color units, about ten thousand, and at 7 bits per channel the two pictures use 5,427 and 3,697 distinct colors. The perceptual requirement is therefore a color precision of about 7 bits per channel together with as many simultaneous colors as there are color units. 24-bit direct color meets it by allowing 16.7 million colors at every cell, at a cost of 1.9 to 3.3 times the bytes of indexed colors in Table 6. A palette with entries of that precision and enough of them, scoped to a picture, would meet it as well. Why terminals went the other way is a question of protocol history, described under [palettes and direct color](../../sixel-format/terminal-graphics-history/README.md#palettes-and-direct-color).
+
 ### Practical consequences
 
 These results suggest four rules for a character renderer:
@@ -319,7 +370,7 @@ The reasoning of this section is an argument from the sensitivity curves and the
 
 ## Figures and reproduction
 
-Figures 2 and 5 to 18 are generated by [`tools/plot_visual_perception_figures.py`](../../../tools/plot_visual_perception_figures.py) with Matplotlib, NumPy and Pillow. Run it to regenerate them and with `--check` to verify that the committed files are current. Their data sources are recorded in [`figures/figures.json`](figures/figures.json): the cone and rod curves use the photopigment template of Govardovskii et al. (2000); the luminous efficiency curves are the CIE 1924 and 1951 tables; the receptor density, dark adaptation and chroma sensitivity curves are schematic; the luminance sensitivity curve is the Mannos and Sakrison (1974) model; and Figures 17 and 18 use the repository image `images/snake.png`. Figure 18 reproduces the processing of the interactive [tile perception lab](../../../tools/docs/tile-lab/index.html), a development tool used to choose how fine grids and tiles are presented: averages and dithering errors in linear light, nearest colors by DIN99d, the xterm 256-color palette, and Floyd–Steinberg diffusion in raster order. Its measures are recorded in `figures.json`. Figures 1, 3 and 4 are reproduced from Wikimedia Commons under the licenses stated in their captions and recorded in the same file.
+Figures 2 and 5 to 19 are generated by [`tools/plot_visual_perception_figures.py`](../../../tools/plot_visual_perception_figures.py) with Matplotlib, NumPy and Pillow. Run it to regenerate them and with `--check` to verify that the committed files are current. Their data sources are recorded in [`figures/figures.json`](figures/figures.json): the cone and rod curves use the photopigment template of Govardovskii et al. (2000); the luminous efficiency curves are the CIE 1924 and 1951 tables; the receptor density, dark adaptation and chroma sensitivity curves are schematic; the luminance sensitivity curve is the Mannos and Sakrison (1974) model; and Figures 17 to 19 use the repository image `images/snake.png`. Figures 18 and 19 and Tables 4 to 6 reproduce processing chosen with the interactive [tile perception lab](../../../tools/docs/tile-lab/index.html), a development tool for comparing fine grids and tiles; the generator records their measurements in `figures.json`, and their geometry, palettes and visible-error model are described under [color precision for character cells](#color-precision-for-character-cells). Figures 1, 3 and 4 are reproduced from Wikimedia Commons under the licenses stated in their captions and recorded in the same file.
 
 ## References
 
@@ -349,3 +400,4 @@ Figures 2 and 5 to 18 are generated by [`tools/plot_visual_perception_figures.py
 - Wang, Z., H. R. Sheikh, and A. C. Bovik. "No-reference perceptual quality assessment of JPEG compressed images." Proceedings of the 2002 International Conference on Image Processing, vol. 1, I-477–I-480, 2002. doi:[10.1109/ICIP.2002.1038064](https://doi.org/10.1109/ICIP.2002.1038064)
 - Xu, X., L. Zhang, and T.-T. Wong. "Structure-based ASCII art." ACM Transactions on Graphics 29(4):52, 2010. doi:[10.1145/1778765.1778789](https://doi.org/10.1145/1778765.1778789)
 - Yip, A. W., and P. Sinha. "Contribution of color to face recognition." Perception 31(8):995–1003, 2002. doi:[10.1068/p3376](https://doi.org/10.1068/p3376)
+- Zhang, X., and B. A. Wandell. "A spatial extension of CIELAB for digital color-image reproduction." Journal of the Society for Information Display 5(1):61–63, 1997. doi:[10.1889/1.1985127](https://doi.org/10.1889/1.1985127)
