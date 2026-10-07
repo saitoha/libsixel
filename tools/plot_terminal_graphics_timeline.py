@@ -43,7 +43,7 @@ LANES = (
     ("render", "Character rendering software", "#c0392b"),
     ("terminal", "Vector and DEC terminals", "#0f7c80"),
     ("videotex", "Videotex and image coding", "#7a4fa0"),
-    ("emulator", "Software terminals and SIXEL", "#17618c"),
+    ("emulator", "Software terminals and SIXEL tools", "#17618c"),
     ("protocol", "Image protocols and proposals", "#2f8f5b"),
 )
 
@@ -144,14 +144,28 @@ EVENTS = (
      "docs/project-history.md"),
     (2012.3, "emulator", "mlterm SIXEL",
      "docs/project-history.md"),
-    (2013.5, "emulator", "xterm SIXEL",
+    (2012.85, "emulator", "PySixel",
+     "https://pypi.org/project/PySixel/"),
+    (2013.5, "emulator", "xterm SIXEL (experimental)",
      "https://invisible-island.net/xterm/xterm.log.html#xterm_294"),
+    (2014.17, "emulator", "kmiya's sixel",
+     "https://github.com/saitoha/sixel"),
     (2014.2, "emulator", "libsixel",
      "docs/project-history.md"),
+    (2014.4, "emulator", "monosixel (tw-sixel)",
+     "https://github.com/saitoha/libsixel/commit/d0db9b5c3d411442d9ca2af2a4465bb36f4dce7f"),
+    (2014.76, "emulator", "ImageMagick SIXEL coder",
+     "https://github.com/ImageMagick/ImageMagick6/commits/main/coders/sixel.c"),
     (2014.75, "emulator", "w3mimg-sixel",
      "https://github.com/uobikiemukot/sdump"),
     (2014.85, "emulator", "w3m SIXEL",
      "https://github.com/tats/w3m/blob/master/doc/README.sixel"),
+    (2015.0, "emulator", "gnuplot sixeltek",
+     "https://sourceforge.net/p/gnuplot/gnuplot-main/ci/master/tree/term/tek.trm"),
+    (2017.67, "emulator", "gnuplot sixelgd",
+     "https://sourceforge.net/p/gnuplot/gnuplot-main/ci/master/tree/NEWS"),
+    (2020.63, "emulator", "xterm SIXEL by default",
+     "https://invisible-island.net/xterm/xterm.log.html#xterm_359"),
     (2020.6, "emulator", "mintty Tek",
      "https://github.com/mintty/mintty/blob/master/wiki/Changelog.md"),
     (2024.1, "emulator", "tmux 3.4 SIXEL",
@@ -288,7 +302,7 @@ def wide_figure() -> str:
         "software from AAlib to chafa; Tektronix and DEC terminals from the "
         "Tektronix 4010 to the VT340; videotex and image coding from Telidon "
         "to JPEG and the NAPLPS plug-in; software terminals and SIXEL from "
-        "Tera Term to Windows Terminal; and image protocols and proposals "
+        "Tera Term to Windows Terminal, including SIXEL tools from PySixel to gnuplot; and image protocols and proposals "
         "from GateOne to the xterm.js image add-on. Years before 1960 are "
         "compressed on the axis.")
     return svg_document(width, height, title, description, "".join(body))
@@ -327,7 +341,7 @@ def mobile_figure() -> str:
         "first, with each event colored by one of seven traditions: character "
         "art, mosaic characters and Unicode, character rendering software, "
         "vector and DEC terminals, videotex and image coding, software "
-        "terminals and SIXEL, and image protocols and proposals.")
+        "terminals and SIXEL tools, and image protocols and proposals.")
     return svg_document(width, height, title, description, "".join(body))
 
 

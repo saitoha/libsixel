@@ -53,14 +53,14 @@ It is a survey, not an exhaustive catalog. Dates are those of the cited releases
 | 2009 | RLogin adds Tektronix 4014/4105 modes | Software emulator |
 | 2010 | RLogin 2.9.0 adds SIXEL and ReGIS | SIXEL revival |
 | 2011 | GateOne detects image files in the output stream | In-band, no protocol |
-| 2012 | tanasinn with Tektronix, SIXEL, and URL-based OSC extensions; Terminology `tycat` passes file paths or URIs; mlterm adds SIXEL | Software emulators |
-| 2013 | FinalTerm semantic escape sequences (OSC 133); xterm patch #294 adds SIXEL | Shell integration; SIXEL revival |
-| 2014 | iTerm2 inline images (OSC 1337); libsixel; haru's `w3mimg-sixel`; w3m SIXEL support; drawille draws with Braille patterns | Image protocol; SIXEL tooling; character rendering |
-| 2015 | DomTerm, later with HTML insertion through OSC 72 | HTML in terminal |
-| 2017 | kitty 0.4.0 introduces its graphics protocol | Image protocol |
+| 2012 | tanasinn with Tektronix, SIXEL, and URL-based OSC extensions; Terminology `tycat` passes file paths or URIs; mlterm adds SIXEL; PySixel converts images to SIXEL | Software emulators; SIXEL tooling |
+| 2013 | FinalTerm semantic escape sequences (OSC 133); xterm patch #294 adds experimental SIXEL as a build option | Shell integration; SIXEL revival |
+| 2014 | iTerm2 inline images (OSC 1337); kmiya's `sixel` version of 2014-03-02 and libsixel branched from it; monosixel in Araki Ken's tw-sixel; haru's `w3mimg-sixel`; ImageMagick's SIXEL coder; w3m SIXEL support; drawille draws with Braille patterns | Image protocol; SIXEL tooling; character rendering |
+| 2015 | DomTerm, later with HTML insertion through OSC 72; gnuplot 5.0 ships the `sixeltek` terminal | HTML in terminal; SIXEL tooling |
+| 2017 | kitty 0.4.0 introduces its graphics protocol; gnuplot 5.2 adds the `sixelgd` terminal | Image protocol; SIXEL tooling |
 | 2018 | chafa, later combining character mosaics with SIXEL, kitty, and iTerm2 output | Character rendering and image protocols |
 | 2019 | Terminal working group discussion of a simple image display sequence | Standardization attempt |
-| 2020 | mintty 3.3.0 adds Tektronix 4014 emulation; Unicode 13.0 adds Symbols for Legacy Computing, including 60 sextants from teletext and videotex | Software emulator; Unicode |
+| 2020 | mintty 3.3.0 adds Tektronix 4014 emulation; xterm patch #359 enables SIXEL by default; Unicode 13.0 adds Symbols for Legacy Computing, including 60 sextants from teletext and videotex | Software emulator; Unicode |
 | 2021 | Nick Black's STEGAP proposal; Windows Terminal adds DECDLD soft fonts; xterm.js image add-on | Proposals and implementations |
 | 2024 | tmux 3.4 adds SIXEL; Windows Terminal Preview 1.22 adds SIXEL; Unicode 16.0 adds 230 octants | SIXEL adoption; Unicode |
 
@@ -184,7 +184,7 @@ As software terminals gained modern rendering engines, several projects tried th
 
 Some of these designs let output name a resource that the terminal then loads: a local path, a URI, or a web page. Output from a remote host or an untrusted file can thereby make the terminal read local files or perform network requests on the user's side, a different trust boundary from in-band data. The general hazards of terminals acting on escape sequences were already known, for example in Terminology's [CVE-2015-8971](https://nvd.nist.gov/vuln/detail/CVE-2015-8971) concerning title reports. Self-contained encodings such as SIXEL and iTerm2's base64 file transfer avoid that indirection, although they still require the parser hardening described in the [format overview](../README.md#robustness-and-security).
 
-During the same years SIXEL itself was revived: RLogin in 2010, mlterm in 2012, xterm in 2013, and libsixel from 2014, as the [project history](../../project-history.md#before-libsixel-sixel-in-software-terminal-emulators) describes.
+During the same years SIXEL itself was revived, first in terminals and then in the tools that produce it. RLogin added SIXEL in 2010 and mlterm in 2012. xterm's patch #294 (2013-07-05) added experimental SIXEL support contributed by Ross Combs, available only when built with `--enable-sixel-graphics`; patch #359 (2020-08-17) enabled it by default, and later patches aligned its scrolling behavior with the VT330 and VT340. On the producing side, PySixel (2012-11) converted images to SIXEL from Python, and kmiya's standalone `sixel` encoder and decoder, developed alongside RLogin, provided the version of 2014-03-02 from which libsixel branched, as the [project history](../../project-history.md#before-libsixel-sixel-in-software-terminal-emulators) describes. In 2014 Araki Ken's tw-sixel, a Twitter client that showed images with SIXEL, included the monochrome converter monosixel, whose pattern dithering libsixel briefly adopted; ImageMagick added a SIXEL coder on 2014-10-03. gnuplot, which had long offered ReGIS and Tektronix terminals, gained a native `sixeltek` terminal written by Erik Olofsen in November 2013 and tested with xterm and mlterm, as a more practical alternative to piping its PBM output through `ppmtosixel`; it shipped in gnuplot 5.0 (2015), and gnuplot 5.2 (2017) added a second, GD-based `sixelgd` terminal. Printer-oriented SIXEL producers such as Netpbm's `ppmtosixel` and Ghostscript's DEC printer drivers predate this revival.
 
 ## Protocols designed for modern terminals
 
@@ -213,5 +213,6 @@ No single protocol has displaced the others. SIXEL remains the most widely imple
 - [FFmpeg devices](https://ffmpeg.org/ffmpeg-devices.html#caca) and [mpv video output drivers](https://mpv.io/manual/stable/#video-output-drivers).
 - [w3m inline image documentation](https://github.com/tats/w3m/blob/master/doc/README.img) and [SIXEL support](https://github.com/tats/w3m/blob/master/doc/README.sixel).
 - haru (uobikiemukot), [sdump](https://github.com/uobikiemukot/sdump), containing `yaimg-sixel`, first added as `w3mimg-sixel` on 2014-09-23.
+- [xterm change log](https://invisible-island.net/xterm/xterm.log.html), patches #294 and #359; [PySixel on PyPI](https://pypi.org/project/PySixel/); [kmiya `sixel` mirror](https://github.com/saitoha/sixel); ImageMagick6 commit ["Added sixel coder"](https://github.com/ImageMagick/ImageMagick6/commits/main/coders/sixel.c) (2014-10-03); [gnuplot NEWS](https://sourceforge.net/p/gnuplot/gnuplot-main/ci/master/tree/NEWS) for version 5.2 and [`term/tek.trm`](https://sourceforge.net/p/gnuplot/gnuplot-main/ci/master/tree/term/tek.trm) for `sixeltek`.
 - [RLogin history](https://github.com/kmiya-culti/RLogin/blob/master/docs/history.html); [mintty changelog](https://github.com/mintty/mintty/blob/master/wiki/Changelog.md); [kitty changelog](https://sw.kovidgoyal.net/kitty/changelog/); [tmux CHANGES](https://github.com/tmux/tmux/blob/master/CHANGES).
 - Microsoft, [terminal issue #9164](https://github.com/microsoft/terminal/issues/9164) on DECDLD soft fonts and [Windows Terminal Preview 1.22 release](https://devblogs.microsoft.com/commandline/windows-terminal-preview-1-22-release/).

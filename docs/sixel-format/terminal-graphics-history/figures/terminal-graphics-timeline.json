@@ -272,6 +272,12 @@
       "year": 2012.3
     },
     {
+      "label": "PySixel",
+      "lane": "emulator",
+      "source": "https://pypi.org/project/PySixel/",
+      "year": 2012.85
+    },
+    {
       "label": "Terminology tycat",
       "lane": "protocol",
       "source": "https://github.com/borisfaure/terminology",
@@ -284,7 +290,7 @@
       "year": 2013.3
     },
     {
-      "label": "xterm SIXEL",
+      "label": "xterm SIXEL (experimental)",
       "lane": "emulator",
       "source": "https://invisible-island.net/xterm/xterm.log.html#xterm_294",
       "year": 2013.5
@@ -294,6 +300,12 @@
       "lane": "protocol",
       "source": "https://iterm2.com/documentation-images.html",
       "year": 2014.05
+    },
+    {
+      "label": "kmiya's sixel",
+      "lane": "emulator",
+      "source": "https://github.com/saitoha/sixel",
+      "year": 2014.17
     },
     {
       "label": "libsixel",
@@ -308,10 +320,22 @@
       "year": 2014.3
     },
     {
+      "label": "monosixel (tw-sixel)",
+      "lane": "emulator",
+      "source": "https://github.com/saitoha/libsixel/commit/d0db9b5c3d411442d9ca2af2a4465bb36f4dce7f",
+      "year": 2014.4
+    },
+    {
       "label": "w3mimg-sixel",
       "lane": "emulator",
       "source": "https://github.com/uobikiemukot/sdump",
       "year": 2014.75
+    },
+    {
+      "label": "ImageMagick SIXEL coder",
+      "lane": "emulator",
+      "source": "https://github.com/ImageMagick/ImageMagick6/commits/main/coders/sixel.c",
+      "year": 2014.76
     },
     {
       "label": "w3m SIXEL",
@@ -320,10 +344,22 @@
       "year": 2014.85
     },
     {
+      "label": "gnuplot sixeltek",
+      "lane": "emulator",
+      "source": "https://sourceforge.net/p/gnuplot/gnuplot-main/ci/master/tree/term/tek.trm",
+      "year": 2015.0
+    },
+    {
       "label": "DomTerm OSC 72",
       "lane": "protocol",
       "source": "https://domterm.org/Wire-byte-protocol.html",
       "year": 2015.6
+    },
+    {
+      "label": "gnuplot sixelgd",
+      "lane": "emulator",
+      "source": "https://sourceforge.net/p/gnuplot/gnuplot-main/ci/master/tree/NEWS",
+      "year": 2017.67
     },
     {
       "label": "kitty graphics",
@@ -354,6 +390,12 @@
       "lane": "emulator",
       "source": "https://github.com/mintty/mintty/blob/master/wiki/Changelog.md",
       "year": 2020.6
+    },
+    {
+      "label": "xterm SIXEL by default",
+      "lane": "emulator",
+      "source": "https://invisible-island.net/xterm/xterm.log.html#xterm_359",
+      "year": 2020.63
     },
     {
       "label": "STEGAP",
@@ -417,7 +459,7 @@
     },
     {
       "key": "emulator",
-      "label": "Software terminals and SIXEL"
+      "label": "Software terminals and SIXEL tools"
     },
     {
       "key": "protocol",
