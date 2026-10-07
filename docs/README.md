@@ -14,6 +14,7 @@ What libsixel is, where it came from, and the SIXEL format it implements.
 ### SIXEL format
 
 - [SIXEL format overview](sixel-format/README.md) is a practical guide to the DEC SIXEL wire format, its control functions, rendering model, and interoperability limits.
+- [SIXEL specification status and interpretation layers](sixel-format/specification-layers.md) explains what ECMA-48 and DEC's device manuals define, SIXEL's de facto history as a `.six` image file, the formal, emulation, and modern-interpretation layers that determine implementation behavior, and libsixel's position on them.
 - [SIXEL codec comparison](sixel-format/comparison/README.md) compares quality, encoding and decoding latency, 7-bit transport size, thread budgets, and repeated generations with JPEG, GIF, PNG, and WebP.
 
 ## Using libsixel

@@ -13,6 +13,8 @@ this implementation. It is not a substitute for the device manual: historical
 printers, DEC terminals, and modern terminal emulators differ in limits,
 palette lifetime, aspect-ratio handling, scrolling, and error recovery.
 
+SIXEL is defined only by the ECMA-48 control-string envelope and DEC's device documentation, not by an image-format standard. [SIXEL specification status and interpretation layers](specification-layers.md) explains that standing, the format's de facto history as `.six` files, and how formal rules, emulation of DEC hardware, and modern interpretation together determine implementation behavior.
+
 ## An old syntax with a modern image pipeline
 
 Ordinary SIXEL output combines three separable choices: color quantization, six-row color masks with run-length coding, and a terminal protocol that uses only 7-bit bytes. The wire syntax defines how the result is transmitted, not how an encoder chooses its palette, so improvements to clustering, perceptual color spaces, pixel assignment and dithering can improve output without changing the receiving terminal. [SIXEL among contemporary image codecs](comparison/README.md) develops these points and measures quality, latency, transport size, thread budgets and repeated generations against JPEG, GIF, PNG and WebP.
@@ -322,6 +324,8 @@ A `.six` file normally contains a terminal control stream rather than a
 container with an independent magic header, directory, or checksum. It may
 contain one DCS image, several images, or surrounding terminal controls.
 
+Such files have been exchanged since at least the late 1980s, but that practice never produced a definition of the file as an image; see [de facto use as an image file](specification-layers.md#de-facto-use-as-an-image-file).
+
 Animation is not a distinct DEC SIXEL file format. It is produced by sending a
 series of SIXEL images and coordinating palette reuse, placement, erasure, and
 timing outside the individual bitmap body. libsixel can generate such streams,
@@ -388,4 +392,4 @@ failure even when the encoder already reported its original error.
 - [Netpbm `ppmtosixel` manual](https://netpbm.sourceforge.net/doc/ppmtosixel.html) and [current source](https://svn.code.sf.net/p/netpbm/code/stable/converter/ppm/ppmtosixel.c), for the row-at-a-time encoder and its packed horizontal-repeat mode.
 
 Where these references and a terminal emulator disagree, document the
-interoperability decision and cover the intended behavior with a focused test.
+interoperability decision and cover the intended behavior with a focused test. [Three layers of implementation decisions](specification-layers.md#three-layers-of-implementation-decisions) describes how such decisions relate to the formal specification.
