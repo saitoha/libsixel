@@ -1,0 +1,427 @@
+{
+  "document": "docs/sixel-format/terminal-graphics-history/README.md",
+  "events": [
+    {
+      "label": "Typewriter-art advertisement",
+      "lane": "art",
+      "source": "https://en.wikipedia.org/wiki/ASCII_art#Typewriter_art",
+      "year": 1875.0
+    },
+    {
+      "label": "Pitman typed ornaments",
+      "lane": "art",
+      "source": "https://www.themarginalian.org/2014/05/23/typewriter-art-laurence-king/",
+      "year": 1893.0
+    },
+    {
+      "label": "Stacey's typed butterfly",
+      "lane": "art",
+      "source": "https://infostory.com/2014/05/23/the-history-of-typewriter-art/",
+      "year": 1898.8
+    },
+    {
+      "label": "Paul Smith's typewriter pictures",
+      "lane": "art",
+      "source": "https://en.wikipedia.org/wiki/Paul_Smith_(artist)",
+      "year": 1932.0
+    },
+    {
+      "label": "Artyping",
+      "lane": "art",
+      "source": "https://loriemerson.net/2014/01/26/artyping-in-1939/",
+      "year": 1939.0
+    },
+    {
+      "label": "Concrete poetry",
+      "lane": "art",
+      "source": "https://en.wikipedia.org/wiki/Concrete_poetry",
+      "year": 1955.0
+    },
+    {
+      "label": "Teleprinter and RTTY art",
+      "lane": "art",
+      "source": "https://en.wikipedia.org/wiki/ASCII_art#TTY_and_RTTY",
+      "year": 1962.0
+    },
+    {
+      "label": "Studies in Perception I",
+      "lane": "art",
+      "source": "https://en.wikipedia.org/wiki/Leon_Harmon",
+      "year": 1966.0
+    },
+    {
+      "label": "Tektronix 4010",
+      "lane": "terminal",
+      "source": "https://en.wikipedia.org/wiki/Tektronix_4010",
+      "year": 1972.0
+    },
+    {
+      "label": "Tektronix 4014",
+      "lane": "terminal",
+      "source": "https://en.wikipedia.org/wiki/Tektronix_4010",
+      "year": 1974.0
+    },
+    {
+      "label": "Ceefax mosaics",
+      "lane": "mosaic",
+      "source": "https://en.wikipedia.org/wiki/Teletext_character_set",
+      "year": 1974.7
+    },
+    {
+      "label": "TRS-80 semigraphics",
+      "lane": "mosaic",
+      "source": "https://en.wikipedia.org/wiki/Semigraphics",
+      "year": 1977.5
+    },
+    {
+      "label": "Telidon",
+      "lane": "videotex",
+      "source": "https://en.wikipedia.org/wiki/Telidon",
+      "year": 1978.0
+    },
+    {
+      "label": "Prestel",
+      "lane": "videotex",
+      "source": "https://en.wikipedia.org/wiki/Prestel",
+      "year": 1979.0
+    },
+    {
+      "label": "PC-8001 2×4 graphics",
+      "lane": "mosaic",
+      "source": "https://en.wikipedia.org/wiki/Semigraphics",
+      "year": 1979.5
+    },
+    {
+      "label": "CCITT T.4 fax",
+      "lane": "videotex",
+      "source": "https://www.rfc-editor.org/rfc/rfc804",
+      "year": 1980.5
+    },
+    {
+      "label": "ReGIS on VT125",
+      "lane": "terminal",
+      "source": "https://en.wikipedia.org/wiki/ReGIS",
+      "year": 1981.5
+    },
+    {
+      "label": "Minitel",
+      "lane": "videotex",
+      "source": "https://en.wikipedia.org/wiki/Minitel",
+      "year": 1982.0
+    },
+    {
+      "label": "NAPLPS",
+      "lane": "videotex",
+      "source": "https://en.wikipedia.org/wiki/NAPLPS",
+      "year": 1983.0
+    },
+    {
+      "label": "Bildschirmtext",
+      "lane": "videotex",
+      "source": "https://en.wikipedia.org/wiki/Bildschirmtext",
+      "year": 1983.5
+    },
+    {
+      "label": "VT240 SIXEL",
+      "lane": "terminal",
+      "source": "https://en.wikipedia.org/wiki/VT220",
+      "year": 1984.6
+    },
+    {
+      "label": "CAPTAIN",
+      "lane": "videotex",
+      "source": "https://en.wikipedia.org/wiki/Captain_(videotex)",
+      "year": 1984.9
+    },
+    {
+      "label": "VT100 animations",
+      "lane": "art",
+      "source": "http://artscene.textfiles.com/vt100/",
+      "year": 1985.0
+    },
+    {
+      "label": "PICA photovideotex",
+      "lane": "videotex",
+      "source": "https://www.itu.int/dms_pub/itu-s/opb/journal/S-JOURNAL-ICTS.V3I1-2020-13-PDF-E.pdf",
+      "year": 1985.5
+    },
+    {
+      "label": "JPEG formed",
+      "lane": "videotex",
+      "source": "https://www.ecma-international.org/wp-content/uploads/IS-presentation-to-JTC1SC29WG1-regarding-JPEG25-celebration.pdf",
+      "year": 1986.85
+    },
+    {
+      "label": "VT330 and VT340",
+      "lane": "terminal",
+      "source": "https://vt100.net/docs/vt3xx-gp/",
+      "year": 1987.5
+    },
+    {
+      "label": "Christmas Tree EXEC",
+      "lane": "art",
+      "source": "https://en.wikipedia.org/wiki/Christmas_Tree_EXEC",
+      "year": 1987.9
+    },
+    {
+      "label": "JBIG",
+      "lane": "videotex",
+      "source": "https://en.wikipedia.org/wiki/Joint_Bi-level_Image_Experts_Group",
+      "year": 1988.0
+    },
+    {
+      "label": "BBS ANSI art",
+      "lane": "art",
+      "source": "https://en.wikipedia.org/wiki/ANSI_art",
+      "year": 1991.0
+    },
+    {
+      "label": "RIPscrip",
+      "lane": "videotex",
+      "source": "https://en.wikipedia.org/wiki/Remote_Imaging_Protocol",
+      "year": 1992.0
+    },
+    {
+      "label": "JPEG T.81",
+      "lane": "videotex",
+      "source": "https://www.w3.org/Graphics/JPEG/itu-t81.pdf",
+      "year": 1992.7
+    },
+    {
+      "label": "Tera Term TEK",
+      "lane": "emulator",
+      "source": "https://en.wikipedia.org/wiki/Tera_Term",
+      "year": 1994.0
+    },
+    {
+      "label": "Usenet ASCII art",
+      "lane": "art",
+      "source": "https://en.wikipedia.org/wiki/ASCII_art",
+      "year": 1995.0
+    },
+    {
+      "label": "image/naplps",
+      "lane": "videotex",
+      "source": "https://www.iana.org/assignments/media-types/image/naplps",
+      "year": 1995.9
+    },
+    {
+      "label": "NAPLPS plug-in",
+      "lane": "videotex",
+      "source": "http://uclsun.ucl.co.jp/naplps/naptech-e.html",
+      "year": 1996.5
+    },
+    {
+      "label": "AAlib",
+      "lane": "render",
+      "source": "https://aa-project.sourceforge.net/aalib/",
+      "year": 1997.0
+    },
+    {
+      "label": "Unicode 3.0 Braille",
+      "lane": "mosaic",
+      "source": "https://en.wikipedia.org/wiki/Braille_Patterns",
+      "year": 1999.7
+    },
+    {
+      "label": "w3m-img",
+      "lane": "emulator",
+      "source": "https://github.com/tats/w3m/blob/master/doc/README.img",
+      "year": 2001.75
+    },
+    {
+      "label": "Unicode 3.2 quadrants",
+      "lane": "mosaic",
+      "source": "https://www.unicode.org/L2/L2000/00159-ucsterminal.txt",
+      "year": 2002.2
+    },
+    {
+      "label": "libcaca",
+      "lane": "render",
+      "source": "http://caca.zoy.org/study/",
+      "year": 2003.9
+    },
+    {
+      "label": "RLogin Tek",
+      "lane": "emulator",
+      "source": "https://github.com/kmiya-culti/RLogin/blob/master/docs/history.html",
+      "year": 2009.1
+    },
+    {
+      "label": "RLogin SIXEL",
+      "lane": "emulator",
+      "source": "docs/project-history.md",
+      "year": 2010.7
+    },
+    {
+      "label": "GateOne",
+      "lane": "protocol",
+      "source": "https://github.com/liftoff/GateOne",
+      "year": 2011.8
+    },
+    {
+      "label": "tanasinn OSC",
+      "lane": "protocol",
+      "source": "https://github.com/saitoha/tanasinn",
+      "year": 2012.1
+    },
+    {
+      "label": "mlterm SIXEL",
+      "lane": "emulator",
+      "source": "docs/project-history.md",
+      "year": 2012.3
+    },
+    {
+      "label": "Terminology tycat",
+      "lane": "protocol",
+      "source": "https://github.com/borisfaure/terminology",
+      "year": 2012.9
+    },
+    {
+      "label": "FinalTerm OSC 133",
+      "lane": "protocol",
+      "source": "https://github.com/p-e-w/finalterm",
+      "year": 2013.3
+    },
+    {
+      "label": "xterm SIXEL",
+      "lane": "emulator",
+      "source": "https://invisible-island.net/xterm/xterm.log.html#xterm_294",
+      "year": 2013.5
+    },
+    {
+      "label": "iTerm2 OSC 1337",
+      "lane": "protocol",
+      "source": "https://iterm2.com/documentation-images.html",
+      "year": 2014.05
+    },
+    {
+      "label": "libsixel",
+      "lane": "emulator",
+      "source": "docs/project-history.md",
+      "year": 2014.2
+    },
+    {
+      "label": "drawille",
+      "lane": "render",
+      "source": "https://github.com/asciimoo/drawille",
+      "year": 2014.3
+    },
+    {
+      "label": "w3mimg-sixel",
+      "lane": "emulator",
+      "source": "https://github.com/uobikiemukot/sdump",
+      "year": 2014.75
+    },
+    {
+      "label": "w3m SIXEL",
+      "lane": "emulator",
+      "source": "https://github.com/tats/w3m/blob/master/doc/README.sixel",
+      "year": 2014.85
+    },
+    {
+      "label": "DomTerm OSC 72",
+      "lane": "protocol",
+      "source": "https://domterm.org/Wire-byte-protocol.html",
+      "year": 2015.6
+    },
+    {
+      "label": "kitty graphics",
+      "lane": "protocol",
+      "source": "https://sw.kovidgoyal.net/kitty/changelog/",
+      "year": 2017.8
+    },
+    {
+      "label": "chafa",
+      "lane": "render",
+      "source": "https://github.com/hpjansson/chafa",
+      "year": 2018.3
+    },
+    {
+      "label": "terminal-wg images",
+      "lane": "protocol",
+      "source": "https://gitlab.freedesktop.org/terminal-wg/specifications/issues/12",
+      "year": 2019.2
+    },
+    {
+      "label": "Unicode 13 sextants",
+      "lane": "mosaic",
+      "source": "https://www.unicode.org/L2/L2019/19025-terminals-prop.pdf",
+      "year": 2020.2
+    },
+    {
+      "label": "mintty Tek",
+      "lane": "emulator",
+      "source": "https://github.com/mintty/mintty/blob/master/wiki/Changelog.md",
+      "year": 2020.6
+    },
+    {
+      "label": "STEGAP",
+      "lane": "protocol",
+      "source": "https://nick-black.com/dankwiki/index.php/Spriteful_TErminal_GrAphics_Protocol",
+      "year": 2021.4
+    },
+    {
+      "label": "Windows Terminal DECDLD",
+      "lane": "protocol",
+      "source": "https://github.com/microsoft/terminal/issues/9164",
+      "year": 2021.6
+    },
+    {
+      "label": "xterm.js image add-on",
+      "lane": "protocol",
+      "source": "https://github.com/jerch/xterm-addon-image",
+      "year": 2021.99
+    },
+    {
+      "label": "tmux 3.4 SIXEL",
+      "lane": "emulator",
+      "source": "https://github.com/tmux/tmux/blob/master/CHANGES",
+      "year": 2024.1
+    },
+    {
+      "label": "Windows Terminal SIXEL",
+      "lane": "emulator",
+      "source": "https://devblogs.microsoft.com/commandline/windows-terminal-preview-1-22-release/",
+      "year": 2024.65
+    },
+    {
+      "label": "Unicode 16 octants",
+      "lane": "mosaic",
+      "source": "https://www.unicode.org/L2/L2021/21235-terminals-supplement.pdf",
+      "year": 2024.7
+    }
+  ],
+  "generator": "tools/plot_terminal_graphics_timeline.py",
+  "kind": "documentary timeline from cited sources, not a measurement",
+  "lanes": [
+    {
+      "key": "art",
+      "label": "Character art"
+    },
+    {
+      "key": "mosaic",
+      "label": "Mosaic characters and Unicode"
+    },
+    {
+      "key": "render",
+      "label": "Character rendering software"
+    },
+    {
+      "key": "terminal",
+      "label": "Vector and DEC terminals"
+    },
+    {
+      "key": "videotex",
+      "label": "Videotex and image coding"
+    },
+    {
+      "key": "emulator",
+      "label": "Software terminals and SIXEL"
+    },
+    {
+      "key": "protocol",
+      "label": "Image protocols and proposals"
+    }
+  ]
+}

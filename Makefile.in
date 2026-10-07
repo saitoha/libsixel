@@ -600,7 +600,10 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/sixel-format/patents-and-royalties.md \
 	docs/misc/algorithm-patents.md \
 	docs/sixel-format/specification-layers.md \
-	docs/sixel-format/terminal-graphics-history.md \
+	docs/sixel-format/terminal-graphics-history/README.md \
+	docs/sixel-format/terminal-graphics-history/figures/terminal-graphics-timeline-mobile.svg \
+	docs/sixel-format/terminal-graphics-history/figures/terminal-graphics-timeline-wide.svg \
+	docs/sixel-format/terminal-graphics-history/figures/terminal-graphics-timeline.json \
 	docs/protocols/graphics-color-management.md \
 	docs/encoder/colorspace-handling/README.md \
 	docs/encoder/colorspace-handling/figures/encoding-pipeline-mobile.svg \
@@ -1302,6 +1305,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	tools/plot_encoding_pipeline_figures.py \
 	tools/plot_sixel_format_figures.py \
 	tools/plot_codec_timeline_figures.py \
+	tools/plot_terminal_graphics_timeline.py \
 	tools/plot_builtin_loader_format_figures.py \
 	tools/measure_png_loaders.py \
 	tools/bench/png-loader.c \
