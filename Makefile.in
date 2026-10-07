@@ -1218,6 +1218,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/quality/visual-perception/figures/chromatic-adaptation.svg \
 	docs/quality/visual-perception/figures/cone-sensitivity.svg \
 	docs/quality/visual-perception/figures/contrast-sensitivity.svg \
+	docs/quality/visual-perception/figures/csf-ratio.svg \
 	docs/quality/visual-perception/figures/dark-adaptation.svg \
 	docs/quality/visual-perception/figures/dither-integration.svg \
 	docs/quality/visual-perception/figures/eye-anatomy.jpg \

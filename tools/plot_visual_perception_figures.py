@@ -320,6 +320,76 @@ def character_cell_examples():
             'units': rows}
 
 
+def csf_ratio():
+    """Ratio of luminance to chroma sensitivity with the character-cell bands."""
+    width, height = 760, 335
+    x0, x1 = 90, 700
+    lo, hi = math.log10(0.3), math.log10(60)
+    y0, y1 = 50, 270
+    rlo, rhi = -1.0, 3.0
+
+    def fx(f):
+        return x0 + (math.log10(f) - lo) / (hi - lo) * (x1 - x0)
+
+    def fy(r):
+        return y1 - (math.log10(r) - rlo) / (rhi - rlo) * (y1 - y0)
+
+    cells = character_cell_examples()['units']
+    cell = next(u for u in cells if u['unit'] == 'character cell')
+    sub = next(u for u in cells if u['unit'] == 'chafa 8 x 8 sub-cell')
+    body = []
+    for f_lo, f_hi, label in ((cell['vertical_cpd'], cell['horizontal_cpd'], 'Cell grid'),
+                              (sub['vertical_cpd'], sub['horizontal_cpd'],
+                               'Shapes inside a cell')):
+        body.append(f'<rect x="{fx(f_lo):.1f}" y="{y0}" width="{fx(f_hi) - fx(f_lo):.1f}" '
+                    f'height="{y1 - y0}" fill="#eef2f6"/>')
+        body.append(svg_text((fx(f_lo) + fx(f_hi)) / 2, y0 - 10, label, 13, MUTED, 700,
+                             'middle'))
+    body.append(f'<rect x="{x0}" y="{y0}" width="{x1 - x0}" height="{y1 - y0}" '
+                f'fill="none" stroke="{GRID}"/>')
+    for f in (0.5, 1, 2, 5, 10, 20, 50):
+        x = fx(f)
+        body.append(f'<path d="M {x:.1f} {y0} L {x:.1f} {y1}" stroke="{GRID}"/>')
+        body.append(svg_text(x, y1 + 20, f'{f:g}', 13, MUTED, 400, 'middle'))
+    body.append(svg_text((x0 + x1) / 2, y1 + 44, 'Spatial frequency (cycles per degree)',
+                         14, INK, 400, 'middle'))
+    for r in (0.1, 1, 10, 100, 1000):
+        y = fy(r)
+        body.append(f'<path d="M {x0} {y:.1f} L {x1} {y:.1f}" stroke="{GRID}"/>')
+        body.append(svg_text(x0 - 8, y + 4, f'{r:g}', 13, MUTED, 400, 'end'))
+    body.append(f'<path d="M {x0} {fy(1):.1f} L {x1} {fy(1):.1f}" stroke="{MUTED}" '
+                'stroke-dasharray="5 4"/>')
+    body.append(svg_text(x1 - 4, fy(1) - 6, 'equal', 12, MUTED, 400, 'end'))
+    body.append(svg_text(x0 + 6, fy(300), 'luminance dominates', 12, MUTED, 400, 'start'))
+    body.append(svg_text(x1 - 6, fy(0.15), 'chroma dominates', 12, MUTED, 400, 'end'))
+    middle = (y0 + y1) / 2
+    body.append(svg_text(30, middle, 'Luminance ÷ chroma sensitivity', 14, INK, 400, 'middle')
+                .replace('<text ', f'<text transform="rotate(-90 30 {middle})" ', 1))
+    # The chroma curve is schematic at high frequencies; draw the ratio only
+    # over the tabulated range.
+    grid = np.logspace(lo, math.log10(max(CSF_SAMPLE_CPD)), 300)
+    ratio = np.clip(luminance_csf(grid) / chroma_csf(grid), 10 ** rlo, 10 ** rhi)
+    points = ' '.join(f'{fx(f):.1f},{fy(r):.1f}' for f, r in zip(grid, ratio))
+    body.append(f'<polyline points="{points}" fill="none" stroke="{INK}" stroke-width="2.5"/>')
+    for row in csf_samples():
+        f, r = row['cpd'], row['luminance_over_chroma']
+        x, y = fx(f), fy(r)
+        body.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3.5" fill="{INK}"/>')
+        label = f'{r:.2f}' if r < 1 else f'{r:.1f}' if r < 10 else f'{r:.0f}'
+        if r < 0.3:
+            body.append(svg_text(x - 6, y - 8, label, 12, INK, 400, 'end'))
+        elif r < 1:
+            body.append(svg_text(x + 6, y + 16, label, 12, INK, 400, 'start'))
+        else:
+            body.append(svg_text(x - 6, y - 8, label, 12, INK, 400, 'end'))
+    return svg_document(width, height, 'Luminance and chroma sensitivity compared',
+                        'The ratio of the relative luminance sensitivity to the relative '
+                        'chroma sensitivity of Figure 14 on logarithmic axes: 0.21 at 0.5 '
+                        'cycles per degree, 0.45 at 1, 1.6 at 2, 41 at 8 and 137 at 17. A '
+                        'shaded band from about 1 to 2 cycles per degree marks the cell grid '
+                        'and another from about 9 to 17 the shapes inside a cell.',
+                        body)
+
 def contrast_sensitivity():
     f = CSF_GRID
     lum = luminance_csf(f)
@@ -1109,6 +1179,7 @@ FIGURES = {
     'receptor-density.svg': receptor_density,
     'dark-adaptation.svg': dark_adaptation,
     'contrast-sensitivity.svg': contrast_sensitivity,
+    'csf-ratio.svg': csf_ratio,
     'campbell-robson.svg': campbell_robson,
     'weber-demo.svg': weber_demo,
     'dither-integration.svg': dither_integration,
@@ -1169,6 +1240,8 @@ def main():
             'luminosity-functions.svg': 'CIE 1924 V(lambda) and CIE 1951 V\'(lambda), 10 nm',
             'receptor-density.svg': 'schematic curves shaped after Curcio et al. (1990)',
             'dark-adaptation.svg': 'schematic two-branch threshold curve',
+            'csf-ratio.svg': 'same curves as contrast-sensitivity.svg; cell bands from '
+                             'character_cell_examples',
             'contrast-sensitivity.svg': 'Mannos and Sakrison (1974) luminance model; '
                                         'schematic chroma low-pass after Mullen (1985)',
             'light-levels.svg': 'approximate luminances; regime limits from CIE 191:2010',
