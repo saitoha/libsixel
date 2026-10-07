@@ -22,7 +22,7 @@ The SIXEL format itself is covered by [SIXEL patents and royalties](../sixel-for
 | Positional and blue-noise dithering | The blue-noise mask and void-and-cluster patents have expired. | The blue-noise texture is CC0; `a_dither` is public domain. |
 | Temporal dithering (`interframe`, `stbn`) | Active NVIDIA patents concern spatiotemporal mask generation and stratified sample generation; libsixel's sources do not perform the claimed generation steps. See [temporal dithering](#temporal-dithering). | Independent implementation. |
 | SIXEL encoding and decoding | See the format document; no patent identified for libsixel's scheduling or extensions. | kmiya's code is permissive and relicensed under MIT; DRCS helpers derive from BSD-3-Clause mlterm code. |
-| Decoder dequantization (`k_undither` family) | No patent identified. | **Open question.** The implementation closely follows GPL-3.0-or-later code. See [decoder dequantization](#decoder-dequantization). |
+| Decoder dequantization (`k_undither` family) | No patent identified. | Adopts the algorithm and behavior-defining parameters of the GPL-3.0-or-later undither program; the C implementation is libsixel's own. See [decoder dequantization](#decoder-dequantization). |
 
 ## Color spaces and color management
 
@@ -100,7 +100,15 @@ libsixel's `stbn` sources do not compute energy functions, optimize masks, or tr
 
 `sixel2png` and the decoder API offer dequantization methods that estimate colors a palette could not represent. The `k_undither` family is based on Kornel Lesiński's [undither](https://github.com/kornelski/undither), as the [dequantization guide](../decoder/dequantization/README.md) explains. No patent on the method is known.
 
-undither is licensed under GPL-3.0-or-later. Using its idea is unaffected by that license, but libsixel's implementation in [`decoder.c`](../../src/decoder.c) follows the structure of undither's code closely: a palette-pair similarity cache with the same sentinel and diagonal values, the same midpoint construction and nearest-other-color test, and a Prewitt-gradient gate with the same thresholds, 160 and 256 at the default edge strength, although libsixel's weights and options differ. Whether this makes the code a derivative work of undither, and therefore incompatible with libsixel's MIT license, is unresolved. Until it is resolved by the project, this code should not be described as independently written. Possible resolutions are permission from the author to use the adapted code under MIT, a reimplementation from a written description by a developer who has not read the undither code, or removal of the affected methods.
+undither is licensed under GPL-3.0-or-later. libsixel's implementation in [`decoder.c`](../../src/decoder.c) was developed while consulting undither's source, and it deliberately adopts undither's algorithm and the parameters that define its behavior, because the method is offered under undither's name. The shared elements are:
+
+- a cache of pairwise palette similarities, with -1 marking an uncomputed pair and 7 assigned to identical colors;
+- the midpoint of two palette colors and the test of whether any other palette color lies nearer to that midpoint;
+- a Prewitt gradient on the gray value `r + 2g + b`, with thresholds of 160 and 256 at the default edge strength that select a center weight of 24 or 8 or leave the pixel unchanged.
+
+These are the algorithm and its functional parameters. Copyright does not extend to methods or algorithms (17 U.S.C. 102(b); Article 10(3) of Japan's Copyright Act excludes algorithms from the protection of programs), and elements dictated by an algorithm or by compatibility with it are excluded before implementations are compared for copied expression. The expression of libsixel's code differs from undither's: it is a single C pass over the indexed image rather than undither's `loop9` traversal with an accumulator type; it weights the midpoint by Floyd–Steinberg neighbor positions, scales distances by a configurable bias, uses a nine-step threshold ladder instead of undither's four steps, searches the palette exhaustively instead of through a VP-tree, and adds light and selective-blur variants, SIMD paths, and parallel execution. The Prewitt helper names the stencil positions as undither does, which follows from the standard operator rather than from a creative choice.
+
+On this basis the project does not regard the code as a derivative work of undither, and credits undither as the source of the method. This is the project's assessment, not a legal opinion. Code adapted from undither's source in future must not be added under the MIT license.
 
 ## Third-party notices
 
