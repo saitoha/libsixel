@@ -14,6 +14,8 @@ the published 10 nm tables.
 from __future__ import annotations
 
 import argparse
+import base64
+import functools
 import html
 import io
 import json
@@ -675,6 +677,195 @@ def blind_spot():
                         body)
 
 
+
+# --------------------------------------------------------------------------
+# Fine pixels and coarse tiles under a fixed palette
+#
+# The presentation was chosen with the interactive tool in
+# tools/docs/tile-lab/index.html, whose processing this section reproduces:
+# averages and dithering errors in linear light, nearest colors by DIN99d,
+# and Floyd-Steinberg error diffusion in raster order.
+
+TILE_DEMO = {'image': 'images/snake.png', 'size': (360, 270), 'tile': 9,
+             'palette': 'xterm 256 colors', 'jump_threshold': 6.0}
+
+
+def xterm256_palette():
+    base = [0x000000, 0xcd0000, 0x00cd00, 0xcdcd00, 0x0000ee, 0xcd00cd, 0x00cdcd, 0xe5e5e5,
+            0x7f7f7f, 0xff0000, 0x00ff00, 0xffff00, 0x5c5cff, 0xff00ff, 0x00ffff, 0xffffff]
+    colors = [((c >> 16) & 255, (c >> 8) & 255, c & 255) for c in base]
+    levels = (0, 95, 135, 175, 215, 255)
+    colors += [(r, g, b) for r in levels for g in levels for b in levels]
+    colors += [(8 + 10 * i,) * 3 for i in range(24)]
+    return np.array(colors, dtype=float) / 255.0
+
+
+def linear_to_lab(rgb, din99d=False):
+    rgb = np.asarray(rgb, dtype=float)
+    m = np.array([[0.4124564, 0.3575761, 0.1804375],
+                  [0.2126729, 0.7151522, 0.0721750],
+                  [0.0193339, 0.1191920, 0.9503041]])
+    xyz = rgb @ m.T
+    if din99d:
+        xyz = xyz.copy()
+        xyz[..., 0] = 1.12 * xyz[..., 0] - 0.12 * xyz[..., 2]
+    t = xyz / np.array([0.95047, 1.0, 1.08883])
+    f = np.where(t > 216 / 24389, np.cbrt(t), (24389 / 27 * t + 16) / 116)
+    lab = np.stack([116 * f[..., 1] - 16, 500 * (f[..., 0] - f[..., 1]),
+                    200 * (f[..., 1] - f[..., 2])], axis=-1)
+    if not din99d:
+        return lab
+    c50, s50 = math.cos(math.radians(50)), math.sin(math.radians(50))
+    e = c50 * lab[..., 1] + s50 * lab[..., 2]
+    ff = 1.14 * (c50 * lab[..., 2] - s50 * lab[..., 1])
+    chroma = 22.5 * np.log1p(0.06 * np.hypot(e, ff))
+    hue = np.arctan2(ff, e) + math.radians(50)
+    return np.stack([325.22 * np.log1p(0.0036 * lab[..., 0]),
+                     chroma * np.cos(hue), chroma * np.sin(hue)], axis=-1)
+
+
+def nearest_palette(colors, palette_din):
+    din = linear_to_lab(np.clip(colors, 0, 1), din99d=True).reshape(-1, 3)
+    out = np.empty(len(din), dtype=int)
+    for start in range(0, len(din), 4096):
+        chunk = din[start:start + 4096]
+        out[start:start + 4096] = np.argmin(
+            ((chunk[:, None, :] - palette_din[None, :, :]) ** 2).sum(axis=-1), axis=1)
+    return out.reshape(np.shape(colors)[:-1])
+
+
+def diffuse_to_palette(image, palette, palette_din):
+    work = image.astype(float).copy()
+    height, width, _ = work.shape
+    out = np.zeros((height, width), dtype=int)
+    memo = {}
+    for y in range(height):
+        for x in range(width):
+            value = np.clip(work[y, x], 0, 1)
+            key = tuple(np.round(value * 1023).astype(int))
+            index = memo.get(key)
+            if index is None:
+                index = int(nearest_palette(value[None, :], palette_din)[0])
+                memo[key] = index
+            out[y, x] = index
+            error = value - palette[index]
+            if x + 1 < width:
+                work[y, x + 1] += error * 7 / 16
+            if y + 1 < height:
+                if x > 0:
+                    work[y + 1, x - 1] += error * 3 / 16
+                work[y + 1, x] += error * 5 / 16
+                if x + 1 < width:
+                    work[y + 1, x + 1] += error * 1 / 16
+    return out
+
+
+def tile_means(image, tile):
+    height, width, _ = image.shape
+    return image.reshape(height // tile, tile, width // tile, tile, 3).mean(axis=(1, 3))
+
+
+def tile_metrics(reference, output, tile, threshold):
+    ref = linear_to_lab(tile_means(reference, tile))
+    out = linear_to_lab(tile_means(output, tile))
+
+    def box3(lab):
+        padded = np.pad(lab, ((1, 1), (1, 1), (0, 0)))
+        ones = np.pad(np.ones(lab.shape[:2]), 1)
+        total = sum(padded[1 + dy:padded.shape[0] - 1 + dy, 1 + dx:padded.shape[1] - 1 + dx]
+                    for dy in (-1, 0, 1) for dx in (-1, 0, 1))
+        count = sum(ones[1 + dy:ones.shape[0] - 1 + dy, 1 + dx:ones.shape[1] - 1 + dx]
+                    for dy in (-1, 0, 1) for dx in (-1, 0, 1))
+        return total / count[..., None]
+
+    def delta(a, b):
+        return np.linalg.norm(a - b, axis=-1)
+
+    jumps = pairs = 0
+    for axis in (0, 1):
+        a = np.take(out, range(out.shape[axis] - 1), axis=axis)
+        b = np.take(out, range(1, out.shape[axis]), axis=axis)
+        ra = np.take(ref, range(ref.shape[axis] - 1), axis=axis)
+        rb = np.take(ref, range(1, ref.shape[axis]), axis=axis)
+        excess = delta(a, b) - delta(ra, rb)
+        jumps += int((excess > threshold).sum())
+        pairs += excess.size
+    return {'delta_e_tile': round(float(delta(out, ref).mean()), 1),
+            'delta_e_3x3': round(float(delta(box3(out), box3(ref)).mean()), 1),
+            'jump_share': round(jumps / pairs, 3)}
+
+
+@functools.lru_cache(maxsize=1)
+def tile_demo_panels():
+    width, height = TILE_DEMO['size']
+    tile = TILE_DEMO['tile']
+    source = Image.open(ROOT / TILE_DEMO['image']).convert('RGB')
+    source = source.resize((width, height), Image.Resampling.LANCZOS)
+    image = srgb_decode(np.asarray(source, dtype=float) / 255.0)
+    palette = srgb_decode(xterm256_palette())
+    palette_din = linear_to_lab(palette, din99d=True)
+    means = tile_means(image, tile)
+
+    def expand(grid):
+        return np.repeat(np.repeat(grid, tile, axis=0), tile, axis=1)
+
+    fine = [('Original', image),
+            ('Dithered', palette[diffuse_to_palette(image, palette, palette_din)]),
+            ('Not dithered', palette[nearest_palette(image, palette_din)])]
+    coarse = [('24-bit mean of each tile', expand(means)),
+              ('Dithered over tiles', expand(palette[diffuse_to_palette(means, palette, palette_din)])),
+              ('Not dithered', expand(palette[nearest_palette(means, palette_din)]))]
+    metrics = {label: tile_metrics(image, panel, tile, TILE_DEMO['jump_threshold'])
+               for label, panel in coarse[1:]}
+    return fine, coarse, metrics
+
+
+def png_data_uri(linear_image):
+    pixels = np.round(srgb_encode(linear_image) * 255).astype(np.uint8)
+    buffer = io.BytesIO()
+    Image.fromarray(pixels, 'RGB').save(buffer, format='PNG', optimize=True)
+    return 'data:image/png;base64,' + base64.b64encode(buffer.getvalue()).decode('ascii')
+
+
+def tile_dithering():
+    fine, coarse, metrics = tile_demo_panels()
+    width, height = TILE_DEMO['size']
+    tile = TILE_DEMO['tile']
+    gap, left = 30, 15
+    doc_width = 2 * left + 3 * width + 2 * gap
+    body = []
+    rows = ((f'Fine grid: {TILE_DEMO["palette"]}, one color per pixel', fine, 40, False),
+            (f'Coarse tiles: {TILE_DEMO["palette"]}, one color per {tile} × {tile} tile', coarse, 410,
+             True))
+    for title, panels, top, measured in rows:
+        body.append(svg_text(left, top - 12, title, 17, INK, 700))
+        for column, (label, image) in enumerate(panels):
+            x = left + column * (width + gap)
+            body.append(f'<image x="{x}" y="{top}" width="{width}" height="{height}" '
+                        'preserveAspectRatio="none" image-rendering="optimizeSpeed" '
+                        f'href="{png_data_uri(image)}"/>')
+            body.append(f'<rect x="{x}" y="{top}" width="{width}" height="{height}" '
+                        f'fill="none" stroke="{GRID}"/>')
+            body.append(svg_text(x, top + height + 22, label, 15, INK, 700))
+            if measured and column == 0:
+                body.append(svg_text(x, top + height + 42, 'Reference for the measures',
+                                     14, MUTED))
+            elif measured:
+                m = metrics[label]
+                body.append(svg_text(x, top + height + 42,
+                                     f'ΔE tile {m["delta_e_tile"]:.1f} · ΔE 3×3 '
+                                     f'{m["delta_e_3x3"]:.1f} · jumps {100 * m["jump_share"]:.0f}%',
+                                     14, MUTED))
+    return svg_document(doc_width, 735, 'Fine pixels and coarse tiles under a fixed palette',
+                        'Top row: a photograph of a snake as the original, with the xterm '
+                        '256-color palette dithered and not dithered, one color per pixel. '
+                        'Bottom row: the same photograph with one color per tile, as the '
+                        '24-bit mean of each tile, dithered between tiles, and not dithered. '
+                        'Dithering looks close to the original on the fine grid but breaks '
+                        'the coarse tiles into conspicuous noise.',
+                        body)
+
+
 FIGURES = {
     'blind-spot.svg': blind_spot,
     'cone-sensitivity.svg': cone_sensitivity,
@@ -690,6 +881,7 @@ FIGURES = {
     'opponent-channels.svg': opponent_channels,
     'light-levels.svg': light_levels,
     'viewing-geometry.svg': viewing_geometry,
+    'tile-dithering.svg': tile_dithering,
 }
 
 EXTERNAL = {
@@ -745,9 +937,14 @@ def main():
             'light-levels.svg': 'approximate luminances; regime limits from CIE 191:2010',
             'luma-chroma.svg': 'images/snake.png, BT.601 YCbCr on encoded values',
             'dither-integration.svg': 'Floyd-Steinberg and seeded random threshold dither',
+            'tile-dithering.svg': 'images/snake.png; xterm 256-color palette; averages and '
+                                  'Floyd-Steinberg error in linear light; nearest colors '
+                                  'by DIN99d',
         },
         'contrast_sensitivity_samples': csf_samples(),
         'character_cell_examples': character_cell_examples(),
+        'tile_dithering': dict(TILE_DEMO, size=list(TILE_DEMO['size']),
+                               metrics=tile_demo_panels()[2]),
         'external': EXTERNAL,
     }, indent=2, ensure_ascii=False) + '\n'
     if not args.check:

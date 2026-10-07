@@ -14,6 +14,7 @@
     "luminosity-functions.svg",
     "opponent-channels.svg",
     "receptor-density.svg",
+    "tile-dithering.svg",
     "viewing-geometry.svg",
     "weber-demo.svg"
   ],
@@ -25,7 +26,8 @@
     "contrast-sensitivity.svg": "Mannos and Sakrison (1974) luminance model; schematic chroma low-pass after Mullen (1985)",
     "light-levels.svg": "approximate luminances; regime limits from CIE 191:2010",
     "luma-chroma.svg": "images/snake.png, BT.601 YCbCr on encoded values",
-    "dither-integration.svg": "Floyd-Steinberg and seeded random threshold dither"
+    "dither-integration.svg": "Floyd-Steinberg and seeded random threshold dither",
+    "tile-dithering.svg": "images/snake.png; xterm 256-color palette; averages and Floyd-Steinberg error in linear light; nearest colors by DIN99d"
   },
   "contrast_sensitivity_samples": [
     {
@@ -122,6 +124,28 @@
         "vertical_cpd": 8.59
       }
     ]
+  },
+  "tile_dithering": {
+    "image": "images/snake.png",
+    "size": [
+      360,
+      270
+    ],
+    "tile": 9,
+    "palette": "xterm 256 colors",
+    "jump_threshold": 6.0,
+    "metrics": {
+      "Dithered over tiles": {
+        "delta_e_tile": 19.9,
+        "delta_e_3x3": 5.2,
+        "jump_share": 0.787
+      },
+      "Not dithered": {
+        "delta_e_tile": 17.5,
+        "delta_e_3x3": 13.1,
+        "jump_share": 0.277
+      }
+    }
   },
   "external": {
     "eye-anatomy.jpg": {
