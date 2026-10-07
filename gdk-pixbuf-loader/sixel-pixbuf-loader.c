@@ -316,7 +316,6 @@ fill_info(GdkPixbufFormat *info)
     };
     static gchar *mime_types[] = {
         "image/x-sixel",
-        "image/sixel",
         NULL
     };
     static gchar *extensions[] = {

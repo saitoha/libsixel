@@ -15,7 +15,7 @@ context to support concurrent decoding.
   returned.
 - Inputs larger than 6000x6000 pixels are rejected with an error.
 - Signature priorities: anchored `ESC P q` is high, unanchored `ESC P` is low.
-  MIME type is `image/x-sixel` (alias `image/sixel`).
+  MIME type is `image/x-sixel`.
 - File extensions: `sixel`, `six`.
 
 ## Requirements
