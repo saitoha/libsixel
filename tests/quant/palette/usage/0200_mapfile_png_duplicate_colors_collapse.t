@@ -21,9 +21,10 @@ expected_palette='JASC-PAL
 
 # All four PLTE entries are blue.  Their alpha values differ, so compositing
 # them over the same blue background makes every decoded pixel identical.
-# Native float reconstruction must retain the exact blue endpoint.
+# Force the builtin loader so an optional backend cannot hide incorrect
+# byte alpha normalization. Reconstruction retains the exact blue endpoint.
 actual_palette=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=none! \
         --precision=float32 --alpha-policy=composite \
         -B '#0000ff' -m "${mapfile_png}" -M pal-jasc:- \
         -o /dev/null "${input_image}"

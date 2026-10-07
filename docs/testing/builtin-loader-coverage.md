@@ -15,7 +15,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [Shared loader integration and policy](../loader/builtin.md) | 57 | 1 | 3 | 1 | 4 | 0 | 48 |
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 36 | 0 | 0 | 0 | 0 | 0 |
 | [GIF](../loader/builtin/gif.md) | 73 | 35 | 3 | 2 | 12 | 2 | 19 |
-| [PNG and APNG](../loader/builtin/png/README.md) | 304 | 37 | 59 | 0 | 13 | 7 | 188 |
+| [PNG and APNG](../loader/builtin/png/README.md) | 304 | 38 | 59 | 0 | 13 | 7 | 187 |
 | [JPEG](../loader/builtin/jpeg.md) | 249 | 102 | 14 | 1 | 57 | 5 | 70 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 273 | 219 | 37 | 1 | 5 | 0 | 11 |
 | [PSD and PSB](../loader/builtin/psd.md) | 1268 | 206 | 551 | 402 | 86 | 3 | 20 |
@@ -23,7 +23,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 79 | 53 | 8 | 0 | 14 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2544** | **860** | **676** | **411** | **212** | **17** | **368** |
+| **Total** | **2544** | **861** | **676** | **411** | **212** | **17** | **367** |
 
 ## Complete inventory
 
@@ -323,7 +323,7 @@ Primary implementation context: [PNG/APNG builtin component](../loader/builtin/p
 | [tests/loader/builtin/2062_loader_builtin_png_palette_all_zero_k0_paint.t](../../tests/loader/builtin/2062_loader_builtin_png_palette_all_zero_k0_paint.t) | PNG all zero-alpha SIXEL paint coverage, keycolor 0. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png/README.md`](../loader/builtin/png/README.md) |
 | [tests/loader/builtin/2063_loader_builtin_png_palette_all_zero_k1_paint.t](../../tests/loader/builtin/2063_loader_builtin_png_palette_all_zero_k1_paint.t) | PNG all zero-alpha SIXEL paint coverage, keycolor 1. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png/README.md`](../loader/builtin/png/README.md) |
 | [tests/loader/builtin/2064_loader_builtin_png_palette_cms_source_numeric.t](../../tests/loader/builtin/2064_loader_builtin_png_palette_cms_source_numeric.t) | PNG palette CMS consumes original source RGB. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png/README.md`](../loader/builtin/png/README.md) |
-| [tests/loader/builtin/2065_loader_builtin_png_palette_background_isolation.t](../../tests/loader/builtin/2065_loader_builtin_png_palette_background_isolation.t) | PNG explicit background retains the existing byte blend. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/2065_loader_builtin_png_palette_background_numeric.t](../../tests/loader/builtin/2065_loader_builtin_png_palette_background_numeric.t) | PNG palette composition normalizes alpha and rounds to nearest byte. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png/README.md`](../loader/builtin/png/README.md) |
 | [tests/loader/builtin/2068_loader_builtin_png_palette_k0_allocation_failure.t](../../tests/loader/builtin/2068_loader_builtin_png_palette_k0_allocation_failure.t) | PNG RGB palette allocation failure has no callback or leak. | Robustness/liveness | Policy-linked: [`docs/loader/builtin/png/README.md`](../loader/builtin/png/README.md) |
 | [tests/loader/builtin/2069_loader_builtin_png_palette_k1_allocation_failure.t](../../tests/loader/builtin/2069_loader_builtin_png_palette_k1_allocation_failure.t) | PNG RGB palette allocation failure has no callback or leak. | Robustness/liveness | Policy-linked: [`docs/loader/builtin/png/README.md`](../loader/builtin/png/README.md) |
 | [tests/loader/builtin/2070_loader_builtin_png_metadata_boundary_rgb8_builtin.t](../../tests/loader/builtin/2070_loader_builtin_png_metadata_boundary_rgb8_builtin.t) | Inspect PNG metadata boundary RGB8 with builtin. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png-source-precision.md`](../loader/builtin/png-source-precision.md) |

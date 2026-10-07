@@ -14,6 +14,12 @@ test_loader_0189_png_palette_samples(int argc, char **argv)
     edge_loader_options_t options;
     edge_frame_probe_t probe;
     edge_writer_t writer;
+    /* PLTE entries over (193, 73, 29), with alpha 0, 1/3, 2/3 and 1.
+     * The mixed triples before nearest rounding are (151,85,209/3) and
+     * (371/3,347/3,391/3). No tie is possible with denominator 255. */
+    unsigned char const png_composite[] = {
+        193, 73, 29, 151, 85, 70, 124, 116, 130, 113, 157, 211
+    };
     unsigned char tga[64];
     unsigned char const *alpha;
     unsigned char const *input;
@@ -99,8 +105,10 @@ test_loader_0189_png_palette_samples(int argc, char **argv)
                 /* Independent stored-ICC expectation starts from source RGB,
                  * including hidden/partial colors, before any alpha policy. */
                 expected = color_pal_cms[i * 3 + c];
-            } else if (mode >= 5 && alpha[i] < 255) {
-                /* Isolation control, not a linear-light accuracy claim. */
+            } else if (mode == 5) {
+                expected = png_composite[i * 3 + c];
+            } else if (mode >= 6 && alpha[i] < 255) {
+                /* TGA compatibility control, not linear-light accuracy. */
                 expected = (alpha[i] * expected + (255 - alpha[i]) *
                     (options.set_bgcolor ? options.bgcolor[c] : 0)) >> 8;
             }

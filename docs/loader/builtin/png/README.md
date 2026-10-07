@@ -65,7 +65,7 @@ Without a resolved background, retained indexed PNG paths keep the original `PLT
 
 For nonindexed eight-bit sources without an applied color transform or composition background, alpha requires only an exact-zero mask: RGB remains byte-valued. The shared encoder applies the [precision preference](../../../encoder/precision/README.md) afterward; a mask alone does not require linear float RGB.
 
-The shared palette converter has an explicit format policy. TGA retains its existing black blend when no background is present, and an explicit background retains the existing integer byte blend. These isolation controls do not establish linear-light composition accuracy. `bKGD`, non-indexed decoding, and palettes exceeding `reqcolors` continue through their existing fallback paths.
+The shared palette converter has an explicit format policy. For a retained PNG palette with an explicit background, each gamma-encoded byte component is `floor((alpha * foreground + (255 - alpha) * background + 127) / 255)`. This preserves either endpoint and equal foreground/background values; it does not establish linear-light composition accuracy. TGA retains its existing divide-by-256 byte blend, using black when no background is present. `bKGD`, non-indexed decoding, and palettes exceeding `reqcolors` continue through their existing fallback paths.
 
 ## APNG pipeline
 
@@ -286,6 +286,7 @@ The rows below are pipeline landmarks rather than the complete suite. The [PNG/A
 | PNG-35 | Final SIXEL from a none-zero-alpha fixture paints exactly the source positive-alpha positions and their independently rounded RGB wire colors for either keycolor setting. | [tests/loader/builtin/2060_loader_builtin_png_palette_none_zero_k0_paint.t](../../../../tests/loader/builtin/2060_loader_builtin_png_palette_none_zero_k0_paint.t), [tests/loader/builtin/2061_loader_builtin_png_palette_none_zero_k1_paint.t](../../../../tests/loader/builtin/2061_loader_builtin_png_palette_none_zero_k1_paint.t) |
 | PNG-36 | Final SIXEL from an all-zero-alpha fixture paints exactly the source positive-alpha positions and their independently rounded RGB wire colors for either keycolor setting. | [tests/loader/builtin/2062_loader_builtin_png_palette_all_zero_k0_paint.t](../../../../tests/loader/builtin/2062_loader_builtin_png_palette_all_zero_k0_paint.t), [tests/loader/builtin/2063_loader_builtin_png_palette_all_zero_k1_paint.t](../../../../tests/loader/builtin/2063_loader_builtin_png_palette_all_zero_k1_paint.t) |
 | PNG-37 | Builtin CMS transforms original retained PNG palette RGB before zero-alpha coverage is applied; output bytes follow an independent stored-ICC matrix/TRC oracle. | [tests/loader/builtin/2064_loader_builtin_png_palette_cms_source_numeric.t](../../../../tests/loader/builtin/2064_loader_builtin_png_palette_cms_source_numeric.t) |
+| PNG-39 | Retained PNG palette/background composition uses normalized 8-bit alpha and nearest byte rounding, including transparent, partial and opaque entries. | [tests/loader/builtin/2065_loader_builtin_png_palette_background_numeric.t](../../../../tests/loader/builtin/2065_loader_builtin_png_palette_background_numeric.t) |
 
 ### Quality regression tests
 

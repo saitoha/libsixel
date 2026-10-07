@@ -1048,9 +1048,9 @@ chunk_is_pnm(sixel_chunk_t const *chunk)
 }
 
 /* PNG retains source RGB without a background; TGA keeps its legacy blend. */
-enum palette_no_bg_policy {
-    PALETTE_NO_BG_PRESERVE,
-    PALETTE_NO_BG_BLEND_BLACK
+enum palette_alpha_policy {
+    PALETTE_ALPHA_PNG,
+    PALETTE_ALPHA_TGA_COMPAT
 };
 
 static SIXELSTATUS
@@ -1060,7 +1060,7 @@ convert_palette_to_rgb(
     int palette_colors,
     int palette_comp,
     unsigned char *bgcolor,
-    enum palette_no_bg_policy no_bg_policy,
+    enum palette_alpha_policy alpha_policy,
     sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -1072,6 +1072,8 @@ convert_palette_to_rgb(
     int bg_b;
     unsigned char gray;
     int alpha;
+    int blend_denominator;
+    int blend_rounding;
 
     status = SIXEL_FALSE;
     rgb_palette = NULL;
@@ -1082,6 +1084,12 @@ convert_palette_to_rgb(
     bg_b = 0;
     gray = 0;
     alpha = 0;
+    /* PNG alpha is normalized by 255, with nearest byte rounding. TGA keeps
+     * its historical divide-by-256 floor until its blend policy is migrated.
+     * A denominator of 256 would darken even equal PNG foreground/background
+     * values and could create distinct map colors from identical swatches. */
+    blend_denominator = alpha_policy == PALETTE_ALPHA_PNG ? 255 : 256;
+    blend_rounding = alpha_policy == PALETTE_ALPHA_PNG ? 127 : 0;
 
     if (ppalette_rgb == NULL ||
         ppalette == NULL ||
@@ -1114,20 +1122,23 @@ convert_palette_to_rgb(
             alpha = palette_src[i * 4 + 3];
             if (alpha < 0xff &&
                 (bgcolor != NULL ||
-                 no_bg_policy == PALETTE_NO_BG_BLEND_BLACK)) {
+                 alpha_policy == PALETTE_ALPHA_TGA_COMPAT)) {
                 /*
-                 * Retain the byte blend for an explicit background and for TGA.
+                 * An explicit background blends in gamma byte coordinates.
                  * PNG without a background keeps even hidden source RGB.
                  */
                 rgb_palette[i * 3 + 0] =
                     (unsigned char)(((0xff - alpha) * bg_r
-                                     + alpha * palette_src[i * 4 + 0]) >> 8);
+                                     + alpha * palette_src[i * 4 + 0]
+                                     + blend_rounding) / blend_denominator);
                 rgb_palette[i * 3 + 1] =
                     (unsigned char)(((0xff - alpha) * bg_g
-                                     + alpha * palette_src[i * 4 + 1]) >> 8);
+                                     + alpha * palette_src[i * 4 + 1]
+                                     + blend_rounding) / blend_denominator);
                 rgb_palette[i * 3 + 2] =
                     (unsigned char)(((0xff - alpha) * bg_b
-                                     + alpha * palette_src[i * 4 + 2]) >> 8);
+                                     + alpha * palette_src[i * 4 + 2]
+                                     + blend_rounding) / blend_denominator);
             } else {
                 rgb_palette[i * 3 + 0] = palette_src[i * 4 + 0];
                 rgb_palette[i * 3 + 1] = palette_src[i * 4 + 1];
@@ -4841,7 +4852,7 @@ sixel_builtin_try_load_indexed_png(
                                     palette_colors,
                                     palette_comp,
                                     bgcolor,
-                                    PALETTE_NO_BG_PRESERVE,
+                                    PALETTE_ALPHA_PNG,
                                     allocator);
     if (SIXEL_FAILED(status)) {
         stbi_free(palette);
@@ -5126,7 +5137,7 @@ sixel_builtin_try_load_indexed_tga(
                                     palette_colors,
                                     palette_comp,
                                     bgcolor,
-                                    PALETTE_NO_BG_BLEND_BLACK,
+                                    PALETTE_ALPHA_TGA_COMPAT,
                                     allocator);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
@@ -5248,7 +5259,7 @@ sixel_builtin_load_png_keycolor_or_rgba(
                                         palette_colors,
                                         palette_comp,
                                         bgcolor,
-                                        PALETTE_NO_BG_PRESERVE,
+                                        PALETTE_ALPHA_PNG,
                                         allocator);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
