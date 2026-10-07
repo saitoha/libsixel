@@ -80,8 +80,8 @@
       "year": 1978.0
     },
     {
-      "label": "Prestel",
-      "lane": "videotex",
+      "label": "Prestel service",
+      "lane": "mosaic",
       "source": "https://en.wikipedia.org/wiki/Prestel",
       "year": 1979.0
     },
@@ -90,6 +90,12 @@
       "lane": "mosaic",
       "source": "https://en.wikipedia.org/wiki/Semigraphics",
       "year": 1979.5
+    },
+    {
+      "label": "CCITT T.100 options",
+      "lane": "videotex",
+      "source": "https://stuff.mit.edu/afs/net/dev/reference/ccitt/1992/t/t100_1.asc",
+      "year": 1980.2
     },
     {
       "label": "CCITT T.4 fax",
@@ -104,8 +110,8 @@
       "year": 1981.5
     },
     {
-      "label": "Minitel",
-      "lane": "videotex",
+      "label": "Minitel service",
+      "lane": "mosaic",
       "source": "https://en.wikipedia.org/wiki/Minitel",
       "year": 1982.0
     },
@@ -116,8 +122,14 @@
       "year": 1983.0
     },
     {
-      "label": "Bildschirmtext",
-      "lane": "videotex",
+      "label": "VT220 DECDLD soft fonts",
+      "lane": "terminal",
+      "source": "https://shuford.invisible-island.net/sixel_graphics_news.txt",
+      "year": 1983.3
+    },
+    {
+      "label": "Bildschirmtext DRCS",
+      "lane": "mosaic",
       "source": "https://en.wikipedia.org/wiki/Bildschirmtext",
       "year": 1983.5
     },
@@ -443,7 +455,7 @@
     },
     {
       "key": "mosaic",
-      "label": "Mosaic characters and Unicode"
+      "label": "Mosaics, DRCS, and Unicode"
     },
     {
       "key": "render",

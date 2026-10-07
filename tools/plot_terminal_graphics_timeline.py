@@ -39,7 +39,7 @@ DOCUMENT = "docs/sixel-format/terminal-graphics-history/README.md"
 # bottom.  Each entry is (key, label, color).
 LANES = (
     ("art", "Character art", "#8e5a2b"),
-    ("mosaic", "Mosaic characters and Unicode", "#b07d12"),
+    ("mosaic", "Mosaics, DRCS, and Unicode", "#b07d12"),
     ("render", "Character rendering software", "#c0392b"),
     ("terminal", "Vector and DEC terminals", "#0f7c80"),
     ("videotex", "Videotex and image coding", "#7a4fa0"),
@@ -100,6 +100,8 @@ EVENTS = (
      "https://en.wikipedia.org/wiki/Tektronix_4010"),
     (1974.0, "terminal", "Tektronix 4014",
      "https://en.wikipedia.org/wiki/Tektronix_4010"),
+    (1983.3, "terminal", "VT220 DECDLD soft fonts",
+     "https://shuford.invisible-island.net/sixel_graphics_news.txt"),
     (1981.5, "terminal", "ReGIS on VT125",
      "https://en.wikipedia.org/wiki/ReGIS"),
     (1984.6, "terminal", "VT240 SIXEL",
@@ -108,15 +110,17 @@ EVENTS = (
      "https://vt100.net/docs/vt3xx-gp/"),
     (1978.0, "videotex", "Telidon",
      "https://en.wikipedia.org/wiki/Telidon"),
-    (1979.0, "videotex", "Prestel",
+    (1979.0, "mosaic", "Prestel service",
      "https://en.wikipedia.org/wiki/Prestel"),
+    (1980.2, "videotex", "CCITT T.100 options",
+     "https://stuff.mit.edu/afs/net/dev/reference/ccitt/1992/t/t100_1.asc"),
     (1980.5, "videotex", "CCITT T.4 fax",
      "https://www.rfc-editor.org/rfc/rfc804"),
-    (1982.0, "videotex", "Minitel",
+    (1982.0, "mosaic", "Minitel service",
      "https://en.wikipedia.org/wiki/Minitel"),
     (1983.0, "videotex", "NAPLPS",
      "https://en.wikipedia.org/wiki/NAPLPS"),
-    (1983.5, "videotex", "Bildschirmtext",
+    (1983.5, "mosaic", "Bildschirmtext DRCS",
      "https://en.wikipedia.org/wiki/Bildschirmtext"),
     (1984.9, "videotex", "CAPTAIN",
      "https://en.wikipedia.org/wiki/Captain_(videotex)"),
@@ -298,7 +302,8 @@ def wide_figure() -> str:
     description = (
         "An overview timeline from 1875 to 2024 with seven horizontal bands: "
         "character art from typewriter art to Usenet ASCII art; mosaic "
-        "characters from Ceefax to Unicode 16 octants; character rendering "
+        "characters and DRCS from Ceefax, Prestel, and Minitel to Unicode 16 "
+        "octants; character rendering "
         "software from AAlib to chafa; Tektronix and DEC terminals from the "
         "Tektronix 4010 to the VT340; videotex and image coding from Telidon "
         "to JPEG and the NAPLPS plug-in; software terminals and SIXEL from "
@@ -339,7 +344,7 @@ def mobile_figure() -> str:
     description = (
         "A vertical timeline of terminal graphics from 1875 to 2024, oldest "
         "first, with each event colored by one of seven traditions: character "
-        "art, mosaic characters and Unicode, character rendering software, "
+        "art, mosaics, DRCS, and Unicode, character rendering software, "
         "vector and DEC terminals, videotex and image coding, software "
         "terminals and SIXEL tools, and image protocols and proposals.")
     return svg_document(width, height, title, description, "".join(body))
