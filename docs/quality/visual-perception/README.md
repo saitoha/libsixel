@@ -252,7 +252,7 @@ The two sensitivity curves of [Figure 14](#contrast-sensitivity) weight these fr
 
 *Table 2. Relative contrast sensitivity of the luminance model (Mannos and Sakrison 1974) and the schematic chroma curve (after Mullen 1985), each scaled to its own peak. The ratio compares the two shapes, not absolute thresholds, and is reliable only in its order of magnitude, because the chroma curve is schematic.*
 
-At the frequency of the cell grid, around 1 to 2 cpd, luminance and chroma are about equally effective, and below 1 cpd chroma is relatively the stronger of the two. At the frequency of the shapes inside a cell, around 8 to 17 cpd, luminance dominates by more than an order of magnitude and chroma detail is close to invisible. Seen this way the usual design of character renderers is well matched to vision: the glyph inside a cell is read mainly as a pattern of luminance coverage, and the colors of the cell are read mainly as area colors. It also follows that the color assigned to each cell carries as much weight as the choice of glyph, so that matching cell colors in a perceptually uniform space, as chafa does with DIN99d, matters more for a character renderer than for a pixel display.
+At the frequency of the cell grid, around 1 to 2 cpd, luminance and chroma are about equally effective, and below 1 cpd chroma is relatively the stronger of the two. At the frequency of the shapes inside a cell, around 8 to 17 cpd, luminance dominates by more than an order of magnitude and chroma detail is close to invisible. Seen this way the usual design of character renderers is well matched to vision: the glyph inside a cell is read mainly as a pattern of luminance coverage, and the colors of the cell are read mainly as area colors. It also follows that the color assigned to each cell carries as much weight as the choice of glyph. What the viewer judges about those colors, however, is not their distance from the original, as the next section explains.
 
 ### Research on coarse mosaics
 
@@ -264,7 +264,54 @@ The perception of block-quantized, or pixelated, images has been studied since t
 - **Color helps when shape is degraded.** Yip and Sinha (2002) found that color contributes to face recognition mainly when shape information is degraded, for example by blur. Oliva and Schyns (2000) found that diagnostic colors speed scene recognition, especially at coarse scales. Schyns and Oliva (1994) and Oliva and Schyns (1997) showed that the spatial scale used for recognition depends on the task, rather than always proceeding from coarse to fine.
 - **Glyphs as structure.** Xu, Zhang and Wong (2010) chose glyphs for line drawings by structural similarity rather than by tone, an approach that treats glyphs as small images, as later character renderers do.
 
-These results support three practical rules for a character renderer: preserve coarse luminance structure, because it carries recognition at the few cycles per object that a cell grid can show; set the colors of each cell to match the local average in a perceptual space, because at these frequencies color contributes to recognition; and avoid making the cell grid itself conspicuous, because sharp, regular block edges mask the image, while texture, dithering inside cells or a small amount of noise can reduce that masking. The numbers in Tables 1 and 2 are computed by [`tools/plot_visual_perception_figures.py`](../../../tools/plot_visual_perception_figures.py) and recorded in [`figures/figures.json`](figures/figures.json).
+### What the viewer compares
+
+A viewer of a terminal image has no original to compare with. The judgment is *no-reference*: the viewer sees a defect when the picture contains structure that a natural image would not, not when a color differs from a reference that is not on the screen. Two consequences follow for character cells.
+
+- **A smooth absolute error is tolerated.** An image that is slightly too warm or too dark everywhere, or whose colors drift slowly across a region, is accepted as the picture's own appearance, helped by [chromatic adaptation](#chromatic-adaptation). The comparison of Table 2 says how visible a pattern at a given frequency is; it does not say that the viewer can tell a cell's color from the original's.
+- **A fluctuation between neighboring cells is seen.** When adjacent cells of a smooth region, such as skin or sky, change hue, brightness or texture without reason, the change forms a pattern at the frequency of the cell grid, 1 to 2 cpd in Table 1. Both luminance and chroma are seen well there, and natural images vary little in chroma within smooth regions, so a hue that jumps from cell to cell is judged unnatural even when its error against the original is small.
+
+Harmon and Julesz point the same way: what defeated recognition was the spurious structure of the block edges, not the error of the block averages. Measures of blocking artifacts in compressed images likewise work without a reference by measuring discontinuities at block boundaries (Wang, Bovik and Evans 2000; Wang, Sheikh and Bovik 2002).
+
+This reverses a usual assumption about dithering. On a fine pixel grid, dithering moves quantization error to frequencies that the eye does not resolve. On a cell grid, error diffused from cell to cell lands at the cell frequency, where it is seen as exactly the neighbor-to-neighbor fluctuation described above. For a character renderer, leaving cells undithered can therefore look better than dithering them, and the answer depends on the palette:
+
+- **24-bit color.** The colors of a cell can match the local mean almost exactly, so the only remaining quantization is the shape of the glyph. There is little reason to dither color.
+- **256 colors.** Steps between palette colors are moderate. Without dithering, smooth gradients show a few broad bands; with dithering, they show cell-scale fluctuation. Which is less visible depends on the image, and a dither, if used, is better placed inside cells.
+- **16 colors or fewer.** Steps are large, and bands are strengthened by Mach bands into prominent contours, which are themselves a structure a natural image does not have. Some dithering is needed, but preferably at a sub-cell grain and with a pattern fixed in position, such as ordered or blue-noise dithering, rather than error diffusion between cells.
+
+A pattern fixed in position also keeps its decision stable: error diffusion propagates each decision to the following cells, so a small change of input can flip a whole run of cells, which in animation is seen as shimmer.
+
+### How character renderers handle it
+
+The source code of three renderers shows choices that agree with this reasoning in the newest of them, and with the constraints of their time in the older two.
+
+| Renderer | Colors | Default dithering | Where the error goes | Cell choice |
+| --- | --- | --- | --- | --- |
+| AAlib 1.4 | Brightness only, with text attributes | Floyd–Steinberg | Between cells: the difference between the mean of a cell's 2 × 2 samples and the brightness of the chosen glyph passes to the neighboring cells | Glyph from a table indexed by the 2 × 2 samples; flat cells, whose samples differ from their mean by less than 13 of 256 levels, use a glyph chosen by brightness alone |
+| libcaca (`img2txt`) | 16 ANSI colors | Floyd–Steinberg | Between cells: the difference between the cell average and the mixture of the chosen colors and density glyph | Background is the nearest palette color in RGB, foreground the second nearest, and the glyph is chosen from a density ramp assuming linear mixing |
+| chafa 1.18, symbols | 24-bit, 256, 240, 16, 8 or 2 colors | None. Ordered, Floyd–Steinberg or blue-noise dithering on request; always off with 24-bit color | Inside the 8 × 8 working image of the cells, in grains of 1/8 to 1 cell, by default half a cell | Glyph and foreground and background colors minimize the error within the cell, each color being the mean of the pixels it covers; palette colors are the nearest match |
+| chafa 1.18, sixel | Dynamic palette | Blue noise | Pixels | Not applicable |
+
+*Table 3. Default behavior of character renderers, from their source code: AAlib `src/aarender.c` (Debian packaging repository), libcaca `caca/dither.c` and `src/img2txt.c`, chafa `chafa/chafa-canvas.c`, `chafa/internal/chafa-pixops.c` and `chafa/internal/chafa-symbol-renderer.c`.*
+
+chafa turns dithering off in 24-bit symbol mode with the comment that there is "no reason to dither in truecolor mode", and keeps it off by default in every other symbol mode, while it dithers SIXEL output, which is drawn with real pixels. In 24-bit mode each cell color is the mean of the pixels under the glyph, a continuous function of the image, so neighboring cells of a smooth region receive neighboring colors. In 16-color and fewer modes chafa instead preprocesses the image with a contrast boost, and for 16 colors a saturation boost, which accepts a flatter, stylized result rather than masking the steps with noise. When dithering is requested, its default grain of half a cell puts the pattern at about 2 to 4 cpd in the geometry of Table 1; a grain of one eighth of a cell moves it to the 8 to 17 cpd of the sub-cell row.
+
+AAlib and libcaca both diffuse error between cells by default, which places it at the cell frequency. Both come from the era of monochrome and 16-color terminals, where the steps between available tones are so large that bands would dominate without dithering, which is the last case above. AAlib's special handling of flat cells keeps uniform areas uniform within the tone that diffusion delivers to them.
+
+None of the three has an explicit term for consistency between neighboring cells: each cell is chosen independently, given the image and any diffused error. A nearest-color lookup is discontinuous, so in palette modes two neighboring cells with almost the same content can still fall on different sides of a decision boundary.
+
+An informal check with chafa 1.18.2 agrees. A horizontal gradient, constant in the vertical direction, was rendered as 80 × 20 cells. Any difference between vertically adjacent cells is therefore structure that the image does not contain. Of the 1,520 vertically adjacent pairs, none differed without dithering in the 16-color, 256-color and 24-bit modes, while with dithering in the 16-color mode 721 differed with ordered dithering, 781 with blue noise and 1,285 with Floyd–Steinberg. The count records any change of glyph or color and not its visibility, so it shows where dithering creates cell-scale structure rather than how conspicuous that structure is.
+
+### Practical consequences
+
+These results suggest four rules for a character renderer:
+
+- **Preserve coarse luminance structure.** It carries recognition at the few cycles per object that a cell grid can show.
+- **Keep neighboring cells consistent.** In smooth regions, differences between adjacent cells should follow the image. A slowly varying absolute error is acceptable; a fluctuation from cell to cell is not.
+- **Dither only as much as the palette requires, and inside cells.** With 24-bit color, do not dither color. With fewer colors, prefer patterns fixed in position at a sub-cell grain over error diffusion between cells.
+- **Do not make the cell grid conspicuous.** Sharp, regular block edges mask the image.
+
+The reasoning of this section is an argument from the sensitivity curves and the research above, checked against the implementations; it has not been tested in a controlled viewing experiment. The numbers in Tables 1 and 2 are computed by [`tools/plot_visual_perception_figures.py`](../../../tools/plot_visual_perception_figures.py) and recorded in [`figures/figures.json`](figures/figures.json).
 
 ## Figures and reproduction
 
@@ -294,5 +341,7 @@ Figures 2 and 5 to 17 are generated by [`tools/plot_visual_perception_figures.py
 - Pelli, D. G. "Close encounters: an artist shows that size affects shape." Science 285(5429):844–846, 1999. doi:[10.1126/science.285.5429.844](https://doi.org/10.1126/science.285.5429.844)
 - Schyns, P. G., and A. Oliva. "From blobs to boundary edges: evidence for time- and spatial-scale-dependent scene recognition." Psychological Science 5(4):195–200, 1994. doi:[10.1111/j.1467-9280.1994.tb00500.x](https://doi.org/10.1111/j.1467-9280.1994.tb00500.x)
 - von Kries, J. "Chromatic adaptation." Festschrift der Albrecht-Ludwigs-Universität, Freiburg, 1902. English translation in D. L. MacAdam, ed., *Sources of Color Science*, MIT Press, 1970.
+- Wang, Z., A. C. Bovik, and B. L. Evans. "Blind measurement of blocking artifacts in images." Proceedings of the 2000 International Conference on Image Processing, vol. 3, 981–984, 2000. doi:[10.1109/ICIP.2000.899622](https://doi.org/10.1109/ICIP.2000.899622)
+- Wang, Z., H. R. Sheikh, and A. C. Bovik. "No-reference perceptual quality assessment of JPEG compressed images." Proceedings of the 2002 International Conference on Image Processing, vol. 1, I-477–I-480, 2002. doi:[10.1109/ICIP.2002.1038064](https://doi.org/10.1109/ICIP.2002.1038064)
 - Xu, X., L. Zhang, and T.-T. Wong. "Structure-based ASCII art." ACM Transactions on Graphics 29(4):52, 2010. doi:[10.1145/1778765.1778789](https://doi.org/10.1145/1778765.1778789)
 - Yip, A. W., and P. Sinha. "Contribution of color to face recognition." Perception 31(8):995–1003, 2002. doi:[10.1068/p3376](https://doi.org/10.1068/p3376)
