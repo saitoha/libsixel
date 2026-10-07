@@ -4,7 +4,7 @@
 
 This document records what the libsixel project has been able to establish about patents affecting the image formats that its loaders decode. It is not legal advice, and the project has not commissioned a freedom-to-operate analysis. Patent status depends on jurisdiction, on the exact claims of each patent, and on facts that public sources may not reveal. Absence of a known patent or claim is not proof that none exists. Readers who need a legal opinion should obtain one from a qualified professional.
 
-The SIXEL format itself is covered by [SIXEL patents and royalties](../sixel-format/patents-and-royalties.md), which also explains how patent terms are calculated. Encoder algorithms such as quantization and dithering are outside this document.
+The SIXEL format itself is covered by [SIXEL patents and royalties](../sixel-format/patents-and-royalties.md), which also explains how patent terms are calculated. Encoder and decoder algorithms such as quantization, dithering, and dequantization are covered by [patent and license status of processing algorithms](../misc/algorithm-patents.md).
 
 ## Summary
 

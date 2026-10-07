@@ -84,6 +84,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/project-history.md \
 	docs/sixel-format/README.md \
 	docs/sixel-format/patents-and-royalties.md \
+	docs/misc/algorithm-patents.md \
 	docs/sixel-format/specification-layers.md \
 	docs/protocols/graphics-color-management.md \
 	docs/encoder/colorspace-handling/README.md \

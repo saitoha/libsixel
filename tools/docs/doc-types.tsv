@@ -94,6 +94,7 @@ docs/loader/png-color-metadata.md	reference	both	PNG interpretation contracts + 
 docs/loader/precision-policy.md	reference	both	loader preservation contract + contributor adoption/review guidance and tests
 docs/loader/quicklook.md	reference	user	""
 docs/loader/wic.md	reference	user	""
+docs/misc/algorithm-patents.md	explanation	both	patent and code-license evidence for processing algorithms, not legal advice
 docs/misc/platforms/README.md	reference	contributor	compatibility ledger + maintenance how-to
 docs/misc/platforms/cosmopolitan.md	reference	contributor	""
 docs/misc/platforms/cygwin-msys.md	reference	contributor	""

@@ -4,7 +4,7 @@
 
 This document summarizes public evidence about patents, royalties, and related rights for the SIXEL format. It is not legal advice. The libsixel project has not commissioned a freedom-to-operate analysis, and absence of a known claim is not proof that none exists. Readers who need a legal opinion for a particular product or jurisdiction should obtain one from a qualified professional.
 
-The subject is the SIXEL format as documented by DEC and described in the [SIXEL format overview](README.md). libsixel's own license, the image-processing algorithms it implements, and the formats handled by loaders are separate matters. [Patent status of loader formats](../loader/patents.md) covers the loaders.
+The subject is the SIXEL format as documented by DEC and described in the [SIXEL format overview](README.md). libsixel's own license, the image-processing algorithms it implements, and the formats handled by loaders are separate matters. [Patent status of loader formats](../loader/patents.md) covers the loaders, and [patent and license status of processing algorithms](../misc/algorithm-patents.md) covers color, palette, lookup, dithering, and dequantization methods.
 
 ## Summary
 
