@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <!--
+    image/x-sixel is not a registered media type.  It follows the convention
+    used by several other SIXEL implementations; see
+    docs/sixel-format/specification-layers.md (Media types in use).
+  -->
   <mime-type type="image/x-sixel">
     <comment>DEC SIXEL image</comment>
     <magic priority="60">

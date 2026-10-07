@@ -15,7 +15,9 @@ context to support concurrent decoding.
   returned.
 - Inputs larger than 6000x6000 pixels are rejected with an error.
 - Signature priorities: anchored `ESC P q` is high, unanchored `ESC P` is low.
-  MIME type is `image/x-sixel`.
+  MIME type is `image/x-sixel`. This is not a registered media type: it
+  follows a convention used by several other SIXEL implementations. See
+  [Media types in use](../docs/sixel-format/specification-layers.md#media-types-in-use).
 - File extensions: `sixel`, `six`.
 
 ## Requirements

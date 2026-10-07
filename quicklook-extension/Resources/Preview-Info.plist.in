@@ -42,6 +42,9 @@
                     <string>six</string>
                     <string>sixel</string>
                 </array>
+                <!-- image/x-sixel is not a registered media type; it follows the
+                     convention used by several other SIXEL implementations.  See
+                     docs/sixel-format/specification-layers.md (Media types in use). -->
                 <key>public.mime-type</key>
                 <string>image/x-sixel</string>
             </dict>

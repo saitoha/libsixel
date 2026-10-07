@@ -35,6 +35,11 @@ int main(int argc, const char * argv[])
         [utis addObject:@"com.saitoha.libsixel.sixel"];
 
         NSArray<NSString *> *extensions = @[ @"six", @"sixel" ];
+        /*
+         * image/x-sixel is not a registered media type.  It follows the
+         * convention used by several other SIXEL implementations; see
+         * docs/sixel-format/specification-layers.md (Media types in use).
+         */
         NSArray<NSString *> *mimeTypes = @[ @"image/x-sixel" ];
 
         for (NSString *ext in extensions) {

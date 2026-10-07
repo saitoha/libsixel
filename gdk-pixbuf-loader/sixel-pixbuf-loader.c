@@ -314,6 +314,11 @@ fill_info(GdkPixbufFormat *info)
         { "\x1bP", "* ", 90 },    /* unanchored ESC P */
         { NULL, NULL, 0 }
     };
+    /*
+     * image/x-sixel is not a registered media type.  It follows the
+     * convention used by several other SIXEL implementations; see
+     * docs/sixel-format/specification-layers.md (Media types in use).
+     */
     static gchar *mime_types[] = {
         "image/x-sixel",
         NULL

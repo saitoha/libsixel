@@ -3693,6 +3693,10 @@ DllRegisterServer(void)
 
     /*
      * extension: .six
+     *
+     * image/x-sixel is not a registered media type.  It follows the
+     * convention used by several other SIXEL implementations; see
+     * docs/sixel-format/specification-layers.md (Media types in use).
      */
     key = L".six";
     RegisterStringValue(HKEY_CLASSES_ROOT, key,

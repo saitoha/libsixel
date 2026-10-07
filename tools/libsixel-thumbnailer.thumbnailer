@@ -1,4 +1,7 @@
 [Thumbnailer Entry]
 TryExec=sixel-thumbnailer
 Exec=sixel-thumbnailer -s %s %i %o
+# image/x-sixel is not a registered media type.  It follows the convention
+# used by several other SIXEL implementations; see
+# docs/sixel-format/specification-layers.md (Media types in use).
 MimeType=image/x-sixel;
