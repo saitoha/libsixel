@@ -1431,7 +1431,10 @@ The P3 float requirement overrides an explicit byte preference.
 For high-color \fB-I\fP, P3 accepts RGB input with optional separated
 alpha-zero masks and ordinary RGB/HLS SIXEL output. Gamma, linear, Oklab, CIELAB and DIN99d working coordinates
 retain extended values until destination conversion. Palette construction,
-lookup and diffusion are bypassed. Active snap, GPU, packed-alpha storage,
+lookup and diffusion are bypassed. Gamma-coordinate packed alpha uses common
+frame normalization before geometry and working-space conversion. Fractional
+composition retains float precision; binary alpha alone does not force float.
+Active snap, GPU,
 OR mode, DRCS, macros, PNG snapshots and delta remain unsupported on this
 high-color path and fail before output. The receiver must interpret the
 resulting color definitions as Display P3.

@@ -478,7 +478,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0031_P3_PNG_RECOVERY \
     -DBUILD_TEST_0032_P3_SNAP_RECOVERY \
     -DBUILD_TEST_0033_P3_NAN_RECOVERY \
-    -DBUILD_TEST_0034_P3_ALPHA_RECOVERY \
+    -DBUILD_TEST_0034_P3_ALPHA_SPACE_RECOVERY \
     -DBUILD_TEST_0035_FINAL_FULL \
     -DBUILD_TEST_0036_FINAL_ONE \
     -DBUILD_TEST_0037_FINAL_TWO \
@@ -510,6 +510,24 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0063_MASK_ZERO \
     -DBUILD_TEST_0064_MASK_REUSE \
     -DBUILD_TEST_0065_MASK_CORE_RECOVERY \
+    -DBUILD_TEST_0066_PACKED_RGBA \
+    -DBUILD_TEST_0067_PACKED_ARGB_P3 \
+    -DBUILD_TEST_0068_PACKED_BGRA_LINEAR \
+    -DBUILD_TEST_0069_PACKED_ABGR_OKLAB \
+    -DBUILD_TEST_0070_PACKED_GA_CIELAB \
+    -DBUILD_TEST_0071_PACKED_AG_DIN99D \
+    -DBUILD_TEST_0072_PACKED_BINARY_BYTE \
+    -DBUILD_TEST_0073_PACKED_BINARY_FLOAT \
+    -DBUILD_TEST_0074_PACKED_ALPHA_DISABLED \
+    -DBUILD_TEST_0075_PACKED_MASK_UNION \
+    -DBUILD_TEST_0076_PACKED_BACKGROUND \
+    -DBUILD_TEST_0077_PACKED_CROP \
+    -DBUILD_TEST_0078_PACKED_RESIZE \
+    -DBUILD_TEST_0079_PACKED_REUSE \
+    -DBUILD_TEST_0080_PACKED_PIXEL_RETRY \
+    -DBUILD_TEST_0081_PACKED_MASK_RETRY \
+    -DBUILD_TEST_0082_PACKED_HANDOFF_PLAN \
+    -DBUILD_HIGHCOLOR_PACKED_COMMON \
     -DBUILD_HIGHCOLOR_MASK_COMMON \
     -DBUILD_HIGHCOLOR_BAND_COMMON \
     -DBUILD_HIGHCOLOR_OUTPUT_COMMON \
@@ -6006,7 +6024,7 @@ test_runner_SOURCES = test_runner.c \
     codec/highcolor/0031_p3_png_recovery.c \
     codec/highcolor/0032_p3_snap_recovery.c \
     codec/highcolor/0033_p3_nan_recovery.c \
-    codec/highcolor/0034_p3_alpha_recovery.c \
+    codec/highcolor/0034_p3_alpha_space_recovery.c \
     codec/highcolor/0035_final_full.c \
     codec/highcolor/0036_final_one.c \
     codec/highcolor/0037_final_two.c \
@@ -6038,6 +6056,24 @@ test_runner_SOURCES = test_runner.c \
     codec/highcolor/0063_mask_zero.c \
     codec/highcolor/0064_mask_reuse.c \
     codec/highcolor/0065_mask_core_recovery.c \
+    codec/highcolor/0066_packed_rgba.c \
+    codec/highcolor/0067_packed_argb_p3.c \
+    codec/highcolor/0068_packed_bgra_linear.c \
+    codec/highcolor/0069_packed_abgr_oklab.c \
+    codec/highcolor/0070_packed_ga_cielab.c \
+    codec/highcolor/0071_packed_ag_din99d.c \
+    codec/highcolor/0072_packed_binary_byte.c \
+    codec/highcolor/0073_packed_binary_float.c \
+    codec/highcolor/0074_packed_alpha_disabled.c \
+    codec/highcolor/0075_packed_mask_union.c \
+    codec/highcolor/0076_packed_background.c \
+    codec/highcolor/0077_packed_crop.c \
+    codec/highcolor/0078_packed_resize.c \
+    codec/highcolor/0079_packed_reuse.c \
+    codec/highcolor/0080_packed_pixel_retry.c \
+    codec/highcolor/0081_packed_mask_retry.c \
+    codec/highcolor/0082_packed_handoff_plan.c \
+    codec/highcolor_packed_common.c \
     codec/highcolor_mask_common.c \
     codec/highcolor_band_common.c \
     codec/highcolor_output_common.c \

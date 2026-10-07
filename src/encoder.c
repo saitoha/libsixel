@@ -7132,7 +7132,28 @@ sixel_encoder_rgb101_alpha(sixel_encoder_t const *encoder,
           encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME));
 }
 
-/* Resolve packed storage only within the admitted frame/palette scope. */
+/* High-color owns destination samples, not a fixed working palette.
+ * Bypassed quantizer, lookup, clustering, cover and diffusion choices must
+ * not impose ordinary palette restrictions on packed-frame normalization
+ * or P3 admission. Keep these two entry checks on the same output scope. */
+static int
+sixel_encoder_highcolor_options(sixel_encoder_t const *encoder)
+{
+    return encoder->working_colorspace >= SIXEL_COLORSPACE_GAMMA &&
+        encoder->working_colorspace <= SIXEL_COLORSPACE_DIN99D &&
+        encoder->working_colorspace != SIXEL_COLORSPACE_SMPTEC &&
+        encoder->gpu_policy == SIXEL_GPU_POLICY_OFF &&
+        (encoder->palette_type == SIXEL_PALETTETYPE_AUTO ||
+         encoder->palette_type == SIXEL_PALETTETYPE_RGB ||
+         encoder->palette_type == SIXEL_PALETTETYPE_HLS) &&
+        (encoder->snap_policy == SIXEL_PALETTE_SNAP_POLICY_NONE ||
+         encoder->snap_policy_approach_rate <= 0.0) &&
+        !encoder->sixdelta_enabled && !encoder->ormode &&
+        !encoder->fdrcs && !encoder->fuse_macro &&
+        encoder->macro_number < 0 && !encoder->output_is_png;
+}
+
+/* Resolve packed storage only within the admitted frame/output scope. */
 static int
 sixel_encoder_unpack_alpha_candidate(sixel_encoder_t const *encoder,
                                       sixel_frame_t *frame)
@@ -7140,8 +7161,10 @@ sixel_encoder_unpack_alpha_candidate(sixel_encoder_t const *encoder,
     return sixel_encoder_pixelformat_has_alpha(
             sixel_frame_get_pixelformat(frame)) &&
         sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_GAMMA &&
-        sixel_encoder_rgb101_options(encoder) &&
-        sixel_encoder_rgb101_alpha(encoder, frame);
+        (encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR
+            ? sixel_encoder_highcolor_options(encoder)
+            : sixel_encoder_rgb101_options(encoder) &&
+              sixel_encoder_rgb101_alpha(encoder, frame));
 }
 
 static int
@@ -7193,22 +7216,8 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
     if (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
         return SIXEL_OK;
     }
-    /* High-color owns destination samples, not a fixed working palette.
-     * Its bypassed quantizer, lookup, cover and diffusion selections must
-     * not accidentally impose the ordinary palette admission contract. */
     if (encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
-        if (encoder->working_colorspace >= SIXEL_COLORSPACE_GAMMA &&
-                encoder->working_colorspace <= SIXEL_COLORSPACE_DIN99D &&
-                encoder->working_colorspace != SIXEL_COLORSPACE_SMPTEC &&
-                encoder->gpu_policy == SIXEL_GPU_POLICY_OFF &&
-                (encoder->palette_type == SIXEL_PALETTETYPE_AUTO ||
-                 encoder->palette_type == SIXEL_PALETTETYPE_RGB ||
-                 encoder->palette_type == SIXEL_PALETTETYPE_HLS) &&
-                (encoder->snap_policy == SIXEL_PALETTE_SNAP_POLICY_NONE ||
-                 encoder->snap_policy_approach_rate <= 0.0) &&
-                !encoder->sixdelta_enabled && !encoder->ormode &&
-                !encoder->fdrcs && !encoder->fuse_macro &&
-                encoder->macro_number < 0 && !encoder->output_is_png) {
+        if (sixel_encoder_highcolor_options(encoder)) {
             return SIXEL_OK;
         }
         sixel_helper_set_additional_message(
@@ -7249,12 +7258,13 @@ sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
             encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
         if (sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_RGB888 ||
                 SIXEL_PIXELFORMAT_IS_FLOAT32(
-                    sixel_frame_get_pixelformat(frame))) {
+                    sixel_frame_get_pixelformat(frame)) ||
+                sixel_encoder_unpack_alpha_candidate(encoder, frame)) {
             return SIXEL_OK;
         }
         sixel_helper_set_additional_message(
             "display-p3 high-color requires RGB frames with optional "
-            "separated masks; packed alpha is unsupported.");
+            "separated masks, or gamma-coordinate packed alpha.");
         return SIXEL_BAD_INPUT;
     }
     if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
@@ -9257,7 +9267,8 @@ sixel_encoder_encode_frame_internal(
             encoder->output_color_definition ==
                 SIXEL_PALETTE_OUTPUT_DISPLAY_P3 ||
             encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
-            encoder->clustering_colorspace != SIXEL_COLORSPACE_GAMMA);
+            (encoder->color_option != SIXEL_COLOR_OPTION_HIGHCOLOR &&
+             encoder->clustering_colorspace != SIXEL_COLORSPACE_GAMMA));
         if (SIXEL_FAILED(status)) {
             goto end;
         }

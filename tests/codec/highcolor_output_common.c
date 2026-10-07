@@ -435,6 +435,10 @@ test_highcolor_p3(int scenario)
                     height, format, NULL, -1))) {
             goto end;
         }
+        if (reject && scenario == 34) {
+            /* Packed storage is admitted only in gamma source coordinates. */
+            sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_LINEAR);
+        }
         if (reject && scenario == 26) {
             mask = calloc(1, 1);
             if (mask == NULL) {
