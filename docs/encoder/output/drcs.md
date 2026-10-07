@@ -127,6 +127,14 @@ The native DRCS path excludes preserved alpha-zero masks, `-e`, OR output, nonze
 
 `-Udisplay-p3` supplies P3 component values but sends no color-policy transaction. The caller must configure the receiver's **DRCS-SIXEL** target to interpret those values as P3, as proposed by the [graphics color-management protocol](../../protocols/graphics-color-management.md). The ordinary SIXEL target is separate. `-Uauto` remains unsupported for DRCS because its implemented transaction addresses ordinary SIXEL only. Downloaded glyphs and saved character grids carry no independent color-profile metadata; receiver color interpretation, glyph registration and later display remain separate responsibilities.
 
+## High-color glyph bodies
+
+`-I -Udisplay-p3` admits opaque high-color RGB/HLS bodies through the same glyph envelope. Extended source coordinates and subbyte destination representatives follow [high-color conversion](high-color/README.md#display-p3-boundary); every register definition and repaint pass is retained, including a partially filled final band. The receiver must preserve the color at each paint operation before dividing the completed image into glyphs. An indexed image expanded using only its final palette cannot represent this stream. Producing a valid body does not negotiate or establish that receiver capability.
+
+The same explicit DRCS-SIXEL target interpretation described above applies; ordinary SIXEL color policy does not configure this target. P3 high-color DRCS rejects preserved source masks, interpreted packed alpha, nonzero offsets, OR, delta, macros and PNG snapshots before emitting definition bytes. Supply already composited opaque RGB for source transparency. Legacy output definitions keep their existing admission rules; their acceptance does not establish receiver semantics. Genuine byte jobs remain byte-based. Low-level 15bpp diffusion and independent high-color band scheduling retain the limits documented by the high-color owner.
+
+When `sixel_encoder_encode_frame()` borrows an output object, DRCS header/envelope suppression is temporary. Its original suppression settings are restored after success or failure, so a later ordinary image can use that object without inheriting the glyph envelope. Cell geometry and glyph allocation retain the limitations below.
+
 ## Related options and reuse mechanisms
 
 | Feature | Relationship to DRCS output |
@@ -196,7 +204,20 @@ Native centroid and sub-byte comparisons use absolute working-coordinate toleran
 | DRCS-12 | Repeated P3/gamma/P3 output on one encoder retains source and working values while updating wire codes. | [tests/codec/drcs/0012_output_reuse.t](../../../tests/codec/drcs/0012_output_reuse.t) |
 | DRCS-13 | The native P3 body preserves every expected index with multiple encoder workers. | [tests/codec/drcs/0013_p3_pipeline.t](../../../tests/codec/drcs/0013_p3_pipeline.t) |
 | DRCS-14 | The CLI uses isolated PTY geometry and emits independently expected P3 pixels without color discovery or policy changes. | [tests/cli/color/session/0072_drcs_p3_values.t](../../../tests/cli/color/session/0072_drcs_p3_values.t) |
+| DRCS-15 | Actual register redefinition and a one-row final band preserve independently expected P3 RGB101 paint. | [tests/codec/drcs/0014_highcolor_p3_final_band.t](../../../tests/codec/drcs/0014_highcolor_p3_final_band.t) |
+| DRCS-16 | C1 DRCS framing contains one body without an inner DCS/header/footer. | [tests/codec/drcs/0015_highcolor_p3_c1.t](../../../tests/codec/drcs/0015_highcolor_p3_c1.t) |
+| DRCS-17 | Mapping 3 emits independently expected partial-cell glyph characters and P3 pixels. | [tests/codec/drcs/0016_highcolor_p3_v3_grid.t](../../../tests/codec/drcs/0016_highcolor_p3_v3_grid.t) |
+| DRCS-18 | High-color P3 HLS emits literal HLS syntax and the expected paint. | [tests/codec/drcs/0017_highcolor_p3_hls.t](../../../tests/codec/drcs/0017_highcolor_p3_hls.t) |
+| DRCS-19 | A genuine high-color byte job stays RGB888 and keeps expected RGB101 paint. | [tests/codec/drcs/0018_highcolor_byte_control.t](../../../tests/codec/drcs/0018_highcolor_byte_control.t) |
+| DRCS-20 | P3 DRCS, ordinary gamma and P3 DRCS reuse restores framing and output interpretation. | [tests/codec/drcs/0019_highcolor_output_reuse.t](../../../tests/codec/drcs/0019_highcolor_output_reuse.t) |
+| DRCS-21 | A separate source mask rejects before output and opaque DRCS reuse succeeds. | [tests/codec/drcs/0020_highcolor_mask_recovery.t](../../../tests/codec/drcs/0020_highcolor_mask_recovery.t) |
+| DRCS-22 | Interpreted packed alpha rejects before output and opaque DRCS reuse succeeds. | [tests/codec/drcs/0021_highcolor_packed_recovery.t](../../../tests/codec/drcs/0021_highcolor_packed_recovery.t) |
+| DRCS-23 | Macro wrapping rejects before output and DRCS reuse succeeds. | [tests/codec/drcs/0022_highcolor_macro_recovery.t](../../../tests/codec/drcs/0022_highcolor_macro_recovery.t) |
+| DRCS-24 | PNG snapshot wrapping rejects before output and DRCS reuse succeeds. | [tests/codec/drcs/0023_highcolor_png_recovery.t](../../../tests/codec/drcs/0023_highcolor_png_recovery.t) |
+| DRCS-25 | A writer failure restores the caller's original, independently set header/envelope suppression flags. | [tests/codec/drcs/0024_highcolor_writer_restore.t](../../../tests/codec/drcs/0024_highcolor_writer_restore.t) |
+
+High-color tests use independent linear P3-to-sRGB source construction and analytic transfer references. The RGB101 grid has a minimum rounding-boundary margin of .0098 field units against a .001 field-unit conversion budget. Primary/neutral fixtures also check HLS syntax and a subbyte neutral. Direct decoding checks paint-time register replacement; it does not emulate a glyph receiver.
 
 ### Coverage boundary
 
-The unit envelope cases cover mappings 2/3 at charset 1, cached 2-by-6 cells, C0/C1 controls, partial cells and a short character grid; the CLI case exercises real geometry lookup on its own PTY. They do not establish glyph appearance, transparent edge behavior, font capacity, mapping-0/1 correctness, later receiver color-policy changes or exhaustive charset rollover. The existing limitations above remain. The bitmap decoder only observes the extracted SIXEL body; it is not a DRCS receiver. Automatic color-transaction rejections remain owned by [output colorspace](output-colorspace.md#test-coverage).
+The unit envelope cases cover mappings 2/3 at charset 1, cached 2-by-6 or 4-by-6 cells, C0/C1 controls, partial cells and a short character grid; the CLI case exercises real geometry lookup on its own PTY. They do not establish glyph appearance, transparent edge behavior, font capacity, mapping-0/1 correctness, later receiver color-policy changes or exhaustive charset rollover. The existing limitations above remain. The bitmap decoder only observes the extracted SIXEL body; it is not a DRCS receiver. Automatic color-transaction rejections remain owned by [output colorspace](output-colorspace.md#test-coverage).

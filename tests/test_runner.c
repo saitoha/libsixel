@@ -624,6 +624,17 @@ int test_drcs_native_0010(int argc, char **argv);
 int test_drcs_native_0011(int argc, char **argv);
 int test_drcs_native_0012(int argc, char **argv);
 int test_drcs_native_0013(int argc, char **argv);
+int test_drcs_highcolor_0014(int argc, char **argv);
+int test_drcs_highcolor_0015(int argc, char **argv);
+int test_drcs_highcolor_0016(int argc, char **argv);
+int test_drcs_highcolor_0017(int argc, char **argv);
+int test_drcs_highcolor_0018(int argc, char **argv);
+int test_drcs_highcolor_0019(int argc, char **argv);
+int test_drcs_highcolor_0020(int argc, char **argv);
+int test_drcs_highcolor_0021(int argc, char **argv);
+int test_drcs_highcolor_0022(int argc, char **argv);
+int test_drcs_highcolor_0023(int argc, char **argv);
+int test_drcs_highcolor_0024(int argc, char **argv);
 int test_clamp_0047(int argc, char **argv);
 int test_clamp_0032(int argc, char **argv);
 int test_filter_0015_filter_dither_6delta_lso2(int argc, char **argv);
@@ -3911,7 +3922,7 @@ static test_entry_t const test_entries[] = {
     { "codec/highcolor/0026_p3_short_mask_recovery", test_highcolor_0026 },
     { "codec/highcolor/0027_p3_delta_recovery", test_highcolor_0027 },
     { "codec/highcolor/0028_p3_or_recovery", test_highcolor_0028 },
-    { "codec/highcolor/0029_p3_drcs_recovery", test_highcolor_0029 },
+    { "codec/highcolor/0029_p3_drcs_offset_recovery", test_highcolor_0029 },
     { "codec/highcolor/0030_p3_macro_png_recovery", test_highcolor_0030 },
     { "codec/highcolor/0031_p3_png_sixel_reuse", test_highcolor_0031 },
     { "codec/highcolor/0032_p3_snap_recovery", test_highcolor_0032 },
@@ -4010,6 +4021,17 @@ static test_entry_t const test_entries[] = {
     { "codec/drcs/0011_macro_reject", test_drcs_native_0011 },
     { "codec/drcs/0012_output_reuse", test_drcs_native_0012 },
     { "codec/drcs/0013_p3_pipeline", test_drcs_native_0013 },
+    { "codec/drcs/0014_highcolor_p3_final_band", test_drcs_highcolor_0014 },
+    { "codec/drcs/0015_highcolor_p3_c1", test_drcs_highcolor_0015 },
+    { "codec/drcs/0016_highcolor_p3_v3_grid", test_drcs_highcolor_0016 },
+    { "codec/drcs/0017_highcolor_p3_hls", test_drcs_highcolor_0017 },
+    { "codec/drcs/0018_highcolor_byte_control", test_drcs_highcolor_0018 },
+    { "codec/drcs/0019_highcolor_output_reuse", test_drcs_highcolor_0019 },
+    { "codec/drcs/0020_highcolor_mask_recovery", test_drcs_highcolor_0020 },
+    { "codec/drcs/0021_highcolor_packed_recovery", test_drcs_highcolor_0021 },
+    { "codec/drcs/0022_highcolor_macro_recovery", test_drcs_highcolor_0022 },
+    { "codec/drcs/0023_highcolor_png_recovery", test_drcs_highcolor_0023 },
+    { "codec/drcs/0024_highcolor_writer_restore", test_drcs_highcolor_0024 },
     { "dither/clamp/0047_snapshot_allocation", test_clamp_0047 },
     { "dither/clamp/0032_kernel_interframe", test_clamp_0032 },
     { "filter/0015_filter_dither_6delta_lso2",

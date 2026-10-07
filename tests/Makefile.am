@@ -481,7 +481,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0026_P3_SHORT_MASK_RECOVERY \
     -DBUILD_TEST_0027_P3_DELTA_RECOVERY \
     -DBUILD_TEST_0028_P3_OR_RECOVERY \
-    -DBUILD_TEST_0029_P3_DRCS_RECOVERY \
+    -DBUILD_TEST_0029_P3_DRCS_OFFSET_RECOVERY \
     -DBUILD_TEST_0030_P3_MACRO_PNG_RECOVERY \
     -DBUILD_TEST_0031_P3_PNG_SIXEL_REUSE \
     -DBUILD_TEST_0032_P3_SNAP_RECOVERY \
@@ -1158,6 +1158,18 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0022_AUTO_REJECT_KMEANS_FEEDBACK \
     -DBUILD_TEST_0023_AUTO_IRRELEVANT_HECKBERT_FEEDBACK \
     -DBUILD_DRCS_NATIVE_TEST_COMMON \
+    -DBUILD_HIGHCOLOR_DRCS_COMMON \
+    -DBUILD_TEST_0014_HIGHCOLOR_P3_FINAL_BAND \
+    -DBUILD_TEST_0015_HIGHCOLOR_P3_C1 \
+    -DBUILD_TEST_0016_HIGHCOLOR_P3_V3_GRID \
+    -DBUILD_TEST_0017_HIGHCOLOR_P3_HLS \
+    -DBUILD_TEST_0018_HIGHCOLOR_BYTE_CONTROL \
+    -DBUILD_TEST_0019_HIGHCOLOR_OUTPUT_REUSE \
+    -DBUILD_TEST_0020_HIGHCOLOR_MASK_RECOVERY \
+    -DBUILD_TEST_0021_HIGHCOLOR_PACKED_RECOVERY \
+    -DBUILD_TEST_0022_HIGHCOLOR_MACRO_RECOVERY \
+    -DBUILD_TEST_0023_HIGHCOLOR_PNG_RECOVERY \
+    -DBUILD_TEST_0024_HIGHCOLOR_WRITER_RESTORE \
     -DBUILD_TEST_0001_SRGB_FLOAT_CENTER \
     -DBUILD_TEST_0002_P3_FLOAT_CENTER \
     -DBUILD_TEST_0003_P3_C1_BODY \
@@ -6015,7 +6027,7 @@ test_runner_SOURCES = test_runner.c \
     codec/highcolor/0026_p3_short_mask_recovery.c \
     codec/highcolor/0027_p3_delta_recovery.c \
     codec/highcolor/0028_p3_or_recovery.c \
-    codec/highcolor/0029_p3_drcs_recovery.c \
+    codec/highcolor/0029_p3_drcs_offset_recovery.c \
     codec/highcolor/0030_p3_macro_png_recovery.c \
     codec/highcolor/0031_p3_png_sixel_reuse.c \
     codec/highcolor/0032_p3_snap_recovery.c \
@@ -6113,6 +6125,18 @@ test_runner_SOURCES = test_runner.c \
     codec/drcs/0011_macro_reject.c \
     codec/drcs/0012_output_reuse.c \
     codec/drcs/0013_p3_pipeline.c \
+    codec/drcs/highcolor_drcs_common.c \
+    codec/drcs/0014_highcolor_p3_final_band.c \
+    codec/drcs/0015_highcolor_p3_c1.c \
+    codec/drcs/0016_highcolor_p3_v3_grid.c \
+    codec/drcs/0017_highcolor_p3_hls.c \
+    codec/drcs/0018_highcolor_byte_control.c \
+    codec/drcs/0019_highcolor_output_reuse.c \
+    codec/drcs/0020_highcolor_mask_recovery.c \
+    codec/drcs/0021_highcolor_packed_recovery.c \
+    codec/drcs/0022_highcolor_macro_recovery.c \
+    codec/drcs/0023_highcolor_png_recovery.c \
+    codec/drcs/0024_highcolor_writer_restore.c \
     processing/encoder-core/or_native_test_common.c \
     processing/encoder-core/0030_or_float_srgb_center.c \
     processing/encoder-core/0031_or_float_p3_center.c \

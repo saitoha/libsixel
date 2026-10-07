@@ -95,6 +95,7 @@
 #include "frame-normalize.h"
 #include "frame-factory.h"
 #include "encoder-core.h"
+#include "output.h"
 #include "output-factory.h"
 #include "timeline-logger.h"
 #include "options.h"
@@ -7149,11 +7150,17 @@ sixel_encoder_highcolor_options(sixel_encoder_t const *encoder)
         (encoder->snap_policy == SIXEL_PALETTE_SNAP_POLICY_NONE ||
          encoder->snap_policy_approach_rate <= 0.0) &&
         !encoder->sixdelta_enabled && !encoder->ormode &&
-        !encoder->fdrcs &&
+        /* Glyph bodies omit P2; offsets and other outer transports have
+         * no established meaning in that envelope. */
+        !(encoder->fdrcs &&
+          (encoder->transparent_offset_left != 0 ||
+           encoder->transparent_offset_top != 0 || encoder->fuse_macro ||
+           encoder->macro_number >= 0)) &&
         /* Macros hex-wrap every high-color register definition and pass.
          * PNG readback expects ordinary SIXEL, not the outer definition. */
         !(encoder->output_is_png &&
-          (encoder->fuse_macro || encoder->macro_number >= 0));
+          (encoder->fdrcs || encoder->fuse_macro ||
+           encoder->macro_number >= 0));
 }
 
 /* Resolve packed storage only within the admitted frame/output scope. */
@@ -7165,7 +7172,9 @@ sixel_encoder_unpack_alpha_candidate(sixel_encoder_t const *encoder,
             sixel_frame_get_pixelformat(frame)) &&
         sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_GAMMA &&
         (encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR
-            ? sixel_encoder_highcolor_options(encoder)
+            ? sixel_encoder_highcolor_options(encoder) &&
+              (!encoder->fdrcs ||
+               !sixel_encoder_frame_preserves_alpha_key(frame))
             : sixel_encoder_rgb101_options(encoder) &&
               sixel_encoder_rgb101_alpha(encoder, frame));
 }
@@ -7225,9 +7234,10 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
         }
         sixel_helper_set_additional_message(
             "display-p3 high-color requires CPU RGB/HLS SIXEL "
-            "(ordinary, macro or ordinary PNG snapshot), "
+            "(ordinary, macro, opaque DRCS or ordinary PNG snapshot), "
             "-W gamma|linear|oklab|cielab|din99d and inactive snap; "
-            "delta, OR, DRCS and macro PNG snapshots are unsupported.");
+            "delta, OR and macro/DRCS PNG snapshots are unsupported; "
+            "DRCS excludes macros and offsets.");
         return SIXEL_BAD_ARGUMENT;
     }
     if (!sixel_encoder_rgb101_options(encoder)) {
@@ -7260,6 +7270,12 @@ sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
     }
     if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
             encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
+        if (encoder->fdrcs &&
+                sixel_encoder_frame_preserves_alpha_key(frame)) {
+            sixel_helper_set_additional_message(
+                "display-p3 high-color DRCS requires opaque frames.");
+            return SIXEL_BAD_INPUT;
+        }
         if (sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_RGB888 ||
                 SIXEL_PIXELFORMAT_IS_FLOAT32(
                     sixel_frame_get_pixelformat(frame)) ||
@@ -15252,8 +15268,11 @@ sixel_encoder_encode_frame(
     sixel_output_t  *output)
 {
     SIXELSTATUS status;
+    sixel_writer_controls_t controls;
+    int restore_envelope;
 
     status = SIXEL_FALSE;
+    restore_envelope = 0;
 
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -15271,6 +15290,13 @@ sixel_encoder_encode_frame(
         return status;
     }
     if (output != NULL) {
+        if (encoder->fdrcs) {
+            status = sixel_output_get_writer_controls(output, &controls);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            restore_envelope = 1;
+        }
         /*
          * Internal cleanup always releases context.output.  Hold one temporary
          * reference so early DAG failures cannot consume caller ownership.
@@ -15279,6 +15305,14 @@ sixel_encoder_encode_frame(
     }
 
     status = sixel_encoder_encode_frame_internal(encoder, frame, output, NULL);
+
+    /* DRCS borrows body-only framing. Do not leave that override on a
+     * caller-owned output reused for an ordinary image, even on failure.
+     * Restore just the overridden fields, including caller-set values. */
+    if (restore_envelope) {
+        sixel_output_set_skip_dcs_envelope(output, controls.skip_dcs_envelope);
+        sixel_output_set_skip_header(output, controls.skip_header);
+    }
 
     return status;
 }

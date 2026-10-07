@@ -22,7 +22,7 @@ A macro stores image bytes, not the receiver's color interpretation. Explicit `-
 
 High color retains its own destination-sample conversion and bypasses the fixed-palette construction/application path. Macro wrapping does not quantize the float representatives through RGB888. Byte-eligible high-color input remains byte-based. Automatic animation playback defines complete images on loop zero and invokes those IDs on later loops; it does not store the receiver's background for omitted source pixels.
 
-OR and DRCS remain outside the high-color P3 contract. Macro output also cannot be combined with a PNG snapshot: the snapshot reader accepts ordinary SIXEL, not hexadecimal DECDMAC definitions. The existing delta restriction applies independently of high color.
+High-color P3 macros cannot be combined with OR or DRCS output. Macro output also cannot be combined with a PNG snapshot: the snapshot reader accepts ordinary SIXEL, not hexadecimal DECDMAC definitions. The existing delta restriction applies independently of high color.
 
 ## Origin and emulation model
 

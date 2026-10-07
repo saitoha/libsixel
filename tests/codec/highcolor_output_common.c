@@ -463,6 +463,7 @@ test_highcolor_p3(int scenario)
         encoder->sixdelta_enabled = reject && scenario == 27;
         encoder->ormode = reject && scenario == 28;
         encoder->fdrcs = reject && scenario == 29;
+        encoder->transparent_offset_left = reject && scenario == 29;
         encoder->fuse_macro = reject && scenario == 30 && phase == 0;
         encoder->macro_number = reject && scenario == 30 && phase == 1 ?
             7 : -1;
