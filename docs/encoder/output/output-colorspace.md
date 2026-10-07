@@ -1,6 +1,6 @@
 # Output Color Space
 
-`img2sixel -U` selects the RGB representation of the palette written to a SIXEL stream. Palette export with `-M` has its own sRGB interchange boundary. For normal terminal display, leave `-U` at its default, `gamma`. Use another output space only when the consumer's interpretation of those numbers is known.
+`img2sixel -U` selects the RGB representation of the palette written to a SIXEL stream. Palette export with `-M` has its own sRGB interchange boundary. For normal terminal display, leave `-U` at its default, `gamma`. Use another output space only when the consumer's interpretation of those numbers is known. Ordinary SIXEL defines no color space for its register values; treating them as sRGB by default is libsixel's [interpretation](../../sixel-format/specification-layers.md#interpretation-1-register-rgb-values-default-to-srgb), not part of the format.
 
 ```text
 -U COLORSPACE

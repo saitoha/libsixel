@@ -97,6 +97,34 @@ Within that position, libsixel:
 - describes its decoder's choices for undefined cases as libsixel decoder behavior, not as the meaning of SIXEL;
 - presents protocol additions, such as the [graphics color-management proposal](../protocols/graphics-color-management.md), as separately negotiated, receiver-independent proposals rather than as changes to ordinary SIXEL.
 
+### Interpretations libsixel adopts
+
+Some libsixel behavior necessarily rests on layer-3 interpretations. They are stated here so that they are not mistaken for properties of SIXEL itself. Each is libsixel's choice; another implementation can reasonably choose differently.
+
+#### Interpretation 1: register RGB values default to sRGB
+
+SIXEL color registers carry RGB or HLS coordinates as percentages, but the DEC manuals do not tie them to a colorimetric definition. Chapter 2 of the VT330/VT340 graphics manual describes RGB and HLS as color coordinate systems and lists default maps without stating primaries, a white point, or a transfer function. By default, libsixel writes register values as gamma-encoded sRGB (`img2sixel -U gamma`; see [output color space](../encoder/output/output-colorspace.md)).
+
+This matches the practice of current software terminals, which effectively treat register values as ordinary sRGB code values. The convention is implicit rather than specified, and where it first appeared has not been established. It is also anachronistic: sRGB was proposed in 1996 and standardized as IEC 61966-2-1 in 1999, after the DEC devices that defined SIXEL. For faithful emulation, the interpretation would instead follow the video practice of the original devices or measurements of their output, which requires device research that is not yet available.
+
+The approximation is probably not far off. sRGB was designed around typical CRT displays of the 1990s, with ITU-R BT.709 primaries close to the SMPTE-C phosphors then common in North American monitors and an effective transfer characteristic near a 2.2 power law, so the CRTs of the DEC era likely responded similarly. This remains an inference, not a measurement.
+
+One observation keeps the question open. Read as sRGB, the VT340 default color map is unevenly bright. Its six saturated hues all have HLS lightness 50 and saturation 60, but blue (`20;20;80` percent RGB) has a CIELAB lightness of about 33, while red has about 44, green about 72, and yellow about 80. Much of this follows from HLS lightness not being a perceptual lightness: equal HLS lightness gives unequal luminance on any display with conventional primaries. Whether DEC also adjusted for its monitors cannot be determined without measurements of the hardware.
+
+An equally defensible reading is that ordinary SIXEL specifies no color space at all, so that colorimetric meaning requires agreement with the receiver. libsixel's default does not exclude that reading. Applications that manage color for a particular device can choose a [fixed palette](../encoder/palette-construction/fixed-palettes.md) such as `vt340color` and an explicit output representation with `-U`, such as `-U smpte-c` for a receiver that expects SMPTE-C primaries, or negotiate one through the [graphics color-management proposal](../protocols/graphics-color-management.md).
+
+#### Interpretation 2: a later paint replaces an earlier one
+
+libsixel treats painting a pixel that has already been painted as replacing its color. The `-E size` encoder policy depends on this: it fills a span with one color and lets later colors repaint their own pixels, which can shorten the stream (see [encoding policy](../encoder/output/encode-policy/README.md#why-size-can-save-bytes)). libsixel's decoder implements the same replacement.
+
+This holds for a display whose frame buffer stores one value per pixel, but not in general. On a color printer, overprinting a position deposits more ink and mixes the colors, and DEC's color printing was described at the time as successive overstruck passes, one per color plane. Repainting is therefore a device-dependent technique rather than a SIXEL guarantee. The ordinary `-E auto` and `-E fast` paths never paint a pixel more than once and do not depend on this interpretation. The [OR-mode dialect](../encoder/output/or-mode/README.md) deliberately defines a different combining rule and must be requested from a receiver that supports it.
+
+#### Interpretation 3: a color register can be redefined during an image
+
+`img2sixel -I` (high-color mode) increases the number of colors in one SIXEL image by redefining color registers after they have been used for painting. It requires paint-time color resolution, in which each pixel keeps the RGB value its register held when it was painted. The [high-color guide](../encoder/output/high-color/README.md#the-terminal-decides-whether-it-works) describes the two possible receiver models.
+
+This interpretation clearly conflicts with DEC terminals. On a VT340 the frame buffer stores register indices, so redefining a register recolors every pixel already painted with it. Software terminals differ in which model they implement. Whether DEC printers could support the technique has not been verified. libsixel therefore enables high-color output only on explicit request, and its direct decoder (`sixel2png --direct`) applies paint-time resolution, while an indexed decode can retain only the final palette.
+
 If applications require terminal graphics whose display and control semantics are unambiguous on modern terminals and devices, the appropriate course is a new protocol designed for those terminals and devices, not a redefinition of SIXEL.
 
 ## References
