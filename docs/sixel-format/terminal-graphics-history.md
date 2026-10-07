@@ -11,6 +11,11 @@ It is a survey, not an exhaustive catalog. Dates are those of the cited releases
 | Year | Event | Kind |
 | --- | --- | --- |
 | 1875 | Typewriter art in a newspaper advertisement | Character art |
+| 1893 | Typed ornaments in the first edition of Pitman's typewriter manual | Character art |
+| 1898 | Flora Stacey's typed butterfly in Pitman's Phonetic Journal | Character art |
+| 1930s | Paul Smith begins typewriter pictures made from ten symbol keys | Character art |
+| 1939 | Julius Nelson's *Artyping* instruction book | Character art |
+| 1950s–1960s | Concrete poetry and typewriter abstractions, such as Dom Sylvester Houédard's typestracts | Character art |
 | 1960s | Teleprinter and RTTY art; line-printer art | Character art |
 | 1966 | Knowlton and Harmon's *Studies in Perception I* maps a scanned photograph to typographic symbols | Character rendering |
 | 1972 | Tektronix 4010 storage-tube terminal | Vector terminal |
@@ -87,7 +92,11 @@ A second lineage does not send pixels at all. It draws with characters whose gly
 
 ### Typewriters, teleprinters, and printers
 
-Pictures made of characters are older than terminals. Typewriter art appeared in print as early as an 1875 advertisement in the Brooklyn Daily Eagle. Teleprinter and radio-teletype (RTTY) operators exchanged pictures built from characters in the mid-twentieth century, and 1960s computer centers printed pictures on line printers such as the IBM 1403.
+Pictures made of characters are older than terminals, and they began with the typewriter. A picture made of typed characters appeared in an advertisement in the Brooklyn Daily Eagle as early as 1875. Typewriter manuals and stenographers' journals soon encouraged the practice: the first edition of Pitman's typewriter manual (1893) included typed ornaments, and typists entered competitions for typed drawings. The best-known early work is Flora Stacey's butterfly, built from brackets, hyphens, points, oblique strokes, an asterisk, and the letter "o", and published in Pitman's Phonetic Journal on 15 October 1898.
+
+Typewriter art matured in the twentieth century. Julius Nelson, a secretarial-science teacher in Windber, Pennsylvania, published *Artyping* (1939), a manual of borders, lettering, cross-stitch patterns, and pictures. Paul Smith, who had severe cerebral palsy, began typing pictures in the 1930s using only the ten symbols on the shifted top row of the keyboard, and produced detailed landscapes and portraits over the following decades. From the 1950s, concrete poets treated the typewriter as a visual instrument: Bob Cobbing worked with typewriter and duplicator from 1942, Dom Sylvester Houédard made abstract *typestracts* in the 1960s, and Alan Riddell's anthology *Typewriter Art* (1975) collected work by 65 practitioners from 18 countries.
+
+These artists already worked with the constraints that character renderers later formalized: a fixed grid of cells, a small repertoire of glyph shapes, and density controlled by the choice of character and by overtyping several characters in one cell. Teleprinter and radio-teletype (RTTY) operators exchanged pictures built from characters in the mid-twentieth century, and 1960s computer centers printed pictures on line printers such as the IBM 1403.
 
 The first known algorithmic conversion of a photograph into characters came from Bell Labs. In 1966 Kenneth Knowlton and Leon Harmon made *Studies in Perception I* (also known as *Computer Nude*): they scanned a photograph with a camera, converted the voltages to numbers, and assigned typographic symbols according to halftone density. The New York Times printed it on 11 October 1967. The idea of choosing a symbol for each region by its density, and later by its shape, is the core of every character renderer that followed.
 
@@ -189,7 +198,8 @@ No single protocol has displaced the others. SIXEL remains the most widely imple
 - István Sebestyén, [*JPEG 25 years celebration presentation*](https://www.ecma-international.org/wp-content/uploads/IS-presentation-to-JTC1SC29WG1-regarding-JPEG25-celebration.pdf), Ecma International.
 - [*ISO/IEC 10918-1 (1986–1993)*](https://www.itu.int/dms_pub/itu-s/opb/journal/S-JOURNAL-ICTS.V3I1-2020-13-PDF-E.pdf), ITU Journal: ICT Discoveries, 2020.
 - [IANA registration of `image/naplps`](https://www.iana.org/assignments/media-types/image/naplps), 1995; Universal Computer Laboratory, [NAPLPS technical information and viewer plug-in](http://uclsun.ucl.co.jp/naplps/naptech-e.html).
-- ASCII art, ANSI art, Christmas Tree EXEC, Ken Knowlton, and Leon Harmon articles on Wikipedia; [textfiles.com VT100 animation collection](http://artscene.textfiles.com/vt100/).
+- Lori Emerson, [*artyping in 1939*](https://loriemerson.net/2014/01/26/artyping-in-1939/); Barrie Tullett, *Typewriter Art: A Modern Anthology* (Laurence King, 2014), reviewed in [*A Visual History of Typewriter Art from 1893 to Today*](https://www.themarginalian.org/2014/05/23/typewriter-art-laurence-king/); Alan Riddell (ed.), [*Typewriter Art*](https://monoskop.org/log/?p=11300) (1975).
+- ASCII art, ANSI art, Concrete poetry, Paul Smith (artist), Christmas Tree EXEC, Ken Knowlton, and Leon Harmon articles on Wikipedia; [textfiles.com VT100 animation collection](http://artscene.textfiles.com/vt100/).
 - Unicode Consortium proposals [L2/19-025](https://www.unicode.org/L2/L2019/19025-terminals-prop.pdf) (Symbols for Legacy Computing), [L2/21-235](https://www.unicode.org/L2/L2021/21235-terminals-supplement.pdf) (its supplement), and Frank da Cruz, [L2/00-159](https://www.unicode.org/L2/L2000/00159-ucsterminal.txt) (*Supplemental Terminal Graphics for Unicode*); Semigraphics, Teletext character set, Braille Patterns, AAlib, and libcaca articles on Wikipedia.
 - [chafa](https://github.com/hpjansson/chafa) and its [manual](https://hpjansson.org/chafa/man/); [drawille](https://github.com/asciimoo/drawille); [AAlib documentation](https://aa-project.sourceforge.net/aalib/) and [tuning guide](https://aa-project.sourceforge.net/tune/); Sam Hocevar, [*Libcaca study: the science behind colour ASCII art*](http://caca.zoy.org/study/).
 - [FFmpeg devices](https://ffmpeg.org/ffmpeg-devices.html#caca) and [mpv video output drivers](https://mpv.io/manual/stable/#video-output-drivers).
