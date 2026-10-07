@@ -2,7 +2,7 @@
 
 ## Scope
 
-SIXEL is one of many ways that have been used to show pictures through a character terminal or a terminal-like connection. Its strengths and gaps, which the [specification status and interpretation layers](specification-layers.md) describe, are easier to judge against that wider history. This document surveys it from vector storage-tube terminals through videotex and DEC's raster terminals to the image protocols of software terminal emulators.
+SIXEL is one of many ways that have been used to show pictures through a character terminal or a terminal-like connection. Its strengths and gaps, which the [specification status and interpretation layers](specification-layers.md) describe, are easier to judge against that wider history. Two lineages run through that history. One sends pixels or drawing commands: vector storage-tube terminals, videotex picture coding, DEC's ReGIS and SIXEL, and the image protocols of software terminal emulators. The other builds pictures from characters: the block mosaics of teletext and videotex, the semigraphics of home computers, and the Unicode mosaic and Braille characters used by AAlib, libcaca, chafa, and similar tools. This document surveys both.
 
 It is a survey, not an exhaustive catalog. Dates are those of the cited releases, specifications, or first public commits; a product announced earlier or released in stages can have other dates in other sources. The libsixel [project history](../project-history.md) covers the SIXEL implementations closest to libsixel in more detail.
 
@@ -12,6 +12,8 @@ It is a survey, not an exhaustive catalog. Dates are those of the cited releases
 | --- | --- | --- |
 | 1972 | Tektronix 4010 storage-tube terminal | Vector terminal |
 | 1974 | Tektronix 4014, whose command set became the common target of later Tektronix emulations | Vector terminal |
+| 1974 | Ceefax teletext with 2-by-3 block mosaic characters | Character mosaic |
+| 1977–1979 | Home-computer semigraphics, such as the TRS-80's 2-by-3 blocks and the PC-8001's 2-by-4 patterns | Character mosaic |
 | 1978 | Telidon trials in Canada | Videotex, alpha-geometric |
 | 1979 | Prestel public service in the United Kingdom | Videotex, alpha-mosaic |
 | 1980–1981 | CCITT T.4, the Group 3 facsimile coding | Facsimile |
@@ -24,20 +26,25 @@ It is a survey, not an exhaustive catalog. Dates are those of the cited releases
 | 1988 | JBIG split from JPEG for bi-level images | Image coding |
 | 1992 | RIPscrip vector graphics for bulletin board systems; ITU-T T.81 (JPEG) | BBS graphics; image coding |
 | 1994 | Tera Term with Tektronix 4010 emulation | Software emulator |
+| 1997 | AAlib renders images as ASCII art | Character rendering |
+| 1999 | Unicode 3.0 adds Braille Patterns (U+2800–U+28FF) | Unicode |
 | 1995–1996 | `image/naplps` registered with IANA; UCL's NAPLPS viewer plug-in for Netscape Navigator 2.0 | Videotex on the web |
 | 2001 | w3m inline image support through the external `w3mimgdisplay` helper | Terminal browser |
+| 2002 | Unicode 3.2 adds quadrant block elements, proposed as terminal graphics by Frank da Cruz | Unicode |
+| 2003 | libcaca 0.1 adds color character rendering with dithering | Character rendering |
 | 2009 | RLogin adds Tektronix 4014/4105 modes | Software emulator |
 | 2010 | RLogin 2.9.0 adds SIXEL and ReGIS | SIXEL revival |
 | 2011 | GateOne detects image files in the output stream | In-band, no protocol |
 | 2012 | tanasinn with Tektronix, SIXEL, and URL-based OSC extensions; Terminology `tycat` passes file paths or URIs; mlterm adds SIXEL | Software emulators |
 | 2013 | FinalTerm semantic escape sequences (OSC 133); xterm patch #294 adds SIXEL | Shell integration; SIXEL revival |
-| 2014 | iTerm2 inline images (OSC 1337); libsixel; haru's `w3mimg-sixel`; w3m SIXEL support | Image protocol; SIXEL tooling |
+| 2014 | iTerm2 inline images (OSC 1337); libsixel; haru's `w3mimg-sixel`; w3m SIXEL support; drawille draws with Braille patterns | Image protocol; SIXEL tooling; character rendering |
 | 2015 | DomTerm, later with HTML insertion through OSC 72 | HTML in terminal |
 | 2017 | kitty 0.4.0 introduces its graphics protocol | Image protocol |
+| 2018 | chafa, later combining character mosaics with SIXEL, kitty, and iTerm2 output | Character rendering and image protocols |
 | 2019 | Terminal working group discussion of a simple image display sequence | Standardization attempt |
-| 2020 | mintty 3.3.0 adds Tektronix 4014 emulation | Software emulator |
+| 2020 | mintty 3.3.0 adds Tektronix 4014 emulation; Unicode 13.0 adds Symbols for Legacy Computing, including 60 sextants from teletext and videotex | Software emulator; Unicode |
 | 2021 | Nick Black's STEGAP proposal; Windows Terminal adds DECDLD soft fonts; xterm.js image add-on | Proposals and implementations |
-| 2024 | tmux 3.4 adds SIXEL; Windows Terminal Preview 1.22 adds SIXEL | SIXEL adoption |
+| 2024 | tmux 3.4 adds SIXEL; Windows Terminal Preview 1.22 adds SIXEL; Unicode 16.0 adds 230 octants | SIXEL adoption; Unicode |
 
 ## Vector graphics before raster terminals
 
@@ -68,6 +75,29 @@ The picture-coding work of the videotex era is a direct ancestor of image format
 - **Royalty-free policy.** The same presentation attributes JPEG's original royalty-free baseline to the practice of earlier CCITT picture coding, including facsimile.
 
 Videotex therefore connects terminal graphics with mainstream image coding: the photographic mode that terminals of the 1980s could not afford became the JPEG that is still the most common photographic format.
+
+## Pictures made of characters
+
+A second lineage does not send pixels at all. It draws with characters whose glyphs are blocks or dots, so that any terminal able to display the characters can show the picture.
+
+### Mosaics in teletext and videotex
+
+Teletext, starting with the BBC's Ceefax in 1974, divided a character cell into a 2-by-3 grid and defined mosaic characters for its 64 on/off combinations, with contiguous and separated forms selected by control codes. The alpha-mosaic videotex systems built on the same idea: Prestel, the Antiope standard behind Minitel, and other CEPT-profile terminals mixed text with these block mosaics. Home computers of the same period had comparable semigraphics, such as the TRS-80's 2-by-3 blocks, PETSCII's 2-by-2 blocks, and the PC-8001's 2-by-4 patterns.
+
+### Software that renders images as text
+
+On general-purpose terminals, programs rendered images with whatever characters were available. Jan Hubička's AAlib (1997) converted images into ASCII art by matching cell brightness and shape to characters. Sam Hocevar and Jean-Yves Lamoureux's libcaca (first release 2003) added color, dithering, and Unicode output; its documentation includes a study of halftoning and dithering algorithms. Later tools used denser glyphs: drawille (2014) draws pixel graphics with Braille patterns, and Hans Petter Jansson's chafa (2018) chooses among block, mosaic, Braille, and other symbols, and also emits SIXEL, kitty, and iTerm2 images. In chafa the two lineages of this document meet in one program.
+
+### Unicode adopts the mosaics
+
+These techniques depend on Unicode supplying suitable characters, and Unicode added them in stages:
+
+- **Block elements.** Half blocks and shades from PC code pages were present from early versions. Frank da Cruz of the Kermit Project proposed *Supplemental Terminal Graphics for Unicode* in 2000, which led to the quadrant characters U+2596–U+259F in Unicode 3.2 (2002).
+- **Braille Patterns.** Unicode 3.0 (1999) encoded all 256 eight-dot Braille cells at U+2800–U+28FF for Braille text. Their regular 2-by-4 dot grid made them a high-resolution substitute for pixels on terminals, an application the encoding was not designed for.
+- **Symbols for Legacy Computing.** Unicode 13.0 (2020) added a block of characters from home computers and teletext, proposed by Doug Ewell, Rebecca Bettencourt, and others, including 60 *sextants*: the 2-by-3 block mosaics of teletext and videotex, also called alpha-mosaic characters.
+- **Symbols for Legacy Computing Supplement.** Unicode 16.0 (2024) added 230 *octants* in a 2-by-4 grid, together with other characters from legacy computers and terminals.
+
+With sextants and octants, teletext's 1974 cell grid became part of the universal character set, and terminal programs can now draw block mosaics with ordinary text. This lineage complements pixel protocols such as SIXEL: it works on any terminal with suitable fonts and copies as text, but its resolution and color are limited to what one or two colors per cell can express.
 
 ## Images in terminal browsers
 
@@ -112,6 +142,8 @@ No single protocol has displaced the others. SIXEL remains the most widely imple
 - István Sebestyén, [*JPEG 25 years celebration presentation*](https://www.ecma-international.org/wp-content/uploads/IS-presentation-to-JTC1SC29WG1-regarding-JPEG25-celebration.pdf), Ecma International.
 - [*ISO/IEC 10918-1 (1986–1993)*](https://www.itu.int/dms_pub/itu-s/opb/journal/S-JOURNAL-ICTS.V3I1-2020-13-PDF-E.pdf), ITU Journal: ICT Discoveries, 2020.
 - [IANA registration of `image/naplps`](https://www.iana.org/assignments/media-types/image/naplps), 1995; Universal Computer Laboratory, [NAPLPS technical information and viewer plug-in](http://uclsun.ucl.co.jp/naplps/naptech-e.html).
+- Unicode Consortium proposals [L2/19-025](https://www.unicode.org/L2/L2019/19025-terminals-prop.pdf) (Symbols for Legacy Computing), [L2/21-235](https://www.unicode.org/L2/L2021/21235-terminals-supplement.pdf) (its supplement), and Frank da Cruz, [L2/00-159](https://www.unicode.org/L2/L2000/00159-ucsterminal.txt) (*Supplemental Terminal Graphics for Unicode*); Semigraphics, Teletext character set, Braille Patterns, AAlib, and libcaca articles on Wikipedia.
+- [chafa](https://github.com/hpjansson/chafa) and [drawille](https://github.com/asciimoo/drawille) repositories.
 - [w3m inline image documentation](https://github.com/tats/w3m/blob/master/doc/README.img) and [SIXEL support](https://github.com/tats/w3m/blob/master/doc/README.sixel).
 - haru (uobikiemukot), [sdump](https://github.com/uobikiemukot/sdump), containing `yaimg-sixel`, first added as `w3mimg-sixel` on 2014-09-23.
 - [RLogin history](https://github.com/kmiya-culti/RLogin/blob/master/docs/history.html); [mintty changelog](https://github.com/mintty/mintty/blob/master/wiki/Changelog.md); [kitty changelog](https://sw.kovidgoyal.net/kitty/changelog/); [tmux CHANGES](https://github.com/tmux/tmux/blob/master/CHANGES).
