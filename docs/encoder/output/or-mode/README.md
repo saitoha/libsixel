@@ -2,7 +2,7 @@
 
 `img2sixel -O` (or `--ormode`) encodes palette indices as overlapping bit planes. The receiver combines the selected index bits with bitwise OR, then looks up the resulting index in the palette. This is a SIXEL dialect signaled by `P2=5`, so ordinary SIXEL support alone does not establish compatibility.
 
-The [img2sixel manual](../../../../converters/img2sixel.1) attributes the dialect to the NetBSD/x68k `ite` console and the `sayaka` client. This document describes the current libsixel implementation; it does not certify current versions of those or other receivers.
+The [img2sixel manual](../../../../converters/img2sixel.1) attributes the dialect to the NetBSD/x68k `ite` console and the `sayaka` client. This document describes the current libsixel implementation; it does not certify current versions of those or other receivers. OR mode is not recommended for new applications: libsixel maintains it for historical preservation, and the [specification layers document](../../../sixel-format/specification-layers.md#or-mode) explains its incompatibilities.
 
 ## The idea, step by step
 

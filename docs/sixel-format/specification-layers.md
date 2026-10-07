@@ -144,6 +144,29 @@ This holds for a display whose frame buffer stores one value per pixel, but not 
 
 This interpretation clearly conflicts with DEC terminals. On a VT340 the frame buffer stores register indices, so redefining a register recolors every pixel already painted with it. Software terminals differ in which model they implement. Whether DEC printers could support the technique has not been verified. The interpretation is confined to `-I`: ordinary output defines each register before use and never redefines a register it has already painted with, so it does not depend on either receiver model. High-color output is enabled only on explicit request and should not be selected for a receiver that follows the live-register model. For decoding, libsixel's direct decoder (`sixel2png --direct`) applies paint-time resolution, while an indexed decode can retain only the final palette.
 
+### Incompatible extensions kept for historical preservation
+
+libsixel also emits two extensions that are incompatible with the formal layer. They are not recommended for new applications. libsixel adopts and maintains them because they worked on real platforms and terminals, so that streams written for those receivers can still be produced and examined; their presence in libsixel is not an endorsement of their design.
+
+#### OR mode
+
+The [OR-mode dialect](../encoder/output/or-mode/README.md) encodes palette indices as bit planes that the receiver combines with bitwise OR. It originated with the NetBSD/x68k `ite` console and the `sayaka` client, and it worked on those receivers.
+
+It has two problems that libsixel does not try to repair:
+
+- **Overloaded DCS parameter.** OR mode is selected by `P2=5`. DEC defines `P2` as the background-selection parameter with the values 0, 1, and 2, so `5` reuses a parameter whose meaning is already fixed instead of identifying a new protocol. A receiver that does not know the dialect applies its own handling of an undefined `P2` value and decodes the stream as ordinary SIXEL, producing wrong colors without any indication of failure. The stream itself offers no means of negotiation.
+- **Incompatible change to the encoding.** Combining bit planes by OR replaces the overwrite semantics of ordinary SIXEL painting. The same data characters therefore mean different pixels under the two models, so OR-mode output is not a variant that ordinary receivers can approximate.
+
+libsixel enables OR mode only on explicit request and does not use it as a default or fallback.
+
+#### DRCS-SIXEL
+
+[DRCS-SIXEL](../encoder/output/drcs.md) embeds a SIXEL image in a soft-character download so that a terminal registers the image as character-cell glyphs. It originated with RLogin in 2012 and was later specified with mlterm; see the [project history](../project-history.md#drcs-sixel-and-unicode-plane-16). It is an experimental extension, and it is incompatible with DEC's design: it is introduced with the same final byte `{` as DEC's DECDLD soft-font download, and it is distinguished from DECDLD only by the value `3` in the `Pt` parameter, for which DEC defines the values 0 through 2. A DECDLD implementation that does not know the extension may reject the sequence or misinterpret the SIXEL body as monochrome soft-font data. The mode value makes the two formats distinguishable to a receiver that knows both, but this does not make the extension a recommended design.
+
+The incompatibility went largely unnoticed because, in the early 2010s, almost no terminal emulators in use implemented DECDLD, so there was no practical need to remain compatible with it.
+
+The libsixel project's position is that DRCS-SIXEL should eventually move to its own control-function space, identified by a distinct combination of intermediate bytes and final byte instead of DECDLD's final byte and an undefined parameter value. libsixel continues to emit the existing form for the receivers that implement it, and does not define the replacement unilaterally; such a change belongs to the implementations that maintain the extension.
+
 If applications require terminal graphics whose display and control semantics are unambiguous on modern terminals and devices, the appropriate course is a new protocol designed for those terminals and devices, not a redefinition of SIXEL.
 
 ## References
