@@ -284,6 +284,12 @@
       "year": 2012.3
     },
     {
+      "label": "DRCS-SIXEL (RLogin)",
+      "lane": "mosaic",
+      "source": "https://github.com/kmiya-culti/RLogin/blob/master/docs/history.html",
+      "year": 2012.78
+    },
+    {
       "label": "PySixel",
       "lane": "emulator",
       "source": "https://pypi.org/project/PySixel/",

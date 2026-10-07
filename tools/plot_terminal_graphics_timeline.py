@@ -80,6 +80,8 @@ EVENTS = (
      "https://en.wikipedia.org/wiki/Semigraphics"),
     (1979.5, "mosaic", "PC-8001 2×4 graphics",
      "https://en.wikipedia.org/wiki/Semigraphics"),
+    (2012.78, "mosaic", "DRCS-SIXEL (RLogin)",
+     "https://github.com/kmiya-culti/RLogin/blob/master/docs/history.html"),
     (1999.7, "mosaic", "Unicode 3.0 Braille",
      "https://en.wikipedia.org/wiki/Braille_Patterns"),
     (2002.2, "mosaic", "Unicode 3.2 quadrants",
