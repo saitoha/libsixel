@@ -10,6 +10,9 @@ It is a survey, not an exhaustive catalog. Dates are those of the cited releases
 
 | Year | Event | Kind |
 | --- | --- | --- |
+| 1875 | Typewriter art in a newspaper advertisement | Character art |
+| 1960s | Teleprinter and RTTY art; line-printer art | Character art |
+| 1966 | Knowlton and Harmon's *Studies in Perception I* maps a scanned photograph to typographic symbols | Character rendering |
 | 1972 | Tektronix 4010 storage-tube terminal | Vector terminal |
 | 1974 | Tektronix 4014, whose command set became the common target of later Tektronix emulations | Vector terminal |
 | 1974 | Ceefax teletext with 2-by-3 block mosaic characters | Character mosaic |
@@ -18,13 +21,15 @@ It is a survey, not an exhaustive catalog. Dates are those of the cited releases
 | 1979 | Prestel public service in the United Kingdom | Videotex, alpha-mosaic |
 | 1980–1981 | CCITT T.4, the Group 3 facsimile coding | Facsimile |
 | 1981 | DEC ReGIS on the VT125, then the GIGI | Vector graphics language |
+| 1980s–1990s | VT100 animations, such as Christmas cards, circulate as escape-sequence text files | Character animation |
 | 1982 | Minitel terminals in France, using the Antiope-based display standard | Videotex, alpha-mosaic |
 | 1983 | NAPLPS standardized as ANSI X3.110 and CSA T500; Bildschirmtext service in Germany | Videotex |
 | 1984 | NTT's CAPTAIN service in Japan; DEC VT240 programmer reference manual, documenting SIXEL on a terminal screen | Videotex, alpha-photographic; raster terminal |
 | 1985–1986 | ESPRIT PICA photovideotex compression project; formation of JPEG | Image coding |
-| 1987 | DEC VT330 and VT340 with ReGIS, SIXEL, and Tektronix 4010/4014 emulation | Raster terminal |
+| 1987 | DEC VT330 and VT340 with ReGIS, SIXEL, and Tektronix 4010/4014 emulation; the Christmas Tree EXEC worm draws a text Christmas tree | Raster terminal; character art |
 | 1988 | JBIG split from JPEG for bi-level images | Image coding |
 | 1992 | RIPscrip vector graphics for bulletin board systems; ITU-T T.81 (JPEG) | BBS graphics; image coding |
+| Early 1990s | ANSI art on bulletin board systems; ASCII art on Usenet, later in alt.ascii-art | Character art |
 | 1994 | Tera Term with Tektronix 4010 emulation | Software emulator |
 | 1997 | AAlib renders images as ASCII art | Character rendering |
 | 1999 | Unicode 3.0 adds Braille Patterns (U+2800–U+28FF) | Unicode |
@@ -80,13 +85,25 @@ Videotex therefore connects terminal graphics with mainstream image coding: the 
 
 A second lineage does not send pixels at all. It draws with characters whose glyphs are blocks or dots, so that any terminal able to display the characters can show the picture.
 
+### Typewriters, teleprinters, and printers
+
+Pictures made of characters are older than terminals. Typewriter art appeared in print as early as an 1875 advertisement in the Brooklyn Daily Eagle. Teleprinter and radio-teletype (RTTY) operators exchanged pictures built from characters in the mid-twentieth century, and 1960s computer centers printed pictures on line printers such as the IBM 1403.
+
+The first known algorithmic conversion of a photograph into characters came from Bell Labs. In 1966 Kenneth Knowlton and Leon Harmon made *Studies in Perception I* (also known as *Computer Nude*): they scanned a photograph with a camera, converted the voltages to numbers, and assigned typographic symbols according to halftone density. The New York Times printed it on 11 October 1967. The idea of choosing a symbol for each region by its density, and later by its shape, is the core of every character renderer that followed.
+
 ### Mosaics in teletext and videotex
 
 Teletext, starting with the BBC's Ceefax in 1974, divided a character cell into a 2-by-3 grid and defined mosaic characters for its 64 on/off combinations, with contiguous and separated forms selected by control codes. The alpha-mosaic videotex systems built on the same idea: Prestel, the Antiope standard behind Minitel, and other CEPT-profile terminals mixed text with these block mosaics. Home computers of the same period had comparable semigraphics, such as the TRS-80's 2-by-3 blocks, PETSCII's 2-by-2 blocks, and the PC-8001's 2-by-4 patterns.
 
+### Character art on networks
+
+Networks spread character art among users. On terminals, artists combined characters with cursor-movement escape sequences to make *VT100 animations*: text files that play as moving pictures when sent raw to a VT100 or compatible terminal, originally at serial speeds such as 9600 baud. The collection preserved at [textfiles.com](http://artscene.textfiles.com/vt100/) includes many Christmas cards, such as `xmas.vt` and its variants, one dated 1992. Seasonal pictures also showed the risk of running received text as a program: in December 1987 the Christmas Tree EXEC drew a text Christmas tree on IBM VM/CMS systems and then mailed itself to the user's contacts, paralyzing the EARN, BITNET, and VNET networks as the first widely disruptive computer worm.
+
+Bulletin board systems developed ANSI art in the IBM code page 437 character set, with color escape sequences, and Atari and Commodore users made ATASCII and PETSCII art with their machines' graphic characters. On Usenet, ASCII art circulated in signatures and postings and later gathered in the alt.ascii-art newsgroup, where artists such as Joan Stark were active in the mid-1990s. These traditions were made by hand; the software described next automated the conversion of images.
+
 ### Software that renders images as text
 
-On general-purpose terminals, programs rendered images with whatever characters were available. The technique spread from stand-alone viewers into the major media frameworks, so that video and images can be shown on any text terminal:
+Software then automated the conversion on general-purpose terminals, rendering images with whatever characters were available. The technique spread from stand-alone viewers into the major media frameworks, so that video and images can be shown on any text terminal:
 
 | Software | Character output |
 | --- | --- |
@@ -172,6 +189,7 @@ No single protocol has displaced the others. SIXEL remains the most widely imple
 - István Sebestyén, [*JPEG 25 years celebration presentation*](https://www.ecma-international.org/wp-content/uploads/IS-presentation-to-JTC1SC29WG1-regarding-JPEG25-celebration.pdf), Ecma International.
 - [*ISO/IEC 10918-1 (1986–1993)*](https://www.itu.int/dms_pub/itu-s/opb/journal/S-JOURNAL-ICTS.V3I1-2020-13-PDF-E.pdf), ITU Journal: ICT Discoveries, 2020.
 - [IANA registration of `image/naplps`](https://www.iana.org/assignments/media-types/image/naplps), 1995; Universal Computer Laboratory, [NAPLPS technical information and viewer plug-in](http://uclsun.ucl.co.jp/naplps/naptech-e.html).
+- ASCII art, ANSI art, Christmas Tree EXEC, Ken Knowlton, and Leon Harmon articles on Wikipedia; [textfiles.com VT100 animation collection](http://artscene.textfiles.com/vt100/).
 - Unicode Consortium proposals [L2/19-025](https://www.unicode.org/L2/L2019/19025-terminals-prop.pdf) (Symbols for Legacy Computing), [L2/21-235](https://www.unicode.org/L2/L2021/21235-terminals-supplement.pdf) (its supplement), and Frank da Cruz, [L2/00-159](https://www.unicode.org/L2/L2000/00159-ucsterminal.txt) (*Supplemental Terminal Graphics for Unicode*); Semigraphics, Teletext character set, Braille Patterns, AAlib, and libcaca articles on Wikipedia.
 - [chafa](https://github.com/hpjansson/chafa) and its [manual](https://hpjansson.org/chafa/man/); [drawille](https://github.com/asciimoo/drawille); [AAlib documentation](https://aa-project.sourceforge.net/aalib/) and [tuning guide](https://aa-project.sourceforge.net/tune/); Sam Hocevar, [*Libcaca study: the science behind colour ASCII art*](http://caca.zoy.org/study/).
 - [FFmpeg devices](https://ffmpeg.org/ffmpeg-devices.html#caca) and [mpv video output drivers](https://mpv.io/manual/stable/#video-output-drivers).
