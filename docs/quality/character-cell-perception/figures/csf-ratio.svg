@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="760" height="335" viewBox="0 0 760 335" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
 <title id="title">Luminance and chroma sensitivity compared</title>
-<desc id="desc">The ratio of the relative luminance sensitivity to the relative chroma sensitivity of Figure 14 on logarithmic axes: 0.21 at 0.5 cycles per degree, 0.45 at 1, 1.6 at 2, 41 at 8 and 137 at 17. A shaded band from about 1 to 2 cycles per degree marks the cell grid and another from about 9 to 17 the shapes inside a cell.</desc>
+<desc id="desc">The ratio of the relative luminance sensitivity to the relative chroma sensitivity of the visual perception chapter on logarithmic axes: 0.21 at 0.5 cycles per degree, 0.45 at 1, 1.6 at 2, 41 at 8 and 137 at 17. A shaded band from about 1 to 2 cycles per degree marks the cell grid and another from about 9 to 17 the shapes inside a cell.</desc>
 <rect x="0" y="0" width="760" height="335" fill="#ffffff"/>
 <rect x="236.4" y="50" width="80.3" height="220" fill="#eef2f6"/>
 <text x="276.574" y="40" font-size="13" fill="#4c6070" font-weight="700" text-anchor="middle">Cell grid</text>

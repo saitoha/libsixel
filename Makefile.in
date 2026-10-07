@@ -1212,13 +1212,17 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/concepts/palettes/figures/palette-sizes.svg \
 	docs/concepts/palettes/figures/standard-palettes.svg \
 	docs/concepts/palettes/figures/timeline.svg \
+	docs/quality/character-cell-perception/README.md \
+	docs/quality/character-cell-perception/figures/csf-ratio.svg \
+	docs/quality/character-cell-perception/figures/figures.json \
+	docs/quality/character-cell-perception/figures/palette-direct.svg \
+	docs/quality/character-cell-perception/figures/tile-dithering.svg \
 	docs/quality/visual-perception/README.md \
 	docs/quality/visual-perception/figures/blind-spot.svg \
 	docs/quality/visual-perception/figures/campbell-robson.svg \
 	docs/quality/visual-perception/figures/chromatic-adaptation.svg \
 	docs/quality/visual-perception/figures/cone-sensitivity.svg \
 	docs/quality/visual-perception/figures/contrast-sensitivity.svg \
-	docs/quality/visual-perception/figures/csf-ratio.svg \
 	docs/quality/visual-perception/figures/dark-adaptation.svg \
 	docs/quality/visual-perception/figures/dither-integration.svg \
 	docs/quality/visual-perception/figures/eye-anatomy.jpg \
@@ -1227,11 +1231,9 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/quality/visual-perception/figures/luma-chroma.svg \
 	docs/quality/visual-perception/figures/luminosity-functions.svg \
 	docs/quality/visual-perception/figures/opponent-channels.svg \
-	docs/quality/visual-perception/figures/palette-direct.svg \
 	docs/quality/visual-perception/figures/receptor-density.svg \
 	docs/quality/visual-perception/figures/retina-layers.jpg \
 	docs/quality/visual-perception/figures/retina-mosaic.jpg \
-	docs/quality/visual-perception/figures/tile-dithering.svg \
 	docs/quality/visual-perception/figures/viewing-geometry.svg \
 	docs/quality/visual-perception/figures/weber-demo.svg \
 	docs/testing/builtin-loader-coverage.md \

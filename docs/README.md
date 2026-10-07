@@ -41,6 +41,7 @@ The foundations the rest of the documentation builds on, in reading order: how v
 ### Visual perception
 
 - [Visual perception for image quality](quality/visual-perception/README.md) explains the sensory physiology behind the metrics: perceptual quality, photoreceptors and opponent channels, light and chromatic adaptation including display filters and dark rooms, contrast sensitivity, viewing geometry, and the visibility of noise and chroma detail.
+- [Character cell perception](quality/character-cell-perception/README.md) treats images drawn with characters as a display device: where the cell grid falls on the contrast sensitivity curves, research on coarse mosaics, why viewers judge cells by their neighbors rather than by the original, how AAlib, libcaca and chafa handle dithering, and how much color precision and how many simultaneous colors character cells need.
 
 ### Color spaces
 
