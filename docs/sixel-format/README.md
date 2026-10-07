@@ -15,6 +15,8 @@ palette lifetime, aspect-ratio handling, scrolling, and error recovery.
 
 SIXEL is defined only by the ECMA-48 control-string envelope and DEC's device documentation, not by an image-format standard. [SIXEL specification status and interpretation layers](specification-layers.md) explains that standing, the format's de facto history as `.six` files, and how formal rules, emulation of DEC hardware, and modern interpretation together determine implementation behavior.
 
+[SIXEL patents and royalties](patents-and-royalties.md) summarizes the evidence that implementing the format requires no license or royalty.
+
 ## An old syntax with a modern image pipeline
 
 Ordinary SIXEL output combines three separable choices: color quantization, six-row color masks with run-length coding, and a terminal protocol that uses only 7-bit bytes. The wire syntax defines how the result is transmitted, not how an encoder chooses its palette, so improvements to clustering, perceptual color spaces, pixel assignment and dithering can improve output without changing the receiving terminal. [SIXEL among contemporary image codecs](comparison/README.md) develops these points and measures quality, latency, transport size, thread budgets and repeated generations against JPEG, GIF, PNG and WebP.
