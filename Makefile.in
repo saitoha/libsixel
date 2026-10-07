@@ -679,6 +679,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/cli/clipboard.md \
 	docs/cli/diagnostics.md \
 	docs/cli/runtime-policy.md \
+	docs/loader/patents.md \
 	docs/loader/libjpeg.md \
 	docs/loader/libwebp.md \
 	docs/loader/libtiff.md \

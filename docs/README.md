@@ -94,6 +94,7 @@ The encoder and decoder in data-flow order, from loading an image to writing SIX
 ### Image loading
 
 - [Image loader architecture](loader/README.md) explains the compiled loader registry, `-L` chain construction, predicate and fallback control flow, typed frame outputs, backend inventory, and quality/security tradeoffs.
+- [Patent status of loader formats](loader/patents.md) records what is known about patents on each builtin decoder, external codec library, and platform framework path, including the independent builtin WebP decoder's VP8 position.
 - [Loader precision, gamut, and fast paths](loader/precision-policy.md): backend representation, color/alpha preservation, byte eligibility, and validation requirements.
 - [Loader Color Management](loader/color-management/README.md) defines the backend integration policy, lists current CMS and precision boundaries by loader/format, and compares engines, unsupported profiles, fallback, rendering intents, quality, and speed/memory tradeoffs. Its [ColorSync dark-tone comparison](loader/color-management/README.md#colorsync-pure-gamma-curves-and-dark-tones) plots the pure-gamma representation difference and explains the compatibility setting.
 - [Builtin CMS specification and architecture](loader/builtin-cms.md) explains the implemented ICC subset, profile and transform ownership, numerical behavior, safety boundaries, and coverage limits.

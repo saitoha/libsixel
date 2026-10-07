@@ -61,6 +61,7 @@ docs/encoder/preprocessing/resampling/wide-kernels.md	reference	both	kernel form
 docs/encoder/palette-construction/snap-policy/README.md	reference	both	snap contracts + numeric explanation and contributor measurements/test ledger
 docs/encoder/output/terminal-macros.md	reference	both	macro contracts + playback how-to, history and contributor test ledger
 docs/encoder/palette-application/working-colorspace/README.md	reference	both	working-space contracts + mathematical explanation and contributor measurements/tests
+docs/loader/patents.md	explanation	user	per-format patent evidence summary, not legal advice
 docs/loader/README.md	reference	both	loader chain contracts + architecture explanation and contributor test ledger
 docs/loader/alpha-policy/README.md	reference	both	alpha contracts + visual explanation and contributor test ledger
 docs/loader/background-policy.md	reference	both	background contracts + contributor test ledger

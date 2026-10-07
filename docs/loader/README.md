@@ -106,6 +106,8 @@ Consequently, “loaded frame (RGBA)” and “get pixel (RGBA)” are incorrect
 
 Loader output is also not controlled solely by the encoder's `--precision` option. A decoder can preserve high-depth source values as float32 before encoder preprocessing begins. Conversely, a requested float-capable CMS target does not manufacture extra source precision when no transform runs. With CMS enabled, `prefer_8bit=0` permits float32 target output; `prefer_8bit=1` requests an 8-bit gamma RGB boundary. See [Pixel-format Precision](../concepts/pixelformat-precision/README.md) and [Color-Space Handling](../encoder/colorspace-handling/README.md) for the later resize and encoder conversions.
 
+[Patent status of loader formats](patents.md) records what is known about patents for each loader path.
+
 ## Why several loaders exist
 
 Optional mature libraries and platform frameworks provide broad compatibility, native integration, and their own maintenance and security programs. The builtin loader provides a dependency-free baseline, but dependency removal is only one of its design goals. Keeping selected decode paths in-tree also lets libsixel preserve source precision, expose explicit colorspace interpretation, retain indexed structure, control animation and alpha semantics, and delay lossy conversion until the encoder actually needs it. These capabilities can improve the final palette and resize quality.
