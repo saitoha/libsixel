@@ -482,7 +482,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0027_P3_DELTA_RECOVERY \
     -DBUILD_TEST_0028_P3_OR_RECOVERY \
     -DBUILD_TEST_0029_P3_DRCS_RECOVERY \
-    -DBUILD_TEST_0030_P3_MACRO_RECOVERY \
+    -DBUILD_TEST_0030_P3_MACRO_PNG_RECOVERY \
     -DBUILD_TEST_0031_P3_PNG_SIXEL_REUSE \
     -DBUILD_TEST_0032_P3_SNAP_RECOVERY \
     -DBUILD_TEST_0033_P3_NAN_RECOVERY \
@@ -1193,6 +1193,16 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0014_FLOAT_ANIMATION_REPLAY \
     -DBUILD_TEST_0015_BYTE_DEFINE \
     -DBUILD_TEST_0016_FLOAT_OUTPUT_REUSE \
+    -DBUILD_HIGHCOLOR_MACRO_COMMON \
+    -DBUILD_TEST_0017_HIGHCOLOR_P3_DEFINE \
+    -DBUILD_TEST_0018_HIGHCOLOR_P3_INVOKE \
+    -DBUILD_TEST_0019_HIGHCOLOR_P3_C1 \
+    -DBUILD_TEST_0020_HIGHCOLOR_P3_HLS \
+    -DBUILD_TEST_0021_HIGHCOLOR_P3_MASK \
+    -DBUILD_TEST_0022_HIGHCOLOR_P3_PACKED \
+    -DBUILD_TEST_0023_HIGHCOLOR_BYTE_DEFINE \
+    -DBUILD_TEST_0024_HIGHCOLOR_OUTPUT_REUSE \
+    -DBUILD_TEST_0025_HIGHCOLOR_P3_REPLAY \
     -DBUILD_HECKBERT_TEST_COMMON \
     -DBUILD_TEST_0034_HECKBERT_REPEATED_SUBBYTE \
     -DBUILD_TEST_0033_HECKBERT_REPEATED_POPULATION \
@@ -6006,7 +6016,7 @@ test_runner_SOURCES = test_runner.c \
     codec/highcolor/0027_p3_delta_recovery.c \
     codec/highcolor/0028_p3_or_recovery.c \
     codec/highcolor/0029_p3_drcs_recovery.c \
-    codec/highcolor/0030_p3_macro_recovery.c \
+    codec/highcolor/0030_p3_macro_png_recovery.c \
     codec/highcolor/0031_p3_png_sixel_reuse.c \
     codec/highcolor/0032_p3_snap_recovery.c \
     codec/highcolor/0033_p3_nan_recovery.c \
@@ -6125,6 +6135,16 @@ test_runner_SOURCES = test_runner.c \
     codec/macro/0014_float_animation_replay.c \
     codec/macro/0015_byte_define.c \
     codec/macro/0016_float_output_reuse.c \
+    codec/macro/highcolor_macro_common.c \
+    codec/macro/0017_highcolor_p3_define.c \
+    codec/macro/0018_highcolor_p3_invoke.c \
+    codec/macro/0019_highcolor_p3_c1.c \
+    codec/macro/0020_highcolor_p3_hls.c \
+    codec/macro/0021_highcolor_p3_mask.c \
+    codec/macro/0022_highcolor_p3_packed.c \
+    codec/macro/0023_highcolor_byte_define.c \
+    codec/macro/0024_highcolor_output_reuse.c \
+    codec/macro/0025_highcolor_p3_replay.c \
     quant/palette/heckbert_test_common.c \
     quant/palette/heckbert_float/0034_heckbert_repeated_subbyte.c \
     quant/palette/heckbert_float/0033_heckbert_repeated_population.c \

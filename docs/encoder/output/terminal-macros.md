@@ -16,6 +16,14 @@ The selected [native float palette path](output-colorspace.md#selected-ordinary-
 
 A macro stores image bytes, not the receiver's color interpretation. Explicit `-U display-p3` requires the receiver to interpret those palette components as Display P3 when it executes the macro. A CLI `-Uauto` color session surrounds that conversion/playback only; it does not embed a color-policy change in each stored definition. An application invoking a preloaded macro later must restore the matching receiver policy itself. Replaying under a different policy changes the meaning of the stored RGB values. The proposed [graphics color-management protocol](../../protocols/graphics-color-management.md) describes interpretation separately from SIXEL image data.
 
+## High-color macros
+
+[High-color output](high-color/README.md) supports the same macro transport, including explicit Display P3, RGB/HLS fields, C1 inner controls, separated masks and gamma-coordinate packed alpha. Each stored stream includes every register definition and repaint pass. The receiver must support paint-time register resolution; storing the stream in a macro does not turn a live-register renderer into a high-color renderer. Color interpretation must match at invocation as described above.
+
+High color retains its own destination-sample conversion and bypasses the fixed-palette construction/application path. Macro wrapping does not quantize the float representatives through RGB888. Byte-eligible high-color input remains byte-based. Automatic animation playback defines complete images on loop zero and invokes those IDs on later loops; it does not store the receiver's background for omitted source pixels.
+
+OR and DRCS remain outside the high-color P3 contract. Macro output also cannot be combined with a PNG snapshot: the snapshot reader accepts ordinary SIXEL, not hexadecimal DECDMAC definitions. The existing delta restriction applies independently of high color.
+
 ## Origin and emulation model
 
 Araki Ken (`@arakiken`) proposed image preloading with terminal macros as a speed improvement during libsixel's formative 2014 period. mlterm's [2014-07-21 history](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/ChangeLog#L11508-L11515) records both DECDMAC/DECINVM support and caching of macro images. libsixel added [`-u` on July 21](https://github.com/saitoha/libsixel/commit/fc93d97631a6c1556b8af0ceceab2a5cf8c9fa35), incorporated [Araki Ken's faster hexadecimal output patch on July 22](https://github.com/saitoha/libsixel/commit/45bd1b2c9a6ad20b6681adb48ec3a2052d13a5b4), and added [`-n` on August 2](https://github.com/saitoha/libsixel/commit/7f12bdb00456f43a260c03cba9986227744d46cd). The [2014 timeline](../../project-history.md#2014-from-utility-to-reusable-library) places this work alongside the high-color and image-ID implementations that followed in the same year.
@@ -218,6 +226,20 @@ The native macro tests use borrowed typed frames through the encoder's fd-backed
 | TM-14 | Two distinct native float frames are defined on the first loop and invoked without redefinition on the second. | [tests/codec/macro/0014_float_animation_replay.t](../../../tests/codec/macro/0014_float_animation_replay.t) |
 | TM-15 | Byte-eligible macro input retains byte palette application and the independently expected wire stream. | [tests/codec/macro/0015_byte_define.t](../../../tests/codec/macro/0015_byte_define.t) |
 | TM-16 | One encoder reused for P3, gamma and P3 macro definitions refreshes wire values while retaining the same unrounded center. | [tests/codec/macro/0016_float_output_reuse.t](../../../tests/codec/macro/0016_float_output_reuse.t) |
+
+High-color macro tests read the actual fd-backed hexadecimal output, check the wrapper and invocation, and direct-decode the stored SIXEL against independent RGB101 values and opacity. The 320-pixel case requires register redefinition; the remaining witnesses isolate transport, color and state contracts. These tests establish emitted bytes and paint values, not receiver macro capacity or color-policy ownership.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| TM-17 | A P3 high-color fixed-ID definition retains all 320 independent paint values through actual register redefinition. | [tests/codec/macro/0017_highcolor_p3_define.t](../../../tests/codec/macro/0017_highcolor_p3_define.t) |
+| TM-18 | P3 high-color primaries and a subbyte neutral are defined before automatic invocation. | [tests/codec/macro/0018_highcolor_p3_invoke.t](../../../tests/codec/macro/0018_highcolor_p3_invoke.t) |
+| TM-19 | P3 high-color C1 inner controls remain hex encoded under a 7-bit outer macro. | [tests/codec/macro/0019_highcolor_p3_c1.t](../../../tests/codec/macro/0019_highcolor_p3_c1.t) |
+| TM-20 | High-color HLS syntax and independent P3 primary/neutral values survive macro transport. | [tests/codec/macro/0020_highcolor_p3_hls.t](../../../tests/codec/macro/0020_highcolor_p3_hls.t) |
+| TM-21 | High-color P3 macro paint preserves separated source-mask omissions. | [tests/codec/macro/0021_highcolor_p3_mask.t](../../../tests/codec/macro/0021_highcolor_p3_mask.t) |
+| TM-22 | Gamma packed alpha normalizes before P3 high-color macro conversion and retains its omitted pixel. | [tests/codec/macro/0022_highcolor_p3_packed.t](../../../tests/codec/macro/0022_highcolor_p3_packed.t) |
+| TM-23 | Byte-eligible sRGB high-color macro input remains byte-based and emits independent RGB101 values. | [tests/codec/macro/0023_highcolor_byte_define.t](../../../tests/codec/macro/0023_highcolor_byte_define.t) |
+| TM-24 | One high-color macro encoder refreshes the destination when switching P3 to gamma and back. | [tests/codec/macro/0024_highcolor_output_reuse.t](../../../tests/codec/macro/0024_highcolor_output_reuse.t) |
+| TM-25 | Two distinct P3 high-color animation frames are defined/invoked on loop zero and only invoked on loop one. | [tests/codec/macro/0025_highcolor_p3_replay.t](../../../tests/codec/macro/0025_highcolor_p3_replay.t) |
 
 ### Supplementary coverage and boundaries
 

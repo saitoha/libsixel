@@ -234,6 +234,15 @@ int test_macro_0013(int argc, char **argv);
 int test_macro_0014(int argc, char **argv);
 int test_macro_0015(int argc, char **argv);
 int test_macro_0016(int argc, char **argv);
+int test_macro_0017(int argc, char **argv);
+int test_macro_0018(int argc, char **argv);
+int test_macro_0019(int argc, char **argv);
+int test_macro_0020(int argc, char **argv);
+int test_macro_0021(int argc, char **argv);
+int test_macro_0022(int argc, char **argv);
+int test_macro_0023(int argc, char **argv);
+int test_macro_0024(int argc, char **argv);
+int test_macro_0025(int argc, char **argv);
 int test_hls_native_0014(int argc, char **argv);
 int test_hls_native_0015(int argc, char **argv);
 int test_delta_native_0048(int argc, char **argv);
@@ -3357,6 +3366,15 @@ static test_entry_t const test_entries[] = {
     { "codec/macro/0014_float_animation_replay", test_macro_0014 },
     { "codec/macro/0015_byte_define", test_macro_0015 },
     { "codec/macro/0016_float_output_reuse", test_macro_0016 },
+    { "codec/macro/0017_highcolor_p3_define", test_macro_0017 },
+    { "codec/macro/0018_highcolor_p3_invoke", test_macro_0018 },
+    { "codec/macro/0019_highcolor_p3_c1", test_macro_0019 },
+    { "codec/macro/0020_highcolor_p3_hls", test_macro_0020 },
+    { "codec/macro/0021_highcolor_p3_mask", test_macro_0021 },
+    { "codec/macro/0022_highcolor_p3_packed", test_macro_0022 },
+    { "codec/macro/0023_highcolor_byte_define", test_macro_0023 },
+    { "codec/macro/0024_highcolor_output_reuse", test_macro_0024 },
+    { "codec/macro/0025_highcolor_p3_replay", test_macro_0025 },
     { "codec/hls/0014_byte_or_control", test_hls_native_0014 },
     { "codec/hls/0015_serial_or", test_hls_native_0015 },
     { "palette/delta_native/0048_delta_fixed_fs_diffuse",
@@ -3894,7 +3912,7 @@ static test_entry_t const test_entries[] = {
     { "codec/highcolor/0027_p3_delta_recovery", test_highcolor_0027 },
     { "codec/highcolor/0028_p3_or_recovery", test_highcolor_0028 },
     { "codec/highcolor/0029_p3_drcs_recovery", test_highcolor_0029 },
-    { "codec/highcolor/0030_p3_macro_recovery", test_highcolor_0030 },
+    { "codec/highcolor/0030_p3_macro_png_recovery", test_highcolor_0030 },
     { "codec/highcolor/0031_p3_png_sixel_reuse", test_highcolor_0031 },
     { "codec/highcolor/0032_p3_snap_recovery", test_highcolor_0032 },
     { "codec/highcolor/0033_p3_nan_recovery", test_highcolor_0033 },

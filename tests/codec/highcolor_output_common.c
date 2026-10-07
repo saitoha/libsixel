@@ -359,7 +359,8 @@ test_highcolor_p3(int scenario)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 't', "hls"))) {
         goto end;
     }
-    phases = scenario >= 26 ? 2 : scenario == 25 ? 3 : 1;
+    phases = scenario == 30 ? 3 :
+        scenario >= 26 ? 2 : scenario == 25 ? 3 : 1;
     if (scenario == 25 &&
             (SIXEL_FAILED(sixel_encoder_new(&other, NULL)) ||
              SIXEL_FAILED(sixel_encoder_setopt(other, 'I', NULL)) ||
@@ -419,7 +420,8 @@ test_highcolor_p3(int scenario)
                 expected[0] = 100; expected[1] = expected[2] = 0;
             }
         }
-        reject = scenario >= 26 && scenario != 31 && phase == 0;
+        reject = scenario >= 26 && scenario != 31 &&
+            phase < (scenario == 30 ? 2 : 1);
         if (reject && scenario == 33) {
             samples[0] = NAN;
         }
@@ -461,8 +463,11 @@ test_highcolor_p3(int scenario)
         encoder->sixdelta_enabled = reject && scenario == 27;
         encoder->ormode = reject && scenario == 28;
         encoder->fdrcs = reject && scenario == 29;
-        encoder->fuse_macro = reject && scenario == 30;
-        encoder->output_is_png = scenario == 31 && phase == 0;
+        encoder->fuse_macro = reject && scenario == 30 && phase == 0;
+        encoder->macro_number = reject && scenario == 30 && phase == 1 ?
+            7 : -1;
+        encoder->output_is_png = (scenario == 31 && phase == 0) ||
+            (scenario == 30 && reject);
         if (scenario == 32 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 '_', reject ? "nearest" : "none"))) {
             goto end;

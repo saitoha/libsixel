@@ -7149,8 +7149,11 @@ sixel_encoder_highcolor_options(sixel_encoder_t const *encoder)
         (encoder->snap_policy == SIXEL_PALETTE_SNAP_POLICY_NONE ||
          encoder->snap_policy_approach_rate <= 0.0) &&
         !encoder->sixdelta_enabled && !encoder->ormode &&
-        !encoder->fdrcs && !encoder->fuse_macro &&
-        encoder->macro_number < 0;
+        !encoder->fdrcs &&
+        /* Macros hex-wrap every high-color register definition and pass.
+         * PNG readback expects ordinary SIXEL, not the outer definition. */
+        !(encoder->output_is_png &&
+          (encoder->fuse_macro || encoder->macro_number >= 0));
 }
 
 /* Resolve packed storage only within the admitted frame/output scope. */
@@ -7221,10 +7224,10 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             return SIXEL_OK;
         }
         sixel_helper_set_additional_message(
-            "display-p3 high-color requires ordinary CPU RGB/HLS SIXEL "
-            "or a PNG snapshot, "
+            "display-p3 high-color requires CPU RGB/HLS SIXEL "
+            "(ordinary, macro or ordinary PNG snapshot), "
             "-W gamma|linear|oklab|cielab|din99d and inactive snap; "
-            "delta, OR, DRCS and macros are unsupported.");
+            "delta, OR, DRCS and macro PNG snapshots are unsupported.");
         return SIXEL_BAD_ARGUMENT;
     }
     if (!sixel_encoder_rgb101_options(encoder)) {
