@@ -281,6 +281,8 @@ This reverses a usual assumption about dithering. On a fine pixel grid, ditherin
 
 A pattern fixed in position also keeps its decision stable: error diffusion propagates each decision to the following cells, so a small change of input can flip a whole run of cells, which in animation is seen as shimmer.
 
+> **Try it.** The [tile perception lab](tile-lab/index.html) is an interactive page that compares a fine pixel grid with coarse tiles under the same palette. Its three experiments ask whether coarse tiles need dithering, whether the colors of a tile should be mixed in linear light or in sRGB-encoded values, and which color difference should choose the nearest palette color. Each row can be compared blind, without the original, which is how a terminal image is actually seen. The page runs in the browser of the documentation site; on GitHub, open the file from a local checkout or the published site.
+
 ### How character renderers handle it
 
 The source code of three renderers shows choices that agree with this reasoning in the newest of them, and with the constraints of their time in the older two.

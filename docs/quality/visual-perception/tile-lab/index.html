@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tile Perception Lab</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --fg: #1d1d1f;
+  --muted: #5f6368;
+  --panel: #f4f5f7;
+  --line: #d6d8dc;
+  --accent: #2f6fdb;
+  --mark: #e0245e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16171a;
+    --fg: #e8e8ea;
+    --muted: #a0a4ab;
+    --panel: #212327;
+    --line: #3a3d43;
+    --accent: #7aa7ff;
+    --mark: #ff5c8a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16171a;
+  --fg: #e8e8ea;
+  --muted: #a0a4ab;
+  --panel: #212327;
+  --line: #3a3d43;
+  --accent: #7aa7ff;
+  --mark: #ff5c8a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+main { max-width: 1120px; margin: 0 auto; padding: 16px; }
+h1 { font-size: 1.5rem; margin: 0.2em 0 0.3em; }
+h2 { font-size: 1.1rem; margin: 1.4em 0 0.4em; }
+p { margin: 0.4em 0 0.8em; }
+a { color: var(--accent); }
+.lead { color: var(--muted); max-width: 70ch; }
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+}
+.controls label { display: block; font-size: 0.85rem; color: var(--muted); }
+.controls select, .controls input[type="number"] {
+  width: 100%;
+  margin-top: 2px;
+  padding: 4px 6px;
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+.controls input[type="range"] { width: 100%; }
+.check { display: flex; gap: 6px; align-items: center; color: var(--fg) !important; }
+.row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+figure { margin: 0; }
+canvas {
+  display: block;
+  max-width: 100%;
+  image-rendering: pixelated;
+  border: 1px solid var(--line);
+  background: #808080;
+}
+figcaption { font-size: 0.85rem; margin-top: 4px; }
+figcaption b { display: block; }
+.metrics { color: var(--muted); font-variant-numeric: tabular-nums; }
+.viewing {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  margin: 4px 0 8px;
+}
+button {
+  font: inherit;
+  padding: 4px 12px;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: pointer;
+}
+button:hover { border-color: var(--accent); }
+.blindbar { display: flex; gap: 8px; align-items: center; margin: 6px 0; flex-wrap: wrap; }
+.hidden { display: none !important; }
+.note { font-size: 0.85rem; color: var(--muted); max-width: 75ch; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 16px 0 4px; border-bottom: 1px solid var(--line); }
+.tabs button { border-radius: 6px 6px 0 0; border-bottom: none; }
+.tabs button[aria-current="page"] { background: var(--panel); border-color: var(--accent); font-weight: 600; }
+.controls.local { margin-bottom: 8px; }
+h3 { font-size: 1rem; margin: 1.2em 0 0.2em; }
+@media (max-width: 720px) {
+  .row { grid-template-columns: minmax(0, 1fr); }
+}
+</style>
+</head>
+<body>
+<main>
+<h1>Tile Perception Lab</h1>
+<p class="lead">Experiments on how a fine pixel grid and a coarse grid of tiles, such as character cells, are seen. Each corner varies one choice and keeps the others fixed. All processing runs in this page; a file you open is not uploaded.</p>
+
+<div class="controls" id="controls">
+  <label>Image
+    <select id="image">
+      <option value="snake">Snake (photograph)</option>
+      <option value="egret">Egret (photograph)</option>
+      <option value="gradient">Skin-to-sky gradient</option>
+      <option value="sphere">Shaded sphere</option>
+      <option value="file">Open a file…</option>
+    </select>
+    <input type="file" id="file" accept="image/*" class="hidden">
+  </label>
+  <label>Fixed palette
+    <select id="palette">
+      <option value="xterm16">16 colors (xterm)</option>
+      <option value="rgb8">8 colors (RGB cube corners)</option>
+      <option value="cube216">216 colors (6×6×6 cube)</option>
+      <option value="xterm256">256 colors (xterm)</option>
+      <option value="gray4">4 grays</option>
+    </select>
+  </label>
+  <label>Tile size: <span id="tileOut"></span>
+    <input type="range" id="tile" min="4" max="32" step="1" value="12">
+  </label>
+  <label>Tile shape
+    <select id="shape">
+      <option value="cell">Character cell (1 : 2)</option>
+      <option value="square">Square</option>
+    </select>
+  </label>
+  <label>Simulated distance (blur): <span id="blurOut"></span>
+    <input type="range" id="blur" min="0" max="6" step="0.5" value="0">
+  </label>
+  <label>Screen density (ppi)
+    <input type="number" id="ppi" min="50" max="600" step="1">
+  </label>
+  <label>Viewing distance (cm)
+    <input type="number" id="dist" min="10" max="300" step="1" value="50">
+  </label>
+  <label class="check"><input type="checkbox" id="animate"> Slow pan (shows shimmer)</label>
+  <label class="check"><input type="checkbox" id="overlay"> Mark unnatural tile-to-tile jumps</label>
+</div>
+
+<nav class="tabs" id="tabs" aria-label="Experiments"></nav>
+<section id="corner"></section>
+
+<h2>How to read the panels</h2>
+<p class="note"><b>Blind comparison.</b> A viewer of a terminal image never sees the original. The blind button of a row hides the reference and the labels and shuffles the remaining panels; judge which looks most natural, then reveal.</p>
+<p class="note"><b>Metrics.</b> <i>ΔE tile</i> is the mean CIELAB ΔE between each output tile and the original tile. <i>ΔE 3×3</i> compares averages over 3 × 3 tiles, the error that dithering reduces. <i>Jumps</i> is the share of neighboring tile pairs whose difference exceeds the original's by more than 6 ΔE: changes a viewer sees as structure that the picture does not contain. The marking option outlines them. The original tile colors are averaged in linear light, which is how light mixes physically. This choice of reference can favor linear-light mixing, and the metrics do not model the visibility of texture, so use them as hints and judge by eye.</p>
+<p class="note"><b>Viewing geometry.</b> Cycles per degree assume the density and distance entered above and one physical pixel per device pixel. Relative sensitivities use the luminance model of Mannos and Sakrison and the schematic chroma curve of the <a href="../#character-cells-and-mosaics">visual perception chapter</a>.</p>
+<p class="note"><b>Processing.</b> Nearest palette colors are chosen with the selected color difference; averages and dithering errors are formed in the selected space; ordered and blue-noise offsets are scaled to the mean spacing of the palette levels in that space. DIN99d follows the formulas also used by chafa. Photographs are <code>images/snake.jpg</code> and <code>images/egret.jpg</code> from the libsixel repository.</p>
+</main>
+
+<script>
+"use strict";
+
+/* ---------- color conversion ---------- */
+
+const s2l = (c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+const l2s = (c) => (c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
+const S2L = new Float32Array(256);
+for (let i = 0; i < 256; i++) S2L[i] = s2l(i / 255);
+const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+const to8 = (v) => Math.round(clamp01(v) * 255);
+
+function linToXyz(r, g, b) {
+  return [
+    0.4124564 * r + 0.3575761 * g + 0.1804375 * b,
+    0.2126729 * r + 0.7151522 * g + 0.0721750 * b,
+    0.0193339 * r + 0.1191920 * g + 0.9503041 * b,
+  ];
+}
+const WX = 0.95047, WY = 1.0, WZ = 1.08883;
+const labF = (t) => (t > 216 / 24389 ? Math.cbrt(t) : (24389 / 27 * t + 16) / 116);
+function xyzToLab(x, y, z) {
+  const fx = labF(x / WX), fy = labF(y / WY), fz = labF(z / WZ);
+  return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+}
+function linToLab(r, g, b) {
+  const [x, y, z] = linToXyz(r, g, b);
+  return xyzToLab(x, y, z);
+}
+const C50 = Math.cos(50 * Math.PI / 180), S50 = Math.sin(50 * Math.PI / 180);
+function linToDin99d(r, g, b) {
+  const [x, y, z] = linToXyz(r, g, b);
+  const [L, a, bb] = xyzToLab(1.12 * x - 0.12 * z, y, z);
+  const L99 = 325.22 * Math.log(1 + 0.0036 * L);
+  const e = C50 * a + S50 * bb;
+  const f = 1.14 * (C50 * bb - S50 * a);
+  const G = Math.sqrt(e * e + f * f);
+  const C = 22.5 * Math.log(1 + 0.06 * G);
+  const h = Math.atan2(f, e) + 50 * Math.PI / 180;
+  return [L99, C * Math.cos(h), C * Math.sin(h)];
+}
+function linToOklab(r, g, b) {
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  return [
+    0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s,
+  ];
+}
+const METRICS = {
+  rgb: (r, g, b) => [l2s(r), l2s(g), l2s(b)],
+  din99d: linToDin99d,
+  oklab: linToOklab,
+};
+
+/* ---------- palettes (stored as sRGB bytes) ---------- */
+
+function hexList(s) {
+  return s.trim().split(/\s+/).map((h) => [0, 2, 4].map((i) => parseInt(h.substr(i, 2), 16)));
+}
+const XTERM16 = hexList("000000 cd0000 00cd00 cdcd00 0000ee cd00cd 00cdcd e5e5e5 7f7f7f ff0000 00ff00 ffff00 5c5cff ff00ff 00ffff ffffff");
+const CUBE_LEVELS = [0, 95, 135, 175, 215, 255];
+function cube216() {
+  const out = [];
+  for (const r of CUBE_LEVELS) for (const g of CUBE_LEVELS) for (const b of CUBE_LEVELS) out.push([r, g, b]);
+  return out;
+}
+function grays24() {
+  const out = [];
+  for (let i = 0; i < 24; i++) out.push([8 + 10 * i, 8 + 10 * i, 8 + 10 * i]);
+  return out;
+}
+const PALETTES = {
+  xterm16: XTERM16,
+  rgb8: hexList("000000 ff0000 00ff00 ffff00 0000ff ff00ff 00ffff ffffff"),
+  cube216: cube216(),
+  xterm256: XTERM16.concat(cube216(), grays24()),
+  gray4: hexList("000000 555555 aaaaaa ffffff"),
+};
+
+/* ---------- threshold textures ---------- */
+
+function bayer(n) {
+  let m = [[0]];
+  while (m.length < n) {
+    const k = m.length, next = [];
+    for (let y = 0; y < 2 * k; y++) {
+      next.push([]);
+      for (let x = 0; x < 2 * k; x++) {
+        const base = m[y % k][x % k] * 4;
+        const q = [[0, 2], [3, 1]][Math.floor(y / k)][Math.floor(x / k)];
+        next[y].push(base + q);
+      }
+    }
+    m = next;
+  }
+  const size = n * n, out = new Float32Array(size);
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) out[y * n + x] = (m[y][x] + 0.5) / size;
+  return out;
+}
+const BAYER = bayer(8);
+
+/* Blue-noise ranks by progressive void filling on a torus, seeded. */
+function blueNoise(n) {
+  const N = n * n, energy = new Float32Array(N), rank = new Float32Array(N), used = new Uint8Array(N);
+  const R = 6, sigma2 = 2 * 1.9 * 1.9, kernel = [];
+  for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) kernel.push([dx, dy, Math.exp(-(dx * dx + dy * dy) / sigma2)]);
+  let seed = 12345;
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296);
+  for (let i = 0; i < N; i++) energy[i] = rnd() * 1e-3;
+  for (let k = 0; k < N; k++) {
+    let best = -1, bestE = Infinity;
+    for (let i = 0; i < N; i++) if (!used[i] && energy[i] < bestE) { bestE = energy[i]; best = i; }
+    used[best] = 1;
+    rank[best] = (k + 0.5) / N;
+    const bx = best % n, by = (best / n) | 0;
+    for (const [dx, dy, w] of kernel) energy[((by + dy + n) % n) * n + ((bx + dx + n) % n)] += w;
+  }
+  return rank;
+}
+let BLUE = null;
+
+
+/* ---------- state ---------- */
+
+const $ = (id) => document.getElementById(id);
+const ui = {};
+for (const id of ["image", "file", "palette", "tile", "shape", "blur", "ppi", "dist", "animate", "overlay"]) ui[id] = $(id);
+ui.ppi.value = Math.round(96 * (window.devicePixelRatio || 1));
+
+const sources = {};
+let userImage = null;
+const palCaches = new Map();
+
+function loadImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+function preparePalette(name, metricName, mixName) {
+  const key = name + "|" + metricName + "|" + mixName;
+  const cached = palCaches.get(key);
+  if (cached) return cached;
+  const bytes = PALETTES[name];
+  const metric = METRICS[metricName];
+  const linear = mixName === "linear";
+  const n = bytes.length;
+  const lin = new Float32Array(n * 3), mix = new Float32Array(n * 3), met = new Float32Array(n * 3);
+  bytes.forEach((c, i) => {
+    for (let k = 0; k < 3; k++) {
+      lin[i * 3 + k] = S2L[c[k]];
+      mix[i * 3 + k] = linear ? S2L[c[k]] : c[k] / 255;
+    }
+    met.set(metric(lin[i * 3], lin[i * 3 + 1], lin[i * 3 + 2]), i * 3);
+  });
+  /* Mean spacing of palette levels per channel in the mixing space. */
+  const gap = [0, 0, 0];
+  for (let k = 0; k < 3; k++) {
+    const levels = Array.from(new Set(Array.from({ length: n }, (_, i) => mix[i * 3 + k].toFixed(5)))).map(Number).sort((a, b) => a - b);
+    gap[k] = levels.length > 1 ? (levels[levels.length - 1] - levels[0]) / (levels.length - 1) : 1;
+  }
+  const P = { key, bytes, lin, mix, met, metric, linear, n, gap, memo: new Map() };
+  palCaches.set(key, P);
+  return P;
+}
+
+/* Nearest palette index for a color given in the mixing space. */
+function nearest(P, a, b, c) {
+  a = clamp01(a); b = clamp01(b); c = clamp01(c);
+  const key = (Math.round(a * 1023) << 20) | (Math.round(b * 1023) << 10) | Math.round(c * 1023);
+  const hit = P.memo.get(key);
+  if (hit !== undefined) return hit;
+  const r = P.linear ? a : s2l(a), g = P.linear ? b : s2l(b), bl = P.linear ? c : s2l(c);
+  const [x, y, z] = P.metric(r, g, bl);
+  let best = 0, bestD = Infinity;
+  for (let i = 0; i < P.n; i++) {
+    const dx = x - P.met[i * 3], dy = y - P.met[i * 3 + 1], dz = z - P.met[i * 3 + 2];
+    const d = dx * dx + dy * dy + dz * dz;
+    if (d < bestD) { bestD = d; best = i; }
+  }
+  if (P.memo.size > 400000) P.memo.clear();
+  P.memo.set(key, best);
+  return best;
+}
+
+/* ---------- image preparation ---------- */
+
+function synthetic(name, W, H, ctx) {
+  const img = ctx.createImageData(W, H), d = img.data;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    let r, g, b;
+    if (name === "gradient") {
+      const t = x / (W - 1), v = y / (H - 1);
+      r = 0.93 - 0.55 * t; g = 0.74 - 0.08 * t + 0.04 * v; b = 0.62 + 0.30 * t;
+    } else {
+      const cx = W * 0.5, cy = H * 0.52, rad = Math.min(W, H) * 0.42;
+      const dx = (x - cx) / rad, dy = (y - cy) / rad, q = dx * dx + dy * dy;
+      if (q < 1) {
+        const nz = Math.sqrt(1 - q);
+        const lum = Math.max(0, -0.45 * dx - 0.55 * dy + 0.70 * nz);
+        r = 0.08 + 0.82 * lum; g = 0.10 + 0.55 * lum; b = 0.20 + 0.30 * lum;
+      } else {
+        const t = y / (H - 1);
+        r = 0.20 + 0.25 * t; g = 0.24 + 0.22 * t; b = 0.30 + 0.20 * t;
+      }
+    }
+    const o = (y * W + x) * 4;
+    d[o] = to8(r); d[o + 1] = to8(g); d[o + 2] = to8(b); d[o + 3] = 255;
+  }
+  return img;
+}
+
+function sourceData(W, H, shift) {
+  const cv = document.createElement("canvas");
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext("2d", { willReadFrequently: true });
+  const name = ui.image.value;
+  if (name === "gradient" || name === "sphere") {
+    const img = synthetic(name, W, H, ctx);
+    if (!shift) return img;
+    ctx.putImageData(img, 0, 0);
+    const cv2 = document.createElement("canvas");
+    cv2.width = W; cv2.height = H;
+    const c2 = cv2.getContext("2d", { willReadFrequently: true });
+    c2.imageSmoothingQuality = "high";
+    c2.drawImage(cv, shift, 0, W, H, 0, 0, W, H);
+    c2.drawImage(cv, shift - W, 0, W, H, 0, 0, W, H);
+    return c2.getImageData(0, 0, W, H);
+  }
+  const img = name === "file" ? userImage : sources[name];
+  if (!img) return ctx.createImageData(W, H);
+  const scale = Math.max(W / img.naturalWidth, H / img.naturalHeight) * 1.08;
+  const dw = img.naturalWidth * scale, dh = img.naturalHeight * scale;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, (W - dw) / 2 + shift, (H - dh) / 2, dw, dh);
+  return ctx.getImageData(0, 0, W, H);
+}
+
+/* ---------- unit grid processing ---------- */
+
+/* Average the source over units of uw x uh pixels, in the mixing space. */
+function unitAverages(src, W, H, uw, uh, linear) {
+  const nx = Math.ceil(W / uw), ny = Math.ceil(H / uh);
+  const acc = new Float32Array(nx * ny * 3), cnt = new Float32Array(nx * ny);
+  const d = src.data;
+  for (let y = 0; y < H; y++) {
+    const uy = (y / uh) | 0;
+    for (let x = 0; x < W; x++) {
+      const u = uy * nx + ((x / uw) | 0), o = (y * W + x) * 4;
+      for (let k = 0; k < 3; k++) acc[u * 3 + k] += linear ? S2L[d[o + k]] : d[o + k] / 255;
+      cnt[u]++;
+    }
+  }
+  for (let u = 0; u < nx * ny; u++) for (let k = 0; k < 3; k++) acc[u * 3 + k] /= cnt[u];
+  return { nx, ny, val: acc };
+}
+
+/* Quantize a grid of colors in the mixing space; returns palette indices. */
+function quantizeGrid(P, grid, method) {
+  const { nx, ny, val } = grid, out = new Int32Array(nx * ny);
+  if (method === "none") {
+    for (let u = 0; u < nx * ny; u++) out[u] = nearest(P, val[u * 3], val[u * 3 + 1], val[u * 3 + 2]);
+    return out;
+  }
+  if (method === "fs") {
+    const err = new Float32Array((nx + 2) * 2 * 3);
+    for (let y = 0; y < ny; y++) {
+      const cur = (y & 1) * (nx + 2), nxt = ((y + 1) & 1) * (nx + 2);
+      for (let i = 0; i < (nx + 2) * 3; i++) err[nxt * 3 + i] = 0;
+      for (let x = 0; x < nx; x++) {
+        const u = y * nx + x, e = (cur + x + 1) * 3;
+        const a = clamp01(val[u * 3] + err[e]), b = clamp01(val[u * 3 + 1] + err[e + 1]), c = clamp01(val[u * 3 + 2] + err[e + 2]);
+        const p = nearest(P, a, b, c);
+        out[u] = p;
+        const q = [a - P.mix[p * 3], b - P.mix[p * 3 + 1], c - P.mix[p * 3 + 2]];
+        for (let k = 0; k < 3; k++) {
+          err[(cur + x + 2) * 3 + k] += q[k] * 7 / 16;
+          err[(nxt + x) * 3 + k] += q[k] * 3 / 16;
+          err[(nxt + x + 1) * 3 + k] += q[k] * 5 / 16;
+          err[(nxt + x + 2) * 3 + k] += q[k] * 1 / 16;
+        }
+      }
+    }
+    return out;
+  }
+  let tex, n;
+  if (method === "bayer") { tex = BAYER; n = 8; }
+  else { BLUE = BLUE || blueNoise(64); tex = BLUE; n = 64; }
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
+    const u = y * nx + x, t = tex[(y % n) * n + (x % n)] - 0.5;
+    out[u] = nearest(P, val[u * 3] + t * P.gap[0], val[u * 3 + 1] + t * P.gap[1], val[u * 3 + 2] + t * P.gap[2]);
+  }
+  return out;
+}
+
+function paintIndices(ctx, W, H, uw, uh, nx, idx, P) {
+  const img = ctx.createImageData(W, H), d = img.data;
+  for (let y = 0; y < H; y++) {
+    const uy = (y / uh) | 0;
+    for (let x = 0; x < W; x++) {
+      const c = P.bytes[idx[uy * nx + ((x / uw) | 0)]], o = (y * W + x) * 4;
+      d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+function paintColors(ctx, W, H, uw, uh, grid, linear) {
+  const img = ctx.createImageData(W, H), d = img.data, { nx, val } = grid;
+  for (let y = 0; y < H; y++) {
+    const uy = (y / uh) | 0;
+    for (let x = 0; x < W; x++) {
+      const u = uy * nx + ((x / uw) | 0), o = (y * W + x) * 4;
+      for (let k = 0; k < 3; k++) d[o + k] = to8(linear ? l2s(val[u * 3 + k]) : val[u * 3 + k]);
+      d[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+/* Lab mean of each tile of an RGBA image, averaged in linear light. */
+function tileLab(img, W, H, tw, th) {
+  const g = unitAverages(img, W, H, tw, th, true), lab = new Float32Array(g.nx * g.ny * 3);
+  for (let u = 0; u < g.nx * g.ny; u++) lab.set(linToLab(g.val[u * 3], g.val[u * 3 + 1], g.val[u * 3 + 2]), u * 3);
+  return { nx: g.nx, ny: g.ny, lab };
+}
+const dE = (A, i, B, j) => Math.hypot(A[i * 3] - B[j * 3], A[i * 3 + 1] - B[j * 3 + 1], A[i * 3 + 2] - B[j * 3 + 2]);
+
+function box3(t) {
+  const { nx, ny, lab } = t, out = new Float32Array(lab.length);
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
+    const s = [0, 0, 0];
+    let c = 0;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const xx = x + dx, yy = y + dy;
+      if (xx < 0 || yy < 0 || xx >= nx || yy >= ny) continue;
+      for (let k = 0; k < 3; k++) s[k] += lab[(yy * nx + xx) * 3 + k];
+      c++;
+    }
+    for (let k = 0; k < 3; k++) out[(y * nx + x) * 3 + k] = s[k] / c;
+  }
+  return out;
+}
+
+const JUMP = 6;
+function compare(ref, out) {
+  const { nx, ny } = ref, n = nx * ny;
+  let sum = 0;
+  for (let u = 0; u < n; u++) sum += dE(out.lab, u, ref.lab, u);
+  const rb = box3(ref), ob = box3(out);
+  let sum3 = 0;
+  for (let u = 0; u < n; u++) sum3 += dE(ob, u, rb, u);
+  const jumps = [];
+  let pairs = 0;
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
+    const u = y * nx + x;
+    for (const [dx, dy] of [[1, 0], [0, 1]]) {
+      if (x + dx >= nx || y + dy >= ny) continue;
+      const v = (y + dy) * nx + x + dx;
+      pairs++;
+      if (dE(out.lab, u, out.lab, v) - dE(ref.lab, u, ref.lab, v) > JUMP) jumps.push([x, y, dx, dy]);
+    }
+  }
+  return { de: sum / n, de3: sum3 / n, jumpShare: jumps.length / pairs, jumps };
+}
+
+function drawJumps(ctx, jumps, tw, th, dpr) {
+  ctx.save();
+  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--mark").trim() || "#e0245e";
+  ctx.lineWidth = Math.max(1, Math.round(dpr));
+  ctx.beginPath();
+  for (const [x, y, dx, dy] of jumps) {
+    if (dx) { ctx.moveTo((x + 1) * tw, y * th); ctx.lineTo((x + 1) * tw, (y + 1) * th); }
+    else { ctx.moveTo(x * tw, (y + 1) * th); ctx.lineTo((x + 1) * tw, (y + 1) * th); }
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+/* ---------- viewing geometry ---------- */
+
+function lumCsf(f) {
+  const raw = (x) => 2.6 * (0.0192 + 0.114 * x) * Math.exp(-Math.pow(0.114 * x, 1.1));
+  let peak = 0;
+  for (let i = 0; i < 400; i++) peak = Math.max(peak, raw(Math.pow(10, -1 + i * (Math.log10(60) + 1) / 399)));
+  return raw(f) / peak;
+}
+const chromaCsf = (f) => 1 / (1 + Math.pow(f / 1.5, 2.2));
+
+function viewingText(unitW, unitH, label) {
+  const ppi = Number(ui.ppi.value) || 96, dist = (Number(ui.dist.value) || 50) * 10;
+  const ppd = dist * Math.tan(Math.PI / 180) / (25.4 / ppi);
+  const fx = ppd / (2 * unitW), fy = ppd / (2 * unitH);
+  const f = fx, l = lumCsf(f), c = chromaCsf(f);
+  return `${label}: ${unitW} × ${unitH} device pixels · ${ppd.toFixed(1)} pixels per degree · alternating ${label === "Tile" ? "tiles" : "pixels"} = ${fx.toFixed(1)} cpd horizontal, ${fy.toFixed(1)} cpd vertical · relative sensitivity at ${f.toFixed(1)} cpd: luminance ${l.toFixed(2)}, chroma ${c.toFixed(2)}`;
+}
+
+
+/* ---------- linear-light blur, the original as seen from a distance ---------- */
+
+function boxPass(buf, W, H, r, horizontal) {
+  const out = new Float32Array(buf.length);
+  const len = horizontal ? W : H, lines = horizontal ? H : W;
+  for (let l = 0; l < lines; l++) {
+    for (let k = 0; k < 3; k++) {
+      let sum = 0, cnt = 0;
+      const at = (i) => (horizontal ? (l * W + i) : (i * W + l)) * 3 + k;
+      for (let i = 0; i < Math.min(r, len); i++) { sum += buf[at(i)]; cnt++; }
+      for (let i = 0; i < len; i++) {
+        if (i + r < len) { sum += buf[at(i + r)]; cnt++; }
+        if (i - r - 1 >= 0) { sum -= buf[at(i - r - 1)]; cnt--; }
+        out[at(i)] = sum / cnt;
+      }
+    }
+  }
+  return out;
+}
+
+function distantView(src, W, H, rx, ry) {
+  let buf = new Float32Array(W * H * 3);
+  const d = src.data;
+  for (let i = 0; i < W * H; i++) for (let k = 0; k < 3; k++) buf[i * 3 + k] = S2L[d[i * 4 + k]];
+  for (let pass = 0; pass < 2; pass++) {
+    buf = boxPass(buf, W, H, rx, true);
+    buf = boxPass(buf, W, H, ry, false);
+  }
+  const img = new ImageData(W, H);
+  for (let i = 0; i < W * H; i++) {
+    for (let k = 0; k < 3; k++) img.data[i * 4 + k] = to8(l2s(buf[i * 3 + k]));
+    img.data[i * 4 + 3] = 255;
+  }
+  return img;
+}
+
+/* ---------- experiments ---------- */
+
+const DITHER_OPTIONS = [["fs", "Floyd–Steinberg error diffusion"], ["bayer", "Ordered (8×8 Bayer)"], ["blue", "Blue noise (fixed texture)"]];
+const MIX_OPTIONS = [["linear", "Linear light"], ["encoded", "sRGB-encoded values"]];
+const METRIC_OPTIONS = [["rgb", "Euclidean in sRGB values"], ["din99d", "DIN99d"], ["oklab", "OKLab"]];
+const METRIC_LABEL = { rgb: "Euclidean in sRGB values", din99d: "DIN99d", oklab: "OKLab" };
+
+const CORNERS = [
+  {
+    id: "dither",
+    tab: "Dithering on tiles",
+    title: "Do coarse tiles need dithering?",
+    intro: "On a fine grid, dithering moves quantization error to frequencies the eye does not resolve. On coarse tiles, error moved from tile to tile lands at a few cycles per degree, where it can be seen as fluctuation between neighbors. Compare both grids with the same palette, and try the 16-color, 216-color and 256-color palettes: the answer changes with the size of the palette steps.",
+    controls: [
+      { key: "method", label: "Dithering method", options: DITHER_OPTIONS, value: "fs" },
+      { key: "grain", label: "Dither grain in tiles", options: [["1", "Whole tile"], ["2", "Half tile"], ["4", "Quarter tile"]], value: "1" },
+      { key: "fine", label: "Fine pixel size", options: [["1", "1 device pixel"], ["2", "2 device pixels"], ["3", "3 device pixels"], ["4", "4 device pixels"]], value: "1" },
+      { key: "mix", label: "Averaging and error space", options: MIX_OPTIONS, value: "linear" },
+      { key: "metric", label: "Color difference", options: METRIC_OPTIONS, value: "din99d" },
+    ],
+    rows: [
+      { title: "Fine grid", unit: "fine", panels: [
+        { kind: "ref", label: "Original" },
+        { kind: "pal", dither: "$method", label: "Fixed palette, dithered" },
+        { kind: "pal", dither: "none", label: "Fixed palette, not dithered" },
+      ] },
+      { title: "Coarse tiles", unit: "tile", panels: [
+        { kind: "mean", label: "24-bit mean color of each tile" },
+        { kind: "pal", dither: "$method", grain: "$grain", label: "Fixed palette, dithered" },
+        { kind: "pal", dither: "none", label: "Fixed palette, not dithered" },
+      ] },
+    ],
+  },
+  {
+    id: "mix",
+    tab: "Mixing colors",
+    title: "How should the colors in a tile be mixed?",
+    intro: "A tile replaces many pixels with one color, and a dithered area replaces a color with a mixture of palette colors. Light mixes linearly, so an area seen from a distance looks like its average in linear light; averaging sRGB-encoded values instead darkens mixtures of light and dark. The difference is largest at high-contrast detail such as edges, highlights and fine texture. The dithered row is easier to judge with 216 or 256 colors, where dithering noise does not dominate.",
+    controls: [
+      { key: "method", label: "Dithering method", options: DITHER_OPTIONS, value: "fs" },
+      { key: "metric", label: "Color difference", options: METRIC_OPTIONS, value: "din99d" },
+    ],
+    rows: [
+      { title: "24-bit tile colors", unit: "tile", panels: [
+        { kind: "distant", label: "Original seen from a distance (linear-light blur)" },
+        { kind: "mean", mix: "linear", label: "Mean in linear light" },
+        { kind: "mean", mix: "encoded", label: "Mean of sRGB-encoded values" },
+      ] },
+      { title: "Fixed palette, dithered over tiles", unit: "tile", panels: [
+        { kind: "distant", label: "Original seen from a distance (linear-light blur)" },
+        { kind: "pal", dither: "$method", mix: "linear", label: "Averages and error in linear light" },
+        { kind: "pal", dither: "$method", mix: "encoded", label: "Averages and error in sRGB-encoded values" },
+      ] },
+    ],
+  },
+  {
+    id: "metric",
+    tab: "Measuring color distance",
+    title: "How should the distance between colors be measured?",
+    intro: "Choosing the nearest palette color requires a measure of color difference. Euclidean distance in sRGB values is fast but treats equal code-value steps as equal, although they are not equally visible; DIN99d and OKLab are designed to be closer to perceived differences. With few colors, the choice decides which hue a tile falls to, and inconsistent decisions between similar tiles appear as jumps.",
+    controls: [
+      { key: "method", label: "Dithering method", options: DITHER_OPTIONS, value: "fs" },
+      { key: "mix", label: "Averaging and error space", options: MIX_OPTIONS, value: "linear" },
+    ],
+    rows: [
+      { title: "Reference", unit: "tile", panels: [
+        { kind: "ref", label: "Original" },
+        { kind: "mean", label: "24-bit mean color of each tile" },
+      ] },
+      { title: "Fixed palette, not dithered", unit: "tile", panels: ["rgb", "din99d", "oklab"].map((m) => ({ kind: "pal", dither: "none", metric: m, label: METRIC_LABEL[m] })) },
+      { title: "Fixed palette, dithered", unit: "tile", panels: ["rgb", "din99d", "oklab"].map((m) => ({ kind: "pal", dither: "$method", metric: m, label: METRIC_LABEL[m] })) },
+    ],
+  },
+];
+
+/* ---------- building a corner ---------- */
+
+let active = null;
+const local = {};
+const blindOrders = new Map();
+
+function buildTabs() {
+  const nav = $("tabs");
+  nav.innerHTML = "";
+  for (const c of CORNERS) {
+    const b = document.createElement("button");
+    b.textContent = c.tab;
+    b.dataset.id = c.id;
+    b.onclick = () => { location.hash = c.id; };
+    nav.append(b);
+  }
+}
+
+function buildCorner(c) {
+  active = c;
+  local[c.id] = local[c.id] || Object.fromEntries(c.controls.map((k) => [k.key, k.value]));
+  for (const b of $("tabs").children) b.setAttribute("aria-current", b.dataset.id === c.id ? "page" : "false");
+  const sec = $("corner");
+  sec.innerHTML = `<h2></h2><p class="lead"></p><div class="controls local"></div>`;
+  sec.querySelector("h2").textContent = c.title;
+  sec.querySelector(".lead").textContent = c.intro;
+  const box = sec.querySelector(".local");
+  for (const k of c.controls) {
+    const lab = document.createElement("label");
+    lab.textContent = k.label;
+    const sel = document.createElement("select");
+    for (const [v, t] of k.options) sel.add(new Option(t, v));
+    sel.value = local[c.id][k.key];
+    sel.oninput = () => { local[c.id][k.key] = sel.value; schedule(); };
+    lab.append(sel);
+    box.append(lab);
+  }
+  c.rows.forEach((row, ri) => {
+    const h = document.createElement("h3");
+    h.textContent = row.title;
+    const view = document.createElement("div");
+    view.className = "viewing";
+    const bar = document.createElement("div");
+    bar.className = "blindbar";
+    const grid = document.createElement("div");
+    grid.className = "row";
+    sec.append(h, view, bar, grid);
+    row.view = view;
+    row.figs = row.panels.map((p) => {
+      const fig = document.createElement("figure");
+      const cv = document.createElement("canvas");
+      const cap = document.createElement("figcaption");
+      cap.innerHTML = `<b></b><span class="metrics"></span>`;
+      fig.append(cv, cap);
+      grid.append(fig);
+      return { p, fig, cv, title: cap.querySelector("b"), metrics: cap.querySelector(".metrics") };
+    });
+    buildBlind(bar, row, c.id + ":" + ri);
+  });
+  schedule();
+}
+
+function buildBlind(bar, row, key) {
+  const start = document.createElement("button");
+  start.textContent = "Blind comparison";
+  const reveal = document.createElement("button");
+  reveal.textContent = "Reveal";
+  reveal.classList.add("hidden");
+  const hint = document.createElement("span");
+  hint.className = "note";
+  bar.append(start, reveal, hint);
+  const apply = () => {
+    const order = blindOrders.get(key);
+    row.figs.forEach((f, i) => {
+      if (!order) {
+        f.fig.classList.remove("hidden");
+        f.fig.style.order = "";
+        f.title.textContent = f.p.label;
+        f.metrics.classList.remove("hidden");
+        return;
+      }
+      const pos = order.indexOf(i);
+      f.fig.classList.toggle("hidden", pos < 0);
+      f.fig.style.order = String(pos);
+      f.title.textContent = "Panel " + "ABCD"[pos];
+      f.metrics.classList.add("hidden");
+    });
+  };
+  start.onclick = () => {
+    const cands = row.figs.map((f, i) => [f, i]).filter(([f]) => f.p.kind !== "ref" && f.p.kind !== "distant").map(([, i]) => i);
+    for (let i = cands.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cands[i], cands[j]] = [cands[j], cands[i]];
+    }
+    blindOrders.set(key, cands);
+    start.classList.add("hidden");
+    reveal.classList.remove("hidden");
+    hint.textContent = "Which panel looks most like a natural picture?";
+    apply();
+  };
+  reveal.onclick = () => {
+    blindOrders.delete(key);
+    start.classList.remove("hidden");
+    reveal.classList.add("hidden");
+    hint.textContent = "";
+    apply();
+  };
+  row.applyBlind = apply;
+}
+
+/* ---------- render ---------- */
+
+function panelSize() {
+  const dpr = window.devicePixelRatio || 1;
+  const rowW = $("corner").clientWidth || 900;
+  const cols = window.matchMedia("(max-width: 720px)").matches ? 1 : 3;
+  const cssW = Math.min(480, Math.floor((rowW - 12 * (cols - 1)) / cols) - 2);
+  const W = Math.max(64, Math.floor(cssW * dpr));
+  return { dpr, W, H: Math.floor(W * 0.75) };
+}
+
+function setCanvas(cv, W, H, dpr) {
+  if (cv.width !== W) cv.width = W;
+  if (cv.height !== H) cv.height = H;
+  cv.style.width = W / dpr + "px";
+  cv.style.height = H / dpr + "px";
+  const blur = Number(ui.blur.value);
+  cv.style.filter = blur ? `blur(${blur}px)` : "";
+}
+
+const resolve = (v, L) => (typeof v === "string" && v[0] === "$" ? L[v.slice(1)] : v);
+
+let phase = 0;
+function render() {
+  if (!active) return;
+  const { dpr, W, H } = panelSize();
+  const L = local[active.id];
+  const T = Number(ui.tile.value);
+  const th = ui.shape.value === "cell" ? 2 * T : T;
+  $("tileOut").textContent = `${T} px`;
+  $("blurOut").textContent = `${ui.blur.value} px`;
+  const shift = ui.animate.checked ? Math.sin(phase) * T * 0.75 : 0;
+  const src = sourceData(W, H, shift);
+  const refTiles = tileLab(src, W, H, T, th);
+  let distant = null;
+
+  for (const row of active.rows) {
+    const fine = Number(L.fine || 1);
+    const uw = row.unit === "fine" ? fine : T, uh = row.unit === "fine" ? fine : th;
+    row.view.textContent = viewingText(uw, uh, row.unit === "fine" ? "Pixel" : "Tile");
+    for (const f of row.figs) {
+      const p = f.p;
+      setCanvas(f.cv, W, H, dpr);
+      const ctx = f.cv.getContext("2d", { willReadFrequently: true });
+      const mix = p.mix || L.mix || "linear";
+      const metric = p.metric || L.metric || "din99d";
+      if (p.kind === "ref") {
+        ctx.putImageData(src, 0, 0);
+      } else if (p.kind === "distant") {
+        distant = distant || distantView(src, W, H, Math.max(1, Math.round(T / 2)), Math.max(1, Math.round(th / 2)));
+        ctx.putImageData(distant, 0, 0);
+      } else if (p.kind === "mean") {
+        paintColors(ctx, W, H, uw, uh, unitAverages(src, W, H, uw, uh, mix === "linear"), mix === "linear");
+      } else {
+        const P = preparePalette(ui.palette.value, metric, mix);
+        const dither = resolve(p.dither, L);
+        const grain = Number(resolve(p.grain, L) || 1);
+        const gw = Math.max(1, Math.round(uw / grain)), gh = Math.max(1, Math.round(uh / grain));
+        const grid = unitAverages(src, W, H, gw, gh, P.linear);
+        paintIndices(ctx, W, H, gw, gh, grid.nx, quantizeGrid(P, grid, dither), P);
+      }
+      f.metrics.textContent = "";
+      if (row.unit === "tile" && p.kind !== "ref" && p.kind !== "distant") {
+        const m = compare(refTiles, tileLab(ctx.getImageData(0, 0, W, H), W, H, T, th));
+        if (ui.overlay.checked) drawJumps(ctx, m.jumps, T, th, dpr);
+        f.metrics.textContent = `ΔE tile ${m.de.toFixed(1)} · ΔE 3×3 ${m.de3.toFixed(1)} · jumps ${(100 * m.jumpShare).toFixed(1)}%`;
+      }
+    }
+    row.applyBlind();
+  }
+}
+
+let pending = false;
+function schedule() {
+  if (pending) return;
+  pending = true;
+  requestAnimationFrame(() => { pending = false; render(); });
+}
+
+let timer = null;
+function updateAnimation() {
+  if (ui.animate.checked && !timer) {
+    timer = setInterval(() => { phase += 0.06; render(); }, 120);
+  } else if (!ui.animate.checked && timer) {
+    clearInterval(timer);
+    timer = null;
+    phase = 0;
+    schedule();
+  }
+}
+
+function route() {
+  const id = location.hash.slice(1);
+  buildCorner(CORNERS.find((c) => c.id === id) || CORNERS[0]);
+}
+
+for (const id of ["palette", "tile", "shape", "blur", "ppi", "dist", "overlay"]) ui[id].addEventListener("input", schedule);
+ui.animate.addEventListener("change", updateAnimation);
+ui.image.addEventListener("change", () => {
+  if (ui.image.value === "file") ui.file.click();
+  else schedule();
+});
+ui.file.addEventListener("change", async () => {
+  const f = ui.file.files[0];
+  if (!f) return;
+  const url = URL.createObjectURL(f);
+  try { userImage = await loadImage(url); } finally { URL.revokeObjectURL(url); }
+  schedule();
+});
+window.addEventListener("resize", schedule);
+window.addEventListener("hashchange", route);
+
+buildTabs();
+route();
+Promise.all(["snake", "egret"].map((n) => loadImage(n + ".jpg").then((img) => { sources[n] = img; }).catch(() => {})))
+  .then(schedule);
+</script>
+</body>
+</html>

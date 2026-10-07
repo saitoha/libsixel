@@ -717,6 +717,9 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/quality/visual-perception/figures/retina-mosaic.jpg \
 	docs/quality/visual-perception/figures/viewing-geometry.svg \
 	docs/quality/visual-perception/figures/weber-demo.svg \
+	docs/quality/visual-perception/tile-lab/egret.jpg \
+	docs/quality/visual-perception/tile-lab/index.html \
+	docs/quality/visual-perception/tile-lab/snake.jpg \
 	docs/testing/builtin-loader-coverage.md \
 	docs/testing/guide.md \
 	docs/testing/staticcheck.md \
