@@ -86,7 +86,37 @@ Teletext, starting with the BBC's Ceefax in 1974, divided a character cell into 
 
 ### Software that renders images as text
 
-On general-purpose terminals, programs rendered images with whatever characters were available. Jan Hubička's AAlib (1997) converted images into ASCII art by matching cell brightness and shape to characters. Sam Hocevar and Jean-Yves Lamoureux's libcaca (first release 2003) added color, dithering, and Unicode output; its documentation includes a study of halftoning and dithering algorithms. Later tools used denser glyphs: drawille (2014) draws pixel graphics with Braille patterns, and Hans Petter Jansson's chafa (2018) chooses among block, mosaic, Braille, and other symbols, and also emits SIXEL, kitty, and iTerm2 images. In chafa the two lineages of this document meet in one program.
+On general-purpose terminals, programs rendered images with whatever characters were available. The technique spread from stand-alone viewers into the major media frameworks, so that video and images can be shown on any text terminal:
+
+| Software | Character output |
+| --- | --- |
+| [FFmpeg](https://ffmpeg.org/ffmpeg-devices.html#caca) | The `caca` output device renders video through libcaca. |
+| [mpv](https://mpv.io/manual/stable/#video-output-drivers) | `--vo=caca` uses libcaca, and `--vo=tct` draws true-color half blocks; `--vo=sixel` and `--vo=kitty` use pixel protocols instead. |
+| MPlayer | The `aa` and `caca` video outputs use AAlib and libcaca. |
+| VLC | ASCII-art and color ASCII-art video outputs based on AAlib and libcaca. |
+| GStreamer | The `aasink` and `cacasink` elements. |
+| libcaca tools | `img2txt`, `cacaview`, and `cacaplay` convert and view images and animations. |
+| Image viewers | [timg](https://github.com/hzeller/timg) and [viu](https://github.com/atanunq/viu) use half or quarter blocks when no pixel protocol is available, and [TerminalImageViewer](https://github.com/stefanhaustein/TerminalImageViewer) matches 4-by-8 pixel blocks to block characters. |
+| Libraries | [Notcurses](https://github.com/dankamongmen/notcurses) offers half-block, quadrant, sextant, octant, Braille, and pixel blitters, and [chafa](https://github.com/hpjansson/chafa) provides a library as well as its command-line tool. |
+
+AAlib also enabled curiosities such as a text-mode port of Quake II.
+
+### From AAlib to chafa
+
+The quality of character rendering improved through better models of what a character cell can show and through dithering methods that are no less sophisticated than those used for raster output.
+
+- **AAlib (1997).** Jan Hubička's library renders every 2-by-2 block of image pixels into one character. It derives an approximation table from the bitmap of the actual font, so that each glyph is chosen by the brightness distribution over its cell rather than by a fixed character ramp, and treats text attributes such as dim, bold, bold font, and reverse as additional brightness levels. It offers Floyd–Steinberg, error-distribution, and random dithering, together with gamma, brightness, and contrast controls.
+- **libcaca (2003).** Sam Hocevar and Jean-Yves Lamoureux's library added color. Combining 16 foreground and background colors with glyphs of different densities from ASCII, shade, or block character sets yields a much larger effective palette than the colors alone. It provides Floyd–Steinberg, 2-by-2, 4-by-4, and 8-by-8 ordered, and random dithering with prefilter antialiasing. Its [study](http://caca.zoy.org/study/) of the underlying science works through thresholding, halftoning patterns, ordered dithering and the void-and-cluster method, Floyd–Steinberg and its derivatives, variable-coefficient error diffusion, block and sub-block error diffusion, model-based dithering with a Gaussian model of human vision and direct binary search, gamma, color dithering, and photographic mosaics.
+- **Half and quarter blocks.** With true-color terminals, tools such as timg, viu, and mpv's `tct` driver treat the upper half block as two pixels with independent foreground and background colors, which reproduces color exactly at half the vertical cell resolution. TerminalImageViewer refines this by splitting a 4-by-8 pixel block into two colors and choosing the block character whose shape best matches the split.
+- **chafa (2018).** Hans Petter Jansson's chafa generalizes the search. Each symbol is an 8-by-8 coverage bitmap, taken from its built-in sets or loaded from a font file through FreeType. For each cell it chooses foreground and background colors, shortlists symbols by comparing 64-bit coverage masks with population counts, and scores the candidates by color error using SIMD code. It can work in the DIN99d color space, applies ordered, diffusion, or noise dithering with a configurable grain smaller than a cell, preprocesses low-color output, trades accuracy for speed through a work factor, and emits SIXEL, kitty, and iTerm2 images as well as symbols.
+
+The common problem is harder than mapping pixels to a palette: each cell must be represented by one glyph shape and at most two colors, so shape, foreground, and background are chosen jointly under that constraint, and the dithering must distribute error between cells as well as within them.
+
+### Glyph brightness and dot gain
+
+A rendered glyph does not emit light in proportion to its geometric coverage. Antialiasing, stroke weight, font hinting, subpixel rendering, and attributes such as bold or dim change how bright a cell actually appears, much as dot gain makes printed halftone dots darker than their nominal area. Character renderers therefore need a model of the effective brightness of each glyph and attribute. AAlib builds its table from the real font bitmap and lets users calibrate the dim and bold multipliers (`dimmul` and `boldmul`) to their monitor, and chafa can load its symbol bitmaps from a font file, such as the one the terminal uses, instead of relying on idealized shapes.
+
+libsixel does not currently have a model of this kind. Its quantization and dithering assume that every output pixel shows exactly its palette color, which holds for a pixel-addressed terminal but ignores effects such as the dot gain of the SIXEL printers for which the format was first designed. The calculation methods of character rendering are therefore a body of technique that libsixel could learn from.
 
 ### Unicode adopts the mosaics
 
@@ -143,7 +173,8 @@ No single protocol has displaced the others. SIXEL remains the most widely imple
 - [*ISO/IEC 10918-1 (1986–1993)*](https://www.itu.int/dms_pub/itu-s/opb/journal/S-JOURNAL-ICTS.V3I1-2020-13-PDF-E.pdf), ITU Journal: ICT Discoveries, 2020.
 - [IANA registration of `image/naplps`](https://www.iana.org/assignments/media-types/image/naplps), 1995; Universal Computer Laboratory, [NAPLPS technical information and viewer plug-in](http://uclsun.ucl.co.jp/naplps/naptech-e.html).
 - Unicode Consortium proposals [L2/19-025](https://www.unicode.org/L2/L2019/19025-terminals-prop.pdf) (Symbols for Legacy Computing), [L2/21-235](https://www.unicode.org/L2/L2021/21235-terminals-supplement.pdf) (its supplement), and Frank da Cruz, [L2/00-159](https://www.unicode.org/L2/L2000/00159-ucsterminal.txt) (*Supplemental Terminal Graphics for Unicode*); Semigraphics, Teletext character set, Braille Patterns, AAlib, and libcaca articles on Wikipedia.
-- [chafa](https://github.com/hpjansson/chafa) and [drawille](https://github.com/asciimoo/drawille) repositories.
+- [chafa](https://github.com/hpjansson/chafa) and its [manual](https://hpjansson.org/chafa/man/); [drawille](https://github.com/asciimoo/drawille); [AAlib documentation](https://aa-project.sourceforge.net/aalib/) and [tuning guide](https://aa-project.sourceforge.net/tune/); Sam Hocevar, [*Libcaca study: the science behind colour ASCII art*](http://caca.zoy.org/study/).
+- [FFmpeg devices](https://ffmpeg.org/ffmpeg-devices.html#caca) and [mpv video output drivers](https://mpv.io/manual/stable/#video-output-drivers).
 - [w3m inline image documentation](https://github.com/tats/w3m/blob/master/doc/README.img) and [SIXEL support](https://github.com/tats/w3m/blob/master/doc/README.sixel).
 - haru (uobikiemukot), [sdump](https://github.com/uobikiemukot/sdump), containing `yaimg-sixel`, first added as `w3mimg-sixel` on 2014-09-23.
 - [RLogin history](https://github.com/kmiya-culti/RLogin/blob/master/docs/history.html); [mintty changelog](https://github.com/mintty/mintty/blob/master/wiki/Changelog.md); [kitty changelog](https://sw.kovidgoyal.net/kitty/changelog/); [tmux CHANGES](https://github.com/tmux/tmux/blob/master/CHANGES).
