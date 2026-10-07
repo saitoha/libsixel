@@ -2670,6 +2670,7 @@ sixel_encoder_bind_transparent_mask(
      * storage keeps the synthetic accumulation mask alive for the encode call.
      */
     if (frame == NULL || (dither->keycolor < 0 &&
+            encoder->color_option != SIXEL_COLOR_OPTION_HIGHCOLOR &&
             !(dither->use_rgb101_palette &&
               (encoder->color_option == SIXEL_COLOR_OPTION_MAPFILE ||
                encoder->color_option == SIXEL_COLOR_OPTION_BUILTIN))) ||
@@ -2697,6 +2698,22 @@ sixel_encoder_bind_transparent_mask(
     status = sixel_encoder_frame_get_transparency(frame, &transparency);
     if (SIXEL_FAILED(status)) {
         return status;
+    }
+
+    if (encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
+        /* High-color already reserves register 255 for omitted cells. Keep
+         * source coverage separate from its changing paint palette; never
+         * allocate another transparent color or manufacture delta history. */
+        if (transparency.transparent_mask != NULL) {
+            if (transparency.transparent_mask_size < pixel_count) {
+                sixel_helper_set_additional_message(
+                    "high-color source mask does not cover the frame.");
+                return SIXEL_BAD_INPUT;
+            }
+            sixel_dither_set_pipeline_transparent_mask_hint(dither,
+                transparency.transparent_mask, pixel_count, 255);
+        }
+        return SIXEL_OK;
     }
 
     /*
@@ -7230,16 +7247,14 @@ sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
     }
     if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
             encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
-        if ((sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_RGB888 ||
+        if (sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_RGB888 ||
                 SIXEL_PIXELFORMAT_IS_FLOAT32(
-                    sixel_frame_get_pixelformat(frame))) &&
-                !sixel_encoder_frame_preserves_alpha_key(frame) &&
-                !sixel_encoder_frame_has_transparent_mask(frame)) {
+                    sixel_frame_get_pixelformat(frame))) {
             return SIXEL_OK;
         }
         sixel_helper_set_additional_message(
-            "display-p3 high-color requires opaque RGB frames; "
-            "packed alpha, transparency keys and masks are unsupported.");
+            "display-p3 high-color requires RGB frames with optional "
+            "separated masks; packed alpha is unsupported.");
         return SIXEL_BAD_INPUT;
     }
     if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&

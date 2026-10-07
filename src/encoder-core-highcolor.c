@@ -906,6 +906,8 @@ sixel_encode_highcolor(
     int encoded_width;
     int encoded_height;
     int saved_offset_top;
+    unsigned char const *saved_mask;
+    unsigned char const *source_mask;
     int const maxcolors = 1 << 15;
     int whole_size = width * height  /* for paletted_pixels */
                    + maxcolors       /* for rgbhit */
@@ -944,6 +946,8 @@ sixel_encode_highcolor(
      * them further down the page.
      */
     saved_offset_top = output->transparent_offset_top;
+    saved_mask = output->transparent_mask;
+    source_mask = dither->pipeline_transparent_mask;
     status = sixel_output_compute_transparent_extent(output,
                                                      width,
                                                      height,
@@ -952,6 +956,18 @@ sixel_encode_highcolor(
     if (SIXEL_FAILED(status)) {
         return status;
     }
+
+    /* The borrowed view covers the original frame, before height is reduced
+     * by pass rewinds. Keep it on output for P2 and fill suppression, then
+     * restore the caller's view on every exit, including conversion errors. */
+    if (source_mask != NULL &&
+            (dither->pipeline_transparent_mask_size <
+                (size_t)width * (size_t)height || output->ormode)) {
+        sixel_helper_set_additional_message(
+            "high-color source mask requires full size and normal output.");
+        return SIXEL_BAD_INPUT;
+    }
+    output->transparent_mask = source_mask;
 
     if (dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         sixel_helper_set_additional_message(
@@ -1051,7 +1067,13 @@ next:
 
     while (1) {
         for (x = 0; x < width; x++, mptr++, dst++, pixels += stride) {
-            if (*mptr) {
+            if (source_mask != NULL &&
+                    source_mask[(size_t)y * (size_t)width + (size_t)x]) {
+                /* Omitted source pixels neither consume a register nor
+                 * select the representative of a visible lookup key. */
+                *mptr = 1;
+                *dst = 255;
+            } else if (*mptr) {
                 *dst = 255;
             } else {
                 representative = pixels;
@@ -1175,6 +1197,10 @@ next:
              * but never emit the whole top margin a second time. */
             output->transparent_offset_top = y == band_rows ?
                 output->transparent_offset_top % 6 : 0;
+            if (source_mask != NULL) {
+                source_mask += (size_t)(y - band_rows) * (size_t)width;
+                output->transparent_mask = source_mask;
+            }
             pixels -= band_rows * width * stride;
             height = orig_height - height + band_rows;
             goto next;
@@ -1222,6 +1248,7 @@ end:
 
 error:
     output->transparent_offset_top = saved_offset_top;
+    output->transparent_mask = saved_mask;
     if (palette_entries != NULL) {
         sixel_allocator_free(dither->allocator, palette_entries);
     }

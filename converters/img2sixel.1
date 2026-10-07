@@ -1428,10 +1428,10 @@ Supported spatial methods are FS, Atkinson, JJN, Stucki, Burkes, the Sierra
 variants, and LSO2. Positional a_dither, x_dither, and bluenoise are supported;
 interframe dithering remains unsupported.
 The P3 float requirement overrides an explicit byte preference.
-For high-color \fB-I\fP, P3 accepts opaque RGB input and ordinary RGB/HLS
-SIXEL output. Gamma, linear, Oklab, CIELAB and DIN99d working coordinates
+For high-color \fB-I\fP, P3 accepts RGB input with optional separated
+alpha-zero masks and ordinary RGB/HLS SIXEL output. Gamma, linear, Oklab, CIELAB and DIN99d working coordinates
 retain extended values until destination conversion. Palette construction,
-lookup and diffusion are bypassed. Active snap, GPU, preserved transparency,
+lookup and diffusion are bypassed. Active snap, GPU, packed-alpha storage,
 OR mode, DRCS, macros, PNG snapshots and delta remain unsupported on this
 high-color path and fail before output. The receiver must interpret the
 resulting color definitions as Display P3.

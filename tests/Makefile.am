@@ -470,7 +470,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0023_P3_MULTIPASS \
     -DBUILD_TEST_0024_P3_WORKERS \
     -DBUILD_TEST_0025_P3_REUSE \
-    -DBUILD_TEST_0026_P3_MASK_RECOVERY \
+    -DBUILD_TEST_0026_P3_SHORT_MASK_RECOVERY \
     -DBUILD_TEST_0027_P3_DELTA_RECOVERY \
     -DBUILD_TEST_0028_P3_OR_RECOVERY \
     -DBUILD_TEST_0029_P3_DRCS_RECOVERY \
@@ -494,6 +494,23 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0047_SLOTS_255 \
     -DBUILD_TEST_0048_SLOTS_256 \
     -DBUILD_TEST_0049_SINGLE_OFFSET \
+    -DBUILD_TEST_0050_MASK_BYTE \
+    -DBUILD_TEST_0051_MASK_FLOAT \
+    -DBUILD_TEST_0052_MASK_P3 \
+    -DBUILD_TEST_0053_MASK_KEEP \
+    -DBUILD_TEST_0054_MASK_CLEAR \
+    -DBUILD_TEST_0055_MASK_COMPOSITE \
+    -DBUILD_TEST_0056_MASK_MULTIPASS \
+    -DBUILD_TEST_0057_MASK_P3_MULTIPASS \
+    -DBUILD_TEST_0058_MASK_PARTIAL \
+    -DBUILD_TEST_0059_MASK_OFFSET \
+    -DBUILD_TEST_0060_MASK_WORKERS \
+    -DBUILD_TEST_0061_MASK_HIDDEN_KEY \
+    -DBUILD_TEST_0062_MASK_ALL \
+    -DBUILD_TEST_0063_MASK_ZERO \
+    -DBUILD_TEST_0064_MASK_REUSE \
+    -DBUILD_TEST_0065_MASK_CORE_RECOVERY \
+    -DBUILD_HIGHCOLOR_MASK_COMMON \
     -DBUILD_HIGHCOLOR_BAND_COMMON \
     -DBUILD_HIGHCOLOR_OUTPUT_COMMON \
     -DBUILD_PNG_DELTA_COMMON \
@@ -5981,7 +5998,7 @@ test_runner_SOURCES = test_runner.c \
     codec/highcolor/0023_p3_multipass.c \
     codec/highcolor/0024_p3_workers.c \
     codec/highcolor/0025_p3_reuse.c \
-    codec/highcolor/0026_p3_mask_recovery.c \
+    codec/highcolor/0026_p3_short_mask_recovery.c \
     codec/highcolor/0027_p3_delta_recovery.c \
     codec/highcolor/0028_p3_or_recovery.c \
     codec/highcolor/0029_p3_drcs_recovery.c \
@@ -6005,6 +6022,23 @@ test_runner_SOURCES = test_runner.c \
     codec/highcolor/0047_slots_255.c \
     codec/highcolor/0048_slots_256.c \
     codec/highcolor/0049_single_offset.c \
+    codec/highcolor/0050_mask_byte.c \
+    codec/highcolor/0051_mask_float.c \
+    codec/highcolor/0052_mask_p3.c \
+    codec/highcolor/0053_mask_keep.c \
+    codec/highcolor/0054_mask_clear.c \
+    codec/highcolor/0055_mask_composite.c \
+    codec/highcolor/0056_mask_multipass.c \
+    codec/highcolor/0057_mask_p3_multipass.c \
+    codec/highcolor/0058_mask_partial.c \
+    codec/highcolor/0059_mask_offset.c \
+    codec/highcolor/0060_mask_workers.c \
+    codec/highcolor/0061_mask_hidden_key.c \
+    codec/highcolor/0062_mask_all.c \
+    codec/highcolor/0063_mask_zero.c \
+    codec/highcolor/0064_mask_reuse.c \
+    codec/highcolor/0065_mask_core_recovery.c \
+    codec/highcolor_mask_common.c \
     codec/highcolor_band_common.c \
     codec/highcolor_output_common.c \
     codec/png_delta_common.c \

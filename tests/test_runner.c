@@ -538,6 +538,22 @@ int test_highcolor_0046(int argc, char **argv);
 int test_highcolor_0047(int argc, char **argv);
 int test_highcolor_0048(int argc, char **argv);
 int test_highcolor_0049(int argc, char **argv);
+int test_highcolor_0050(int argc, char **argv);
+int test_highcolor_0051(int argc, char **argv);
+int test_highcolor_0052(int argc, char **argv);
+int test_highcolor_0053(int argc, char **argv);
+int test_highcolor_0054(int argc, char **argv);
+int test_highcolor_0055(int argc, char **argv);
+int test_highcolor_0056(int argc, char **argv);
+int test_highcolor_0057(int argc, char **argv);
+int test_highcolor_0058(int argc, char **argv);
+int test_highcolor_0059(int argc, char **argv);
+int test_highcolor_0060(int argc, char **argv);
+int test_highcolor_0061(int argc, char **argv);
+int test_highcolor_0062(int argc, char **argv);
+int test_highcolor_0063(int argc, char **argv);
+int test_highcolor_0064(int argc, char **argv);
+int test_highcolor_0065(int argc, char **argv);
 int test_png_snapshot_0001(int argc, char **argv);
 int test_png_snapshot_0002(int argc, char **argv);
 int test_png_snapshot_0003(int argc, char **argv);
@@ -3893,7 +3909,7 @@ static test_entry_t const test_entries[] = {
     { "codec/highcolor/0023_p3_multipass", test_highcolor_0023 },
     { "codec/highcolor/0024_p3_workers", test_highcolor_0024 },
     { "codec/highcolor/0025_p3_reuse", test_highcolor_0025 },
-    { "codec/highcolor/0026_p3_mask_recovery", test_highcolor_0026 },
+    { "codec/highcolor/0026_p3_short_mask_recovery", test_highcolor_0026 },
     { "codec/highcolor/0027_p3_delta_recovery", test_highcolor_0027 },
     { "codec/highcolor/0028_p3_or_recovery", test_highcolor_0028 },
     { "codec/highcolor/0029_p3_drcs_recovery", test_highcolor_0029 },
@@ -3917,6 +3933,22 @@ static test_entry_t const test_entries[] = {
     { "codec/highcolor/0047_slots_255", test_highcolor_0047 },
     { "codec/highcolor/0048_slots_256", test_highcolor_0048 },
     { "codec/highcolor/0049_single_offset", test_highcolor_0049 },
+    { "codec/highcolor/0050_mask_byte", test_highcolor_0050 },
+    { "codec/highcolor/0051_mask_float", test_highcolor_0051 },
+    { "codec/highcolor/0052_mask_p3", test_highcolor_0052 },
+    { "codec/highcolor/0053_mask_keep", test_highcolor_0053 },
+    { "codec/highcolor/0054_mask_clear", test_highcolor_0054 },
+    { "codec/highcolor/0055_mask_composite", test_highcolor_0055 },
+    { "codec/highcolor/0056_mask_multipass", test_highcolor_0056 },
+    { "codec/highcolor/0057_mask_p3_multipass", test_highcolor_0057 },
+    { "codec/highcolor/0058_mask_partial", test_highcolor_0058 },
+    { "codec/highcolor/0059_mask_offset", test_highcolor_0059 },
+    { "codec/highcolor/0060_mask_workers", test_highcolor_0060 },
+    { "codec/highcolor/0061_mask_hidden_key", test_highcolor_0061 },
+    { "codec/highcolor/0062_mask_all", test_highcolor_0062 },
+    { "codec/highcolor/0063_mask_zero", test_highcolor_0063 },
+    { "codec/highcolor/0064_mask_reuse", test_highcolor_0064 },
+    { "codec/highcolor/0065_mask_core_recovery", test_highcolor_0065 },
     { "codec/png_snapshot/0001_srgb_frame_precision", test_png_snapshot_0001 },
     { "codec/png_snapshot/0002_p3_frame_precision", test_png_snapshot_0002 },
     { "codec/png_snapshot/0003_byte_frame_control", test_png_snapshot_0003 },

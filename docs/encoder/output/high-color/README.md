@@ -43,8 +43,8 @@ High color is an alternate encoding path, not a larger value for `-p`.
 
 - It bypasses fixed-palette construction and fixed-palette nearest-color lookup. `-p`, `-b`, `-m`, and `-e` select incompatible color modes and are rejected when combined with `-I`.
 - The current CLI resolves palette-space diffusion to `none` for `-I`. Supplying `-d fs` or another diffusion method does not recreate the historical high-color diffusion path described in the 2014 article.
-- It converts source coordinates to the selected `-U gamma`, `-U linear`, `-U smpte-c` or `-U display-p3` destination before building lookup keys. Display P3 accepts opaque RGB frames with ordinary CPU RGB or HLS SIXEL output. See [destination samples](#destination-samples-and-precision) and [Output color space](../output-colorspace.md#scope-and-current-gaps).
-- Register `#255` is an internal skip value for multi-pass painting. Transparent offset is supported as a separate geometry feature; source alpha semantics still follow the [alpha policy](../../../loader/alpha-policy/README.md).
+- It converts source coordinates to the selected `-U gamma`, `-U linear`, `-U smpte-c` or `-U display-p3` destination before building lookup keys. Display P3 accepts RGB frames with optional separated alpha-zero masks and ordinary CPU RGB or HLS SIXEL output. See [destination samples](#destination-samples-and-precision) and [Output color space](../output-colorspace.md#scope-and-current-gaps).
+- Register `#255` is an internal skip value for multi-pass painting. It also omits pixels marked by a separated source mask. Transparent offset is supported as a separate geometry feature; source alpha semantics follow the [alpha policy](../../../loader/alpha-policy/README.md).
 - Validation must use a direct decoder. A final indexed plane and final palette cannot represent the earlier colors painted before a register redefinition. Use `sixel2png --direct` (`-D`) rather than an indexed snapshot. See the [PNG writer boundary](../../../writers/png/README.md) for details.
 
 ## Destination samples and precision
@@ -59,9 +59,15 @@ Low-level callers that explicitly enable the legacy 15bpp diffusion routines sti
 
 ### Display P3 boundary
 
-`-I -U display-p3` keeps the frame's source definition separate from the destination. It accepts RGB888 or typed float32 gamma, linear, Oklab, CIELAB or DIN99d frames and `-W` in those five spaces. One common sRGB-to-Display-P3 transform is prepared per frame; no profile is parsed per pixel or register replacement. Source alpha must already have been resolved to opaque RGB. Packed-alpha storage, preserved masks, delta, OR mode, DRCS, terminal macros and PNG snapshots reject before output. These are implementation boundaries of this high-color path, not limitations of the P3 definition.
+`-I -U display-p3` keeps the frame's source definition separate from the destination. It accepts RGB888 or typed float32 gamma, linear, Oklab, CIELAB or DIN99d frames and `-W` in those five spaces. One common sRGB-to-Display-P3 transform is prepared per frame; no profile is parsed per pixel or register replacement. The loader must already have resolved partial alpha to RGB; exact-zero coverage may remain in a separated mask. Packed-alpha storage, delta, OR mode, DRCS, terminal macros and PNG snapshots reject before output. These are implementation boundaries of this high-color path, not limitations of the P3 definition.
 
 The ordinary palette solver and lookup restrictions do not apply to high color because those stages are bypassed. High-level diffusion remains disabled, even if `-d` selects a method. GPU and active snap remain unsupported; a zero snap approach is inactive. The receiver must interpret these RGB or HLS definitions as Display P3, as described in [output interpretation](../output-colorspace.md). The low-level `sixel_encode()` API retains its existing legacy destination setup; the P3 intent is carried privately by the high-level encoder without changing public API signatures.
+
+## Separated source masks
+
+The high-level encoder borrows a frame's alpha-zero mask for ordinary high-color SIXEL. It does not allocate another palette entry: masked cells use the existing internal skip value `255`. They consume no paint register and cannot select the representative of a key shared with visible samples. The mask follows each pass rewind and suppresses the body writer's size-policy fill across holes, including in parallel band serialization. A mask smaller than the original frame rejects before output. An all-masked image still declares its dimensions without painting pixels.
+
+This preserves the loader's coverage decision; it does not add composition to high color. The [alpha policy](../../../loader/alpha-policy/README.md) owns partial-alpha composition, `clear`/`keep`, and unresolved-`composite` fallback. The header requests the corresponding P2 value, while the body omits the marked cells. All source samples still undergo finite-value validation during conversion, including masked samples. The borrowed mask is cleared or replaced for each frame, and the core restores the caller's previous mask view on both success and failure. No public API signature changes are involved. This contract covers the no-diffusion path; legacy low-level 15bpp diffusion remains outside it.
 
 ## Pending final bands
 
@@ -163,7 +169,7 @@ The small value witnesses inspect direct-decoded pixels and opacity, including r
 | HC-23 | P3 representatives survive register redefinition across completed passes. | [tests/codec/highcolor/0023_p3_multipass.t](../../../../tests/codec/highcolor/0023_p3_multipass.t) |
 | HC-24 | P3 representatives survive completed passes with a four-thread body budget. | [tests/codec/highcolor/0024_p3_workers.t](../../../../tests/codec/highcolor/0024_p3_workers.t) |
 | HC-25 | Output definition and byte or float input switch safely between encoder contexts. | [tests/codec/highcolor/0025_p3_reuse.t](../../../../tests/codec/highcolor/0025_p3_reuse.t) |
-| HC-26 | A preserved source mask rejects before output and allows opaque reuse. | [tests/codec/highcolor/0026_p3_mask_recovery.t](../../../../tests/codec/highcolor/0026_p3_mask_recovery.t) |
+| HC-26 | An undersized source mask rejects before output and allows opaque reuse. | [tests/codec/highcolor/0026_p3_short_mask_recovery.t](../../../../tests/codec/highcolor/0026_p3_short_mask_recovery.t) |
 | HC-27 | High-color P3 delta rejects before output and allows full-frame reuse. | [tests/codec/highcolor/0027_p3_delta_recovery.t](../../../../tests/codec/highcolor/0027_p3_delta_recovery.t) |
 | HC-28 | High-color P3 OR mode rejects before output and allows ordinary reuse. | [tests/codec/highcolor/0028_p3_or_recovery.t](../../../../tests/codec/highcolor/0028_p3_or_recovery.t) |
 | HC-29 | High-color P3 DRCS rejects before output and allows ordinary reuse. | [tests/codec/highcolor/0029_p3_drcs_recovery.t](../../../../tests/codec/highcolor/0029_p3_drcs_recovery.t) |
@@ -187,3 +193,20 @@ The small value witnesses inspect direct-decoded pixels and opacity, including r
 | HC-47 | Exactly 255 keys finish without a pending pass. | [tests/codec/highcolor/0047_slots_255.t](../../../../tests/codec/highcolor/0047_slots_255.t) |
 | HC-48 | The 256th key is painted by a pending final pass. | [tests/codec/highcolor/0048_slots_256.t](../../../../tests/codec/highcolor/0048_slots_256.t) |
 | HC-49 | A short offset image retains its row bit over repeated passes. | [tests/codec/highcolor/0049_single_offset.t](../../../../tests/codec/highcolor/0049_single_offset.t) |
+| HC-50 | Byte RGB retains the separated alpha-zero mask. | [tests/codec/highcolor/0050_mask_byte.t](../../../../tests/codec/highcolor/0050_mask_byte.t) |
+| HC-51 | Float RGB retains the separated alpha-zero mask. | [tests/codec/highcolor/0051_mask_float.t](../../../../tests/codec/highcolor/0051_mask_float.t) |
+| HC-52 | P3 RGB preserves visible colors and separated omissions. | [tests/codec/highcolor/0052_mask_p3.t](../../../../tests/codec/highcolor/0052_mask_p3.t) |
+| HC-53 | A high-color source mask requests P2=1 for keep. | [tests/codec/highcolor/0053_mask_keep.t](../../../../tests/codec/highcolor/0053_mask_keep.t) |
+| HC-54 | A high-color source mask explicitly requests P2=0 for clear. | [tests/codec/highcolor/0054_mask_clear.t](../../../../tests/codec/highcolor/0054_mask_clear.t) |
+| HC-55 | A retained composite-fallback mask requests P2=1. | [tests/codec/highcolor/0055_mask_composite.t](../../../../tests/codec/highcolor/0055_mask_composite.t) |
+| HC-56 | A source mask follows repeated palette passes. | [tests/codec/highcolor/0056_mask_multipass.t](../../../../tests/codec/highcolor/0056_mask_multipass.t) |
+| HC-57 | P3 masks and representatives survive pending final passes. | [tests/codec/highcolor/0057_mask_p3_multipass.t](../../../../tests/codec/highcolor/0057_mask_p3_multipass.t) |
+| HC-58 | A source mask follows partial final-band rewinds. | [tests/codec/highcolor/0058_mask_partial.t](../../../../tests/codec/highcolor/0058_mask_partial.t) |
+| HC-59 | Source masks retain coordinates across transparent margins. | [tests/codec/highcolor/0059_mask_offset.t](../../../../tests/codec/highcolor/0059_mask_offset.t) |
+| HC-60 | Parallel body serialization preserves source-mask holes. | [tests/codec/highcolor/0060_mask_workers.t](../../../../tests/codec/highcolor/0060_mask_workers.t) |
+| HC-61 | Hidden samples cannot become visible key representatives. | [tests/codec/highcolor/0061_mask_hidden_key.t](../../../../tests/codec/highcolor/0061_mask_hidden_key.t) |
+| HC-62 | An all-masked frame declares its extent without painting. | [tests/codec/highcolor/0062_mask_all.t](../../../../tests/codec/highcolor/0062_mask_all.t) |
+| HC-63 | An all-zero mask does not omit visible pixels. | [tests/codec/highcolor/0063_mask_zero.t](../../../../tests/codec/highcolor/0063_mask_zero.t) |
+| HC-64 | P3 encoder reuse clears and replaces borrowed masks. | [tests/codec/highcolor/0064_mask_reuse.t](../../../../tests/codec/highcolor/0064_mask_reuse.t) |
+| HC-65 | Short masks and nonfinite samples fail before output; low-level reuse restores the caller mask on success and failure. | [tests/codec/highcolor/0065_mask_core_recovery.t](../../../../tests/codec/highcolor/0065_mask_core_recovery.t) |
+| HC-66 | Libpng tRNS opt-in and opt-out both request P2=1 with high-color keep. | [tests/loader/libpng/0168_loader_libpng_trns_mask_highcolor.t](../../../../tests/loader/libpng/0168_loader_libpng_trns_mask_highcolor.t) |

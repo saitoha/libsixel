@@ -54,7 +54,7 @@ Unresolved packed frames supplied to the selected encoder path use its [packed a
 
 The loader owns alpha normalization. If it composites onto a background, the resulting frame is opaque and must not carry an alpha-zero mask. If it preserves alpha zero, it records that state in the frame's transparent index or per-pixel mask.
 
-The encoder trusts that frame state. It reserves a key color only when the frame still contains transparency, then selects `P2` from the requested policy. It must not discard a loader-provided mask merely because the policy is `composite`: such a mask means that background resolution failed and the loader intentionally used the `keep` fallback.
+The encoder trusts that frame state. The ordinary generated-palette path reserves a key color only when the frame still contains transparency, then selects `P2` from the requested policy. [High-color output](../../encoder/output/high-color/README.md#separated-source-masks) uses its existing skip value for separated masks instead of reserving another paint color. It must not discard a loader-provided mask merely because the policy is `composite`: such a mask means that background resolution failed and the loader intentionally used the `keep` fallback.
 
 The builtin RGBA and non-indexed PNG paths preserve source RGB for alpha-zero pixels under `clear` and `keep`, while still compositing partial alpha over an available background. Under `composite`, they composite all alpha, including alpha zero, and clear the mask after successful composition.
 

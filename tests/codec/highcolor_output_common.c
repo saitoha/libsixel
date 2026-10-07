@@ -445,7 +445,7 @@ test_highcolor_p3(int scenario)
             transparency.transparent = -1;
             transparency.alpha_zero_is_transparent = 1;
             transparency.transparent_mask = mask;
-            transparency.transparent_mask_size = 1;
+            transparency.transparent_mask_size = 0;
             iface = (sixel_frame_interface_t *)frame;
             if (SIXEL_FAILED(iface->vtbl->set_transparency(iface,
                     &transparency))) {

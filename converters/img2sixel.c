@@ -511,6 +511,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    output 15bpp sixel image\n"
         "    This option is mutually exclusive with -b, -m, and -e. Repeating\n"
         "    -I is allowed.\n"
+        "    RGB frames may retain separate alpha-zero masks, including P3;\n"
+        "    partial alpha is resolved by the loader before high color.\n"
     },
     {
         'u',
