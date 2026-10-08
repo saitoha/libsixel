@@ -2092,7 +2092,7 @@ SIXELAPI SIXELSTATUS
 sixel_encoder_invalidate_6delta_plane(
     sixel_encoder_t /* in */ *encoder);
 
-#define SIXEL_HAVE_ENCODER_6DELTA_REFINEMENT 1
+#define SIXEL_HAVE_ENCODER_6DELTA_REFINEMENT 2
 
 /* Limit the effective delta threshold without changing its configured maximum
  * or the retained plane. 0 requests exact-threshold refinement; 255 removes
@@ -2103,8 +2103,8 @@ sixel_encoder_set_6delta_threshold_limit(
     sixel_encoder_t *encoder,
     unsigned int threshold);
 
-/* After a successful frame, return nonzero only when no opaque pixel was
- * painted and at least one nonexact threshold keep was recorded. The caller
+/* After a successful frame, return nonzero when at least one nonexact
+ * threshold keep was recorded, even if other pixels were painted. The caller
  * may re-encode the latest source with limit 0, retaining normal delta
  * history. This function neither schedules work nor retains source pixels.
  * Re-evaluating at zero clears the request even if post-lookup keeps remain.
@@ -2112,6 +2112,13 @@ sixel_encoder_set_6delta_threshold_limit(
  * NULL and invalidated encoders return zero. */
 SIXELAPI int
 sixel_encoder_needs_6delta_refinement(sixel_encoder_t const *encoder);
+
+/* Number of opaque pixels painted by the latest successful delta frame.
+ * Paired with needs_6delta_refinement, this distinguishes zero painting from
+ * a small update even when palette/protocol overhead is large. NULL, disabled
+ * and invalidated encoders return zero. No additional pixel scan is needed. */
+SIXELAPI size_t
+sixel_encoder_get_6delta_painted_pixels(sixel_encoder_t const *encoder);
 
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS

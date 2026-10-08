@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify refine partial.
+# Verify partially painted frames still request refinement.
 # Policy: docs/encoder/output/delta-encoding.md
 set -eux
 

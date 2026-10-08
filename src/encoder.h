@@ -345,6 +345,7 @@ struct sixel_encoder {
     /* Runtime ceiling does not mutate the configured maximum or history. */
     unsigned int sixdelta_threshold_limit;
     int sixdelta_refinement_needed;
+    size_t sixdelta_painted_pixels;
     int sixdelta_threshold_override;
     int sixdelta_error_mode;
     int sixdelta_error_mode_override;

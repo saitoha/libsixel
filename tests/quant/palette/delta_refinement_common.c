@@ -107,13 +107,18 @@ test_delta_refinement(int mode)
     if (mode >= 3) {
         ok = !sixel_encoder_needs_6delta_refinement(encoder);
         if (mode == 4) {
-            ok = ok && encoder->accumulation_pixels[0] == 255 &&
+            ok = sixel_encoder_needs_6delta_refinement(encoder) &&
+                encoder->accumulation_pixels[0] == 255 &&
                 encoder->accumulation_pixels[3] == 5;
         }
+        ok = ok && sixel_encoder_get_6delta_painted_pixels(encoder) ==
+            (mode == 4 ? 1u : 0u);
         goto end;
     }
     dither = (sixel_dither_t *)encoder->diagnostic_dither;
     if (!sixel_encoder_needs_6delta_refinement(encoder) ||
+            sixel_encoder_get_6delta_painted_pixels(encoder) != 0u ||
+            sixel_encoder_get_6delta_painted_pixels(NULL) != 0u ||
             memcmp(encoder->accumulation_pixels, history, sizeof(history)) ||
             dither == NULL || (mode == 1 && !dither->use_rgb101_palette) ||
             sixel_encoder_needs_6delta_refinement(other)) {
@@ -124,7 +129,8 @@ test_delta_refinement(int mode)
                 SIXEL_BAD_ARGUMENT || encoder->sixdelta_threshold_limit != 0 ||
             other->sixdelta_threshold_limit != 255 ||
             SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, output)) ||
-            sixel_encoder_needs_6delta_refinement(encoder)) {
+            sixel_encoder_needs_6delta_refinement(encoder) ||
+            sixel_encoder_get_6delta_painted_pixels(encoder) != 24u) {
         goto end;
     }
     for (i = 0; i < 72; ++i) {
@@ -138,7 +144,8 @@ test_delta_refinement(int mode)
         SIXEL_SUCCEEDED(sixel_encoder_set_6delta_threshold_limit(encoder,
             255)) &&
         SIXEL_SUCCEEDED(sixel_encoder_encode_frame(encoder, frame, output)) &&
-        !sixel_encoder_needs_6delta_refinement(encoder);
+        !sixel_encoder_needs_6delta_refinement(encoder) &&
+        sixel_encoder_get_6delta_painted_pixels(encoder) == 0u;
 end:
     if (!ok) {
         fprintf(stderr, "delta refinement mode %d: %s\n", mode,

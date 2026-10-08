@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Verify refine partial. */
+/* Verify partially painted frames still request refinement. */
 int test_delta_refinement(int);
 
 int
