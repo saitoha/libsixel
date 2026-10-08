@@ -189,14 +189,20 @@ test_palette_0051_p3_contract(int argc, char **argv)
                     &count))) {
             goto end;
         }
-        /* Recovery through the old entry must retain its original bounded
-         * behavior. A failed opt-in must not change a later ordinary job. */
+        /* Both entry points preserve typed float coordinates. Recovery
+         * must discard failed state without selecting a byte or clamped
+         * palette. A single centroid is the literal source triple; the
+         * 2e-6 budget permits double/float arithmetic, not a gamut clip. */
         if (SIXEL_FAILED(p3_build(palette, &request, 0)) ||
                 SIXEL_FAILED(palette->vtbl->get_entries_float32(palette,
-                    &floats)) || floats.entries == NULL ||
-                floats.entries[0] != 1.0f || floats.entries[1] != 0.0f ||
-                floats.entries[2] != 0.0f) {
+                    &floats)) || floats.entries == NULL) {
             goto end;
+        }
+        for (index = 0; index < 3; ++index) {
+            if (!isfinite(floats.entries[index]) ||
+                    fabs(floats.entries[index] - source[index]) > 2e-6) {
+                goto end;
+            }
         }
         if (SIXEL_FAILED(p3_build(palette, &request, 1)) ||
                 SIXEL_FAILED(sixel_palette_prepare_rgb101(palette,

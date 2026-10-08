@@ -1608,6 +1608,23 @@ int test_ordinary_center_reuse(int argc, char **argv);
 int test_ordinary_medoids_reuse(int argc, char **argv);
 int test_ordinary_center_reduce(int argc, char **argv);
 int test_ordinary_medoids_reduce(int argc, char **argv);
+int test_ordinary_kmeans_sources(int argc, char **argv);
+int test_ordinary_kmeans_hard(int argc, char **argv);
+int test_ordinary_kmeans_exact(int argc, char **argv);
+int test_ordinary_kmeans_ward(int argc, char **argv);
+int test_ordinary_kmeans_snap(int argc, char **argv);
+int test_ordinary_kmeans_fault(int argc, char **argv);
+int test_ordinary_kmeans_nonfinite(int argc, char **argv);
+int test_ordinary_kmeans_hint(int argc, char **argv);
+int test_ordinary_kmeans_byte(int argc, char **argv);
+int test_ordinary_kmeans_reuse(int argc, char **argv);
+int test_ordinary_kmeans_fractional(int argc, char **argv);
+int test_ordinary_kmeans_polish(int argc, char **argv);
+int test_ordinary_kmeans_empty(int argc, char **argv);
+int test_ordinary_kmeans_feedback(int argc, char **argv);
+int test_ordinary_kmeans_feedback_snap(int argc, char **argv);
+int test_ordinary_kmeans_feedback_interval(int argc, char **argv);
+int test_ordinary_kmeans_unique(int argc, char **argv);
 int test_palette_retention_kmeans(int argc, char **argv);
 int test_palette_retention_kcenter(int argc, char **argv);
 int test_palette_retention_kmedoids(int argc, char **argv);
@@ -5956,6 +5973,40 @@ static test_entry_t const test_entries[] = {
     { "palette/ordinary_float/medoids_reuse", test_ordinary_medoids_reuse },
     { "palette/ordinary_float/center_reduce", test_ordinary_center_reduce },
     { "palette/ordinary_float/medoids_reduce", test_ordinary_medoids_reduce },
+    { "palette/ordinary_float/kmeans_sources",
+      test_ordinary_kmeans_sources },
+    { "palette/ordinary_float/kmeans_hard",
+      test_ordinary_kmeans_hard },
+    { "palette/ordinary_float/kmeans_exact",
+      test_ordinary_kmeans_exact },
+    { "palette/ordinary_float/kmeans_ward",
+      test_ordinary_kmeans_ward },
+    { "palette/ordinary_float/kmeans_snap",
+      test_ordinary_kmeans_snap },
+    { "palette/ordinary_float/kmeans_fault",
+      test_ordinary_kmeans_fault },
+    { "palette/ordinary_float/kmeans_nonfinite",
+      test_ordinary_kmeans_nonfinite },
+    { "palette/ordinary_float/kmeans_hint",
+      test_ordinary_kmeans_hint },
+    { "palette/ordinary_float/kmeans_byte",
+      test_ordinary_kmeans_byte },
+    { "palette/ordinary_float/kmeans_reuse",
+      test_ordinary_kmeans_reuse },
+    { "palette/ordinary_float/kmeans_fractional",
+      test_ordinary_kmeans_fractional },
+    { "palette/ordinary_float/kmeans_polish",
+      test_ordinary_kmeans_polish },
+    { "palette/ordinary_float/kmeans_empty",
+      test_ordinary_kmeans_empty },
+    { "palette/ordinary_float/kmeans_feedback",
+      test_ordinary_kmeans_feedback },
+    { "palette/ordinary_float/kmeans_feedback_snap",
+      test_ordinary_kmeans_feedback_snap },
+    { "palette/ordinary_float/kmeans_feedback_interval",
+      test_ordinary_kmeans_feedback_interval },
+    { "palette/ordinary_float/kmeans_unique",
+      test_ordinary_kmeans_unique },
     { "palette/retention_kmeans",
       test_palette_retention_kmeans },
     { "palette/retention_kcenter",

@@ -635,162 +635,6 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
     return status;
 }
 
-/* Try the preferred float32 K-means engine before falling back to legacy. */
-static SIXELSTATUS
-sixel_palette_apply_kmeans_engines(sixel_palette_t *palette,
-                                   void const *data,
-                                   unsigned int length,
-                                   int pixelformat,
-                                   sixel_allocator_t *allocator,
-                                   int prefer_float32)
-{
-    sixel_palette_quant_engine_t const *engine;
-    sixel_palette_build_context_t *context;
-    sixel_palette_binning_state_t *binning_state;
-    sixel_palette_binning_policy_t requested_binning;
-    sixel_palette_policy_origin_t binning_origin;
-    SIXELSTATUS status;
-    unsigned char *legacy_pixels;
-    void const *legacy_data;
-    unsigned int legacy_length;
-    size_t pixel_count;
-    int saved_lut_policy;
-    int legacy_pixelformat;
-    int source_depth;
-
-    engine = NULL;
-    context = NULL;
-    binning_state = NULL;
-    requested_binning = SIXEL_PALETTE_BINNING_AUTO;
-    binning_origin = SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
-    status = SIXEL_LOGIC_ERROR;
-    legacy_pixels = NULL;
-    legacy_data = data;
-    legacy_length = length;
-    pixel_count = 0U;
-    saved_lut_policy = SIXEL_LUT_POLICY_AUTO;
-    legacy_pixelformat = pixelformat;
-    source_depth = 0;
-    context = SIXEL_PALETTE_CONTEXT(palette);
-    if (context == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    saved_lut_policy = context->lut_policy;
-
-    if (prefer_float32) {
-        engine = sixel_palette_quant_engine_lookup(
-            SIXEL_QUANTIZE_MODEL_KMEANS,
-            1);
-        if (engine != NULL) {
-            context->lut_policy = SIXEL_LUT_POLICY_NONE;
-            status = sixel_palette_quant_engine_run(engine,
-                                                    palette,
-                                                    data,
-                                                    length,
-                                                    pixelformat,
-                                                    allocator);
-            if (SIXEL_SUCCEEDED(status)) {
-                return status;
-            }
-            context->lut_policy = saved_lut_policy;
-            if (context->preserve_extended_rgb != 0) {
-                return status;
-            }
-            /*
-             * Each engine retry owns a fresh binning attempt.  A failed
-             * float32 solver may already have executed the filter, so the
-             * legacy solver must not inherit that partial lifecycle state.
-             */
-            binning_state = context->attempt != NULL
-                ? &context->attempt->binning
-                : NULL;
-            if (binning_state != NULL) {
-                requested_binning =
-                    (sixel_palette_binning_policy_t)
-                        binning_state->policy.requested;
-                binning_origin = binning_state->policy.origin;
-                /*
-                 * Exact binning promises equality in the source coordinate
-                 * domain.  Converting float samples to RGB888 before the
-                 * legacy retry can merge distinct coordinates, so preserve
-                 * the float engine failure instead of weakening that
-                 * contract silently.
-                 */
-                if (requested_binning == SIXEL_PALETTE_BINNING_EXACT) {
-                    return status;
-                }
-                sixel_palette_binning_state_init(binning_state,
-                                                  requested_binning,
-                                                  binning_origin);
-            }
-            if (context->attempt != NULL) {
-                ++context->attempt->quantizer_retry_count;
-            }
-        }
-    }
-
-    if (context->preserve_extended_rgb != 0) {
-        return status;
-    }
-
-    /*
-     * The legacy engine consumes byte RGB samples.  Float input must be
-     * normalized before retrying; passing its raw bytes makes the legacy
-     * engine reject the float pixel depth before it reaches K-means.
-     */
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        source_depth = sixel_helper_compute_depth(pixelformat);
-        if (source_depth <= 0 ||
-                length % (unsigned int)source_depth != 0U) {
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
-        pixel_count = length / (unsigned int)source_depth;
-        if (pixel_count == 0U || pixel_count > (size_t)INT_MAX ||
-                pixel_count > (size_t)UINT_MAX / 3U) {
-            status = SIXEL_BAD_INTEGER_OVERFLOW;
-            goto end;
-        }
-        legacy_length = (unsigned int)pixel_count * 3U;
-        legacy_pixels = (unsigned char *)sixel_allocator_malloc(
-            allocator,
-            legacy_length);
-        if (legacy_pixels == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-        status = sixel_helper_normalize_pixelformat(
-            legacy_pixels,
-            &legacy_pixelformat,
-            (unsigned char const *)data,
-            pixelformat,
-            (int)pixel_count,
-            1);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        legacy_data = legacy_pixels;
-    }
-
-    engine = sixel_palette_quant_engine_lookup(
-        SIXEL_QUANTIZE_MODEL_KMEANS,
-        0);
-    if (engine != NULL) {
-        status = sixel_palette_quant_engine_run(engine,
-                                                palette,
-                                                legacy_data,
-                                                legacy_length,
-                                                legacy_pixelformat,
-                                                allocator);
-    }
-
-end:
-    if (legacy_pixels != NULL) {
-        sixel_allocator_free(allocator, legacy_pixels);
-    }
-    return status;
-}
-
 /* Thin wrapper that executes the median-cut/Heckbert engine. */
 static SIXELSTATUS
 sixel_palette_apply_mediancut_engine(sixel_palette_t *palette,
@@ -841,7 +685,7 @@ sixel_palette_apply_mediancut_engine(sixel_palette_t *palette,
                                           allocator);
 }
 
-/* K-center and K-medoids choose arithmetic from the actual input type.
+/* Lloyd/center/medoid solvers choose arithmetic from the actual input type.
  * A float failure must not retry byte storage, even when the caller does not
  * use the native output cache. Explicit snap still runs inside the builder. */
 static SIXELSTATUS
@@ -854,6 +698,11 @@ sixel_palette_apply_typed_engine(sixel_palette_t *palette,
 {
     sixel_palette_quant_engine_t const *engine;
 
+    if (quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS &&
+            SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        /* Byte lookup caches cannot represent the Lloyd float coordinates. */
+        SIXEL_PALETTE_CONTEXT(palette)->lut_policy = SIXEL_LUT_POLICY_NONE;
+    }
     engine = sixel_palette_quant_engine_lookup(quantize_model,
         SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat));
     if (engine == NULL) {
@@ -1461,19 +1310,15 @@ sixel_palette_repair_native(sixel_palette_t *palette,
 /*
  * sixel_palette_generate builds the palette entries inside the provided
  * sixel_palette_t instance.  The dispatcher consults the quantizer engine
- * registry to pick either the legacy 8bit solvers or (in later phases) the
- * RGBFLOAT32-enabled variants.  The high-level flow is:
+ * registry to select the requested solver. K-means, K-center and K-medoids
+ * choose arithmetic from the actual input type; a typed float failure is
+ * returned without narrowing or trying another solver. True byte requests
+ * retain their historical Heckbert fallback where binning permits it.
+ * Compatibility Heckbert still follows its separate preference-based path.
  *
- *   1. Honour explicit K-means/K-center requests by running the preferred
- *      engine (float32 when available, otherwise the current 8bit solver).
- *      Failed runs fall back to Heckbert to preserve historical behaviour.
- *   2. Honour explicit K-medoids requests with the same fallback ladder.
- *   3. Invoke the median-cut/Heckbert engine for every other case, including
- *      the AUTO mode.
- *
- * Both branches share helper routines for cache management and post-processing
- * (for example reversible palette transformation).  The palette object tracks
- * the generated metadata so the caller can publish it without recomputing.
+ * The branches share cache management and policy post-processing helpers.
+ * The palette object tracks the generated metadata so the caller can
+ * publish it without recomputing.
  */
 static SIXELSTATUS
 sixel_palette_generate_internal(
@@ -1546,18 +1391,18 @@ sixel_palette_generate_internal(
     status = SIXEL_FALSE;
 
     if (context.quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
-        status = sixel_palette_apply_kmeans_engines(palette,
-                                                    request->data,
-                                                    request->length,
-                                                    request->pixelformat,
-                                                    work_allocator,
-                                                    request->prefer_float32);
+        status = sixel_palette_apply_typed_engine(palette,
+            context.quantize_model, request->data, request->length,
+            request->pixelformat, work_allocator);
         if (SIXEL_SUCCEEDED(status)) {
             effective_quantize_model = SIXEL_QUANTIZE_MODEL_KMEANS;
             ncolors = storage->entry_count;
             origcolors = storage->original_colors;
             depth = (unsigned int)storage->depth;
             goto success;
+        }
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
+            goto end;
         }
     } else if (context.quantize_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
         status = sixel_palette_apply_typed_engine(palette,

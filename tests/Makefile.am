@@ -1493,6 +1493,23 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0018_MEDOIDS_REUSE \
     -DBUILD_TEST_0019_CENTER_REDUCE \
     -DBUILD_TEST_0020_MEDOIDS_REDUCE \
+    -DBUILD_TEST_0021_KMEANS_SOURCES \
+    -DBUILD_TEST_0022_KMEANS_HARD \
+    -DBUILD_TEST_0023_KMEANS_EXACT \
+    -DBUILD_TEST_0024_KMEANS_WARD \
+    -DBUILD_TEST_0025_KMEANS_SNAP \
+    -DBUILD_TEST_0026_KMEANS_FAULT \
+    -DBUILD_TEST_0027_KMEANS_NONFINITE \
+    -DBUILD_TEST_0028_KMEANS_HINT \
+    -DBUILD_TEST_0029_KMEANS_BYTE \
+    -DBUILD_TEST_0030_KMEANS_REUSE \
+    -DBUILD_TEST_0031_KMEANS_FRACTIONAL \
+    -DBUILD_TEST_0032_KMEANS_POLISH \
+    -DBUILD_TEST_0033_KMEANS_EMPTY \
+    -DBUILD_TEST_0034_KMEANS_FEEDBACK \
+    -DBUILD_TEST_0035_KMEANS_FEEDBACK_SNAP \
+    -DBUILD_TEST_0036_KMEANS_FEEDBACK_INTERVAL \
+    -DBUILD_TEST_0037_KMEANS_UNIQUE \
     -DBUILD_RETENTION_TEST_COMMON \
     -DBUILD_TEST_0016_KCENTER_BOUNDARY \
     -DBUILD_TEST_0014_EXTENDED_READ \
@@ -5468,6 +5485,23 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/ordinary_float/0018_medoids_reuse.c \
     quant/palette/ordinary_float/0019_center_reduce.c \
     quant/palette/ordinary_float/0020_medoids_reduce.c \
+    quant/palette/ordinary_float/0021_kmeans_sources.c \
+    quant/palette/ordinary_float/0022_kmeans_hard.c \
+    quant/palette/ordinary_float/0023_kmeans_exact.c \
+    quant/palette/ordinary_float/0024_kmeans_ward.c \
+    quant/palette/ordinary_float/0025_kmeans_snap.c \
+    quant/palette/ordinary_float/0026_kmeans_fault.c \
+    quant/palette/ordinary_float/0027_kmeans_nonfinite.c \
+    quant/palette/ordinary_float/0028_kmeans_hint.c \
+    quant/palette/ordinary_float/0029_kmeans_byte.c \
+    quant/palette/ordinary_float/0030_kmeans_reuse.c \
+    quant/palette/ordinary_float/0031_kmeans_fractional.c \
+    quant/palette/ordinary_float/0032_kmeans_polish.c \
+    quant/palette/ordinary_float/0033_kmeans_empty.c \
+    quant/palette/ordinary_float/0034_kmeans_feedback.c \
+    quant/palette/ordinary_float/0035_kmeans_feedback_snap.c \
+    quant/palette/ordinary_float/0036_kmeans_feedback_interval.c \
+    quant/palette/ordinary_float/0037_kmeans_unique.c \
     quant/palette/retention/retention_test_common.c \
     quant/palette/retention/retention_test_common.h \
     quant/palette/retention/0016_kcenter_boundary.c \
