@@ -36,6 +36,8 @@ MS-SSIM:0.98
 
 Never lower a quality threshold below `0.95` to make a regression pass.
 
+`MS-SSIM` currently names the historical arithmetic-average score. `MS-SSIM-origin` is the independently selectable reference five-scale product; its formula, input-size requirement and numerical tests are defined in [image-quality metrics](metrics.md#reference-ms-ssim-ms-ssim-origin). Existing gates retain their metric until explicitly migrated. Migrate a gate by recording both scores on its valid and degraded controls, checking the input dimensions and confirming that its threshold rejects the intended defect. Small fixtures must not be silently enlarged or assigned a reduced-scale score; use a justified larger fixture or keep the gate on the legacy metric pending redesign. Record the metric name with every baseline and benchmark, and re-evaluate policy rankings before carrying an old optimum into an origin-based comparison. A passing legacy gate does not establish the corresponding origin score.
+
 Use secondary metrics to explain changes that MS-SSIM alone does not
 characterize. Depending on the defect, useful measurements include:
 

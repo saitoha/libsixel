@@ -21,7 +21,8 @@ Formulas use plain-text notation: `Σ` is a sum, `Π` a product, `E[·]` an aver
 
 | Metric | Signal | Better | Family |
 | --- | --- | --- | --- |
-| `MS-SSIM` | luma | higher, 1 = identical | structural similarity |
+| `MS-SSIM` | luma | higher, 1 = identical | legacy multiscale SSIM average |
+| `MS-SSIM-origin` | luma | higher, 1 = identical | reference five-scale MS-SSIM product |
 | `GMSD` | luma | lower, 0 = identical | gradient similarity |
 | `PSNR_Y` | luma | higher, 99 = identical | error power |
 | `Δ E00_mean`, `DE00_max` | CIELAB | lower | per-pixel color difference |
@@ -87,7 +88,7 @@ MS-SSIM evaluates contrast and structure at `M = 5` dyadic scales. Scale 1 is th
 
 ```text
 MS-SSIM = l_M^{α_M} · Π_{j=1..M} c_j^{β_j} · s_j^{γ_j}
-α_M = β_j = γ_j = w_j
+α_M = w_M,  β_j = γ_j = w_j
 (w_1 .. w_5) = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333)
 ```
 
@@ -112,7 +113,31 @@ The weights are the published ones, and scales stop early when a dimension falls
 - **Pooling is arithmetic, not geometric.** In the published score a single badly damaged scale pulls the product toward zero; here it only reduces a weighted average.
 - **The whole map is averaged,** including mirror-padded borders, rather than only the "valid" region where the window fits.
 
-As a result, `lsqa` MS-SSIM values are internally consistent and suitable for libsixel's comparative gates, but they are not numerically comparable with MS-SSIM values published elsewhere or produced by other libraries. Report the tool and revision with any value.
+The `MS-SSIM` name, its aliases and the established `-mm` abbreviation retain this legacy score. Measurements made with it remain reproducible, but neither their numeric values nor their ranking of encoder policies can be assumed to match published MS-SSIM. Report the metric name, tool and revision with any value. Migration of quality gates is governed by the [measurement policy](measurement-policy.md#primary-and-secondary-metrics).
+
+### Reference MS-SSIM: `MS-SSIM-origin`
+
+Select the reference metric with `lsqa -m ms-ssim-origin reference.png output.six`. Names are case-insensitive; the JSON key is `MS-SSIM-origin`. `-b MS-SSIM-origin:0.98` selects a baseline for this metric. `MS-SSIM`, `MS_SSIM`, `SSIM` and their established prefixes, including `-mm`, keep their legacy meaning; the two scores are independently selectable and both appear in the full JSON report.
+
+The implementation follows the default five-scale product in the authors' [MATLAB reference code](https://ece.uwaterloo.ca/~z70wang/research/iwssim/msssim.zip), distributed from their [reference implementation page](https://ece.uwaterloo.ca/~z70wang/research/iwssim/). It uses an 11 × 11 normalized Gaussian window with sigma 1.5, `K1 = 0.01`, `K2 = 0.03` and unit signal range. At each scale, only window positions wholly inside the image contribute to the spatial mean. The first four factors average contrast times structure (`CS`); the fifth averages the full local SSIM product, including luminance:
+
+```text
+score = mean(CS_1)^0.0448 · mean(CS_2)^0.2856
+      · mean(CS_3)^0.3001 · mean(CS_4)^0.2363
+      · mean(l_5 · CS_5)^0.1333
+```
+
+The rounded published weights are used as printed, without renormalizing them. Between scales, a 2 × 2 box is correlated with symmetric boundaries and subsampled at its first, third, fifth and subsequent positions. The window looks right and down; an odd final row or column is reflected onto itself. Downsampling therefore retains `ceil(width/2) × ceil(height/2)` samples. Local moments, downsampling and spatial sums use double arithmetic; the assessment result is stored as float32. Only roundoff above the final upper bound of one is capped. A negative mean factor has no real-valued fractional power and makes this metric unavailable instead of silently replacing that factor with zero.
+
+Both aligned comparison dimensions must be at least 176 pixels, matching the reference's `11 × 2^4` admission rule. Smaller images do not acquire fewer scales, narrower windows or implicit enlargement. An unavailable result is `null` in JSON and `nan` with `-m`; the usual `-b` handling rejects it with exit code 5 even when the threshold is zero. Other selected metrics remain available. Nonfinite comparison samples also make the metric unavailable if they reach metric evaluation.
+
+`origin` identifies the structural formula, window pooling and pyramid, not a different color interpretation. Both SSIM variants use the existing [comparison signal](color-evaluation.md#physical-color-and-comparison-signal), which defaults to BT.709-weighted encoded luma. Reproducing another tool's score also requires matching its input samples, RGB-to-gray conversion and preprocessing. For two constant gray images of 0 and `3/255`, all contrast/structure factors are one: the reference score is approximately `0.419448476^0.1333 = 0.890641772`, while the legacy arithmetic score is approximately `0.419448476`.
+
+#### Numerical validation
+
+The [independent reference generator](../../tests/data/assessment/ms_ssim_origin_reference.py) evaluates direct two-dimensional Gaussian windows in NumPy and emits each factor and the final product. It does not call the production separable filter or `lsqa`. Literal expectations in the C observer cover flat levels, a fine checker pattern, a textured even-size image and an odd-size image. The checker averages to a constant after the first reduction, isolating the first contrast/structure exponent; the flat case isolates the sole coarsest-scale luminance factor. Odd-size and textured observations additionally exercise valid-window pooling, symmetric edge handling, scale weights and the last spatially pooled SSIM factor.
+
+Scores use an absolute tolerance of `1.5e-5`, not bit identity. The reference begins with ideal gray levels (binary fractions except `3/255`); the observation includes float32 storage and BT.709 luma arithmetic before double statistics. The generator bounds input perturbations by `4e-7` times each image's maximum sample, accounting for input rounding, coefficient representation, three weighted products and two sums. Variance perturbation is bounded by `2 sigma delta + delta²`, covariance perturbation by `sigma_x delta_y + sigma_y delta_x + delta_x delta_y`, and the stabilized ratios and weighted product propagate those bounds to the final score. The resulting input-error bounds are below `6e-8` for the flat case, `4.5e-6` for the checker and `1.1e-5` for both textured cases. The remaining budget covers double statistics/reduction, `exp`/`pow` and float32 result storage. This budget applies to these fixtures, not every possible anticorrelated or near-zero-factor input. Availability, metric masks and stale-result clearing are exact state assertions. See the shared [floating-point testing rules](../testing/guide.md#intermediate-floating-point-error).
 
 ### What it measures
 
@@ -280,6 +305,34 @@ The spatial metrics in `lsqa` operate on a single luma signal, while color is me
 **Separation of concerns.** Keeping spatial structure on luma and color fidelity on CIELAB lets a report say *which* property changed. A palette or lookup change that shifts hue without moving edges appears in ΔE00 and `Δ Chroma_mean` but not in MS-SSIM; a dither change that moves noise between scales appears in MS-SSIM and the spectral descriptors.
 
 **Limits.** This split under-represents chromatic spatial artifacts at low frequencies, which are visible: color banding in gradients, chroma noise in large flat areas, and slow hue or neutral drift caused by palette geometry, such as gray areas drifting toward a tint. The luma metrics are blind to these. Regional ΔE00 and `Δ Chroma_mean` are the current safeguards, which is why the [measurement policy](measurement-policy.md#primary-and-secondary-metrics) prefers per-pixel color summaries for palette studies. Luma itself is gamma-encoded and non-constant-luminance, so saturated colors are weighted imperfectly; linear `Y` is available as a comparison signal when that matters. A spatial color metric in the S-CIELAB family, filtering opponent channels by their own contrast sensitivity before computing color difference, would close this gap more directly; it is not implemented.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+This inventory covers the reference MS-SSIM addition and coexistence with the legacy metric. It does not claim to independently validate every other metric described in this document; color-coordinate coverage is owned by [color-aware evaluation](color-evaluation.md#test-coverage).
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| MO-01 | Identical textured inputs score one at the minimum admitted size. | [tests/processing/assessment/0017_ms_ssim_origin_identity.t](../../tests/processing/assessment/0017_ms_ssim_origin_identity.t) |
+| MO-02 | A flat mean-level shift contributes luminance only at the coarsest scale. | [tests/processing/assessment/0018_ms_ssim_origin_coarsest_luminance.t](../../tests/processing/assessment/0018_ms_ssim_origin_coarsest_luminance.t) |
+| MO-03 | A fine checker contributes through the first CS exponent and geometric product. | [tests/processing/assessment/0019_ms_ssim_origin_geometric_product.t](../../tests/processing/assessment/0019_ms_ssim_origin_geometric_product.t) |
+| MO-04 | An even-sized textured input matches independently pooled reference factors. | [tests/processing/assessment/0020_ms_ssim_origin_even_reference.t](../../tests/processing/assessment/0020_ms_ssim_origin_even_reference.t) |
+| MO-05 | Odd-sized reduction and valid windows match the independent reference. | [tests/processing/assessment/0021_ms_ssim_origin_odd_reference.t](../../tests/processing/assessment/0021_ms_ssim_origin_odd_reference.t) |
+| MO-06 | Swapping reference and output preserves the reference score. | [tests/processing/assessment/0022_ms_ssim_origin_symmetry.t](../../tests/processing/assessment/0022_ms_ssim_origin_symmetry.t) |
+| MO-07 | Inputs narrower than 176 pixels have no origin result. | [tests/processing/assessment/0023_ms_ssim_origin_undersized.t](../../tests/processing/assessment/0023_ms_ssim_origin_undersized.t) |
+| MO-08 | A negative mean factor has no real-valued origin result. | [tests/processing/assessment/0024_ms_ssim_origin_negative_factor.t](../../tests/processing/assessment/0024_ms_ssim_origin_negative_factor.t) |
+| MO-09 | An unavailable comparison clears a preceding valid score in either narrow orientation. | [tests/processing/assessment/0025_ms_ssim_origin_reuse.t](../../tests/processing/assessment/0025_ms_ssim_origin_reuse.t) |
+| MO-10 | CLI selection is case-insensitive and accepts the matching origin baseline. | [tests/quality_gate/ms_ssim_origin/0001_cli_selection.t](../../tests/quality_gate/ms_ssim_origin/0001_cli_selection.t) |
+| MO-11 | The established -mm prefix still selects the legacy score. | [tests/quality_gate/ms_ssim_origin/0002_legacy_prefix.t](../../tests/quality_gate/ms_ssim_origin/0002_legacy_prefix.t) |
+| MO-12 | An unavailable origin result prints nan and fails even a zero baseline. | [tests/quality_gate/ms_ssim_origin/0003_unavailable_baseline.t](../../tests/quality_gate/ms_ssim_origin/0003_unavailable_baseline.t) |
+| MO-13 | The full JSON report includes an unavailable origin as null. | [tests/quality_gate/ms_ssim_origin/0004_json_unavailable.t](../../tests/quality_gate/ms_ssim_origin/0004_json_unavailable.t) |
+| MO-14 | A finite origin score below its baseline exits with quality failure. | [tests/quality_gate/ms_ssim_origin/0005_finite_baseline.t](../../tests/quality_gate/ms_ssim_origin/0005_finite_baseline.t) |
+| MO-15 | Help distinguishes both formulas and the minimum dimensions. | [tests/quality_gate/ms_ssim_origin/0006_help.t](../../tests/quality_gate/ms_ssim_origin/0006_help.t) |
+
+These are value, state and CLI-contract assertions. They do not establish an encoder quality floor or transfer an old threshold to the new metric.
 
 ## References
 

@@ -78,7 +78,7 @@ Color difference uses XYZ with `Y=1` for white and ICC D50 `(Xn, Yn, Zn) = (0.96
 
 Either input with zero chroma has hue zero by the CIEDE2000 convention. The evaluator applies that rule before calling `atan2`, so runtimes that return NaN for `atan2(0, 0)` cannot contaminate black, white, or neutral comparisons. The reference tests include zero chroma in both input positions, black versus white, and identical black samples.
 
-`-W / --compare-colorspace` selects the signal for MS-SSIM, PSNR-Y, GMSD and the other spatial/luma diagnostics:
+`-W / --compare-colorspace` selects the signal for both MS-SSIM variants, PSNR-Y, GMSD and the other spatial/luma diagnostics:
 
 | Selection | Signal |
 | --- | --- |

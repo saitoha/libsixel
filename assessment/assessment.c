@@ -138,6 +138,7 @@ typedef struct sixel_assessment_complex {
 typedef struct sixel_assessment_metrics {
     unsigned int valid_mask; /* bit mask for computed metrics */
     float ms_ssim;
+    float ms_ssim_origin;
     float high_freq_out;
     float high_freq_ref;
     float high_freq_delta;
@@ -1584,6 +1585,184 @@ ms_ssim_luma(const sixel_assessment_float_buffer_t *ref,
     }
     return 0.0f;
 }
+
+/* Wang's five-scale reference uses valid Gaussian windows and the product
+ * of mean contrast/structure at scales 1--4 and mean full SSIM at scale 5.
+ * Keep this independent of the historical arithmetic-average metric above.
+ * Double moments avoid cancellation in flat patches and double pooling
+ * avoids image-size-dependent float summation error. */
+static double
+ssim_origin_scale(double const *a, double const *b, double *horizontal,
+                  int width, int height, double const kernel[11], int last)
+{
+    double moments[5];
+    double av;
+    double bv;
+    double weight;
+    double cs;
+    double denominator;
+    double sum;
+    size_t source;
+    size_t target;
+    int valid_width;
+    int row;
+    int column;
+    int tap;
+    int moment;
+
+    valid_width = width - 10;
+    for (row = 0; row < height; ++row) {
+        for (column = 0; column < valid_width; ++column) {
+            memset(moments, 0, sizeof(moments));
+            source = (size_t)row * (size_t)width + (size_t)column;
+            for (tap = 0; tap < 11; ++tap) {
+                av = a[source + (size_t)tap];
+                bv = b[source + (size_t)tap];
+                weight = kernel[tap];
+                moments[0] += weight * av;
+                moments[1] += weight * bv;
+                moments[2] += weight * av * av;
+                moments[3] += weight * bv * bv;
+                moments[4] += weight * av * bv;
+            }
+            target = ((size_t)row * (size_t)valid_width +
+                (size_t)column) * 5u;
+            memcpy(horizontal + target, moments, sizeof(moments));
+        }
+    }
+    sum = 0.0;
+    for (row = 0; row < height - 10; ++row) {
+        for (column = 0; column < valid_width; ++column) {
+            memset(moments, 0, sizeof(moments));
+            for (tap = 0; tap < 11; ++tap) {
+                source = ((size_t)(row + tap) * (size_t)valid_width +
+                    (size_t)column) * 5u;
+                for (moment = 0; moment < 5; ++moment) {
+                    moments[moment] += kernel[tap] *
+                        horizontal[source + (size_t)moment];
+                }
+            }
+            av = moments[0];
+            bv = moments[1];
+            denominator = moments[2] - av * av + moments[3] - bv * bv
+                + 0.0009;
+            if (!(denominator > 0.0)) {
+                return NAN;
+            }
+            cs = (2.0 * (moments[4] - av * bv) + 0.0009) / denominator;
+            if (last) {
+                cs *= (2.0 * av * bv + 0.0001) /
+                    (av * av + bv * bv + 0.0001);
+            }
+            sum += cs;
+        }
+    }
+    return sum / ((double)valid_width * (double)(height - 10));
+}
+
+/* Match imfilter(..., ones(2)/4, 'symmetric', 'same')(1:2:end,...):
+ * the even-sized correlation window looks right/down. An odd final row or
+ * column is reflected onto itself, retaining ceil(size/2) samples. Earlier
+ * compacted outputs never overwrite an input still needed by this pass. */
+static void
+ssim_origin_downsample(double *pixels, int width, int height)
+{
+    int row;
+    int column;
+    int next_row;
+    int next_column;
+    size_t first;
+    size_t second;
+    size_t output;
+
+    output = 0u;
+    for (row = 0; row < height; row += 2) {
+        next_row = row + 1 < height ? row + 1 : row;
+        first = (size_t)row * (size_t)width;
+        second = (size_t)next_row * (size_t)width;
+        for (column = 0; column < width; column += 2) {
+            next_column = column + 1 < width ? column + 1 : column;
+            pixels[output++] = 0.25 *
+                (pixels[first + (size_t)column] +
+                 pixels[first + (size_t)next_column] +
+                 pixels[second + (size_t)column] +
+                 pixels[second + (size_t)next_column]);
+        }
+    }
+}
+
+static float
+ms_ssim_origin_luma(sixel_assessment_float_buffer_t const *ref,
+                    sixel_assessment_float_buffer_t const *out,
+                    int width, int height)
+{
+    double const weights[5] = {0.0448, 0.2856, 0.3001, 0.2363, 0.1333};
+    double kernel[11];
+    double kernel_sum;
+    double factor;
+    double product;
+    double *workspace;
+    double *a;
+    double *b;
+    double *horizontal;
+    size_t count;
+    size_t index;
+    int tap;
+    int level;
+
+    /* Do not silently replace five scales with a different small-image
+     * metric. Follow the reference's 11 * 2^4 admission rule. */
+    if (width < 176 || height < 176) {
+        return NAN;
+    }
+    count = (size_t)width * (size_t)height;
+    if (count > SIZE_MAX / (7u * sizeof(double))) {
+        assessment_fail(SIXEL_BAD_ALLOCATION,
+                        "MS-SSIM-origin workspace size overflow");
+    }
+    for (index = 0u; index < count; ++index) {
+        if (!isfinite(ref->values[index]) || !isfinite(out->values[index])) {
+            return NAN;
+        }
+    }
+    workspace = (double *)xmalloc(count * 7u * sizeof(double));
+    a = workspace;
+    b = a + count;
+    horizontal = b + count;
+    for (index = 0u; index < count; ++index) {
+        a[index] = ref->values[index];
+        b[index] = out->values[index];
+    }
+    kernel_sum = 0.0;
+    for (tap = 0; tap < 11; ++tap) {
+        kernel[tap] = exp(-(double)((tap - 5) * (tap - 5)) / 4.5);
+        kernel_sum += kernel[tap];
+    }
+    for (tap = 0; tap < 11; ++tap) {
+        kernel[tap] /= kernel_sum;
+    }
+    product = 1.0;
+    for (level = 0; level < 5; ++level) {
+        factor = ssim_origin_scale(a, b, horizontal, width, height,
+                                    kernel, level == 4);
+        /* Fractional powers of negative mean factors are not real-valued.
+         * Report an unavailable metric, not a silently clipped substitute.
+         * Tiny overshoot above one is only bounded at the final result. */
+        if (!isfinite(factor) || factor < 0.0) {
+            product = NAN;
+            break;
+        }
+        product *= pow(factor, weights[level]);
+        if (level < 4) {
+            ssim_origin_downsample(a, width, height);
+            ssim_origin_downsample(b, width, height);
+            width = width / 2 + width % 2;
+            height = height / 2 + height % 2;
+        }
+    }
+    free(workspace);
+    return (float)(product > 1.0 ? 1.0 : product);
+}
 /*
  * FFT helpers for spectral metrics
  */
@@ -2644,6 +2823,7 @@ evaluate_metrics(sixel_assessment_t *assessment,
     int threshold;
 
     int want_ms_ssim;
+    int want_ms_ssim_origin;
     int want_high_freq_out;
     int want_high_freq_ref;
     int want_high_freq_delta;
@@ -2694,6 +2874,8 @@ evaluate_metrics(sixel_assessment_t *assessment,
 
     want_ms_ssim = assessment_metric_selected(assessment,
                    SIXEL_ASSESSMENT_METRIC_MS_SSIM);
+    want_ms_ssim_origin = assessment_metric_selected(assessment,
+        SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN);
     want_high_freq_delta = assessment_metric_selected(assessment,
                            SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_DELTA);
     want_high_freq_out = assessment_metric_selected(assessment,
@@ -2764,7 +2946,8 @@ evaluate_metrics(sixel_assessment_t *assessment,
                  SIXEL_ASSESSMENT_METRIC_GMSD);
     want_psnr_y = assessment_metric_selected(assessment,
                    SIXEL_ASSESSMENT_METRIC_PSNR_Y);
-    need_luma = want_ms_ssim || want_high_freq_out || want_high_freq_ref ||
+    need_luma = want_ms_ssim || want_ms_ssim_origin ||
+                want_high_freq_out || want_high_freq_ref ||
                 want_stripe_out || want_stripe_ref || want_banding_run_rel ||
                 want_banding_grad_rel || want_gmsd || want_psnr_y;
     need_lab = want_delta_chroma_mean || want_delta_e00_mean ||
@@ -2781,6 +2964,12 @@ evaluate_metrics(sixel_assessment_t *assessment,
         assessment_metric_mark(&metrics,
                                SIXEL_ASSESSMENT_METRIC_MS_SSIM,
                                metrics.ms_ssim);
+    }
+    if (want_ms_ssim_origin && need_luma) {
+        metrics.ms_ssim_origin = ms_ssim_origin_luma(&ref_luma, &out_luma,
+                                                     width, height);
+        assessment_metric_mark(&metrics,
+            SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN, metrics.ms_ssim_origin);
     }
     if (need_luma && (want_high_freq_out || want_high_freq_delta)) {
         high_freq_out_value = high_frequency_ratio(&out_luma,
@@ -3084,6 +3273,7 @@ typedef struct MetricDescriptor {
 
 static const MetricDescriptor g_metric_table[] = {
     {SIXEL_ASSESSMENT_METRIC_MS_SSIM, "MS-SSIM"},
+    {SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN, "MS-SSIM-origin"},
     {SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT, "HighFreqRatio_out"},
     {SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_REF, "HighFreqRatio_ref"},
     {SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_DELTA, "HighFreqRatio_delta"},
@@ -3144,6 +3334,8 @@ store_metrics(sixel_assessment_t *assessment,
                           mask,
                           SIXEL_ASSESSMENT_METRIC_MS_SSIM,
                           metrics->ms_ssim);
+    store_metric_if_valid(results, mask,
+        SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN, metrics->ms_ssim_origin);
     store_metric_if_valid(results,
                           mask,
                           SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT,
