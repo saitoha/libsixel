@@ -6888,10 +6888,12 @@ sixel_encoder_native_delta(sixel_encoder_t const *encoder)
 }
 
 /* The selected float pipeline keeps a separate RGB101 wire cache. Keep
- * this predicate shared with P3 validation so sRGB cannot enter with an
- * unconnected snap, alpha, cache or alternate lookup policy. */
-static int
-sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
+ * this admission check shared with P3 validation. A restriction describes
+ * the incompatible operation, not the precision request: P3 already
+ * promotes the effective format to float, including under --precision=8bit.
+ * Ordinary sRGB callers inspect only whether a restriction exists. */
+static char const *
+sixel_encoder_rgb101_restriction(sixel_encoder_t const *encoder)
 {
     sixel_palette_quantizer_resolver_input_t input;
     sixel_palette_quantizer_selection_t selection;
@@ -6929,7 +6931,7 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
                 encoder, &input.binning_requested, &origin)) ||
                 SIXEL_FAILED(sixel_palette_quantizer_select(
                     &input, &selection))) {
-            return 0;
+            return "display-p3 could not resolve the palette quantizer.";
         }
         quantize_model = selection.effective;
     }
@@ -6954,7 +6956,7 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
     case SIXEL_DIFFUSE_BLUENOISE_DITHER:
         break;
     default:
-        return 0;
+        return "display-p3 does not support this dither method.";
     }
     /* These float lookup classes retain native palette coordinates. AUTO
      * resolves to 6bit, whose float implementation is an exact scan. */
@@ -6971,7 +6973,7 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
     case SIXEL_LUT_POLICY_FHEDT:
         break;
     default:
-        return 0;
+        return "display-p3 does not support this lookup policy.";
     }
     /* DEC macros hex-wrap this same SIXEL writer and retain its RGB101
      * cache. They do not introduce another palette or coordinate domain. */
@@ -6982,63 +6984,94 @@ sixel_encoder_rgb101_options(sixel_encoder_t const *encoder)
      * remains an output-only legacy definition, not a working geometry.
      * A zero snap approach is identity and must choose the same precision
      * path as NONE, independently of its otherwise enabled policy name. */
-    return !(encoder->working_colorspace < SIXEL_COLORSPACE_GAMMA ||
+    if (encoder->working_colorspace < SIXEL_COLORSPACE_GAMMA ||
             encoder->working_colorspace > SIXEL_COLORSPACE_DIN99D ||
             encoder->working_colorspace == SIXEL_COLORSPACE_SMPTEC ||
             encoder->clustering_colorspace < SIXEL_COLORSPACE_GAMMA ||
             encoder->clustering_colorspace > SIXEL_COLORSPACE_DIN99D ||
-            encoder->clustering_colorspace == SIXEL_COLORSPACE_SMPTEC ||
-            (quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS &&
-             quantize_model != SIXEL_QUANTIZE_MODEL_KCENTER &&
-             quantize_model != SIXEL_QUANTIZE_MODEL_KMEDOIDS &&
-             quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT) ||
-            (quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS &&
-             encoder->quantize_model_kmeans_feedback_mode !=
-                SIXEL_PALETTE_KMEANS_FEEDBACK_OFF) ||
-            (sixel_resolve_final_merge_mode(encoder->final_merge_mode) !=
-                 SIXEL_FINAL_MERGE_NONE &&
-             sixel_resolve_final_merge_mode(encoder->final_merge_mode) !=
-                 SIXEL_FINAL_MERGE_WARD) ||
-            (encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
-             encoder->color_option != SIXEL_COLOR_OPTION_BUILTIN &&
-             encoder->color_option != SIXEL_COLOR_OPTION_MONOCHROME &&
-             encoder->cover_policy != SIXEL_PALETTE_COVER_OFF &&
-             encoder->cover_policy != SIXEL_PALETTE_COVER_AUTO &&
-             (cover_mode != SIXEL_PALETTE_COVER_MODE_SOFT &&
-              cover_mode != SIXEL_PALETTE_COVER_MODE_HARD)) ||
-            (encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE &&
-             encoder->snap_policy_approach_rate > 0.0 &&
-             (encoder->output_color_definition ==
-                  SIXEL_PALETTE_OUTPUT_DISPLAY_P3 ||
-              encoder->snap_policy_timing != SIXEL_PALETTE_SNAP_TIMING_ONCE ||
-              (encoder->cover_policy != SIXEL_PALETTE_COVER_OFF &&
-               encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT))) ||
-            encoder->gpu_policy != SIXEL_GPU_POLICY_OFF ||
-            (palette_type != SIXEL_PALETTETYPE_RGB &&
-             palette_type != SIXEL_PALETTETYPE_HLS) ||
-            (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT &&
-             encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
-             encoder->color_option != SIXEL_COLOR_OPTION_BUILTIN &&
-             encoder->color_option != SIXEL_COLOR_OPTION_MONOCHROME) ||
-            (encoder->ormode != 0 &&
-             encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME) ||
-            /* DRCS omits the ordinary P2 header. Admit opaque RGB bodies,
-             * not modes whose interpretation requires that missing header.
-             * Glyphs and macros also have incompatible outer envelopes. */
-            (encoder->fdrcs != 0 &&
-             (encoder->ormode != 0 || encoder->fuse_macro != 0 ||
-              encoder->macro_number >= 0 ||
-              encoder->transparent_offset_left != 0 ||
-              encoder->transparent_offset_top != 0 ||
-              encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME)) ||
-            (encoder->sixdelta_enabled != 0 &&
-             !sixel_encoder_native_delta(encoder)) ||
-            /* PNG snapshots decode ordinary SIXEL, not outer transports
-             * or receiver-dependent OR composition. Their destination
-             * must not otherwise change palette construction. */
-            (encoder->output_is_png != 0 &&
-             (encoder->fuse_macro != 0 || encoder->macro_number >= 0 ||
-              encoder->fdrcs != 0 || encoder->ormode != 0)));
+            encoder->clustering_colorspace == SIXEL_COLORSPACE_SMPTEC) {
+        return "display-p3 does not support this clustering/working space.";
+    }
+    if (quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS &&
+            quantize_model != SIXEL_QUANTIZE_MODEL_KCENTER &&
+            quantize_model != SIXEL_QUANTIZE_MODEL_KMEDOIDS &&
+            quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
+        return "display-p3 does not support this palette quantizer.";
+    }
+    if (quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS &&
+            encoder->quantize_model_kmeans_feedback_mode !=
+                SIXEL_PALETTE_KMEANS_FEEDBACK_OFF) {
+        return "display-p3 does not support K-means feedback.";
+    }
+    if (sixel_resolve_final_merge_mode(encoder->final_merge_mode) !=
+                SIXEL_FINAL_MERGE_NONE &&
+            sixel_resolve_final_merge_mode(encoder->final_merge_mode) !=
+                SIXEL_FINAL_MERGE_WARD) {
+        return "display-p3 does not support this final merge policy.";
+    }
+    if (encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
+            encoder->color_option != SIXEL_COLOR_OPTION_BUILTIN &&
+            encoder->color_option != SIXEL_COLOR_OPTION_MONOCHROME &&
+            encoder->cover_policy != SIXEL_PALETTE_COVER_OFF &&
+            encoder->cover_policy != SIXEL_PALETTE_COVER_AUTO &&
+            cover_mode != SIXEL_PALETTE_COVER_MODE_SOFT &&
+            cover_mode != SIXEL_PALETTE_COVER_MODE_HARD) {
+        return "display-p3 does not support this cover mode.";
+    }
+    if (encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE &&
+            encoder->snap_policy_approach_rate > 0.0) {
+        if (encoder->output_color_definition ==
+                SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+            return "display-p3 does not support active snap; use -_none "
+                "or a zero snap rate.";
+        }
+        if (encoder->snap_policy_timing != SIXEL_PALETTE_SNAP_TIMING_ONCE ||
+                (encoder->cover_policy != SIXEL_PALETTE_COVER_OFF &&
+                 encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT)) {
+            return "native palette does not support this snap combination.";
+        }
+    }
+    if (encoder->gpu_policy != SIXEL_GPU_POLICY_OFF) {
+        return "display-p3 does not support GPU encoding.";
+    }
+    if (palette_type != SIXEL_PALETTETYPE_RGB &&
+            palette_type != SIXEL_PALETTETYPE_HLS) {
+        return "display-p3 does not support this palette type.";
+    }
+    if (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT &&
+            encoder->color_option != SIXEL_COLOR_OPTION_MAPFILE &&
+            encoder->color_option != SIXEL_COLOR_OPTION_BUILTIN &&
+            encoder->color_option != SIXEL_COLOR_OPTION_MONOCHROME) {
+        return "display-p3 does not support this palette source.";
+    }
+    if (encoder->ormode != 0 &&
+            encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME) {
+        return "display-p3 cannot combine OR output with monochrome.";
+    }
+    /* DRCS omits the ordinary P2 header. Admit opaque RGB bodies, not modes
+     * requiring that header or incompatible outer envelopes. */
+    if (encoder->fdrcs != 0 &&
+            (encoder->ormode != 0 || encoder->fuse_macro != 0 ||
+             encoder->macro_number >= 0 ||
+             encoder->transparent_offset_left != 0 ||
+             encoder->transparent_offset_top != 0 ||
+             encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME)) {
+        return "display-p3 DRCS cannot combine with OR, macros, offsets "
+            "or monochrome.";
+    }
+    if (encoder->sixdelta_enabled != 0 &&
+            !sixel_encoder_native_delta(encoder)) {
+        return "display-p3 does not support this delta output combination.";
+    }
+    /* PNG snapshots decode ordinary SIXEL, not outer transports or OR
+     * composition. Their destination must not change palette construction. */
+    if (encoder->output_is_png != 0 &&
+            (encoder->fuse_macro != 0 || encoder->macro_number >= 0 ||
+             encoder->fdrcs != 0 || encoder->ormode != 0)) {
+        return "display-p3 PNG snapshots cannot combine with macros, "
+            "DRCS or OR output.";
+    }
+    return NULL;
 }
 
 /* Separate masks preserve RGB geometry. Generated palettes reserve a slot;
@@ -7108,7 +7141,7 @@ sixel_encoder_unpack_alpha_candidate(sixel_encoder_t const *encoder,
             ? sixel_encoder_highcolor_options(encoder) &&
               (!encoder->fdrcs ||
                !sixel_encoder_frame_preserves_alpha_key(frame))
-            : sixel_encoder_rgb101_options(encoder) &&
+            : sixel_encoder_rgb101_restriction(encoder) == NULL &&
               sixel_encoder_rgb101_alpha(encoder, frame));
 }
 
@@ -7131,7 +7164,7 @@ sixel_encoder_rgb101_candidate(sixel_encoder_t const *encoder,
         (format == SIXEL_PIXELFORMAT_RGB888 ||
          SIXEL_PIXELFORMAT_IS_FLOAT32(format)) &&
         sixel_encoder_rgb101_alpha(encoder, frame) &&
-        sixel_encoder_rgb101_options(encoder);
+        sixel_encoder_rgb101_restriction(encoder) == NULL;
 }
 
 static int
@@ -7163,6 +7196,8 @@ sixel_encoder_rgb101_frame(sixel_encoder_t const *encoder,
 static SIXELSTATUS
 sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
 {
+    char const *restriction;
+
     if (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
         return SIXEL_OK;
     }
@@ -7178,19 +7213,9 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "DRCS excludes macros and offsets.");
         return SIXEL_BAD_ARGUMENT;
     }
-    if (!sixel_encoder_rgb101_options(encoder)) {
-        sixel_helper_set_additional_message(
-            "display-p3 requires the selected CPU float palette path: "
-            "--precision=auto|float -Qauto|kmeans|center|medoids|heckbert "
-            "-~none|certlut|5bit|6bit|auto|vptree|rbc|mahalanobis|"
-            "eytzinger|fhedt "
-            "-X/-W gamma|linear|oklab|cielab|din99d "
-            "CPU spatial/positional dither (or -dnone/-dauto), "
-            "-Fnone|ward -_none -tauto|rgb|hls, auto/off or soft/hard "
-            "cover "
-            "for generated palettes, and normal, macro, opaque OR or "
-            "opaque DRCS SIXEL output, or an ordinary SIXEL PNG snapshot "
-            "(DRCS excludes OR, macros and offsets).");
+    restriction = sixel_encoder_rgb101_restriction(encoder);
+    if (restriction != NULL) {
+        sixel_helper_set_additional_message(restriction);
         return SIXEL_BAD_ARGUMENT;
     }
     return SIXEL_OK;

@@ -210,7 +210,9 @@ native_snap_encode(int model, int space, int policy, int mode)
             goto end;
         }
         status = sixel_encoder_encode_frame(encoder, frame, output);
-        if (status != SIXEL_BAD_ARGUMENT || capture.size != 0) {
+        if (status != SIXEL_BAD_ARGUMENT || capture.size != 0 ||
+                strstr(sixel_helper_get_additional_message(),
+                    "display-p3 does not support active snap") == NULL) {
             goto end;
         }
         if (mode == 3) {

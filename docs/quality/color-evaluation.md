@@ -2,7 +2,7 @@
 
 `lsqa` separates the interpretation of an input sample, the physical color used for color difference, and the signal used for spatial quality metrics. These are independent choices. An RGB triplet alone does not identify a color.
 
-The measurement foundation and explicit SIXEL input interpretation are implemented. **Wide-gamut PNG/CMS integration is not validated yet.** The legacy PNG loader can normalize or clip samples before `lsqa` sees them. Passing these numeric tests does not establish that a P3 PNG retains its gamut, that external CMS engines execute the new descriptor, or that the encoder can emit P3 colors correctly.
+Explicit SIXEL interpretation and image-loader CMS are separate boundaries. The SIXEL descriptor tests do not establish that every PNG loader preserves extended colors or applies an embedded profile. For PNG references, select a CMS-capable loader and a float-preserving configuration within its documented [support and test scope](../loader/color-management/README.md). A normalized frame uses the canonical sRGB basis; that basis alone does not imply clipping, because float coordinates can retain colors outside the sRGB gamut.
 
 ## Input interpretation
 
@@ -35,6 +35,23 @@ Explicit definitions currently require a standalone SIXEL DCS stream. They apply
 Explicit PNG overrides report an error until the pre-normalization loader connection is validated. They must never reinterpret already normalized sRGB as though it were the original P3 samples. `auto` PNG keeps its existing loader CMS behavior. Explicit target definitions with `-d` dequantization are also rejected because that reconstruction needs its own color-space contract.
 
 The new descriptor evaluator uses the builtin ICC PCS implementation. `--cms-engine` continues to select the legacy image-loader CMS; it does not change the descriptor evaluator. ICC input only needs a usable forward transform. An inverse table is not required. Slot selection does not add black-point compensation, absolute adaptation, or an external CMS profile-link operation.
+
+### Evaluating Display P3 output
+
+The encoder's `-Udisplay-p3` selects an output definition; the corresponding evaluator option is `-Tdisplay-p3`. For a PNG reference, leave `-Rauto` and let its embedded profile reach a CMS-capable loader. `-Rdisplay-p3` is for an original SIXEL reference, not for relabeling normalized PNG samples. For example, the builtin PNG loader can be selected explicitly for both reference loading and encoding:
+
+```sh
+input=tests/data/color-numeric/png-p3-16-rgb.png
+converters/img2sixel "$input" --threads=1 \
+    -L'builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!' \
+    -Udisplay-p3 -_none > output.six
+assessment/lsqa -L'builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!' \
+    -Tdisplay-p3 "$input" output.six
+```
+
+The full JSON records each input's effective coordinate/format and the target definition. Its physical color metrics and [regional means](#per-pixel-and-regional-differences) complement MS-SSIM when studying destination rounding or a proposed destination-aware snap. The evaluator decodes SIXEL percentage values to RGB8 before interpretation; such measurements include that decoder's rounding, and do not model a receiver retaining exact `q/100` values. They also do not measure display calibration or operating-system color filters.
+
+An enabled snap run cannot yet be compared with this unsnapped P3 command: [destination-aware snap is unimplemented](../encoder/palette-construction/snap-policy/README.md#output-conversion-and-the-display-p3-boundary). Existing sRGB snap results do not demonstrate a P3 benefit. Any experiment must first define the destination target, then hold input interpretation and the other encoding controls fixed across snap-disabled and snap-enabled runs; the [measurement policy](measurement-policy.md#controlled-comparisons) owns those controls.
 
 ## SIXEL drawing mode
 

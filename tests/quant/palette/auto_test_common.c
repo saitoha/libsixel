@@ -160,8 +160,8 @@ test_auto_palette(int mode, int space)
             /* A later solver rejection must not masquerade as preflight. */
             ok = SIXEL_FAILED(status) && capture.size == 0U &&
                 strstr(sixel_helper_get_additional_message(),
-                    "display-p3 requires the selected CPU float palette "
-                    "path") != NULL;
+                    mode == 11 ? "display-p3 does not support active snap"
+                    : "display-p3 does not support K-means feedback") != NULL;
             goto end;
         }
         dither = (sixel_dither_t *)encoder->diagnostic_dither;
