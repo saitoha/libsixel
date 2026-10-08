@@ -2361,6 +2361,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/cover_float/0001_cover_contract.c \
 	quant/palette/cover_mask/0001_cover_mask.c \
 	quant/palette/snap_float/0001_snap_contract.c \
+	quant/palette/p3_snap/0001_grid.c \
+	quant/palette/p3_snap/0002_pipeline.c \
 	quant/palette/merge_float/0002_scan_contract.c \
 	processing/lookup/extended/0001_extended_lookup.c \
 	processing/lookup/fhedt_test_common.c \
@@ -2442,7 +2444,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/auto_cover_float/0017_environment_hard_grow.c \
 	quant/palette/auto_cover_float/0018_explicit_auto_precedence.c \
 	quant/palette/auto_cover_float/0019_p3_default_byte.c \
-	quant/palette/auto_cover_float/0020_p3_rejection_recovery.c \
+	quant/palette/auto_cover_float/0020_p3_snap_transition.c \
 	quant/palette/auto_cover_float/0021_encoder_isolation.c \
 	quant/palette/auto_cover_float/0022_masked_default.c \
 	quant/palette/auto_cover_float/0023_animation_precision.c \
@@ -2565,7 +2567,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/mono_float/0022_inversion_reuse.c \
 	quant/palette/mono_float/0023_clear_mask.c \
 	quant/palette/mono_float/0024_p3_zero_snap.c \
-	quant/palette/mono_float/0025_p3_snap_recovery.c \
+	quant/palette/mono_float/0025_p3_snap_bypass.c \
 	quant/palette/mono_float/0026_multiframe_native.c \
 	quant/palette/mono_float/0027_cielab_export.c \
 	quant/palette/mono_float/0028_auto_gamma.c \
@@ -2594,7 +2596,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/builtin_float/0019_precision_reuse.c \
 	quant/palette/builtin_float/0020_output_reuse.c \
 	quant/palette/builtin_float/0021_table_reuse.c \
-	quant/palette/builtin_float/0022_p3_snap_recovery.c \
+	quant/palette/builtin_float/0022_p3_snap_bypass.c \
 	quant/palette/builtin_float/0023_multiframe_native.c \
 	quant/palette/builtin_float/0024_p3_export.c \
 	quant/palette/builtin_float/0025_positive_fs.c \
@@ -2970,7 +2972,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/auto_float/0013_auto_zero_snap.c \
 	quant/palette/auto_float/0014_auto_binning_reuse.c \
 	quant/palette/auto_float/0015_auto_implicit_cover.c \
-	quant/palette/auto_float/0016_auto_reject_snap.c \
+	quant/palette/auto_float/0016_auto_p3_snap.c \
 	quant/palette/auto_float/0017_auto_subbyte_diffusion.c \
 	quant/palette/auto_float/0018_auto_explicit_auto_binning.c \
 	quant/palette/auto_float/0019_auto_byte_hard_kmeans.c \
@@ -5437,6 +5439,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cover_float/test_runner-0001_cover_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cover_mask/test_runner-0001_cover_mask.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_float/test_runner-0001_snap_contract.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/p3_snap/test_runner-0001_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/p3_snap/test_runner-0002_pipeline.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/merge_float/test_runner-0002_scan_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/extended/test_runner-0001_extended_lookup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-fhedt_test_common.$(OBJEXT) \
@@ -5518,7 +5522,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_cover_float/test_runner-0017_environment_hard_grow.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_cover_float/test_runner-0018_explicit_auto_precedence.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_cover_float/test_runner-0019_p3_default_byte.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_cover_float/test_runner-0020_p3_rejection_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_cover_float/test_runner-0020_p3_snap_transition.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_cover_float/test_runner-0021_encoder_isolation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_cover_float/test_runner-0022_masked_default.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_cover_float/test_runner-0023_animation_precision.$(OBJEXT) \
@@ -5641,7 +5645,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0022_inversion_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0023_clear_mask.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0024_p3_zero_snap.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0025_p3_snap_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0025_p3_snap_bypass.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0026_multiframe_native.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0027_cielab_export.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/mono_float/test_runner-0028_auto_gamma.$(OBJEXT) \
@@ -5670,7 +5674,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0019_precision_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0020_output_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0021_table_reuse.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0022_p3_snap_bypass.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0023_multiframe_native.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0024_p3_export.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/builtin_float/test_runner-0025_positive_fs.$(OBJEXT) \
@@ -6045,7 +6049,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0013_auto_zero_snap.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0014_auto_binning_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0015_auto_implicit_cover.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0016_auto_reject_snap.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0016_auto_p3_snap.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0017_auto_subbyte_diffusion.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0018_auto_explicit_auto_binning.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/auto_float/test_runner-0019_auto_byte_hard_kmeans.$(OBJEXT) \
@@ -8756,7 +8760,7 @@ am__depfiles_remade =  \
 	quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0017_environment_hard_grow.Po \
 	quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0018_explicit_auto_precedence.Po \
 	quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0019_p3_default_byte.Po \
-	quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_rejection_recovery.Po \
+	quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_snap_transition.Po \
 	quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0021_encoder_isolation.Po \
 	quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0022_masked_default.Po \
 	quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0023_animation_precision.Po \
@@ -8777,7 +8781,7 @@ am__depfiles_remade =  \
 	quant/palette/auto_float/$(DEPDIR)/test_runner-0013_auto_zero_snap.Po \
 	quant/palette/auto_float/$(DEPDIR)/test_runner-0014_auto_binning_reuse.Po \
 	quant/palette/auto_float/$(DEPDIR)/test_runner-0015_auto_implicit_cover.Po \
-	quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_reject_snap.Po \
+	quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_p3_snap.Po \
 	quant/palette/auto_float/$(DEPDIR)/test_runner-0017_auto_subbyte_diffusion.Po \
 	quant/palette/auto_float/$(DEPDIR)/test_runner-0018_auto_explicit_auto_binning.Po \
 	quant/palette/auto_float/$(DEPDIR)/test_runner-0019_auto_byte_hard_kmeans.Po \
@@ -8807,7 +8811,7 @@ am__depfiles_remade =  \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0019_precision_reuse.Po \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0020_output_reuse.Po \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0021_table_reuse.Po \
-	quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_recovery.Po \
+	quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_bypass.Po \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_native.Po \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0024_p3_export.Po \
 	quant/palette/builtin_float/$(DEPDIR)/test_runner-0025_positive_fs.Po \
@@ -9324,7 +9328,7 @@ am__depfiles_remade =  \
 	quant/palette/mono_float/$(DEPDIR)/test_runner-0022_inversion_reuse.Po \
 	quant/palette/mono_float/$(DEPDIR)/test_runner-0023_clear_mask.Po \
 	quant/palette/mono_float/$(DEPDIR)/test_runner-0024_p3_zero_snap.Po \
-	quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_recovery.Po \
+	quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_bypass.Po \
 	quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_native.Po \
 	quant/palette/mono_float/$(DEPDIR)/test_runner-0027_cielab_export.Po \
 	quant/palette/mono_float/$(DEPDIR)/test_runner-0028_auto_gamma.Po \
@@ -9396,6 +9400,8 @@ am__depfiles_remade =  \
 	quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Po \
 	quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Po \
 	quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Po \
+	quant/palette/p3_snap/$(DEPDIR)/test_runner-0001_grid.Po \
+	quant/palette/p3_snap/$(DEPDIR)/test_runner-0002_pipeline.Po \
 	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0001_layout_rgba.Po \
 	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0002_layout_argb.Po \
 	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0003_layout_bgra.Po \
@@ -11120,7 +11126,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_AUTO_ZERO_SNAP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_AUTO_BINNING_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_AUTO_IMPLICIT_COVER \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_AUTO_REJECT_SNAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_AUTO_P3_SNAP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_AUTO_SUBBYTE_DIFFUSION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_AUTO_EXPLICIT_AUTO_BINNING \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_AUTO_BYTE_HARD_KMEANS \
@@ -11509,6 +11515,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_COVER_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_COVER_MASK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SNAP_CONTRACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_PIPELINE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_SCAN_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_EXTENDED_LOOKUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_FHEDT_TEST_COMMON \
@@ -11579,7 +11587,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_ENVIRONMENT_HARD_GROW \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_EXPLICIT_AUTO_PRECEDENCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_P3_DEFAULT_BYTE \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_P3_REJECTION_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_P3_SNAP_TRANSITION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_ENCODER_ISOLATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_MASKED_DEFAULT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_ANIMATION_PRECISION \
@@ -11702,7 +11710,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_INVERSION_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_CLEAR_MASK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_P3_ZERO_SNAP \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_P3_SNAP_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_P3_SNAP_BYPASS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_MULTIFRAME_NATIVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_CIELAB_EXPORT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_AUTO_GAMMA \
@@ -11731,7 +11739,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_PRECISION_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_OUTPUT_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_TABLE_REUSE \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_P3_SNAP_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_P3_SNAP_BYPASS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_MULTIFRAME_NATIVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_P3_EXPORT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_POSITIVE_FS \
@@ -15538,6 +15546,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cover_float/0001_cover_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cover_mask/0001_cover_mask.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_float/0001_snap_contract.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/p3_snap/0001_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/p3_snap/0002_pipeline.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/merge_float/0002_scan_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/extended/0001_extended_lookup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/fhedt_test_common.c \
@@ -15619,7 +15629,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_cover_float/0017_environment_hard_grow.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_cover_float/0018_explicit_auto_precedence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_cover_float/0019_p3_default_byte.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_cover_float/0020_p3_rejection_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_cover_float/0020_p3_snap_transition.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_cover_float/0021_encoder_isolation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_cover_float/0022_masked_default.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_cover_float/0023_animation_precision.c \
@@ -15742,7 +15752,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0022_inversion_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0023_clear_mask.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0024_p3_zero_snap.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0025_p3_snap_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0025_p3_snap_bypass.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0026_multiframe_native.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0027_cielab_export.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/mono_float/0028_auto_gamma.c \
@@ -15771,7 +15781,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0019_precision_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0020_output_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0021_table_reuse.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0022_p3_snap_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0022_p3_snap_bypass.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0023_multiframe_native.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0024_p3_export.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/builtin_float/0025_positive_fs.c \
@@ -16147,7 +16157,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0013_auto_zero_snap.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0014_auto_binning_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0015_auto_implicit_cover.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0016_auto_reject_snap.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0016_auto_p3_snap.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0017_auto_subbyte_diffusion.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0018_auto_explicit_auto_binning.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/auto_float/0019_auto_byte_hard_kmeans.c \
@@ -23593,6 +23603,18 @@ quant/palette/snap_float/$(DEPDIR)/$(am__dirstamp):
 quant/palette/snap_float/test_runner-0001_snap_contract.$(OBJEXT):  \
 	quant/palette/snap_float/$(am__dirstamp) \
 	quant/palette/snap_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/p3_snap/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/p3_snap
+	@: >>quant/palette/p3_snap/$(am__dirstamp)
+quant/palette/p3_snap/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/p3_snap/$(DEPDIR)
+	@: >>quant/palette/p3_snap/$(DEPDIR)/$(am__dirstamp)
+quant/palette/p3_snap/test_runner-0001_grid.$(OBJEXT):  \
+	quant/palette/p3_snap/$(am__dirstamp) \
+	quant/palette/p3_snap/$(DEPDIR)/$(am__dirstamp)
+quant/palette/p3_snap/test_runner-0002_pipeline.$(OBJEXT):  \
+	quant/palette/p3_snap/$(am__dirstamp) \
+	quant/palette/p3_snap/$(DEPDIR)/$(am__dirstamp)
 quant/palette/merge_float/test_runner-0002_scan_contract.$(OBJEXT):  \
 	quant/palette/merge_float/$(am__dirstamp) \
 	quant/palette/merge_float/$(DEPDIR)/$(am__dirstamp)
@@ -23860,7 +23882,7 @@ quant/palette/auto_cover_float/test_runner-0018_explicit_auto_precedence.$(OBJEX
 quant/palette/auto_cover_float/test_runner-0019_p3_default_byte.$(OBJEXT):  \
 	quant/palette/auto_cover_float/$(am__dirstamp) \
 	quant/palette/auto_cover_float/$(DEPDIR)/$(am__dirstamp)
-quant/palette/auto_cover_float/test_runner-0020_p3_rejection_recovery.$(OBJEXT):  \
+quant/palette/auto_cover_float/test_runner-0020_p3_snap_transition.$(OBJEXT):  \
 	quant/palette/auto_cover_float/$(am__dirstamp) \
 	quant/palette/auto_cover_float/$(DEPDIR)/$(am__dirstamp)
 quant/palette/auto_cover_float/test_runner-0021_encoder_isolation.$(OBJEXT):  \
@@ -24253,7 +24275,7 @@ quant/palette/mono_float/test_runner-0023_clear_mask.$(OBJEXT):  \
 quant/palette/mono_float/test_runner-0024_p3_zero_snap.$(OBJEXT):  \
 	quant/palette/mono_float/$(am__dirstamp) \
 	quant/palette/mono_float/$(DEPDIR)/$(am__dirstamp)
-quant/palette/mono_float/test_runner-0025_p3_snap_recovery.$(OBJEXT):  \
+quant/palette/mono_float/test_runner-0025_p3_snap_bypass.$(OBJEXT):  \
 	quant/palette/mono_float/$(am__dirstamp) \
 	quant/palette/mono_float/$(DEPDIR)/$(am__dirstamp)
 quant/palette/mono_float/test_runner-0026_multiframe_native.$(OBJEXT):  \
@@ -24346,7 +24368,7 @@ quant/palette/builtin_float/test_runner-0020_output_reuse.$(OBJEXT):  \
 quant/palette/builtin_float/test_runner-0021_table_reuse.$(OBJEXT):  \
 	quant/palette/builtin_float/$(am__dirstamp) \
 	quant/palette/builtin_float/$(DEPDIR)/$(am__dirstamp)
-quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.$(OBJEXT):  \
+quant/palette/builtin_float/test_runner-0022_p3_snap_bypass.$(OBJEXT):  \
 	quant/palette/builtin_float/$(am__dirstamp) \
 	quant/palette/builtin_float/$(DEPDIR)/$(am__dirstamp)
 quant/palette/builtin_float/test_runner-0023_multiframe_native.$(OBJEXT):  \
@@ -25567,7 +25589,7 @@ quant/palette/auto_float/test_runner-0014_auto_binning_reuse.$(OBJEXT):  \
 quant/palette/auto_float/test_runner-0015_auto_implicit_cover.$(OBJEXT):  \
 	quant/palette/auto_float/$(am__dirstamp) \
 	quant/palette/auto_float/$(DEPDIR)/$(am__dirstamp)
-quant/palette/auto_float/test_runner-0016_auto_reject_snap.$(OBJEXT):  \
+quant/palette/auto_float/test_runner-0016_auto_p3_snap.$(OBJEXT):  \
 	quant/palette/auto_float/$(am__dirstamp) \
 	quant/palette/auto_float/$(DEPDIR)/$(am__dirstamp)
 quant/palette/auto_float/test_runner-0017_auto_subbyte_diffusion.$(OBJEXT):  \
@@ -26628,6 +26650,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/mono_float/*.$(OBJEXT)
 	-rm -f quant/palette/ordinary_float/*.$(OBJEXT)
 	-rm -f quant/palette/output_float/*.$(OBJEXT)
+	-rm -f quant/palette/p3_snap/*.$(OBJEXT)
 	-rm -f quant/palette/packed_alpha/*.$(OBJEXT)
 	-rm -f quant/palette/retention/*.$(OBJEXT)
 	-rm -f quant/palette/rgb101_diffusion/*.$(OBJEXT)
@@ -28997,7 +29020,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0017_environment_hard_grow.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0018_explicit_auto_precedence.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0019_p3_default_byte.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_rejection_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_snap_transition.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0021_encoder_isolation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0022_masked_default.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0023_animation_precision.Po@am__quote@ # am--include-marker
@@ -29018,7 +29041,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_float/$(DEPDIR)/test_runner-0013_auto_zero_snap.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_float/$(DEPDIR)/test_runner-0014_auto_binning_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_float/$(DEPDIR)/test_runner-0015_auto_implicit_cover.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_reject_snap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_p3_snap.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_float/$(DEPDIR)/test_runner-0017_auto_subbyte_diffusion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_float/$(DEPDIR)/test_runner-0018_auto_explicit_auto_binning.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/auto_float/$(DEPDIR)/test_runner-0019_auto_byte_hard_kmeans.Po@am__quote@ # am--include-marker
@@ -29048,7 +29071,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0019_precision_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0020_output_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0021_table_reuse.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_bypass.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_native.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0024_p3_export.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/builtin_float/$(DEPDIR)/test_runner-0025_positive_fs.Po@am__quote@ # am--include-marker
@@ -29565,7 +29588,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0022_inversion_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0023_clear_mask.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0024_p3_zero_snap.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_bypass.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_native.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0027_cielab_export.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0028_auto_gamma.Po@am__quote@ # am--include-marker
@@ -29637,6 +29660,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0025_linear_fixed_map.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0026_smptec_fixed_map.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0027_output_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/p3_snap/$(DEPDIR)/test_runner-0001_grid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/p3_snap/$(DEPDIR)/test_runner-0002_pipeline.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0001_layout_rgba.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0002_layout_argb.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0003_layout_bgra.Po@am__quote@ # am--include-marker
@@ -60419,6 +60444,34 @@ quant/palette/snap_float/test_runner-0001_snap_contract.obj: quant/palette/snap_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_float/test_runner-0001_snap_contract.obj `if test -f 'quant/palette/snap_float/0001_snap_contract.c'; then $(CYGPATH_W) 'quant/palette/snap_float/0001_snap_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_float/0001_snap_contract.c'; fi`
 
+quant/palette/p3_snap/test_runner-0001_grid.o: quant/palette/p3_snap/0001_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/p3_snap/test_runner-0001_grid.o -MD -MP -MF quant/palette/p3_snap/$(DEPDIR)/test_runner-0001_grid.Tpo -c -o quant/palette/p3_snap/test_runner-0001_grid.o `test -f 'quant/palette/p3_snap/0001_grid.c' || echo '$(srcdir)/'`quant/palette/p3_snap/0001_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/p3_snap/$(DEPDIR)/test_runner-0001_grid.Tpo quant/palette/p3_snap/$(DEPDIR)/test_runner-0001_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/p3_snap/0001_grid.c' object='quant/palette/p3_snap/test_runner-0001_grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/p3_snap/test_runner-0001_grid.o `test -f 'quant/palette/p3_snap/0001_grid.c' || echo '$(srcdir)/'`quant/palette/p3_snap/0001_grid.c
+
+quant/palette/p3_snap/test_runner-0001_grid.obj: quant/palette/p3_snap/0001_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/p3_snap/test_runner-0001_grid.obj -MD -MP -MF quant/palette/p3_snap/$(DEPDIR)/test_runner-0001_grid.Tpo -c -o quant/palette/p3_snap/test_runner-0001_grid.obj `if test -f 'quant/palette/p3_snap/0001_grid.c'; then $(CYGPATH_W) 'quant/palette/p3_snap/0001_grid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/p3_snap/0001_grid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/p3_snap/$(DEPDIR)/test_runner-0001_grid.Tpo quant/palette/p3_snap/$(DEPDIR)/test_runner-0001_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/p3_snap/0001_grid.c' object='quant/palette/p3_snap/test_runner-0001_grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/p3_snap/test_runner-0001_grid.obj `if test -f 'quant/palette/p3_snap/0001_grid.c'; then $(CYGPATH_W) 'quant/palette/p3_snap/0001_grid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/p3_snap/0001_grid.c'; fi`
+
+quant/palette/p3_snap/test_runner-0002_pipeline.o: quant/palette/p3_snap/0002_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/p3_snap/test_runner-0002_pipeline.o -MD -MP -MF quant/palette/p3_snap/$(DEPDIR)/test_runner-0002_pipeline.Tpo -c -o quant/palette/p3_snap/test_runner-0002_pipeline.o `test -f 'quant/palette/p3_snap/0002_pipeline.c' || echo '$(srcdir)/'`quant/palette/p3_snap/0002_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/p3_snap/$(DEPDIR)/test_runner-0002_pipeline.Tpo quant/palette/p3_snap/$(DEPDIR)/test_runner-0002_pipeline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/p3_snap/0002_pipeline.c' object='quant/palette/p3_snap/test_runner-0002_pipeline.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/p3_snap/test_runner-0002_pipeline.o `test -f 'quant/palette/p3_snap/0002_pipeline.c' || echo '$(srcdir)/'`quant/palette/p3_snap/0002_pipeline.c
+
+quant/palette/p3_snap/test_runner-0002_pipeline.obj: quant/palette/p3_snap/0002_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/p3_snap/test_runner-0002_pipeline.obj -MD -MP -MF quant/palette/p3_snap/$(DEPDIR)/test_runner-0002_pipeline.Tpo -c -o quant/palette/p3_snap/test_runner-0002_pipeline.obj `if test -f 'quant/palette/p3_snap/0002_pipeline.c'; then $(CYGPATH_W) 'quant/palette/p3_snap/0002_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/p3_snap/0002_pipeline.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/p3_snap/$(DEPDIR)/test_runner-0002_pipeline.Tpo quant/palette/p3_snap/$(DEPDIR)/test_runner-0002_pipeline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/p3_snap/0002_pipeline.c' object='quant/palette/p3_snap/test_runner-0002_pipeline.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/p3_snap/test_runner-0002_pipeline.obj `if test -f 'quant/palette/p3_snap/0002_pipeline.c'; then $(CYGPATH_W) 'quant/palette/p3_snap/0002_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/p3_snap/0002_pipeline.c'; fi`
+
 quant/palette/merge_float/test_runner-0002_scan_contract.o: quant/palette/merge_float/0002_scan_contract.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/merge_float/test_runner-0002_scan_contract.o -MD -MP -MF quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Tpo -c -o quant/palette/merge_float/test_runner-0002_scan_contract.o `test -f 'quant/palette/merge_float/0002_scan_contract.c' || echo '$(srcdir)/'`quant/palette/merge_float/0002_scan_contract.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Tpo quant/palette/merge_float/$(DEPDIR)/test_runner-0002_scan_contract.Po
@@ -61553,19 +61606,19 @@ quant/palette/auto_cover_float/test_runner-0019_p3_default_byte.obj: quant/palet
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/auto_cover_float/test_runner-0019_p3_default_byte.obj `if test -f 'quant/palette/auto_cover_float/0019_p3_default_byte.c'; then $(CYGPATH_W) 'quant/palette/auto_cover_float/0019_p3_default_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/auto_cover_float/0019_p3_default_byte.c'; fi`
 
-quant/palette/auto_cover_float/test_runner-0020_p3_rejection_recovery.o: quant/palette/auto_cover_float/0020_p3_rejection_recovery.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/auto_cover_float/test_runner-0020_p3_rejection_recovery.o -MD -MP -MF quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_rejection_recovery.Tpo -c -o quant/palette/auto_cover_float/test_runner-0020_p3_rejection_recovery.o `test -f 'quant/palette/auto_cover_float/0020_p3_rejection_recovery.c' || echo '$(srcdir)/'`quant/palette/auto_cover_float/0020_p3_rejection_recovery.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_rejection_recovery.Tpo quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_rejection_recovery.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/auto_cover_float/0020_p3_rejection_recovery.c' object='quant/palette/auto_cover_float/test_runner-0020_p3_rejection_recovery.o' libtool=no @AMDEPBACKSLASH@
+quant/palette/auto_cover_float/test_runner-0020_p3_snap_transition.o: quant/palette/auto_cover_float/0020_p3_snap_transition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/auto_cover_float/test_runner-0020_p3_snap_transition.o -MD -MP -MF quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_snap_transition.Tpo -c -o quant/palette/auto_cover_float/test_runner-0020_p3_snap_transition.o `test -f 'quant/palette/auto_cover_float/0020_p3_snap_transition.c' || echo '$(srcdir)/'`quant/palette/auto_cover_float/0020_p3_snap_transition.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_snap_transition.Tpo quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_snap_transition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/auto_cover_float/0020_p3_snap_transition.c' object='quant/palette/auto_cover_float/test_runner-0020_p3_snap_transition.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/auto_cover_float/test_runner-0020_p3_rejection_recovery.o `test -f 'quant/palette/auto_cover_float/0020_p3_rejection_recovery.c' || echo '$(srcdir)/'`quant/palette/auto_cover_float/0020_p3_rejection_recovery.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/auto_cover_float/test_runner-0020_p3_snap_transition.o `test -f 'quant/palette/auto_cover_float/0020_p3_snap_transition.c' || echo '$(srcdir)/'`quant/palette/auto_cover_float/0020_p3_snap_transition.c
 
-quant/palette/auto_cover_float/test_runner-0020_p3_rejection_recovery.obj: quant/palette/auto_cover_float/0020_p3_rejection_recovery.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/auto_cover_float/test_runner-0020_p3_rejection_recovery.obj -MD -MP -MF quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_rejection_recovery.Tpo -c -o quant/palette/auto_cover_float/test_runner-0020_p3_rejection_recovery.obj `if test -f 'quant/palette/auto_cover_float/0020_p3_rejection_recovery.c'; then $(CYGPATH_W) 'quant/palette/auto_cover_float/0020_p3_rejection_recovery.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/auto_cover_float/0020_p3_rejection_recovery.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_rejection_recovery.Tpo quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_rejection_recovery.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/auto_cover_float/0020_p3_rejection_recovery.c' object='quant/palette/auto_cover_float/test_runner-0020_p3_rejection_recovery.obj' libtool=no @AMDEPBACKSLASH@
+quant/palette/auto_cover_float/test_runner-0020_p3_snap_transition.obj: quant/palette/auto_cover_float/0020_p3_snap_transition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/auto_cover_float/test_runner-0020_p3_snap_transition.obj -MD -MP -MF quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_snap_transition.Tpo -c -o quant/palette/auto_cover_float/test_runner-0020_p3_snap_transition.obj `if test -f 'quant/palette/auto_cover_float/0020_p3_snap_transition.c'; then $(CYGPATH_W) 'quant/palette/auto_cover_float/0020_p3_snap_transition.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/auto_cover_float/0020_p3_snap_transition.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_snap_transition.Tpo quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0020_p3_snap_transition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/auto_cover_float/0020_p3_snap_transition.c' object='quant/palette/auto_cover_float/test_runner-0020_p3_snap_transition.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/auto_cover_float/test_runner-0020_p3_rejection_recovery.obj `if test -f 'quant/palette/auto_cover_float/0020_p3_rejection_recovery.c'; then $(CYGPATH_W) 'quant/palette/auto_cover_float/0020_p3_rejection_recovery.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/auto_cover_float/0020_p3_rejection_recovery.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/auto_cover_float/test_runner-0020_p3_snap_transition.obj `if test -f 'quant/palette/auto_cover_float/0020_p3_snap_transition.c'; then $(CYGPATH_W) 'quant/palette/auto_cover_float/0020_p3_snap_transition.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/auto_cover_float/0020_p3_snap_transition.c'; fi`
 
 quant/palette/auto_cover_float/test_runner-0021_encoder_isolation.o: quant/palette/auto_cover_float/0021_encoder_isolation.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/auto_cover_float/test_runner-0021_encoder_isolation.o -MD -MP -MF quant/palette/auto_cover_float/$(DEPDIR)/test_runner-0021_encoder_isolation.Tpo -c -o quant/palette/auto_cover_float/test_runner-0021_encoder_isolation.o `test -f 'quant/palette/auto_cover_float/0021_encoder_isolation.c' || echo '$(srcdir)/'`quant/palette/auto_cover_float/0021_encoder_isolation.c
@@ -63275,19 +63328,19 @@ quant/palette/mono_float/test_runner-0024_p3_zero_snap.obj: quant/palette/mono_f
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/mono_float/test_runner-0024_p3_zero_snap.obj `if test -f 'quant/palette/mono_float/0024_p3_zero_snap.c'; then $(CYGPATH_W) 'quant/palette/mono_float/0024_p3_zero_snap.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/mono_float/0024_p3_zero_snap.c'; fi`
 
-quant/palette/mono_float/test_runner-0025_p3_snap_recovery.o: quant/palette/mono_float/0025_p3_snap_recovery.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/mono_float/test_runner-0025_p3_snap_recovery.o -MD -MP -MF quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_recovery.Tpo -c -o quant/palette/mono_float/test_runner-0025_p3_snap_recovery.o `test -f 'quant/palette/mono_float/0025_p3_snap_recovery.c' || echo '$(srcdir)/'`quant/palette/mono_float/0025_p3_snap_recovery.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_recovery.Tpo quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_recovery.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/mono_float/0025_p3_snap_recovery.c' object='quant/palette/mono_float/test_runner-0025_p3_snap_recovery.o' libtool=no @AMDEPBACKSLASH@
+quant/palette/mono_float/test_runner-0025_p3_snap_bypass.o: quant/palette/mono_float/0025_p3_snap_bypass.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/mono_float/test_runner-0025_p3_snap_bypass.o -MD -MP -MF quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_bypass.Tpo -c -o quant/palette/mono_float/test_runner-0025_p3_snap_bypass.o `test -f 'quant/palette/mono_float/0025_p3_snap_bypass.c' || echo '$(srcdir)/'`quant/palette/mono_float/0025_p3_snap_bypass.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_bypass.Tpo quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_bypass.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/mono_float/0025_p3_snap_bypass.c' object='quant/palette/mono_float/test_runner-0025_p3_snap_bypass.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/mono_float/test_runner-0025_p3_snap_recovery.o `test -f 'quant/palette/mono_float/0025_p3_snap_recovery.c' || echo '$(srcdir)/'`quant/palette/mono_float/0025_p3_snap_recovery.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/mono_float/test_runner-0025_p3_snap_bypass.o `test -f 'quant/palette/mono_float/0025_p3_snap_bypass.c' || echo '$(srcdir)/'`quant/palette/mono_float/0025_p3_snap_bypass.c
 
-quant/palette/mono_float/test_runner-0025_p3_snap_recovery.obj: quant/palette/mono_float/0025_p3_snap_recovery.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/mono_float/test_runner-0025_p3_snap_recovery.obj -MD -MP -MF quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_recovery.Tpo -c -o quant/palette/mono_float/test_runner-0025_p3_snap_recovery.obj `if test -f 'quant/palette/mono_float/0025_p3_snap_recovery.c'; then $(CYGPATH_W) 'quant/palette/mono_float/0025_p3_snap_recovery.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/mono_float/0025_p3_snap_recovery.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_recovery.Tpo quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_recovery.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/mono_float/0025_p3_snap_recovery.c' object='quant/palette/mono_float/test_runner-0025_p3_snap_recovery.obj' libtool=no @AMDEPBACKSLASH@
+quant/palette/mono_float/test_runner-0025_p3_snap_bypass.obj: quant/palette/mono_float/0025_p3_snap_bypass.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/mono_float/test_runner-0025_p3_snap_bypass.obj -MD -MP -MF quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_bypass.Tpo -c -o quant/palette/mono_float/test_runner-0025_p3_snap_bypass.obj `if test -f 'quant/palette/mono_float/0025_p3_snap_bypass.c'; then $(CYGPATH_W) 'quant/palette/mono_float/0025_p3_snap_bypass.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/mono_float/0025_p3_snap_bypass.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_bypass.Tpo quant/palette/mono_float/$(DEPDIR)/test_runner-0025_p3_snap_bypass.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/mono_float/0025_p3_snap_bypass.c' object='quant/palette/mono_float/test_runner-0025_p3_snap_bypass.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/mono_float/test_runner-0025_p3_snap_recovery.obj `if test -f 'quant/palette/mono_float/0025_p3_snap_recovery.c'; then $(CYGPATH_W) 'quant/palette/mono_float/0025_p3_snap_recovery.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/mono_float/0025_p3_snap_recovery.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/mono_float/test_runner-0025_p3_snap_bypass.obj `if test -f 'quant/palette/mono_float/0025_p3_snap_bypass.c'; then $(CYGPATH_W) 'quant/palette/mono_float/0025_p3_snap_bypass.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/mono_float/0025_p3_snap_bypass.c'; fi`
 
 quant/palette/mono_float/test_runner-0026_multiframe_native.o: quant/palette/mono_float/0026_multiframe_native.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/mono_float/test_runner-0026_multiframe_native.o -MD -MP -MF quant/palette/mono_float/$(DEPDIR)/test_runner-0026_multiframe_native.Tpo -c -o quant/palette/mono_float/test_runner-0026_multiframe_native.o `test -f 'quant/palette/mono_float/0026_multiframe_native.c' || echo '$(srcdir)/'`quant/palette/mono_float/0026_multiframe_native.c
@@ -63681,19 +63734,19 @@ quant/palette/builtin_float/test_runner-0021_table_reuse.obj: quant/palette/buil
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/builtin_float/test_runner-0021_table_reuse.obj `if test -f 'quant/palette/builtin_float/0021_table_reuse.c'; then $(CYGPATH_W) 'quant/palette/builtin_float/0021_table_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/builtin_float/0021_table_reuse.c'; fi`
 
-quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.o: quant/palette/builtin_float/0022_p3_snap_recovery.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.o -MD -MP -MF quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_recovery.Tpo -c -o quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.o `test -f 'quant/palette/builtin_float/0022_p3_snap_recovery.c' || echo '$(srcdir)/'`quant/palette/builtin_float/0022_p3_snap_recovery.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_recovery.Tpo quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_recovery.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/builtin_float/0022_p3_snap_recovery.c' object='quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.o' libtool=no @AMDEPBACKSLASH@
+quant/palette/builtin_float/test_runner-0022_p3_snap_bypass.o: quant/palette/builtin_float/0022_p3_snap_bypass.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/builtin_float/test_runner-0022_p3_snap_bypass.o -MD -MP -MF quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_bypass.Tpo -c -o quant/palette/builtin_float/test_runner-0022_p3_snap_bypass.o `test -f 'quant/palette/builtin_float/0022_p3_snap_bypass.c' || echo '$(srcdir)/'`quant/palette/builtin_float/0022_p3_snap_bypass.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_bypass.Tpo quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_bypass.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/builtin_float/0022_p3_snap_bypass.c' object='quant/palette/builtin_float/test_runner-0022_p3_snap_bypass.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.o `test -f 'quant/palette/builtin_float/0022_p3_snap_recovery.c' || echo '$(srcdir)/'`quant/palette/builtin_float/0022_p3_snap_recovery.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/builtin_float/test_runner-0022_p3_snap_bypass.o `test -f 'quant/palette/builtin_float/0022_p3_snap_bypass.c' || echo '$(srcdir)/'`quant/palette/builtin_float/0022_p3_snap_bypass.c
 
-quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.obj: quant/palette/builtin_float/0022_p3_snap_recovery.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.obj -MD -MP -MF quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_recovery.Tpo -c -o quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.obj `if test -f 'quant/palette/builtin_float/0022_p3_snap_recovery.c'; then $(CYGPATH_W) 'quant/palette/builtin_float/0022_p3_snap_recovery.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/builtin_float/0022_p3_snap_recovery.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_recovery.Tpo quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_recovery.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/builtin_float/0022_p3_snap_recovery.c' object='quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.obj' libtool=no @AMDEPBACKSLASH@
+quant/palette/builtin_float/test_runner-0022_p3_snap_bypass.obj: quant/palette/builtin_float/0022_p3_snap_bypass.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/builtin_float/test_runner-0022_p3_snap_bypass.obj -MD -MP -MF quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_bypass.Tpo -c -o quant/palette/builtin_float/test_runner-0022_p3_snap_bypass.obj `if test -f 'quant/palette/builtin_float/0022_p3_snap_bypass.c'; then $(CYGPATH_W) 'quant/palette/builtin_float/0022_p3_snap_bypass.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/builtin_float/0022_p3_snap_bypass.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_bypass.Tpo quant/palette/builtin_float/$(DEPDIR)/test_runner-0022_p3_snap_bypass.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/builtin_float/0022_p3_snap_bypass.c' object='quant/palette/builtin_float/test_runner-0022_p3_snap_bypass.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/builtin_float/test_runner-0022_p3_snap_recovery.obj `if test -f 'quant/palette/builtin_float/0022_p3_snap_recovery.c'; then $(CYGPATH_W) 'quant/palette/builtin_float/0022_p3_snap_recovery.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/builtin_float/0022_p3_snap_recovery.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/builtin_float/test_runner-0022_p3_snap_bypass.obj `if test -f 'quant/palette/builtin_float/0022_p3_snap_bypass.c'; then $(CYGPATH_W) 'quant/palette/builtin_float/0022_p3_snap_bypass.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/builtin_float/0022_p3_snap_bypass.c'; fi`
 
 quant/palette/builtin_float/test_runner-0023_multiframe_native.o: quant/palette/builtin_float/0023_multiframe_native.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/builtin_float/test_runner-0023_multiframe_native.o -MD -MP -MF quant/palette/builtin_float/$(DEPDIR)/test_runner-0023_multiframe_native.Tpo -c -o quant/palette/builtin_float/test_runner-0023_multiframe_native.o `test -f 'quant/palette/builtin_float/0023_multiframe_native.c' || echo '$(srcdir)/'`quant/palette/builtin_float/0023_multiframe_native.c
@@ -68931,19 +68984,19 @@ quant/palette/auto_float/test_runner-0015_auto_implicit_cover.obj: quant/palette
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/auto_float/test_runner-0015_auto_implicit_cover.obj `if test -f 'quant/palette/auto_float/0015_auto_implicit_cover.c'; then $(CYGPATH_W) 'quant/palette/auto_float/0015_auto_implicit_cover.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/auto_float/0015_auto_implicit_cover.c'; fi`
 
-quant/palette/auto_float/test_runner-0016_auto_reject_snap.o: quant/palette/auto_float/0016_auto_reject_snap.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/auto_float/test_runner-0016_auto_reject_snap.o -MD -MP -MF quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_reject_snap.Tpo -c -o quant/palette/auto_float/test_runner-0016_auto_reject_snap.o `test -f 'quant/palette/auto_float/0016_auto_reject_snap.c' || echo '$(srcdir)/'`quant/palette/auto_float/0016_auto_reject_snap.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_reject_snap.Tpo quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_reject_snap.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/auto_float/0016_auto_reject_snap.c' object='quant/palette/auto_float/test_runner-0016_auto_reject_snap.o' libtool=no @AMDEPBACKSLASH@
+quant/palette/auto_float/test_runner-0016_auto_p3_snap.o: quant/palette/auto_float/0016_auto_p3_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/auto_float/test_runner-0016_auto_p3_snap.o -MD -MP -MF quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_p3_snap.Tpo -c -o quant/palette/auto_float/test_runner-0016_auto_p3_snap.o `test -f 'quant/palette/auto_float/0016_auto_p3_snap.c' || echo '$(srcdir)/'`quant/palette/auto_float/0016_auto_p3_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_p3_snap.Tpo quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_p3_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/auto_float/0016_auto_p3_snap.c' object='quant/palette/auto_float/test_runner-0016_auto_p3_snap.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/auto_float/test_runner-0016_auto_reject_snap.o `test -f 'quant/palette/auto_float/0016_auto_reject_snap.c' || echo '$(srcdir)/'`quant/palette/auto_float/0016_auto_reject_snap.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/auto_float/test_runner-0016_auto_p3_snap.o `test -f 'quant/palette/auto_float/0016_auto_p3_snap.c' || echo '$(srcdir)/'`quant/palette/auto_float/0016_auto_p3_snap.c
 
-quant/palette/auto_float/test_runner-0016_auto_reject_snap.obj: quant/palette/auto_float/0016_auto_reject_snap.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/auto_float/test_runner-0016_auto_reject_snap.obj -MD -MP -MF quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_reject_snap.Tpo -c -o quant/palette/auto_float/test_runner-0016_auto_reject_snap.obj `if test -f 'quant/palette/auto_float/0016_auto_reject_snap.c'; then $(CYGPATH_W) 'quant/palette/auto_float/0016_auto_reject_snap.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/auto_float/0016_auto_reject_snap.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_reject_snap.Tpo quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_reject_snap.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/auto_float/0016_auto_reject_snap.c' object='quant/palette/auto_float/test_runner-0016_auto_reject_snap.obj' libtool=no @AMDEPBACKSLASH@
+quant/palette/auto_float/test_runner-0016_auto_p3_snap.obj: quant/palette/auto_float/0016_auto_p3_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/auto_float/test_runner-0016_auto_p3_snap.obj -MD -MP -MF quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_p3_snap.Tpo -c -o quant/palette/auto_float/test_runner-0016_auto_p3_snap.obj `if test -f 'quant/palette/auto_float/0016_auto_p3_snap.c'; then $(CYGPATH_W) 'quant/palette/auto_float/0016_auto_p3_snap.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/auto_float/0016_auto_p3_snap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_p3_snap.Tpo quant/palette/auto_float/$(DEPDIR)/test_runner-0016_auto_p3_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/auto_float/0016_auto_p3_snap.c' object='quant/palette/auto_float/test_runner-0016_auto_p3_snap.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/auto_float/test_runner-0016_auto_reject_snap.obj `if test -f 'quant/palette/auto_float/0016_auto_reject_snap.c'; then $(CYGPATH_W) 'quant/palette/auto_float/0016_auto_reject_snap.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/auto_float/0016_auto_reject_snap.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/auto_float/test_runner-0016_auto_p3_snap.obj `if test -f 'quant/palette/auto_float/0016_auto_p3_snap.c'; then $(CYGPATH_W) 'quant/palette/auto_float/0016_auto_p3_snap.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/auto_float/0016_auto_p3_snap.c'; fi`
 
 quant/palette/auto_float/test_runner-0017_auto_subbyte_diffusion.o: quant/palette/auto_float/0017_auto_subbyte_diffusion.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/auto_float/test_runner-0017_auto_subbyte_diffusion.o -MD -MP -MF quant/palette/auto_float/$(DEPDIR)/test_runner-0017_auto_subbyte_diffusion.Tpo -c -o quant/palette/auto_float/test_runner-0017_auto_subbyte_diffusion.o `test -f 'quant/palette/auto_float/0017_auto_subbyte_diffusion.c' || echo '$(srcdir)/'`quant/palette/auto_float/0017_auto_subbyte_diffusion.c
@@ -73548,6 +73601,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/ordinary_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/output_float/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/p3_snap/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/p3_snap/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/packed_alpha/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/retention/$(DEPDIR)/$(am__dirstamp)

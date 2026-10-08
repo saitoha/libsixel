@@ -1,0 +1,15 @@
+#!/bin/sh
+# Verify auto policy nearest with independent P3 expectations.
+# Policy: docs/encoder/palette-construction/snap-policy/README.md
+set -eux
+
+echo "1..1"
+set -v
+
+SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    palette/p3_snap/0002_pipeline 0 2 0 4 || {
+    echo "not ok 1 - auto policy nearest"
+    exit 0
+}
+echo "ok 1 - auto policy nearest"
+exit 0

@@ -386,13 +386,7 @@ test_auto_cover_admission(int mode)
             sixel_frame_set_frame_no(frame, pass);
         }
         status = sixel_encoder_encode_frame(encoder, frame, output);
-        if (mode == 10 && pass == 1) {
-            /* Active snap is outside P3 admission. Disabling it must
-             * recover on this same encoder without changing cover policy. */
-            if (status != SIXEL_BAD_ARGUMENT || capture.length != 0) {
-                goto end;
-            }
-        } else {
+        {
             dither = (sixel_dither_t *)encoder->diagnostic_dither;
             if (SIXEL_FAILED(status) || dither == NULL ||
                     dither->use_rgb101_palette != !byte_work ||
@@ -425,6 +419,9 @@ test_auto_cover_admission(int mode)
                 }
                 for (i = 0; i < 3; ++i) {
                     want = byte_input ? gray8[i] / 255.0 : grays[i];
+                    if (mode == 10 && pass == 1) {
+                        want = i == 0 ? 0.0 : i == 1 ? 128.0 / 255.0 : 1.0;
+                    }
                     code = want <= 0 ? 0 : want >= 1 ? 100
                         : (int)(want * 100 + .5);
                     if (linear) {

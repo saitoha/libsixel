@@ -251,6 +251,8 @@ struct sixel_encoder {
     int snap_policy;
     int snap_policy_timing_override;
     int snap_policy_timing;
+    int snap_policy_grid_override;
+    int snap_policy_grid;
     int snap_policy_approach_rate_override;
     double snap_policy_approach_rate;
     int snap_policy_channel_factor_l_override;

@@ -7020,14 +7020,12 @@ sixel_encoder_rgb101_restriction(sixel_encoder_t const *encoder)
     }
     if (encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE &&
             encoder->snap_policy_approach_rate > 0.0) {
-        if (encoder->output_color_definition ==
-                SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
-            return "display-p3 does not support active snap; use -_none "
-                "or a zero snap rate.";
-        }
-        if (encoder->snap_policy_timing != SIXEL_PALETTE_SNAP_TIMING_ONCE ||
-                (encoder->cover_policy != SIXEL_PALETTE_COVER_OFF &&
-                 encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT)) {
+        if (encoder->output_color_definition !=
+                SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
+                (encoder->snap_policy_timing !=
+                    SIXEL_PALETTE_SNAP_TIMING_ONCE ||
+                 (encoder->cover_policy != SIXEL_PALETTE_COVER_OFF &&
+                  encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT))) {
             return "native palette does not support this snap combination.";
         }
     }
@@ -8011,6 +8009,9 @@ sixel_encoder_prepare_palette(
         snap_options.channel_factor_l =
             encoder->snap_policy_channel_factor_l;
         sixel_set_palette_snap_override(&snap_options);
+        sixel_palette_snap_set_output(!from_map_image &&
+            encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3,
+            encoder->snap_policy_grid_override, encoder->snap_policy_grid);
     }
     sixel_set_kcenter_algo_override(
         encoder->quantize_model_kcenter_algo_override,
@@ -9730,6 +9731,8 @@ sixel_encoder_new(
     (*ppencoder)->snap_policy_override = 0;
     (*ppencoder)->snap_policy =
         SIXEL_PALETTE_SNAP_POLICY_NONE;
+    (*ppencoder)->snap_policy_grid_override = 0;
+    (*ppencoder)->snap_policy_grid = 0;
     (*ppencoder)->snap_policy_timing_override = 0;
     (*ppencoder)->snap_policy_timing =
         SIXEL_PALETTE_SNAP_TIMING_ONCE;

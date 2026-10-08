@@ -53,7 +53,8 @@ sixel_palette_snap_entries(unsigned char *entries,
                           unsigned int colors,
                           int pixelformat);
 
-/* Final-only sRGB targets; retain extended coordinates until blending.
+/* Final typed targets; use the active destination grid when present.
+ * Retain extended coordinates until blending.
  * Failure leaves every entry unchanged. No byte compatibility view is read. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_snap_native(float *entries, unsigned int colors,
@@ -64,13 +65,16 @@ enum sixel_palette_snap_stage {
     SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE,
     SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER,
     SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER,
-    SIXEL_PALETTE_SNAP_STAGE_INITIAL_SEED
+    SIXEL_PALETTE_SNAP_STAGE_INITIAL_SEED,
+    SIXEL_PALETTE_SNAP_STAGE_SAMPLE,
+    SIXEL_PALETTE_SNAP_STAGE_APPLY
 };
 
 enum sixel_palette_snap_policy {
     SIXEL_PALETTE_SNAP_POLICY_NONE = 0,
     SIXEL_PALETTE_SNAP_POLICY_NEAREST,
-    SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE
+    SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE,
+    SIXEL_PALETTE_SNAP_POLICY_AUTO
 };
 
 enum sixel_palette_snap_timing_policy {
@@ -78,7 +82,13 @@ enum sixel_palette_snap_timing_policy {
     SIXEL_PALETTE_SNAP_TIMING_POLISH,
     SIXEL_PALETTE_SNAP_TIMING_MERGE,
     SIXEL_PALETTE_SNAP_TIMING_RESOLVE,
-    SIXEL_PALETTE_SNAP_TIMING_ALL
+    SIXEL_PALETTE_SNAP_TIMING_ALL,
+    SIXEL_PALETTE_SNAP_TIMING_SAMPLE,
+    SIXEL_PALETTE_SNAP_TIMING_SEED,
+    SIXEL_PALETTE_SNAP_TIMING_ITERATION,
+    SIXEL_PALETTE_SNAP_TIMING_PREMERGE,
+    SIXEL_PALETTE_SNAP_TIMING_MERGE_ITERATION,
+    SIXEL_PALETTE_SNAP_TIMING_APPLY
 };
 
 typedef struct sixel_palette_snap_options {
@@ -118,6 +128,27 @@ sixel_palette_snap_triple(double *components,
                           int use_reversible,
                           int pixelformat,
                           enum sixel_palette_snap_stage stage);
+
+/* Destination and grid policy are scoped to the encoder's build override.
+ * A build owns its mutable cache; another encoder cannot reuse that state. */
+SIXEL_INTERNAL_API void
+sixel_palette_snap_set_output(int p3, int grid_override, int grid_policy);
+SIXEL_INTERNAL_API int
+sixel_palette_snap_destination_active(void);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_snap_begin(int pixelformat, int quantizer,
+                          sixel_allocator_t *allocator);
+/* Merge/medoid solvers use nominal byte-scaled doubles, not typed units. */
+SIXEL_INTERNAL_API void
+sixel_palette_snap_scaled_triple(double *components, int pixelformat,
+                                  enum sixel_palette_snap_stage stage);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_snap_end(void);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_snap_status(void);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_snap_stage_entries(float *entries, unsigned int colors,
+    int pixelformat, enum sixel_palette_snap_stage stage);
 
 /*
  * Safe-tone lookup table used when constructing reversible palettes.  Values

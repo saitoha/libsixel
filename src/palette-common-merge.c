@@ -584,6 +584,26 @@ sixel_final_merge_is_lab_colorspace(int pixelformat)
     }
 }
 
+/* Only an explicit destination snap may move merge representatives. The
+ * pair cache is built/refreshed after this operation in both Ward engines. */
+static void
+sixel_final_merge_snap_cluster(sixel_final_merge_cluster_t *cluster,
+    int pixelformat, enum sixel_palette_snap_stage stage)
+{
+    double components[3];
+
+    if (!sixel_palette_snap_destination_active() || cluster->count <= 0.0) {
+        return;
+    }
+    components[0] = cluster->r;
+    components[1] = cluster->g;
+    components[2] = cluster->b;
+    sixel_palette_snap_scaled_triple(components, pixelformat, stage);
+    cluster->r = components[0];
+    cluster->g = components[1];
+    cluster->b = components[2];
+}
+
 static void
 sixel_final_merge_clusters(sixel_final_merge_cluster_t *clusters,
                            int nclusters,
@@ -592,8 +612,16 @@ sixel_final_merge_clusters(sixel_final_merge_cluster_t *clusters,
                            int use_reversible,
                            int pixelformat)
 {
+    int index;
+
     if (clusters == NULL || nclusters <= 0) {
         return;
+    }
+    if (use_reversible) {
+        for (index = 0; index < nclusters; ++index) {
+            sixel_final_merge_snap_cluster(clusters + index, pixelformat,
+                SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE);
+        }
     }
     switch (merge_mode) {
     case SIXEL_FINAL_MERGE_DISPATCH_WARD:
@@ -708,6 +736,8 @@ sixel_final_merge_ward(sixel_final_merge_cluster_t *clusters,
             / merged_weight;
         merged.b = (clusters[best_i].b * wi + clusters[best_j].b * wj)
             / merged_weight;
+        sixel_final_merge_snap_cluster(&merged, pixelformat,
+            SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER);
         clusters[best_i] = merged;
         clusters[best_j].count = 0.0;
         clusters[best_j].r = 0.0;
@@ -1028,6 +1058,8 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
             / merged_weight;
         merged.b = (clusters[best_i].b * wi + clusters[best_j].b * wj)
             / merged_weight;
+        sixel_final_merge_snap_cluster(&merged, pixelformat,
+            SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER);
         clusters[best_i] = merged;
         clusters[best_j].count = 0.0;
         clusters[best_j].r = 0.0;

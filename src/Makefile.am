@@ -128,7 +128,9 @@ libsixel_la_SOURCES = \
                 $(srcdir)/palette-common-merge.c \
                 $(srcdir)/palette-common-merge.h \
                 $(srcdir)/palette-common-snap.c \
+                $(srcdir)/palette-snap-grid.c \
                 $(srcdir)/palette-common-snap.h \
+                $(srcdir)/palette-snap-grid.h \
                 $(srcdir)/palette-kmeans.c \
                 $(srcdir)/palette-kmeans-assign.c \
                 $(srcdir)/palette-kmeans-assign.h \

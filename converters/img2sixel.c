@@ -445,8 +445,13 @@ static cli_option_help_t const g_option_help_table[] = {
         "    control whether and how palette channels approach the 101\n"
         "    reversible SIXEL tone levels. POLICY is one of:\n"
         "      none, auto, nearest, reversible\n"
+        "    Default: none. auto selects nearest; timing defaults to once.\n"
         "    sub-option:\n"
         "      :timing=once|polish|merge|resolve|all (:Ivalue)\n"
+        "        P3 also: sample|seed|iteration|premerge|"
+        "merge-iteration|apply\n"
+        "      :grid=auto|direct|table|cache|full (:Gvalue), P3 only\n"
+        "        auto uses the small primary-contribution table.\n"
         "      :rate=FACTOR (:AFACTOR), 0.0-1.0\n"
         "      :channel_l=FACTOR (:LFACTOR), 0.0-1.0\n"
         "    The corresponding SIXEL_PALETTE_SNAP_* environments\n"
@@ -1212,7 +1217,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    medoids/heckbert none/auto;\n"
         "    none/CPU spatial or positional diffusion/auto;\n"
         "    none/ward merge; cover auto/off or soft/hard\n"
-        "    snap none or rate=0\n"
+        "    destination-aware palette snap; no high-color snap\n"
         "    -m with the admitted solvers; -M exports sRGB8; no interframe\n"
     },
     {
@@ -2210,7 +2215,12 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_PALETTE_SNAP_TIMING_POLICY",
         "Decide when snaps run: 'once', 'polish', 'merge', 'resolve', or\n"
-        "'all'. Defaults to 'once'."
+        "'all'. P3 also accepts sample/seed/iteration/premerge/\n"
+        "merge-iteration/apply. Defaults to 'once'."
+    },
+    {
+        "SIXEL_PALETTE_SNAP_GRID",
+        "P3 candidate computation: auto, direct, table, cache or full."
     },
     {
         "SIXEL_PALETTE_SNAP_APPROACH_RATE",

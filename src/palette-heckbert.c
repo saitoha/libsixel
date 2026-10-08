@@ -2139,7 +2139,8 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                                   unsigned long *cluster_weight,
                                   double *cluster_sums,
                                   unsigned int iterations,
-                                  unsigned int *executed_iterations)
+                                  unsigned int *executed_iterations,
+                                  int pixelformat)
 {
     double centers[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
     unsigned long cluster_weight_local[SIXEL_PALETTE_MAX];
@@ -2460,6 +2461,10 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                 }
                 centers[offset + (size_t)component] = channel;
             }
+            if (depth == 3U && colorfreqtable.preserve_extended) {
+                sixel_palette_snap_scaled_triple(centers + offset,
+                    pixelformat, SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER);
+            }
         }
         executed = iteration + 1U;
         if (!center_changed) {
@@ -2492,6 +2497,16 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
         for (component = 0U; component < depth; ++component) {
             cluster_sums[output_offset + (size_t)component]
                 = cluster_sums_local[local_offset + (size_t)component];
+            /* A projected representative is no longer the unconstrained
+             * mean; preserve its position when exporting weighted sums. */
+            if (colorfreqtable.preserve_extended &&
+                    sixel_palette_snap_destination_active() &&
+                    sixel_palette_should_snap(
+                        SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER)) {
+                cluster_sums[output_offset + (size_t)component] =
+                    centers[local_offset + (size_t)component] *
+                    (double)cluster_weight[cluster_index];
+            }
         }
     }
     if (assignment != NULL) {
@@ -3218,7 +3233,8 @@ mediancut(tupletable2 const colorfreqtable,
                                                   cluster_weight,
                                                   cluster_sums,
                                                   iteration_limit,
-                                                  &iteration_actual);
+                                                  &iteration_actual,
+                                                  pixelformat);
             }
         }
         merge_status = sixel_palette_clusters_to_colormap(
@@ -3477,11 +3493,6 @@ sixel_palette_heckbert_colormap(
     colormapP->size = 0U;
     colormapP->table = NULL;
     if (SIXEL_PALETTE_CONTEXT(palette)->preserve_extended_rgb) {
-        /* Active snap is not connected to the native histogram yet. */
-        if (use_reversible) {
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
         status = sixel_heckbert_native_histogram(data, length, pixelformat,
                                                 &colorfreqtable, allocator);
     } else {

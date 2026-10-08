@@ -2124,6 +2124,7 @@ loader_helper_sources = files(
   'src/palette-common-cover.h',
   'src/palette-common-merge.c',
   'src/palette-common-snap.c',
+  'src/palette-snap-grid.c',
   'src/palette-heckbert.c',
   'src/palette-kmeans.c',
   'src/palette-kmeans-assign.c',

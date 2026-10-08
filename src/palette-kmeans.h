@@ -197,7 +197,7 @@ sixel_set_kmeans_feedback_interval_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmeans_feedback_interval(void);
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_kmeans_choose_initial_centroids(double *centers,
                                       unsigned int k,
                                       double const *samples,

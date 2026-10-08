@@ -81,7 +81,7 @@ test_auto_palette(int mode, int space)
     byte_input = mode == 4 || mode == 5 || mode == 14;
     byte_work = byte_input && mode != 5;
     p3 = mode == 2 || mode == 10 || mode == 11 || mode >= 15;
-    reject = mode == 11 || mode == 17;
+    reject = mode == 17;
     passes = mode == 9 ? 3 : 1;
     count = mode == 12 ? 3 : 2;
     if (space < 0 || space > 4) {
@@ -160,8 +160,7 @@ test_auto_palette(int mode, int space)
             /* A later solver rejection must not masquerade as preflight. */
             ok = SIXEL_FAILED(status) && capture.size == 0U &&
                 strstr(sixel_helper_get_additional_message(),
-                    mode == 11 ? "display-p3 does not support active snap"
-                    : "display-p3 does not support K-means feedback") != NULL;
+                    "display-p3 does not support K-means feedback") != NULL;
             goto end;
         }
         dither = (sixel_dither_t *)encoder->diagnostic_dither;
@@ -201,6 +200,9 @@ test_auto_palette(int mode, int space)
                         expected = byte_input
                             ? bytes[i * 3 + channel] / 255.0
                             : pixels[i * 3 + channel];
+                        if (mode == 11) {
+                            expected = .5 * expected + .5 * (i == 1);
+                        }
                         tolerance = 1e-7 + fabs(expected) * 5e-6;
                         if (!isfinite(view.entries[j * 3 + channel]) ||
                                 fabs(view.entries[j * 3 + channel]

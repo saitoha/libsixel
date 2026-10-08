@@ -1337,8 +1337,19 @@ sixel_palette_generate_internal(
     unsigned int snap_component;
     unsigned int color_capacity;
     sixel_allocator_t *work_allocator;
+    sixel_palette_generate_request_t sampled_request;
+    sixel_palette_generate_request_t const *original_request;
+    float *snap_samples;
+    double sample[3];
+    unsigned int sample_index;
+    unsigned int sample_channel;
+    int snap_started;
+    SIXELSTATUS snap_status;
 
     storage = NULL;
+    original_request = request;
+    snap_samples = NULL;
+    snap_started = 0;
     memset(&context, 0, sizeof(context));
     effective_quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
     if (palette == NULL || request == NULL) {
@@ -1368,10 +1379,10 @@ sixel_palette_generate_internal(
     context.method_for_rep = request->method_for_rep;
     context.quality_mode = request->quality_mode;
     context.force_palette = request->force_palette;
-    /* Native once-only snapping is owned by the common post-merge boundary.
-     * Never let legacy histogram or solver hooks snap the source first. */
-    context.use_reversible = preserve_extended_rgb
-        ? 0 : request->use_reversible;
+    /* Destination-aware stages preserve samples unless SAMPLE is explicit.
+     * The common owner keeps final snap separate from solver-local hooks. */
+    context.use_reversible = preserve_extended_rgb &&
+        !sixel_palette_snap_destination_active() ? 0 : request->use_reversible;
     context.preserve_extended_rgb = preserve_extended_rgb;
     context.quantize_model = request->quantize_model;
     context.final_merge_mode = request->final_merge_mode;
@@ -1388,6 +1399,42 @@ sixel_palette_generate_internal(
     storage->requested_colors = request->requested_colors;
     storage->build_context = &context;
 
+    status = sixel_palette_snap_begin(request->pixelformat,
+        context.quantize_model, work_allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    snap_started = 1;
+    if (sixel_palette_snap_destination_active() &&
+            sixel_palette_should_snap(SIXEL_PALETTE_SNAP_STAGE_SAMPLE)) {
+        snap_samples = sixel_allocator_malloc(work_allocator, request->length);
+        if (snap_samples == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        memcpy(snap_samples, request->data, request->length);
+        for (sample_index = 0U;
+                sample_index < request->length / (3U * sizeof(float));
+                ++sample_index) {
+            for (sample_channel = 0U; sample_channel < 3U; ++sample_channel) {
+                sample[sample_channel] =
+                    snap_samples[sample_index * 3U + sample_channel];
+            }
+            sixel_palette_snap_triple(sample, 1, request->pixelformat,
+                                       SIXEL_PALETTE_SNAP_STAGE_SAMPLE);
+            status = sixel_palette_snap_status();
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            for (sample_channel = 0U; sample_channel < 3U; ++sample_channel) {
+                snap_samples[sample_index * 3U + sample_channel] =
+                    (float)sample[sample_channel];
+            }
+        }
+        sampled_request = *request;
+        sampled_request.data = (unsigned char const *)snap_samples;
+        request = &sampled_request;
+    }
     status = SIXEL_FALSE;
 
     if (context.quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
@@ -1478,6 +1525,12 @@ after_quantizer:
     status = SIXEL_OK;
 
 success:
+    request = original_request;
+    snap_status = sixel_palette_snap_status();
+    if (SIXEL_FAILED(snap_status)) {
+        status = snap_status;
+        goto end;
+    }
     if (SIXEL_SUCCEEDED(status) && color_capacity < SIXEL_PALETTE_MAX &&
             ncolors > color_capacity) {
         status = SIXEL_BAD_INPUT;
@@ -1501,12 +1554,28 @@ success:
             }
         }
         /* Cover follows final snap. Its new anchors and funded midpoints
-         * retain their coordinates; do not apply the snap rate again here
-         * or reconstruct the working palette from the RGB101 wire cache. */
+         * retain their coordinates unless the caller explicitly selects
+         * application preparation below. Never rebuild this typed palette
+         * from the RGB101 compatibility cache. */
         status = sixel_palette_repair_native(palette, request, &ncolors,
             color_capacity, work_allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
+        }
+        if (sixel_palette_snap_destination_active()) {
+            status = sixel_palette_snap_stage_entries(
+                storage->entries_float32, ncolors, request->pixelformat,
+                SIXEL_PALETTE_SNAP_STAGE_APPLY);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            for (snap_component = 0U; snap_component < ncolors * 3U;
+                    ++snap_component) {
+                storage->entries[snap_component] =
+                    sixel_pixelformat_float_channel_to_byte(
+                        request->pixelformat, (int)(snap_component % 3U),
+                        storage->entries_float32[snap_component]);
+            }
         }
     }
     /*
@@ -1644,6 +1713,13 @@ success:
     storage->depth = (int)depth;
 
 end:
+    sixel_allocator_free(work_allocator, snap_samples);
+    if (snap_started) {
+        snap_status = sixel_palette_snap_end();
+        if (SIXEL_FAILED(snap_status) && SIXEL_SUCCEEDED(status)) {
+            status = snap_status;
+        }
+    }
     if (SIXEL_SUCCEEDED(status) && context.attempt != NULL) {
         context.attempt->quantize_model = effective_quantize_model;
     }
@@ -1672,6 +1748,7 @@ sixel_palette_generate_extended(
              request->quantize_model != SIXEL_QUANTIZE_MODEL_KMEDOIDS &&
              request->quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT) ||
             (request->use_reversible &&
+             !sixel_palette_snap_destination_active() &&
              sixel_palette_should_snap(
                  SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE)) ||
             (sixel_resolve_final_merge_mode(request->final_merge_mode) !=

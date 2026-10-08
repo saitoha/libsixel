@@ -44,6 +44,8 @@
 #include "loader-common.h"
 #include "options.h"
 #include "palette-common-snap.h"
+#include "palette-snap-grid.h"
+#include "palette.h"
 #include "pixelformat.h"
 
 static enum sixel_palette_snap_policy
@@ -72,6 +74,12 @@ sixel_palette_snap_float_entries(float *entries, unsigned int colors,
 #endif
 
 static SIXEL_SNAP_TLS sixel_palette_snap_options_t g_snap_options;
+static SIXEL_SNAP_TLS int g_snap_output_p3;
+static SIXEL_SNAP_TLS int g_snap_grid_policy;
+static SIXEL_SNAP_TLS sixel_snap_grid_t *g_snap_grid;
+static SIXEL_SNAP_TLS SIXELSTATUS g_snap_status;
+static SIXEL_SNAP_TLS int g_snap_scaled_zero_origin;
+static SIXEL_SNAP_TLS unsigned long g_snap_stages[7];
 
 #undef SIXEL_SNAP_TLS
 
@@ -86,10 +94,14 @@ sixel_set_palette_snap_override(
     timing_name = "once";
     if (options == NULL) {
         memset(&g_snap_options, 0, sizeof(g_snap_options));
+        g_snap_output_p3 = 0;
+        g_snap_grid_policy = SIXEL_SNAP_GRID_AUTO;
         return;
     }
     g_snap_options = *options;
-    if (options->policy == SIXEL_PALETTE_SNAP_POLICY_NEAREST) {
+    if (options->policy == SIXEL_PALETTE_SNAP_POLICY_AUTO) {
+        policy_name = "auto";
+    } else if (options->policy == SIXEL_PALETTE_SNAP_POLICY_NEAREST) {
         policy_name = "nearest";
     } else if (options->policy
                == SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE) {
@@ -107,6 +119,24 @@ sixel_set_palette_snap_override(
         break;
     case SIXEL_PALETTE_SNAP_TIMING_ALL:
         timing_name = "all";
+        break;
+    case SIXEL_PALETTE_SNAP_TIMING_SAMPLE:
+        timing_name = "sample";
+        break;
+    case SIXEL_PALETTE_SNAP_TIMING_SEED:
+        timing_name = "seed";
+        break;
+    case SIXEL_PALETTE_SNAP_TIMING_ITERATION:
+        timing_name = "iteration";
+        break;
+    case SIXEL_PALETTE_SNAP_TIMING_PREMERGE:
+        timing_name = "premerge";
+        break;
+    case SIXEL_PALETTE_SNAP_TIMING_MERGE_ITERATION:
+        timing_name = "merge-iteration";
+        break;
+    case SIXEL_PALETTE_SNAP_TIMING_APPLY:
+        timing_name = "apply";
         break;
     case SIXEL_PALETTE_SNAP_TIMING_ONCE:
     default:
@@ -266,26 +296,95 @@ sixel_palette_should_snap(enum sixel_palette_snap_stage stage)
 
     timing = sixel_palette_get_snap_timing();
     if (stage == SIXEL_PALETTE_SNAP_STAGE_FINAL_OUTPUT) {
-        return 1;
+        return timing != SIXEL_PALETTE_SNAP_TIMING_APPLY;
     }
-    if (stage == SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE
-        && timing >= SIXEL_PALETTE_SNAP_TIMING_POLISH) {
-        return 1;
+    /* Single-stage spellings add only that hook to final palette snap.
+     * APPLY replaces the pre-cover final pass rather than doubling it. */
+    if (timing > SIXEL_PALETTE_SNAP_TIMING_ALL) {
+        return (timing == SIXEL_PALETTE_SNAP_TIMING_SAMPLE &&
+                stage == SIXEL_PALETTE_SNAP_STAGE_SAMPLE) ||
+            (timing == SIXEL_PALETTE_SNAP_TIMING_SEED &&
+                stage == SIXEL_PALETTE_SNAP_STAGE_INITIAL_SEED) ||
+            (timing == SIXEL_PALETTE_SNAP_TIMING_ITERATION &&
+                stage == SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER) ||
+            (timing == SIXEL_PALETTE_SNAP_TIMING_PREMERGE &&
+                stage == SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE) ||
+            (timing == SIXEL_PALETTE_SNAP_TIMING_MERGE_ITERATION &&
+                stage == SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER) ||
+            (timing == SIXEL_PALETTE_SNAP_TIMING_APPLY &&
+                stage == SIXEL_PALETTE_SNAP_STAGE_APPLY);
     }
-    if (stage == SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER
-        && timing >= SIXEL_PALETTE_SNAP_TIMING_MERGE) {
-        return 1;
-    }
-    if (stage == SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER
-        && timing >= SIXEL_PALETTE_SNAP_TIMING_RESOLVE) {
-        return 1;
-    }
-    if (stage == SIXEL_PALETTE_SNAP_STAGE_INITIAL_SEED
-        && timing >= SIXEL_PALETTE_SNAP_TIMING_ALL) {
-        return 1;
-    }
+    return (stage == SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE &&
+            timing >= SIXEL_PALETTE_SNAP_TIMING_POLISH) ||
+        (stage == SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER &&
+            timing >= SIXEL_PALETTE_SNAP_TIMING_MERGE) ||
+        (stage == SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER &&
+            timing >= SIXEL_PALETTE_SNAP_TIMING_RESOLVE) ||
+        (stage == SIXEL_PALETTE_SNAP_STAGE_INITIAL_SEED &&
+            timing >= SIXEL_PALETTE_SNAP_TIMING_ALL);
+}
 
-    return 0;
+void
+sixel_palette_snap_set_output(int p3, int grid_override, int grid_policy)
+{
+    g_snap_output_p3 = p3;
+    g_snap_grid_policy = grid_policy;
+    if (!grid_override) {
+        (void)sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_SNAP_POLICY, NULL,
+            SIXEL_SUBOPTION_BINDING_ID_2(snap_policy_grid,
+                snap_policy_grid_override), &g_snap_grid_policy);
+    }
+}
+
+int
+sixel_palette_snap_destination_active(void)
+{
+    return g_snap_output_p3 && sixel_palette_snap_is_enabled();
+}
+
+SIXELSTATUS
+sixel_palette_snap_begin(int pixelformat, int quantizer,
+                          sixel_allocator_t *allocator)
+{
+    if (g_snap_grid != NULL) {
+        return SIXEL_LOGIC_ERROR;
+    }
+    g_snap_status = SIXEL_OK;
+    g_snap_scaled_zero_origin = quantizer == SIXEL_QUANTIZE_MODEL_MEDIANCUT;
+    memset(g_snap_stages, 0, sizeof(g_snap_stages));
+    if (!sixel_palette_snap_destination_active()) {
+        return SIXEL_OK;
+    }
+    g_snap_status = sixel_snap_grid_new(&g_snap_grid, g_snap_grid_policy,
+        sixel_palette_determine_colorspace(pixelformat), allocator);
+    return g_snap_status;
+}
+
+SIXELSTATUS
+sixel_palette_snap_status(void)
+{
+    return g_snap_status;
+}
+
+SIXELSTATUS
+sixel_palette_snap_end(void)
+{
+    SIXELSTATUS status;
+
+    status = g_snap_status;
+    if (g_snap_grid != NULL) {
+        sixel_trace_topic_message("palette_contract",
+            "LSXSN2|final=%lu|premerge=%lu|merge=%lu|iteration=%lu|"
+            "seed=%lu|sample=%lu|apply=%lu",
+            g_snap_stages[0], g_snap_stages[1], g_snap_stages[2],
+            g_snap_stages[3], g_snap_stages[4], g_snap_stages[5],
+            g_snap_stages[6]);
+        sixel_snap_grid_destroy(g_snap_grid);
+        g_snap_grid = NULL;
+    }
+    g_snap_status = SIXEL_OK;
+    return status;
 }
 
 static int
@@ -456,6 +555,10 @@ sixel_palette_snap_entries(unsigned char *entries,
     size_t count;
     int channel;
 
+    if (g_snap_grid != NULL) {
+        return;
+    }
+
     if (entries == NULL || colors == 0U) {
         return;
     }
@@ -513,6 +616,18 @@ sixel_palette_snap_coordinates(double *result, double const *source,
             space == SIXEL_COLORSPACE_DIN99D) {
         weights[0] = sixel_palette_get_snap_channel_factor();
         weights[1] = weights[2] = (1.0 - weights[0]) * 0.5;
+    }
+    if (g_snap_grid != NULL) {
+        if (SIXEL_FAILED(g_snap_status)) {
+            return g_snap_status;
+        }
+        g_snap_status = sixel_snap_grid_project(g_snap_grid, source,
+            policy != SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE,
+            weights[0], best);
+        if (SIXEL_FAILED(g_snap_status)) {
+            return g_snap_status;
+        }
+        goto blend;
     }
     if (!sixel_color_convert(gamma, source, space,
             SIXEL_COLORSPACE_GAMMA)) {
@@ -576,6 +691,7 @@ sixel_palette_snap_coordinates(double *result, double const *source,
             }
         }
     }
+blend:
     for (channel = 0; channel < 3; ++channel) {
         /* Weighted endpoints avoid x + (target - x) losing the target
          * to cancellation at rate=1 for very large finite coordinates. */
@@ -631,17 +747,37 @@ sixel_palette_snap_float_entries(float *entries, unsigned int colors,
     return SIXEL_OK;
 }
 
-/* The native builder still admits only final-only timing. Sharing arithmetic
- * with early hooks does not implement their solver ordering or binning. */
+/* The common palette owner orders final and post-cover application stages.
+ * Solver-local final hooks are bypassed while this destination is active. */
 SIXELSTATUS
 sixel_palette_snap_native(float *entries, unsigned int colors,
                            int pixelformat)
 {
-    if (sixel_palette_snap_is_enabled() &&
+    if (g_snap_grid == NULL && sixel_palette_snap_is_enabled() &&
             sixel_palette_get_snap_timing() != SIXEL_PALETTE_SNAP_TIMING_ONCE) {
         return SIXEL_BAD_ARGUMENT;
     }
-    return sixel_palette_snap_float_entries(entries, colors, pixelformat);
+    return sixel_palette_snap_stage_entries(entries, colors, pixelformat,
+        SIXEL_PALETTE_SNAP_STAGE_FINAL_OUTPUT);
+}
+
+SIXELSTATUS
+sixel_palette_snap_stage_entries(float *entries, unsigned int colors,
+    int pixelformat, enum sixel_palette_snap_stage stage)
+{
+    SIXELSTATUS status;
+
+    if (!sixel_palette_should_snap(stage)) {
+        return SIXEL_OK;
+    }
+    status = sixel_palette_snap_float_entries(entries, colors, pixelformat);
+    if (g_snap_grid != NULL) {
+        g_snap_stages[stage] += colors;
+        if (SIXEL_FAILED(status)) {
+            g_snap_status = status;
+        }
+    }
+    return status;
 }
 
 void
@@ -655,21 +791,28 @@ sixel_palette_snap_triple(double *components,
     unsigned char byte_value;
     int active;
     int channel;
+    SIXELSTATUS status;
 
     if (components == NULL) {
         return;
     }
     active = use_reversible && sixel_palette_snap_is_enabled() &&
         sixel_palette_should_snap(stage);
+    if (active && g_snap_grid != NULL) {
+        ++g_snap_stages[stage];
+    }
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         /* An inactive stage must not narrow solver doubles to float32,
          * clamp nominal channel ranges, or even change signed zero. */
         if (!active) {
             return;
         }
-        if (SIXEL_SUCCEEDED(sixel_palette_snap_coordinates(snapped,
-                components, pixelformat))) {
+        status = sixel_palette_snap_coordinates(snapped, components,
+                                                 pixelformat);
+        if (SIXEL_SUCCEEDED(status)) {
             memcpy(components, snapped, sizeof(snapped));
+        } else if (g_snap_grid != NULL) {
+            g_snap_status = status;
         }
         return;
     }
@@ -696,6 +839,38 @@ sixel_palette_snap_triple(double *components,
     for (channel = 0; channel < 3; ++channel) {
         components[channel] = sixel_pixelformat_float_channel_to_byte(
             SIXEL_PIXELFORMAT_RGBFLOAT32, channel, (float)working[channel]);
+    }
+}
+
+/* The grid stores typed coordinates. Preserve the solver's affine scale
+ * and origin when projecting representatives; source samples are unchanged. */
+void
+sixel_palette_snap_scaled_triple(double *components, int pixelformat,
+                                  enum sixel_palette_snap_stage stage)
+{
+    double source[3];
+    double minimum[3];
+    double range[3];
+    int channel;
+
+    if (g_snap_grid == NULL || !sixel_palette_should_snap(stage)) {
+        return;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        minimum[channel] = g_snap_scaled_zero_origin ? 0.0
+            : sixel_pixelformat_float_channel_min(pixelformat, channel);
+        range[channel] = sixel_pixelformat_float_channel_range(
+            pixelformat, channel);
+        source[channel] = components[channel] * range[channel] / 255.0
+            + minimum[channel];
+    }
+    sixel_palette_snap_triple(source, 1, pixelformat, stage);
+    if (SIXEL_FAILED(g_snap_status)) {
+        return;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        components[channel] =
+            (source[channel] - minimum[channel]) * 255.0 / range[channel];
     }
 }
 

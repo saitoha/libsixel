@@ -59,6 +59,7 @@
 #include "options-registry.h"
 #include "palette-common-cover.h"
 #include "palette-common-snap.h"
+#include "palette-snap-grid.h"
 #include "dither-clamp.h"
 #include "palette-heckbert.h"
 #include "palette-kcenter.h"
@@ -1163,7 +1164,7 @@ static sixel_option_value_schema_t const g_snap_policy_values[] = {
         SIXEL_OPTION_BASE_POLICY_NONE
     },
     {
-        "auto", SIXEL_PALETTE_SNAP_POLICY_NEAREST, 0u,
+        "auto", SIXEL_PALETTE_SNAP_POLICY_AUTO, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
     },
     {
@@ -1606,7 +1607,21 @@ static sixel_suboption_choice_t const g_palette_snap_timing_choices[] = {
     { "polish", SIXEL_PALETTE_SNAP_TIMING_POLISH },
     { "merge", SIXEL_PALETTE_SNAP_TIMING_MERGE },
     { "resolve", SIXEL_PALETTE_SNAP_TIMING_RESOLVE },
-    { "all", SIXEL_PALETTE_SNAP_TIMING_ALL }
+    { "all", SIXEL_PALETTE_SNAP_TIMING_ALL },
+    { "sample", SIXEL_PALETTE_SNAP_TIMING_SAMPLE },
+    { "seed", SIXEL_PALETTE_SNAP_TIMING_SEED },
+    { "iteration", SIXEL_PALETTE_SNAP_TIMING_ITERATION },
+    { "premerge", SIXEL_PALETTE_SNAP_TIMING_PREMERGE },
+    { "merge-iteration", SIXEL_PALETTE_SNAP_TIMING_MERGE_ITERATION },
+    { "apply", SIXEL_PALETTE_SNAP_TIMING_APPLY }
+};
+
+static sixel_suboption_choice_t const g_palette_snap_grid_choices[] = {
+    { "auto", SIXEL_SNAP_GRID_AUTO },
+    { "direct", SIXEL_SNAP_GRID_DIRECT },
+    { "table", SIXEL_SNAP_GRID_TABLE },
+    { "cache", SIXEL_SNAP_GRID_CACHE },
+    { "full", SIXEL_SNAP_GRID_FULL }
 };
 
 static sixel_suboption_choice_t const g_heckbert_profile_choices[] = {
@@ -2073,6 +2088,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "timing", 'I', "SIXEL_PALETTE_SNAP_TIMING_POLICY", NULL, NULL,
         g_palette_snap_timing_choices,
         snap_policy_timing, snap_policy_timing_override),
+    SIXEL_REGISTRY_ENCODER_CHOICE(
+        SIXEL_OPTION_SCHEMA_SNAP_POLICY, NULL,
+        "grid", 'G', "SIXEL_PALETTE_SNAP_GRID", NULL, NULL,
+        g_palette_snap_grid_choices,
+        snap_policy_grid, snap_policy_grid_override),
     SIXEL_REGISTRY_ENCODER_DOUBLE_ENV_CLAMP(
         SIXEL_OPTION_SCHEMA_SNAP_POLICY, NULL,
         "rate", 'A', "SIXEL_PALETTE_SNAP_APPROACH_RATE", NULL, NULL,

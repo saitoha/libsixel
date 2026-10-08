@@ -11,6 +11,7 @@
 #include "src/palette.h"
 #include "src/palette-common-snap.h"
 #include "tests/data/color-numeric/snap-native.h"
+#include "tests/data/color-numeric/p3-snap.h"
 #include "tests/data/color-numeric/cover-anchors.h"
 
 static int const native_snap_formats[] = {
@@ -169,7 +170,9 @@ native_snap_encode(int model, int space, int policy, int mode)
     partial = mode == 1 || mode == 7 || mode == 9;
     memset(&capture, 0, sizeof(capture));
     for (n = 0; n < 6; ++n) {
-        pixels[n] = (float)snap_native_fixture[0][space][0][n % 3];
+        pixels[n] = (float)(mode == 3 || mode == 4
+            ? p3_snap_values[0][space][0][n % 3]
+            : snap_native_fixture[0][space][0][n % 3]);
     }
     memcpy(saved, pixels, sizeof(saved));
     snprintf(snap, sizeof(snap), "%s:timing=once:rate=%s",
@@ -210,18 +213,35 @@ native_snap_encode(int model, int space, int policy, int mode)
             goto end;
         }
         status = sixel_encoder_encode_frame(encoder, frame, output);
-        if (status != SIXEL_BAD_ARGUMENT || capture.size != 0 ||
-                strstr(sixel_helper_get_additional_message(),
-                    "display-p3 does not support active snap") == NULL) {
+        dither = (sixel_dither_t *)encoder->diagnostic_dither;
+        if (SIXEL_FAILED(status) || capture.size == 0 || dither == NULL ||
+                !dither->use_rgb101_palette ||
+                SIXEL_FAILED(dither->palette->vtbl->get_entries_float32(
+                    dither->palette, &view)) || view.entries == NULL ||
+                view.entry_count != 1U ||
+                SIXEL_FAILED(sixel_palette_get_rgb101(dither->palette,
+                    &wire, &count)) || count != 1U ||
+                memcmp(wire, p3_snap_wire[0][space][policy - 1][0], 3) != 0) {
             goto end;
         }
+        for (n = 0; n < 3; ++n) {
+            if (!isfinite(view.entries[n]) || fabs(view.entries[n] -
+                    p3_snap_values[0][space][policy][n]) > 2e-5) {
+                goto end;
+            }
+        }
         if (mode == 3) {
-            ok = 1;
+            ok = memcmp(saved, pixels, sizeof(saved)) == 0;
             goto end;
         }
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma"))) {
             goto end;
         }
+        for (n = 0; n < 6; ++n) {
+            pixels[n] = (float)snap_native_fixture[0][space][0][n % 3];
+        }
+        memcpy(saved, pixels, sizeof(saved));
+        memset(&capture, 0, sizeof(capture));
     }
     status = sixel_encoder_encode_frame(encoder, frame, output);
     dither = (sixel_dither_t *)encoder->diagnostic_dither;
@@ -397,7 +417,7 @@ native_snap_cover(int model, int space, int policy, int mode)
             goto end;
         }
         status = sixel_encoder_encode_frame(encoder, frame, output);
-        if (status != SIXEL_BAD_ARGUMENT || capture.size != 0 ||
+        if (SIXEL_FAILED(status) || capture.size == 0 ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma"))) {
             goto end;
         }

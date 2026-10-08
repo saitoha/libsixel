@@ -929,6 +929,8 @@ int test_palette_merge_float(int argc, char **argv);
 int test_palette_cover_native(int argc, char **argv);
 int test_cover_mask(int argc, char **argv);
 int test_native_snap(int argc, char **argv);
+int test_p3_snap_grid(int argc, char **argv);
+int test_p3_snap_pipeline(int argc, char **argv);
 int test_ward_scan_populations(int argc, char **argv);
 int test_extended_lookup(int argc, char **argv);
 int test_positional_0059(int argc, char **argv);
@@ -4996,7 +4998,7 @@ static test_entry_t const test_entries[] = {
       test_auto_native_0014 },
     { "palette/auto_float/0015_auto_implicit_cover",
       test_auto_native_0015 },
-    { "palette/auto_float/0016_auto_reject_snap",
+    { "palette/auto_float/0016_auto_p3_snap",
       test_auto_native_0016 },
     { "palette/auto_float/0017_auto_subbyte_diffusion",
       test_auto_native_0017 },
@@ -5268,7 +5270,7 @@ static test_entry_t const test_entries[] = {
       test_auto_cover_0018 },
     { "quant/palette/auto_cover_float/0019_p3_default_byte",
       test_auto_cover_0019 },
-    { "quant/palette/auto_cover_float/0020_p3_rejection_recovery",
+    { "quant/palette/auto_cover_float/0020_p3_snap_transition",
       test_auto_cover_0020 },
     { "quant/palette/auto_cover_float/0021_encoder_isolation",
       test_auto_cover_0021 },
@@ -5474,7 +5476,7 @@ static test_entry_t const test_entries[] = {
       test_mono_native_0023 },
     { "quant/palette/mono_float/0024_p3_zero_snap",
       test_mono_native_0024 },
-    { "quant/palette/mono_float/0025_p3_snap_recovery",
+    { "quant/palette/mono_float/0025_p3_snap_bypass",
       test_mono_native_0025 },
     { "quant/palette/mono_float/0026_multiframe_native",
       test_mono_native_0026 },
@@ -5530,7 +5532,7 @@ static test_entry_t const test_entries[] = {
       test_builtin_native_0020 },
     { "quant/palette/builtin_float/0021_table_reuse",
       test_builtin_native_0021 },
-    { "quant/palette/builtin_float/0022_p3_snap_recovery",
+    { "quant/palette/builtin_float/0022_p3_snap_bypass",
       test_builtin_native_0022 },
     { "quant/palette/builtin_float/0023_multiframe_native",
       test_builtin_native_0023 },
@@ -5916,6 +5918,8 @@ static test_entry_t const test_entries[] = {
     { "palette/merge_float/0002_scan_contract",
       test_ward_scan_populations },
     { "palette/snap_float/0001_snap_contract", test_native_snap },
+    { "palette/p3_snap/0001_grid", test_p3_snap_grid },
+    { "palette/p3_snap/0002_pipeline", test_p3_snap_pipeline },
     { "quant/palette/cover_mask/0001_cover_mask", test_cover_mask },
     { "palette/cover_float/0001_cover_contract",
       test_palette_cover_native },

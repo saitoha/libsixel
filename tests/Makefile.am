@@ -1151,7 +1151,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0013_AUTO_ZERO_SNAP \
     -DBUILD_TEST_0014_AUTO_BINNING_REUSE \
     -DBUILD_TEST_0015_AUTO_IMPLICIT_COVER \
-    -DBUILD_TEST_0016_AUTO_REJECT_SNAP \
+    -DBUILD_TEST_0016_AUTO_P3_SNAP \
     -DBUILD_TEST_0017_AUTO_SUBBYTE_DIFFUSION \
     -DBUILD_TEST_0018_AUTO_EXPLICIT_AUTO_BINNING \
     -DBUILD_TEST_0019_AUTO_BYTE_HARD_KMEANS \
@@ -1540,6 +1540,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_COVER_CONTRACT \
     -DBUILD_TEST_0001_COVER_MASK \
     -DBUILD_TEST_0001_SNAP_CONTRACT \
+    -DBUILD_TEST_0001_GRID \
+    -DBUILD_TEST_0002_PIPELINE \
     -DBUILD_TEST_0002_SCAN_CONTRACT \
     -DBUILD_TEST_0001_EXTENDED_LOOKUP \
     -DBUILD_FHEDT_TEST_COMMON \
@@ -1610,7 +1612,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0017_ENVIRONMENT_HARD_GROW \
     -DBUILD_TEST_0018_EXPLICIT_AUTO_PRECEDENCE \
     -DBUILD_TEST_0019_P3_DEFAULT_BYTE \
-    -DBUILD_TEST_0020_P3_REJECTION_RECOVERY \
+    -DBUILD_TEST_0020_P3_SNAP_TRANSITION \
     -DBUILD_TEST_0021_ENCODER_ISOLATION \
     -DBUILD_TEST_0022_MASKED_DEFAULT \
     -DBUILD_TEST_0023_ANIMATION_PRECISION \
@@ -1733,7 +1735,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0022_INVERSION_REUSE \
     -DBUILD_TEST_0023_CLEAR_MASK \
     -DBUILD_TEST_0024_P3_ZERO_SNAP \
-    -DBUILD_TEST_0025_P3_SNAP_RECOVERY \
+    -DBUILD_TEST_0025_P3_SNAP_BYPASS \
     -DBUILD_TEST_0026_MULTIFRAME_NATIVE \
     -DBUILD_TEST_0027_CIELAB_EXPORT \
     -DBUILD_TEST_0028_AUTO_GAMMA \
@@ -1762,7 +1764,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0019_PRECISION_REUSE \
     -DBUILD_TEST_0020_OUTPUT_REUSE \
     -DBUILD_TEST_0021_TABLE_REUSE \
-    -DBUILD_TEST_0022_P3_SNAP_RECOVERY \
+    -DBUILD_TEST_0022_P3_SNAP_BYPASS \
     -DBUILD_TEST_0023_MULTIFRAME_NATIVE \
     -DBUILD_TEST_0024_P3_EXPORT \
     -DBUILD_TEST_0025_POSITIVE_FS \
@@ -5538,6 +5540,8 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/cover_float/0001_cover_contract.c \
     quant/palette/cover_mask/0001_cover_mask.c \
     quant/palette/snap_float/0001_snap_contract.c \
+    quant/palette/p3_snap/0001_grid.c \
+    quant/palette/p3_snap/0002_pipeline.c \
     quant/palette/merge_float/0002_scan_contract.c \
     processing/lookup/extended/0001_extended_lookup.c \
     processing/lookup/fhedt_test_common.c \
@@ -5619,7 +5623,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/auto_cover_float/0017_environment_hard_grow.c \
     quant/palette/auto_cover_float/0018_explicit_auto_precedence.c \
     quant/palette/auto_cover_float/0019_p3_default_byte.c \
-    quant/palette/auto_cover_float/0020_p3_rejection_recovery.c \
+    quant/palette/auto_cover_float/0020_p3_snap_transition.c \
     quant/palette/auto_cover_float/0021_encoder_isolation.c \
     quant/palette/auto_cover_float/0022_masked_default.c \
     quant/palette/auto_cover_float/0023_animation_precision.c \
@@ -5742,7 +5746,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/mono_float/0022_inversion_reuse.c \
     quant/palette/mono_float/0023_clear_mask.c \
     quant/palette/mono_float/0024_p3_zero_snap.c \
-    quant/palette/mono_float/0025_p3_snap_recovery.c \
+    quant/palette/mono_float/0025_p3_snap_bypass.c \
     quant/palette/mono_float/0026_multiframe_native.c \
     quant/palette/mono_float/0027_cielab_export.c \
     quant/palette/mono_float/0028_auto_gamma.c \
@@ -5771,7 +5775,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/builtin_float/0019_precision_reuse.c \
     quant/palette/builtin_float/0020_output_reuse.c \
     quant/palette/builtin_float/0021_table_reuse.c \
-    quant/palette/builtin_float/0022_p3_snap_recovery.c \
+    quant/palette/builtin_float/0022_p3_snap_bypass.c \
     quant/palette/builtin_float/0023_multiframe_native.c \
     quant/palette/builtin_float/0024_p3_export.c \
     quant/palette/builtin_float/0025_positive_fs.c \
@@ -6147,7 +6151,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/auto_float/0013_auto_zero_snap.c \
     quant/palette/auto_float/0014_auto_binning_reuse.c \
     quant/palette/auto_float/0015_auto_implicit_cover.c \
-    quant/palette/auto_float/0016_auto_reject_snap.c \
+    quant/palette/auto_float/0016_auto_p3_snap.c \
     quant/palette/auto_float/0017_auto_subbyte_diffusion.c \
     quant/palette/auto_float/0018_auto_explicit_auto_binning.c \
     quant/palette/auto_float/0019_auto_byte_hard_kmeans.c \

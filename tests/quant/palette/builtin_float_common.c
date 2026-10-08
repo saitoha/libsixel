@@ -145,7 +145,8 @@ test_builtin_native_run(int space, int output_kind, int table, int mode,
     status = SIXEL_OK;
     ok = 0;
     memset(&capture, 0, sizeof(capture));
-    passes = mode >= 4 && mode <= 6 ? 3 : mode == 8 ? 2 : 1;
+    passes = mode >= 4 && mode <= 6 ? 3 :
+        mode == 7 || mode == 8 ? 2 : 1;
     if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
             SIXEL_FAILED(sixel_output_new(&output, bi_write,
                 &capture, NULL))) {
@@ -232,14 +233,11 @@ test_builtin_native_run(int space, int output_kind, int table, int mode,
             sixel_frame_set_frame_no(frame, pass % 2);
             sixel_frame_set_loop_count(frame, pass / 2);
         }
-        if (mode == 7) {
-            if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '_', "nearest")) ||
-                    !SIXEL_FAILED(sixel_encoder_encode_frame(encoder,
-                        frame, output)) || capture.size != 0 ||
-                    SIXEL_FAILED(sixel_encoder_setopt(encoder,
-                        '_', "none"))) {
-                goto end;
-            }
+        /* Fixed entries bypass construction snap in both passes. Verify
+         * their independent values and painted indices/mask below. */
+        if (mode == 7 && SIXEL_FAILED(sixel_encoder_setopt(encoder, '_',
+                pass == 0 ? "nearest:rate=.25" : "none"))) {
+            goto end;
         }
         status = sixel_encoder_encode_frame(encoder, frame, output);
         dither = (sixel_dither_t *)encoder->diagnostic_dither;

@@ -2827,8 +2827,18 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                 }
                 channel_sum = accum + (size_t)center_index * 3U;
                 for (channel = 0U; channel < 3U; ++channel) {
-                    update = channel_sum[channel]
+                    snapped_center[channel] = channel_sum[channel]
                         / cluster_weight;
+                }
+                /* Refinement after Ward uses the same destination contract
+                 * before movement bounds are refreshed for the next pass. */
+                if (sixel_palette_snap_destination_active()) {
+                    sixel_palette_snap_triple(snapped_center,
+                        use_reversible, pixelformat,
+                        SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER);
+                }
+                for (channel = 0U; channel < 3U; ++channel) {
+                    update = snapped_center[channel];
                     diff = centers[center_index * 3U + channel] - update;
                     delta += diff * diff;
                     centers[center_index * 3U + channel] = update;

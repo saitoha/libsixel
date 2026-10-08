@@ -400,11 +400,25 @@ control whether and how palette channels approach the 101 reversible SIXEL
 tone levels independently of palette coverage. \fBnone\fP disables snapping.
 \fIPOLICY\fP accepts \fBnone\fP, \fBauto\fP, \fBnearest\fP, or
 \fBreversible\fP.
+The default is \fBnone\fP. \fBauto\fP selects \fBnearest\fP,
+with final-palette-only timing unless a timing override is supplied.
 .br
 Supported suboptions:
 .br
 \fBtiming\fP (short form \fBIVALUE\fP): \fBonce\fP,
 \fBpolish\fP, \fBmerge\fP, \fBresolve\fP, or \fBall\fP.
+Display P3 also accepts \fBsample\fP, \fBseed\fP,
+\fBiteration\fP, \fBpremerge\fP, \fBmerge-iteration\fP,
+and \fBapply\fP. The first five add their stage to final snap;
+apply moves that final pass after cover, before lookup construction.
+K-means owns the centroid seed/update stages; other solvers retain their
+discrete representative algorithms. Sample snap changes only the training copy.
+.br
+\fBgrid\fP (short form \fBGVALUE\fP): P3 candidate computation
+\fBauto\fP, \fBdirect\fP, \fBtable\fP, \fBcache\fP, or
+\fBfull\fP. These share the RGB101 to RGB8 to Display P3 target model.
+Automatic grid selection uses the small primary-contribution table.
+The lazy cache adds 256 KiB, and the full grid uses about 23.6 MiB per build.
 .br
 \fBrate\fP (short form \fBAFACTOR\fP): floating value in 0.0-1.0.
 .br
@@ -1422,7 +1436,7 @@ any sampling policy,
 lookup none/certlut/5bit/6bit/auto/vptree/rbc/mahalanobis/eytzinger/fhedt,
 none, CPU spatial error diffusion (including auto), or positional dithering,
 none or Ward merge,
-cover auto/off or soft/hard, no active snap, and RGB SIXEL output.
+cover auto/off or soft/hard, destination-aware palette snap, and RGB SIXEL output.
 Omitted cover and plain auto select the supported native float path with
 repair off. Byte-eligible jobs retain their byte path.
 K-means accepts any binning policy; K-center accepts none, exact, hard
@@ -2502,7 +2516,14 @@ or "none" to disable snapping.
 .B SIXEL_PALETTE_SNAP_TIMING_POLICY
 .br
 decide when snaps run: "once", "polish", "merge", "resolve", or "all".
+Display P3 also accepts "sample", "seed", "iteration", "premerge",
+"merge-iteration" and "apply".
 Defaults to "once".
+.TP 5
+.B SIXEL_PALETTE_SNAP_GRID
+P3 candidate computation: "auto", "direct", "table", "cache", or "full".
+"auto" selects the small contribution table.
+Explicit snap suboptions override this environment default.
 .TP 5
 .B SIXEL_PALETTE_SNAP_APPROACH_RATE
 .br
