@@ -259,13 +259,20 @@ solver_recover(sixel_palette_t *palette, int model, int invalid)
             return 0;
         }
     }
-    /* The failed opt-in must not leak into a subsequent legacy attempt. */
+    /* Both ordinary and opt-in float attempts preserve source coordinates.
+     * Failure must leave the object reusable through either entry point. */
     if (SIXEL_FAILED(solver_build(palette, samples, 1, 1, model, 0,
             SIXEL_PALETTE_BINNING_NONE, 0)) ||
             SIXEL_FAILED(palette->vtbl->get_entries_float32(palette,
                 &view)) || view.entries == NULL ||
-            view.entries[0] != 1.0f || view.entries[1] != 0.0f) {
+            view.entry_count != 1) {
         return 0;
+    }
+    for (n = 0; n < 3; ++n) {
+        if (!isfinite(view.entries[n]) ||
+                fabs(view.entries[n] - samples[n]) > 5e-7) {
+            return 0;
+        }
     }
     if (SIXEL_FAILED(solver_build(palette, samples, 1, 1, model, 0,
             SIXEL_PALETTE_BINNING_NONE, 1)) ||

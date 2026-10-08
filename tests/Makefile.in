@@ -2286,6 +2286,28 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/snap_hooks/0013_stage_ladder.c \
 	quant/palette/snap_hooks/0014_kmeans_once.c \
 	quant/palette/snap_hooks/0015_kmeans_all.c \
+	quant/palette/ordinary_float/ordinary_float_test_common.c \
+	quant/palette/ordinary_float/ordinary_float_test_common.h \
+	quant/palette/ordinary_float/0001_center_sources.c \
+	quant/palette/ordinary_float/0002_medoids_sources.c \
+	quant/palette/ordinary_float/0003_center_hard.c \
+	quant/palette/ordinary_float/0004_center_exact.c \
+	quant/palette/ordinary_float/0005_center_ward.c \
+	quant/palette/ordinary_float/0006_medoids_ward.c \
+	quant/palette/ordinary_float/0007_center_snap.c \
+	quant/palette/ordinary_float/0008_medoids_snap.c \
+	quant/palette/ordinary_float/0009_center_fault.c \
+	quant/palette/ordinary_float/0010_medoids_fault.c \
+	quant/palette/ordinary_float/0011_center_nonfinite.c \
+	quant/palette/ordinary_float/0012_medoids_nonfinite.c \
+	quant/palette/ordinary_float/0013_center_hint.c \
+	quant/palette/ordinary_float/0014_medoids_hint.c \
+	quant/palette/ordinary_float/0015_center_byte.c \
+	quant/palette/ordinary_float/0016_medoids_byte.c \
+	quant/palette/ordinary_float/0017_center_reuse.c \
+	quant/palette/ordinary_float/0018_medoids_reuse.c \
+	quant/palette/ordinary_float/0019_center_reduce.c \
+	quant/palette/ordinary_float/0020_medoids_reduce.c \
 	quant/palette/retention/retention_test_common.c \
 	quant/palette/retention/retention_test_common.h \
 	quant/palette/retention/0016_kcenter_boundary.c \
@@ -5325,6 +5347,27 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0013_stage_ladder.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0014_kmeans_once.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0015_kmeans_all.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-ordinary_float_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0001_center_sources.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0002_medoids_sources.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0003_center_hard.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0004_center_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0005_center_ward.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0006_medoids_ward.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0007_center_snap.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0008_medoids_snap.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0009_center_fault.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0010_medoids_fault.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0011_center_nonfinite.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0012_medoids_nonfinite.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0013_center_hint.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0014_medoids_hint.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0015_center_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0016_medoids_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0017_center_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0018_medoids_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0019_center_reduce.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0020_medoids_reduce.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-retention_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0016_kcenter_boundary.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0014_extended_read.$(OBJEXT) \
@@ -9254,6 +9297,27 @@ am__depfiles_remade =  \
 	quant/palette/mono_float/$(DEPDIR)/test_runner-0029_auto_cielab.Po \
 	quant/palette/mono_float/$(DEPDIR)/test_runner-0030_empty_mask.Po \
 	quant/palette/mono_float/$(DEPDIR)/test_runner-0031_full_mask.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0001_center_sources.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0002_medoids_sources.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0003_center_hard.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0004_center_exact.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0005_center_ward.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0006_medoids_ward.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0007_center_snap.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0008_medoids_snap.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0009_center_fault.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0010_medoids_fault.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0011_center_nonfinite.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0012_medoids_nonfinite.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0013_center_hint.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0014_medoids_hint.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0015_center_byte.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0016_medoids_byte.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0017_center_reuse.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0018_medoids_reuse.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0019_center_reduce.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0020_medoids_reduce.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-ordinary_float_test_common.Po \
 	quant/palette/output_float/$(DEPDIR)/test_runner-0001_linear_gamma.Po \
 	quant/palette/output_float/$(DEPDIR)/test_runner-0002_linear_linear.Po \
 	quant/palette/output_float/$(DEPDIR)/test_runner-0003_linear_oklab.Po \
@@ -11326,6 +11390,27 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_STAGE_LADDER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_KMEANS_ONCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_KMEANS_ALL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ORDINARY_FLOAT_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CENTER_SOURCES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_MEDOIDS_SOURCES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_CENTER_HARD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_CENTER_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_CENTER_WARD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_MEDOIDS_WARD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_CENTER_SNAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_MEDOIDS_SNAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_CENTER_FAULT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_MEDOIDS_FAULT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_CENTER_NONFINITE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_MEDOIDS_NONFINITE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_CENTER_HINT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_MEDOIDS_HINT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_CENTER_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_MEDOIDS_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_CENTER_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_MEDOIDS_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_CENTER_REDUCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_MEDOIDS_REDUCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RETENTION_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_KCENTER_BOUNDARY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_EXTENDED_READ \
@@ -15310,6 +15395,28 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0013_stage_ladder.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0014_kmeans_once.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0015_kmeans_all.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/ordinary_float_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/ordinary_float_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0001_center_sources.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0002_medoids_sources.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0003_center_hard.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0004_center_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0005_center_ward.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0006_medoids_ward.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0007_center_snap.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0008_medoids_snap.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0009_center_fault.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0010_medoids_fault.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0011_center_nonfinite.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0012_medoids_nonfinite.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0013_center_hint.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0014_medoids_hint.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0015_center_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0016_medoids_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0017_center_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0018_medoids_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0019_center_reduce.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0020_medoids_reduce.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/retention_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/retention_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0016_kcenter_boundary.c \
@@ -23116,6 +23223,75 @@ quant/palette/snap_hooks/test_runner-0014_kmeans_once.$(OBJEXT):  \
 quant/palette/snap_hooks/test_runner-0015_kmeans_all.$(OBJEXT):  \
 	quant/palette/snap_hooks/$(am__dirstamp) \
 	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/ordinary_float
+	@: >>quant/palette/ordinary_float/$(am__dirstamp)
+quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/ordinary_float/$(DEPDIR)
+	@: >>quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-ordinary_float_test_common.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0001_center_sources.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0002_medoids_sources.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0003_center_hard.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0004_center_exact.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0005_center_ward.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0006_medoids_ward.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0007_center_snap.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0008_medoids_snap.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0009_center_fault.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0010_medoids_fault.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0011_center_nonfinite.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0012_medoids_nonfinite.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0013_center_hint.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0014_medoids_hint.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0015_center_byte.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0016_medoids_byte.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0017_center_reuse.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0018_medoids_reuse.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0019_center_reduce.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0020_medoids_reduce.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
 quant/palette/retention/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette/retention
 	@: >>quant/palette/retention/$(am__dirstamp)
@@ -26314,6 +26490,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/map_solver/*.$(OBJEXT)
 	-rm -f quant/palette/merge_float/*.$(OBJEXT)
 	-rm -f quant/palette/mono_float/*.$(OBJEXT)
+	-rm -f quant/palette/ordinary_float/*.$(OBJEXT)
 	-rm -f quant/palette/output_float/*.$(OBJEXT)
 	-rm -f quant/palette/packed_alpha/*.$(OBJEXT)
 	-rm -f quant/palette/retention/*.$(OBJEXT)
@@ -29259,6 +29436,27 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0029_auto_cielab.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0030_empty_mask.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mono_float/$(DEPDIR)/test_runner-0031_full_mask.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0001_center_sources.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0002_medoids_sources.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0003_center_hard.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0004_center_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0005_center_ward.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0006_medoids_ward.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0007_center_snap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0008_medoids_snap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0009_center_fault.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0010_medoids_fault.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0011_center_nonfinite.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0012_medoids_nonfinite.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0013_center_hint.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0014_medoids_hint.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0015_center_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0016_medoids_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0017_center_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0018_medoids_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0019_center_reduce.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0020_medoids_reduce.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-ordinary_float_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0001_linear_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0002_linear_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0003_linear_oklab.Po@am__quote@ # am--include-marker
@@ -59046,6 +59244,300 @@ quant/palette/snap_hooks/test_runner-0015_kmeans_all.obj: quant/palette/snap_hoo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0015_kmeans_all.obj `if test -f 'quant/palette/snap_hooks/0015_kmeans_all.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0015_kmeans_all.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0015_kmeans_all.c'; fi`
 
+quant/palette/ordinary_float/test_runner-ordinary_float_test_common.o: quant/palette/ordinary_float/ordinary_float_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-ordinary_float_test_common.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-ordinary_float_test_common.Tpo -c -o quant/palette/ordinary_float/test_runner-ordinary_float_test_common.o `test -f 'quant/palette/ordinary_float/ordinary_float_test_common.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/ordinary_float_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-ordinary_float_test_common.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-ordinary_float_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/ordinary_float_test_common.c' object='quant/palette/ordinary_float/test_runner-ordinary_float_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-ordinary_float_test_common.o `test -f 'quant/palette/ordinary_float/ordinary_float_test_common.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/ordinary_float_test_common.c
+
+quant/palette/ordinary_float/test_runner-ordinary_float_test_common.obj: quant/palette/ordinary_float/ordinary_float_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-ordinary_float_test_common.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-ordinary_float_test_common.Tpo -c -o quant/palette/ordinary_float/test_runner-ordinary_float_test_common.obj `if test -f 'quant/palette/ordinary_float/ordinary_float_test_common.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/ordinary_float_test_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/ordinary_float_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-ordinary_float_test_common.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-ordinary_float_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/ordinary_float_test_common.c' object='quant/palette/ordinary_float/test_runner-ordinary_float_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-ordinary_float_test_common.obj `if test -f 'quant/palette/ordinary_float/ordinary_float_test_common.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/ordinary_float_test_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/ordinary_float_test_common.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0001_center_sources.o: quant/palette/ordinary_float/0001_center_sources.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0001_center_sources.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0001_center_sources.Tpo -c -o quant/palette/ordinary_float/test_runner-0001_center_sources.o `test -f 'quant/palette/ordinary_float/0001_center_sources.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0001_center_sources.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0001_center_sources.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0001_center_sources.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0001_center_sources.c' object='quant/palette/ordinary_float/test_runner-0001_center_sources.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0001_center_sources.o `test -f 'quant/palette/ordinary_float/0001_center_sources.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0001_center_sources.c
+
+quant/palette/ordinary_float/test_runner-0001_center_sources.obj: quant/palette/ordinary_float/0001_center_sources.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0001_center_sources.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0001_center_sources.Tpo -c -o quant/palette/ordinary_float/test_runner-0001_center_sources.obj `if test -f 'quant/palette/ordinary_float/0001_center_sources.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0001_center_sources.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0001_center_sources.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0001_center_sources.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0001_center_sources.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0001_center_sources.c' object='quant/palette/ordinary_float/test_runner-0001_center_sources.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0001_center_sources.obj `if test -f 'quant/palette/ordinary_float/0001_center_sources.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0001_center_sources.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0001_center_sources.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0002_medoids_sources.o: quant/palette/ordinary_float/0002_medoids_sources.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0002_medoids_sources.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0002_medoids_sources.Tpo -c -o quant/palette/ordinary_float/test_runner-0002_medoids_sources.o `test -f 'quant/palette/ordinary_float/0002_medoids_sources.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0002_medoids_sources.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0002_medoids_sources.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0002_medoids_sources.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0002_medoids_sources.c' object='quant/palette/ordinary_float/test_runner-0002_medoids_sources.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0002_medoids_sources.o `test -f 'quant/palette/ordinary_float/0002_medoids_sources.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0002_medoids_sources.c
+
+quant/palette/ordinary_float/test_runner-0002_medoids_sources.obj: quant/palette/ordinary_float/0002_medoids_sources.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0002_medoids_sources.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0002_medoids_sources.Tpo -c -o quant/palette/ordinary_float/test_runner-0002_medoids_sources.obj `if test -f 'quant/palette/ordinary_float/0002_medoids_sources.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0002_medoids_sources.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0002_medoids_sources.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0002_medoids_sources.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0002_medoids_sources.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0002_medoids_sources.c' object='quant/palette/ordinary_float/test_runner-0002_medoids_sources.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0002_medoids_sources.obj `if test -f 'quant/palette/ordinary_float/0002_medoids_sources.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0002_medoids_sources.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0002_medoids_sources.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0003_center_hard.o: quant/palette/ordinary_float/0003_center_hard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0003_center_hard.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0003_center_hard.Tpo -c -o quant/palette/ordinary_float/test_runner-0003_center_hard.o `test -f 'quant/palette/ordinary_float/0003_center_hard.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0003_center_hard.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0003_center_hard.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0003_center_hard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0003_center_hard.c' object='quant/palette/ordinary_float/test_runner-0003_center_hard.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0003_center_hard.o `test -f 'quant/palette/ordinary_float/0003_center_hard.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0003_center_hard.c
+
+quant/palette/ordinary_float/test_runner-0003_center_hard.obj: quant/palette/ordinary_float/0003_center_hard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0003_center_hard.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0003_center_hard.Tpo -c -o quant/palette/ordinary_float/test_runner-0003_center_hard.obj `if test -f 'quant/palette/ordinary_float/0003_center_hard.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0003_center_hard.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0003_center_hard.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0003_center_hard.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0003_center_hard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0003_center_hard.c' object='quant/palette/ordinary_float/test_runner-0003_center_hard.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0003_center_hard.obj `if test -f 'quant/palette/ordinary_float/0003_center_hard.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0003_center_hard.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0003_center_hard.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0004_center_exact.o: quant/palette/ordinary_float/0004_center_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0004_center_exact.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0004_center_exact.Tpo -c -o quant/palette/ordinary_float/test_runner-0004_center_exact.o `test -f 'quant/palette/ordinary_float/0004_center_exact.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0004_center_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0004_center_exact.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0004_center_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0004_center_exact.c' object='quant/palette/ordinary_float/test_runner-0004_center_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0004_center_exact.o `test -f 'quant/palette/ordinary_float/0004_center_exact.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0004_center_exact.c
+
+quant/palette/ordinary_float/test_runner-0004_center_exact.obj: quant/palette/ordinary_float/0004_center_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0004_center_exact.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0004_center_exact.Tpo -c -o quant/palette/ordinary_float/test_runner-0004_center_exact.obj `if test -f 'quant/palette/ordinary_float/0004_center_exact.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0004_center_exact.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0004_center_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0004_center_exact.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0004_center_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0004_center_exact.c' object='quant/palette/ordinary_float/test_runner-0004_center_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0004_center_exact.obj `if test -f 'quant/palette/ordinary_float/0004_center_exact.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0004_center_exact.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0004_center_exact.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0005_center_ward.o: quant/palette/ordinary_float/0005_center_ward.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0005_center_ward.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0005_center_ward.Tpo -c -o quant/palette/ordinary_float/test_runner-0005_center_ward.o `test -f 'quant/palette/ordinary_float/0005_center_ward.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0005_center_ward.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0005_center_ward.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0005_center_ward.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0005_center_ward.c' object='quant/palette/ordinary_float/test_runner-0005_center_ward.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0005_center_ward.o `test -f 'quant/palette/ordinary_float/0005_center_ward.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0005_center_ward.c
+
+quant/palette/ordinary_float/test_runner-0005_center_ward.obj: quant/palette/ordinary_float/0005_center_ward.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0005_center_ward.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0005_center_ward.Tpo -c -o quant/palette/ordinary_float/test_runner-0005_center_ward.obj `if test -f 'quant/palette/ordinary_float/0005_center_ward.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0005_center_ward.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0005_center_ward.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0005_center_ward.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0005_center_ward.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0005_center_ward.c' object='quant/palette/ordinary_float/test_runner-0005_center_ward.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0005_center_ward.obj `if test -f 'quant/palette/ordinary_float/0005_center_ward.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0005_center_ward.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0005_center_ward.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0006_medoids_ward.o: quant/palette/ordinary_float/0006_medoids_ward.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0006_medoids_ward.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0006_medoids_ward.Tpo -c -o quant/palette/ordinary_float/test_runner-0006_medoids_ward.o `test -f 'quant/palette/ordinary_float/0006_medoids_ward.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0006_medoids_ward.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0006_medoids_ward.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0006_medoids_ward.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0006_medoids_ward.c' object='quant/palette/ordinary_float/test_runner-0006_medoids_ward.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0006_medoids_ward.o `test -f 'quant/palette/ordinary_float/0006_medoids_ward.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0006_medoids_ward.c
+
+quant/palette/ordinary_float/test_runner-0006_medoids_ward.obj: quant/palette/ordinary_float/0006_medoids_ward.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0006_medoids_ward.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0006_medoids_ward.Tpo -c -o quant/palette/ordinary_float/test_runner-0006_medoids_ward.obj `if test -f 'quant/palette/ordinary_float/0006_medoids_ward.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0006_medoids_ward.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0006_medoids_ward.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0006_medoids_ward.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0006_medoids_ward.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0006_medoids_ward.c' object='quant/palette/ordinary_float/test_runner-0006_medoids_ward.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0006_medoids_ward.obj `if test -f 'quant/palette/ordinary_float/0006_medoids_ward.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0006_medoids_ward.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0006_medoids_ward.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0007_center_snap.o: quant/palette/ordinary_float/0007_center_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0007_center_snap.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0007_center_snap.Tpo -c -o quant/palette/ordinary_float/test_runner-0007_center_snap.o `test -f 'quant/palette/ordinary_float/0007_center_snap.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0007_center_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0007_center_snap.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0007_center_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0007_center_snap.c' object='quant/palette/ordinary_float/test_runner-0007_center_snap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0007_center_snap.o `test -f 'quant/palette/ordinary_float/0007_center_snap.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0007_center_snap.c
+
+quant/palette/ordinary_float/test_runner-0007_center_snap.obj: quant/palette/ordinary_float/0007_center_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0007_center_snap.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0007_center_snap.Tpo -c -o quant/palette/ordinary_float/test_runner-0007_center_snap.obj `if test -f 'quant/palette/ordinary_float/0007_center_snap.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0007_center_snap.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0007_center_snap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0007_center_snap.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0007_center_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0007_center_snap.c' object='quant/palette/ordinary_float/test_runner-0007_center_snap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0007_center_snap.obj `if test -f 'quant/palette/ordinary_float/0007_center_snap.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0007_center_snap.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0007_center_snap.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0008_medoids_snap.o: quant/palette/ordinary_float/0008_medoids_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0008_medoids_snap.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0008_medoids_snap.Tpo -c -o quant/palette/ordinary_float/test_runner-0008_medoids_snap.o `test -f 'quant/palette/ordinary_float/0008_medoids_snap.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0008_medoids_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0008_medoids_snap.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0008_medoids_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0008_medoids_snap.c' object='quant/palette/ordinary_float/test_runner-0008_medoids_snap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0008_medoids_snap.o `test -f 'quant/palette/ordinary_float/0008_medoids_snap.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0008_medoids_snap.c
+
+quant/palette/ordinary_float/test_runner-0008_medoids_snap.obj: quant/palette/ordinary_float/0008_medoids_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0008_medoids_snap.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0008_medoids_snap.Tpo -c -o quant/palette/ordinary_float/test_runner-0008_medoids_snap.obj `if test -f 'quant/palette/ordinary_float/0008_medoids_snap.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0008_medoids_snap.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0008_medoids_snap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0008_medoids_snap.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0008_medoids_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0008_medoids_snap.c' object='quant/palette/ordinary_float/test_runner-0008_medoids_snap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0008_medoids_snap.obj `if test -f 'quant/palette/ordinary_float/0008_medoids_snap.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0008_medoids_snap.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0008_medoids_snap.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0009_center_fault.o: quant/palette/ordinary_float/0009_center_fault.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0009_center_fault.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0009_center_fault.Tpo -c -o quant/palette/ordinary_float/test_runner-0009_center_fault.o `test -f 'quant/palette/ordinary_float/0009_center_fault.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0009_center_fault.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0009_center_fault.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0009_center_fault.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0009_center_fault.c' object='quant/palette/ordinary_float/test_runner-0009_center_fault.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0009_center_fault.o `test -f 'quant/palette/ordinary_float/0009_center_fault.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0009_center_fault.c
+
+quant/palette/ordinary_float/test_runner-0009_center_fault.obj: quant/palette/ordinary_float/0009_center_fault.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0009_center_fault.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0009_center_fault.Tpo -c -o quant/palette/ordinary_float/test_runner-0009_center_fault.obj `if test -f 'quant/palette/ordinary_float/0009_center_fault.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0009_center_fault.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0009_center_fault.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0009_center_fault.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0009_center_fault.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0009_center_fault.c' object='quant/palette/ordinary_float/test_runner-0009_center_fault.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0009_center_fault.obj `if test -f 'quant/palette/ordinary_float/0009_center_fault.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0009_center_fault.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0009_center_fault.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0010_medoids_fault.o: quant/palette/ordinary_float/0010_medoids_fault.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0010_medoids_fault.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0010_medoids_fault.Tpo -c -o quant/palette/ordinary_float/test_runner-0010_medoids_fault.o `test -f 'quant/palette/ordinary_float/0010_medoids_fault.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0010_medoids_fault.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0010_medoids_fault.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0010_medoids_fault.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0010_medoids_fault.c' object='quant/palette/ordinary_float/test_runner-0010_medoids_fault.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0010_medoids_fault.o `test -f 'quant/palette/ordinary_float/0010_medoids_fault.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0010_medoids_fault.c
+
+quant/palette/ordinary_float/test_runner-0010_medoids_fault.obj: quant/palette/ordinary_float/0010_medoids_fault.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0010_medoids_fault.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0010_medoids_fault.Tpo -c -o quant/palette/ordinary_float/test_runner-0010_medoids_fault.obj `if test -f 'quant/palette/ordinary_float/0010_medoids_fault.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0010_medoids_fault.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0010_medoids_fault.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0010_medoids_fault.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0010_medoids_fault.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0010_medoids_fault.c' object='quant/palette/ordinary_float/test_runner-0010_medoids_fault.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0010_medoids_fault.obj `if test -f 'quant/palette/ordinary_float/0010_medoids_fault.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0010_medoids_fault.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0010_medoids_fault.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0011_center_nonfinite.o: quant/palette/ordinary_float/0011_center_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0011_center_nonfinite.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0011_center_nonfinite.Tpo -c -o quant/palette/ordinary_float/test_runner-0011_center_nonfinite.o `test -f 'quant/palette/ordinary_float/0011_center_nonfinite.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0011_center_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0011_center_nonfinite.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0011_center_nonfinite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0011_center_nonfinite.c' object='quant/palette/ordinary_float/test_runner-0011_center_nonfinite.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0011_center_nonfinite.o `test -f 'quant/palette/ordinary_float/0011_center_nonfinite.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0011_center_nonfinite.c
+
+quant/palette/ordinary_float/test_runner-0011_center_nonfinite.obj: quant/palette/ordinary_float/0011_center_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0011_center_nonfinite.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0011_center_nonfinite.Tpo -c -o quant/palette/ordinary_float/test_runner-0011_center_nonfinite.obj `if test -f 'quant/palette/ordinary_float/0011_center_nonfinite.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0011_center_nonfinite.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0011_center_nonfinite.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0011_center_nonfinite.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0011_center_nonfinite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0011_center_nonfinite.c' object='quant/palette/ordinary_float/test_runner-0011_center_nonfinite.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0011_center_nonfinite.obj `if test -f 'quant/palette/ordinary_float/0011_center_nonfinite.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0011_center_nonfinite.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0011_center_nonfinite.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0012_medoids_nonfinite.o: quant/palette/ordinary_float/0012_medoids_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0012_medoids_nonfinite.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0012_medoids_nonfinite.Tpo -c -o quant/palette/ordinary_float/test_runner-0012_medoids_nonfinite.o `test -f 'quant/palette/ordinary_float/0012_medoids_nonfinite.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0012_medoids_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0012_medoids_nonfinite.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0012_medoids_nonfinite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0012_medoids_nonfinite.c' object='quant/palette/ordinary_float/test_runner-0012_medoids_nonfinite.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0012_medoids_nonfinite.o `test -f 'quant/palette/ordinary_float/0012_medoids_nonfinite.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0012_medoids_nonfinite.c
+
+quant/palette/ordinary_float/test_runner-0012_medoids_nonfinite.obj: quant/palette/ordinary_float/0012_medoids_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0012_medoids_nonfinite.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0012_medoids_nonfinite.Tpo -c -o quant/palette/ordinary_float/test_runner-0012_medoids_nonfinite.obj `if test -f 'quant/palette/ordinary_float/0012_medoids_nonfinite.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0012_medoids_nonfinite.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0012_medoids_nonfinite.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0012_medoids_nonfinite.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0012_medoids_nonfinite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0012_medoids_nonfinite.c' object='quant/palette/ordinary_float/test_runner-0012_medoids_nonfinite.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0012_medoids_nonfinite.obj `if test -f 'quant/palette/ordinary_float/0012_medoids_nonfinite.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0012_medoids_nonfinite.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0012_medoids_nonfinite.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0013_center_hint.o: quant/palette/ordinary_float/0013_center_hint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0013_center_hint.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0013_center_hint.Tpo -c -o quant/palette/ordinary_float/test_runner-0013_center_hint.o `test -f 'quant/palette/ordinary_float/0013_center_hint.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0013_center_hint.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0013_center_hint.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0013_center_hint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0013_center_hint.c' object='quant/palette/ordinary_float/test_runner-0013_center_hint.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0013_center_hint.o `test -f 'quant/palette/ordinary_float/0013_center_hint.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0013_center_hint.c
+
+quant/palette/ordinary_float/test_runner-0013_center_hint.obj: quant/palette/ordinary_float/0013_center_hint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0013_center_hint.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0013_center_hint.Tpo -c -o quant/palette/ordinary_float/test_runner-0013_center_hint.obj `if test -f 'quant/palette/ordinary_float/0013_center_hint.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0013_center_hint.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0013_center_hint.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0013_center_hint.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0013_center_hint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0013_center_hint.c' object='quant/palette/ordinary_float/test_runner-0013_center_hint.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0013_center_hint.obj `if test -f 'quant/palette/ordinary_float/0013_center_hint.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0013_center_hint.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0013_center_hint.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0014_medoids_hint.o: quant/palette/ordinary_float/0014_medoids_hint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0014_medoids_hint.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0014_medoids_hint.Tpo -c -o quant/palette/ordinary_float/test_runner-0014_medoids_hint.o `test -f 'quant/palette/ordinary_float/0014_medoids_hint.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0014_medoids_hint.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0014_medoids_hint.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0014_medoids_hint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0014_medoids_hint.c' object='quant/palette/ordinary_float/test_runner-0014_medoids_hint.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0014_medoids_hint.o `test -f 'quant/palette/ordinary_float/0014_medoids_hint.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0014_medoids_hint.c
+
+quant/palette/ordinary_float/test_runner-0014_medoids_hint.obj: quant/palette/ordinary_float/0014_medoids_hint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0014_medoids_hint.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0014_medoids_hint.Tpo -c -o quant/palette/ordinary_float/test_runner-0014_medoids_hint.obj `if test -f 'quant/palette/ordinary_float/0014_medoids_hint.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0014_medoids_hint.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0014_medoids_hint.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0014_medoids_hint.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0014_medoids_hint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0014_medoids_hint.c' object='quant/palette/ordinary_float/test_runner-0014_medoids_hint.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0014_medoids_hint.obj `if test -f 'quant/palette/ordinary_float/0014_medoids_hint.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0014_medoids_hint.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0014_medoids_hint.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0015_center_byte.o: quant/palette/ordinary_float/0015_center_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0015_center_byte.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0015_center_byte.Tpo -c -o quant/palette/ordinary_float/test_runner-0015_center_byte.o `test -f 'quant/palette/ordinary_float/0015_center_byte.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0015_center_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0015_center_byte.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0015_center_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0015_center_byte.c' object='quant/palette/ordinary_float/test_runner-0015_center_byte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0015_center_byte.o `test -f 'quant/palette/ordinary_float/0015_center_byte.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0015_center_byte.c
+
+quant/palette/ordinary_float/test_runner-0015_center_byte.obj: quant/palette/ordinary_float/0015_center_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0015_center_byte.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0015_center_byte.Tpo -c -o quant/palette/ordinary_float/test_runner-0015_center_byte.obj `if test -f 'quant/palette/ordinary_float/0015_center_byte.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0015_center_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0015_center_byte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0015_center_byte.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0015_center_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0015_center_byte.c' object='quant/palette/ordinary_float/test_runner-0015_center_byte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0015_center_byte.obj `if test -f 'quant/palette/ordinary_float/0015_center_byte.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0015_center_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0015_center_byte.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0016_medoids_byte.o: quant/palette/ordinary_float/0016_medoids_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0016_medoids_byte.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0016_medoids_byte.Tpo -c -o quant/palette/ordinary_float/test_runner-0016_medoids_byte.o `test -f 'quant/palette/ordinary_float/0016_medoids_byte.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0016_medoids_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0016_medoids_byte.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0016_medoids_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0016_medoids_byte.c' object='quant/palette/ordinary_float/test_runner-0016_medoids_byte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0016_medoids_byte.o `test -f 'quant/palette/ordinary_float/0016_medoids_byte.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0016_medoids_byte.c
+
+quant/palette/ordinary_float/test_runner-0016_medoids_byte.obj: quant/palette/ordinary_float/0016_medoids_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0016_medoids_byte.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0016_medoids_byte.Tpo -c -o quant/palette/ordinary_float/test_runner-0016_medoids_byte.obj `if test -f 'quant/palette/ordinary_float/0016_medoids_byte.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0016_medoids_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0016_medoids_byte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0016_medoids_byte.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0016_medoids_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0016_medoids_byte.c' object='quant/palette/ordinary_float/test_runner-0016_medoids_byte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0016_medoids_byte.obj `if test -f 'quant/palette/ordinary_float/0016_medoids_byte.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0016_medoids_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0016_medoids_byte.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0017_center_reuse.o: quant/palette/ordinary_float/0017_center_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0017_center_reuse.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0017_center_reuse.Tpo -c -o quant/palette/ordinary_float/test_runner-0017_center_reuse.o `test -f 'quant/palette/ordinary_float/0017_center_reuse.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0017_center_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0017_center_reuse.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0017_center_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0017_center_reuse.c' object='quant/palette/ordinary_float/test_runner-0017_center_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0017_center_reuse.o `test -f 'quant/palette/ordinary_float/0017_center_reuse.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0017_center_reuse.c
+
+quant/palette/ordinary_float/test_runner-0017_center_reuse.obj: quant/palette/ordinary_float/0017_center_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0017_center_reuse.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0017_center_reuse.Tpo -c -o quant/palette/ordinary_float/test_runner-0017_center_reuse.obj `if test -f 'quant/palette/ordinary_float/0017_center_reuse.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0017_center_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0017_center_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0017_center_reuse.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0017_center_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0017_center_reuse.c' object='quant/palette/ordinary_float/test_runner-0017_center_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0017_center_reuse.obj `if test -f 'quant/palette/ordinary_float/0017_center_reuse.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0017_center_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0017_center_reuse.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0018_medoids_reuse.o: quant/palette/ordinary_float/0018_medoids_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0018_medoids_reuse.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0018_medoids_reuse.Tpo -c -o quant/palette/ordinary_float/test_runner-0018_medoids_reuse.o `test -f 'quant/palette/ordinary_float/0018_medoids_reuse.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0018_medoids_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0018_medoids_reuse.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0018_medoids_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0018_medoids_reuse.c' object='quant/palette/ordinary_float/test_runner-0018_medoids_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0018_medoids_reuse.o `test -f 'quant/palette/ordinary_float/0018_medoids_reuse.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0018_medoids_reuse.c
+
+quant/palette/ordinary_float/test_runner-0018_medoids_reuse.obj: quant/palette/ordinary_float/0018_medoids_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0018_medoids_reuse.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0018_medoids_reuse.Tpo -c -o quant/palette/ordinary_float/test_runner-0018_medoids_reuse.obj `if test -f 'quant/palette/ordinary_float/0018_medoids_reuse.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0018_medoids_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0018_medoids_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0018_medoids_reuse.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0018_medoids_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0018_medoids_reuse.c' object='quant/palette/ordinary_float/test_runner-0018_medoids_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0018_medoids_reuse.obj `if test -f 'quant/palette/ordinary_float/0018_medoids_reuse.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0018_medoids_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0018_medoids_reuse.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0019_center_reduce.o: quant/palette/ordinary_float/0019_center_reduce.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0019_center_reduce.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0019_center_reduce.Tpo -c -o quant/palette/ordinary_float/test_runner-0019_center_reduce.o `test -f 'quant/palette/ordinary_float/0019_center_reduce.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0019_center_reduce.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0019_center_reduce.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0019_center_reduce.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0019_center_reduce.c' object='quant/palette/ordinary_float/test_runner-0019_center_reduce.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0019_center_reduce.o `test -f 'quant/palette/ordinary_float/0019_center_reduce.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0019_center_reduce.c
+
+quant/palette/ordinary_float/test_runner-0019_center_reduce.obj: quant/palette/ordinary_float/0019_center_reduce.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0019_center_reduce.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0019_center_reduce.Tpo -c -o quant/palette/ordinary_float/test_runner-0019_center_reduce.obj `if test -f 'quant/palette/ordinary_float/0019_center_reduce.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0019_center_reduce.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0019_center_reduce.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0019_center_reduce.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0019_center_reduce.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0019_center_reduce.c' object='quant/palette/ordinary_float/test_runner-0019_center_reduce.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0019_center_reduce.obj `if test -f 'quant/palette/ordinary_float/0019_center_reduce.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0019_center_reduce.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0019_center_reduce.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0020_medoids_reduce.o: quant/palette/ordinary_float/0020_medoids_reduce.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0020_medoids_reduce.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0020_medoids_reduce.Tpo -c -o quant/palette/ordinary_float/test_runner-0020_medoids_reduce.o `test -f 'quant/palette/ordinary_float/0020_medoids_reduce.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0020_medoids_reduce.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0020_medoids_reduce.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0020_medoids_reduce.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0020_medoids_reduce.c' object='quant/palette/ordinary_float/test_runner-0020_medoids_reduce.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0020_medoids_reduce.o `test -f 'quant/palette/ordinary_float/0020_medoids_reduce.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0020_medoids_reduce.c
+
+quant/palette/ordinary_float/test_runner-0020_medoids_reduce.obj: quant/palette/ordinary_float/0020_medoids_reduce.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0020_medoids_reduce.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0020_medoids_reduce.Tpo -c -o quant/palette/ordinary_float/test_runner-0020_medoids_reduce.obj `if test -f 'quant/palette/ordinary_float/0020_medoids_reduce.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0020_medoids_reduce.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0020_medoids_reduce.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0020_medoids_reduce.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0020_medoids_reduce.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0020_medoids_reduce.c' object='quant/palette/ordinary_float/test_runner-0020_medoids_reduce.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0020_medoids_reduce.obj `if test -f 'quant/palette/ordinary_float/0020_medoids_reduce.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0020_medoids_reduce.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0020_medoids_reduce.c'; fi`
+
 quant/palette/retention/test_runner-retention_test_common.o: quant/palette/retention/retention_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-retention_test_common.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Tpo -c -o quant/palette/retention/test_runner-retention_test_common.o `test -f 'quant/palette/retention/retention_test_common.c' || echo '$(srcdir)/'`quant/palette/retention/retention_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Tpo quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Po
@@ -72661,6 +73153,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/merge_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/mono_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/mono_float/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/ordinary_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/output_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/output_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)

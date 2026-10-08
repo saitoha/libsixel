@@ -1472,6 +1472,27 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0013_STAGE_LADDER \
     -DBUILD_TEST_0014_KMEANS_ONCE \
     -DBUILD_TEST_0015_KMEANS_ALL \
+    -DBUILD_ORDINARY_FLOAT_TEST_COMMON \
+    -DBUILD_TEST_0001_CENTER_SOURCES \
+    -DBUILD_TEST_0002_MEDOIDS_SOURCES \
+    -DBUILD_TEST_0003_CENTER_HARD \
+    -DBUILD_TEST_0004_CENTER_EXACT \
+    -DBUILD_TEST_0005_CENTER_WARD \
+    -DBUILD_TEST_0006_MEDOIDS_WARD \
+    -DBUILD_TEST_0007_CENTER_SNAP \
+    -DBUILD_TEST_0008_MEDOIDS_SNAP \
+    -DBUILD_TEST_0009_CENTER_FAULT \
+    -DBUILD_TEST_0010_MEDOIDS_FAULT \
+    -DBUILD_TEST_0011_CENTER_NONFINITE \
+    -DBUILD_TEST_0012_MEDOIDS_NONFINITE \
+    -DBUILD_TEST_0013_CENTER_HINT \
+    -DBUILD_TEST_0014_MEDOIDS_HINT \
+    -DBUILD_TEST_0015_CENTER_BYTE \
+    -DBUILD_TEST_0016_MEDOIDS_BYTE \
+    -DBUILD_TEST_0017_CENTER_REUSE \
+    -DBUILD_TEST_0018_MEDOIDS_REUSE \
+    -DBUILD_TEST_0019_CENTER_REDUCE \
+    -DBUILD_TEST_0020_MEDOIDS_REDUCE \
     -DBUILD_RETENTION_TEST_COMMON \
     -DBUILD_TEST_0016_KCENTER_BOUNDARY \
     -DBUILD_TEST_0014_EXTENDED_READ \
@@ -5425,6 +5446,28 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/snap_hooks/0013_stage_ladder.c \
     quant/palette/snap_hooks/0014_kmeans_once.c \
     quant/palette/snap_hooks/0015_kmeans_all.c \
+    quant/palette/ordinary_float/ordinary_float_test_common.c \
+    quant/palette/ordinary_float/ordinary_float_test_common.h \
+    quant/palette/ordinary_float/0001_center_sources.c \
+    quant/palette/ordinary_float/0002_medoids_sources.c \
+    quant/palette/ordinary_float/0003_center_hard.c \
+    quant/palette/ordinary_float/0004_center_exact.c \
+    quant/palette/ordinary_float/0005_center_ward.c \
+    quant/palette/ordinary_float/0006_medoids_ward.c \
+    quant/palette/ordinary_float/0007_center_snap.c \
+    quant/palette/ordinary_float/0008_medoids_snap.c \
+    quant/palette/ordinary_float/0009_center_fault.c \
+    quant/palette/ordinary_float/0010_medoids_fault.c \
+    quant/palette/ordinary_float/0011_center_nonfinite.c \
+    quant/palette/ordinary_float/0012_medoids_nonfinite.c \
+    quant/palette/ordinary_float/0013_center_hint.c \
+    quant/palette/ordinary_float/0014_medoids_hint.c \
+    quant/palette/ordinary_float/0015_center_byte.c \
+    quant/palette/ordinary_float/0016_medoids_byte.c \
+    quant/palette/ordinary_float/0017_center_reuse.c \
+    quant/palette/ordinary_float/0018_medoids_reuse.c \
+    quant/palette/ordinary_float/0019_center_reduce.c \
+    quant/palette/ordinary_float/0020_medoids_reduce.c \
     quant/palette/retention/retention_test_common.c \
     quant/palette/retention/retention_test_common.h \
     quant/palette/retention/0016_kcenter_boundary.c \

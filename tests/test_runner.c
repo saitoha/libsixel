@@ -1588,6 +1588,26 @@ int test_snap_hooks_byte_grid(int argc, char **argv);
 int test_snap_hooks_stage_ladder(int argc, char **argv);
 int test_snap_hooks_kmeans_once(int argc, char **argv);
 int test_snap_hooks_kmeans_all(int argc, char **argv);
+int test_ordinary_center_sources(int argc, char **argv);
+int test_ordinary_medoids_sources(int argc, char **argv);
+int test_ordinary_center_hard(int argc, char **argv);
+int test_ordinary_center_exact(int argc, char **argv);
+int test_ordinary_center_ward(int argc, char **argv);
+int test_ordinary_medoids_ward(int argc, char **argv);
+int test_ordinary_center_snap(int argc, char **argv);
+int test_ordinary_medoids_snap(int argc, char **argv);
+int test_ordinary_center_fault(int argc, char **argv);
+int test_ordinary_medoids_fault(int argc, char **argv);
+int test_ordinary_center_nonfinite(int argc, char **argv);
+int test_ordinary_medoids_nonfinite(int argc, char **argv);
+int test_ordinary_center_hint(int argc, char **argv);
+int test_ordinary_medoids_hint(int argc, char **argv);
+int test_ordinary_center_byte(int argc, char **argv);
+int test_ordinary_medoids_byte(int argc, char **argv);
+int test_ordinary_center_reuse(int argc, char **argv);
+int test_ordinary_medoids_reuse(int argc, char **argv);
+int test_ordinary_center_reduce(int argc, char **argv);
+int test_ordinary_medoids_reduce(int argc, char **argv);
 int test_palette_retention_kmeans(int argc, char **argv);
 int test_palette_retention_kcenter(int argc, char **argv);
 int test_palette_retention_kmedoids(int argc, char **argv);
@@ -5916,6 +5936,26 @@ static test_entry_t const test_entries[] = {
     { "palette/snap_hooks/stage_ladder", test_snap_hooks_stage_ladder },
     { "palette/snap_hooks/kmeans_once", test_snap_hooks_kmeans_once },
     { "palette/snap_hooks/kmeans_all", test_snap_hooks_kmeans_all },
+    { "palette/ordinary_float/center_sources", test_ordinary_center_sources },
+    { "palette/ordinary_float/medoids_sources", test_ordinary_medoids_sources },
+    { "palette/ordinary_float/center_hard", test_ordinary_center_hard },
+    { "palette/ordinary_float/center_exact", test_ordinary_center_exact },
+    { "palette/ordinary_float/center_ward", test_ordinary_center_ward },
+    { "palette/ordinary_float/medoids_ward", test_ordinary_medoids_ward },
+    { "palette/ordinary_float/center_snap", test_ordinary_center_snap },
+    { "palette/ordinary_float/medoids_snap", test_ordinary_medoids_snap },
+    { "palette/ordinary_float/center_fault", test_ordinary_center_fault },
+    { "palette/ordinary_float/medoids_fault", test_ordinary_medoids_fault },
+    { "palette/ordinary_float/center_nonfinite", test_ordinary_center_nonfinite },
+    { "palette/ordinary_float/medoids_nonfinite", test_ordinary_medoids_nonfinite },
+    { "palette/ordinary_float/center_hint", test_ordinary_center_hint },
+    { "palette/ordinary_float/medoids_hint", test_ordinary_medoids_hint },
+    { "palette/ordinary_float/center_byte", test_ordinary_center_byte },
+    { "palette/ordinary_float/medoids_byte", test_ordinary_medoids_byte },
+    { "palette/ordinary_float/center_reuse", test_ordinary_center_reuse },
+    { "palette/ordinary_float/medoids_reuse", test_ordinary_medoids_reuse },
+    { "palette/ordinary_float/center_reduce", test_ordinary_center_reduce },
+    { "palette/ordinary_float/medoids_reduce", test_ordinary_medoids_reduce },
     { "palette/retention_kmeans",
       test_palette_retention_kmeans },
     { "palette/retention_kcenter",

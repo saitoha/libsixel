@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Verify the half-open [0, 256) hard grid used by legacy K-center.
+ * Verify the half-open [0, 256) hard grid used by nominal K-center.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -86,8 +86,6 @@ test_filter_0041_filter_binning_uniform_256(int argc, char **argv)
     config.scale[2] = 255.0;
     config.offset[1] = 127.5;
     config.offset[2] = 127.5;
-    config.coordinate_mode =
-        SIXEL_FILTER_BINNING_COORDINATE_CLAMPED;
     status = sixel_filter_factory_create_by_kind(
         SIXEL_FILTER_KIND_BINNING,
         &config,

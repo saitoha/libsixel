@@ -101,7 +101,6 @@ test_filter_0037_filter_binning_stream_float(int argc, char **argv)
     config.scale[0] = 255.0;
     config.scale[1] = 255.0;
     config.scale[2] = 255.0;
-    config.coordinate_mode = SIXEL_FILTER_BINNING_COORDINATE_CLAMPED;
     status = sixel_filter_factory_create_by_kind(
         SIXEL_FILTER_KIND_BINNING,
         &config,

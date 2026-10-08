@@ -841,188 +841,26 @@ sixel_palette_apply_mediancut_engine(sixel_palette_t *palette,
                                           allocator);
 }
 
-/* Run K-center and keep the same float32-first fallback ladder. */
+/* K-center and K-medoids choose arithmetic from the actual input type.
+ * A float failure must not retry byte storage, even when the caller does not
+ * use the native output cache. Explicit snap still runs inside the builder. */
 static SIXELSTATUS
-sixel_palette_apply_kcenter_engines(sixel_palette_t *palette,
-                                    void const *data,
-                                    unsigned int length,
-                                    int pixelformat,
-                                    sixel_allocator_t *allocator,
-                                    int prefer_float32)
+sixel_palette_apply_typed_engine(sixel_palette_t *palette,
+                                 int quantize_model,
+                                 void const *data,
+                                 unsigned int length,
+                                 int pixelformat,
+                                 sixel_allocator_t *allocator)
 {
     sixel_palette_quant_engine_t const *engine;
-    sixel_palette_build_context_t *context;
-    sixel_palette_binning_state_t saved_binning;
-    sixel_palette_binning_policy_t requested_binning;
-    SIXELSTATUS status;
-    unsigned char *legacy_pixels;
-    void const *legacy_data;
-    unsigned int legacy_length;
-    size_t pixel_count;
-    int legacy_pixelformat;
-    int source_depth;
-    int have_saved_binning;
 
-    engine = NULL;
-    context = NULL;
-    memset(&saved_binning, 0, sizeof(saved_binning));
-    requested_binning = SIXEL_PALETTE_BINNING_AUTO;
-    status = SIXEL_LOGIC_ERROR;
-    legacy_pixels = NULL;
-    legacy_data = data;
-    legacy_length = length;
-    pixel_count = 0u;
-    legacy_pixelformat = pixelformat;
-    source_depth = 0;
-    have_saved_binning = 0;
-    context = SIXEL_PALETTE_CONTEXT(palette);
-    if (context != NULL && context->attempt != NULL &&
-            context->attempt->binning.policy.phase ==
-                SIXEL_PALETTE_POLICY_RESOLVED) {
-        saved_binning = context->attempt->binning;
-        have_saved_binning = 1;
+    engine = sixel_palette_quant_engine_lookup(quantize_model,
+        SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat));
+    if (engine == NULL) {
+        return SIXEL_LOGIC_ERROR;
     }
-
-    if (prefer_float32 && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        engine = sixel_palette_quant_engine_lookup(
-            SIXEL_QUANTIZE_MODEL_KCENTER,
-            1);
-        if (engine != NULL) {
-            status = sixel_palette_quant_engine_run(engine,
-                                                    palette,
-                                                    data,
-                                                    length,
-                                                    pixelformat,
-                                                    allocator);
-            if (SIXEL_SUCCEEDED(status)) {
-                return status;
-            }
-            if (context != NULL && context->preserve_extended_rgb != 0) {
-                return status;
-            }
-            if (have_saved_binning) {
-                requested_binning =
-                    (sixel_palette_binning_policy_t)
-                        saved_binning.policy.requested;
-                if (requested_binning == SIXEL_PALETTE_BINNING_EXACT) {
-                    return status;
-                }
-                context->attempt->binning = saved_binning;
-                ++context->attempt->quantizer_retry_count;
-            }
-        }
-    }
-
-    if (context != NULL && context->preserve_extended_rgb != 0) {
-        return status;
-    }
-    /*
-     * The legacy engine consumes RGB888 samples.  Preserve its byte-domain
-     * contract when a float solver fails instead of reinterpreting raw float
-     * coordinates as byte-scale values.  Exact source coordinates cannot
-     * survive this conversion and are rejected above.
-     */
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        source_depth = sixel_helper_compute_depth(pixelformat);
-        if (source_depth <= 0 ||
-                length % (unsigned int)source_depth != 0u) {
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
-        pixel_count = length / (unsigned int)source_depth;
-        if (pixel_count == 0u || pixel_count > (size_t)INT_MAX ||
-                pixel_count > (size_t)UINT_MAX / 3u) {
-            status = SIXEL_BAD_INTEGER_OVERFLOW;
-            goto end;
-        }
-        legacy_length = (unsigned int)pixel_count * 3u;
-        legacy_pixels = (unsigned char *)sixel_allocator_malloc(
-            allocator,
-            legacy_length);
-        if (legacy_pixels == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-        status = sixel_helper_normalize_pixelformat(
-            legacy_pixels,
-            &legacy_pixelformat,
-            (unsigned char const *)data,
-            pixelformat,
-            (int)pixel_count,
-            1);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        legacy_data = legacy_pixels;
-    }
-
-    engine = sixel_palette_quant_engine_lookup(
-        SIXEL_QUANTIZE_MODEL_KCENTER,
-        0);
-    if (engine != NULL) {
-        status = sixel_palette_quant_engine_run(engine,
-                                                palette,
-                                                legacy_data,
-                                                legacy_length,
-                                                legacy_pixelformat,
-                                                allocator);
-    }
-
-end:
-    if (legacy_pixels != NULL) {
-        sixel_allocator_free(allocator, legacy_pixels);
-    }
-    return status;
-}
-
-static SIXELSTATUS
-sixel_palette_apply_kmedoids_engines(sixel_palette_t *palette,
-                                     void const *data,
-                                     unsigned int length,
-                                     int pixelformat,
-                                     sixel_allocator_t *allocator,
-                                     int prefer_float32)
-{
-    sixel_palette_quant_engine_t const *engine;
-    SIXELSTATUS status;
-
-    engine = NULL;
-    status = SIXEL_LOGIC_ERROR;
-
-    if (prefer_float32 && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        engine = sixel_palette_quant_engine_lookup(
-            SIXEL_QUANTIZE_MODEL_KMEDOIDS,
-            1);
-        if (engine != NULL) {
-            status = sixel_palette_quant_engine_run(engine,
-                                                    palette,
-                                                    data,
-                                                    length,
-                                                    pixelformat,
-                                                    allocator);
-            if (SIXEL_SUCCEEDED(status)) {
-                return status;
-            }
-        }
-    }
-
-    /* The selected float contract cannot retry byte or Heckbert engines. */
-    if (SIXEL_PALETTE_CONTEXT(palette)->preserve_extended_rgb != 0) {
-        return status;
-    }
-    engine = sixel_palette_quant_engine_lookup(
-        SIXEL_QUANTIZE_MODEL_KMEDOIDS,
-        0);
-    if (engine != NULL) {
-        status = sixel_palette_quant_engine_run(engine,
-                                                palette,
-                                                data,
-                                                length,
-                                                pixelformat,
-                                                allocator);
-    }
-
-    return status;
+    return sixel_palette_quant_engine_run(engine, palette, data, length,
+        pixelformat, allocator);
 }
 
 /* Palette orchestration delegates algorithm specifics to dedicated modules. */
@@ -1722,12 +1560,9 @@ sixel_palette_generate_internal(
             goto success;
         }
     } else if (context.quantize_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
-        status = sixel_palette_apply_kcenter_engines(palette,
-                                                     request->data,
-                                                     request->length,
-                                                     request->pixelformat,
-                                                     work_allocator,
-                                                     request->prefer_float32);
+        status = sixel_palette_apply_typed_engine(palette,
+            context.quantize_model, request->data, request->length,
+            request->pixelformat, work_allocator);
         if (SIXEL_SUCCEEDED(status)) {
             effective_quantize_model = SIXEL_QUANTIZE_MODEL_KCENTER;
             ncolors = storage->entry_count;
@@ -1735,19 +1570,24 @@ sixel_palette_generate_internal(
             depth = (unsigned int)storage->depth;
             goto success;
         }
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
+            /* Preserve the original failure and the requested numeric type. */
+            goto end;
+        }
     } else if (context.quantize_model == SIXEL_QUANTIZE_MODEL_KMEDOIDS) {
-        status = sixel_palette_apply_kmedoids_engines(palette,
-                                                      request->data,
-                                                      request->length,
-                                                      request->pixelformat,
-                                                      work_allocator,
-                                                      request->prefer_float32);
+        status = sixel_palette_apply_typed_engine(palette,
+            context.quantize_model, request->data, request->length,
+            request->pixelformat, work_allocator);
         if (SIXEL_SUCCEEDED(status)) {
             effective_quantize_model = SIXEL_QUANTIZE_MODEL_KMEDOIDS;
             ncolors = storage->entry_count;
             origcolors = storage->original_colors;
             depth = (unsigned int)storage->depth;
             goto success;
+        }
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
+            /* Preserve the original failure and the requested numeric type. */
+            goto end;
         }
     } else if (context.quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
         status = sixel_palette_apply_mediancut_engine(palette,

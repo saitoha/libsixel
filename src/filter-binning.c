@@ -575,14 +575,13 @@ sixel_filter_binning_read_stream_sample(
     unsigned int channels,
     int input_is_float32,
     size_t index,
-    sixel_filter_binning_config_t const *config,
     double sample[3],
     int *visible_out)
 {
     unsigned int channel;
 
     channel = 0u;
-    if (view == NULL || transparency == NULL || config == NULL ||
+    if (view == NULL || transparency == NULL ||
             sample == NULL || visible_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -603,14 +602,6 @@ sixel_filter_binning_read_stream_sample(
             if (!(sample[channel] <= DBL_MAX &&
                   sample[channel] >= -DBL_MAX)) {
                 return SIXEL_BAD_INPUT;
-            }
-            if (config->coordinate_mode ==
-                    SIXEL_FILTER_BINNING_COORDINATE_CLAMPED) {
-                sample[channel] = (double)
-                    sixel_pixelformat_float_channel_clamp(
-                        view->pixelformat,
-                        (int)channel,
-                        (float)sample[channel]);
             }
         } else {
             sample[channel] = (double)
@@ -687,7 +678,6 @@ sixel_filter_binning_add_stream(
             channels,
             input_is_float32,
             index,
-            config,
             sample,
             &visible);
         if (SIXEL_FAILED(status)) {
@@ -774,7 +764,6 @@ sixel_filter_binning_add_exact_stream(
             channels,
             input_is_float32,
             index,
-            config,
             sample,
             &visible);
         if (SIXEL_FAILED(status)) {
@@ -852,7 +841,6 @@ sixel_filter_binning_publish_direct_stream(
             channels,
             input_is_float32,
             index,
-            config,
             sample,
             &visible);
         if (SIXEL_FAILED(status)) {
@@ -1201,11 +1189,7 @@ sixel_filter_binning_apply(sixel_filter_t *filter,
             (state->config.output_order !=
                  SIXEL_FILTER_BINNING_OUTPUT_NATIVE &&
              state->config.output_order !=
-                 SIXEL_FILTER_BINNING_OUTPUT_BIN_KEY_ASCENDING) ||
-            (state->config.coordinate_mode !=
-                 SIXEL_FILTER_BINNING_COORDINATE_SOURCE &&
-             state->config.coordinate_mode !=
-                 SIXEL_FILTER_BINNING_COORDINATE_CLAMPED)) {
+                 SIXEL_FILTER_BINNING_OUTPUT_BIN_KEY_ASCENDING)) {
         return SIXEL_LOGIC_ERROR;
     }
     if (input != NULL) {
@@ -1406,11 +1390,7 @@ sixel_filter_binning_init(
     }
     if ((config->output_order != SIXEL_FILTER_BINNING_OUTPUT_NATIVE &&
          config->output_order !=
-             SIXEL_FILTER_BINNING_OUTPUT_BIN_KEY_ASCENDING) ||
-            (config->coordinate_mode !=
-                 SIXEL_FILTER_BINNING_COORDINATE_SOURCE &&
-             config->coordinate_mode !=
-                 SIXEL_FILTER_BINNING_COORDINATE_CLAMPED)) {
+             SIXEL_FILTER_BINNING_OUTPUT_BIN_KEY_ASCENDING)) {
         return SIXEL_BAD_ARGUMENT;
     }
     state = (sixel_filter_binning_state_t *)malloc(sizeof(*state));

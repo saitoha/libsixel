@@ -11447,7 +11447,6 @@ build_palette_kmedoids(unsigned char **result,
                        sixel_allocator_t *allocator,
                        int pixelformat,
                        int treat_input_as_float32,
-                       int preserve_extended_rgb,
                        sixel_timeline_logger_t *logger,
                        int *job_seq,
                        char const *engine_name,
@@ -11525,6 +11524,9 @@ build_palette_kmedoids(unsigned char **result,
     double bin_scale[3];
     double bin_offset[3];
     int input_is_float32;
+    float float_minimum;
+    float float_maximum;
+    double range;
     int job_init;
     int job_iter;
     int job_merge;
@@ -11679,24 +11681,10 @@ build_palette_kmedoids(unsigned char **result,
                         && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat));
     if (input_is_float32) {
         for (channel = 0u; channel < 3u; ++channel) {
-            float float_minimum;
-            float float_maximum;
-            double range;
-
-#if HAVE_FLOAT_H
-# define SIXEL_KMEDOIDS_FLOAT_BOUND FLT_MAX
-#else
-# define SIXEL_KMEDOIDS_FLOAT_BOUND 1.0e9f
-#endif
-            float_minimum = sixel_pixelformat_float_channel_clamp(
-                pixelformat,
-                (int)channel,
-                -SIXEL_KMEDOIDS_FLOAT_BOUND);
-            float_maximum = sixel_pixelformat_float_channel_clamp(
-                pixelformat,
-                (int)channel,
-                SIXEL_KMEDOIDS_FLOAT_BOUND);
-#undef SIXEL_KMEDOIDS_FLOAT_BOUND
+            float_minimum = sixel_pixelformat_float_channel_min(
+                pixelformat, (int)channel);
+            float_maximum = sixel_pixelformat_float_channel_max(
+                pixelformat, (int)channel);
             range = (double)float_maximum - (double)float_minimum;
             if (range <= 0.0) {
                 float32_channel_scale[channel] = 0.0;
@@ -11732,7 +11720,7 @@ build_palette_kmedoids(unsigned char **result,
     }
     memcpy(bin_scale, float32_channel_scale, sizeof(bin_scale));
     memcpy(bin_offset, float32_channel_offset, sizeof(bin_offset));
-    if (preserve_extended_rgb && input_is_float32) {
+    if (input_is_float32) {
         /* Candidate addresses may expand; Ward still uses the nominal
          * channel scales. Reusing bin bounds there would change its metric
          * according to this image's extrema, even without any clipping. */
@@ -12326,10 +12314,10 @@ build_palette_kmedoids(unsigned char **result,
                         float32_channel_scale,
                         float32_channel_offset);
                 }
-                if (!preserve_extended_rgb && merge_component < 0.0) {
+                if (!input_is_float32 && merge_component < 0.0) {
                     merge_component = 0.0;
                 }
-                if (!preserve_extended_rgb && merge_component > 255.0) {
+                if (!input_is_float32 && merge_component > 255.0) {
                     merge_component = 255.0;
                 }
                 merge_sums[slot * 3u + channel]
@@ -12345,7 +12333,7 @@ build_palette_kmedoids(unsigned char **result,
                                                   resolved_merge,
                                                   use_reversible,
                                                   pixelformat,
-                                                  preserve_extended_rgb,
+                                                  input_is_float32,
                                                   allocator);
         if (cluster_total < 0) {
             status = SIXEL_BAD_ALLOCATION;
@@ -12428,10 +12416,7 @@ build_palette_kmedoids(unsigned char **result,
             restored_component = final_centers[slot * 3u + channel];
             if (float_palette != NULL) {
                 float_palette[slot * 3u + channel]
-                    = preserve_extended_rgb ? (float)restored_component
-                        : sixel_pixelformat_float_channel_clamp(
-                            pixelformat, (int)channel,
-                            (float)restored_component);
+                    = (float)restored_component;
             }
             if (input_is_float32) {
                 restored_component
@@ -12750,8 +12735,6 @@ sixel_palette_build_kmedoids_internal(sixel_palette_t *palette,
                                     work_allocator,
                                     pixelformat,
                                     treat_input_as_float32,
-                                    SIXEL_PALETTE_CONTEXT(palette)
-                                        ->preserve_extended_rgb,
                                     logger,
                                     job_seq,
                                     engine_name,

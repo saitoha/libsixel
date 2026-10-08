@@ -67,9 +67,17 @@ be requested explicitly, for example:
 -Q heckbert:profile=quality
 ```
 
-Outside the selected native path, legacy solver failures can fall back to Heckbert. A failed selected native build instead returns an error without narrowing the data or silently choosing another solver. Record effective palette-build telemetry when distinguishing the requested policy, resolved consumer and fallback.
+A failed selected native build returns an error without narrowing the data or silently choosing another solver. Ordinary K-center and K-medoids also retain this failure contract for typed float input, as described below. Compatibility K-means/Heckbert and true byte paths still have historical fallback behavior outside the selected native path. Record effective palette-build telemetry when distinguishing the requested policy, resolved consumer and fallback.
 
 The time and space costs of `auto` follow its resolved [Heckbert](#heckbert-recursive-median-cut) or [K-means](#kmeans-centroid-optimization) consumer. `auto` reserves selection policy while an explicit solver names the algorithm directly.
+
+## Ordinary float K-center and K-medoids
+
+K-center and K-medoids use one float implementation for both ordinary `generate()` and the selected native output path. The actual input pixel format selects the arithmetic; an internal byte preference cannot reinterpret or narrow an already typed float buffer. True byte inputs continue to use byte storage. This does not change encoder admission, automatic precision selection, or the separate restrictions on Display P3 output.
+
+Without an active snap policy, finite negative and above-nominal source coordinates survive candidate collection and representative export in gamma RGB, linear RGB, Oklab, CIELAB and DIN99d. K-center hard bins and the K-medoids candidate grid expand their addressing bounds to include the source population. This changes which grid cells hold candidates, not the fixed nominal channel scales used by solver distances or Ward merging. Bin addressing never clips the stored sample coordinates. Ward retains fractional means rather than projecting them through bytes.
+
+An explicitly requested final snap remains effective and follows the [snap policy](../snap-policy/README.md); coordinate preservation does not disable it. K-center and K-medoids still have no consumers for the early initialization/iteration timing hooks. Float allocation or input-validation failure returns the original error without a byte-engine or alternate-solver retry. A subsequent build can reuse the same palette object after the failed attempt finishes.
 
 ## `heckbert`: recursive median cut
 
@@ -751,3 +759,31 @@ These observations check two-color native coordinates with a small binary32 erro
 | AQ-21 | Explicit auto reaches the Display P3 wire path. | [tests/quant/palette/auto_float/0021_auto_explicit_p3.t](../../../../tests/quant/palette/auto_float/0021_auto_explicit_p3.t) |
 | AQ-22 | P3 admission rejects pending feedback on the resolved K-means consumer. | [tests/quant/palette/auto_float/0022_auto_reject_kmeans_feedback.t](../../../../tests/quant/palette/auto_float/0022_auto_reject_kmeans_feedback.t) |
 | AQ-23 | Pending K-means feedback does not reject auto resolved to Heckbert. | [tests/quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.t](../../../../tests/quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.t) |
+
+### Ordinary typed float generators
+
+These value observations call ordinary `generate()` directly, so native output admission cannot hide a bounded compatibility branch. Literal source representatives and independently specified Ward means allow `2e-6` absolute error for affine scaling and binary32 export; this tolerance cannot hide nominal-range clipping or byte quantization. Explicit snap, allocation failure, invalid input, reuse, typed-input selection and true byte storage have separate observations. Photograph quality is measured separately from these contracts.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| OF-01 | Ordinary center retains extended source representatives in five spaces. | [tests/quant/palette/ordinary_float/0001_center_sources.t](../../../../tests/quant/palette/ordinary_float/0001_center_sources.t) |
+| OF-02 | Ordinary medoids retains extended source representatives in five spaces. | [tests/quant/palette/ordinary_float/0002_medoids_sources.t](../../../../tests/quant/palette/ordinary_float/0002_medoids_sources.t) |
+| OF-03 | K-center hard bins expand addresses without clipping source coordinates. | [tests/quant/palette/ordinary_float/0003_center_hard.t](../../../../tests/quant/palette/ordinary_float/0003_center_hard.t) |
+| OF-04 | K-center exact bins distinguish extended coordinates. | [tests/quant/palette/ordinary_float/0004_center_exact.t](../../../../tests/quant/palette/ordinary_float/0004_center_exact.t) |
+| OF-05 | Ward merge retains signed independent means. | [tests/quant/palette/ordinary_float/0005_center_ward.t](../../../../tests/quant/palette/ordinary_float/0005_center_ward.t) |
+| OF-06 | Ward merge retains signed independent means. | [tests/quant/palette/ordinary_float/0006_medoids_ward.t](../../../../tests/quant/palette/ordinary_float/0006_medoids_ward.t) |
+| OF-07 | Preservation retains the explicitly requested final partial snap. | [tests/quant/palette/ordinary_float/0007_center_snap.t](../../../../tests/quant/palette/ordinary_float/0007_center_snap.t) |
+| OF-08 | Preservation retains the explicitly requested final partial snap. | [tests/quant/palette/ordinary_float/0008_medoids_snap.t](../../../../tests/quant/palette/ordinary_float/0008_medoids_snap.t) |
+| OF-09 | Float allocation failure cannot retry byte or another solver. | [tests/quant/palette/ordinary_float/0009_center_fault.t](../../../../tests/quant/palette/ordinary_float/0009_center_fault.t) |
+| OF-10 | Float allocation failure cannot retry byte or another solver. | [tests/quant/palette/ordinary_float/0010_medoids_fault.t](../../../../tests/quant/palette/ordinary_float/0010_medoids_fault.t) |
+| OF-11 | Invalid float coordinates fail without a lossy retry. | [tests/quant/palette/ordinary_float/0011_center_nonfinite.t](../../../../tests/quant/palette/ordinary_float/0011_center_nonfinite.t) |
+| OF-12 | Invalid float coordinates fail without a lossy retry. | [tests/quant/palette/ordinary_float/0012_medoids_nonfinite.t](../../../../tests/quant/palette/ordinary_float/0012_medoids_nonfinite.t) |
+| OF-13 | Typed float input determines arithmetic despite a byte preference. | [tests/quant/palette/ordinary_float/0013_center_hint.t](../../../../tests/quant/palette/ordinary_float/0013_center_hint.t) |
+| OF-14 | Typed float input determines arithmetic despite a byte preference. | [tests/quant/palette/ordinary_float/0014_medoids_hint.t](../../../../tests/quant/palette/ordinary_float/0014_medoids_hint.t) |
+| OF-15 | True byte inputs retain byte storage and exact representatives. | [tests/quant/palette/ordinary_float/0015_center_byte.t](../../../../tests/quant/palette/ordinary_float/0015_center_byte.t) |
+| OF-16 | True byte inputs retain byte storage and exact representatives. | [tests/quant/palette/ordinary_float/0016_medoids_byte.t](../../../../tests/quant/palette/ordinary_float/0016_medoids_byte.t) |
+| OF-17 | A failed ordinary float build permits a clean subsequent attempt. | [tests/quant/palette/ordinary_float/0017_center_reuse.t](../../../../tests/quant/palette/ordinary_float/0017_center_reuse.t) |
+| OF-18 | A failed ordinary float build permits a clean subsequent attempt. | [tests/quant/palette/ordinary_float/0018_medoids_reuse.t](../../../../tests/quant/palette/ordinary_float/0018_medoids_reuse.t) |
+| OF-19 | Reduced ordinary palettes select extended source candidates. | [tests/quant/palette/ordinary_float/0019_center_reduce.t](../../../../tests/quant/palette/ordinary_float/0019_center_reduce.t) |
+| OF-20 | Reduced ordinary palettes select extended source candidates. | [tests/quant/palette/ordinary_float/0020_medoids_reduce.t](../../../../tests/quant/palette/ordinary_float/0020_medoids_reduce.t) |
+| OF-21 | A post-build ordinary float K-center fault reaches the CLI as failure, with zero retries and no committed quantizer/binning state. | [tests/cli/options/matching/0265_option_matching_palette_kcenter_float_failure.t](../../../../tests/cli/options/matching/0265_option_matching_palette_kcenter_float_failure.t) |

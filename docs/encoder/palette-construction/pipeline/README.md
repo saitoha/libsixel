@@ -331,21 +331,7 @@ thread-local pointer refers to the encoder's stack frame. Concurrent palette
 instances are therefore independent, and re-entry on one active instance is
 rejected instead of overwriting another operation's result target.
 
-Outside the [selected extended float path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path), a failed float32 K-means or K-center engine resets the attempt lifecycle before
-invoking its legacy byte engine. Float samples are normalized to RGB888 for
-that retry because the legacy engines consume byte samples; passing the float
-buffer through unchanged cannot form a valid legacy input. Exact binning is
-the exception: normalization could merge distinct float coordinates, so a
-failed float engine is returned without entering the RGB888 retry. If the
-palette component's historical solver fallback succeeds, the frame records
-the solver that actually produced the palette with `fallback` as its reason
-and discards the failed attempt's binning state. A fallback is rejected when
-its solver cannot consume an explicit `exact`, `hard`, or `soft` artifact; it
-cannot silently erase that request. An asynchronous palette worker commits the
-effective policy, origin, lifecycle phase, resolution reason, and actual
-source-point count only after its successful attempt, before collection
-completes.
-On the selected extended path, K-means, K-center, K-medoids and Heckbert, including resolved auto requests, report float solver failure without a byte or alternate-solver retry.
+Outside the [selected extended float path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path), a failed compatibility float32 K-means engine resets the attempt lifecycle before invoking its legacy byte engine. Float samples are normalized to RGB888 for that retry because the legacy engines consume byte samples; passing the float buffer through unchanged cannot form a valid legacy input. Exact binning is the exception: normalization could merge distinct float coordinates, so a failed float engine is returned without entering the RGB888 retry. If the palette component's historical solver fallback succeeds, the frame records the solver that actually produced the palette with `fallback` as its reason and discards the failed attempt's binning state. A fallback is rejected when its solver cannot consume an explicit `exact`, `hard`, or `soft` artifact; it cannot silently erase that request. An asynchronous palette worker commits the effective policy, origin, lifecycle phase, resolution reason, and actual source-point count only after its successful attempt, before collection completes. On the selected extended path, K-means, K-center, K-medoids and Heckbert, including resolved auto requests, report float solver failure without a byte or alternate-solver retry. Ordinary typed float K-center and K-medoids follow the same error contract; see [ordinary float generators](../quantization/README.md#ordinary-float-k-center-and-k-medoids).
 
 When automatic adaptive sampling falls back to the full preprocessed frame,
 binning keeps its request and origin but resolves its sample-dependent metadata
@@ -439,19 +425,13 @@ scan order. The residual histogram used by K-means feedback is a quantizer
 operation, not a second preprocessing filter, although it reuses the same
 compact histogram primitive.
 
-K-center hard binning uses a separate uniform-grid mapping with a half-open
-`[0, 256)` byte domain. For `b` bits per axis, a clamped channel value `x` is
-assigned by:
+K-center hard binning uses a separate uniform-grid mapping with a half-open `[0, 256)` address domain. For nominal byte coordinates and `b` bits per axis, the address is:
 
 ```text
 bin(x) = floor(x * 2^b / 256)
 ```
 
-This preserves the former `((unsigned int)x) >> (8 - b)` behavior. The
-distinction from the general closed `[0, 255]` uniform mapping is observable
-for float palette-space coordinates near a bin boundary even though every
-integer byte maps to the same expected legacy cell. Soft binning rejects this
-hard-only compatibility grid.
+This preserves the former `((unsigned int)x) >> (8 - b)` behavior for integer bytes. The distinction from the general closed `[0, 255]` mapping is observable for fractional coordinates near a bin boundary. Float input outside the nominal range expands the addressing bounds before this mapping; the original sample coordinates remain unchanged. Address mapping and the fixed solver-distance scales are separate, as specified by the [ordinary float generator contract](../quantization/README.md#ordinary-float-k-center-and-k-medoids). Soft binning rejects this hard-only compatibility grid.
 
 Exact aggregation uses a separate compact hash table because finite grid keys
 cannot represent full palette-space coordinates. Equality is numeric equality
