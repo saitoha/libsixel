@@ -1190,6 +1190,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/precision/0006_resize_linear_float_source.c \
 	processing/precision/0007_resize_preserve_float_source.c \
 	processing/precision/0008_explicit_float_preserve.c \
+	processing/precision/0009_dither_promotion.c \
 	processing/chunk/0001_chunk_factory.c \
 	processing/chunk/0002_chunk_cancel_callback.c \
 	processing/timeline/0001_timeline_logger_factory.c \
@@ -4317,6 +4318,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/precision/test_runner-0006_resize_linear_float_source.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/precision/test_runner-0007_resize_preserve_float_source.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/precision/test_runner-0008_explicit_float_preserve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/precision/test_runner-0009_dither_promotion.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/chunk/test_runner-0001_chunk_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/chunk/test_runner-0002_chunk_cancel_callback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0001_timeline_logger_factory.$(OBJEXT) \
@@ -8648,6 +8650,7 @@ am__depfiles_remade =  \
 	processing/precision/$(DEPDIR)/test_runner-0006_resize_linear_float_source.Po \
 	processing/precision/$(DEPDIR)/test_runner-0007_resize_preserve_float_source.Po \
 	processing/precision/$(DEPDIR)/test_runner-0008_explicit_float_preserve.Po \
+	processing/precision/$(DEPDIR)/test_runner-0009_dither_promotion.Po \
 	processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po \
 	processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po \
 	processing/scale/$(DEPDIR)/test_runner-0003_resample_allocation_failure.Po \
@@ -11395,6 +11398,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_RESIZE_LINEAR_FLOAT_SOURCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_RESIZE_PRESERVE_FLOAT_SOURCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_EXPLICIT_FLOAT_PRESERVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_DITHER_PROMOTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_BLACK_LOG1P_MODEL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CHUNK_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_CHUNK_CANCEL_CALLBACK \
@@ -14430,6 +14434,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/precision/0006_resize_linear_float_source.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/precision/0007_resize_preserve_float_source.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/precision/0008_explicit_float_preserve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/precision/0009_dither_promotion.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/chunk/0001_chunk_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/chunk/0002_chunk_cancel_callback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0001_timeline_logger_factory.c \
@@ -20042,6 +20047,9 @@ processing/precision/test_runner-0007_resize_preserve_float_source.$(OBJEXT):  \
 	processing/precision/$(am__dirstamp) \
 	processing/precision/$(DEPDIR)/$(am__dirstamp)
 processing/precision/test_runner-0008_explicit_float_preserve.$(OBJEXT):  \
+	processing/precision/$(am__dirstamp) \
+	processing/precision/$(DEPDIR)/$(am__dirstamp)
+processing/precision/test_runner-0009_dither_promotion.$(OBJEXT):  \
 	processing/precision/$(am__dirstamp) \
 	processing/precision/$(DEPDIR)/$(am__dirstamp)
 processing/chunk/$(am__dirstamp):
@@ -29005,6 +29013,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/precision/$(DEPDIR)/test_runner-0006_resize_linear_float_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/precision/$(DEPDIR)/test_runner-0007_resize_preserve_float_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/precision/$(DEPDIR)/test_runner-0008_explicit_float_preserve.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/precision/$(DEPDIR)/test_runner-0009_dither_promotion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0003_resample_allocation_failure.Po@am__quote@ # am--include-marker
@@ -44667,6 +44676,20 @@ processing/precision/test_runner-0008_explicit_float_preserve.obj: processing/pr
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0008_explicit_float_preserve.c' object='processing/precision/test_runner-0008_explicit_float_preserve.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0008_explicit_float_preserve.obj `if test -f 'processing/precision/0008_explicit_float_preserve.c'; then $(CYGPATH_W) 'processing/precision/0008_explicit_float_preserve.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0008_explicit_float_preserve.c'; fi`
+
+processing/precision/test_runner-0009_dither_promotion.o: processing/precision/0009_dither_promotion.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0009_dither_promotion.o -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0009_dither_promotion.Tpo -c -o processing/precision/test_runner-0009_dither_promotion.o `test -f 'processing/precision/0009_dither_promotion.c' || echo '$(srcdir)/'`processing/precision/0009_dither_promotion.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0009_dither_promotion.Tpo processing/precision/$(DEPDIR)/test_runner-0009_dither_promotion.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0009_dither_promotion.c' object='processing/precision/test_runner-0009_dither_promotion.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0009_dither_promotion.o `test -f 'processing/precision/0009_dither_promotion.c' || echo '$(srcdir)/'`processing/precision/0009_dither_promotion.c
+
+processing/precision/test_runner-0009_dither_promotion.obj: processing/precision/0009_dither_promotion.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0009_dither_promotion.obj -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0009_dither_promotion.Tpo -c -o processing/precision/test_runner-0009_dither_promotion.obj `if test -f 'processing/precision/0009_dither_promotion.c'; then $(CYGPATH_W) 'processing/precision/0009_dither_promotion.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0009_dither_promotion.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0009_dither_promotion.Tpo processing/precision/$(DEPDIR)/test_runner-0009_dither_promotion.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0009_dither_promotion.c' object='processing/precision/test_runner-0009_dither_promotion.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0009_dither_promotion.obj `if test -f 'processing/precision/0009_dither_promotion.c'; then $(CYGPATH_W) 'processing/precision/0009_dither_promotion.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0009_dither_promotion.c'; fi`
 
 processing/chunk/test_runner-0001_chunk_factory.o: processing/chunk/0001_chunk_factory.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/chunk/test_runner-0001_chunk_factory.o -MD -MP -MF processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Tpo -c -o processing/chunk/test_runner-0001_chunk_factory.o `test -f 'processing/chunk/0001_chunk_factory.c' || echo '$(srcdir)/'`processing/chunk/0001_chunk_factory.c

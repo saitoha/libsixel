@@ -126,8 +126,8 @@ sixel_dither_logger_set_frame_context(sixel_timeline_logger_t *logger,
 
 /*
  * Promote an RGB888 buffer to RGBFLOAT32 by normalising each channel to the
- * 0.0-1.0 range.  The helper is used when a float32 pipeline is requested via
- * the pixelformat but the incoming frame still relies on 8bit pixels.
+ * 0.0-1.0 range. A typed palette, explicit float preference or signed
+ * diffusion feedback can require float work while the frame remains byte.
  */
 static SIXELSTATUS
 sixel_dither_promote_rgb888_to_float32(float **out_pixels,
@@ -164,6 +164,8 @@ sixel_dither_promote_rgb888_to_float32(float **out_pixels,
 
     buffer = (float *)sixel_allocator_malloc(allocator, bytes);
     if (buffer == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dither: RGB888-to-float32 allocation failed.");
         return SIXEL_BAD_ALLOCATION;
     }
 
@@ -2621,7 +2623,6 @@ sixel_dither_initialize_internal(
 {
     unsigned char *normalized_pixels = NULL;
     unsigned char *alpha_pixels = NULL;
-    float *float_pixels = NULL;
     unsigned char *input_pixels;
     SIXELSTATUS status = SIXEL_FALSE;
     SIXELSTATUS attempt_status;
@@ -2629,7 +2630,6 @@ sixel_dither_initialize_internal(
     unsigned int payload_length;
     int method_for_largest_for_palette;
     int palette_pixelformat;
-    int prefer_float32;
     int palette_attempt_active;
     sixel_palette_generate_request_t palette_request;
     sixel_palette_metadata_t palette_metadata;
@@ -2652,12 +2652,6 @@ sixel_dither_initialize_internal(
     total_pixels = (size_t)width * (size_t)height;
     payload_length = 0U;
     palette_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    prefer_float32 = dither->prefer_float32;
-
-    /* Float32 input requires the pipeline to honour higher precision. */
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        prefer_float32 = 1;
-    }
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_RGB888:
@@ -2703,21 +2697,21 @@ sixel_dither_initialize_internal(
             }
             break;
         }
-        /* fallthrough */
+        /* Without a transparent key these formats normalize to RGB888. */
+        goto normalize;
     case SIXEL_PIXELFORMAT_RGBFLOAT32:
     case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
     case SIXEL_PIXELFORMAT_OKLABFLOAT32:
     case SIXEL_PIXELFORMAT_CIELABFLOAT32:
     case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
-        if (prefer_float32) {
-            input_pixels = data;
-            palette_pixelformat = pixelformat;
-            payload_length = (unsigned int)(total_pixels * 3U
-                                            * sizeof(float));
-            break;
-        }
-        /* fallthrough */
+        /* The supplied format owns construction precision. Byte callers
+         * normalize below; typed float callers never use a byte adapter. */
+        input_pixels = data;
+        palette_pixelformat = pixelformat;
+        payload_length = (unsigned int)(total_pixels * 3U * sizeof(float));
+        break;
     default:
+    normalize:
         /* normalize pixelformat */
         normalized_pixels
             = (unsigned char *)sixel_allocator_malloc(
@@ -2746,30 +2740,6 @@ sixel_dither_initialize_internal(
     if (payload_length == 0U) {
         payload_length = (unsigned int)(total_pixels * 3U);
     }
-
-    if (prefer_float32
-        && !SIXEL_PIXELFORMAT_IS_FLOAT32(palette_pixelformat)
-        && total_pixels > 0U) {
-        status = sixel_dither_promote_rgb888_to_float32(
-            &float_pixels,
-            input_pixels,
-            total_pixels,
-            dither->allocator);
-        if (SIXEL_SUCCEEDED(status) && float_pixels != NULL) {
-            payload_length
-                = (unsigned int)(total_pixels * 3U * sizeof(float));
-            palette_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
-            input_pixels = (unsigned char *)float_pixels;
-        } else {
-            if (dither->use_rgb101_palette != 0) {
-                goto end;
-            }
-            prefer_float32 = 0;
-            status = SIXEL_OK;
-        }
-    }
-
-    dither->prefer_float32 = prefer_float32;
 
     sixel_dither_set_method_for_largest(dither, method_for_largest);
     sixel_dither_set_method_for_rep(dither, method_for_rep);
@@ -2851,9 +2821,6 @@ end:
     }
     if (alpha_pixels != NULL) {
         sixel_allocator_free(dither->allocator, alpha_pixels);
-    }
-    if (float_pixels != NULL) {
-        sixel_allocator_free(dither->allocator, float_pixels);
     }
 
     /* decrement ref count */
@@ -4628,22 +4595,17 @@ sixel_dither_apply_palette_with_mode(
             input_pixels,
             total_pixels,
             dither->allocator);
-        if (SIXEL_SUCCEEDED(status) && float_pipeline_pixels != NULL) {
-            input_pixels = (unsigned char *)float_pipeline_pixels;
-            pipeline_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
-            owns_float_pipeline = 1;
-            dither->clamp_promoted_rgb888 =
-                sixel_dither_clamp_requires_float(dither);
-        } else {
-            /* A byte fallback would lose native map precision even with
-             * hard/no diffusion; clamp headroom is a separate requirement. */
-            if (dither->use_rgb101_palette != 0 ||
-                    sixel_dither_clamp_requires_float(dither)) {
-                goto end;
-            }
-            prefer_float_pipeline = 0;
-            status = SIXEL_OK;
+        if (SIXEL_FAILED(status)) {
+            /* Float palette coordinates and explicit float requests are
+             * precision contracts too, even with hard/no diffusion. Memory
+             * pressure must not change lookup or feedback arithmetic. */
+            goto end;
         }
+        input_pixels = (unsigned char *)float_pipeline_pixels;
+        pipeline_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+        owns_float_pipeline = 1;
+        dither->clamp_promoted_rgb888 =
+            sixel_dither_clamp_requires_float(dither);
     } else if (prefer_float_pipeline
                && !SIXEL_PIXELFORMAT_IS_FLOAT32(pipeline_pixelformat)) {
         prefer_float_pipeline = 0;
