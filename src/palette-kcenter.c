@@ -7153,8 +7153,16 @@ sixel_kcenter_build_export_phase(sixel_kcenter_build_runtime_t *rt)
                         : sixel_pixelformat_float_channel_clamp(
                             rt->pixelformat, (int)channel,
                             (float)restored_component);
+                /* Publish the byte projection of the exported float, not
+                 * of the solver's double-scaled coordinate. Near a byte
+                 * midpoint those round differently; a later consistency
+                 * check must not mistake that difference for a byte edit. */
+                rt->palette[slot * 3u + channel] =
+                    sixel_pixelformat_float_channel_to_byte(rt->pixelformat,
+                        (int)channel, rt->float_palette[slot * 3u + channel]);
+                continue;
             }
-            /* Only the compatibility byte view is saturated. */
+            /* Byte-only generation keeps its existing bounded projection. */
             if (component < 0.0) {
                 component = 0.0;
             }

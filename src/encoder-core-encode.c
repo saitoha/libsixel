@@ -2840,63 +2840,6 @@ sixel_palette_float_pixelformat_for_colorspace(int colorspace)
 }
 
 static int
-sixel_palette_float32_matches_u8(unsigned char const *palette,
-                                 float const *palette_float,
-                                 size_t count,
-                                 int float_pixelformat)
-{
-    size_t index;
-    size_t limit;
-    unsigned char expected;
-    int channel;
-
-    if (palette == NULL || palette_float == NULL || count == 0U) {
-        return 1;
-    }
-    if (count > SIZE_MAX / 3U) {
-        return 0;
-    }
-    limit = count * 3U;
-    for (index = 0U; index < limit; ++index) {
-        channel = (int)(index % 3U);
-        expected = sixel_pixelformat_float_channel_to_byte(
-            float_pixelformat,
-            channel,
-            palette_float[index]);
-        if (palette[index] != expected) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-static void
-sixel_palette_sync_float32_from_u8(unsigned char const *palette,
-                                   float *palette_float,
-                                   size_t count,
-                                   int float_pixelformat)
-{
-    size_t index;
-    size_t limit;
-    int channel;
-
-    if (palette == NULL || palette_float == NULL || count == 0U) {
-        return;
-    }
-    if (count > SIZE_MAX / 3U) {
-        return;
-    }
-    limit = count * 3U;
-    for (index = 0U; index < limit; ++index) {
-        channel = (int)(index % 3U);
-        palette_float[index] = sixel_pixelformat_byte_to_float(
-            float_pixelformat,
-            channel,
-            palette[index]);
-    }
-}
-
-static int
 sixel_output_palette_channel_to_pct(unsigned char const *palette,
                                     float const *palette_float,
                                     int n,
@@ -4941,6 +4884,16 @@ sixel_encode_dither(
             sixel_helper_compute_depth(palette_float_pixelformat);
     }
 
+    if (!use_rgb101_palette) {
+        /* Indexed input can bypass application. Observe a byte assignment
+         * here too, before copying the authoritative working float view. */
+        status = sixel_palette_reconcile_bytes(palette_obj,
+            palette_float_pixelformat);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+
     status = palette_obj->vtbl->get_entries(palette_obj, &palette_view);
     if (SIXEL_FAILED(status) || palette_view.entries == NULL ||
             palette_view.depth != 3 || palette_view.entry_count == 0U) {
@@ -5030,20 +4983,6 @@ sixel_encode_dither(
      * Legacy OR callers retain their existing byte contract. */
     if (use_rgb101_palette) {
         ormode_palette_float = palette_entries_float32;
-    }
-    if (!use_rgb101_palette &&
-            palette_entries != NULL && palette_entries_float32 != NULL
-            && palette_count == palette_float_count
-            && palette_count > 0U
-            && !sixel_palette_float32_matches_u8(
-                    palette_entries,
-                    palette_entries_float32,
-                    palette_count,
-                    palette_float_pixelformat)) {
-        sixel_palette_sync_float32_from_u8(palette_entries,
-                                           palette_entries_float32,
-                                           palette_count,
-                                           palette_float_pixelformat);
     }
     if (!use_rgb101_palette && palette_entries != NULL && palette_count > 0U
             && output != NULL

@@ -1,5 +1,6 @@
 #!/bin/sh
-# Verify float K-center keeps its legacy half-open hard-grid palette.
+# Verify float K-center retains its typed half-open hard-grid representatives.
+# Policy: docs/encoder/output/output-colorspace.md
 
 set -eux
 
@@ -7,7 +8,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    "palette/0043_kcenter_float_legacy_grid" || {
+    "palette/0043_kcenter_float_grid_values" || {
     echo "not ok 1 - K-center float hard-grid regression"
     exit 0
 }

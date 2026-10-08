@@ -2632,7 +2632,6 @@ sixel_dither_initialize_internal(
     int prefer_float32;
     int palette_attempt_active;
     sixel_palette_generate_request_t palette_request;
-    sixel_palette_float32_entries_request_t drop_float_request;
     sixel_palette_metadata_t palette_metadata;
 
     palette_attempt_active = 0;
@@ -2823,32 +2822,9 @@ sixel_dither_initialize_internal(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    /*
-     * The legacy make_palette() path returned only byte palette entries to
-     * dither.  Some quantizers keep float32 entries in their internal sample
-     * domain, and 6cells does not yet tag palette float views with that domain.
-     * Normally drop them so PaletteApply rebuilds byte-derived float entries in
-     * the active source pixelformat, keeping lookup and emitted palette entries
-     * consistent with the pre-component behavior.
-     */
-    /*
-     * A snapped typed palette has an explicit palette_pixelformat domain.
-     * Preserve that authoritative view: packing perceptual coordinates to
-     * bytes here would move the selected RGB fixed points off the safe grid.
-     * The private extended RGB path likewise owns a typed float view even
-     * without snapping. Other unsnapped paths retain byte-derived behavior.
-     */
-    if (dither->use_rgb101_palette == 0 &&
-            (!palette_request.use_reversible ||
-             !SIXEL_PIXELFORMAT_IS_FLOAT32(palette_pixelformat))) {
-        memset(&drop_float_request, 0, sizeof(drop_float_request));
-        status = dither->palette->vtbl->init_entries_float32(
-            dither->palette,
-            &drop_float_request);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
+    /* All generators publish float entries in palette_pixelformat, after
+     * undoing solver-local scales. Keep those coordinates even without a
+     * prepared output cache; the byte view is only a compatibility copy. */
     memset(&palette_metadata, 0, sizeof(palette_metadata));
     status = dither->palette->vtbl->get_metadata(dither->palette,
                                                  &palette_metadata);
@@ -3260,6 +3236,7 @@ sixel_dither_set_palette(
     unsigned char  /* in */ *palette)
 {
     sixel_palette_entries_request_t request;
+    sixel_palette_float32_entries_request_t drop;
     SIXELSTATUS status;
 
     if (dither == NULL || dither->palette == NULL) {
@@ -3277,6 +3254,12 @@ sixel_dither_set_palette(
         if (SIXEL_SUCCEEDED(status)) {
             (void)sixel_dither_use_standalone_bytes(dither);
         }
+    } else if (SIXEL_SUCCEEDED(status)) {
+        /* Explicit byte assignment is a precision boundary even when the
+         * assigned bytes equal the projection of the existing float view. */
+        memset(&drop, 0, sizeof(drop));
+        (void)dither->palette->vtbl->init_entries_float32(dither->palette,
+            &drop);
     }
     dither->palette_snap_exact = 0;
 }
@@ -4694,6 +4677,15 @@ sixel_dither_apply_palette_with_mode(
         }
     }
 
+    if (!dither->use_rgb101_palette) {
+        /* A mutable compatibility getter may have changed the byte view.
+         * Reconcile before lookup, not only while serializing its result. */
+        status = sixel_palette_reconcile_bytes(palette, pipeline_pixelformat);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+
     method_for_scan = dither->method_for_scan;
     if (method_for_scan == SIXEL_SCAN_AUTO) {
         /*
@@ -5024,10 +5016,12 @@ sixel_dither_apply_palette_with_mode(
     }
 
     dither->ncolors = ncolors;
-    /* The RGB101 owner cached wire codes with the working entry order.
-     * Reinitializing even identical byte entries invalidates its wire codes. */
+    /* CPU application retains the entry order. Republishing an unchanged
+     * byte view is not an assignment and must not invalidate float/output
+     * views. A changed count still updates the component metadata. */
     if (dither->use_rgb101_palette == 0 &&
             ncolors >= 0 &&
+            (unsigned int)ncolors != entries_view.entry_count &&
             entries_view.entries != NULL &&
             entries_view.depth > 0 &&
             (size_t)ncolors <= palette_entry_capacity) {

@@ -96,6 +96,12 @@ sixel_palette_generate_extended(
     sixel_palette_t *palette,
     sixel_palette_generate_request_t const *request);
 
+/* Preserve a coherent float view; a changed mutable byte view deliberately
+ * replaces all coordinates in the supplied working format. No allocation.
+ * Call before application/serialization, never concurrently with mutation. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_reconcile_bytes(sixel_palette_t *palette, int pixelformat);
+
 /* Cache destination RGB101 codes without changing either working view.
  * Wire quantization does not implicitly enable palette snapping. */
 SIXEL_INTERNAL_API SIXELSTATUS

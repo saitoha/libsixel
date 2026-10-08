@@ -41,6 +41,7 @@
 #endif
 
 #include <stdlib.h>
+#include <math.h>
 #include <string.h>
 
 #if HAVE_LIMITS_H
@@ -2005,6 +2006,57 @@ sixel_palette_generate_extended(
     /* The opt-in is a call argument, not retained instance or thread state.
      * Every return clears the ordinary attempt-local build context. */
     return sixel_palette_generate_internal(palette, request, 1);
+}
+
+/* Legacy byte access is mutable. Matching compatibility bytes do not own
+ * precision: keep every original float fraction, including signed and
+ * extended coordinates. A mismatch denotes an actual byte edit, so rebuild
+ * the complete view before either lookup or output can consume it. */
+SIXELSTATUS
+sixel_palette_reconcile_bytes(sixel_palette_t *palette, int pixelformat)
+{
+    sixel_palette_storage_t *storage;
+    size_t index;
+    size_t count;
+    int changed;
+    int channel;
+
+    if (palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    storage = SIXEL_PALETTE_STORAGE(palette);
+    if (storage->entries_float32 == NULL) {
+        return SIXEL_OK;
+    }
+    count = (size_t)storage->entry_count * 3U;
+    if (storage->entries == NULL || storage->depth != 3 ||
+            storage->float_depth != (int)(3U * sizeof(float)) ||
+            count / 3U != storage->entry_count ||
+            count > SIZE_MAX / sizeof(float) ||
+            storage->entries_size < count ||
+            storage->entries_float32_size < count * sizeof(float)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    changed = 0;
+    for (index = 0U; index < count; ++index) {
+        if (!isfinite(storage->entries_float32[index])) {
+            return SIXEL_BAD_INPUT;
+        }
+        channel = (int)(index % 3U);
+        if (storage->entries[index] !=
+                sixel_pixelformat_float_channel_to_byte(pixelformat,
+                    channel, storage->entries_float32[index])) {
+            changed = 1;
+        }
+    }
+    if (changed) {
+        for (index = 0U; index < count; ++index) {
+            storage->entries_float32[index] = sixel_pixelformat_byte_to_float(
+                pixelformat, (int)(index % 3U), storage->entries[index]);
+        }
+        sixel_palette_clear_output(storage);
+    }
+    return SIXEL_OK;
 }
 
 SIXELSTATUS

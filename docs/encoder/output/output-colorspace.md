@@ -364,7 +364,12 @@ Float source storage, float diffusion and native float palette ownership are sep
 | Low-level high-color diffusion | The explicit legacy 15bpp diffusion routines use a bounded byte plane; high-level no-diffusion output has a separate float representative path. | [High-color precision](high-color/README.md#destination-samples-and-precision) |
 | Loader conversion | Encoder palette preservation cannot recover precision or gamut already discarded during loading. Backend and source-format coverage must be checked separately. | [Loader precision](../../loader/precision-policy.md) |
 
-The public color converter uses [common extended arithmetic for float input](../../concepts/pixelformat-precision/README.md#float-conversion-arithmetic), independently of native palette admission. Bounded byte conversion remains an explicit storage operation. Compatibility palette reconstruction and non-admitted policy branches still require their own ownership audit; removing bounded float arithmetic alone does not establish end-to-end palette preservation.
+The public color converter uses [common extended arithmetic for float input](../../concepts/pixelformat-precision/README.md#float-conversion-arithmetic), independently of native palette admission. Bounded byte conversion remains an explicit storage operation. Removing bounded float arithmetic alone does not establish end-to-end palette preservation: non-admitted generation policies still retain their own solver restrictions.
+
+Generated float palette entries retain the generation request's typed coordinates even when no native output cache is selected. K-means, K-center and K-medoids undo their solver-local scales before exporting those coordinates; dither initialization does not discard the export or reconstruct it from compatibility bytes. K-center projects its compatibility bytes from the exported float values, so scale/unscale rounding near a byte midpoint does not look like a caller edit. Compatibility Heckbert retains its typed export too, but its non-native byte histogram has already rounded those samples. This retention does not enable extended solver arithmetic, change early snap or feedback policy, or promote a genuinely byte-only palette generation request.
+
+Before CPU palette application, compatibility-byte changes are reconciled with the working float view. Reading an unchanged byte view preserves its float fractions. Changing bytes through the mutable getter replaces the complete float view with the assigned byte coordinates in the current working format, so lookup and serialization agree. Explicit `sixel_dither_set_palette()` assignment is a byte precision boundary even when the assigned bytes equal the existing projection. Indexed serialization, which can bypass application, performs the same reconciliation before copying the working entries. An unchanged entry count and order after application do not invalidate prepared output values. Native standalone palettes retain their separately described domain and byte-shadow rules.
+
 
 ## Test coverage
 
@@ -1212,3 +1217,25 @@ The CIELAB export witness protects neutral float endpoints; see the [external-pa
 | CM-20 | Changing only hidden RGB leaves soft-cover output byte-identical. | [tests/quant/palette/cover_mask/0020_hidden_rgb_invariant.t](../../../tests/quant/palette/cover_mask/0020_hidden_rgb_invariant.t) |
 | CM-21 | Legacy byte cover respects the same reserved-slot ceiling. | [tests/quant/palette/cover_mask/0021_byte_mask_boundary.t](../../../tests/quant/palette/cover_mask/0021_byte_mask_boundary.t) |
 | CM-22 | A mask stays aligned across multiple bands with four requested workers. | [tests/quant/palette/cover_mask/0022_parallel_mask.t](../../../tests/quant/palette/cover_mask/0022_parallel_mask.t) |
+
+### Float palette retention without a native output cache
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| PR-01 | kmeans retains generated sub-byte coordinates without native output. | [tests/quant/palette/retention/0001_kmeans.t](../../../tests/quant/palette/retention/0001_kmeans.t) |
+| PR-02 | kcenter retains generated sub-byte coordinates without native output. | [tests/quant/palette/retention/0002_kcenter.t](../../../tests/quant/palette/retention/0002_kcenter.t) |
+| PR-03 | kmedoids retains generated sub-byte coordinates without native output. | [tests/quant/palette/retention/0003_kmedoids.t](../../../tests/quant/palette/retention/0003_kmedoids.t) |
+| PR-04 | Typed exports retain their coordinate scale without native output. | [tests/quant/palette/retention/0004_typed.t](../../../tests/quant/palette/retention/0004_typed.t) |
+| PR-05 | Mutable byte edits affect lookup before serialization. | [tests/quant/palette/retention/0005_getter_write.t](../../../tests/quant/palette/retention/0005_getter_write.t) |
+| PR-06 | Explicit identical byte assignment replaces float precision. | [tests/quant/palette/retention/0006_setter_same.t](../../../tests/quant/palette/retention/0006_setter_same.t) |
+| PR-07 | Uncached serialization rounds the retained float coordinates. | [tests/quant/palette/retention/0007_wire.t](../../../tests/quant/palette/retention/0007_wire.t) |
+| PR-08 | Unchanged palette application preserves prepared output values. | [tests/quant/palette/retention/0008_cache.t](../../../tests/quant/palette/retention/0008_cache.t) |
+| PR-09 | Byte construction remains eligible without a float palette. | [tests/quant/palette/retention/0009_byte.t](../../../tests/quant/palette/retention/0009_byte.t) |
+| PR-10 | Invalid float reconciliation cannot partially rewrite a palette. | [tests/quant/palette/retention/0010_invalid.t](../../../tests/quant/palette/retention/0010_invalid.t) |
+| PR-11 | Float lookup uses retained fractions near monochrome endpoints. | [tests/quant/palette/retention/0011_mono.t](../../../tests/quant/palette/retention/0011_mono.t) |
+| PR-12 | Feedback compatibility generation retains its float export. | [tests/quant/palette/retention/0012_feedback.t](../../../tests/quant/palette/retention/0012_feedback.t) |
+| PR-13 | Compatibility Heckbert retains its typed byte-histogram export. | [tests/quant/palette/retention/0013_heckbert.t](../../../tests/quant/palette/retention/0013_heckbert.t) |
+| PR-14 | Coherent compatibility reads preserve signed and extended coordinates. | [tests/quant/palette/retention/0014_extended_read.t](../../../tests/quant/palette/retention/0014_extended_read.t) |
+| PR-15 | Indexed serialization reconciles byte edits when application is bypassed. | [tests/quant/palette/retention/0015_indexed_write.t](../../../tests/quant/palette/retention/0015_indexed_write.t) |
+| PR-16 | Compatibility projection rounding cannot replace K-center float values; the compatibility byte is not a substitute for the retained representative. | [tests/quant/palette/retention/0016_kcenter_boundary.t](../../../tests/quant/palette/retention/0016_kcenter_boundary.t) |
+| PR-17 | The compatibility hard-grid K-center path retains its selected typed representatives without a byte roundtrip. | [tests/quant/palette/0043_kcenter_float_grid_values.t](../../../tests/quant/palette/0043_kcenter_float_grid_values.t) |

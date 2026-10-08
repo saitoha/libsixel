@@ -1,13 +1,14 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Verify shared hard binning preserves the legacy float K-center palette.
+ * Verify shared hard binning preserves typed K-center representatives.
  */
 
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,13 +18,13 @@
 #include "src/dither.h"
 
 int
-test_palette_0043_kcenter_float_legacy_grid(int argc, char **argv)
+test_palette_0043_kcenter_float_grid_values(int argc, char **argv)
 {
-    static unsigned char const expected[] = {
-        163u, 51u, 217u,
-        20u, 204u, 76u,
-        191u, 128u, 128u,
-        122u, 115u, 13u
+    static float const expected[] = {
+        .64f, -.30f, .35f,
+        .08f, .30f, -.20f,
+        .75f, .00f, .00f,
+        .48f, -.05f, -.45f
     };
     static float pixels[] = {
         0.49f, 0.00f, 0.00f, 0.50f, 0.00f, 0.00f,
@@ -38,7 +39,8 @@ test_palette_0043_kcenter_float_legacy_grid(int argc, char **argv)
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
-    sixel_palette_entries_view_t view;
+    sixel_palette_float32_entries_view_t view;
+    unsigned int index;
 
     (void)argc;
     (void)argv;
@@ -69,12 +71,22 @@ test_palette_0043_kcenter_float_legacy_grid(int argc, char **argv)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    status = dither->palette->vtbl->get_entries(dither->palette, &view);
+    status = dither->palette->vtbl->get_entries_float32(dither->palette, &view);
     if (SIXEL_FAILED(status) || view.entry_count != 4u ||
-            view.depth != 3 || view.entries == NULL ||
-            memcmp(view.entries, expected, sizeof(expected)) != 0) {
+            view.depth != 3 * (int)sizeof(float) || view.entries == NULL) {
         status = SIXEL_LOGIC_ERROR;
         goto cleanup;
+    }
+    /* The fixed hard-grid fixture selects these four observed source
+     * triplets. Verify coordinates rather than double-vs-float rounding at
+     * a compatibility-byte midpoint (notably a=-.20). The tolerance covers
+     * scale/unscale storage error and is far below one packed-byte step. */
+    for (index = 0; index < sizeof(expected) / sizeof(expected[0]); ++index) {
+        if (!isfinite(view.entries[index]) ||
+                fabs((double)view.entries[index] - expected[index]) > 1e-6) {
+            status = SIXEL_LOGIC_ERROR;
+            goto cleanup;
+        }
     }
     status = SIXEL_OK;
 

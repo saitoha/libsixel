@@ -1334,7 +1334,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0040_PALETTE_BUILD_ATTEMPT_ISOLATION \
     -DBUILD_TEST_0041_KCENTER_BINNING_FILTER \
     -DBUILD_TEST_0042_KCENTER_LARGE_BUFFER \
-    -DBUILD_TEST_0043_KCENTER_FLOAT_LEGACY_GRID \
+    -DBUILD_TEST_0043_KCENTER_FLOAT_GRID_VALUES \
     -DBUILD_TEST_0044_KCENTER_PACKED_ALPHA_LAYOUTS \
     -DBUILD_TEST_0048_POSITIONAL_8BIT_NO_DIFFUSE_GPU_6DELTA \
     -DBUILD_TEST_0052_POSITIONAL_8BIT_BLUENOISE_GPU_FORCE_KEEP_OFFSET \
@@ -1456,6 +1456,23 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0040_CLI_COLOR_JOB \
     -DBUILD_TEST_0033_STDIN_INTERRUPT \
     -DBUILD_TEST_0001_FLOAT_PALETTE \
+    -DBUILD_RETENTION_TEST_COMMON \
+    -DBUILD_TEST_0016_KCENTER_BOUNDARY \
+    -DBUILD_TEST_0014_EXTENDED_READ \
+    -DBUILD_TEST_0015_INDEXED_WRITE \
+    -DBUILD_TEST_0001_KMEANS \
+    -DBUILD_TEST_0002_KCENTER \
+    -DBUILD_TEST_0003_KMEDOIDS \
+    -DBUILD_TEST_0004_TYPED \
+    -DBUILD_TEST_0005_GETTER_WRITE \
+    -DBUILD_TEST_0006_SETTER_SAME \
+    -DBUILD_TEST_0007_WIRE \
+    -DBUILD_TEST_0008_CACHE \
+    -DBUILD_TEST_0009_BYTE \
+    -DBUILD_TEST_0010_INVALID \
+    -DBUILD_TEST_0011_MONO \
+    -DBUILD_TEST_0012_FEEDBACK \
+    -DBUILD_TEST_0013_HECKBERT \
     -DBUILD_TEST_0051_P3_PALETTE_CONTRACT \
     -DBUILD_TEST_0054_P3_ENCODER_CONTRACT \
     -DBUILD_TEST_0055_P3_MAPFILE_CONTRACT \
@@ -5370,11 +5387,29 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0040_palette_build_attempt_isolation.c \
     quant/palette/0041_kcenter_binning_filter.c \
     quant/palette/0042_kcenter_large_buffer.c \
-    quant/palette/0043_kcenter_float_legacy_grid.c \
+    quant/palette/0043_kcenter_float_grid_values.c \
     quant/palette/0044_kcenter_packed_alpha_layouts.c \
     quant/palette/0045_snap_output_grid.c \
     quant/palette/0048_snap_partial_once.c \
     quant/palette/direct/0001_float_palette.c \
+    quant/palette/retention/retention_test_common.c \
+    quant/palette/retention/retention_test_common.h \
+    quant/palette/retention/0016_kcenter_boundary.c \
+    quant/palette/retention/0014_extended_read.c \
+    quant/palette/retention/0015_indexed_write.c \
+    quant/palette/retention/0001_kmeans.c \
+    quant/palette/retention/0002_kcenter.c \
+    quant/palette/retention/0003_kmedoids.c \
+    quant/palette/retention/0004_typed.c \
+    quant/palette/retention/0005_getter_write.c \
+    quant/palette/retention/0006_setter_same.c \
+    quant/palette/retention/0007_wire.c \
+    quant/palette/retention/0008_cache.c \
+    quant/palette/retention/0009_byte.c \
+    quant/palette/retention/0010_invalid.c \
+    quant/palette/retention/0011_mono.c \
+    quant/palette/retention/0012_feedback.c \
+    quant/palette/retention/0013_heckbert.c \
     quant/palette/0051_p3_palette_contract.c \
     quant/palette/0054_p3_encoder_contract.c \
     quant/palette/0055_p3_mapfile_contract.c \

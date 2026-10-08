@@ -2264,11 +2264,29 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/0040_palette_build_attempt_isolation.c \
 	quant/palette/0041_kcenter_binning_filter.c \
 	quant/palette/0042_kcenter_large_buffer.c \
-	quant/palette/0043_kcenter_float_legacy_grid.c \
+	quant/palette/0043_kcenter_float_grid_values.c \
 	quant/palette/0044_kcenter_packed_alpha_layouts.c \
 	quant/palette/0045_snap_output_grid.c \
 	quant/palette/0048_snap_partial_once.c \
 	quant/palette/direct/0001_float_palette.c \
+	quant/palette/retention/retention_test_common.c \
+	quant/palette/retention/retention_test_common.h \
+	quant/palette/retention/0016_kcenter_boundary.c \
+	quant/palette/retention/0014_extended_read.c \
+	quant/palette/retention/0015_indexed_write.c \
+	quant/palette/retention/0001_kmeans.c \
+	quant/palette/retention/0002_kcenter.c \
+	quant/palette/retention/0003_kmedoids.c \
+	quant/palette/retention/0004_typed.c \
+	quant/palette/retention/0005_getter_write.c \
+	quant/palette/retention/0006_setter_same.c \
+	quant/palette/retention/0007_wire.c \
+	quant/palette/retention/0008_cache.c \
+	quant/palette/retention/0009_byte.c \
+	quant/palette/retention/0010_invalid.c \
+	quant/palette/retention/0011_mono.c \
+	quant/palette/retention/0012_feedback.c \
+	quant/palette/retention/0013_heckbert.c \
 	quant/palette/0051_p3_palette_contract.c \
 	quant/palette/0054_p3_encoder_contract.c \
 	quant/palette/0055_p3_mapfile_contract.c \
@@ -5269,11 +5287,28 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0040_palette_build_attempt_isolation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0041_kcenter_binning_filter.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0042_kcenter_large_buffer.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0043_kcenter_float_legacy_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0043_kcenter_float_grid_values.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0045_snap_output_grid.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0048_snap_partial_once.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/direct/test_runner-0001_float_palette.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-retention_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0016_kcenter_boundary.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0014_extended_read.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0015_indexed_write.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0001_kmeans.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0002_kcenter.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0003_kmedoids.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0004_typed.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0005_getter_write.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0006_setter_same.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0007_wire.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0008_cache.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0009_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0010_invalid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0011_mono.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0012_feedback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0013_heckbert.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0051_p3_palette_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0054_p3_encoder_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0055_p3_mapfile_contract.$(OBJEXT) \
@@ -8501,7 +8536,7 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Po \
 	quant/palette/$(DEPDIR)/test_runner-0041_kcenter_binning_filter.Po \
 	quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Po \
-	quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Po \
+	quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_grid_values.Po \
 	quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Po \
 	quant/palette/$(DEPDIR)/test_runner-0045_snap_output_grid.Po \
 	quant/palette/$(DEPDIR)/test_runner-0048_snap_partial_once.Po \
@@ -9248,6 +9283,23 @@ am__depfiles_remade =  \
 	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0033_wire_fs_feedback.Po \
 	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0034_wire_allocation_retry.Po \
 	quant/palette/packed_alpha/$(DEPDIR)/test_runner-0035_disabled_alpha_side_mask.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0001_kmeans.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0002_kcenter.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0003_kmedoids.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0004_typed.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0005_getter_write.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0006_setter_same.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0007_wire.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0008_cache.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0009_byte.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0010_invalid.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0011_mono.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0012_feedback.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0013_heckbert.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0014_extended_read.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0015_indexed_write.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-0016_kcenter_boundary.Po \
+	quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Po \
 	quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po \
 	quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po \
 	quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Po \
@@ -11087,7 +11139,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_PALETTE_BUILD_ATTEMPT_ISOLATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_KCENTER_BINNING_FILTER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_KCENTER_LARGE_BUFFER \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_KCENTER_FLOAT_LEGACY_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_KCENTER_FLOAT_GRID_VALUES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_KCENTER_PACKED_ALPHA_LAYOUTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_POSITIONAL_8BIT_NO_DIFFUSE_GPU_6DELTA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_POSITIONAL_8BIT_BLUENOISE_GPU_FORCE_KEEP_OFFSET \
@@ -11209,6 +11261,23 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_CLI_COLOR_JOB \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_STDIN_INTERRUPT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FLOAT_PALETTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RETENTION_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_KCENTER_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_EXTENDED_READ \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_INDEXED_WRITE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_KMEANS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_KCENTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_KMEDOIDS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_TYPED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_GETTER_WRITE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_SETTER_SAME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_WIRE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_CACHE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_INVALID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_MONO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_FEEDBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_HECKBERT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_P3_PALETTE_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_P3_ENCODER_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_P3_MAPFILE_CONTRACT \
@@ -15154,11 +15223,29 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0040_palette_build_attempt_isolation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0041_kcenter_binning_filter.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0042_kcenter_large_buffer.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0043_kcenter_float_legacy_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0043_kcenter_float_grid_values.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0044_kcenter_packed_alpha_layouts.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0045_snap_output_grid.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0048_snap_partial_once.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/direct/0001_float_palette.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/retention_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/retention_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0016_kcenter_boundary.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0014_extended_read.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0015_indexed_write.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0001_kmeans.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0002_kcenter.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0003_kmedoids.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0004_typed.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0005_getter_write.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0006_setter_same.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0007_wire.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0008_cache.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0009_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0010_invalid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0011_mono.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0012_feedback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0013_heckbert.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0051_p3_palette_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0054_p3_encoder_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0055_p3_mapfile_contract.c \
@@ -22872,7 +22959,7 @@ quant/palette/test_runner-0041_kcenter_binning_filter.$(OBJEXT):  \
 quant/palette/test_runner-0042_kcenter_large_buffer.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
-quant/palette/test_runner-0043_kcenter_float_legacy_grid.$(OBJEXT):  \
+quant/palette/test_runner-0043_kcenter_float_grid_values.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.$(OBJEXT):  \
@@ -22893,6 +22980,63 @@ quant/palette/direct/$(DEPDIR)/$(am__dirstamp):
 quant/palette/direct/test_runner-0001_float_palette.$(OBJEXT):  \
 	quant/palette/direct/$(am__dirstamp) \
 	quant/palette/direct/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/retention
+	@: >>quant/palette/retention/$(am__dirstamp)
+quant/palette/retention/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/retention/$(DEPDIR)
+	@: >>quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-retention_test_common.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0016_kcenter_boundary.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0014_extended_read.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0015_indexed_write.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0001_kmeans.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0002_kcenter.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0003_kmedoids.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0004_typed.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0005_getter_write.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0006_setter_same.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0007_wire.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0008_cache.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0009_byte.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0010_invalid.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0011_mono.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0012_feedback.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+quant/palette/retention/test_runner-0013_heckbert.$(OBJEXT):  \
+	quant/palette/retention/$(am__dirstamp) \
+	quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-0051_p3_palette_contract.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
@@ -26036,6 +26180,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/mono_float/*.$(OBJEXT)
 	-rm -f quant/palette/output_float/*.$(OBJEXT)
 	-rm -f quant/palette/packed_alpha/*.$(OBJEXT)
+	-rm -f quant/palette/retention/*.$(OBJEXT)
 	-rm -f quant/palette/rgb101_diffusion/*.$(OBJEXT)
 	-rm -f quant/palette/sampling_float/*.$(OBJEXT)
 	-rm -f quant/palette/snap_float/*.$(OBJEXT)
@@ -28292,7 +28437,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0041_kcenter_binning_filter.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_grid_values.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0045_snap_output_grid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0048_snap_partial_once.Po@am__quote@ # am--include-marker
@@ -29039,6 +29184,23 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0033_wire_fs_feedback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0034_wire_allocation_retry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/packed_alpha/$(DEPDIR)/test_runner-0035_disabled_alpha_side_mask.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0001_kmeans.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0002_kcenter.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0003_kmedoids.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0004_typed.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0005_getter_write.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0006_setter_same.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0007_wire.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0008_cache.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0009_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0010_invalid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0011_mono.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0012_feedback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0013_heckbert.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0014_extended_read.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0015_indexed_write.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-0016_kcenter_boundary.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Po@am__quote@ # am--include-marker
@@ -58437,19 +58599,19 @@ quant/palette/test_runner-0042_kcenter_large_buffer.obj: quant/palette/0042_kcen
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0042_kcenter_large_buffer.obj `if test -f 'quant/palette/0042_kcenter_large_buffer.c'; then $(CYGPATH_W) 'quant/palette/0042_kcenter_large_buffer.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0042_kcenter_large_buffer.c'; fi`
 
-quant/palette/test_runner-0043_kcenter_float_legacy_grid.o: quant/palette/0043_kcenter_float_legacy_grid.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0043_kcenter_float_legacy_grid.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Tpo -c -o quant/palette/test_runner-0043_kcenter_float_legacy_grid.o `test -f 'quant/palette/0043_kcenter_float_legacy_grid.c' || echo '$(srcdir)/'`quant/palette/0043_kcenter_float_legacy_grid.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Tpo quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0043_kcenter_float_legacy_grid.c' object='quant/palette/test_runner-0043_kcenter_float_legacy_grid.o' libtool=no @AMDEPBACKSLASH@
+quant/palette/test_runner-0043_kcenter_float_grid_values.o: quant/palette/0043_kcenter_float_grid_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0043_kcenter_float_grid_values.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_grid_values.Tpo -c -o quant/palette/test_runner-0043_kcenter_float_grid_values.o `test -f 'quant/palette/0043_kcenter_float_grid_values.c' || echo '$(srcdir)/'`quant/palette/0043_kcenter_float_grid_values.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_grid_values.Tpo quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_grid_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0043_kcenter_float_grid_values.c' object='quant/palette/test_runner-0043_kcenter_float_grid_values.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0043_kcenter_float_legacy_grid.o `test -f 'quant/palette/0043_kcenter_float_legacy_grid.c' || echo '$(srcdir)/'`quant/palette/0043_kcenter_float_legacy_grid.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0043_kcenter_float_grid_values.o `test -f 'quant/palette/0043_kcenter_float_grid_values.c' || echo '$(srcdir)/'`quant/palette/0043_kcenter_float_grid_values.c
 
-quant/palette/test_runner-0043_kcenter_float_legacy_grid.obj: quant/palette/0043_kcenter_float_legacy_grid.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0043_kcenter_float_legacy_grid.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Tpo -c -o quant/palette/test_runner-0043_kcenter_float_legacy_grid.obj `if test -f 'quant/palette/0043_kcenter_float_legacy_grid.c'; then $(CYGPATH_W) 'quant/palette/0043_kcenter_float_legacy_grid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0043_kcenter_float_legacy_grid.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Tpo quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0043_kcenter_float_legacy_grid.c' object='quant/palette/test_runner-0043_kcenter_float_legacy_grid.obj' libtool=no @AMDEPBACKSLASH@
+quant/palette/test_runner-0043_kcenter_float_grid_values.obj: quant/palette/0043_kcenter_float_grid_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0043_kcenter_float_grid_values.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_grid_values.Tpo -c -o quant/palette/test_runner-0043_kcenter_float_grid_values.obj `if test -f 'quant/palette/0043_kcenter_float_grid_values.c'; then $(CYGPATH_W) 'quant/palette/0043_kcenter_float_grid_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0043_kcenter_float_grid_values.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_grid_values.Tpo quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_grid_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0043_kcenter_float_grid_values.c' object='quant/palette/test_runner-0043_kcenter_float_grid_values.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0043_kcenter_float_legacy_grid.obj `if test -f 'quant/palette/0043_kcenter_float_legacy_grid.c'; then $(CYGPATH_W) 'quant/palette/0043_kcenter_float_legacy_grid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0043_kcenter_float_legacy_grid.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0043_kcenter_float_grid_values.obj `if test -f 'quant/palette/0043_kcenter_float_grid_values.c'; then $(CYGPATH_W) 'quant/palette/0043_kcenter_float_grid_values.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0043_kcenter_float_grid_values.c'; fi`
 
 quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.o: quant/palette/0044_kcenter_packed_alpha_layouts.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Tpo -c -o quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.o `test -f 'quant/palette/0044_kcenter_packed_alpha_layouts.c' || echo '$(srcdir)/'`quant/palette/0044_kcenter_packed_alpha_layouts.c
@@ -58506,6 +58668,244 @@ quant/palette/direct/test_runner-0001_float_palette.obj: quant/palette/direct/00
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/direct/0001_float_palette.c' object='quant/palette/direct/test_runner-0001_float_palette.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/direct/test_runner-0001_float_palette.obj `if test -f 'quant/palette/direct/0001_float_palette.c'; then $(CYGPATH_W) 'quant/palette/direct/0001_float_palette.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/direct/0001_float_palette.c'; fi`
+
+quant/palette/retention/test_runner-retention_test_common.o: quant/palette/retention/retention_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-retention_test_common.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Tpo -c -o quant/palette/retention/test_runner-retention_test_common.o `test -f 'quant/palette/retention/retention_test_common.c' || echo '$(srcdir)/'`quant/palette/retention/retention_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Tpo quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/retention_test_common.c' object='quant/palette/retention/test_runner-retention_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-retention_test_common.o `test -f 'quant/palette/retention/retention_test_common.c' || echo '$(srcdir)/'`quant/palette/retention/retention_test_common.c
+
+quant/palette/retention/test_runner-retention_test_common.obj: quant/palette/retention/retention_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-retention_test_common.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Tpo -c -o quant/palette/retention/test_runner-retention_test_common.obj `if test -f 'quant/palette/retention/retention_test_common.c'; then $(CYGPATH_W) 'quant/palette/retention/retention_test_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/retention_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Tpo quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/retention_test_common.c' object='quant/palette/retention/test_runner-retention_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-retention_test_common.obj `if test -f 'quant/palette/retention/retention_test_common.c'; then $(CYGPATH_W) 'quant/palette/retention/retention_test_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/retention_test_common.c'; fi`
+
+quant/palette/retention/test_runner-0016_kcenter_boundary.o: quant/palette/retention/0016_kcenter_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0016_kcenter_boundary.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0016_kcenter_boundary.Tpo -c -o quant/palette/retention/test_runner-0016_kcenter_boundary.o `test -f 'quant/palette/retention/0016_kcenter_boundary.c' || echo '$(srcdir)/'`quant/palette/retention/0016_kcenter_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0016_kcenter_boundary.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0016_kcenter_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0016_kcenter_boundary.c' object='quant/palette/retention/test_runner-0016_kcenter_boundary.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0016_kcenter_boundary.o `test -f 'quant/palette/retention/0016_kcenter_boundary.c' || echo '$(srcdir)/'`quant/palette/retention/0016_kcenter_boundary.c
+
+quant/palette/retention/test_runner-0016_kcenter_boundary.obj: quant/palette/retention/0016_kcenter_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0016_kcenter_boundary.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0016_kcenter_boundary.Tpo -c -o quant/palette/retention/test_runner-0016_kcenter_boundary.obj `if test -f 'quant/palette/retention/0016_kcenter_boundary.c'; then $(CYGPATH_W) 'quant/palette/retention/0016_kcenter_boundary.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0016_kcenter_boundary.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0016_kcenter_boundary.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0016_kcenter_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0016_kcenter_boundary.c' object='quant/palette/retention/test_runner-0016_kcenter_boundary.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0016_kcenter_boundary.obj `if test -f 'quant/palette/retention/0016_kcenter_boundary.c'; then $(CYGPATH_W) 'quant/palette/retention/0016_kcenter_boundary.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0016_kcenter_boundary.c'; fi`
+
+quant/palette/retention/test_runner-0014_extended_read.o: quant/palette/retention/0014_extended_read.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0014_extended_read.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0014_extended_read.Tpo -c -o quant/palette/retention/test_runner-0014_extended_read.o `test -f 'quant/palette/retention/0014_extended_read.c' || echo '$(srcdir)/'`quant/palette/retention/0014_extended_read.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0014_extended_read.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0014_extended_read.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0014_extended_read.c' object='quant/palette/retention/test_runner-0014_extended_read.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0014_extended_read.o `test -f 'quant/palette/retention/0014_extended_read.c' || echo '$(srcdir)/'`quant/palette/retention/0014_extended_read.c
+
+quant/palette/retention/test_runner-0014_extended_read.obj: quant/palette/retention/0014_extended_read.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0014_extended_read.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0014_extended_read.Tpo -c -o quant/palette/retention/test_runner-0014_extended_read.obj `if test -f 'quant/palette/retention/0014_extended_read.c'; then $(CYGPATH_W) 'quant/palette/retention/0014_extended_read.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0014_extended_read.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0014_extended_read.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0014_extended_read.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0014_extended_read.c' object='quant/palette/retention/test_runner-0014_extended_read.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0014_extended_read.obj `if test -f 'quant/palette/retention/0014_extended_read.c'; then $(CYGPATH_W) 'quant/palette/retention/0014_extended_read.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0014_extended_read.c'; fi`
+
+quant/palette/retention/test_runner-0015_indexed_write.o: quant/palette/retention/0015_indexed_write.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0015_indexed_write.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0015_indexed_write.Tpo -c -o quant/palette/retention/test_runner-0015_indexed_write.o `test -f 'quant/palette/retention/0015_indexed_write.c' || echo '$(srcdir)/'`quant/palette/retention/0015_indexed_write.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0015_indexed_write.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0015_indexed_write.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0015_indexed_write.c' object='quant/palette/retention/test_runner-0015_indexed_write.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0015_indexed_write.o `test -f 'quant/palette/retention/0015_indexed_write.c' || echo '$(srcdir)/'`quant/palette/retention/0015_indexed_write.c
+
+quant/palette/retention/test_runner-0015_indexed_write.obj: quant/palette/retention/0015_indexed_write.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0015_indexed_write.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0015_indexed_write.Tpo -c -o quant/palette/retention/test_runner-0015_indexed_write.obj `if test -f 'quant/palette/retention/0015_indexed_write.c'; then $(CYGPATH_W) 'quant/palette/retention/0015_indexed_write.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0015_indexed_write.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0015_indexed_write.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0015_indexed_write.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0015_indexed_write.c' object='quant/palette/retention/test_runner-0015_indexed_write.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0015_indexed_write.obj `if test -f 'quant/palette/retention/0015_indexed_write.c'; then $(CYGPATH_W) 'quant/palette/retention/0015_indexed_write.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0015_indexed_write.c'; fi`
+
+quant/palette/retention/test_runner-0001_kmeans.o: quant/palette/retention/0001_kmeans.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0001_kmeans.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0001_kmeans.Tpo -c -o quant/palette/retention/test_runner-0001_kmeans.o `test -f 'quant/palette/retention/0001_kmeans.c' || echo '$(srcdir)/'`quant/palette/retention/0001_kmeans.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0001_kmeans.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0001_kmeans.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0001_kmeans.c' object='quant/palette/retention/test_runner-0001_kmeans.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0001_kmeans.o `test -f 'quant/palette/retention/0001_kmeans.c' || echo '$(srcdir)/'`quant/palette/retention/0001_kmeans.c
+
+quant/palette/retention/test_runner-0001_kmeans.obj: quant/palette/retention/0001_kmeans.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0001_kmeans.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0001_kmeans.Tpo -c -o quant/palette/retention/test_runner-0001_kmeans.obj `if test -f 'quant/palette/retention/0001_kmeans.c'; then $(CYGPATH_W) 'quant/palette/retention/0001_kmeans.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0001_kmeans.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0001_kmeans.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0001_kmeans.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0001_kmeans.c' object='quant/palette/retention/test_runner-0001_kmeans.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0001_kmeans.obj `if test -f 'quant/palette/retention/0001_kmeans.c'; then $(CYGPATH_W) 'quant/palette/retention/0001_kmeans.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0001_kmeans.c'; fi`
+
+quant/palette/retention/test_runner-0002_kcenter.o: quant/palette/retention/0002_kcenter.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0002_kcenter.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0002_kcenter.Tpo -c -o quant/palette/retention/test_runner-0002_kcenter.o `test -f 'quant/palette/retention/0002_kcenter.c' || echo '$(srcdir)/'`quant/palette/retention/0002_kcenter.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0002_kcenter.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0002_kcenter.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0002_kcenter.c' object='quant/palette/retention/test_runner-0002_kcenter.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0002_kcenter.o `test -f 'quant/palette/retention/0002_kcenter.c' || echo '$(srcdir)/'`quant/palette/retention/0002_kcenter.c
+
+quant/palette/retention/test_runner-0002_kcenter.obj: quant/palette/retention/0002_kcenter.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0002_kcenter.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0002_kcenter.Tpo -c -o quant/palette/retention/test_runner-0002_kcenter.obj `if test -f 'quant/palette/retention/0002_kcenter.c'; then $(CYGPATH_W) 'quant/palette/retention/0002_kcenter.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0002_kcenter.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0002_kcenter.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0002_kcenter.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0002_kcenter.c' object='quant/palette/retention/test_runner-0002_kcenter.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0002_kcenter.obj `if test -f 'quant/palette/retention/0002_kcenter.c'; then $(CYGPATH_W) 'quant/palette/retention/0002_kcenter.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0002_kcenter.c'; fi`
+
+quant/palette/retention/test_runner-0003_kmedoids.o: quant/palette/retention/0003_kmedoids.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0003_kmedoids.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0003_kmedoids.Tpo -c -o quant/palette/retention/test_runner-0003_kmedoids.o `test -f 'quant/palette/retention/0003_kmedoids.c' || echo '$(srcdir)/'`quant/palette/retention/0003_kmedoids.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0003_kmedoids.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0003_kmedoids.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0003_kmedoids.c' object='quant/palette/retention/test_runner-0003_kmedoids.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0003_kmedoids.o `test -f 'quant/palette/retention/0003_kmedoids.c' || echo '$(srcdir)/'`quant/palette/retention/0003_kmedoids.c
+
+quant/palette/retention/test_runner-0003_kmedoids.obj: quant/palette/retention/0003_kmedoids.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0003_kmedoids.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0003_kmedoids.Tpo -c -o quant/palette/retention/test_runner-0003_kmedoids.obj `if test -f 'quant/palette/retention/0003_kmedoids.c'; then $(CYGPATH_W) 'quant/palette/retention/0003_kmedoids.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0003_kmedoids.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0003_kmedoids.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0003_kmedoids.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0003_kmedoids.c' object='quant/palette/retention/test_runner-0003_kmedoids.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0003_kmedoids.obj `if test -f 'quant/palette/retention/0003_kmedoids.c'; then $(CYGPATH_W) 'quant/palette/retention/0003_kmedoids.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0003_kmedoids.c'; fi`
+
+quant/palette/retention/test_runner-0004_typed.o: quant/palette/retention/0004_typed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0004_typed.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0004_typed.Tpo -c -o quant/palette/retention/test_runner-0004_typed.o `test -f 'quant/palette/retention/0004_typed.c' || echo '$(srcdir)/'`quant/palette/retention/0004_typed.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0004_typed.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0004_typed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0004_typed.c' object='quant/palette/retention/test_runner-0004_typed.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0004_typed.o `test -f 'quant/palette/retention/0004_typed.c' || echo '$(srcdir)/'`quant/palette/retention/0004_typed.c
+
+quant/palette/retention/test_runner-0004_typed.obj: quant/palette/retention/0004_typed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0004_typed.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0004_typed.Tpo -c -o quant/palette/retention/test_runner-0004_typed.obj `if test -f 'quant/palette/retention/0004_typed.c'; then $(CYGPATH_W) 'quant/palette/retention/0004_typed.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0004_typed.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0004_typed.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0004_typed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0004_typed.c' object='quant/palette/retention/test_runner-0004_typed.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0004_typed.obj `if test -f 'quant/palette/retention/0004_typed.c'; then $(CYGPATH_W) 'quant/palette/retention/0004_typed.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0004_typed.c'; fi`
+
+quant/palette/retention/test_runner-0005_getter_write.o: quant/palette/retention/0005_getter_write.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0005_getter_write.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0005_getter_write.Tpo -c -o quant/palette/retention/test_runner-0005_getter_write.o `test -f 'quant/palette/retention/0005_getter_write.c' || echo '$(srcdir)/'`quant/palette/retention/0005_getter_write.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0005_getter_write.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0005_getter_write.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0005_getter_write.c' object='quant/palette/retention/test_runner-0005_getter_write.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0005_getter_write.o `test -f 'quant/palette/retention/0005_getter_write.c' || echo '$(srcdir)/'`quant/palette/retention/0005_getter_write.c
+
+quant/palette/retention/test_runner-0005_getter_write.obj: quant/palette/retention/0005_getter_write.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0005_getter_write.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0005_getter_write.Tpo -c -o quant/palette/retention/test_runner-0005_getter_write.obj `if test -f 'quant/palette/retention/0005_getter_write.c'; then $(CYGPATH_W) 'quant/palette/retention/0005_getter_write.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0005_getter_write.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0005_getter_write.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0005_getter_write.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0005_getter_write.c' object='quant/palette/retention/test_runner-0005_getter_write.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0005_getter_write.obj `if test -f 'quant/palette/retention/0005_getter_write.c'; then $(CYGPATH_W) 'quant/palette/retention/0005_getter_write.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0005_getter_write.c'; fi`
+
+quant/palette/retention/test_runner-0006_setter_same.o: quant/palette/retention/0006_setter_same.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0006_setter_same.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0006_setter_same.Tpo -c -o quant/palette/retention/test_runner-0006_setter_same.o `test -f 'quant/palette/retention/0006_setter_same.c' || echo '$(srcdir)/'`quant/palette/retention/0006_setter_same.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0006_setter_same.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0006_setter_same.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0006_setter_same.c' object='quant/palette/retention/test_runner-0006_setter_same.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0006_setter_same.o `test -f 'quant/palette/retention/0006_setter_same.c' || echo '$(srcdir)/'`quant/palette/retention/0006_setter_same.c
+
+quant/palette/retention/test_runner-0006_setter_same.obj: quant/palette/retention/0006_setter_same.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0006_setter_same.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0006_setter_same.Tpo -c -o quant/palette/retention/test_runner-0006_setter_same.obj `if test -f 'quant/palette/retention/0006_setter_same.c'; then $(CYGPATH_W) 'quant/palette/retention/0006_setter_same.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0006_setter_same.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0006_setter_same.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0006_setter_same.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0006_setter_same.c' object='quant/palette/retention/test_runner-0006_setter_same.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0006_setter_same.obj `if test -f 'quant/palette/retention/0006_setter_same.c'; then $(CYGPATH_W) 'quant/palette/retention/0006_setter_same.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0006_setter_same.c'; fi`
+
+quant/palette/retention/test_runner-0007_wire.o: quant/palette/retention/0007_wire.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0007_wire.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0007_wire.Tpo -c -o quant/palette/retention/test_runner-0007_wire.o `test -f 'quant/palette/retention/0007_wire.c' || echo '$(srcdir)/'`quant/palette/retention/0007_wire.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0007_wire.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0007_wire.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0007_wire.c' object='quant/palette/retention/test_runner-0007_wire.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0007_wire.o `test -f 'quant/palette/retention/0007_wire.c' || echo '$(srcdir)/'`quant/palette/retention/0007_wire.c
+
+quant/palette/retention/test_runner-0007_wire.obj: quant/palette/retention/0007_wire.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0007_wire.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0007_wire.Tpo -c -o quant/palette/retention/test_runner-0007_wire.obj `if test -f 'quant/palette/retention/0007_wire.c'; then $(CYGPATH_W) 'quant/palette/retention/0007_wire.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0007_wire.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0007_wire.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0007_wire.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0007_wire.c' object='quant/palette/retention/test_runner-0007_wire.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0007_wire.obj `if test -f 'quant/palette/retention/0007_wire.c'; then $(CYGPATH_W) 'quant/palette/retention/0007_wire.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0007_wire.c'; fi`
+
+quant/palette/retention/test_runner-0008_cache.o: quant/palette/retention/0008_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0008_cache.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0008_cache.Tpo -c -o quant/palette/retention/test_runner-0008_cache.o `test -f 'quant/palette/retention/0008_cache.c' || echo '$(srcdir)/'`quant/palette/retention/0008_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0008_cache.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0008_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0008_cache.c' object='quant/palette/retention/test_runner-0008_cache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0008_cache.o `test -f 'quant/palette/retention/0008_cache.c' || echo '$(srcdir)/'`quant/palette/retention/0008_cache.c
+
+quant/palette/retention/test_runner-0008_cache.obj: quant/palette/retention/0008_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0008_cache.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0008_cache.Tpo -c -o quant/palette/retention/test_runner-0008_cache.obj `if test -f 'quant/palette/retention/0008_cache.c'; then $(CYGPATH_W) 'quant/palette/retention/0008_cache.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0008_cache.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0008_cache.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0008_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0008_cache.c' object='quant/palette/retention/test_runner-0008_cache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0008_cache.obj `if test -f 'quant/palette/retention/0008_cache.c'; then $(CYGPATH_W) 'quant/palette/retention/0008_cache.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0008_cache.c'; fi`
+
+quant/palette/retention/test_runner-0009_byte.o: quant/palette/retention/0009_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0009_byte.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0009_byte.Tpo -c -o quant/palette/retention/test_runner-0009_byte.o `test -f 'quant/palette/retention/0009_byte.c' || echo '$(srcdir)/'`quant/palette/retention/0009_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0009_byte.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0009_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0009_byte.c' object='quant/palette/retention/test_runner-0009_byte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0009_byte.o `test -f 'quant/palette/retention/0009_byte.c' || echo '$(srcdir)/'`quant/palette/retention/0009_byte.c
+
+quant/palette/retention/test_runner-0009_byte.obj: quant/palette/retention/0009_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0009_byte.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0009_byte.Tpo -c -o quant/palette/retention/test_runner-0009_byte.obj `if test -f 'quant/palette/retention/0009_byte.c'; then $(CYGPATH_W) 'quant/palette/retention/0009_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0009_byte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0009_byte.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0009_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0009_byte.c' object='quant/palette/retention/test_runner-0009_byte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0009_byte.obj `if test -f 'quant/palette/retention/0009_byte.c'; then $(CYGPATH_W) 'quant/palette/retention/0009_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0009_byte.c'; fi`
+
+quant/palette/retention/test_runner-0010_invalid.o: quant/palette/retention/0010_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0010_invalid.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0010_invalid.Tpo -c -o quant/palette/retention/test_runner-0010_invalid.o `test -f 'quant/palette/retention/0010_invalid.c' || echo '$(srcdir)/'`quant/palette/retention/0010_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0010_invalid.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0010_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0010_invalid.c' object='quant/palette/retention/test_runner-0010_invalid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0010_invalid.o `test -f 'quant/palette/retention/0010_invalid.c' || echo '$(srcdir)/'`quant/palette/retention/0010_invalid.c
+
+quant/palette/retention/test_runner-0010_invalid.obj: quant/palette/retention/0010_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0010_invalid.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0010_invalid.Tpo -c -o quant/palette/retention/test_runner-0010_invalid.obj `if test -f 'quant/palette/retention/0010_invalid.c'; then $(CYGPATH_W) 'quant/palette/retention/0010_invalid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0010_invalid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0010_invalid.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0010_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0010_invalid.c' object='quant/palette/retention/test_runner-0010_invalid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0010_invalid.obj `if test -f 'quant/palette/retention/0010_invalid.c'; then $(CYGPATH_W) 'quant/palette/retention/0010_invalid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0010_invalid.c'; fi`
+
+quant/palette/retention/test_runner-0011_mono.o: quant/palette/retention/0011_mono.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0011_mono.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0011_mono.Tpo -c -o quant/palette/retention/test_runner-0011_mono.o `test -f 'quant/palette/retention/0011_mono.c' || echo '$(srcdir)/'`quant/palette/retention/0011_mono.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0011_mono.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0011_mono.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0011_mono.c' object='quant/palette/retention/test_runner-0011_mono.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0011_mono.o `test -f 'quant/palette/retention/0011_mono.c' || echo '$(srcdir)/'`quant/palette/retention/0011_mono.c
+
+quant/palette/retention/test_runner-0011_mono.obj: quant/palette/retention/0011_mono.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0011_mono.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0011_mono.Tpo -c -o quant/palette/retention/test_runner-0011_mono.obj `if test -f 'quant/palette/retention/0011_mono.c'; then $(CYGPATH_W) 'quant/palette/retention/0011_mono.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0011_mono.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0011_mono.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0011_mono.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0011_mono.c' object='quant/palette/retention/test_runner-0011_mono.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0011_mono.obj `if test -f 'quant/palette/retention/0011_mono.c'; then $(CYGPATH_W) 'quant/palette/retention/0011_mono.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0011_mono.c'; fi`
+
+quant/palette/retention/test_runner-0012_feedback.o: quant/palette/retention/0012_feedback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0012_feedback.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0012_feedback.Tpo -c -o quant/palette/retention/test_runner-0012_feedback.o `test -f 'quant/palette/retention/0012_feedback.c' || echo '$(srcdir)/'`quant/palette/retention/0012_feedback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0012_feedback.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0012_feedback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0012_feedback.c' object='quant/palette/retention/test_runner-0012_feedback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0012_feedback.o `test -f 'quant/palette/retention/0012_feedback.c' || echo '$(srcdir)/'`quant/palette/retention/0012_feedback.c
+
+quant/palette/retention/test_runner-0012_feedback.obj: quant/palette/retention/0012_feedback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0012_feedback.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0012_feedback.Tpo -c -o quant/palette/retention/test_runner-0012_feedback.obj `if test -f 'quant/palette/retention/0012_feedback.c'; then $(CYGPATH_W) 'quant/palette/retention/0012_feedback.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0012_feedback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0012_feedback.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0012_feedback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0012_feedback.c' object='quant/palette/retention/test_runner-0012_feedback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0012_feedback.obj `if test -f 'quant/palette/retention/0012_feedback.c'; then $(CYGPATH_W) 'quant/palette/retention/0012_feedback.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0012_feedback.c'; fi`
+
+quant/palette/retention/test_runner-0013_heckbert.o: quant/palette/retention/0013_heckbert.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0013_heckbert.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0013_heckbert.Tpo -c -o quant/palette/retention/test_runner-0013_heckbert.o `test -f 'quant/palette/retention/0013_heckbert.c' || echo '$(srcdir)/'`quant/palette/retention/0013_heckbert.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0013_heckbert.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0013_heckbert.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0013_heckbert.c' object='quant/palette/retention/test_runner-0013_heckbert.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0013_heckbert.o `test -f 'quant/palette/retention/0013_heckbert.c' || echo '$(srcdir)/'`quant/palette/retention/0013_heckbert.c
+
+quant/palette/retention/test_runner-0013_heckbert.obj: quant/palette/retention/0013_heckbert.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-0013_heckbert.obj -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-0013_heckbert.Tpo -c -o quant/palette/retention/test_runner-0013_heckbert.obj `if test -f 'quant/palette/retention/0013_heckbert.c'; then $(CYGPATH_W) 'quant/palette/retention/0013_heckbert.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0013_heckbert.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-0013_heckbert.Tpo quant/palette/retention/$(DEPDIR)/test_runner-0013_heckbert.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/retention/0013_heckbert.c' object='quant/palette/retention/test_runner-0013_heckbert.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/retention/test_runner-0013_heckbert.obj `if test -f 'quant/palette/retention/0013_heckbert.c'; then $(CYGPATH_W) 'quant/palette/retention/0013_heckbert.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/retention/0013_heckbert.c'; fi`
 
 quant/palette/test_runner-0051_p3_palette_contract.o: quant/palette/0051_p3_palette_contract.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0051_p3_palette_contract.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0051_p3_palette_contract.Tpo -c -o quant/palette/test_runner-0051_p3_palette_contract.o `test -f 'quant/palette/0051_p3_palette_contract.c' || echo '$(srcdir)/'`quant/palette/0051_p3_palette_contract.c
@@ -71888,6 +72288,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/output_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/packed_alpha/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/packed_alpha/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/retention/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/retention/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/rgb101_diffusion/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/rgb101_diffusion/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/sampling_float/$(DEPDIR)/$(am__dirstamp)
