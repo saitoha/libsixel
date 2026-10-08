@@ -989,6 +989,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_MAP_FLOAT_COMMON \
     -DBUILD_MAP_PRECISION_COMMON \
     -DBUILD_POSITIONAL_TEST_COMMON \
+    -DBUILD_INTERFRAME_TEST_COMMON \
     -DBUILD_TEST_0059_A_BYTE_BAND \
     -DBUILD_TEST_0060_X_BYTE_BAND \
     -DBUILD_TEST_0061_BLUE_BYTE_BAND \
@@ -1510,6 +1511,20 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0035_KMEANS_FEEDBACK_SNAP \
     -DBUILD_TEST_0036_KMEANS_FEEDBACK_INTERVAL \
     -DBUILD_TEST_0037_KMEANS_UNIQUE \
+    -DBUILD_TEST_0038_HECKBERT_SOURCES \
+    -DBUILD_TEST_0039_HECKBERT_WARD \
+    -DBUILD_TEST_0040_HECKBERT_SNAP \
+    -DBUILD_TEST_0041_HECKBERT_FAULT \
+    -DBUILD_TEST_0042_HECKBERT_NONFINITE \
+    -DBUILD_TEST_0043_HECKBERT_HINT \
+    -DBUILD_TEST_0044_HECKBERT_BYTE \
+    -DBUILD_TEST_0045_HECKBERT_REUSE \
+    -DBUILD_TEST_0046_HECKBERT_CENTER \
+    -DBUILD_TEST_0047_HECKBERT_AVERAGE \
+    -DBUILD_TEST_0048_HECKBERT_HISTOGRAM \
+    -DBUILD_TEST_0049_HECKBERT_POLISH \
+    -DBUILD_TEST_0050_HECKBERT_ONCE \
+    -DBUILD_TEST_0051_HECKBERT_UNIQUE \
     -DBUILD_RETENTION_TEST_COMMON \
     -DBUILD_TEST_0016_KCENTER_BOUNDARY \
     -DBUILD_TEST_0014_EXTENDED_READ \
@@ -5504,6 +5519,20 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/ordinary_float/0035_kmeans_feedback_snap.c \
     quant/palette/ordinary_float/0036_kmeans_feedback_interval.c \
     quant/palette/ordinary_float/0037_kmeans_unique.c \
+    quant/palette/ordinary_float/0038_heckbert_sources.c \
+    quant/palette/ordinary_float/0039_heckbert_ward.c \
+    quant/palette/ordinary_float/0040_heckbert_snap.c \
+    quant/palette/ordinary_float/0041_heckbert_fault.c \
+    quant/palette/ordinary_float/0042_heckbert_nonfinite.c \
+    quant/palette/ordinary_float/0043_heckbert_hint.c \
+    quant/palette/ordinary_float/0044_heckbert_byte.c \
+    quant/palette/ordinary_float/0045_heckbert_reuse.c \
+    quant/palette/ordinary_float/0046_heckbert_center.c \
+    quant/palette/ordinary_float/0047_heckbert_average.c \
+    quant/palette/ordinary_float/0048_heckbert_histogram.c \
+    quant/palette/ordinary_float/0049_heckbert_polish.c \
+    quant/palette/ordinary_float/0050_heckbert_once.c \
+    quant/palette/ordinary_float/0051_heckbert_unique.c \
     quant/palette/retention/retention_test_common.c \
     quant/palette/retention/retention_test_common.h \
     quant/palette/retention/0016_kcenter_boundary.c \
@@ -5988,6 +6017,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/map_float_common.c \
     quant/palette/map_precision_common.c \
     processing/dither/positional_test_common.c \
+    processing/dither/interframe/interframe_test_common.c \
     processing/dither/positional/precision/0059_a_byte_band.c \
     processing/dither/positional/precision/0060_x_byte_band.c \
     processing/dither/positional/precision/0061_blue_byte_band.c \

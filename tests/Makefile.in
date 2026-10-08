@@ -2325,6 +2325,20 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/ordinary_float/0035_kmeans_feedback_snap.c \
 	quant/palette/ordinary_float/0036_kmeans_feedback_interval.c \
 	quant/palette/ordinary_float/0037_kmeans_unique.c \
+	quant/palette/ordinary_float/0038_heckbert_sources.c \
+	quant/palette/ordinary_float/0039_heckbert_ward.c \
+	quant/palette/ordinary_float/0040_heckbert_snap.c \
+	quant/palette/ordinary_float/0041_heckbert_fault.c \
+	quant/palette/ordinary_float/0042_heckbert_nonfinite.c \
+	quant/palette/ordinary_float/0043_heckbert_hint.c \
+	quant/palette/ordinary_float/0044_heckbert_byte.c \
+	quant/palette/ordinary_float/0045_heckbert_reuse.c \
+	quant/palette/ordinary_float/0046_heckbert_center.c \
+	quant/palette/ordinary_float/0047_heckbert_average.c \
+	quant/palette/ordinary_float/0048_heckbert_histogram.c \
+	quant/palette/ordinary_float/0049_heckbert_polish.c \
+	quant/palette/ordinary_float/0050_heckbert_once.c \
+	quant/palette/ordinary_float/0051_heckbert_unique.c \
 	quant/palette/retention/retention_test_common.c \
 	quant/palette/retention/retention_test_common.h \
 	quant/palette/retention/0016_kcenter_boundary.c \
@@ -2809,6 +2823,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/map_float_common.c \
 	quant/palette/map_precision_common.c \
 	processing/dither/positional_test_common.c \
+	processing/dither/interframe/interframe_test_common.c \
 	processing/dither/positional/precision/0059_a_byte_band.c \
 	processing/dither/positional/precision/0060_x_byte_band.c \
 	processing/dither/positional/precision/0061_blue_byte_band.c \
@@ -5404,6 +5419,20 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0035_kmeans_feedback_snap.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0036_kmeans_feedback_interval.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0037_kmeans_unique.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0038_heckbert_sources.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0039_heckbert_ward.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0040_heckbert_snap.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0041_heckbert_fault.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0042_heckbert_nonfinite.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0043_heckbert_hint.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0044_heckbert_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0045_heckbert_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0046_heckbert_center.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0047_heckbert_average.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0048_heckbert_histogram.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0049_heckbert_polish.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0050_heckbert_once.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/ordinary_float/test_runner-0051_heckbert_unique.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-retention_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0016_kcenter_boundary.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0014_extended_read.$(OBJEXT) \
@@ -5887,6 +5916,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-map_float_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-map_precision_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/test_runner-positional_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/interframe/test_runner-interframe_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0059_a_byte_band.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0060_x_byte_band.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0061_blue_byte_band.$(OBJEXT) \
@@ -8287,6 +8317,7 @@ am__depfiles_remade =  \
 	processing/dither/clamp/$(DEPDIR)/test_runner-0043_parallel_overlap.Po \
 	processing/dither/clamp/$(DEPDIR)/test_runner-0047_snapshot_allocation.Po \
 	processing/dither/clamp/$(DEPDIR)/test_runner-clamp_test_common.Po \
+	processing/dither/interframe/$(DEPDIR)/test_runner-interframe_test_common.Po \
 	processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po \
 	processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po \
 	processing/dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Po \
@@ -9372,6 +9403,20 @@ am__depfiles_remade =  \
 	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0035_kmeans_feedback_snap.Po \
 	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0036_kmeans_feedback_interval.Po \
 	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0037_kmeans_unique.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0038_heckbert_sources.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0039_heckbert_ward.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0040_heckbert_snap.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0041_heckbert_fault.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0042_heckbert_nonfinite.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0043_heckbert_hint.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0044_heckbert_byte.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0045_heckbert_reuse.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0046_heckbert_center.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0047_heckbert_average.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0048_heckbert_histogram.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0049_heckbert_polish.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0050_heckbert_once.Po \
+	quant/palette/ordinary_float/$(DEPDIR)/test_runner-0051_heckbert_unique.Po \
 	quant/palette/ordinary_float/$(DEPDIR)/test_runner-ordinary_float_test_common.Po \
 	quant/palette/output_float/$(DEPDIR)/test_runner-0001_linear_gamma.Po \
 	quant/palette/output_float/$(DEPDIR)/test_runner-0002_linear_linear.Po \
@@ -10964,6 +11009,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_MAP_FLOAT_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_MAP_PRECISION_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_POSITIONAL_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_INTERFRAME_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_A_BYTE_BAND \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0060_X_BYTE_BAND \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_BLUE_BYTE_BAND \
@@ -11485,6 +11531,20 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_KMEANS_FEEDBACK_SNAP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0036_KMEANS_FEEDBACK_INTERVAL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_KMEANS_UNIQUE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_HECKBERT_SOURCES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_HECKBERT_WARD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_HECKBERT_SNAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_HECKBERT_FAULT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_HECKBERT_NONFINITE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_HECKBERT_HINT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_HECKBERT_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_HECKBERT_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0046_HECKBERT_CENTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0047_HECKBERT_AVERAGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_HECKBERT_HISTOGRAM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0049_HECKBERT_POLISH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_HECKBERT_ONCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_HECKBERT_UNIQUE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RETENTION_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_KCENTER_BOUNDARY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_EXTENDED_READ \
@@ -15510,6 +15570,20 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0035_kmeans_feedback_snap.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0036_kmeans_feedback_interval.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0037_kmeans_unique.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0038_heckbert_sources.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0039_heckbert_ward.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0040_heckbert_snap.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0041_heckbert_fault.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0042_heckbert_nonfinite.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0043_heckbert_hint.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0044_heckbert_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0045_heckbert_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0046_heckbert_center.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0047_heckbert_average.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0048_heckbert_histogram.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0049_heckbert_polish.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0050_heckbert_once.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/ordinary_float/0051_heckbert_unique.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/retention_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/retention_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0016_kcenter_boundary.c \
@@ -15994,6 +16068,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_float_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/map_precision_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/interframe/interframe_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0059_a_byte_band.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0060_x_byte_band.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0061_blue_byte_band.c \
@@ -23438,6 +23513,48 @@ quant/palette/ordinary_float/test_runner-0036_kmeans_feedback_interval.$(OBJEXT)
 quant/palette/ordinary_float/test_runner-0037_kmeans_unique.$(OBJEXT):  \
 	quant/palette/ordinary_float/$(am__dirstamp) \
 	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0038_heckbert_sources.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0039_heckbert_ward.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0040_heckbert_snap.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0041_heckbert_fault.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0042_heckbert_nonfinite.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0043_heckbert_hint.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0044_heckbert_byte.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0045_heckbert_reuse.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0046_heckbert_center.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0047_heckbert_average.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0048_heckbert_histogram.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0049_heckbert_polish.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0050_heckbert_once.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/ordinary_float/test_runner-0051_heckbert_unique.$(OBJEXT):  \
+	quant/palette/ordinary_float/$(am__dirstamp) \
+	quant/palette/ordinary_float/$(DEPDIR)/$(am__dirstamp)
 quant/palette/retention/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette/retention
 	@: >>quant/palette/retention/$(am__dirstamp)
@@ -25073,6 +25190,15 @@ quant/palette/test_runner-map_precision_common.$(OBJEXT):  \
 processing/dither/test_runner-positional_test_common.$(OBJEXT):  \
 	processing/dither/$(am__dirstamp) \
 	processing/dither/$(DEPDIR)/$(am__dirstamp)
+processing/dither/interframe/$(am__dirstamp):
+	@$(MKDIR_P) processing/dither/interframe
+	@: >>processing/dither/interframe/$(am__dirstamp)
+processing/dither/interframe/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/dither/interframe/$(DEPDIR)
+	@: >>processing/dither/interframe/$(DEPDIR)/$(am__dirstamp)
+processing/dither/interframe/test_runner-interframe_test_common.$(OBJEXT):  \
+	processing/dither/interframe/$(am__dirstamp) \
+	processing/dither/interframe/$(DEPDIR)/$(am__dirstamp)
 processing/dither/positional/precision/$(am__dirstamp):
 	@$(MKDIR_P) processing/dither/positional/precision
 	@: >>processing/dither/positional/precision/$(am__dirstamp)
@@ -26597,6 +26723,7 @@ mostlyclean-compile:
 	-rm -f processing/dither/*.$(OBJEXT)
 	-rm -f processing/dither/bluenoise/*.$(OBJEXT)
 	-rm -f processing/dither/clamp/*.$(OBJEXT)
+	-rm -f processing/dither/interframe/*.$(OBJEXT)
 	-rm -f processing/dither/perturb/*.$(OBJEXT)
 	-rm -f processing/dither/positional/*.$(OBJEXT)
 	-rm -f processing/dither/positional/precision/*.$(OBJEXT)
@@ -28547,6 +28674,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0043_parallel_overlap.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0047_snapshot_allocation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-clamp_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/interframe/$(DEPDIR)/test_runner-interframe_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Po@am__quote@ # am--include-marker
@@ -29632,6 +29760,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0035_kmeans_feedback_snap.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0036_kmeans_feedback_interval.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0037_kmeans_unique.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0038_heckbert_sources.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0039_heckbert_ward.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0040_heckbert_snap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0041_heckbert_fault.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0042_heckbert_nonfinite.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0043_heckbert_hint.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0044_heckbert_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0045_heckbert_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0046_heckbert_center.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0047_heckbert_average.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0048_heckbert_histogram.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0049_heckbert_polish.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0050_heckbert_once.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-0051_heckbert_unique.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/ordinary_float/$(DEPDIR)/test_runner-ordinary_float_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0001_linear_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/output_float/$(DEPDIR)/test_runner-0002_linear_linear.Po@am__quote@ # am--include-marker
@@ -59954,6 +60096,202 @@ quant/palette/ordinary_float/test_runner-0037_kmeans_unique.obj: quant/palette/o
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0037_kmeans_unique.obj `if test -f 'quant/palette/ordinary_float/0037_kmeans_unique.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0037_kmeans_unique.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0037_kmeans_unique.c'; fi`
 
+quant/palette/ordinary_float/test_runner-0038_heckbert_sources.o: quant/palette/ordinary_float/0038_heckbert_sources.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0038_heckbert_sources.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0038_heckbert_sources.Tpo -c -o quant/palette/ordinary_float/test_runner-0038_heckbert_sources.o `test -f 'quant/palette/ordinary_float/0038_heckbert_sources.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0038_heckbert_sources.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0038_heckbert_sources.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0038_heckbert_sources.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0038_heckbert_sources.c' object='quant/palette/ordinary_float/test_runner-0038_heckbert_sources.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0038_heckbert_sources.o `test -f 'quant/palette/ordinary_float/0038_heckbert_sources.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0038_heckbert_sources.c
+
+quant/palette/ordinary_float/test_runner-0038_heckbert_sources.obj: quant/palette/ordinary_float/0038_heckbert_sources.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0038_heckbert_sources.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0038_heckbert_sources.Tpo -c -o quant/palette/ordinary_float/test_runner-0038_heckbert_sources.obj `if test -f 'quant/palette/ordinary_float/0038_heckbert_sources.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0038_heckbert_sources.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0038_heckbert_sources.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0038_heckbert_sources.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0038_heckbert_sources.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0038_heckbert_sources.c' object='quant/palette/ordinary_float/test_runner-0038_heckbert_sources.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0038_heckbert_sources.obj `if test -f 'quant/palette/ordinary_float/0038_heckbert_sources.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0038_heckbert_sources.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0038_heckbert_sources.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0039_heckbert_ward.o: quant/palette/ordinary_float/0039_heckbert_ward.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0039_heckbert_ward.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0039_heckbert_ward.Tpo -c -o quant/palette/ordinary_float/test_runner-0039_heckbert_ward.o `test -f 'quant/palette/ordinary_float/0039_heckbert_ward.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0039_heckbert_ward.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0039_heckbert_ward.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0039_heckbert_ward.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0039_heckbert_ward.c' object='quant/palette/ordinary_float/test_runner-0039_heckbert_ward.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0039_heckbert_ward.o `test -f 'quant/palette/ordinary_float/0039_heckbert_ward.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0039_heckbert_ward.c
+
+quant/palette/ordinary_float/test_runner-0039_heckbert_ward.obj: quant/palette/ordinary_float/0039_heckbert_ward.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0039_heckbert_ward.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0039_heckbert_ward.Tpo -c -o quant/palette/ordinary_float/test_runner-0039_heckbert_ward.obj `if test -f 'quant/palette/ordinary_float/0039_heckbert_ward.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0039_heckbert_ward.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0039_heckbert_ward.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0039_heckbert_ward.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0039_heckbert_ward.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0039_heckbert_ward.c' object='quant/palette/ordinary_float/test_runner-0039_heckbert_ward.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0039_heckbert_ward.obj `if test -f 'quant/palette/ordinary_float/0039_heckbert_ward.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0039_heckbert_ward.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0039_heckbert_ward.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0040_heckbert_snap.o: quant/palette/ordinary_float/0040_heckbert_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0040_heckbert_snap.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0040_heckbert_snap.Tpo -c -o quant/palette/ordinary_float/test_runner-0040_heckbert_snap.o `test -f 'quant/palette/ordinary_float/0040_heckbert_snap.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0040_heckbert_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0040_heckbert_snap.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0040_heckbert_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0040_heckbert_snap.c' object='quant/palette/ordinary_float/test_runner-0040_heckbert_snap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0040_heckbert_snap.o `test -f 'quant/palette/ordinary_float/0040_heckbert_snap.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0040_heckbert_snap.c
+
+quant/palette/ordinary_float/test_runner-0040_heckbert_snap.obj: quant/palette/ordinary_float/0040_heckbert_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0040_heckbert_snap.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0040_heckbert_snap.Tpo -c -o quant/palette/ordinary_float/test_runner-0040_heckbert_snap.obj `if test -f 'quant/palette/ordinary_float/0040_heckbert_snap.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0040_heckbert_snap.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0040_heckbert_snap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0040_heckbert_snap.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0040_heckbert_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0040_heckbert_snap.c' object='quant/palette/ordinary_float/test_runner-0040_heckbert_snap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0040_heckbert_snap.obj `if test -f 'quant/palette/ordinary_float/0040_heckbert_snap.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0040_heckbert_snap.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0040_heckbert_snap.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0041_heckbert_fault.o: quant/palette/ordinary_float/0041_heckbert_fault.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0041_heckbert_fault.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0041_heckbert_fault.Tpo -c -o quant/palette/ordinary_float/test_runner-0041_heckbert_fault.o `test -f 'quant/palette/ordinary_float/0041_heckbert_fault.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0041_heckbert_fault.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0041_heckbert_fault.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0041_heckbert_fault.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0041_heckbert_fault.c' object='quant/palette/ordinary_float/test_runner-0041_heckbert_fault.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0041_heckbert_fault.o `test -f 'quant/palette/ordinary_float/0041_heckbert_fault.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0041_heckbert_fault.c
+
+quant/palette/ordinary_float/test_runner-0041_heckbert_fault.obj: quant/palette/ordinary_float/0041_heckbert_fault.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0041_heckbert_fault.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0041_heckbert_fault.Tpo -c -o quant/palette/ordinary_float/test_runner-0041_heckbert_fault.obj `if test -f 'quant/palette/ordinary_float/0041_heckbert_fault.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0041_heckbert_fault.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0041_heckbert_fault.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0041_heckbert_fault.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0041_heckbert_fault.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0041_heckbert_fault.c' object='quant/palette/ordinary_float/test_runner-0041_heckbert_fault.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0041_heckbert_fault.obj `if test -f 'quant/palette/ordinary_float/0041_heckbert_fault.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0041_heckbert_fault.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0041_heckbert_fault.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0042_heckbert_nonfinite.o: quant/palette/ordinary_float/0042_heckbert_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0042_heckbert_nonfinite.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0042_heckbert_nonfinite.Tpo -c -o quant/palette/ordinary_float/test_runner-0042_heckbert_nonfinite.o `test -f 'quant/palette/ordinary_float/0042_heckbert_nonfinite.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0042_heckbert_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0042_heckbert_nonfinite.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0042_heckbert_nonfinite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0042_heckbert_nonfinite.c' object='quant/palette/ordinary_float/test_runner-0042_heckbert_nonfinite.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0042_heckbert_nonfinite.o `test -f 'quant/palette/ordinary_float/0042_heckbert_nonfinite.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0042_heckbert_nonfinite.c
+
+quant/palette/ordinary_float/test_runner-0042_heckbert_nonfinite.obj: quant/palette/ordinary_float/0042_heckbert_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0042_heckbert_nonfinite.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0042_heckbert_nonfinite.Tpo -c -o quant/palette/ordinary_float/test_runner-0042_heckbert_nonfinite.obj `if test -f 'quant/palette/ordinary_float/0042_heckbert_nonfinite.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0042_heckbert_nonfinite.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0042_heckbert_nonfinite.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0042_heckbert_nonfinite.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0042_heckbert_nonfinite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0042_heckbert_nonfinite.c' object='quant/palette/ordinary_float/test_runner-0042_heckbert_nonfinite.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0042_heckbert_nonfinite.obj `if test -f 'quant/palette/ordinary_float/0042_heckbert_nonfinite.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0042_heckbert_nonfinite.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0042_heckbert_nonfinite.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0043_heckbert_hint.o: quant/palette/ordinary_float/0043_heckbert_hint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0043_heckbert_hint.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0043_heckbert_hint.Tpo -c -o quant/palette/ordinary_float/test_runner-0043_heckbert_hint.o `test -f 'quant/palette/ordinary_float/0043_heckbert_hint.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0043_heckbert_hint.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0043_heckbert_hint.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0043_heckbert_hint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0043_heckbert_hint.c' object='quant/palette/ordinary_float/test_runner-0043_heckbert_hint.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0043_heckbert_hint.o `test -f 'quant/palette/ordinary_float/0043_heckbert_hint.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0043_heckbert_hint.c
+
+quant/palette/ordinary_float/test_runner-0043_heckbert_hint.obj: quant/palette/ordinary_float/0043_heckbert_hint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0043_heckbert_hint.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0043_heckbert_hint.Tpo -c -o quant/palette/ordinary_float/test_runner-0043_heckbert_hint.obj `if test -f 'quant/palette/ordinary_float/0043_heckbert_hint.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0043_heckbert_hint.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0043_heckbert_hint.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0043_heckbert_hint.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0043_heckbert_hint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0043_heckbert_hint.c' object='quant/palette/ordinary_float/test_runner-0043_heckbert_hint.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0043_heckbert_hint.obj `if test -f 'quant/palette/ordinary_float/0043_heckbert_hint.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0043_heckbert_hint.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0043_heckbert_hint.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0044_heckbert_byte.o: quant/palette/ordinary_float/0044_heckbert_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0044_heckbert_byte.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0044_heckbert_byte.Tpo -c -o quant/palette/ordinary_float/test_runner-0044_heckbert_byte.o `test -f 'quant/palette/ordinary_float/0044_heckbert_byte.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0044_heckbert_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0044_heckbert_byte.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0044_heckbert_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0044_heckbert_byte.c' object='quant/palette/ordinary_float/test_runner-0044_heckbert_byte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0044_heckbert_byte.o `test -f 'quant/palette/ordinary_float/0044_heckbert_byte.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0044_heckbert_byte.c
+
+quant/palette/ordinary_float/test_runner-0044_heckbert_byte.obj: quant/palette/ordinary_float/0044_heckbert_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0044_heckbert_byte.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0044_heckbert_byte.Tpo -c -o quant/palette/ordinary_float/test_runner-0044_heckbert_byte.obj `if test -f 'quant/palette/ordinary_float/0044_heckbert_byte.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0044_heckbert_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0044_heckbert_byte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0044_heckbert_byte.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0044_heckbert_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0044_heckbert_byte.c' object='quant/palette/ordinary_float/test_runner-0044_heckbert_byte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0044_heckbert_byte.obj `if test -f 'quant/palette/ordinary_float/0044_heckbert_byte.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0044_heckbert_byte.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0044_heckbert_byte.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0045_heckbert_reuse.o: quant/palette/ordinary_float/0045_heckbert_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0045_heckbert_reuse.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0045_heckbert_reuse.Tpo -c -o quant/palette/ordinary_float/test_runner-0045_heckbert_reuse.o `test -f 'quant/palette/ordinary_float/0045_heckbert_reuse.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0045_heckbert_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0045_heckbert_reuse.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0045_heckbert_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0045_heckbert_reuse.c' object='quant/palette/ordinary_float/test_runner-0045_heckbert_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0045_heckbert_reuse.o `test -f 'quant/palette/ordinary_float/0045_heckbert_reuse.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0045_heckbert_reuse.c
+
+quant/palette/ordinary_float/test_runner-0045_heckbert_reuse.obj: quant/palette/ordinary_float/0045_heckbert_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0045_heckbert_reuse.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0045_heckbert_reuse.Tpo -c -o quant/palette/ordinary_float/test_runner-0045_heckbert_reuse.obj `if test -f 'quant/palette/ordinary_float/0045_heckbert_reuse.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0045_heckbert_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0045_heckbert_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0045_heckbert_reuse.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0045_heckbert_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0045_heckbert_reuse.c' object='quant/palette/ordinary_float/test_runner-0045_heckbert_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0045_heckbert_reuse.obj `if test -f 'quant/palette/ordinary_float/0045_heckbert_reuse.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0045_heckbert_reuse.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0045_heckbert_reuse.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0046_heckbert_center.o: quant/palette/ordinary_float/0046_heckbert_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0046_heckbert_center.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0046_heckbert_center.Tpo -c -o quant/palette/ordinary_float/test_runner-0046_heckbert_center.o `test -f 'quant/palette/ordinary_float/0046_heckbert_center.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0046_heckbert_center.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0046_heckbert_center.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0046_heckbert_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0046_heckbert_center.c' object='quant/palette/ordinary_float/test_runner-0046_heckbert_center.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0046_heckbert_center.o `test -f 'quant/palette/ordinary_float/0046_heckbert_center.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0046_heckbert_center.c
+
+quant/palette/ordinary_float/test_runner-0046_heckbert_center.obj: quant/palette/ordinary_float/0046_heckbert_center.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0046_heckbert_center.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0046_heckbert_center.Tpo -c -o quant/palette/ordinary_float/test_runner-0046_heckbert_center.obj `if test -f 'quant/palette/ordinary_float/0046_heckbert_center.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0046_heckbert_center.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0046_heckbert_center.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0046_heckbert_center.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0046_heckbert_center.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0046_heckbert_center.c' object='quant/palette/ordinary_float/test_runner-0046_heckbert_center.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0046_heckbert_center.obj `if test -f 'quant/palette/ordinary_float/0046_heckbert_center.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0046_heckbert_center.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0046_heckbert_center.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0047_heckbert_average.o: quant/palette/ordinary_float/0047_heckbert_average.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0047_heckbert_average.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0047_heckbert_average.Tpo -c -o quant/palette/ordinary_float/test_runner-0047_heckbert_average.o `test -f 'quant/palette/ordinary_float/0047_heckbert_average.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0047_heckbert_average.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0047_heckbert_average.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0047_heckbert_average.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0047_heckbert_average.c' object='quant/palette/ordinary_float/test_runner-0047_heckbert_average.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0047_heckbert_average.o `test -f 'quant/palette/ordinary_float/0047_heckbert_average.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0047_heckbert_average.c
+
+quant/palette/ordinary_float/test_runner-0047_heckbert_average.obj: quant/palette/ordinary_float/0047_heckbert_average.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0047_heckbert_average.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0047_heckbert_average.Tpo -c -o quant/palette/ordinary_float/test_runner-0047_heckbert_average.obj `if test -f 'quant/palette/ordinary_float/0047_heckbert_average.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0047_heckbert_average.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0047_heckbert_average.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0047_heckbert_average.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0047_heckbert_average.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0047_heckbert_average.c' object='quant/palette/ordinary_float/test_runner-0047_heckbert_average.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0047_heckbert_average.obj `if test -f 'quant/palette/ordinary_float/0047_heckbert_average.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0047_heckbert_average.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0047_heckbert_average.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0048_heckbert_histogram.o: quant/palette/ordinary_float/0048_heckbert_histogram.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0048_heckbert_histogram.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0048_heckbert_histogram.Tpo -c -o quant/palette/ordinary_float/test_runner-0048_heckbert_histogram.o `test -f 'quant/palette/ordinary_float/0048_heckbert_histogram.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0048_heckbert_histogram.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0048_heckbert_histogram.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0048_heckbert_histogram.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0048_heckbert_histogram.c' object='quant/palette/ordinary_float/test_runner-0048_heckbert_histogram.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0048_heckbert_histogram.o `test -f 'quant/palette/ordinary_float/0048_heckbert_histogram.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0048_heckbert_histogram.c
+
+quant/palette/ordinary_float/test_runner-0048_heckbert_histogram.obj: quant/palette/ordinary_float/0048_heckbert_histogram.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0048_heckbert_histogram.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0048_heckbert_histogram.Tpo -c -o quant/palette/ordinary_float/test_runner-0048_heckbert_histogram.obj `if test -f 'quant/palette/ordinary_float/0048_heckbert_histogram.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0048_heckbert_histogram.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0048_heckbert_histogram.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0048_heckbert_histogram.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0048_heckbert_histogram.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0048_heckbert_histogram.c' object='quant/palette/ordinary_float/test_runner-0048_heckbert_histogram.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0048_heckbert_histogram.obj `if test -f 'quant/palette/ordinary_float/0048_heckbert_histogram.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0048_heckbert_histogram.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0048_heckbert_histogram.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0049_heckbert_polish.o: quant/palette/ordinary_float/0049_heckbert_polish.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0049_heckbert_polish.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0049_heckbert_polish.Tpo -c -o quant/palette/ordinary_float/test_runner-0049_heckbert_polish.o `test -f 'quant/palette/ordinary_float/0049_heckbert_polish.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0049_heckbert_polish.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0049_heckbert_polish.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0049_heckbert_polish.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0049_heckbert_polish.c' object='quant/palette/ordinary_float/test_runner-0049_heckbert_polish.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0049_heckbert_polish.o `test -f 'quant/palette/ordinary_float/0049_heckbert_polish.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0049_heckbert_polish.c
+
+quant/palette/ordinary_float/test_runner-0049_heckbert_polish.obj: quant/palette/ordinary_float/0049_heckbert_polish.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0049_heckbert_polish.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0049_heckbert_polish.Tpo -c -o quant/palette/ordinary_float/test_runner-0049_heckbert_polish.obj `if test -f 'quant/palette/ordinary_float/0049_heckbert_polish.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0049_heckbert_polish.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0049_heckbert_polish.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0049_heckbert_polish.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0049_heckbert_polish.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0049_heckbert_polish.c' object='quant/palette/ordinary_float/test_runner-0049_heckbert_polish.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0049_heckbert_polish.obj `if test -f 'quant/palette/ordinary_float/0049_heckbert_polish.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0049_heckbert_polish.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0049_heckbert_polish.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0050_heckbert_once.o: quant/palette/ordinary_float/0050_heckbert_once.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0050_heckbert_once.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0050_heckbert_once.Tpo -c -o quant/palette/ordinary_float/test_runner-0050_heckbert_once.o `test -f 'quant/palette/ordinary_float/0050_heckbert_once.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0050_heckbert_once.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0050_heckbert_once.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0050_heckbert_once.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0050_heckbert_once.c' object='quant/palette/ordinary_float/test_runner-0050_heckbert_once.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0050_heckbert_once.o `test -f 'quant/palette/ordinary_float/0050_heckbert_once.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0050_heckbert_once.c
+
+quant/palette/ordinary_float/test_runner-0050_heckbert_once.obj: quant/palette/ordinary_float/0050_heckbert_once.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0050_heckbert_once.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0050_heckbert_once.Tpo -c -o quant/palette/ordinary_float/test_runner-0050_heckbert_once.obj `if test -f 'quant/palette/ordinary_float/0050_heckbert_once.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0050_heckbert_once.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0050_heckbert_once.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0050_heckbert_once.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0050_heckbert_once.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0050_heckbert_once.c' object='quant/palette/ordinary_float/test_runner-0050_heckbert_once.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0050_heckbert_once.obj `if test -f 'quant/palette/ordinary_float/0050_heckbert_once.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0050_heckbert_once.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0050_heckbert_once.c'; fi`
+
+quant/palette/ordinary_float/test_runner-0051_heckbert_unique.o: quant/palette/ordinary_float/0051_heckbert_unique.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0051_heckbert_unique.o -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0051_heckbert_unique.Tpo -c -o quant/palette/ordinary_float/test_runner-0051_heckbert_unique.o `test -f 'quant/palette/ordinary_float/0051_heckbert_unique.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0051_heckbert_unique.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0051_heckbert_unique.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0051_heckbert_unique.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0051_heckbert_unique.c' object='quant/palette/ordinary_float/test_runner-0051_heckbert_unique.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0051_heckbert_unique.o `test -f 'quant/palette/ordinary_float/0051_heckbert_unique.c' || echo '$(srcdir)/'`quant/palette/ordinary_float/0051_heckbert_unique.c
+
+quant/palette/ordinary_float/test_runner-0051_heckbert_unique.obj: quant/palette/ordinary_float/0051_heckbert_unique.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/ordinary_float/test_runner-0051_heckbert_unique.obj -MD -MP -MF quant/palette/ordinary_float/$(DEPDIR)/test_runner-0051_heckbert_unique.Tpo -c -o quant/palette/ordinary_float/test_runner-0051_heckbert_unique.obj `if test -f 'quant/palette/ordinary_float/0051_heckbert_unique.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0051_heckbert_unique.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0051_heckbert_unique.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/ordinary_float/$(DEPDIR)/test_runner-0051_heckbert_unique.Tpo quant/palette/ordinary_float/$(DEPDIR)/test_runner-0051_heckbert_unique.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/ordinary_float/0051_heckbert_unique.c' object='quant/palette/ordinary_float/test_runner-0051_heckbert_unique.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/ordinary_float/test_runner-0051_heckbert_unique.obj `if test -f 'quant/palette/ordinary_float/0051_heckbert_unique.c'; then $(CYGPATH_W) 'quant/palette/ordinary_float/0051_heckbert_unique.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/ordinary_float/0051_heckbert_unique.c'; fi`
+
 quant/palette/retention/test_runner-retention_test_common.o: quant/palette/retention/retention_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-retention_test_common.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Tpo -c -o quant/palette/retention/test_runner-retention_test_common.o `test -f 'quant/palette/retention/retention_test_common.c' || echo '$(srcdir)/'`quant/palette/retention/retention_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Tpo quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Po
@@ -66715,6 +67053,20 @@ processing/dither/test_runner-positional_test_common.obj: processing/dither/posi
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional_test_common.c' object='processing/dither/test_runner-positional_test_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/test_runner-positional_test_common.obj `if test -f 'processing/dither/positional_test_common.c'; then $(CYGPATH_W) 'processing/dither/positional_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional_test_common.c'; fi`
+
+processing/dither/interframe/test_runner-interframe_test_common.o: processing/dither/interframe/interframe_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/interframe/test_runner-interframe_test_common.o -MD -MP -MF processing/dither/interframe/$(DEPDIR)/test_runner-interframe_test_common.Tpo -c -o processing/dither/interframe/test_runner-interframe_test_common.o `test -f 'processing/dither/interframe/interframe_test_common.c' || echo '$(srcdir)/'`processing/dither/interframe/interframe_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/interframe/$(DEPDIR)/test_runner-interframe_test_common.Tpo processing/dither/interframe/$(DEPDIR)/test_runner-interframe_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/interframe/interframe_test_common.c' object='processing/dither/interframe/test_runner-interframe_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/interframe/test_runner-interframe_test_common.o `test -f 'processing/dither/interframe/interframe_test_common.c' || echo '$(srcdir)/'`processing/dither/interframe/interframe_test_common.c
+
+processing/dither/interframe/test_runner-interframe_test_common.obj: processing/dither/interframe/interframe_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/interframe/test_runner-interframe_test_common.obj -MD -MP -MF processing/dither/interframe/$(DEPDIR)/test_runner-interframe_test_common.Tpo -c -o processing/dither/interframe/test_runner-interframe_test_common.obj `if test -f 'processing/dither/interframe/interframe_test_common.c'; then $(CYGPATH_W) 'processing/dither/interframe/interframe_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/interframe/interframe_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/interframe/$(DEPDIR)/test_runner-interframe_test_common.Tpo processing/dither/interframe/$(DEPDIR)/test_runner-interframe_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/interframe/interframe_test_common.c' object='processing/dither/interframe/test_runner-interframe_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/interframe/test_runner-interframe_test_common.obj `if test -f 'processing/dither/interframe/interframe_test_common.c'; then $(CYGPATH_W) 'processing/dither/interframe/interframe_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/interframe/interframe_test_common.c'; fi`
 
 processing/dither/positional/precision/test_runner-0059_a_byte_band.o: processing/dither/positional/precision/0059_a_byte_band.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0059_a_byte_band.o -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0059_a_byte_band.Tpo -c -o processing/dither/positional/precision/test_runner-0059_a_byte_band.o `test -f 'processing/dither/positional/precision/0059_a_byte_band.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0059_a_byte_band.c
@@ -73495,6 +73847,8 @@ distclean-generic:
 	-$(am__rm_f) processing/dither/bluenoise/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/clamp/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/clamp/$(am__dirstamp)
+	-$(am__rm_f) processing/dither/interframe/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/dither/interframe/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/perturb/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/perturb/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/positional/$(DEPDIR)/$(am__dirstamp)

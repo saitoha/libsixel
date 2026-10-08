@@ -44,7 +44,6 @@ typedef struct sixel_palette_build_context {
     int final_merge_mode;
     int lut_policy;
     sixel_palette_build_attempt_t *attempt;
-    int preserve_extended_rgb;
 } sixel_palette_build_context_t;
 
 typedef struct sixel_palette_storage {

@@ -82,9 +82,9 @@ ordinary_reset(void)
 }
 
 static SIXELSTATUS
-ordinary_build(sixel_palette_t *palette, void *pixels, unsigned int count,
+ordinary_build_rep(sixel_palette_t *palette, void *pixels, unsigned int count,
                int format, int model, int bin, int merge, int snap, int prefer,
-               unsigned int colors,
+               unsigned int colors, int representative,
                sixel_palette_build_attempt_t *attempt)
 {
     sixel_palette_generate_request_t request;
@@ -98,6 +98,8 @@ ordinary_build(sixel_palette_t *palette, void *pixels, unsigned int count,
         (SIXEL_PIXELFORMAT_IS_FLOAT32(format) ? sizeof(float) : 1u);
     request.pixelformat = format;
     request.requested_colors = colors;
+    request.method_for_rep = representative;
+    request.method_for_largest = SIXEL_LARGE_NORM;
     request.prefer_float32 = prefer;
     request.quantize_model = model;
     request.final_merge_mode = merge;
@@ -134,6 +136,16 @@ ordinary_build(sixel_palette_t *palette, void *pixels, unsigned int count,
         return SIXEL_LOGIC_ERROR;
     }
     return SIXEL_FAILED(status) ? status : finish;
+}
+
+static SIXELSTATUS
+ordinary_build(sixel_palette_t *palette, void *pixels, unsigned int count,
+               int format, int model, int bin, int merge, int snap, int prefer,
+               unsigned int colors,
+               sixel_palette_build_attempt_t *attempt)
+{
+    return ordinary_build_rep(palette, pixels, count, format, model, bin,
+        merge, snap, prefer, colors, SIXEL_REP_AVERAGE_PIXELS, attempt);
 }
 
 static int
@@ -260,9 +272,11 @@ ordinary_float_snap(int model)
     }
     palette = object;
     /* K-means applies ITER to the Lloyd mean, then FINAL to that result.
+     * Heckbert snaps the retained representative at ITER, then FINAL.
      * The discrete solvers have only FINAL. Both targets stay nearest to
      * the same byte codes, so two quarter approaches leave 9/16 residual. */
-    if (model == SIXEL_QUANTIZE_MODEL_KMEANS) {
+    if (model == SIXEL_QUANTIZE_MODEL_KMEANS ||
+            model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
         for (channel = 0; channel < 6; ++channel) {
             expected[channel] = (float)(.5625 * pixels[channel]
                 + .4375 * targets[channel]);
@@ -308,7 +322,9 @@ ordinary_float_failure(int model, int nonfinite, int reuse)
     status = ordinary_build(palette, pixels, 2, SIXEL_PIXELFORMAT_RGBFLOAT32,
         model, SIXEL_PALETTE_BINNING_NONE, SIXEL_FINAL_MERGE_NONE,
         0, 1, 2, &attempt);
-    ok = status == (nonfinite ? SIXEL_BAD_INPUT : SIXEL_BAD_ALLOCATION) &&
+    ok = status == (nonfinite
+        ? (model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
+            ? SIXEL_BAD_ARGUMENT : SIXEL_BAD_INPUT) : SIXEL_BAD_ALLOCATION) &&
         attempt.quantizer_retry_count == 0 &&
         (nonfinite || ordinary_fail_hits == 1);
     if (reuse) {
@@ -563,6 +579,120 @@ ordinary_kmeans_unique(void)
         SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_QUANTIZE_MODEL_KMEANS,
         SIXEL_PALETTE_BINNING_NONE, SIXEL_FINAL_MERGE_WARD,
         0, 1, 2, &attempt)) && ordinary_pair(palette, expected);
+    palette->vtbl->unref(palette);
+    ordinary_reset();
+    return ok;
+}
+
+/* Deliberately asymmetric populations distinguish box extrema, distinct-color
+ * mean and occurrence mean. Binary fractions are exact source fixtures;
+ * 2e-6 covers only scale/unscale and the final float store. */
+int
+ordinary_heckbert_representative(int representative, int polish)
+{
+    float pixels[15] = {-.5f, -2.f, 3.f, -.25f, -2.f, 3.f,
+        -.25f, -2.f, 3.f, -.25f, -2.f, 3.f, 1.5f, -2.f, 3.f};
+    double expected[3] = {0.0, -2.0, 3.0};
+    sixel_palette_build_attempt_t attempt;
+    sixel_palette_t *palette;
+    void *object;
+    int space;
+    int ok;
+
+    object = NULL;
+    ok = 1;
+    ordinary_options(0);
+    expected[0] = representative == SIXEL_REP_CENTER_BOX ? .5
+        : representative == SIXEL_REP_AVERAGE_COLORS ? .25 : .05;
+    if (polish) {
+        expected[0] = .05;
+        sixel_set_final_merge_lloyd_iterations_override(1, 3);
+    }
+    if (SIXEL_FAILED(ordinary_new(&object))) {
+        ordinary_reset();
+        return 0;
+    }
+    palette = object;
+    for (space = 0; space < 5; ++space) {
+        ok = ok && SIXEL_SUCCEEDED(ordinary_build_rep(palette, pixels, 5,
+            ordinary_formats[space], SIXEL_QUANTIZE_MODEL_MEDIANCUT,
+            SIXEL_PALETTE_BINNING_NONE, polish ? SIXEL_FINAL_MERGE_WARD
+                : SIXEL_FINAL_MERGE_NONE,
+            0, 1, 1, representative, &attempt)) &&
+            ordinary_single(palette, expected);
+    }
+    palette->vtbl->unref(palette);
+    ordinary_reset();
+    return ok;
+}
+
+int
+ordinary_heckbert_once(void)
+{
+    float pixels[6] = {-.25f, 1.25f, .38480392098426819f, .5f, .5f, .5f};
+    float expected[6];
+    double const target[6] = {0, 1, 99.0 / 255, 128.0 / 255,
+        128.0 / 255, 128.0 / 255};
+    sixel_palette_snap_options_t options;
+    sixel_palette_build_attempt_t attempt;
+    sixel_palette_t *palette;
+    void *object;
+    int channel;
+    int ok;
+
+    object = NULL;
+    ordinary_options(1);
+    memset(&options, 0, sizeof(options));
+    options.policy_override = options.timing_override = 1;
+    options.approach_rate_override = 1;
+    options.policy = SIXEL_PALETTE_SNAP_POLICY_NEAREST;
+    options.timing = SIXEL_PALETTE_SNAP_TIMING_ONCE;
+    options.approach_rate = .25;
+    sixel_set_palette_snap_override(&options);
+    for (channel = 0; channel < 6; ++channel) {
+        expected[channel] = (float)(.75 * pixels[channel]
+            + .25 * target[channel]);
+    }
+    if (SIXEL_FAILED(ordinary_new(&object))) {
+        ordinary_reset();
+        return 0;
+    }
+    palette = object;
+    /* Exactly one quarter approach; histogram construction cannot snap or
+     * quantize samples when only the final palette stage is requested. */
+    ok = SIXEL_SUCCEEDED(ordinary_build(palette, pixels, 2,
+        SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_QUANTIZE_MODEL_MEDIANCUT,
+        SIXEL_PALETTE_BINNING_NONE, SIXEL_FINAL_MERGE_NONE, 1, 1, 2,
+        &attempt)) && ordinary_pair(palette, expected);
+    palette->vtbl->unref(palette);
+    ordinary_reset();
+    return ok;
+}
+
+int
+ordinary_heckbert_unique(void)
+{
+    float pixels[6] = {.25f, -.5f, 1.5f, .250244140625f, -.5f, 1.5f};
+    sixel_palette_build_attempt_t attempt;
+    sixel_palette_t *palette;
+    void *object;
+    sixel_palette_metadata_t metadata;
+    int ok;
+
+    object = NULL;
+    memset(&metadata, 0, sizeof(metadata));
+    ordinary_options(0);
+    if (SIXEL_FAILED(ordinary_new(&object))) {
+        ordinary_reset();
+        return 0;
+    }
+    palette = object;
+    ok = SIXEL_SUCCEEDED(ordinary_build(palette, pixels, 2,
+        SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_QUANTIZE_MODEL_MEDIANCUT,
+        SIXEL_PALETTE_BINNING_NONE, SIXEL_FINAL_MERGE_NONE, 0, 1, 2,
+        &attempt)) && ordinary_pair(palette, pixels) &&
+        SIXEL_SUCCEEDED(palette->vtbl->get_metadata(palette, &metadata))
+        && metadata.original_colors == 2;
     palette->vtbl->unref(palette);
     ordinary_reset();
     return ok;

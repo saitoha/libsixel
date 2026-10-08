@@ -25,4 +25,7 @@ int ordinary_kmeans_mean(int polish);
 int ordinary_kmeans_empty(void);
 int ordinary_kmeans_feedback(int snap, int interval);
 int ordinary_kmeans_unique(void);
+int ordinary_heckbert_representative(int representative, int polish);
+int ordinary_heckbert_once(void);
+int ordinary_heckbert_unique(void);
 #endif

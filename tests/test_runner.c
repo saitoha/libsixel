@@ -1626,7 +1626,22 @@ int test_ordinary_kmeans_empty(int argc, char **argv);
 int test_ordinary_kmeans_feedback(int argc, char **argv);
 int test_ordinary_kmeans_feedback_snap(int argc, char **argv);
 int test_ordinary_kmeans_feedback_interval(int argc, char **argv);
+int test_interframe_equal_pixels(int argc, char **argv);
 int test_ordinary_kmeans_unique(int argc, char **argv);
+int test_ordinary_heckbert_sources(int argc, char **argv);
+int test_ordinary_heckbert_ward(int argc, char **argv);
+int test_ordinary_heckbert_snap(int argc, char **argv);
+int test_ordinary_heckbert_fault(int argc, char **argv);
+int test_ordinary_heckbert_nonfinite(int argc, char **argv);
+int test_ordinary_heckbert_hint(int argc, char **argv);
+int test_ordinary_heckbert_byte(int argc, char **argv);
+int test_ordinary_heckbert_reuse(int argc, char **argv);
+int test_ordinary_heckbert_center(int argc, char **argv);
+int test_ordinary_heckbert_average(int argc, char **argv);
+int test_ordinary_heckbert_histogram(int argc, char **argv);
+int test_ordinary_heckbert_polish(int argc, char **argv);
+int test_ordinary_heckbert_once(int argc, char **argv);
+int test_ordinary_heckbert_unique(int argc, char **argv);
 int test_palette_retention_kmeans(int argc, char **argv);
 int test_palette_retention_kcenter(int argc, char **argv);
 int test_palette_retention_kmedoids(int argc, char **argv);
@@ -5957,6 +5972,7 @@ static test_entry_t const test_entries[] = {
     { "palette/snap_hooks/stage_ladder", test_snap_hooks_stage_ladder },
     { "palette/snap_hooks/kmeans_once", test_snap_hooks_kmeans_once },
     { "palette/snap_hooks/kmeans_all", test_snap_hooks_kmeans_all },
+    { "dither/interframe/equal_pixels", test_interframe_equal_pixels },
     { "palette/ordinary_float/center_sources", test_ordinary_center_sources },
     { "palette/ordinary_float/medoids_sources", test_ordinary_medoids_sources },
     { "palette/ordinary_float/center_hard", test_ordinary_center_hard },
@@ -6011,6 +6027,34 @@ static test_entry_t const test_entries[] = {
       test_ordinary_kmeans_feedback_interval },
     { "palette/ordinary_float/kmeans_unique",
       test_ordinary_kmeans_unique },
+    { "palette/ordinary_float/heckbert_sources",
+      test_ordinary_heckbert_sources },
+    { "palette/ordinary_float/heckbert_ward",
+      test_ordinary_heckbert_ward },
+    { "palette/ordinary_float/heckbert_snap",
+      test_ordinary_heckbert_snap },
+    { "palette/ordinary_float/heckbert_fault",
+      test_ordinary_heckbert_fault },
+    { "palette/ordinary_float/heckbert_nonfinite",
+      test_ordinary_heckbert_nonfinite },
+    { "palette/ordinary_float/heckbert_hint",
+      test_ordinary_heckbert_hint },
+    { "palette/ordinary_float/heckbert_byte",
+      test_ordinary_heckbert_byte },
+    { "palette/ordinary_float/heckbert_reuse",
+      test_ordinary_heckbert_reuse },
+    { "palette/ordinary_float/heckbert_center",
+      test_ordinary_heckbert_center },
+    { "palette/ordinary_float/heckbert_average",
+      test_ordinary_heckbert_average },
+    { "palette/ordinary_float/heckbert_histogram",
+      test_ordinary_heckbert_histogram },
+    { "palette/ordinary_float/heckbert_polish",
+      test_ordinary_heckbert_polish },
+    { "palette/ordinary_float/heckbert_once",
+      test_ordinary_heckbert_once },
+    { "palette/ordinary_float/heckbert_unique",
+      test_ordinary_heckbert_unique },
     { "palette/retention_kmeans",
       test_palette_retention_kmeans },
     { "palette/retention_kcenter",

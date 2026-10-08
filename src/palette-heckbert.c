@@ -187,22 +187,6 @@ sixel_palette_heckbert_log_finish(sixel_timeline_logger_t *logger,
 }
 
 /*
- * Normalize a float32 channel according to the current pixelformat and convert
- * it into an 8-bit bucket sample for the histogram quantizer.  This keeps
- * signed OKLab components from collapsing to zero when float32 inputs drive
- * the palette solver.
- */
-static unsigned char
-sixel_palette_heckbert_float32_to_u8(float value,
-                                     int pixelformat,
-                                     int channel)
-{
-    return sixel_pixelformat_float_channel_to_byte(pixelformat,
-                                                   channel,
-                                                   value);
-}
-
-/*
  * Convert each histogram tuple component onto the reversible SIXEL tone grid.
  * The conversion mirrors sixel_palette_reversible_palette but operates on the
  * temporary tuple tables used during Heckbert processing.
@@ -223,11 +207,10 @@ sixel_palette_reversible_tuple(sample *tuple_values,
     }
     for (plane = 0U; plane < depth && plane < 3U; ++plane) {
         if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-            components[plane]
-                = (double)sixel_pixelformat_byte_to_float(
-                      pixelformat,
-                      (int)plane,
-                      (unsigned char)tuple_values[plane]);
+            /* Typed histograms use zero-origin, nominal-span scaling. */
+            components[plane] = tuple_values[plane] / 255.0
+                * sixel_pixelformat_float_channel_range(
+                    pixelformat, (int)plane);
             continue;
         }
         components[plane] = (double)tuple_values[plane];
@@ -238,11 +221,9 @@ sixel_palette_reversible_tuple(sample *tuple_values,
                               SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER);
     for (plane = 0U; plane < depth && plane < 3U; ++plane) {
         if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-            tuple_values[plane]
-                = (sample)sixel_pixelformat_float_channel_to_byte(
-                      pixelformat,
-                      (int)plane,
-                      (float)components[plane]);
+            tuple_values[plane] = components[plane] * 255.0
+                / sixel_pixelformat_float_channel_range(
+                    pixelformat, (int)plane);
             continue;
         }
         tuple_values[plane] = (sample)components[plane];
@@ -590,7 +571,7 @@ histogram_pack_color_from_lut(unsigned char const *data,
  * Construct the histogram consumed by the median-cut splitter.  The control
  * flow is intentionally verbose:
  *
- *   1. Choose sampling density based on quality mode.
+ *   1. Consume every byte pixel supplied by upstream sampling.
  *   2. Quantize each pixel into the dense histogram space.
  *   3. Build a sparse reference map and reconstruct representative tuples.
  */
@@ -620,24 +601,20 @@ sixel_lut_build_histogram(unsigned char const *data,
     struct histogram_control control;
     unsigned int depth_u;
     unsigned char reversible_pixel[sixel_palette_heckbert_max_channels];
-    unsigned char quantized_pixel[sixel_palette_heckbert_max_channels];
     unsigned int i;
     unsigned int n;
     unsigned int plane;
     unsigned int channel_stride;
     unsigned char const *bucket_input;
-    float const *float_pixel;
     unsigned int quantized_lut[256];
     uint32_t packed_lut[4][256];
     unsigned int bits;
     int use_fast_pack;
-    int input_is_float32;
 
     status = SIXEL_FALSE;
     histogram = NULL;
     refmap = NULL;
     bucket_input = NULL;
-    float_pixel = NULL;
     if (colorfreqtable == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -660,17 +637,9 @@ sixel_lut_build_histogram(unsigned char const *data,
     }
 
     channel_stride = pixel_stride / depth;
-    input_is_float32 = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat);
-    if (input_is_float32) {
-        if (channel_stride != sizeof(float)) {
-            sixel_helper_set_additional_message(
-                "sixel_lut_build_histogram: unexpected float stride.");
-            return SIXEL_BAD_ARGUMENT;
-        }
-    } else if (channel_stride != 1U) {
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) || channel_stride != 1U) {
         sixel_helper_set_additional_message(
-            "sixel_lut_build_histogram: only 8bit or "
-            "RGBFLOAT32 inputs are supported.");
+            "sixel_lut_build_histogram: requires byte input.");
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -722,10 +691,9 @@ sixel_lut_build_histogram(unsigned char const *data,
 
     /*
      * Keep the dominant 8bit RGB/RGBA path branch-light so histogram packing
-     * does not pay per-pixel float and reversible checks.
+     * does not pay per-pixel reversible checks.
      */
-    if (!input_is_float32
-            && !use_reversible
+    if (!use_reversible
             && use_fast_pack
             && depth_u == 3U) {
         for (i = 0U; i + pixel_stride <= length; i += step) {
@@ -738,8 +706,7 @@ sixel_lut_build_histogram(unsigned char const *data,
                 histogram[bucket_index]++;
             }
         }
-    } else if (!input_is_float32
-               && !use_reversible
+    } else if (!use_reversible
                && use_fast_pack
                && depth_u == 4U) {
         for (i = 0U; i + pixel_stride <= length; i += step) {
@@ -754,19 +721,7 @@ sixel_lut_build_histogram(unsigned char const *data,
         }
     } else {
         for (i = 0U; i + pixel_stride <= length; i += step) {
-            if (input_is_float32) {
-                float_pixel = (float const *)(void const *)(data + i);
-                for (plane = 0U; plane < depth_u; ++plane) {
-                    quantized_pixel[plane]
-                        = sixel_palette_heckbert_float32_to_u8(
-                            float_pixel[plane],
-                            pixelformat,
-                            (int)plane);
-                }
-                bucket_input = quantized_pixel;
-            } else {
-                bucket_input = data + i;
-            }
+            bucket_input = data + i;
             if (use_reversible) {
                 for (plane = 0U; plane < depth_u; ++plane) {
                     reversible_pixel[plane]
@@ -1978,7 +1933,7 @@ colormapFromBv(unsigned int newcolors,
 #endif
             break;
         }
-        if (use_reversible && !colorfreqtable.preserve_extended) {
+        if (use_reversible && !sixel_palette_snap_destination_active()) {
             sixel_palette_reversible_tuple(colormap.table[bi]->tuple,
                                           depth,
                                           pixelformat);
@@ -2564,7 +2519,7 @@ sixel_palette_clusters_to_colormap(unsigned long *weights,
             colormap.table[index]->tuple[plane]
                 = preserve_extended ? component : floor(component + 0.5);
         }
-        if (use_reversible && !preserve_extended) {
+        if (use_reversible && !sixel_palette_snap_destination_active()) {
             sixel_palette_reversible_tuple(colormap.table[index]->tuple,
                                           depth,
                                           pixelformat);
@@ -3303,12 +3258,12 @@ end:
     return status;
 }
 
-/* Native histogram entries retain sub-byte differences and out-of-gamut
+/* Typed float histogram entries retain sub-byte differences and out-of-gamut
  * coordinates. Occurrence weights describe identical triples, not cells on
  * a bounded lookup grid. Lookup selection is independent of this histogram.
  * Scale the nominal span to 255 for existing split/merge metrics, but do not
  * translate signed axes: subtracting an offset would erase tiny values.
- * All admitted operations are translation invariant with snap disabled. */
+ * Snap converts this zero-origin scale back to typed coordinates explicitly. */
 static int
 sixel_heckbert_native_compare(void const *left, void const *right)
 {
@@ -3492,7 +3447,7 @@ sixel_palette_heckbert_colormap(
 
     colormapP->size = 0U;
     colormapP->table = NULL;
-    if (SIXEL_PALETTE_CONTEXT(palette)->preserve_extended_rgb) {
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         status = sixel_heckbert_native_histogram(data, length, pixelformat,
                                                 &colorfreqtable, allocator);
     } else {
@@ -3535,7 +3490,7 @@ sixel_palette_heckbert_colormap(
                 colormapP->table[i]->tuple[n]
                     = colorfreqtable.table[i]->tuple[n];
             }
-            if (use_reversible && !colorfreqtable.preserve_extended) {
+            if (use_reversible && !sixel_palette_snap_destination_active()) {
                 sixel_palette_reversible_tuple(
                     colormapP->table[i]->tuple,
                     depth,
@@ -3617,7 +3572,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     int input_is_float32;
     float *float_entries;
     int float_stride;
-    int preserve_extended;
+    size_t float_entries_size;
     double component;
     int reversible_for_quantizer;
     sixel_palette_heckbert_colormap_request_t colormap_request;
@@ -3698,8 +3653,6 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     float_entries = NULL;
     float_stride = 0;
     reversible_for_quantizer = SIXEL_PALETTE_CONTEXT(palette)->use_reversible;
-    preserve_extended = SIXEL_PALETTE_CONTEXT(palette)
-        ->preserve_extended_rgb;
     colormap_request.palette = palette;
     colormap_request.data = data;
     colormap_request.length = length;
@@ -3751,8 +3704,6 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     }
 
     if (input_is_float32 && colormap.size > 0U && depth > 0U) {
-        size_t float_entries_size;
-
         float_stride = (int)((size_t)depth * (size_t)sizeof(float));
         float_entries_size = (size_t)colormap.size
                               * (size_t)depth
@@ -3782,7 +3733,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
         && colormap.table != NULL) {
         for (index = 0U; index < colormap.size; ++index) {
             for (plane = 0U; plane < depth; ++plane) {
-                if (preserve_extended) {
+                if (input_is_float32) {
                     component = colormap.table[index]->tuple[plane]
                         / 255.0 * sixel_pixelformat_float_channel_range(
                             pixelformat, (int)plane);
@@ -3795,13 +3746,6 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                 }
                 SIXEL_PALETTE_STORAGE(palette)->entries[index * depth + plane]
                     = (unsigned char)colormap.table[index]->tuple[plane];
-                if (float_entries != NULL) {
-                    /* Preserve the typed opponent-axis bounds, not [0,1]. */
-                    float_entries[index * depth + plane]
-                        = sixel_pixelformat_byte_to_float(
-                            pixelformat, (int)plane,
-                            (unsigned char)colormap.table[index]->tuple[plane]);
-                }
             }
         }
     }

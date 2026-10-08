@@ -335,7 +335,7 @@ The following are implementation defects, not alternative semantics for the opti
 
 | Location | Remaining defect |
 | --- | --- |
-| Heckbert histogram construction in [`palette-heckbert.c`](../../../../src/palette-heckbert.c) | Enabling snap changes histogram input and reconstructed bin values before the final pass, without consulting `timing` or `rate`. Thus `once` does not confine snapping to the final palette. |
+| Byte Heckbert histogram construction in [`palette-heckbert.c`](../../../../src/palette-heckbert.c) | Enabling snap changes histogram input and reconstructed bin values before the final pass, without consulting `timing` or `rate`. Thus `once` does not confine snapping to the final palette on byte input. Typed float histograms preserve source coordinates, including through ordinary generation entry points. |
 | Legacy sRGB early timing stages | The destination-aware merge hooks apply to P3. Legacy sRGB merge stages remain outside this implementation; parsing the timing values alone does not establish their execution. |
 | Legacy image-map construction in [`encoder.c`](../../../../src/encoder.c) | Unlike structured palette import, the ordinary image-map builder can consult snap environment settings without the encoder's explicit override. In that path, `SIXEL_PALETTE_SNAP_POLICY=nearest` can change the map palette even with explicit `-_none`. |
 

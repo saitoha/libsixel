@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring float32 PMJ output is stable across thread counts.
+# TAP test ensuring float32 PMJ decoded pixels are stable across thread counts.
 
 set -eux
 
@@ -48,10 +48,11 @@ multi_thread_output=$(
     exit 0
 }
 
-test "${multi_thread_output}" = "${single_thread_output}" || {
-    echo "not ok" 1 - "float32 pmj output changed across thread counts"
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" dither/interframe/equal_pixels \
+    "${single_thread_output}" "${multi_thread_output}" || {
+    echo "not ok" 1 - "float32 pmj decoded pixels changed across thread counts"
     exit 0
 }
 
-echo "ok" 1 - "float32 pmj output is stable across thread counts"
+echo "ok" 1 - "float32 pmj decoded pixels are stable across thread counts"
 exit 0

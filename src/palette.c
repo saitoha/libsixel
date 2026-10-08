@@ -635,59 +635,9 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
     return status;
 }
 
-/* Thin wrapper that executes the median-cut/Heckbert engine. */
-static SIXELSTATUS
-sixel_palette_apply_mediancut_engine(sixel_palette_t *palette,
-                                     void const *data,
-                                     unsigned int length,
-                                     int pixelformat,
-                                     sixel_allocator_t *allocator,
-                                     int prefer_float32)
-{
-    sixel_palette_quant_engine_t const *engine;
-    SIXELSTATUS status;
-
-    status = SIXEL_LOGIC_ERROR;
-    if (prefer_float32 && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        engine = sixel_palette_quant_engine_lookup(
-            SIXEL_QUANTIZE_MODEL_MEDIANCUT,
-            1);
-        if (engine != NULL) {
-            status = sixel_palette_quant_engine_run(engine,
-                                                    palette,
-                                                    data,
-                                                    length,
-                                                    pixelformat,
-                                                    allocator);
-            if (SIXEL_SUCCEEDED(status)) {
-                return status;
-            }
-        }
-    }
-
-    if (SIXEL_PALETTE_CONTEXT(palette)->preserve_extended_rgb) {
-        /* A native failure must never retry through the bounded histogram. */
-        return status;
-    }
-
-    engine = sixel_palette_quant_engine_lookup(
-        SIXEL_QUANTIZE_MODEL_MEDIANCUT,
-        0);
-    if (engine == NULL) {
-        return SIXEL_LOGIC_ERROR;
-    }
-
-    return sixel_palette_quant_engine_run(engine,
-                                          palette,
-                                          data,
-                                          length,
-                                          pixelformat,
-                                          allocator);
-}
-
-/* Lloyd/center/medoid solvers choose arithmetic from the actual input type.
- * A float failure must not retry byte storage, even when the caller does not
- * use the native output cache. Explicit snap still runs inside the builder. */
+/* Solvers choose arithmetic from the actual input type. A float failure
+ * must not retry byte storage, even without the native output cache.
+ * Explicit snap still runs inside the builder. */
 static SIXELSTATUS
 sixel_palette_apply_typed_engine(sixel_palette_t *palette,
                                  int quantize_model,
@@ -1310,11 +1260,10 @@ sixel_palette_repair_native(sixel_palette_t *palette,
 /*
  * sixel_palette_generate builds the palette entries inside the provided
  * sixel_palette_t instance.  The dispatcher consults the quantizer engine
- * registry to select the requested solver. K-means, K-center and K-medoids
+ * registry to select the requested solver. All generators
  * choose arithmetic from the actual input type; a typed float failure is
  * returned without narrowing or trying another solver. True byte requests
  * retain their historical Heckbert fallback where binning permits it.
- * Compatibility Heckbert still follows its separate preference-based path.
  *
  * The branches share cache management and policy post-processing helpers.
  * The palette object tracks the generated metadata so the caller can
@@ -1383,7 +1332,6 @@ sixel_palette_generate_internal(
      * The common owner keeps final snap separate from solver-local hooks. */
     context.use_reversible = preserve_extended_rgb &&
         !sixel_palette_snap_destination_active() ? 0 : request->use_reversible;
-    context.preserve_extended_rgb = preserve_extended_rgb;
     context.quantize_model = request->quantize_model;
     context.final_merge_mode = request->final_merge_mode;
     context.lut_policy = request->lut_policy;
@@ -1482,12 +1430,9 @@ sixel_palette_generate_internal(
             goto end;
         }
     } else if (context.quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
-        status = sixel_palette_apply_mediancut_engine(palette,
-                                                      request->data,
-                                                      request->length,
-                                                      request->pixelformat,
-                                                      work_allocator,
-                                                      request->prefer_float32);
+        status = sixel_palette_apply_typed_engine(palette,
+            SIXEL_QUANTIZE_MODEL_MEDIANCUT, request->data, request->length,
+            request->pixelformat, work_allocator);
         goto after_quantizer;
     }
 
@@ -1495,12 +1440,9 @@ sixel_palette_generate_internal(
         goto end;
     }
 
-    status = sixel_palette_apply_mediancut_engine(palette,
-                                                  request->data,
-                                                  request->length,
-                                                  request->pixelformat,
-                                                  work_allocator,
-                                                  request->prefer_float32);
+    status = sixel_palette_apply_typed_engine(palette,
+        SIXEL_QUANTIZE_MODEL_MEDIANCUT, request->data, request->length,
+        request->pixelformat, work_allocator);
     if (SIXEL_SUCCEEDED(status)) {
         effective_quantize_model = SIXEL_QUANTIZE_MODEL_MEDIANCUT;
     }
