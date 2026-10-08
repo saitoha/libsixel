@@ -809,6 +809,7 @@ int test_precision_0006(int argc, char **argv);
 int test_precision_0007(int argc, char **argv);
 int test_precision_0008(int argc, char **argv);
 int test_precision_0009(int argc, char **argv);
+int test_precision_0018(int argc, char **argv);
 int test_chunk_0001_chunk_factory(int argc, char **argv);
 int test_chunk_cancel_callback(int argc, char **argv);
 int test_timeline_0001_timeline_logger_factory(int argc, char **argv);
@@ -4424,6 +4425,7 @@ static test_entry_t const test_entries[] = {
     { "precision/0007_resize_preserve_float_source", test_precision_0007 },
     { "precision/0008_explicit_float_preserve", test_precision_0008 },
     { "precision/0009_dither_promotion", test_precision_0009 },
+    { "precision/0018_packed_palette", test_precision_0018 },
     { "chunk/0001_chunk_factory", test_chunk_0001_chunk_factory },
     { "chunk/0002_chunk_cancel_callback", test_chunk_cancel_callback },
     { "timeline/0001_timeline_logger_factory",

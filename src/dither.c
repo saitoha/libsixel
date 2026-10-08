@@ -4518,13 +4518,10 @@ sixel_dither_apply_palette_with_mode(
     source_has_float = SIXEL_PIXELFORMAT_IS_FLOAT32(pipeline_pixelformat);
     float_backend_available =
         sixel_dither_method_supports_float_pipeline(dither);
-    float_channels = sixel_helper_compute_depth(pipeline_pixelformat);
-    if (source_has_float != 0 && float_channels > 0) {
-        float_channels /= (int)sizeof(float);
-    }
-    palette_has_float = sixel_dither_palette_has_float_entries(
-        palette,
-        (float_channels > 0) ? float_channels : 3);
+    /* Palette lookup uses three color coordinates, including after packed
+     * source normalization. An alpha/padding byte is not a fourth palette
+     * coordinate and must not hide an authoritative RGB float palette. */
+    palette_has_float = sixel_dither_palette_has_float_entries(palette, 3);
     prefer_float_pipeline = 0;
     if (float_backend_available != 0
             && (sixel_dither_clamp_requires_float(dither)

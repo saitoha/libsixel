@@ -1376,6 +1376,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0007_RESIZE_PRESERVE_FLOAT_SOURCE \
     -DBUILD_TEST_0008_EXPLICIT_FLOAT_PRESERVE \
     -DBUILD_TEST_0009_DITHER_PROMOTION \
+    -DBUILD_TEST_0018_PACKED_PALETTE \
     -DBUILD_TEST_0013_BLACK_LOG1P_MODEL \
     -DBUILD_TEST_0001_CHUNK_FACTORY \
     -DBUILD_TEST_0002_CHUNK_CANCEL_CALLBACK \
@@ -4381,6 +4382,7 @@ test_runner_SOURCES = test_runner.c \
     processing/precision/0007_resize_preserve_float_source.c \
     processing/precision/0008_explicit_float_preserve.c \
     processing/precision/0009_dither_promotion.c \
+    processing/precision/0018_packed_palette.c \
     processing/chunk/0001_chunk_factory.c \
     processing/chunk/0002_chunk_cancel_callback.c \
     processing/timeline/0001_timeline_logger_factory.c \
