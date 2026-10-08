@@ -1199,10 +1199,11 @@ sixel_dither_unref(sixel_dither_t *dither); /* dither context object */
 
 /*
  * Initialize the palette from the buffer format specified by pixelformat.
- * RGBFLOAT32 and LINEARRGBFLOAT32 use three float components per pixel,
- * despite the byte-pointer signature. Default CPU initialization with inactive
- * snap retains that domain through lookup. A separate gamma RGB output copy
- * is rounded for SIXEL; query format changes do not reinterpret the palette.
+ * RGBFLOAT32, LINEARRGBFLOAT32, OKLABFLOAT32, CIELABFLOAT32 and DIN99DFLOAT32
+ * use three float components per pixel, despite the byte-pointer signature.
+ * Default CPU initialization with inactive snap retains that domain through
+ * lookup. A separate gamma RGB output copy is rounded for SIXEL; query format
+ * changes do not reinterpret the palette.
  * A failed native palette build requires successful reinitialization or an
  * explicit byte palette assignment before encoding again.
  */
@@ -1287,7 +1288,9 @@ sixel_dither_get_num_of_histgram_colors(
  * float palette. A write makes the byte view authoritative at the next apply
  * or encode; the pointer must not be retained across reinitialization.
  * For a native linear palette, recover linear values as byte / 255.
- * Byte assignment narrows precision but preserves that linear domain.
+ * Perceptual lightness uses byte / 255. Opponent axes use byte / 255 - 0.5,
+ * multiplied by 1 (Oklab), 3 (CIELAB) or 2 (DIN99d).
+ * Byte assignment narrows precision but preserves the initialized domain.
  */
 SIXELAPI @attr_func_deprecated@ unsigned char *
 sixel_dither_get_palette(

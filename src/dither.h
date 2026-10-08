@@ -296,7 +296,7 @@ struct sixel_dither {
     /* Keep extended working values and separate RGB101/HLS output views.
      * This algorithm contract is independent of the output primaries. */
     int use_rgb101_palette;
-    /* Standalone gamma/linear float initialization owns a native palette.
+    /* Standalone typed float initialization owns a native palette.
      * Zero is legacy, -1 requires reinitialization after a failed build,
      * and a positive count identifies the immutable compatibility shadow.
      * Comparing this bounded snapshot detects writes through get_palette()

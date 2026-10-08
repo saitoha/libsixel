@@ -2962,11 +2962,14 @@ sixel_dither_initialize(
     }
     count = (size_t)width * (size_t)height;
     /* Public initialization has no encoder-owned build/output attempt.
-     * Gamma and linear RGB own their source domain; other typed formats
-     * and policy combinations retain their existing initialization path. */
+     * Each supported three-component float format owns its source domain;
+     * other policy combinations retain their existing initialization path. */
     quantizer = dither->quantize_model;
     native = (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-        pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) &&
+        pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32 ||
+        pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32 ||
+        pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32) &&
         (quantizer == SIXEL_QUANTIZE_MODEL_AUTO ||
          quantizer == SIXEL_QUANTIZE_MODEL_MEDIANCUT) &&
         dither->gpu_policy == SIXEL_GPU_POLICY_OFF &&
@@ -3217,9 +3220,10 @@ sixel_dither_get_palette(
 }
 
 
-/* A byte assignment deliberately narrows working coordinates. Decode
- * linear compatibility entries as byte / 255, then regenerate float lookup
- * and gamma output views instead of treating them as gamma wire bytes. */
+/* A byte assignment deliberately narrows working coordinates. Decode the
+ * recorded format's compatibility representation (including opponent-axis
+ * offsets/scales), then regenerate float lookup and gamma output views.
+ * These working-coordinate bytes are not gamma wire colors. */
 static SIXELSTATUS
 sixel_dither_use_standalone_bytes(sixel_dither_t *dither)
 {

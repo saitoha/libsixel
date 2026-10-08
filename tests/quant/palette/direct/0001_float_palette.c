@@ -67,6 +67,27 @@ direct_write(char *bytes, int length, void *data)
     return length;
 }
 
+/* A complete parameter group must end here: a prefix such as 2 must not
+ * accept 20, and an additional parameter must not hide a malformed group. */
+static int
+direct_definition(char const *stream, char const *expected)
+{
+    char const *match;
+    char next;
+    size_t length;
+
+    length = strlen(expected);
+    match = strstr(stream, expected);
+    while (match != NULL) {
+        next = match[length];
+        if ((next < '0' || next > '9') && next != ';') {
+            return 1;
+        }
+        match = strstr(match + 1, expected);
+    }
+    return 0;
+}
+
 static SIXELSTATUS
 direct_init(sixel_dither_t *dither, void *pixels, int format)
 {
@@ -98,14 +119,14 @@ direct_wire(sixel_dither_t *dither, sixel_output_t *output,
     if (hls) {
         (void)snprintf(expected, sizeof(expected), ";1;0;%d;0", dark);
         return SIXEL_SUCCEEDED(status) &&
-            strstr(capture->bytes, expected) != NULL &&
-            strstr(capture->bytes, ";1;0;51;0") != NULL;
+            direct_definition(capture->bytes, expected) &&
+            direct_definition(capture->bytes, ";1;0;51;0");
     }
     (void)snprintf(expected, sizeof(expected), ";2;%d;%d;%d",
         dark, dark, dark);
     return SIXEL_SUCCEEDED(status) &&
-        strstr(capture->bytes, expected) != NULL &&
-        strstr(capture->bytes, ";2;51;51;51") != NULL;
+        direct_definition(capture->bytes, expected) &&
+        direct_definition(capture->bytes, ";2;51;51;51");
 }
 
 /* Independent sRGB transfer: .002 * 12.92 = .02584 -> 3%;
@@ -129,14 +150,14 @@ direct_linear_wire(sixel_dither_t *dither, sixel_output_t *output,
     if (hls) {
         (void)snprintf(expected, sizeof(expected), ";1;0;%d;0", dark);
         return SIXEL_SUCCEEDED(status) &&
-            strstr(capture->bytes, expected) != NULL &&
-            strstr(capture->bytes, ";1;0;54;0") != NULL;
+            direct_definition(capture->bytes, expected) &&
+            direct_definition(capture->bytes, ";1;0;54;0");
     }
     (void)snprintf(expected, sizeof(expected), ";2;%d;%d;%d",
         dark, dark, dark);
     return SIXEL_SUCCEEDED(status) &&
-        strstr(capture->bytes, expected) != NULL &&
-        strstr(capture->bytes, ";2;54;54;54") != NULL;
+        direct_definition(capture->bytes, expected) &&
+        direct_definition(capture->bytes, ";2;54;54;54");
 }
 
 static int
@@ -158,6 +179,369 @@ direct_lookup(sixel_dither_t *dither, float sample, float expected)
     sixel_allocator_free(dither->allocator, indices);
     return ok;
 }
+
+/* Perceptual samples share coordinates, not physical colors. Output literals
+ * are independently derived from the 60-digit inverse-matrix/scalar method
+ * in tools/generate_color_fixtures.py (frame-byte fixtures). RGB101 and HLS
+ * use the gamma result directly, without an intermediate RGB8 projection.
+ * Sources are exact stored floats; the byte witness starts at byte/255 with
+ * the documented opponent offset and scale. Minimum distance to a rounding
+ * boundary is 0.016 percentage points/degrees. A 0.002-unit output budget
+ * covers inverse-coefficient error, float stores and nonlinear propagation
+ * for these well-conditioned samples, and cannot change any expected code. */
+static int const direct_perceptual_formats[] = {
+    SIXEL_PIXELFORMAT_OKLABFLOAT32, SIXEL_PIXELFORMAT_CIELABFLOAT32,
+    SIXEL_PIXELFORMAT_DIN99DFLOAT32
+};
+static float const direct_perceptual_scale[] = {1.0f, 3.0f, 2.0f};
+static unsigned char const direct_perceptual_bytes[] = {
+    51, 115, 143, 166, 145, 119
+};
+
+static void
+direct_perceptual_decode(float *values, unsigned char const *bytes, int space)
+{
+    int i;
+
+    /* Independent compatibility equation; do not call the production
+     * pixelformat converter to construct its own expected values. */
+    for (i = 0; i < 6; ++i) {
+        values[i] = (float)((double)bytes[i] / 255.0);
+        if (i % 3 != 0) {
+            values[i] = (float)(((double)bytes[i] / 255.0 - .5) *
+                direct_perceptual_scale[space]);
+        }
+    }
+}
+
+static int
+direct_perceptual_entries(sixel_dither_t *dither, float const *expected)
+{
+    sixel_palette_float32_entries_view_t view;
+    unsigned int i;
+    unsigned int j;
+    unsigned int c;
+    unsigned int seen;
+    int match;
+
+    memset(&view, 0, sizeof(view));
+    if (!dither->use_rgb101_palette || SIXEL_FAILED(
+            dither->palette->vtbl->get_entries_float32(dither->palette,
+                &view)) || view.entries == NULL || view.entry_count != 2) {
+        return 0;
+    }
+    /* Scale/unscale and final float stores: 2e-6 absolute component units
+     * over [-3,3], well below any relevant compatibility byte spacing. */
+    seen = 0;
+    for (i = 0; i < 2; ++i) {
+        for (j = 0; j < 2; ++j) {
+            match = 1;
+            for (c = 0; c < 3; ++c) {
+                match = match && isfinite(view.entries[i * 3 + c]) &&
+                    fabs(view.entries[i * 3 + c] - expected[j * 3 + c])
+                        < 2e-6;
+            }
+            if (match) { seen |= 1U << j; }
+        }
+    }
+    return seen == 3;
+}
+
+static int
+direct_perceptual_wire(sixel_dither_t *dither, sixel_output_t *output,
+                      direct_capture_t *capture, int space, int kind)
+{
+    static char const *const expected[3][3][2] = {
+        {{";2;7;10;2", ";2;85;29;78"},
+         {";1;199;6;63", ";1;68;57;66"},
+         {";2;4;11;0", ";2;68;49;64"}},
+        {{";2;18;19;17", ";2;76;56;71"},
+         {";1;202;18;7", ";1;74;66;29"},
+         {";2;12;21;4", ";2;76;56;71"}},
+        {{";2;16;17;16", ";2;71;53;66"},
+         {";1;212;16;5", ";1;77;62;24"},
+         {";2;13;18;10", ";2;66;55;62"}}
+    };
+    float query[] = {.2f, -.02f, .03f, .65f, .2f, -.1f};
+    SIXELSTATUS status;
+
+    if (direct_definition(";2;7;10;20#0@", ";2;7;10;2") ||
+            direct_definition(";2;7;10;2;0#0@", ";2;7;10;2")) {
+        return 0;
+    }
+    if (kind == 2) {
+        direct_perceptual_decode(query, direct_perceptual_bytes, space);
+    }
+    memset(capture, 0, sizeof(*capture));
+    sixel_output_set_palette_type(output, kind == 1
+        ? SIXEL_PALETTETYPE_HLS : SIXEL_PALETTETYPE_RGB);
+    status = sixel_encode((unsigned char *)query, 2, 1, 0, dither, output);
+    return SIXEL_SUCCEEDED(status) &&
+        direct_definition(capture->bytes, expected[space][kind][0]) &&
+        direct_definition(capture->bytes, expected[space][kind][1]);
+}
+
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+static int
+direct_perceptual(int mode)
+{
+    float source[] = {.2f, -.02f, .03f, .65f, .2f, -.1f};
+    float extended[] = {-.1f, -1, 1, 1.2f, .0249f, -.0449f};
+    float close[] = {.4f, -.01f, .03f, .4f, -.009f, .03f};
+    float centers[] = {.5f, -.2f, .025f, .5f, .2f, .025f};
+    float query[] = {.4f, -.0096f, .03f};
+    float fs[] = {.5f, -.06f, .025f, .5f, -.06f, .025f,
+                  .5f, -.06f, .025f};
+    float gamma[] = {.0149f, .0149f, .0149f, .5149f, .5149f, .5149f};
+    float linear[] = {.002f, .002f, .002f, .25f, .25f, .25f};
+    float decoded[6];
+    unsigned char bytes[] = {4, 4, 4, 131, 131, 131};
+    unsigned char copy[6];
+    unsigned char *exposed;
+    sixel_palette_float32_entries_view_t view;
+    sixel_allocator_t *allocator;
+    sixel_dither_t *dither;
+    sixel_dither_t *other;
+    sixel_output_t *output;
+    sixel_index_t *indices;
+    direct_capture_t capture;
+    SIXELSTATUS status;
+    unsigned int i;
+    int space;
+    int format;
+    int operation;
+    int ok;
+
+    allocator = NULL;
+    dither = other = NULL;
+    output = NULL;
+    indices = NULL;
+    ok = 0;
+    space = mode < 70 ? (mode - 40) / 10 : (mode - 70) % 3;
+    operation = mode < 70 ? (mode - 40) % 10 : mode;
+    format = direct_perceptual_formats[space];
+    memset(&capture, 0, sizeof(capture));
+    memset(&view, 0, sizeof(view));
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, direct_malloc,
+            direct_calloc, direct_realloc, free)) ||
+            SIXEL_FAILED(sixel_dither_new(&dither, 2, allocator)) ||
+            SIXEL_FAILED(sixel_output_new(&output, direct_write, &capture,
+                allocator)) ||
+            SIXEL_FAILED(direct_init(dither, source, format))) {
+        goto end;
+    }
+    switch (operation) {
+    case 0:
+        extended[1] = -direct_perceptual_scale[space];
+        extended[2] = direct_perceptual_scale[space];
+        ok = SIXEL_SUCCEEDED(direct_init(dither, extended, format)) &&
+            direct_perceptual_entries(dither, extended);
+        break;
+    case 1:
+    case 2:
+        ok = direct_perceptual_wire(dither, output, &capture,
+            space, operation - 1);
+        break;
+    case 3:
+        if (SIXEL_FAILED(direct_init(dither, close, format))) { break; }
+        indices = sixel_dither_apply_palette(dither,
+            (unsigned char *)query, 1, 1);
+        /* Opponent midpoint -.0095: -.0096 must select -.01. Both
+         * candidates have the same compatibility byte in all three spaces.
+         * The 2e-6 coordinate budget cannot cross this 1e-4 margin. */
+        ok = indices != NULL && SIXEL_SUCCEEDED(
+            dither->palette->vtbl->get_entries_float32(dither->palette,
+                &view)) && view.entries != NULL &&
+            indices[0] < view.entry_count &&
+            isfinite(view.entries[indices[0] * 3 + 1]) &&
+            fabs(view.entries[indices[0] * 3 + 1] + .01) < 2e-6;
+        break;
+    case 4:
+        direct_fault_hits = 0;
+        direct_fail_after = 0;
+        exposed = sixel_dither_get_palette(dither);
+        direct_fail_after = -1;
+        ok = exposed != NULL && direct_fault_hits == 0 &&
+            direct_perceptual_entries(dither, source) &&
+            direct_perceptual_wire(dither, output, &capture, space, 0);
+        break;
+    case 5:
+        exposed = sixel_dither_get_palette(dither);
+        if (exposed == NULL) { break; }
+        memcpy(exposed, direct_perceptual_bytes, sizeof(copy));
+        direct_perceptual_decode(decoded, direct_perceptual_bytes, space);
+        ok = direct_perceptual_wire(dither, output, &capture, space, 2) &&
+            direct_perceptual_entries(dither, decoded);
+        break;
+    case 6:
+        exposed = sixel_dither_get_palette(dither);
+        if (exposed == NULL) { break; }
+        memcpy(copy, exposed, sizeof(copy));
+        direct_perceptual_decode(decoded, copy, space);
+        sixel_dither_set_palette(dither, copy);
+        ok = direct_perceptual_entries(dither, decoded);
+        break;
+    case 7:
+        if (SIXEL_FAILED(direct_init(dither, centers, format)) ||
+                SIXEL_FAILED(sixel_dither_set_clamp_policy(dither,
+                    SIXEL_DITHER_CLAMP_NONE, 1.01))) { break; }
+        sixel_dither_set_diffusion_type(dither, SIXEL_DIFFUSE_FS);
+        indices = sixel_dither_apply_palette(dither,
+            (unsigned char *)fs, 3, 1);
+        /* Opponent-axis FS: -.06 -> -.2; -.06+.14*7/16=.00125
+         * -> .2; -.06+(.00125-.2)*7/16=-.146953125 -> -.2.
+         * L/b residuals are zero. The smallest margin is .00125. */
+        if (indices == NULL || SIXEL_FAILED(
+                dither->palette->vtbl->get_entries_float32(dither->palette,
+                    &view)) || view.entries == NULL) { break; }
+        ok = 1;
+        for (i = 0; i < 3; ++i) {
+            ok = ok && indices[i] < view.entry_count &&
+                isfinite(view.entries[indices[i] * 3 + 1]) &&
+                fabs(view.entries[indices[i] * 3 + 1] -
+                    (i == 1 ? .2 : -.2)) < 2e-6;
+        }
+        break;
+    case 8:
+        exposed = sixel_dither_get_palette(dither);
+        if (exposed == NULL) { break; }
+        memcpy(exposed, direct_perceptual_bytes, sizeof(copy));
+        sixel_dither_set_pixelformat(dither,
+            direct_perceptual_formats[(space + 1) % 3]);
+        status = sixel_encode((unsigned char *)source, 2, 1, 0,
+            dither, output);
+        sixel_dither_set_pixelformat(dither, format);
+        ok = SIXEL_FAILED(status) && capture.length == 0 &&
+            direct_perceptual_wire(dither, output, &capture, space, 2);
+        break;
+    case 9:
+        source[1] = NAN;
+        status = direct_init(dither, source, format);
+        source[1] = -.02f;
+        ok = SIXEL_FAILED(status) && SIXEL_FAILED(sixel_encode(
+            (unsigned char *)source, 2, 1, 0, dither, output)) &&
+            capture.length == 0 &&
+            SIXEL_SUCCEEDED(direct_init(dither, source, format)) &&
+            direct_perceptual_wire(dither, output, &capture, space, 0);
+        break;
+    case 70:
+        ok = 1;
+        for (i = 0; i < 3 && ok; ++i) {
+            ok = SIXEL_SUCCEEDED(direct_init(dither, source,
+                    direct_perceptual_formats[i])) &&
+                direct_perceptual_wire(dither, output, &capture, (int)i, 0);
+        }
+        ok = ok && SIXEL_SUCCEEDED(direct_init(dither, gamma,
+            SIXEL_PIXELFORMAT_RGBFLOAT32)) &&
+            direct_wire(dither, output, &capture, 0, 1) &&
+            SIXEL_SUCCEEDED(direct_init(dither, linear,
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) &&
+            direct_linear_wire(dither, output, &capture, 0, 3) &&
+            SIXEL_SUCCEEDED(direct_init(dither, bytes,
+                SIXEL_PIXELFORMAT_RGB888)) &&
+            direct_wire(dither, output, &capture, 0, 2) &&
+            SIXEL_SUCCEEDED(direct_init(dither, source, format)) &&
+            direct_perceptual_wire(dither, output, &capture, space, 0);
+        break;
+    case 71:
+        ok = SIXEL_SUCCEEDED(sixel_dither_new(&other, 2, allocator)) &&
+            SIXEL_SUCCEEDED(direct_init(other, source,
+                direct_perceptual_formats[2])) &&
+            direct_perceptual_wire(dither, output, &capture, space, 0) &&
+            direct_perceptual_wire(other, output, &capture, 2, 1) &&
+            direct_perceptual_wire(dither, output, &capture, space, 1) &&
+            direct_perceptual_wire(other, output, &capture, 2, 0);
+        break;
+    case 72:
+        ok = 1;
+        for (i = 0; i < 128 && ok; ++i) {
+            direct_fault_hits = 0;
+            direct_fail_after = (int)i;
+            status = direct_init(dither, source, format);
+            direct_fail_after = -1;
+            if (direct_fault_hits == 0) { break; }
+            memset(&capture, 0, sizeof(capture));
+            ok = SIXEL_FAILED(status) && SIXEL_FAILED(sixel_encode(
+                (unsigned char *)source, 2, 1, 0, dither, output)) &&
+                capture.length == 0 &&
+                SIXEL_SUCCEEDED(direct_init(dither, source, format)) &&
+                direct_perceptual_wire(dither, output, &capture, space, 0);
+        }
+        ok = ok && i > 0 && i < 128;
+        break;
+    case 73:
+        direct_fault_hits = 0;
+        direct_fail_after = 0;
+        sixel_dither_set_palette(dither,
+            (unsigned char *)direct_perceptual_bytes);
+        direct_fail_after = -1;
+        ok = direct_fault_hits != 0 && SIXEL_FAILED(sixel_encode(
+            (unsigned char *)source, 2, 1, 0, dither, output)) &&
+            capture.length == 0;
+        sixel_dither_set_palette(dither,
+            (unsigned char *)direct_perceptual_bytes);
+        ok = ok && direct_perceptual_wire(dither, output, &capture, space, 2);
+        break;
+    case 74:
+        ok = 1;
+        for (i = 0; i < 16 && ok; ++i) {
+            if (SIXEL_FAILED(direct_init(dither, source, format))) {
+                ok = 0;
+                break;
+            }
+            exposed = sixel_dither_get_palette(dither);
+            if (exposed == NULL) { ok = 0; break; }
+            memcpy(exposed, direct_perceptual_bytes, sizeof(copy));
+            direct_fault_hits = 0;
+            direct_fail_after = (int)i;
+            status = sixel_dither_prepare_standalone_palette(dither);
+            direct_fail_after = -1;
+            if (direct_fault_hits == 0) { break; }
+            memset(&capture, 0, sizeof(capture));
+            ok = SIXEL_FAILED(status) && SIXEL_FAILED(sixel_encode(
+                (unsigned char *)source, 2, 1, 0, dither, output)) &&
+                capture.length == 0;
+            sixel_dither_set_palette(dither,
+                (unsigned char *)direct_perceptual_bytes);
+            ok = ok && direct_perceptual_wire(dither, output,
+                &capture, space, 2);
+        }
+        ok = ok && i > 0 && i < 16;
+        break;
+    case 75:
+        /* Finite DIN99d L=3000 makes expm1(100*L/325.22) overflow.
+         * Construction must not publish an unusable output cache. */
+        source[0] = 3000;
+        status = direct_init(dither, source, format);
+        source[0] = .2f;
+        ok = SIXEL_FAILED(status) && SIXEL_FAILED(sixel_encode(
+            (unsigned char *)source, 2, 1, 0, dither, output)) &&
+            capture.length == 0 &&
+            SIXEL_SUCCEEDED(direct_init(dither, source, format)) &&
+            direct_perceptual_wire(dither, output, &capture, space, 0);
+        break;
+    default:
+        break;
+    }
+end:
+    direct_fail_after = -1;
+    if (!ok) {
+        fprintf(stderr, "direct perceptual case %d failed: %s\n", mode,
+            sixel_helper_get_additional_message());
+    }
+    sixel_allocator_free(allocator, indices);
+    sixel_output_unref(output);
+    sixel_dither_unref(other);
+    sixel_dither_unref(dither);
+    sixel_allocator_unref(allocator);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic pop
+#endif
 
 /* The mutable legacy getter itself is the contract under test. */
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
@@ -206,6 +590,9 @@ test_palette_direct_float(int argc, char **argv)
         return EXIT_FAILURE;
     }
     mode = atoi(argv[1]);
+    if (mode >= 40 && mode <= 75) {
+        return direct_perceptual(mode);
+    }
     source = mode >= 22 ? linear : pixels;
     format = mode >= 22 ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
                         : SIXEL_PIXELFORMAT_RGBFLOAT32;
