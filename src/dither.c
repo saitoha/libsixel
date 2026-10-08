@@ -4747,7 +4747,11 @@ sixel_dither_apply_palette_with_mode(
         gpu_request.palette = entries_view.entries;
         gpu_request.palette_size = entries_view.entries_size;
         gpu_request.palette_depth = entries_view.depth;
-        gpu_request.ncolors = dither->ncolors;
+        /* The reserved omission key is not a paintable color. Selecting it
+         * as a nearest color would omit output without marking a keep, so
+         * retained RGB would advance to a color never painted. Use the same
+         * candidate count as CPU lookup, including for GPU Eytzinger. */
+        gpu_request.ncolors = sixel_dither_lookup_ncolors(dither);
         gpu_request.lut_policy = dither->lut_policy;
         gpu_request.method_for_diffuse = dither->method_for_diffuse;
         gpu_request.method_for_scan = method_for_scan;

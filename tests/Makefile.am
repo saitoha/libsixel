@@ -1341,6 +1341,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0048_POSITIONAL_8BIT_NO_DIFFUSE_GPU_6DELTA \
     -DBUILD_TEST_0052_POSITIONAL_8BIT_BLUENOISE_GPU_FORCE_KEEP_OFFSET \
     -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
+    -DBUILD_TEST_0002_RESERVED_KEY \
+    -DBUILD_TEST_0003_FADE_HISTORY \
     -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
     -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
@@ -4320,6 +4322,8 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/filter_transparent_mask_fence_test_common.c \
     processing/filter/filter_transparent_mask_fence_test_common.h \
     processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
+    processing/gpu-palette/0002_reserved_key.c \
+    processing/gpu-palette/0003_fade_history.c \
     processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
     processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
