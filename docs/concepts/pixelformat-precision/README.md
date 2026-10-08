@@ -72,6 +72,14 @@ Validate color conversion with independent expected coordinates in each directio
 
 Numerical range checks and color-gamut decisions are separate. Keeping extended coordinates does not mean accepting NaN, infinity, undefined nonlinear operations, or a value that cannot fit the next storage representation. Conversely, clamping finite coordinates into `[0,1]` is not a numerical-accuracy repair. See [Out-of-gamut and imaginary colors](../colorspace/README.md#out-of-gamut-and-imaginary-colors) for the color meaning of those intermediates.
 
+## Float conversion arithmetic
+
+`sixel_helper_convert_colorspace()` and internal float-buffer conversion share the same extended arithmetic. Choosing a palette solver, snap timing or output representation does not select a bounded float converter. Gamma sRGB, linear sRGB, Oklab, CIELAB and DIN99d retain finite signed and above-one coordinates; the public storage converter also accepts SMPTE-C through the common output/inverse transform. Byte formats retain their LUT/SIMD implementations and explicit storage limits.
+
+A nontrivial float conversion validates every result before any write, including before parallel workers start. NaN, infinity, an undefined transform domain, an invalid color-space identifier or float32 overflow returns `SIXEL_BAD_INPUT` without changing samples. The size argument counts bytes and must contain complete three-component float pixels. Equal source and destination identifiers retain the established no-op behavior, including bit preservation without numerical validation. This arithmetic contract does not guarantee that a later palette operation retains its float view.
+
+The public coordinate fixtures use independent Decimal-derived values. Signed sRGB and SMPTE-C triplets start from exactly representable binary32 inputs and allow `2e-7` absolute error for final storage and double math. Perceptual forward/inverse fixtures allow `5e-6` in their normalized coordinate units for stored-input rounding and inverse sensitivity over the specified fixture range. These budgets remain much smaller than the premature-clamp errors they target. Error-state and no-op preservation use exact byte comparisons; byte storage has independently fixed LUT outputs.
+
 ## Float frame coordinate changes
 
 Converting an existing float frame between gamma sRGB, linear sRGB, Oklab, CIELAB, and DIN99d preserves finite RGB values below zero and above one. These are intermediate coordinates, not a request to store a bounded device RGB value. The conversion validates the entire result before modifying the frame; a nonfinite input, a mathematical domain error, or a result that cannot fit finite float32 returns `SIXEL_BAD_INPUT` and preserves the pixel buffer and its format/color-space tags. The validation pass repeats the arithmetic to avoid allocating another full image buffer.
@@ -479,3 +487,30 @@ The [tests/processing/frame/0054_frame_float_geometry_state.c](../../../tests/pr
 | FP-204 | Float-to-byte zero width owned atomic. | [tests/processing/frame/0236_frame_byte_zero_width_owned_atomic.t](../../../tests/processing/frame/0236_frame_byte_zero_width_owned_atomic.t) |
 | FP-205 | Float-to-byte dimension overflow borrowed atomic. | [tests/processing/frame/0237_frame_byte_dimension_overflow_borrowed_atomic.t](../../../tests/processing/frame/0237_frame_byte_dimension_overflow_borrowed_atomic.t) |
 | FP-206 | Float-to-byte dimension overflow owned atomic. | [tests/processing/frame/0238_frame_byte_dimension_overflow_owned_atomic.t](../../../tests/processing/frame/0238_frame_byte_dimension_overflow_owned_atomic.t) |
+
+### Public float conversion
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| FC-01 | Linear-to-gamma retains negative and above-one RGB. | [tests/processing/colorspace/0014_public_linear_gamma.t](../../../tests/processing/colorspace/0014_public_linear_gamma.t) |
+| FC-02 | Gamma-to-linear retains negative and above-one RGB. | [tests/processing/colorspace/0015_public_gamma_linear.t](../../../tests/processing/colorspace/0015_public_gamma_linear.t) |
+| FC-03 | Linear-to-Oklab retains extended opponent coordinates. | [tests/processing/colorspace/0016_public_oklab_forward.t](../../../tests/processing/colorspace/0016_public_oklab_forward.t) |
+| FC-04 | Oklab-to-linear retains extended RGB coordinates. | [tests/processing/colorspace/0017_public_oklab_inverse.t](../../../tests/processing/colorspace/0017_public_oklab_inverse.t) |
+| FC-05 | Linear-to-CIELAB retains extended opponent coordinates. | [tests/processing/colorspace/0018_public_cielab_forward.t](../../../tests/processing/colorspace/0018_public_cielab_forward.t) |
+| FC-06 | CIELAB-to-linear retains extended RGB coordinates. | [tests/processing/colorspace/0019_public_cielab_inverse.t](../../../tests/processing/colorspace/0019_public_cielab_inverse.t) |
+| FC-07 | Linear-to-DIN99d retains extended opponent coordinates. | [tests/processing/colorspace/0020_public_din99d_forward.t](../../../tests/processing/colorspace/0020_public_din99d_forward.t) |
+| FC-08 | DIN99d-to-linear retains extended RGB coordinates. | [tests/processing/colorspace/0021_public_din99d_inverse.t](../../../tests/processing/colorspace/0021_public_din99d_inverse.t) |
+| FC-09 | Linear-to-SMPTE-C retains extended destination coordinates. | [tests/processing/colorspace/0022_public_smptec_forward.t](../../../tests/processing/colorspace/0022_public_smptec_forward.t) |
+| FC-10 | SMPTE-C-to-linear retains extended working coordinates. | [tests/processing/colorspace/0023_public_smptec_inverse.t](../../../tests/processing/colorspace/0023_public_smptec_inverse.t) |
+| FC-11 | A late NaN rejects conversion without modifying any sample. | [tests/processing/colorspace/0024_public_nan_atomic.t](../../../tests/processing/colorspace/0024_public_nan_atomic.t) |
+| FC-12 | A late infinity rejects conversion without modifying any sample. | [tests/processing/colorspace/0025_public_infinity_atomic.t](../../../tests/processing/colorspace/0025_public_infinity_atomic.t) |
+| FC-13 | Float32 result overflow rejects conversion without modifying samples. | [tests/processing/colorspace/0026_public_overflow_atomic.t](../../../tests/processing/colorspace/0026_public_overflow_atomic.t) |
+| FC-14 | An undefined DIN99d inverse rejects conversion without modifying samples. | [tests/processing/colorspace/0027_public_domain_atomic.t](../../../tests/processing/colorspace/0027_public_domain_atomic.t) |
+| FC-15 | An invalid color-space identifier leaves the float buffer unchanged. | [tests/processing/colorspace/0028_public_invalid_space.t](../../../tests/processing/colorspace/0028_public_invalid_space.t) |
+| FC-16 | Incomplete triplet storage leaves the float buffer unchanged. | [tests/processing/colorspace/0029_public_invalid_size.t](../../../tests/processing/colorspace/0029_public_invalid_size.t) |
+| FC-17 | Parallel conversion retains independently expected extended coordinates. | [tests/processing/colorspace/0030_public_parallel_values.t](../../../tests/processing/colorspace/0030_public_parallel_values.t) |
+| FC-18 | Byte conversion retains fixed LUT values. | [tests/processing/colorspace/0031_public_byte_lut.t](../../../tests/processing/colorspace/0031_public_byte_lut.t) |
+| FC-19 | Equal-space conversion preserves all bits, including a NaN payload. | [tests/processing/colorspace/0032_public_identity_bits.t](../../../tests/processing/colorspace/0032_public_identity_bits.t) |
+| FC-20 | Float colorspace partial queue failure never converts a completed chunk twice. | [tests/processing/colorspace/0033_public_partial_queue_failure.t](../../../tests/processing/colorspace/0033_public_partial_queue_failure.t) |
+| FC-21 | Pool creation failure converts the untouched buffer serially. | [tests/processing/colorspace/0034_public_pool_creation_failure.t](../../../tests/processing/colorspace/0034_public_pool_creation_failure.t) |
+| FC-22 | A worker error is reported without retrying transformed pixels. | [tests/processing/colorspace/0035_public_worker_error.t](../../../tests/processing/colorspace/0035_public_worker_error.t) |

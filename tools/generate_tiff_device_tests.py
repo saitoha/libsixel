@@ -158,7 +158,7 @@ def values(linear_profile, cmyk_profile, record):
                 xyz = lab_xyz([D.from_float(v)*(100 if c == 0 else 128) for c,v in enumerate(row)])
                 if bits == 16:
                     xyz = [v*w/p for v,w,p in zip(xyz,map(D,['.95047','1','1.08883']),map(D,['.9642','1','.8249']))]
-                    fb = [gamma(max(D(0),min(D(1),v))) for v in apply(d65,xyz)]
+                    fb = [gamma(v) for v in apply(d65,xyz)]
                 else:
                     fb = apply(matrix,xyz)
             limits.append(bounds)

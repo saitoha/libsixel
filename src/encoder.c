@@ -3259,8 +3259,7 @@ end:
  */
 static SIXELSTATUS
 sixel_encoder_convert_frame_colorspace(sixel_frame_t *frame,
-                                        int target_colorspace,
-                                        int preserve_extended_rgb)
+                                        int target_colorspace)
 {
     SIXELSTATUS status;
     int source_colorspace;
@@ -3322,17 +3321,11 @@ sixel_encoder_convert_frame_colorspace(sixel_frame_t *frame,
         ? (unsigned char *)view.pixels_float32
         : view.pixels;
 
-    if (preserve_extended_rgb && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        status = sixel_color_convert_rgbf32((float *)pixels, pixel_total,
-                                            source_colorspace,
-                                            target_colorspace);
-    } else {
-        status = sixel_helper_convert_colorspace(pixels,
-                                                 pixel_bytes,
-                                                 pixelformat,
-                                                 source_colorspace,
-                                                 target_colorspace);
-    }
+    /* Both precisions use the buffer driver. Float arithmetic preserves
+     * extended coordinates, with the common parallel threshold and budget;
+     * byte storage retains its separate LUT/SIMD implementation. */
+    status = sixel_helper_convert_colorspace(pixels, pixel_bytes,
+        pixelformat, source_colorspace, target_colorspace);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -3350,8 +3343,7 @@ sixel_encoder_convert_frame_colorspace(sixel_frame_t *frame,
 static SIXELSTATUS
 sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
                                          int source_colorspace,
-                                         int target_colorspace,
-                                         int preserve_extended_rgb)
+                                         int target_colorspace)
 {
     SIXELSTATUS status;
     size_t palette_count;
@@ -3361,7 +3353,6 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
     size_t index;
     int channel;
     int float_pixelformat;
-    int source_pixelformat;
     sixel_palette_entries_view_t entries_view;
     sixel_palette_float32_entries_view_t float32_view;
 
@@ -3409,20 +3400,10 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
                     != palette_count) {
             return SIXEL_BAD_INPUT;
         }
-        source_pixelformat =
-            sixel_encoder_pixelformat_for_colorspace(source_colorspace, 1);
-        if (preserve_extended_rgb) {
-            /* P3 palette coordinates may lie outside the sRGB cube. */
-            status = sixel_color_convert_rgbf32(float32_view.entries,
-                palette_count, source_colorspace, target_colorspace);
-        } else {
-            status = sixel_helper_convert_colorspace(
-                (unsigned char *)float32_view.entries,
-                palette_float_bytes,
-                source_pixelformat,
-                source_colorspace,
-                target_colorspace);
-        }
+        /* Float coordinates have one arithmetic contract, independently
+         * of output preparation, snap timing or palette solver selection. */
+        status = sixel_color_convert_rgbf32(float32_view.entries,
+            palette_count, source_colorspace, target_colorspace);
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -5904,7 +5885,7 @@ sixel_encoder_import_srgb_palette(sixel_encoder_t *encoder,
         return status;
     }
     return sixel_encoder_convert_palette_colorspace(dither->palette,
-        SIXEL_COLORSPACE_GAMMA, encoder->working_colorspace, 1);
+        SIXEL_COLORSPACE_GAMMA, encoder->working_colorspace);
 }
 
 /* Create a palette from a structured file or an image mapfile. */
@@ -7311,13 +7292,13 @@ sixel_encoder_copy_fixed_palette(sixel_encoder_t *encoder,
                                                            &request);
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_encoder_convert_palette_colorspace(copy->palette,
-                source_colorspace, encoder->working_colorspace, native);
+                source_colorspace, encoder->working_colorspace);
         }
     } else if (source_colorspace == SIXEL_COLORSPACE_GAMMA) {
         status = sixel_encoder_import_srgb_palette(encoder, copy, native);
     } else {
         status = sixel_encoder_convert_palette_colorspace(copy->palette,
-            source_colorspace, encoder->working_colorspace, native);
+            source_colorspace, encoder->working_colorspace);
     }
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(copy);
@@ -7800,8 +7781,7 @@ sixel_encoder_prepare_palette(
                 != clustering_colorspace) {
             status = sixel_encoder_convert_frame_colorspace(
                 palette_frame,
-                clustering_colorspace,
-                (*dither)->use_rgb101_palette);
+                clustering_colorspace);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
@@ -8208,8 +8188,7 @@ sixel_encoder_prepare_palette(
         status = sixel_encoder_convert_palette_colorspace(
             (*dither)->palette,
             clustering_colorspace,
-            working_colorspace,
-            (*dither)->use_rgb101_palette);
+            working_colorspace);
         if (SIXEL_FAILED(status)) {
             goto end;
         }

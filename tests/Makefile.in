@@ -981,6 +981,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/cms/profile_format_scope_common.h \
 	processing/colorspace/0012_extended_failure_atomic.c \
 	processing/colorspace/0013_black_log1p_model.c \
+	processing/colorspace/public_float_common.c \
+	processing/colorspace/public_float_fault.c \
 	loader/libpng/keycolor/0001_frame_samples.c \
 	loader/libpng/keycolor/0002_paint_mask.c \
 	processing/cms/0008_invalid_rgb_definition.c \
@@ -4019,6 +4021,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-lab_linear_fault_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0012_extended_failure_atomic.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0013_black_log1p_model.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-public_float_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-public_float_fault.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/keycolor/test_runner-0001_frame_samples.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/keycolor/test_runner-0002_paint_mask.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0008_invalid_rgb_definition.$(OBJEXT) \
@@ -8029,6 +8033,8 @@ am__depfiles_remade =  \
 	processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0013_black_log1p_model.Po \
+	processing/colorspace/$(DEPDIR)/test_runner-public_float_common.Po \
+	processing/colorspace/$(DEPDIR)/test_runner-public_float_fault.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po \
@@ -9928,6 +9934,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PUBLIC_FLOAT_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PUBLIC_FLOAT_FAULT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_DELTA_SIGNED_THRESHOLD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_DELTA_P3_OR_RECOVERY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_DELTA_SPATIAL_DISPATCH \
@@ -13855,6 +13863,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/profile_format_scope_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0012_extended_failure_atomic.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0013_black_log1p_model.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/public_float_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/public_float_fault.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/keycolor/0001_frame_samples.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/keycolor/0002_paint_mask.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0008_invalid_rgb_definition.c \
@@ -18858,6 +18868,12 @@ processing/colorspace/test_runner-0012_extended_failure_atomic.$(OBJEXT):  \
 	processing/colorspace/$(am__dirstamp) \
 	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
 processing/colorspace/test_runner-0013_black_log1p_model.$(OBJEXT):  \
+	processing/colorspace/$(am__dirstamp) \
+	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/test_runner-public_float_common.$(OBJEXT):  \
+	processing/colorspace/$(am__dirstamp) \
+	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/test_runner-public_float_fault.$(OBJEXT):  \
 	processing/colorspace/$(am__dirstamp) \
 	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
 loader/libpng/keycolor/$(am__dirstamp):
@@ -27808,6 +27824,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0013_black_log1p_model.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-public_float_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-public_float_fault.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po@am__quote@ # am--include-marker
@@ -40946,6 +40964,34 @@ processing/colorspace/test_runner-0013_black_log1p_model.obj: processing/colorsp
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0013_black_log1p_model.c' object='processing/colorspace/test_runner-0013_black_log1p_model.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0013_black_log1p_model.obj `if test -f 'processing/colorspace/0013_black_log1p_model.c'; then $(CYGPATH_W) 'processing/colorspace/0013_black_log1p_model.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0013_black_log1p_model.c'; fi`
+
+processing/colorspace/test_runner-public_float_common.o: processing/colorspace/public_float_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-public_float_common.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-public_float_common.Tpo -c -o processing/colorspace/test_runner-public_float_common.o `test -f 'processing/colorspace/public_float_common.c' || echo '$(srcdir)/'`processing/colorspace/public_float_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-public_float_common.Tpo processing/colorspace/$(DEPDIR)/test_runner-public_float_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/public_float_common.c' object='processing/colorspace/test_runner-public_float_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-public_float_common.o `test -f 'processing/colorspace/public_float_common.c' || echo '$(srcdir)/'`processing/colorspace/public_float_common.c
+
+processing/colorspace/test_runner-public_float_common.obj: processing/colorspace/public_float_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-public_float_common.obj -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-public_float_common.Tpo -c -o processing/colorspace/test_runner-public_float_common.obj `if test -f 'processing/colorspace/public_float_common.c'; then $(CYGPATH_W) 'processing/colorspace/public_float_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/public_float_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-public_float_common.Tpo processing/colorspace/$(DEPDIR)/test_runner-public_float_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/public_float_common.c' object='processing/colorspace/test_runner-public_float_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-public_float_common.obj `if test -f 'processing/colorspace/public_float_common.c'; then $(CYGPATH_W) 'processing/colorspace/public_float_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/public_float_common.c'; fi`
+
+processing/colorspace/test_runner-public_float_fault.o: processing/colorspace/public_float_fault.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-public_float_fault.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-public_float_fault.Tpo -c -o processing/colorspace/test_runner-public_float_fault.o `test -f 'processing/colorspace/public_float_fault.c' || echo '$(srcdir)/'`processing/colorspace/public_float_fault.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-public_float_fault.Tpo processing/colorspace/$(DEPDIR)/test_runner-public_float_fault.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/public_float_fault.c' object='processing/colorspace/test_runner-public_float_fault.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-public_float_fault.o `test -f 'processing/colorspace/public_float_fault.c' || echo '$(srcdir)/'`processing/colorspace/public_float_fault.c
+
+processing/colorspace/test_runner-public_float_fault.obj: processing/colorspace/public_float_fault.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-public_float_fault.obj -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-public_float_fault.Tpo -c -o processing/colorspace/test_runner-public_float_fault.obj `if test -f 'processing/colorspace/public_float_fault.c'; then $(CYGPATH_W) 'processing/colorspace/public_float_fault.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/public_float_fault.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-public_float_fault.Tpo processing/colorspace/$(DEPDIR)/test_runner-public_float_fault.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/public_float_fault.c' object='processing/colorspace/test_runner-public_float_fault.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-public_float_fault.obj `if test -f 'processing/colorspace/public_float_fault.c'; then $(CYGPATH_W) 'processing/colorspace/public_float_fault.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/public_float_fault.c'; fi`
 
 loader/libpng/keycolor/test_runner-0001_frame_samples.o: loader/libpng/keycolor/0001_frame_samples.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/keycolor/test_runner-0001_frame_samples.o -MD -MP -MF loader/libpng/keycolor/$(DEPDIR)/test_runner-0001_frame_samples.Tpo -c -o loader/libpng/keycolor/test_runner-0001_frame_samples.o `test -f 'loader/libpng/keycolor/0001_frame_samples.c' || echo '$(srcdir)/'`loader/libpng/keycolor/0001_frame_samples.c

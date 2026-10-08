@@ -25,7 +25,7 @@
     "sha256": "28aab53b41186afce76caf1966eb5174e4fdcb20256308c68fec73b32dbbfd2d",
     "status": "Historical incomplete ICC, builtin default legacy acceptance only",
     "reference": "Direct RGB101 SIXEL; Decimal mft2 and Adobe complement; no CMM or encoder",
-    "clipping": "Existing bounded legacy transform; not the affine profile contract"
+    "clipping": "Extended float frame; only the RGB101 reference copy is bounded"
   },
   "missing_intent": "Complete profile with A2B1 renamed to A2B2; A2B0 unchanged",
   "files": {
@@ -40,6 +40,6 @@
     "jpeg-cmyk-missing-intent-adobe.jpg": "dee8364f2b7531ac94bbca9c5d208cd9cfe4cc74dbb73733ff266e4290afdc8c",
     "jpeg-cmyk-adobe-reference.png": "7badf6fb91223401a40afd362aa35b414ccffce4766a70243472940b61f76202",
     "../colormgmt/reference/custom/cmyk_mft2_valid_builtin.six": "7382ef823816c2ee4e0e75ec2944114442073850a357f7888069508d45d9c5be",
-    "jpeg-cmyk.h": "daa0b429ed007dc399517b78eddb71c66046db1b17106a708a6b6f702fc5bd4c"
+    "jpeg-cmyk.h": "1ca276d6607c83cdf7160fdb7553232655dd99a07752d92a4962bb02e8c88817"
   }
 }

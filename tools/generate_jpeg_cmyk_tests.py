@@ -159,13 +159,15 @@ def legacy_values(image, samples, inv):
                 weight *= unit[channel] if bit else 1 - unit[channel]
             for channel in range(3):
                 xyz[channel] += weight * vertex[channel] / 32768
-        rows.append([min(D(1), max(D(0), v)) for v in apply(inv, xyz)])
+        rows.append(apply(inv, xyz))
     return profile, rows
 
 
 def exact_sixel(rows):
     """Encode independently rounded RGB101 values with no palette reducer."""
-    pixels = [tuple(int(srgb(v) * 100 + D('.5')) for v in row) for row in rows]
+    # Only the serialized device copy is bounded; the float oracle is not.
+    pixels = [tuple(int(min(D(1), max(D(0), srgb(v))) * 100 + D('.5'))
+                    for v in row) for row in rows]
     palette = list(dict.fromkeys(pixels))
     assert len(pixels) == 1024 and len(palette) <= 256
     output = '\x1bP0;0;0q"1;1;32;32'
@@ -261,7 +263,7 @@ def values(profile, record):
         legacy_profile=dict(sha256=hashlib.sha256(legacy_profile).hexdigest(),
             status='Historical incomplete ICC, builtin default legacy acceptance only',
             reference='Direct RGB101 SIXEL; Decimal mft2 and Adobe complement; no CMM or encoder',
-            clipping='Existing bounded legacy transform; not the affine profile contract'),
+            clipping='Extended float frame; only the RGB101 reference copy is bounded'),
         missing_intent='Complete profile with A2B1 renamed to A2B2; A2B0 unchanged',
         files={name: hashlib.sha256(data).hexdigest() for name, data in outputs.items()})
     outputs['jpeg-cmyk.json'] = (json.dumps(manifest, indent=2) + '\n').encode()

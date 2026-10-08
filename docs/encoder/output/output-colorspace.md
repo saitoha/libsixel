@@ -364,7 +364,7 @@ Float source storage, float diffusion and native float palette ownership are sep
 | Low-level high-color diffusion | The explicit legacy 15bpp diffusion routines use a bounded byte plane; high-level no-diffusion output has a separate float representative path. | [High-color precision](high-color/README.md#destination-samples-and-precision) |
 | Loader conversion | Encoder palette preservation cannot recover precision or gamut already discarded during loading. Backend and source-format coverage must be checked separately. | [Loader precision](../../loader/precision-policy.md) |
 
-The bounded public color converter and compatibility helpers therefore remain live. Their presence does not by itself identify an intermediate clamp on a selected native job; follow the caller's admission and representation before changing or removing one. Conversely, an unsupported combination is not evidence that all float paths preserve gamut.
+The public color converter uses [common extended arithmetic for float input](../../concepts/pixelformat-precision/README.md#float-conversion-arithmetic), independently of native palette admission. Bounded byte conversion remains an explicit storage operation. Compatibility palette reconstruction and non-admitted policy branches still require their own ownership audit; removing bounded float arithmetic alone does not establish end-to-end palette preservation.
 
 ## Test coverage
 

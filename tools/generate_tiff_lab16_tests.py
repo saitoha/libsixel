@@ -86,9 +86,6 @@ def build_values(linear_profile):
                  ['-.9692660', '1.8760108', '.0415560'],
                  ['.0556434', '-.2040259', '1.0572252']]]
 
-    def clip(value):
-        return max(D(0), min(D(1), value))
-
     def units(lab):
         return [f32(v / (100 if c == 0 else 128)) for c, v in enumerate(lab)]
 
@@ -100,7 +97,7 @@ def build_values(linear_profile):
         xyz65 = [v * white / pcs for v, white, pcs in zip(xyz(lab),
                  [D('.95047'), D(1), D('1.08883')],
                  [D('.9642'), D(1), D('.8249')])]
-        return bounds([[gamma(clip(v)) for v in apply(fallback, xyz65)]])
+        return bounds([[gamma(v) for v in apply(fallback, xyz65)]])
 
     limits = [[], [], [], []]
     for lab in physical:

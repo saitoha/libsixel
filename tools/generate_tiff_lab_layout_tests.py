@@ -134,7 +134,7 @@ def build_values(linear_profile):
                 xyz = [v * white / pcs for v, white, pcs in zip(xyz,
                     map(D, ['.95047', '1', '1.08883']),
                     map(D, ['.9642', '1', '.8249']))]
-                rgb = [gamma(max(D(0), min(D(1), v)))
+                rgb = [gamma(v)
                        for v in apply(d65_matrix, xyz)]
             else:
                 rgb = apply(matrices[0], xyz)

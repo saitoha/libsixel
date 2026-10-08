@@ -43,9 +43,10 @@ sixel_color_encode_srgb(double value);
 
 /*
  * Convert one extended triplet in the existing working-space conventions.
- * Unlike the public storage converter, this internal path neither encodes
- * bytes nor restricts the RGB gamut. It accepts gamma, linear, Oklab,
- * CIELAB and DIN99d. Nonfinite/domain errors return 0 without changing out.
+ * This is the common arithmetic for public and internal float conversion;
+ * it neither encodes bytes nor restricts the RGB gamut. It accepts gamma,
+ * linear, Oklab, CIELAB and DIN99d. Nonfinite/domain errors return 0 without
+ * changing out.
  * Exact aliasing is supported. The caller owns eventual float32 rounding.
  */
 SIXEL_INTERNAL_API int

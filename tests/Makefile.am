@@ -181,6 +181,8 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_PUBLIC_FLOAT_COMMON \
+    -DBUILD_PUBLIC_FLOAT_FAULT \
     -DBUILD_TEST_0015_DELTA_SIGNED_THRESHOLD \
     -DBUILD_TEST_0016_DELTA_P3_OR_RECOVERY \
     -DBUILD_TEST_0017_DELTA_SPATIAL_DISPATCH \
@@ -4077,6 +4079,8 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/profile_format_scope_common.h \
     processing/colorspace/0012_extended_failure_atomic.c \
     processing/colorspace/0013_black_log1p_model.c \
+    processing/colorspace/public_float_common.c \
+    processing/colorspace/public_float_fault.c \
     loader/libpng/keycolor/0001_frame_samples.c \
     loader/libpng/keycolor/0002_paint_mask.c \
     processing/cms/0008_invalid_rgb_definition.c \

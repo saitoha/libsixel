@@ -1,7 +1,7 @@
 #!/bin/sh
 # Policy: docs/cli/runtime-policy.md
-# Early snap selects the legacy converter owning this work threshold.
-# The native extended-float converter currently runs serially.
+# Frame conversion uses the common buffer driver owning this threshold.
+# Early snap also exercises a non-native palette-output caller.
 # Verify the colorspace threshold environment reaches its consumer.
 
 set -eux
