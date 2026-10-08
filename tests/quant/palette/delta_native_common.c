@@ -678,8 +678,9 @@ test_delta_positional_query(int method, int band)
             }
         } else {
             expected = pass == 0 || pass == 3;
+            /* Pass 3 is an approximate early keep; pass 0 is post-lookup. */
             if (result[0] != (expected ? 2 : observer.candidate) ||
-                    record[0] != expected) {
+                    record[0] != (pass == 3 ? 3 : expected)) {
                 goto end;
             }
         }

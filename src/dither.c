@@ -1592,7 +1592,8 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
     if (record_result != 0 &&
         dither->pipeline_accumulation_result_mask != NULL &&
         dither->pipeline_accumulation_result_mask_size > index) {
-        dither->pipeline_accumulation_result_mask[index] = 1u;
+        dither->pipeline_accumulation_result_mask[index] =
+            (unsigned char)(memcmp(rgb, accumulation_pixel, 3U) ? 3U : 1U);
     }
     if (accumulation_rgb_out != NULL) {
         *accumulation_rgb_out = accumulation_pixel;
@@ -1899,7 +1900,9 @@ sixel_dither_6delta_keep_float(
     }
     if (record && dither->pipeline_accumulation_result_mask != NULL &&
             index < dither->pipeline_accumulation_result_mask_size) {
-        dither->pipeline_accumulation_result_mask[index] = 1U;
+        dither->pipeline_accumulation_result_mask[index] =
+            (unsigned char)(within && threshold > 0.0 && keep_distance > 0.0
+                ? 3U : 1U);
     }
     return 1;
 }
@@ -2029,6 +2032,7 @@ sixel_dither_prepare_delta_mask(
     size_t total_pixels)
 {
     SIXELSTATUS status;
+    size_t index;
 
     status = SIXEL_FALSE;
     if (dither == NULL) {
@@ -2053,9 +2057,11 @@ sixel_dither_prepare_delta_mask(
         return status;
     }
     if (transparent_mask != NULL && transparent_mask_size >= total_pixels) {
-        memcpy(dither->pipeline_accumulation_result_mask,
-               transparent_mask,
-               total_pixels);
+        /* Source masks are boolean, not delta keep-reason flags. */
+        for (index = 0; index < total_pixels; ++index) {
+            dither->pipeline_accumulation_result_mask[index] =
+                transparent_mask[index] != 0U ? 1U : 0U;
+        }
     } else {
         memset(dither->pipeline_accumulation_result_mask, 0, total_pixels);
     }

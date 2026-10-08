@@ -279,7 +279,9 @@ struct sixel_dither {
     unsigned int pipeline_6delta_hls_count;
     unsigned int pipeline_6delta_threshold; /* per-channel keep threshold */
     int pipeline_6delta_error_mode; /* kept-pixel error handling */
-    unsigned char *pipeline_accumulation_result_mask; /* encoded keeps */
+    /* Nonzero omits the pixel. Bit 1 additionally records a nonexact
+     * threshold keep. Distinct pixel writes need no shared worker counter. */
+    unsigned char *pipeline_accumulation_result_mask;
     size_t pipeline_accumulation_result_mask_size; /* result mask length */
     size_t pipeline_accumulation_result_mask_capacity; /* mask bytes */
     unsigned char *pipeline_accumulation_result_rgb; /* encoded RGB plane */

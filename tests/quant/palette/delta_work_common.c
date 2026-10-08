@@ -173,9 +173,10 @@ test_delta_work_extended(int mode)
         mask = sixel_dither_get_pipeline_accumulation_result_mask(dither,
             &size);
         /* Gamma distance .008921569 lies between 2/255 and 3/255.
-         * A premature gamut clamp would incorrectly keep at threshold 2. */
+         * A premature gamut clamp would incorrectly keep at threshold 2.
+         * The accepted threshold-3 match records a nonexact early keep. */
         if (keep != (mode == 0 && threshold == 3) || mask == NULL ||
-                size != 1 || mask[0] != keep) {
+                size != 1 || mask[0] != (keep ? 3 : 0)) {
             goto end;
         }
     }

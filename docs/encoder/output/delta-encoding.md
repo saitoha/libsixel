@@ -127,7 +127,7 @@ Omitting pixels can reduce drawing work, but palette definitions, framing, horiz
 
 ## C API and partial updates
 
-The public declarations are in [sixel.h.in](../../../include/sixel.h.in). The feature macros `SIXEL_HAVE_ENCODER_6DELTA_PLANE` and `SIXEL_HAVE_ENCODER_ENCODE_FRAME` allow consumers to test header capabilities.
+The public declarations are in [sixel.h.in](../../../include/sixel.h.in). The feature macros `SIXEL_HAVE_ENCODER_6DELTA_PLANE`, `SIXEL_HAVE_ENCODER_6DELTA_REFINEMENT`, and `SIXEL_HAVE_ENCODER_ENCODE_FRAME` allow consumers to test header capabilities.
 
 | API | Purpose and lifetime |
 | --- | --- |
@@ -138,6 +138,18 @@ The public declarations are in [sixel.h.in](../../../include/sixel.h.in). The fe
 | `sixel_encoder_set_accumulation_buffer(encoder, pixels, width, height, pixelformat)` | Copy a supplied previous image into RGB888 history, mark all positions valid, and declare its dimensions as the plane size. Passing `NULL` clears the history. |
 | `sixel_encoder_invalidate_6delta_plane(encoder)` | Discard history while preserving the declared plane size and origin. |
 | `sixel_encoder_encode_frame(encoder, frame, output)` | Encode an initialized frame and advance the retained state through the high-level encoder. |
+| `sixel_encoder_set_6delta_threshold_limit(encoder, limit)` | Apply a persistent runtime ceiling without changing the configured threshold or history. |
+| `sixel_encoder_needs_6delta_refinement(encoder)` | Query the latest successful frame for zero painting with approximate early keeps; scheduling and source lifetime belong to the caller. |
+
+### Caller-driven idle refinement
+
+A positive threshold is the maximum early-keep tolerance. Consumers compiled with `SIXEL_HAVE_ENCODER_6DELTA_REFINEMENT` can apply a temporary ceiling with `sixel_encoder_set_6delta_threshold_limit(encoder, limit)`. The effective threshold is `min(configured_threshold, limit)`. The limit accepts 0 through 255, defaults to 255, and persists until changed. It neither changes the configured maximum nor invalidates history. Restore 255 before ordinary encoding; setting zero keeps delta enabled and still permits the post-lookup keep comparison.
+
+After a successful frame, `sixel_encoder_needs_6delta_refinement(encoder)` reports whether no opaque pixel was painted and at least one pixel was kept by a nonexact, positive-threshold early match. Exact matches, source transparency, and post-lookup keeps alone do not request refinement. “No painted pixels” is not zero protocol bytes: SIXEL envelopes and palette definitions can still be emitted. The query describes only the latest frame of that encoder, is false after invalidation, and does not retain a source image or schedule work.
+
+An interactive caller can arm one short timer on this result, without extending its deadline on repeated empty frames. On expiry or the next normal update, set the ceiling to zero and re-evaluate the current source over the affected surface, retaining delta history. Re-evaluating the whole visible surface is a simple way to cover earlier omitted rectangles when damage moves. Use current source pixels, not a saved old frame that could overwrite later changes. Respect output backpressure and cancel obsolete work after geometry/history invalidation. A refinement pass must not arm itself again; a zero-threshold post-lookup keep may already be preferable to repainting. The library does not create threads, timers, or unsolicited writes, and `img2sixel` does not automatically replay idle frames.
+
+This simple policy only repairs a zero-paint frame containing approximate keeps. A frame that still paints some pixels and then receives no further input is outside that trigger. Continuous threshold decay, regional aging, and guaranteed convergence beyond the selected palette are separate policies.
 
 ### Surface coordinates
 
@@ -601,6 +613,12 @@ The IDs below map to existing assertions. A representative fixture establishes i
 | D6-271 | The PNG stdout frontend rejects delta before input/staging access and preserves its descriptor and history. | [tests/codec/png_snapshot/0023_delta_stdout_guard.t](../../../tests/codec/png_snapshot/0023_delta_stdout_guard.t) |
 | D6-272 | Forced GPU direct and Eytzinger lookup with `none` or `bluenoise` cannot select the appended omission key as a color; a black source chooses the real dark entry and leaves the keep mask clear. | [tests/processing/gpu-palette/0002_reserved_key.t](../../../tests/processing/gpu-palette/0002_reserved_key.t) |
 | D6-273 | A forced GPU blue-noise white/dark-ramp/black/repeated-black sequence at threshold 8 satisfies independent per-pixel color bounds, and the retained RGB/validity exactly matches the decoded, composed canvas after every frame. The ramp requires lossy quantization, so a uniform-image shortcut cannot satisfy this check. | [tests/processing/gpu-palette/0003_fade_history.t](../../../tests/processing/gpu-palette/0003_fade_history.t) |
+| D6-274 | CPU byte early keeps request refinement; a zero ceiling converges to black without changing the maximum or another encoder. | [tests/quant/palette/delta_native/0234_delta_refine_byte.t](../../../tests/quant/palette/delta_native/0234_delta_refine_byte.t) |
+| D6-275 | CPU float early keeps support the same retained-history refinement contract. | [tests/quant/palette/delta_native/0235_delta_refine_float.t](../../../tests/quant/palette/delta_native/0235_delta_refine_float.t) |
+| D6-276 | Forced GPU blue-noise early keeps support the same refinement contract when Metal is available. | [tests/quant/palette/delta_native/0236_delta_refine_gpu.t](../../../tests/quant/palette/delta_native/0236_delta_refine_gpu.t) |
+| D6-277 | An exactly matching frame does not request refinement. | [tests/quant/palette/delta_native/0237_delta_refine_exact.t](../../../tests/quant/palette/delta_native/0237_delta_refine_exact.t) |
+| D6-278 | A frame that paints any opaque pixel does not request zero-output refinement. | [tests/quant/palette/delta_native/0238_delta_refine_partial.t](../../../tests/quant/palette/delta_native/0238_delta_refine_partial.t) |
+| D6-279 | Nonzero source transparency masks do not impersonate approximate delta keeps. | [tests/quant/palette/delta_native/0239_delta_refine_source_mask.t](../../../tests/quant/palette/delta_native/0239_delta_refine_source_mask.t) |
 
 ### Quality regression tests
 

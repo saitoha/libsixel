@@ -2092,6 +2092,27 @@ SIXELAPI SIXELSTATUS
 sixel_encoder_invalidate_6delta_plane(
     sixel_encoder_t /* in */ *encoder);
 
+#define SIXEL_HAVE_ENCODER_6DELTA_REFINEMENT 1
+
+/* Limit the effective delta threshold without changing its configured maximum
+ * or the retained plane. 0 requests exact-threshold refinement; 255 removes
+ * the runtime limit (the default). Values above 255 are rejected. The limit
+ * persists until changed and is private to this encoder instance. */
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_6delta_threshold_limit(
+    sixel_encoder_t *encoder,
+    unsigned int threshold);
+
+/* After a successful frame, return nonzero only when no opaque pixel was
+ * painted and at least one nonexact threshold keep was recorded. The caller
+ * may re-encode the latest source with limit 0, retaining normal delta
+ * history. This function neither schedules work nor retains source pixels.
+ * Re-evaluating at zero clears the request even if post-lookup keeps remain.
+ * A later frame replaces this result; callers own pending rectangle tracking.
+ * NULL and invalidated encoders return zero. */
+SIXELAPI int
+sixel_encoder_needs_6delta_refinement(sixel_encoder_t const *encoder);
+
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(

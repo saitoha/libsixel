@@ -2777,7 +2777,9 @@ sixel_encoder_bind_transparent_mask(
             view.height,
             omission_index,
             encoder->sixdelta_enabled,
-            encoder->sixdelta_threshold,
+            encoder->sixdelta_threshold < encoder->sixdelta_threshold_limit
+                ? encoder->sixdelta_threshold
+                : encoder->sixdelta_threshold_limit,
             encoder->sixdelta_error_mode);
         return SIXEL_OK;
     }
@@ -2824,7 +2826,8 @@ sixel_encoder_bind_transparent_mask(
         view.height,
         omission_index,
         encoder->sixdelta_enabled,
-        encoder->sixdelta_threshold,
+        encoder->sixdelta_threshold < encoder->sixdelta_threshold_limit
+            ? encoder->sixdelta_threshold : encoder->sixdelta_threshold_limit,
         encoder->sixdelta_error_mode);
     status = SIXEL_OK;
     return status;
@@ -2914,7 +2917,10 @@ sixel_encoder_update_accumulation_from_frame(
     int plane_matches;
     int keep_previous;
     int encoded_rgb_ready;
+    int painted;
+    int approximate;
 
+    painted = approximate = 0;
     status = SIXEL_FALSE;
     current_rgb = NULL;
     encoded_mask = NULL;
@@ -3094,8 +3100,13 @@ sixel_encoder_update_accumulation_from_frame(
                                                        &view,
                                                        index);
             if (keep_previous != 0) {
+                if (encoded_mask != NULL && encoded_mask_size > index &&
+                        (encoded_mask[index] & 2U) != 0U) {
+                    approximate = 1;
+                }
                 continue;
             }
+            painted = 1;
             update_rgb = encoded_rgb + index * 3u;
             memcpy(encoder->accumulation_pixels + plane_index * 3u,
                    update_rgb,
@@ -3108,6 +3119,8 @@ sixel_encoder_update_accumulation_from_frame(
         encoder->output_color_definition;
     encoder->accumulation_colorspace = encoder->output_colorspace;
     encoder->accumulation_valid = 1;
+    /* Protocol envelopes/palette definitions are not painted pixels. */
+    encoder->sixdelta_refinement_needed = !painted && approximate;
     status = SIXEL_OK;
 
 end:
@@ -9110,6 +9123,7 @@ sixel_encoder_encode_frame_internal(
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    encoder->sixdelta_refinement_needed = 0;
     /* A PNG destination must not prepare a delta palette on a fresh
      * snapshot canvas, even if private state bypassed option validation. */
     status = sixel_encoder_validate_delta_png(encoder->sixdelta_enabled,
@@ -9830,6 +9844,8 @@ sixel_encoder_new(
     (*ppencoder)->accumulation_colorspace = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->sixdelta_enabled      = 0;
     (*ppencoder)->sixdelta_threshold    = 0u;
+    (*ppencoder)->sixdelta_threshold_limit = 255U;
+    (*ppencoder)->sixdelta_refinement_needed = 0;
     (*ppencoder)->sixdelta_threshold_override = 0;
     (*ppencoder)->sixdelta_error_mode   = SIXEL_6DELTA_ERROR_DIFFUSE;
     (*ppencoder)->sixdelta_error_mode_override = 0;
@@ -10296,6 +10312,7 @@ sixel_encoder_invalidate_6delta_plane(
         encoder->output_color_definition;
     encoder->accumulation_colorspace = encoder->output_colorspace;
     encoder->accumulation_valid = 0;
+    encoder->sixdelta_refinement_needed = 0;
     if (encoder->accumulation_valid_mask != NULL &&
             encoder->accumulation_valid_mask_size > 0u) {
         memset(encoder->accumulation_valid_mask,
@@ -10304,6 +10321,24 @@ sixel_encoder_invalidate_6delta_plane(
     }
 
     return SIXEL_OK;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_6delta_threshold_limit(sixel_encoder_t *encoder,
+                                        unsigned int threshold)
+{
+    if (encoder == NULL || threshold > 255U) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    encoder->sixdelta_threshold_limit = threshold;
+    return SIXEL_OK;
+}
+
+SIXELAPI int
+sixel_encoder_needs_6delta_refinement(sixel_encoder_t const *encoder)
+{
+    return encoder != NULL && encoder->sixdelta_enabled &&
+        encoder->accumulation_valid && encoder->sixdelta_refinement_needed;
 }
 
 
@@ -15241,6 +15276,7 @@ sixel_encoder_encode_frame(
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    encoder->sixdelta_refinement_needed = 0;
     /* A PNG destination must not prepare a delta palette on a fresh
      * snapshot canvas, even if private state bypassed option validation. */
     status = sixel_encoder_validate_delta_png(encoder->sixdelta_enabled,

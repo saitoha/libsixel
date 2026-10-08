@@ -390,6 +390,13 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0231_DELTA_MACRO_FLOAT_RECOVERY \
     -DBUILD_TEST_0232_DELTA_MACRO_P3_RECOVERY \
     -DBUILD_TEST_0233_DELTA_MACRO_COMBINED_SELECTION \
+    -DBUILD_DELTA_REFINEMENT_COMMON \
+    -DBUILD_TEST_0234_DELTA_REFINE_BYTE \
+    -DBUILD_TEST_0235_DELTA_REFINE_FLOAT \
+    -DBUILD_TEST_0236_DELTA_REFINE_GPU \
+    -DBUILD_TEST_0237_DELTA_REFINE_EXACT \
+    -DBUILD_TEST_0238_DELTA_REFINE_PARTIAL \
+    -DBUILD_TEST_0239_DELTA_REFINE_SOURCE_MASK \
     -DBUILD_DELTA_MACRO_COMMON \
     -DBUILD_DELTA_OUTPUT_COMMON \
     -DBUILD_DELTA_WORK_COMMON \
@@ -3519,6 +3526,13 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0232_delta_macro_p3_recovery.c \
     quant/palette/delta_native/0233_delta_macro_combined_selection.c \
     quant/palette/delta_macro_common.c \
+    quant/palette/delta_refinement_common.c \
+    quant/palette/delta_native/0234_delta_refine_byte.c \
+    quant/palette/delta_native/0235_delta_refine_float.c \
+    quant/palette/delta_native/0236_delta_refine_gpu.c \
+    quant/palette/delta_native/0237_delta_refine_exact.c \
+    quant/palette/delta_native/0238_delta_refine_partial.c \
+    quant/palette/delta_native/0239_delta_refine_source_mask.c \
     quant/palette/delta_output_common.c \
     quant/palette/delta_work_common.c \
     quant/palette/delta_byte_common.c \

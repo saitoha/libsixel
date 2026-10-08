@@ -125,7 +125,8 @@ test_positional_0048_gpu_6delta(int argc, char **argv)
     }
 
     ok &= pos_gpu_expect_byte("kept index", dest[0], POS_GPU_KEYCOLOR);
-    ok &= pos_gpu_expect_byte("kept mask", result_mask[0], 1);
+    /* The nonexact early keep carries its refinement reason bit. */
+    ok &= pos_gpu_expect_byte("kept mask", result_mask[0], 3);
     ok &= pos_gpu_expect_byte("painted index", dest[1], 1);
     ok &= pos_gpu_expect_byte("painted mask", result_mask[1], 0);
     ok &= pos_gpu_expect_byte("transparent index", dest[2], POS_GPU_KEYCOLOR);

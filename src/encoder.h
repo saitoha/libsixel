@@ -342,6 +342,9 @@ struct sixel_encoder {
     int accumulation_colorspace;
     int sixdelta_enabled;
     unsigned int sixdelta_threshold;
+    /* Runtime ceiling does not mutate the configured maximum or history. */
+    unsigned int sixdelta_threshold_limit;
+    int sixdelta_refinement_needed;
     int sixdelta_threshold_override;
     int sixdelta_error_mode;
     int sixdelta_error_mode_override;
