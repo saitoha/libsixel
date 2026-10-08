@@ -2269,6 +2269,23 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/0045_snap_output_grid.c \
 	quant/palette/0048_snap_partial_once.c \
 	quant/palette/direct/0001_float_palette.c \
+	quant/palette/snap_hooks/snap_hook_test_common.c \
+	quant/palette/snap_hooks/snap_hook_test_common.h \
+	quant/palette/snap_hooks/0001_hook_disabled.c \
+	quant/palette/snap_hooks/0002_policy_disabled.c \
+	quant/palette/snap_hooks/0003_stage_excluded.c \
+	quant/palette/snap_hooks/0004_rate_zero.c \
+	quant/palette/snap_hooks/0005_early_nearest.c \
+	quant/palette/snap_hooks/0006_early_reversible.c \
+	quant/palette/snap_hooks/0007_final_nearest.c \
+	quant/palette/snap_hooks/0008_final_reversible.c \
+	quant/palette/snap_hooks/0009_large_source.c \
+	quant/palette/snap_hooks/0010_double_blend.c \
+	quant/palette/snap_hooks/0011_final_rollback.c \
+	quant/palette/snap_hooks/0012_byte_grid.c \
+	quant/palette/snap_hooks/0013_stage_ladder.c \
+	quant/palette/snap_hooks/0014_kmeans_once.c \
+	quant/palette/snap_hooks/0015_kmeans_all.c \
 	quant/palette/retention/retention_test_common.c \
 	quant/palette/retention/retention_test_common.h \
 	quant/palette/retention/0016_kcenter_boundary.c \
@@ -5292,6 +5309,22 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0045_snap_output_grid.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0048_snap_partial_once.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/direct/test_runner-0001_float_palette.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-snap_hook_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0001_hook_disabled.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0002_policy_disabled.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0003_stage_excluded.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0004_rate_zero.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0005_early_nearest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0006_early_reversible.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0007_final_nearest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0008_final_reversible.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0009_large_source.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0010_double_blend.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0011_final_rollback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0012_byte_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0013_stage_ladder.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0014_kmeans_once.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_hooks/test_runner-0015_kmeans_all.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-retention_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0016_kcenter_boundary.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/retention/test_runner-0014_extended_read.$(OBJEXT) \
@@ -9303,6 +9336,22 @@ am__depfiles_remade =  \
 	quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po \
 	quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po \
 	quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0001_hook_disabled.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0002_policy_disabled.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0003_stage_excluded.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0004_rate_zero.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0005_early_nearest.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0006_early_reversible.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0007_final_nearest.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0008_final_reversible.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0009_large_source.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0010_double_blend.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0011_final_rollback.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0012_byte_grid.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0013_stage_ladder.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0014_kmeans_once.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0015_kmeans_all.Po \
+	quant/palette/snap_hooks/$(DEPDIR)/test_runner-snap_hook_test_common.Po \
 	quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Po \
 	quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po \
 	writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po \
@@ -11261,6 +11310,22 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_CLI_COLOR_JOB \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_STDIN_INTERRUPT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FLOAT_PALETTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_SNAP_HOOK_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_HOOK_DISABLED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_POLICY_DISABLED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_STAGE_EXCLUDED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_RATE_ZERO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_EARLY_NEAREST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_EARLY_REVERSIBLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_FINAL_NEAREST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_FINAL_REVERSIBLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_LARGE_SOURCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_DOUBLE_BLEND \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_FINAL_ROLLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_BYTE_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_STAGE_LADDER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_KMEANS_ONCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_KMEANS_ALL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RETENTION_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_KCENTER_BOUNDARY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_EXTENDED_READ \
@@ -15228,6 +15293,23 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0045_snap_output_grid.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0048_snap_partial_once.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/direct/0001_float_palette.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/snap_hook_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/snap_hook_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0001_hook_disabled.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0002_policy_disabled.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0003_stage_excluded.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0004_rate_zero.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0005_early_nearest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0006_early_reversible.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0007_final_nearest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0008_final_reversible.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0009_large_source.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0010_double_blend.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0011_final_rollback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0012_byte_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0013_stage_ladder.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0014_kmeans_once.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_hooks/0015_kmeans_all.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/retention_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/retention_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/retention/0016_kcenter_boundary.c \
@@ -22980,6 +23062,60 @@ quant/palette/direct/$(DEPDIR)/$(am__dirstamp):
 quant/palette/direct/test_runner-0001_float_palette.$(OBJEXT):  \
 	quant/palette/direct/$(am__dirstamp) \
 	quant/palette/direct/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/snap_hooks
+	@: >>quant/palette/snap_hooks/$(am__dirstamp)
+quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/snap_hooks/$(DEPDIR)
+	@: >>quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-snap_hook_test_common.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-0001_hook_disabled.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-0002_policy_disabled.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-0003_stage_excluded.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-0004_rate_zero.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-0005_early_nearest.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-0006_early_reversible.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-0007_final_nearest.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-0008_final_reversible.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-0009_large_source.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-0010_double_blend.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-0011_final_rollback.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-0012_byte_grid.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-0013_stage_ladder.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-0014_kmeans_once.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+quant/palette/snap_hooks/test_runner-0015_kmeans_all.$(OBJEXT):  \
+	quant/palette/snap_hooks/$(am__dirstamp) \
+	quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
 quant/palette/retention/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette/retention
 	@: >>quant/palette/retention/$(am__dirstamp)
@@ -26184,6 +26320,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/rgb101_diffusion/*.$(OBJEXT)
 	-rm -f quant/palette/sampling_float/*.$(OBJEXT)
 	-rm -f quant/palette/snap_float/*.$(OBJEXT)
+	-rm -f quant/palette/snap_hooks/*.$(OBJEXT)
 	-rm -f quant/palette/solvers_float/*.$(OBJEXT)
 	-rm -f quant/palette/usage/*.$(OBJEXT)
 	-rm -f writer/png/*.$(OBJEXT)
@@ -29204,6 +29341,22 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0001_hook_disabled.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0002_policy_disabled.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0003_stage_excluded.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0004_rate_zero.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0005_early_nearest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0006_early_reversible.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0007_final_nearest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0008_final_reversible.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0009_large_source.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0010_double_blend.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0011_final_rollback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0012_byte_grid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0013_stage_ladder.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0014_kmeans_once.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0015_kmeans_all.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-snap_hook_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/solvers_float/$(DEPDIR)/test_runner-0001_solver_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0006_srgb_indexed.Po@am__quote@ # am--include-marker
@@ -58669,6 +58822,230 @@ quant/palette/direct/test_runner-0001_float_palette.obj: quant/palette/direct/00
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/direct/test_runner-0001_float_palette.obj `if test -f 'quant/palette/direct/0001_float_palette.c'; then $(CYGPATH_W) 'quant/palette/direct/0001_float_palette.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/direct/0001_float_palette.c'; fi`
 
+quant/palette/snap_hooks/test_runner-snap_hook_test_common.o: quant/palette/snap_hooks/snap_hook_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-snap_hook_test_common.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-snap_hook_test_common.Tpo -c -o quant/palette/snap_hooks/test_runner-snap_hook_test_common.o `test -f 'quant/palette/snap_hooks/snap_hook_test_common.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/snap_hook_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-snap_hook_test_common.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-snap_hook_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/snap_hook_test_common.c' object='quant/palette/snap_hooks/test_runner-snap_hook_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-snap_hook_test_common.o `test -f 'quant/palette/snap_hooks/snap_hook_test_common.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/snap_hook_test_common.c
+
+quant/palette/snap_hooks/test_runner-snap_hook_test_common.obj: quant/palette/snap_hooks/snap_hook_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-snap_hook_test_common.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-snap_hook_test_common.Tpo -c -o quant/palette/snap_hooks/test_runner-snap_hook_test_common.obj `if test -f 'quant/palette/snap_hooks/snap_hook_test_common.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/snap_hook_test_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/snap_hook_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-snap_hook_test_common.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-snap_hook_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/snap_hook_test_common.c' object='quant/palette/snap_hooks/test_runner-snap_hook_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-snap_hook_test_common.obj `if test -f 'quant/palette/snap_hooks/snap_hook_test_common.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/snap_hook_test_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/snap_hook_test_common.c'; fi`
+
+quant/palette/snap_hooks/test_runner-0001_hook_disabled.o: quant/palette/snap_hooks/0001_hook_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0001_hook_disabled.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0001_hook_disabled.Tpo -c -o quant/palette/snap_hooks/test_runner-0001_hook_disabled.o `test -f 'quant/palette/snap_hooks/0001_hook_disabled.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0001_hook_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0001_hook_disabled.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0001_hook_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0001_hook_disabled.c' object='quant/palette/snap_hooks/test_runner-0001_hook_disabled.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0001_hook_disabled.o `test -f 'quant/palette/snap_hooks/0001_hook_disabled.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0001_hook_disabled.c
+
+quant/palette/snap_hooks/test_runner-0001_hook_disabled.obj: quant/palette/snap_hooks/0001_hook_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0001_hook_disabled.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0001_hook_disabled.Tpo -c -o quant/palette/snap_hooks/test_runner-0001_hook_disabled.obj `if test -f 'quant/palette/snap_hooks/0001_hook_disabled.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0001_hook_disabled.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0001_hook_disabled.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0001_hook_disabled.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0001_hook_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0001_hook_disabled.c' object='quant/palette/snap_hooks/test_runner-0001_hook_disabled.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0001_hook_disabled.obj `if test -f 'quant/palette/snap_hooks/0001_hook_disabled.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0001_hook_disabled.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0001_hook_disabled.c'; fi`
+
+quant/palette/snap_hooks/test_runner-0002_policy_disabled.o: quant/palette/snap_hooks/0002_policy_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0002_policy_disabled.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0002_policy_disabled.Tpo -c -o quant/palette/snap_hooks/test_runner-0002_policy_disabled.o `test -f 'quant/palette/snap_hooks/0002_policy_disabled.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0002_policy_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0002_policy_disabled.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0002_policy_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0002_policy_disabled.c' object='quant/palette/snap_hooks/test_runner-0002_policy_disabled.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0002_policy_disabled.o `test -f 'quant/palette/snap_hooks/0002_policy_disabled.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0002_policy_disabled.c
+
+quant/palette/snap_hooks/test_runner-0002_policy_disabled.obj: quant/palette/snap_hooks/0002_policy_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0002_policy_disabled.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0002_policy_disabled.Tpo -c -o quant/palette/snap_hooks/test_runner-0002_policy_disabled.obj `if test -f 'quant/palette/snap_hooks/0002_policy_disabled.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0002_policy_disabled.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0002_policy_disabled.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0002_policy_disabled.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0002_policy_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0002_policy_disabled.c' object='quant/palette/snap_hooks/test_runner-0002_policy_disabled.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0002_policy_disabled.obj `if test -f 'quant/palette/snap_hooks/0002_policy_disabled.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0002_policy_disabled.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0002_policy_disabled.c'; fi`
+
+quant/palette/snap_hooks/test_runner-0003_stage_excluded.o: quant/palette/snap_hooks/0003_stage_excluded.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0003_stage_excluded.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0003_stage_excluded.Tpo -c -o quant/palette/snap_hooks/test_runner-0003_stage_excluded.o `test -f 'quant/palette/snap_hooks/0003_stage_excluded.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0003_stage_excluded.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0003_stage_excluded.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0003_stage_excluded.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0003_stage_excluded.c' object='quant/palette/snap_hooks/test_runner-0003_stage_excluded.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0003_stage_excluded.o `test -f 'quant/palette/snap_hooks/0003_stage_excluded.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0003_stage_excluded.c
+
+quant/palette/snap_hooks/test_runner-0003_stage_excluded.obj: quant/palette/snap_hooks/0003_stage_excluded.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0003_stage_excluded.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0003_stage_excluded.Tpo -c -o quant/palette/snap_hooks/test_runner-0003_stage_excluded.obj `if test -f 'quant/palette/snap_hooks/0003_stage_excluded.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0003_stage_excluded.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0003_stage_excluded.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0003_stage_excluded.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0003_stage_excluded.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0003_stage_excluded.c' object='quant/palette/snap_hooks/test_runner-0003_stage_excluded.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0003_stage_excluded.obj `if test -f 'quant/palette/snap_hooks/0003_stage_excluded.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0003_stage_excluded.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0003_stage_excluded.c'; fi`
+
+quant/palette/snap_hooks/test_runner-0004_rate_zero.o: quant/palette/snap_hooks/0004_rate_zero.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0004_rate_zero.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0004_rate_zero.Tpo -c -o quant/palette/snap_hooks/test_runner-0004_rate_zero.o `test -f 'quant/palette/snap_hooks/0004_rate_zero.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0004_rate_zero.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0004_rate_zero.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0004_rate_zero.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0004_rate_zero.c' object='quant/palette/snap_hooks/test_runner-0004_rate_zero.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0004_rate_zero.o `test -f 'quant/palette/snap_hooks/0004_rate_zero.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0004_rate_zero.c
+
+quant/palette/snap_hooks/test_runner-0004_rate_zero.obj: quant/palette/snap_hooks/0004_rate_zero.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0004_rate_zero.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0004_rate_zero.Tpo -c -o quant/palette/snap_hooks/test_runner-0004_rate_zero.obj `if test -f 'quant/palette/snap_hooks/0004_rate_zero.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0004_rate_zero.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0004_rate_zero.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0004_rate_zero.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0004_rate_zero.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0004_rate_zero.c' object='quant/palette/snap_hooks/test_runner-0004_rate_zero.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0004_rate_zero.obj `if test -f 'quant/palette/snap_hooks/0004_rate_zero.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0004_rate_zero.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0004_rate_zero.c'; fi`
+
+quant/palette/snap_hooks/test_runner-0005_early_nearest.o: quant/palette/snap_hooks/0005_early_nearest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0005_early_nearest.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0005_early_nearest.Tpo -c -o quant/palette/snap_hooks/test_runner-0005_early_nearest.o `test -f 'quant/palette/snap_hooks/0005_early_nearest.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0005_early_nearest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0005_early_nearest.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0005_early_nearest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0005_early_nearest.c' object='quant/palette/snap_hooks/test_runner-0005_early_nearest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0005_early_nearest.o `test -f 'quant/palette/snap_hooks/0005_early_nearest.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0005_early_nearest.c
+
+quant/palette/snap_hooks/test_runner-0005_early_nearest.obj: quant/palette/snap_hooks/0005_early_nearest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0005_early_nearest.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0005_early_nearest.Tpo -c -o quant/palette/snap_hooks/test_runner-0005_early_nearest.obj `if test -f 'quant/palette/snap_hooks/0005_early_nearest.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0005_early_nearest.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0005_early_nearest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0005_early_nearest.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0005_early_nearest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0005_early_nearest.c' object='quant/palette/snap_hooks/test_runner-0005_early_nearest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0005_early_nearest.obj `if test -f 'quant/palette/snap_hooks/0005_early_nearest.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0005_early_nearest.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0005_early_nearest.c'; fi`
+
+quant/palette/snap_hooks/test_runner-0006_early_reversible.o: quant/palette/snap_hooks/0006_early_reversible.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0006_early_reversible.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0006_early_reversible.Tpo -c -o quant/palette/snap_hooks/test_runner-0006_early_reversible.o `test -f 'quant/palette/snap_hooks/0006_early_reversible.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0006_early_reversible.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0006_early_reversible.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0006_early_reversible.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0006_early_reversible.c' object='quant/palette/snap_hooks/test_runner-0006_early_reversible.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0006_early_reversible.o `test -f 'quant/palette/snap_hooks/0006_early_reversible.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0006_early_reversible.c
+
+quant/palette/snap_hooks/test_runner-0006_early_reversible.obj: quant/palette/snap_hooks/0006_early_reversible.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0006_early_reversible.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0006_early_reversible.Tpo -c -o quant/palette/snap_hooks/test_runner-0006_early_reversible.obj `if test -f 'quant/palette/snap_hooks/0006_early_reversible.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0006_early_reversible.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0006_early_reversible.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0006_early_reversible.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0006_early_reversible.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0006_early_reversible.c' object='quant/palette/snap_hooks/test_runner-0006_early_reversible.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0006_early_reversible.obj `if test -f 'quant/palette/snap_hooks/0006_early_reversible.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0006_early_reversible.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0006_early_reversible.c'; fi`
+
+quant/palette/snap_hooks/test_runner-0007_final_nearest.o: quant/palette/snap_hooks/0007_final_nearest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0007_final_nearest.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0007_final_nearest.Tpo -c -o quant/palette/snap_hooks/test_runner-0007_final_nearest.o `test -f 'quant/palette/snap_hooks/0007_final_nearest.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0007_final_nearest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0007_final_nearest.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0007_final_nearest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0007_final_nearest.c' object='quant/palette/snap_hooks/test_runner-0007_final_nearest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0007_final_nearest.o `test -f 'quant/palette/snap_hooks/0007_final_nearest.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0007_final_nearest.c
+
+quant/palette/snap_hooks/test_runner-0007_final_nearest.obj: quant/palette/snap_hooks/0007_final_nearest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0007_final_nearest.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0007_final_nearest.Tpo -c -o quant/palette/snap_hooks/test_runner-0007_final_nearest.obj `if test -f 'quant/palette/snap_hooks/0007_final_nearest.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0007_final_nearest.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0007_final_nearest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0007_final_nearest.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0007_final_nearest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0007_final_nearest.c' object='quant/palette/snap_hooks/test_runner-0007_final_nearest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0007_final_nearest.obj `if test -f 'quant/palette/snap_hooks/0007_final_nearest.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0007_final_nearest.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0007_final_nearest.c'; fi`
+
+quant/palette/snap_hooks/test_runner-0008_final_reversible.o: quant/palette/snap_hooks/0008_final_reversible.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0008_final_reversible.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0008_final_reversible.Tpo -c -o quant/palette/snap_hooks/test_runner-0008_final_reversible.o `test -f 'quant/palette/snap_hooks/0008_final_reversible.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0008_final_reversible.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0008_final_reversible.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0008_final_reversible.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0008_final_reversible.c' object='quant/palette/snap_hooks/test_runner-0008_final_reversible.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0008_final_reversible.o `test -f 'quant/palette/snap_hooks/0008_final_reversible.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0008_final_reversible.c
+
+quant/palette/snap_hooks/test_runner-0008_final_reversible.obj: quant/palette/snap_hooks/0008_final_reversible.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0008_final_reversible.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0008_final_reversible.Tpo -c -o quant/palette/snap_hooks/test_runner-0008_final_reversible.obj `if test -f 'quant/palette/snap_hooks/0008_final_reversible.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0008_final_reversible.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0008_final_reversible.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0008_final_reversible.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0008_final_reversible.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0008_final_reversible.c' object='quant/palette/snap_hooks/test_runner-0008_final_reversible.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0008_final_reversible.obj `if test -f 'quant/palette/snap_hooks/0008_final_reversible.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0008_final_reversible.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0008_final_reversible.c'; fi`
+
+quant/palette/snap_hooks/test_runner-0009_large_source.o: quant/palette/snap_hooks/0009_large_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0009_large_source.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0009_large_source.Tpo -c -o quant/palette/snap_hooks/test_runner-0009_large_source.o `test -f 'quant/palette/snap_hooks/0009_large_source.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0009_large_source.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0009_large_source.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0009_large_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0009_large_source.c' object='quant/palette/snap_hooks/test_runner-0009_large_source.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0009_large_source.o `test -f 'quant/palette/snap_hooks/0009_large_source.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0009_large_source.c
+
+quant/palette/snap_hooks/test_runner-0009_large_source.obj: quant/palette/snap_hooks/0009_large_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0009_large_source.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0009_large_source.Tpo -c -o quant/palette/snap_hooks/test_runner-0009_large_source.obj `if test -f 'quant/palette/snap_hooks/0009_large_source.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0009_large_source.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0009_large_source.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0009_large_source.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0009_large_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0009_large_source.c' object='quant/palette/snap_hooks/test_runner-0009_large_source.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0009_large_source.obj `if test -f 'quant/palette/snap_hooks/0009_large_source.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0009_large_source.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0009_large_source.c'; fi`
+
+quant/palette/snap_hooks/test_runner-0010_double_blend.o: quant/palette/snap_hooks/0010_double_blend.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0010_double_blend.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0010_double_blend.Tpo -c -o quant/palette/snap_hooks/test_runner-0010_double_blend.o `test -f 'quant/palette/snap_hooks/0010_double_blend.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0010_double_blend.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0010_double_blend.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0010_double_blend.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0010_double_blend.c' object='quant/palette/snap_hooks/test_runner-0010_double_blend.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0010_double_blend.o `test -f 'quant/palette/snap_hooks/0010_double_blend.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0010_double_blend.c
+
+quant/palette/snap_hooks/test_runner-0010_double_blend.obj: quant/palette/snap_hooks/0010_double_blend.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0010_double_blend.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0010_double_blend.Tpo -c -o quant/palette/snap_hooks/test_runner-0010_double_blend.obj `if test -f 'quant/palette/snap_hooks/0010_double_blend.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0010_double_blend.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0010_double_blend.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0010_double_blend.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0010_double_blend.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0010_double_blend.c' object='quant/palette/snap_hooks/test_runner-0010_double_blend.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0010_double_blend.obj `if test -f 'quant/palette/snap_hooks/0010_double_blend.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0010_double_blend.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0010_double_blend.c'; fi`
+
+quant/palette/snap_hooks/test_runner-0011_final_rollback.o: quant/palette/snap_hooks/0011_final_rollback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0011_final_rollback.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0011_final_rollback.Tpo -c -o quant/palette/snap_hooks/test_runner-0011_final_rollback.o `test -f 'quant/palette/snap_hooks/0011_final_rollback.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0011_final_rollback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0011_final_rollback.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0011_final_rollback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0011_final_rollback.c' object='quant/palette/snap_hooks/test_runner-0011_final_rollback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0011_final_rollback.o `test -f 'quant/palette/snap_hooks/0011_final_rollback.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0011_final_rollback.c
+
+quant/palette/snap_hooks/test_runner-0011_final_rollback.obj: quant/palette/snap_hooks/0011_final_rollback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0011_final_rollback.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0011_final_rollback.Tpo -c -o quant/palette/snap_hooks/test_runner-0011_final_rollback.obj `if test -f 'quant/palette/snap_hooks/0011_final_rollback.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0011_final_rollback.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0011_final_rollback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0011_final_rollback.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0011_final_rollback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0011_final_rollback.c' object='quant/palette/snap_hooks/test_runner-0011_final_rollback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0011_final_rollback.obj `if test -f 'quant/palette/snap_hooks/0011_final_rollback.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0011_final_rollback.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0011_final_rollback.c'; fi`
+
+quant/palette/snap_hooks/test_runner-0012_byte_grid.o: quant/palette/snap_hooks/0012_byte_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0012_byte_grid.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0012_byte_grid.Tpo -c -o quant/palette/snap_hooks/test_runner-0012_byte_grid.o `test -f 'quant/palette/snap_hooks/0012_byte_grid.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0012_byte_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0012_byte_grid.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0012_byte_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0012_byte_grid.c' object='quant/palette/snap_hooks/test_runner-0012_byte_grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0012_byte_grid.o `test -f 'quant/palette/snap_hooks/0012_byte_grid.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0012_byte_grid.c
+
+quant/palette/snap_hooks/test_runner-0012_byte_grid.obj: quant/palette/snap_hooks/0012_byte_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0012_byte_grid.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0012_byte_grid.Tpo -c -o quant/palette/snap_hooks/test_runner-0012_byte_grid.obj `if test -f 'quant/palette/snap_hooks/0012_byte_grid.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0012_byte_grid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0012_byte_grid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0012_byte_grid.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0012_byte_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0012_byte_grid.c' object='quant/palette/snap_hooks/test_runner-0012_byte_grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0012_byte_grid.obj `if test -f 'quant/palette/snap_hooks/0012_byte_grid.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0012_byte_grid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0012_byte_grid.c'; fi`
+
+quant/palette/snap_hooks/test_runner-0013_stage_ladder.o: quant/palette/snap_hooks/0013_stage_ladder.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0013_stage_ladder.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0013_stage_ladder.Tpo -c -o quant/palette/snap_hooks/test_runner-0013_stage_ladder.o `test -f 'quant/palette/snap_hooks/0013_stage_ladder.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0013_stage_ladder.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0013_stage_ladder.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0013_stage_ladder.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0013_stage_ladder.c' object='quant/palette/snap_hooks/test_runner-0013_stage_ladder.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0013_stage_ladder.o `test -f 'quant/palette/snap_hooks/0013_stage_ladder.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0013_stage_ladder.c
+
+quant/palette/snap_hooks/test_runner-0013_stage_ladder.obj: quant/palette/snap_hooks/0013_stage_ladder.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0013_stage_ladder.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0013_stage_ladder.Tpo -c -o quant/palette/snap_hooks/test_runner-0013_stage_ladder.obj `if test -f 'quant/palette/snap_hooks/0013_stage_ladder.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0013_stage_ladder.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0013_stage_ladder.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0013_stage_ladder.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0013_stage_ladder.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0013_stage_ladder.c' object='quant/palette/snap_hooks/test_runner-0013_stage_ladder.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0013_stage_ladder.obj `if test -f 'quant/palette/snap_hooks/0013_stage_ladder.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0013_stage_ladder.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0013_stage_ladder.c'; fi`
+
+quant/palette/snap_hooks/test_runner-0014_kmeans_once.o: quant/palette/snap_hooks/0014_kmeans_once.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0014_kmeans_once.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0014_kmeans_once.Tpo -c -o quant/palette/snap_hooks/test_runner-0014_kmeans_once.o `test -f 'quant/palette/snap_hooks/0014_kmeans_once.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0014_kmeans_once.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0014_kmeans_once.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0014_kmeans_once.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0014_kmeans_once.c' object='quant/palette/snap_hooks/test_runner-0014_kmeans_once.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0014_kmeans_once.o `test -f 'quant/palette/snap_hooks/0014_kmeans_once.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0014_kmeans_once.c
+
+quant/palette/snap_hooks/test_runner-0014_kmeans_once.obj: quant/palette/snap_hooks/0014_kmeans_once.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0014_kmeans_once.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0014_kmeans_once.Tpo -c -o quant/palette/snap_hooks/test_runner-0014_kmeans_once.obj `if test -f 'quant/palette/snap_hooks/0014_kmeans_once.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0014_kmeans_once.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0014_kmeans_once.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0014_kmeans_once.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0014_kmeans_once.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0014_kmeans_once.c' object='quant/palette/snap_hooks/test_runner-0014_kmeans_once.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0014_kmeans_once.obj `if test -f 'quant/palette/snap_hooks/0014_kmeans_once.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0014_kmeans_once.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0014_kmeans_once.c'; fi`
+
+quant/palette/snap_hooks/test_runner-0015_kmeans_all.o: quant/palette/snap_hooks/0015_kmeans_all.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0015_kmeans_all.o -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0015_kmeans_all.Tpo -c -o quant/palette/snap_hooks/test_runner-0015_kmeans_all.o `test -f 'quant/palette/snap_hooks/0015_kmeans_all.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0015_kmeans_all.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0015_kmeans_all.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0015_kmeans_all.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0015_kmeans_all.c' object='quant/palette/snap_hooks/test_runner-0015_kmeans_all.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0015_kmeans_all.o `test -f 'quant/palette/snap_hooks/0015_kmeans_all.c' || echo '$(srcdir)/'`quant/palette/snap_hooks/0015_kmeans_all.c
+
+quant/palette/snap_hooks/test_runner-0015_kmeans_all.obj: quant/palette/snap_hooks/0015_kmeans_all.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/snap_hooks/test_runner-0015_kmeans_all.obj -MD -MP -MF quant/palette/snap_hooks/$(DEPDIR)/test_runner-0015_kmeans_all.Tpo -c -o quant/palette/snap_hooks/test_runner-0015_kmeans_all.obj `if test -f 'quant/palette/snap_hooks/0015_kmeans_all.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0015_kmeans_all.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0015_kmeans_all.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/snap_hooks/$(DEPDIR)/test_runner-0015_kmeans_all.Tpo quant/palette/snap_hooks/$(DEPDIR)/test_runner-0015_kmeans_all.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/snap_hooks/0015_kmeans_all.c' object='quant/palette/snap_hooks/test_runner-0015_kmeans_all.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_hooks/test_runner-0015_kmeans_all.obj `if test -f 'quant/palette/snap_hooks/0015_kmeans_all.c'; then $(CYGPATH_W) 'quant/palette/snap_hooks/0015_kmeans_all.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_hooks/0015_kmeans_all.c'; fi`
+
 quant/palette/retention/test_runner-retention_test_common.o: quant/palette/retention/retention_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/retention/test_runner-retention_test_common.o -MD -MP -MF quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Tpo -c -o quant/palette/retention/test_runner-retention_test_common.o `test -f 'quant/palette/retention/retention_test_common.c' || echo '$(srcdir)/'`quant/palette/retention/retention_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Tpo quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Po
@@ -72296,6 +72673,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/sampling_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/snap_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/snap_float/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/snap_hooks/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/solvers_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/solvers_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/usage/$(DEPDIR)/$(am__dirstamp)

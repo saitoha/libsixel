@@ -2020,8 +2020,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                                                        distance_cache,
                                                        allocator,
                                                        init_type,
-                                                       rng_state_ptr,
-                                                       preserve_extended_rgb);
+                                                       rng_state_ptr);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -2296,9 +2295,9 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                     snapped_center[channel] = channel_sum[channel]
                         / cluster_weight;
                 }
-                /* The legacy snap helper clamps even with snapping disabled.
-                 * Extended centers must survive every Lloyd update. */
-                if (preserve_extended_rgb == 0) {
+                /* Snap is a policy operation, not a coordinate clamp.
+                 * Inactive stages preserve the continuous Lloyd center. */
+                if (use_reversible || !input_is_) {
                     sixel_palette_snap_triple(
                         snapped_center,
                         use_reversible,

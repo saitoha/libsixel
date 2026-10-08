@@ -1456,6 +1456,22 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0040_CLI_COLOR_JOB \
     -DBUILD_TEST_0033_STDIN_INTERRUPT \
     -DBUILD_TEST_0001_FLOAT_PALETTE \
+    -DBUILD_SNAP_HOOK_TEST_COMMON \
+    -DBUILD_TEST_0001_HOOK_DISABLED \
+    -DBUILD_TEST_0002_POLICY_DISABLED \
+    -DBUILD_TEST_0003_STAGE_EXCLUDED \
+    -DBUILD_TEST_0004_RATE_ZERO \
+    -DBUILD_TEST_0005_EARLY_NEAREST \
+    -DBUILD_TEST_0006_EARLY_REVERSIBLE \
+    -DBUILD_TEST_0007_FINAL_NEAREST \
+    -DBUILD_TEST_0008_FINAL_REVERSIBLE \
+    -DBUILD_TEST_0009_LARGE_SOURCE \
+    -DBUILD_TEST_0010_DOUBLE_BLEND \
+    -DBUILD_TEST_0011_FINAL_ROLLBACK \
+    -DBUILD_TEST_0012_BYTE_GRID \
+    -DBUILD_TEST_0013_STAGE_LADDER \
+    -DBUILD_TEST_0014_KMEANS_ONCE \
+    -DBUILD_TEST_0015_KMEANS_ALL \
     -DBUILD_RETENTION_TEST_COMMON \
     -DBUILD_TEST_0016_KCENTER_BOUNDARY \
     -DBUILD_TEST_0014_EXTENDED_READ \
@@ -5392,6 +5408,23 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0045_snap_output_grid.c \
     quant/palette/0048_snap_partial_once.c \
     quant/palette/direct/0001_float_palette.c \
+    quant/palette/snap_hooks/snap_hook_test_common.c \
+    quant/palette/snap_hooks/snap_hook_test_common.h \
+    quant/palette/snap_hooks/0001_hook_disabled.c \
+    quant/palette/snap_hooks/0002_policy_disabled.c \
+    quant/palette/snap_hooks/0003_stage_excluded.c \
+    quant/palette/snap_hooks/0004_rate_zero.c \
+    quant/palette/snap_hooks/0005_early_nearest.c \
+    quant/palette/snap_hooks/0006_early_reversible.c \
+    quant/palette/snap_hooks/0007_final_nearest.c \
+    quant/palette/snap_hooks/0008_final_reversible.c \
+    quant/palette/snap_hooks/0009_large_source.c \
+    quant/palette/snap_hooks/0010_double_blend.c \
+    quant/palette/snap_hooks/0011_final_rollback.c \
+    quant/palette/snap_hooks/0012_byte_grid.c \
+    quant/palette/snap_hooks/0013_stage_ladder.c \
+    quant/palette/snap_hooks/0014_kmeans_once.c \
+    quant/palette/snap_hooks/0015_kmeans_all.c \
     quant/palette/retention/retention_test_common.c \
     quant/palette/retention/retention_test_common.h \
     quant/palette/retention/0016_kcenter_boundary.c \

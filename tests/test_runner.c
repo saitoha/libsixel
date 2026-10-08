@@ -1573,6 +1573,21 @@ int test_palette_direct_float(int argc, char **argv);
 int test_palette_retention_kcenter_boundary(int argc, char **argv);
 int test_palette_retention_extended_read(int argc, char **argv);
 int test_palette_retention_indexed_write(int argc, char **argv);
+int test_snap_hooks_hook_disabled(int argc, char **argv);
+int test_snap_hooks_policy_disabled(int argc, char **argv);
+int test_snap_hooks_stage_excluded(int argc, char **argv);
+int test_snap_hooks_rate_zero(int argc, char **argv);
+int test_snap_hooks_early_nearest(int argc, char **argv);
+int test_snap_hooks_early_reversible(int argc, char **argv);
+int test_snap_hooks_final_nearest(int argc, char **argv);
+int test_snap_hooks_final_reversible(int argc, char **argv);
+int test_snap_hooks_large_source(int argc, char **argv);
+int test_snap_hooks_double_blend(int argc, char **argv);
+int test_snap_hooks_final_rollback(int argc, char **argv);
+int test_snap_hooks_byte_grid(int argc, char **argv);
+int test_snap_hooks_stage_ladder(int argc, char **argv);
+int test_snap_hooks_kmeans_once(int argc, char **argv);
+int test_snap_hooks_kmeans_all(int argc, char **argv);
 int test_palette_retention_kmeans(int argc, char **argv);
 int test_palette_retention_kcenter(int argc, char **argv);
 int test_palette_retention_kmedoids(int argc, char **argv);
@@ -5886,6 +5901,21 @@ static test_entry_t const test_entries[] = {
       test_palette_retention_extended_read },
     { "palette/retention_indexed_write",
       test_palette_retention_indexed_write },
+    { "palette/snap_hooks/hook_disabled", test_snap_hooks_hook_disabled },
+    { "palette/snap_hooks/policy_disabled", test_snap_hooks_policy_disabled },
+    { "palette/snap_hooks/stage_excluded", test_snap_hooks_stage_excluded },
+    { "palette/snap_hooks/rate_zero", test_snap_hooks_rate_zero },
+    { "palette/snap_hooks/early_nearest", test_snap_hooks_early_nearest },
+    { "palette/snap_hooks/early_reversible", test_snap_hooks_early_reversible },
+    { "palette/snap_hooks/final_nearest", test_snap_hooks_final_nearest },
+    { "palette/snap_hooks/final_reversible", test_snap_hooks_final_reversible },
+    { "palette/snap_hooks/large_source", test_snap_hooks_large_source },
+    { "palette/snap_hooks/double_blend", test_snap_hooks_double_blend },
+    { "palette/snap_hooks/final_rollback", test_snap_hooks_final_rollback },
+    { "palette/snap_hooks/byte_grid", test_snap_hooks_byte_grid },
+    { "palette/snap_hooks/stage_ladder", test_snap_hooks_stage_ladder },
+    { "palette/snap_hooks/kmeans_once", test_snap_hooks_kmeans_once },
+    { "palette/snap_hooks/kmeans_all", test_snap_hooks_kmeans_all },
     { "palette/retention_kmeans",
       test_palette_retention_kmeans },
     { "palette/retention_kcenter",

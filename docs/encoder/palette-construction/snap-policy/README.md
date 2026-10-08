@@ -161,6 +161,14 @@ The original typed palette coordinates remain unbounded until the requested snap
 
 The numeric fixtures use independently derived transfer, matrix and opponent-space equations starting from stored float32 inputs. Native comparisons allow `2e-5` absolute coordinate units for matrix/TRC round trips and final float storage. The original snap-target RGB101 expectations have at least `0.02` percentage-code margin (`0.0002` in normalized RGB) from a rounding boundary. The combined soft-cover source anchor has a minimum `0.019` percentage-code margin, still larger than its conversion/storage error budget. Copied inactive values and failed-pass rollback are byte-exact. These tests establish arithmetic and dispatch, not a universal image-quality improvement.
 
+## Shared float snap arithmetic
+
+Final typed palette passes and existing K-means seed/iteration hooks use one safe-tone target search. An inactive typed hook (disabled by its caller or policy, excluded by timing, or given `rate=0`) preserves the solver's original double coordinates exactly. An active hook uses sign-preserving double colorspace conversion and blends from the original coordinates. Negative and above-nominal components are bounded only when selecting a safe target, not before interpolation; partial rates can therefore leave them outside the nominal range. Solver hooks retain double precision until the generator stores the palette as float32. The byte hook retains its bounded integer-coordinate contract.
+
+The ordinary final float pass uses the same `nearest` versus `reversible` distinction in gamma RGB as in the other four typed spaces. It stages the complete palette before publication; a nonfinite entry leaves that float palette unchanged. This arithmetic sharing does not add missing consumers for the timing ladder or remove the native builder's final-only admission restriction. Generator-specific histogram bounds, export bounds and precision-losing retries remain separate limitations; the common snap helper cannot repair a value already narrowed by those boundaries.
+
+Early-hook and ordinary-final numerical fixtures use the same independent source/target equations and `2e-5` typed-coordinate budget as the native final tests. Gamma-only double interpolation uses `1e-14`, with no matrix or nonlinear transform. Reduced-color K-means fixtures use `2e-7` for the means of stored float inputs and subsequent palette stores, far below the separation between one and two quarter-rate applications. They assert actual float entries, the requested quantizer and zero retries. These checks establish stage behavior, not image-quality improvement.
+
 ## Output conversion and the Display P3 boundary
 
 An active snap means a policy other than `none` with an approach rate greater than zero. The [selected Display P3 path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path) currently rejects active snap before image output. `-_none` and a zero approach rate retain the unsnapped working palette. This is a restriction on the effective output definition, not on writing `-U` and `-_` in the same command: explicit `-Ugamma` still supports the existing snap path. Automatic output selection is subject to the same P3 restriction if negotiation selects Display P3.
@@ -284,7 +292,6 @@ The following are implementation defects, not alternative semantics for the opti
 
 | Location | Remaining defect |
 | --- | --- |
-| Inactive solver hooks in [`palette-common-snap.c`](../../../../src/palette-common-snap.c) | Disabled or timing-ineligible hooks still clamp components and reduce double coordinates to float. For example, `(-0.25, 1.25, 0.123456789012345)` becomes `(0, 1, 0.12345679104328156)`. The selected extended K-means path bypasses these hooks. |
 | Heckbert histogram construction in [`palette-heckbert.c`](../../../../src/palette-heckbert.c) | Enabling snap changes histogram input and reconstructed bin values before the final pass, without consulting `timing` or `rate`. Thus `once` does not confine snapping to the final palette. |
 | Early timing stages | [`palette-common-merge.c`](../../../../src/palette-common-merge.c) ignores the supplied snap enablement; neither merge stage has a caller. K-center and K-medoids currently call the final snap but have no seed or iteration snap hooks. K-means does have seed and iteration hooks. Parsing all timing values does not establish their execution. |
 | Legacy image-map construction in [`encoder.c`](../../../../src/encoder.c) | Unlike structured palette import, the ordinary image-map builder can consult snap environment settings without the encoder's explicit override. In that path, `SIXEL_PALETTE_SNAP_POLICY=nearest` can change the map palette even with explicit `-_none`. |
@@ -331,3 +338,23 @@ The [native snap suite](../../../../tests/quant/palette/snap_float/) also covers
 ### Coverage audit boundary
 
 The focused suite covers top-level enablement, registered option binding, final typed snapping, and the structured-mapfile, built-in and monochrome bypasses. Suboption trace messages establish configuration delivery, not execution of every solver stage. The existing timing quality test does not detect the missing merge hooks, and the fixed-palette tests do not cover the image-map environment defect above. It does not yet directly test every policy spelling, invalid or empty top-level values, repeated-option last-wins behavior, multi-frame state, exact membership of all 101 tones, byte-for-byte re-encoding, or image-quality effects of the ordering interaction with cover repair. The image tests enforce a broad MS-SSIM floor on one small fixture but do not replace the reproducible measurement suite described above.
+
+### Shared hook contracts
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| SH-01 | Inactive typed snap preserves original double coordinates. | [tests/quant/palette/snap_hooks/0001_hook_disabled.t](../../../../tests/quant/palette/snap_hooks/0001_hook_disabled.t) |
+| SH-02 | Inactive typed snap preserves original double coordinates. | [tests/quant/palette/snap_hooks/0002_policy_disabled.t](../../../../tests/quant/palette/snap_hooks/0002_policy_disabled.t) |
+| SH-03 | Inactive typed snap preserves original double coordinates. | [tests/quant/palette/snap_hooks/0003_stage_excluded.t](../../../../tests/quant/palette/snap_hooks/0003_stage_excluded.t) |
+| SH-04 | Inactive typed snap preserves original double coordinates. | [tests/quant/palette/snap_hooks/0004_rate_zero.t](../../../../tests/quant/palette/snap_hooks/0004_rate_zero.t) |
+| SH-05 | Typed partial snap blends extended coordinates toward independent targets. | [tests/quant/palette/snap_hooks/0005_early_nearest.t](../../../../tests/quant/palette/snap_hooks/0005_early_nearest.t) |
+| SH-06 | Typed partial snap blends extended coordinates toward independent targets. | [tests/quant/palette/snap_hooks/0006_early_reversible.t](../../../../tests/quant/palette/snap_hooks/0006_early_reversible.t) |
+| SH-07 | Typed partial snap blends extended coordinates toward independent targets. | [tests/quant/palette/snap_hooks/0007_final_nearest.t](../../../../tests/quant/palette/snap_hooks/0007_final_nearest.t) |
+| SH-08 | Typed partial snap blends extended coordinates toward independent targets. | [tests/quant/palette/snap_hooks/0008_final_reversible.t](../../../../tests/quant/palette/snap_hooks/0008_final_reversible.t) |
+| SH-09 | Full snap preserves target selection beside a huge source component. | [tests/quant/palette/snap_hooks/0009_large_source.t](../../../../tests/quant/palette/snap_hooks/0009_large_source.t) |
+| SH-10 | Active solver snap blends in double precision before palette storage. | [tests/quant/palette/snap_hooks/0010_double_blend.t](../../../../tests/quant/palette/snap_hooks/0010_double_blend.t) |
+| SH-11 | A later invalid coordinate leaves the complete float palette unchanged. | [tests/quant/palette/snap_hooks/0011_final_rollback.t](../../../../tests/quant/palette/snap_hooks/0011_final_rollback.t) |
+| SH-12 | Byte hooks retain bounded integer safe-tone output. | [tests/quant/palette/snap_hooks/0012_byte_grid.t](../../../../tests/quant/palette/snap_hooks/0012_byte_grid.t) |
+| SH-13 | Each timing value enables only its additive solver stages. | [tests/quant/palette/snap_hooks/0013_stage_ladder.t](../../../../tests/quant/palette/snap_hooks/0013_stage_ladder.t) |
+| SH-14 | Reduced K-means palette executes the requested snap stages exactly once. | [tests/quant/palette/snap_hooks/0014_kmeans_once.t](../../../../tests/quant/palette/snap_hooks/0014_kmeans_once.t) |
+| SH-15 | Reduced K-means palette executes the requested snap stages exactly once. | [tests/quant/palette/snap_hooks/0015_kmeans_all.t](../../../../tests/quant/palette/snap_hooks/0015_kmeans_all.t) |

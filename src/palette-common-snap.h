@@ -41,7 +41,7 @@ sixel_palette_reversible_palette(unsigned char *palette,
                                  unsigned int colors,
                                  int pixelformat);
 
-void
+SIXEL_INTERNAL_API void
 sixel_palette_reversible_palette_float(float *palette,
                                        unsigned int colors,
                                        int pixelformat);
@@ -111,14 +111,9 @@ sixel_palette_snap_output(unsigned char *entries,
 int
 sixel_palette_should_snap(enum sixel_palette_snap_stage stage);
 
-double
-sixel_palette_snap_double(double value,
-                          int use_reversible,
-                          int pixelformat,
-                          int channel,
-                          enum sixel_palette_snap_stage stage);
-
-void
+/* Typed solver doubles remain untouched when the hook is inactive. Active
+ * stages share the final typed target search; byte inputs remain bounded. */
+SIXEL_INTERNAL_API void
 sixel_palette_snap_triple(double *components,
                           int use_reversible,
                           int pixelformat,

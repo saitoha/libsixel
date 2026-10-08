@@ -1217,8 +1217,7 @@ sixel_kmeans_seed_pca(double *centers,
                       unsigned int sample_count,
                       int use_reversible,
                       int pixelformat,
-                      sixel_allocator_t *allocator,
-                      int preserve_extended_rgb)
+                      sixel_allocator_t *allocator)
 {
     sixel_kmeans_projection_entry_t *projections = NULL;
     double covariance[3][3];
@@ -1328,7 +1327,7 @@ sixel_kmeans_seed_pca(double *centers,
         for (channel = 0U; channel < 3U; ++channel) {
             centers[bucket * 3U + channel] = sum[channel] / bucket_weight;
         }
-        if (preserve_extended_rgb == 0) {
+        if (use_reversible || !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
             sixel_palette_snap_triple(&centers[bucket * 3U],
                                       use_reversible,
                                       pixelformat,
@@ -1525,8 +1524,7 @@ sixel_kmeans_choose_initial_centroids(double *centers,
                                       double *distance_cache,
                                       sixel_allocator_t *allocator,
                                       sixel_kmeans_init_type init_type,
-                                      uint32_t *rng_state,
-                                      int preserve_extended_rgb)
+                                      uint32_t *rng_state)
 {
     sixel_kmeans_init_type resolved;
     SIXELSTATUS status;
@@ -1554,8 +1552,7 @@ sixel_kmeans_choose_initial_centroids(double *centers,
                                             sample_count,
                                             use_reversible,
                                             pixelformat,
-                                            allocator,
-                                            preserve_extended_rgb);
+                                            allocator);
         if (seed_status == 0) {
             return SIXEL_OK;
         }
@@ -1586,7 +1583,8 @@ sixel_kmeans_choose_initial_centroids(double *centers,
      * seed positions aligned with the reversible grid before Lloyd
      * refinement begins.
      */
-    if (SIXEL_SUCCEEDED(status) && preserve_extended_rgb == 0) {
+    if (SIXEL_SUCCEEDED(status) &&
+            (use_reversible || !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat))) {
         for (center_index = 0U; center_index < k; ++center_index) {
             for (channel = 0U; channel < 3U; ++channel) {
                 snapped[channel]
