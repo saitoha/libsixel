@@ -344,11 +344,27 @@ To inspect the wire definitions, replace `-M pal:- -o /dev/null` with `-o output
 
 ## Scope and current gaps
 
-Ordinary generated and supplied palette output applies destination conversion in `sixel_encode_dither`. High-color has its own destination-sample preparation; an option being accepted does not establish that every alternate encoder consumes it.
+Ordinary generated and supplied palettes have distinct working and serialization representations. The selected float path prepares its destination cache before lookup; `sixel_encode_dither` consumes that cache without converting the working palette again. Compatibility paths convert an output copy in `sixel_encode_dither`. High-color has its own destination-sample preparation; an option being accepted does not establish that every alternate encoder consumes it.
 
 The `-I` [high-color path](high-color/README.md#destination-samples-and-precision) converts source samples to gamma, linear, SMPTE-C or Display P3 before key selection, preserving float representatives through wire rounding on its no-diffusion path. Its precision and low-level byte-diffusion boundary are owned by that reference. High-color P3 admission and its exclusions are described in the same reference.
 
 `-U` does not embed a profile in the SIXEL stream, configure a separately invoked decoder, or change loader CMS. Encoder-owned [PNG snapshots](../../writers/png/README.md#native-float-snapshots) explicitly pass P3 interpretation to their decoder and PNG writer; other definitions retain the existing sRGB snapshot interpretation. The static-image stage explanation should not be extended to [delta encoding](delta-encoding.md) without accounting for its retained display-color state across frames.
+
+### Storage and compatibility boundaries
+
+Float source storage, float diffusion and native float palette ownership are separate decisions. A float diffusion buffer alone does not establish that palette construction or output conversion preserves sub-byte values. The [selected ordinary path](#selected-ordinary-srgb-float-path) and [library entry points](#library-entry-points) define which jobs retain an authoritative float palette. Remaining byte operations have the following scopes:
+
+| Boundary | Meaning | Owning contract |
+| --- | --- | --- |
+| Byte-eligible source and operations | A gamma job that needs no higher precision can retain byte construction and application. Explicit float precision selects the supported float route. | [Encoder precision](../precision/README.md#requested-precision-and-effective-format) |
+| Explicit byte storage or palette assignment | Byte components cannot retain signed or sub-byte coordinates. A compatibility getter read alone does not narrow an existing native palette. | [Frame storage](../../concepts/pixelformat-precision/README.md#float-frame-coordinate-changes), [palette access](#library-entry-points) |
+| Legacy mapfile export | Metadata-free palette files store sRGB8; conversion and rounding belong to that file boundary. | [External palettes](../palette-construction/external-palettes.md) |
+| Wire serialization and retained display history | RGB101/HLS quantization applies to destination values. Delta history models painted colors; ordinary lookup continues to use working coordinates. | [Rounding](#precision-rounding-and-cost), [delta encoding](delta-encoding.md) |
+| Policies outside native admission | Early snap, quantizer feedback, GPU and temporal combinations do not acquire extended palette preservation merely from float input. Their compatibility branches remain reachable. | [Native admission](#display-p3-selected-cpu-float-path), [snap](../palette-construction/snap-policy/README.md), [standalone restrictions](#library-entry-points) |
+| Low-level high-color diffusion | The explicit legacy 15bpp diffusion routines use a bounded byte plane; high-level no-diffusion output has a separate float representative path. | [High-color precision](high-color/README.md#destination-samples-and-precision) |
+| Loader conversion | Encoder palette preservation cannot recover precision or gamut already discarded during loading. Backend and source-format coverage must be checked separately. | [Loader precision](../../loader/precision-policy.md) |
+
+The bounded public color converter and compatibility helpers therefore remain live. Their presence does not by itself identify an intermediate clamp on a selected native job; follow the caller's admission and representation before changing or removing one. Conversely, an unsupported combination is not evidence that all float paths preserve gamut.
 
 ## Test coverage
 
