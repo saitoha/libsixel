@@ -1567,6 +1567,7 @@ int test_srgb_0065(int argc, char **argv);
 int test_srgb_0066(int argc, char **argv);
 int test_srgb_0067(int argc, char **argv);
 int test_srgb_0068(int argc, char **argv);
+int test_palette_direct_float(int argc, char **argv);
 int test_palette_0051_p3_contract(int argc, char **argv);
 int test_palette_0054_p3_encoder(int argc, char **argv);
 int test_palette_0055_p3_mapfile(int argc, char **argv);
@@ -5858,6 +5859,7 @@ static test_entry_t const test_entries[] = {
     { "palette/0066_srgb_linear_unsnapped_lookup", test_srgb_0066 },
     { "palette/0067_srgb_gamma_extended_source", test_srgb_0067 },
     { "palette/0068_srgb_linear_extended_source", test_srgb_0068 },
+    { "palette/direct_float", test_palette_direct_float },
     { "palette/0051_p3_palette_contract", test_palette_0051_p3_contract },
     { "palette/0054_p3_encoder_contract", test_palette_0054_p3_encoder },
     { "palette/0055_p3_mapfile", test_palette_0055_p3_mapfile },

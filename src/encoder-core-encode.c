@@ -4605,6 +4605,10 @@ sixel_encode_dither(
     if (output == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    status = sixel_dither_prepare_standalone_palette(dither);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     dither->pipeline_6delta_rgb101 = 0;
     dither->pipeline_6delta_hls = 0;
     dither->pipeline_6delta_hls_bytes = NULL;

@@ -4368,15 +4368,18 @@ load_image_callback_for_palette(
     callback_context->dither->gpu_palette_threshold =
         callback_context->gpu_palette_threshold;
 
-    /* create adaptive palette from given frame object */
-    status = sixel_dither_initialize(callback_context->dither,
+    /* Keep this excluded image-map route on its compatibility builder;
+     * standalone RGBFLOAT32 admission does not override encoder policy. */
+    status = sixel_dither_initialize_with_palette_attempt(
+                                     callback_context->dither,
                                      sixel_frame_get_pixels(frame),
                                      sixel_frame_get_width(frame),
                                      sixel_frame_get_height(frame),
                                      sixel_frame_get_pixelformat(frame),
                                      SIXEL_LARGE_NORM,
                                      SIXEL_REP_CENTER_BOX,
-                                     SIXEL_QUALITY_HIGH);
+                                     SIXEL_QUALITY_HIGH,
+                                     NULL);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(callback_context->dither);
         goto end;

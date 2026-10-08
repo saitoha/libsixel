@@ -2264,6 +2264,7 @@ sixel_dither_new(
     (*ppdither)->clamp_promoted_rgb888 = 0;
     (*ppdither)->palette_snap_exact = 0;
     (*ppdither)->use_rgb101_palette = 0;
+    (*ppdither)->standalone_palette_colors = 0;
     (*ppdither)->highcolor_output_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
     (*ppdither)->pipeline_6delta_rgb101 = 0;
     (*ppdither)->pipeline_6delta_hls = 0;
@@ -2918,15 +2919,74 @@ sixel_dither_initialize(
     int             /* in */ method_for_rep,
     int             /* in */ quality_mode)
 {
-    return sixel_dither_initialize_internal(dither,
-                                            data,
-                                            width,
-                                            height,
-                                            pixelformat,
-                                            method_for_largest,
-                                            method_for_rep,
-                                            quality_mode,
-                                            NULL);
+    sixel_palette_build_attempt_t attempt;
+    sixel_palette_entries_view_t view;
+    SIXELSTATUS status;
+    int quantizer;
+    int native;
+    size_t count;
+
+    if (dither == NULL || data == NULL || width <= 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    count = (size_t)width * (size_t)height;
+    /* Public initialization has no encoder-owned build/output attempt.
+     * Keep this first native contract in gamma RGB; other typed formats
+     * and policy combinations retain their existing initialization path. */
+    quantizer = dither->quantize_model;
+    native = pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 &&
+        (quantizer == SIXEL_QUANTIZE_MODEL_AUTO ||
+         quantizer == SIXEL_QUANTIZE_MODEL_MEDIANCUT) &&
+        dither->gpu_policy == SIXEL_GPU_POLICY_OFF &&
+        quality_mode != SIXEL_QUALITY_HIGHCOLOR &&
+        dither->method_for_diffuse != SIXEL_DIFFUSE_INTERFRAME &&
+        !sixel_palette_snap_is_enabled();
+    if (native && (count / (size_t)width != (size_t)height ||
+            count > UINT_MAX / (3U * sizeof(float)))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    dither->standalone_palette_colors = native ? -1 : 0;
+    dither->use_rgb101_palette = native;
+    memset(&attempt, 0, sizeof(attempt));
+    if (native) {
+        /* AUTO's unbinned public default is Heckbert, as in the encoder
+         * resolver. Scope this effective choice to the one build only. */
+        dither->quantize_model = SIXEL_QUANTIZE_MODEL_MEDIANCUT;
+        sixel_palette_binning_state_init(&attempt.binning,
+            SIXEL_PALETTE_BINNING_AUTO, SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT);
+    }
+    status = sixel_dither_initialize_internal(dither, data, width, height,
+        pixelformat, method_for_largest, method_for_rep, quality_mode,
+        native ? &attempt : NULL);
+    dither->quantize_model = quantizer;
+    if (native && SIXEL_SUCCEEDED(status)) {
+        /* Cache the destination copy once. Lookup still owns the original
+         * working values; preparing RGB101 never implicitly enables snap. */
+        status = sixel_palette_prepare_output(dither->palette,
+            SIXEL_COLORSPACE_GAMMA, SIXEL_PALETTE_OUTPUT_LEGACY,
+            SIXEL_COLORSPACE_GAMMA);
+        if (SIXEL_SUCCEEDED(status)) {
+            memset(&view, 0, sizeof(view));
+            status = dither->palette->vtbl->get_entries(dither->palette,
+                                                       &view);
+            if (SIXEL_SUCCEEDED(status) && (view.entries == NULL ||
+                    view.depth != 3 || view.entry_count == 0U ||
+                    view.entry_count > SIXEL_PALETTE_MAX)) {
+                status = SIXEL_LOGIC_ERROR;
+            }
+            if (SIXEL_SUCCEEDED(status)) {
+                memcpy(dither->standalone_palette_bytes, view.entries,
+                    view.entry_count * 3U);
+                dither->standalone_palette_colors = (int)view.entry_count;
+            }
+        }
+    }
+    if (native && SIXEL_FAILED(status)) {
+        /* Failed generation may have partially replaced entries. Never
+         * encode them through a lossy fallback after the caller's error. */
+        dither->use_rgb101_palette = 0;
+    }
+    return status;
 }
 
 
@@ -3148,6 +3208,8 @@ sixel_dither_set_palette(
     unsigned char  /* in */ *palette)
 {
     sixel_palette_entries_request_t request;
+    sixel_palette_float32_entries_request_t drop;
+    SIXELSTATUS status;
 
     if (dither == NULL || dither->palette == NULL) {
         return;
@@ -3157,8 +3219,78 @@ sixel_dither_set_palette(
     request.entries = palette;
     request.colors = (unsigned int)dither->ncolors;
     request.depth = 3;
-    (void)dither->palette->vtbl->init_entries(dither->palette, &request);
+    status = dither->palette->vtbl->init_entries(dither->palette, &request);
+    if (dither->standalone_palette_colors != 0) {
+        dither->use_rgb101_palette = 0;
+        dither->standalone_palette_colors = -1;
+        if (SIXEL_SUCCEEDED(status)) {
+            memset(&drop, 0, sizeof(drop));
+            status = dither->palette->vtbl->init_entries_float32(
+                dither->palette, &drop);
+            if (SIXEL_SUCCEEDED(status)) {
+                dither->standalone_palette_colors = 0;
+            }
+        }
+    }
     dither->palette_snap_exact = 0;
+}
+
+
+/* Reads through the byte getter preserve float precision. An actual write
+ * makes the complete byte view authoritative, just like set_palette(). */
+SIXELSTATUS
+sixel_dither_prepare_standalone_palette(sixel_dither_t *dither)
+{
+    sixel_palette_entries_view_t view;
+    sixel_palette_float32_entries_request_t drop;
+    SIXELSTATUS status;
+
+    if (dither->standalone_palette_colors == 0) {
+        return SIXEL_OK;
+    }
+    if (dither->standalone_palette_colors < 0) {
+        sixel_helper_set_additional_message(
+            "standalone float palette requires successful initialization.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    memset(&view, 0, sizeof(view));
+    status = dither->palette->vtbl->get_entries(dither->palette, &view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (view.entries == NULL || view.depth != 3 ||
+            view.entry_count !=
+                (unsigned int)dither->standalone_palette_colors) {
+        return SIXEL_LOGIC_ERROR;
+    }
+    if (memcmp(view.entries, dither->standalone_palette_bytes,
+            view.entry_count * 3U) != 0) {
+        memset(&drop, 0, sizeof(drop));
+        status = dither->palette->vtbl->init_entries_float32(dither->palette,
+                                                           &drop);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        dither->standalone_palette_colors = 0;
+        dither->use_rgb101_palette = 0;
+        return SIXEL_OK;
+    }
+    if (dither->gpu_policy != SIXEL_GPU_POLICY_OFF ||
+            dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
+        sixel_helper_set_additional_message(
+            "standalone float palette requires CPU spatial application.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    /* Changing memory layout within gamma RGB is safe. A different color
+     * domain needs a new palette, not a reinterpretation of its floats. */
+    if (dither->pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 &&
+            dither->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        sixel_helper_set_additional_message(
+            "standalone float palette needs gamma RGB input or "
+            "reinitialization for another color space.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return SIXEL_OK;
 }
 
 
@@ -4202,6 +4334,10 @@ sixel_dither_apply_palette_with_mode(
     resolved_apply_mode =
         sixel_dither_interframe_resolve_apply_mode(apply_mode);
     sixel_dither_ref(dither);
+    status = sixel_dither_prepare_standalone_palette(dither);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
     sixel_dither_clear_pipeline_accumulation_result_mask(dither);
     sixel_dither_clear_pipeline_accumulation_result_rgb(dither);
     if (resolved_apply_mode == SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE) {

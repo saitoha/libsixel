@@ -135,9 +135,13 @@ Ordinary RGB/HLS [native delta](delta-encoding.md#linear-and-smpte-c-output-hist
 
 ### Library entry points
 
-The selected native palette path is coordinated by `sixel_encoder_t` for CLI, file, frame and byte-buffer encoding, subject to the admission conditions above. Accepting a float pixel format does not by itself establish that path. Standalone `sixel_dither_new()` → `sixel_dither_initialize()` → `sixel_encode()` does not perform the encoder's native-path selection or prepare its separate output palette. With snap disabled, initialization discards the generated float view, and palette application reconstructs working entries from the compatibility byte palette. This can lose sub-byte precision before SIXEL serialization, even with RGBFLOAT32 input and no dithering.
+The encoder-managed native path above serves CLI, file, frame and byte-buffer jobs subject to its admission conditions. Standalone `sixel_dither_new()` → `sixel_dither_initialize()` → `sixel_encode()` also retains a native palette for ordinary CPU RGBFLOAT32 initialization with the default AUTO/Heckbert builder and inactive snap. The palette keeps finite signed and sub-byte working coordinates, and RGB/HLS serialization rounds a separate gamma-sRGB output copy. The public `unsigned char *` input parameter carries storage, not an 8-bit precision promise: initialization or `sixel_dither_set_pixelformat()` supplies the actual layout. A float array can be passed through that pointer type; `sixel_encode()`'s legacy `depth` argument is unused.
 
-This is a remaining implementation limit of the low-level path, distinct from the intentional byte storage exposed by `sixel_dither_set_palette()` and `sixel_dither_get_palette()`. Integrators needing the selected native contract can supply a typed frame through `sixel_encoder_encode_frame()`. The relevant implementation boundaries are in [`src/dither.c`](../../../src/dither.c) and [`src/encoder-core-encode.c`](../../../src/encoder-core-encode.c); the internal native-path flag alone is not a complete palette initialization contract.
+`sixel_dither_get_palette()` exposes mutable compatibility bytes. Reading them leaves the native float palette intact. The next apply or encode detects an actual change to that byte view and makes the complete byte palette authoritative. `sixel_dither_set_palette()` explicitly replaces float precision even when the assigned bytes equal the compatibility view. Reinitialization invalidates a previously borrowed palette pointer. Detection stores at most 768 shadow bytes and a count per dither object, compares only occupied entries, and introduces no per-pixel buffer or getter allocation.
+
+Successful reinitialization selects the representation again: a genuine RGB888 palette stays byte-based, and RGBFLOAT32 can restore native precision. A failed native build cannot be encoded as a partial or fallback byte palette; initialize successfully or supply an explicit byte palette before reuse. Separate dither objects own independent state. RGB888 query storage can be used against an already native gamma palette without discarding it; changing the query format to another color space requires reinitialization. As with other low-level encoding, input storage is mutable, so comparisons between calls must restore their original pixels.
+
+Non-gamma standalone palette initialization, active snap, deprecated temporal application and GPU work retain their separate compatibility scope. Changing a native standalone context to temporal/GPU application is rejected before output rather than silently discarding its palette. The wider typed-space/output-definition contract remains available through `sixel_encoder_encode_frame()` under the encoder's documented selection. High-color encoding has its own [precision boundary](high-color/README.md#destination-samples-and-precision). Neither retaining a float palette nor preparing its wire cache implies palette snapping.
 
 ### Sampling and retained precision
 
@@ -1017,6 +1021,32 @@ These cases reuse independent typed-entry, wire and painted-index references fro
 | FA-26 | Unchanged native frames retain the application object supplying prepared lookup reuse; colors and indices remain correct. | [tests/quant/palette/fixed_animation/0026_prepared_lookup_reuse.t](../../../tests/quant/palette/fixed_animation/0026_prepared_lookup_reuse.t) |
 
 These are numeric, index, mask and state contracts, not photographic quality or physical playback measurements. Temporal dithering and arbitrary changes to excluded modes are outside this coverage.
+
+### Standalone gamma float palette contracts
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| OC-460 | Retain signed and sub-byte RGBFLOAT32 palette representatives through public initialization. | [tests/quant/palette/direct/0001_float_values.t](../../../tests/quant/palette/direct/0001_float_values.t) |
+| OC-461 | Round the separate standalone RGB output copy without an intervening RGB888 palette. | [tests/quant/palette/direct/0002_rgb_wire.t](../../../tests/quant/palette/direct/0002_rgb_wire.t) |
+| OC-462 | Round standalone HLS lightness directly from retained gamma samples. | [tests/quant/palette/direct/0003_hls_wire.t](../../../tests/quant/palette/direct/0003_hls_wire.t) |
+| OC-463 | Use original, unrounded centers for standalone exact lookup. | [tests/quant/palette/direct/0004_unsnapped_lookup.t](../../../tests/quant/palette/direct/0004_unsnapped_lookup.t) |
+| OC-464 | Reading the mutable byte getter does not discard native palette precision. | [tests/quant/palette/direct/0005_getter_read.t](../../../tests/quant/palette/direct/0005_getter_read.t) |
+| OC-465 | Actual writes through the byte getter replace the working palette before lookup. | [tests/quant/palette/direct/0006_getter_write.t](../../../tests/quant/palette/direct/0006_getter_write.t) |
+| OC-466 | Explicit byte palette assignment replaces float precision even when bytes equal its shadow. | [tests/quant/palette/direct/0007_setter_same_bytes.t](../../../tests/quant/palette/direct/0007_setter_same_bytes.t) |
+| OC-467 | Genuine RGB888 initialization retains its byte palette and wire values. | [tests/quant/palette/direct/0008_byte_control.t](../../../tests/quant/palette/direct/0008_byte_control.t) |
+| OC-468 | Float/byte/float reinitialization selects the appropriate palette on each call. | [tests/quant/palette/direct/0009_reinitialize.t](../../../tests/quant/palette/direct/0009_reinitialize.t) |
+| OC-469 | Two standalone dither contexts retain independent byte/native state. | [tests/quant/palette/direct/0010_independent_contexts.t](../../../tests/quant/palette/direct/0010_independent_contexts.t) |
+| OC-470 | Allocation failures cannot publish partial native output or silently use byte fallback; later initialization recovers. | [tests/quant/palette/direct/0011_allocation_recovery.t](../../../tests/quant/palette/direct/0011_allocation_recovery.t) |
+| OC-471 | Nonfinite native construction fails before output and permits a later finite initialization. | [tests/quant/palette/direct/0012_nonfinite_recovery.t](../../../tests/quant/palette/direct/0012_nonfinite_recovery.t) |
+| OC-472 | A native gamma palette rejects a changed non-gamma query format before output and recovers when gamma format returns. | [tests/quant/palette/direct/0013_format_recovery.t](../../../tests/quant/palette/direct/0013_format_recovery.t) |
+| OC-473 | RGB888 query storage does not discard an already native gamma palette. | [tests/quant/palette/direct/0014_byte_queries.t](../../../tests/quant/palette/direct/0014_byte_queries.t) |
+| OC-474 | Repeated RGB/HLS/RGB output preserves the working palette and destination values. | [tests/quant/palette/direct/0015_output_reuse.t](../../../tests/quant/palette/direct/0015_output_reuse.t) |
+| OC-475 | Standalone FS uses the retained float palette and propagates independently derived horizontal residuals. | [tests/quant/palette/direct/0016_fs_values.t](../../../tests/quant/palette/direct/0016_fs_values.t) |
+| OC-476 | Reconcile getter writes before the serializer snapshots native output mode. | [tests/quant/palette/direct/0017_getter_write_wire.t](../../../tests/quant/palette/direct/0017_getter_write_wire.t) |
+| OC-477 | A byte palette setter changes lookup geometry before index selection. | [tests/quant/palette/direct/0018_setter_lookup.t](../../../tests/quant/palette/direct/0018_setter_lookup.t) |
+| OC-478 | An explicit byte palette assignment recovers from a failed native build. | [tests/quant/palette/direct/0019_failed_build_byte_recovery.t](../../../tests/quant/palette/direct/0019_failed_build_byte_recovery.t) |
+| OC-479 | Temporal application of a native standalone palette rejects before output and ordinary reuse recovers. | [tests/quant/palette/direct/0020_temporal_recovery.t](../../../tests/quant/palette/direct/0020_temporal_recovery.t) |
+| OC-480 | Ordinary float reinitialization selects native precision after high-color initialization. | [tests/quant/palette/direct/0021_highcolor_reinitialize.t](../../../tests/quant/palette/direct/0021_highcolor_reinitialize.t) |
 
 ### Defensive and malformed-input tests
 

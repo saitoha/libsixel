@@ -296,6 +296,13 @@ struct sixel_dither {
     /* Keep extended working values and separate RGB101/HLS output views.
      * This algorithm contract is independent of the output primaries. */
     int use_rgb101_palette;
+    /* Standalone RGBFLOAT32 initialization owns a native palette too.
+     * Zero is legacy, -1 requires reinitialization after a failed build,
+     * and a positive count identifies the immutable compatibility shadow.
+     * Comparing this bounded snapshot detects writes through get_palette()
+     * without penalizing read-only access or allocating per image pixel. */
+    int standalone_palette_colors;
+    unsigned char standalone_palette_bytes[SIXEL_PALETTE_MAX * 3];
     /* High-color skips palette preparation. Its per-encoder destination
      * definition is refreshed on every frame, including cached contexts.
      * The core prepares one local transform before any band workers start. */
@@ -305,6 +312,10 @@ struct sixel_dither {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* Reconcile mutable byte access before workers borrow a native palette. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_prepare_standalone_palette(sixel_dither_t *dither);
 
 /* apply palette */
 SIXEL_INTERNAL_API sixel_index_t *

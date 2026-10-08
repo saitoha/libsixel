@@ -1453,6 +1453,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0039_CLI_COLOR_AUTO \
     -DBUILD_TEST_0040_CLI_COLOR_JOB \
     -DBUILD_TEST_0033_STDIN_INTERRUPT \
+    -DBUILD_TEST_0001_FLOAT_PALETTE \
     -DBUILD_TEST_0051_P3_PALETTE_CONTRACT \
     -DBUILD_TEST_0054_P3_ENCODER_CONTRACT \
     -DBUILD_TEST_0055_P3_MAPFILE_CONTRACT \
@@ -5369,6 +5370,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0044_kcenter_packed_alpha_layouts.c \
     quant/palette/0045_snap_output_grid.c \
     quant/palette/0048_snap_partial_once.c \
+    quant/palette/direct/0001_float_palette.c \
     quant/palette/0051_p3_palette_contract.c \
     quant/palette/0054_p3_encoder_contract.c \
     quant/palette/0055_p3_mapfile_contract.c \

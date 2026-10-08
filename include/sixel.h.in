@@ -1197,7 +1197,14 @@ sixel_dither_ref(sixel_dither_t *dither); /* dither context object */
 SIXELAPI void
 sixel_dither_unref(sixel_dither_t *dither); /* dither context object */
 
-/* initialize internal palette from specified pixel buffer */
+/*
+ * Initialize the palette from the buffer format specified by pixelformat.
+ * RGBFLOAT32 uses three float components per pixel, despite the byte-pointer
+ * signature. Default CPU initialization with inactive snap retains its float
+ * palette through lookup and rounds only the separate SIXEL output copy.
+ * A failed native palette build requires successful reinitialization or an
+ * explicit byte palette assignment before encoding again.
+ */
 SIXELAPI SIXELSTATUS
 sixel_dither_initialize(
     sixel_dither_t *dither,                    /* dither context object */
@@ -1274,12 +1281,16 @@ SIXELAPI @attr_func_deprecated@ int /* typoed! remains for compatibility. */
 sixel_dither_get_num_of_histgram_colors(
     sixel_dither_t /* in */ *dither);  /* dither context object */
 
-/* get palette */
+/*
+ * Borrow mutable compatibility bytes. Reading does not discard a native
+ * float palette. A write makes the byte view authoritative at the next apply
+ * or encode; the pointer must not be retained across reinitialization.
+ */
 SIXELAPI @attr_func_deprecated@ unsigned char *
 sixel_dither_get_palette(
     sixel_dither_t /* in */ *dither);  /* dither context object */
 
-/* set palette */
+/* Assign an authoritative byte palette, replacing retained float precision. */
 SIXELAPI void
 sixel_dither_set_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
@@ -1338,7 +1349,12 @@ typedef void * (* sixel_allocator_function)(size_t size);
 extern "C" {
 #endif
 
-/* convert pixels into sixel format and write it to output context */
+/*
+ * Convert pixels into SIXEL and write to the output context. The dither's
+ * pixelformat determines buffer layout; pixels may point to float components
+ * cast to unsigned char *. The depth argument is retained for compatibility.
+ * Encoding may modify the caller's pixel buffer.
+ */
 SIXELAPI SIXELSTATUS
 sixel_encode(
     unsigned char  /* in */ *pixels,     /* pixel bytes */
