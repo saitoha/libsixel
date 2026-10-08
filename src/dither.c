@@ -2265,6 +2265,7 @@ sixel_dither_new(
     (*ppdither)->palette_snap_exact = 0;
     (*ppdither)->use_rgb101_palette = 0;
     (*ppdither)->standalone_palette_colors = 0;
+    (*ppdither)->standalone_palette_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
     (*ppdither)->highcolor_output_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
     (*ppdither)->pipeline_6delta_rgb101 = 0;
     (*ppdither)->pipeline_6delta_hls = 0;
@@ -2908,6 +2909,37 @@ sixel_dither_initialize_with_palette_attempt(
                                             attempt);
 }
 
+/* Publish the destination cache and byte shadow only for the palette's
+ * recorded domain. Query setters must never reinterpret those coordinates. */
+static SIXELSTATUS
+sixel_dither_prepare_standalone_output(sixel_dither_t *dither)
+{
+    sixel_palette_entries_view_t view;
+    SIXELSTATUS status;
+    int source_colorspace;
+
+    source_colorspace = sixel_pixelformat_get_colorspace(
+        dither->standalone_palette_pixelformat);
+    status = sixel_palette_prepare_output(dither->palette, source_colorspace,
+        SIXEL_PALETTE_OUTPUT_LEGACY, SIXEL_COLORSPACE_GAMMA);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    memset(&view, 0, sizeof(view));
+    status = dither->palette->vtbl->get_entries(dither->palette, &view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (view.entries == NULL || view.depth != 3 || view.entry_count == 0U ||
+            view.entry_count > SIXEL_PALETTE_MAX) {
+        return SIXEL_LOGIC_ERROR;
+    }
+    memcpy(dither->standalone_palette_bytes, view.entries,
+        view.entry_count * 3U);
+    dither->standalone_palette_colors = (int)view.entry_count;
+    return SIXEL_OK;
+}
+
 SIXELAPI SIXELSTATUS
 sixel_dither_initialize(
     sixel_dither_t  /* in */ *dither,
@@ -2920,7 +2952,6 @@ sixel_dither_initialize(
     int             /* in */ quality_mode)
 {
     sixel_palette_build_attempt_t attempt;
-    sixel_palette_entries_view_t view;
     SIXELSTATUS status;
     int quantizer;
     int native;
@@ -2931,10 +2962,11 @@ sixel_dither_initialize(
     }
     count = (size_t)width * (size_t)height;
     /* Public initialization has no encoder-owned build/output attempt.
-     * Keep this first native contract in gamma RGB; other typed formats
+     * Gamma and linear RGB own their source domain; other typed formats
      * and policy combinations retain their existing initialization path. */
     quantizer = dither->quantize_model;
-    native = pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 &&
+    native = (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+        pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) &&
         (quantizer == SIXEL_QUANTIZE_MODEL_AUTO ||
          quantizer == SIXEL_QUANTIZE_MODEL_MEDIANCUT) &&
         dither->gpu_policy == SIXEL_GPU_POLICY_OFF &&
@@ -2949,6 +2981,7 @@ sixel_dither_initialize(
     dither->use_rgb101_palette = native;
     memset(&attempt, 0, sizeof(attempt));
     if (native) {
+        dither->standalone_palette_pixelformat = pixelformat;
         /* AUTO's unbinned public default is Heckbert, as in the encoder
          * resolver. Scope this effective choice to the one build only. */
         dither->quantize_model = SIXEL_QUANTIZE_MODEL_MEDIANCUT;
@@ -2962,24 +2995,7 @@ sixel_dither_initialize(
     if (native && SIXEL_SUCCEEDED(status)) {
         /* Cache the destination copy once. Lookup still owns the original
          * working values; preparing RGB101 never implicitly enables snap. */
-        status = sixel_palette_prepare_output(dither->palette,
-            SIXEL_COLORSPACE_GAMMA, SIXEL_PALETTE_OUTPUT_LEGACY,
-            SIXEL_COLORSPACE_GAMMA);
-        if (SIXEL_SUCCEEDED(status)) {
-            memset(&view, 0, sizeof(view));
-            status = dither->palette->vtbl->get_entries(dither->palette,
-                                                       &view);
-            if (SIXEL_SUCCEEDED(status) && (view.entries == NULL ||
-                    view.depth != 3 || view.entry_count == 0U ||
-                    view.entry_count > SIXEL_PALETTE_MAX)) {
-                status = SIXEL_LOGIC_ERROR;
-            }
-            if (SIXEL_SUCCEEDED(status)) {
-                memcpy(dither->standalone_palette_bytes, view.entries,
-                    view.entry_count * 3U);
-                dither->standalone_palette_colors = (int)view.entry_count;
-            }
-        }
+        status = sixel_dither_prepare_standalone_output(dither);
     }
     if (native && SIXEL_FAILED(status)) {
         /* Failed generation may have partially replaced entries. Never
@@ -3201,6 +3217,38 @@ sixel_dither_get_palette(
 }
 
 
+/* A byte assignment deliberately narrows working coordinates. Decode
+ * linear compatibility entries as byte / 255, then regenerate float lookup
+ * and gamma output views instead of treating them as gamma wire bytes. */
+static SIXELSTATUS
+sixel_dither_use_standalone_bytes(sixel_dither_t *dither)
+{
+    sixel_palette_float32_entries_request_t drop;
+    SIXELSTATUS status;
+
+    dither->use_rgb101_palette = 0;
+    dither->standalone_palette_colors = -1;
+    memset(&drop, 0, sizeof(drop));
+    status = dither->palette->vtbl->init_entries_float32(dither->palette, &drop);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (dither->standalone_palette_pixelformat ==
+            SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        dither->standalone_palette_colors = 0;
+        return SIXEL_OK;
+    }
+    status = sixel_dither_promote_palette_rgb888_to_float32(dither->palette,
+        dither->standalone_palette_pixelformat, dither->allocator);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_dither_prepare_standalone_output(dither);
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        dither->use_rgb101_palette = 1;
+    }
+    return status;
+}
+
 /* set palette */
 SIXELAPI void
 sixel_dither_set_palette(
@@ -3208,7 +3256,6 @@ sixel_dither_set_palette(
     unsigned char  /* in */ *palette)
 {
     sixel_palette_entries_request_t request;
-    sixel_palette_float32_entries_request_t drop;
     SIXELSTATUS status;
 
     if (dither == NULL || dither->palette == NULL) {
@@ -3224,12 +3271,7 @@ sixel_dither_set_palette(
         dither->use_rgb101_palette = 0;
         dither->standalone_palette_colors = -1;
         if (SIXEL_SUCCEEDED(status)) {
-            memset(&drop, 0, sizeof(drop));
-            status = dither->palette->vtbl->init_entries_float32(
-                dither->palette, &drop);
-            if (SIXEL_SUCCEEDED(status)) {
-                dither->standalone_palette_colors = 0;
-            }
+            (void)sixel_dither_use_standalone_bytes(dither);
         }
     }
     dither->palette_snap_exact = 0;
@@ -3242,7 +3284,6 @@ SIXELSTATUS
 sixel_dither_prepare_standalone_palette(sixel_dither_t *dither)
 {
     sixel_palette_entries_view_t view;
-    sixel_palette_float32_entries_request_t drop;
     SIXELSTATUS status;
 
     if (dither->standalone_palette_colors == 0) {
@@ -3265,15 +3306,10 @@ sixel_dither_prepare_standalone_palette(sixel_dither_t *dither)
     }
     if (memcmp(view.entries, dither->standalone_palette_bytes,
             view.entry_count * 3U) != 0) {
-        memset(&drop, 0, sizeof(drop));
-        status = dither->palette->vtbl->init_entries_float32(dither->palette,
-                                                           &drop);
-        if (SIXEL_FAILED(status)) {
+        status = sixel_dither_use_standalone_bytes(dither);
+        if (SIXEL_FAILED(status) || dither->standalone_palette_colors == 0) {
             return status;
         }
-        dither->standalone_palette_colors = 0;
-        dither->use_rgb101_palette = 0;
-        return SIXEL_OK;
     }
     if (dither->gpu_policy != SIXEL_GPU_POLICY_OFF ||
             dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
@@ -3283,11 +3319,13 @@ sixel_dither_prepare_standalone_palette(sixel_dither_t *dither)
     }
     /* Changing memory layout within gamma RGB is safe. A different color
      * domain needs a new palette, not a reinterpretation of its floats. */
-    if (dither->pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 &&
-            dither->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+    if (dither->pixelformat != dither->standalone_palette_pixelformat &&
+            !(dither->standalone_palette_pixelformat ==
+                SIXEL_PIXELFORMAT_RGBFLOAT32 &&
+              dither->pixelformat == SIXEL_PIXELFORMAT_RGB888)) {
         sixel_helper_set_additional_message(
-            "standalone float palette needs gamma RGB input or "
-            "reinitialization for another color space.");
+            "standalone float palette requires its initialized color "
+            "space; reinitialize before changing the query domain.");
         return SIXEL_BAD_ARGUMENT;
     }
     return SIXEL_OK;
