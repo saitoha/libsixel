@@ -391,6 +391,22 @@ Native sRGB/gamma [delta encoding](../../output/delta-encoding.md#native-float-c
 
 Direct tests observe the candidate passed to lookup. A/X references use wider integer modular equations; blue-noise references freeze the sums of the two fixed texture taps, without using production noise or conversion helpers. The float budget is `2e-6 + 2e-7 * abs(expected)` working-coordinate units, starting from the exact stored source: the absolute term covers bias arithmetic and the relative term covers rounding when adding that bias to an extended source. Exact byte tests use strength `0.5`; nonzero blue-noise truncation boundaries have at least `1/255` byte-unit margin, while A/X residues use binary-exact factors. Encoder centroid tests allow `3e-5` working-coordinate units for independent transfer/matrix/opponent transforms and float stores. Their wire triples have more than `0.03` RGB101 unit of rounding margin. Parallel tests independently calculate nearest-color distances from the retained palette and coordinate formula; they require a distance gap above `1e-5` and assert actual two-worker application, six-row bands and two-row overlap. These are value/dispatch contracts, separate from perceptual image comparisons.
 
+### Automatic positional strength
+
+When neither the `strength=VALUE` suboption nor its method-specific strength environment variable supplies a numeric value, positional strength is automatic. Let `K` be the actual number of paintable palette entries, excluding an appended reserved omission key. For `2 <= K <= 256`, the amplitude is `base + growth * (sqrt(256 / K) - 1)`:
+
+| Method | Base at 256 colors | Growth | At 64 colors | At 16 colors |
+| --- | --- | --- | --- | --- |
+| `a_dither` | 0.150 | 0.100 | 0.250 | 0.450 |
+| `x_dither` | 0.100 | 0.050 | 0.150 | 0.250 |
+| `bluenoise` | 0.055 | 0.080 | 0.135 | 0.295 |
+
+Zero or one paintable entry uses zero automatic amplitude; counts above 256 use the 256-color baseline. This continuous, inexpensive heuristic increases the chance of crossing a palette boundary at low color counts. It preserves the 256-color defaults without analyzing the image. It is not an image-specific optimum: stronger noise can reduce quality in flat artwork or UI images and can increase output size. Numeric strength, including zero, fixes the amplitude without any count scaling. The suboption takes precedence over the environment; an unset or invalid environment value leaves automatic selection active. `strength` accepts numeric values; automatic selection is requested by omitting the setting, not by a literal `auto` value.
+
+CPU byte, CPU float and GPU bluenoise resolve the same count rule. The value is recomputed from the current palette for each application, including encoder reuse and parallel bands, without overwriting the requested configuration or storing process-global state. It changes only the positional bias, not CMS, working-space conversion or feedback clamp policy. The workspace-unit amplitude described above still applies; this heuristic does not normalize perceptual distances between workspaces.
+
+The automatic-strength candidate tests use independent literal amplitudes for 256, 64, 16, 2 and 1 entries, including a reserved entry and a return to 256 entries. Their float tolerance is the candidate budget above. They also distinguish numeric zero, environment override, and bound numeric override from automatic selection.
+
 ## `a_dither`: addition-based positional dither
 
 ```text
@@ -406,11 +422,7 @@ b = strength * m
 candidate_8bit = source + 32b
 ```
 
-The arithmetic generates a repeatable, spatially stable threshold pattern
-without storing a matrix or mutable error buffer. The default strength is
-0.150. Increasing it makes palette decisions easier to perturb but also
-increases local color error; zero reduces the policy to the same candidates
-as `none`.
+The arithmetic generates a repeatable, spatially stable threshold pattern without storing a matrix or mutable error buffer. At 256 colors the automatic strength is 0.150; other counts follow the [automatic strength rule](#automatic-positional-strength). Increasing it makes palette decisions easier to perturb but also increases local color error; zero reduces the policy to the same candidates as `none`.
 
 Øyvind Kolås introduced this policy to libsixel. Its name and formula come
 from his [*a dither*](https://pippin.gimp.org/a_dither/) work, which searched
@@ -439,11 +451,7 @@ b = strength * m
 candidate_8bit = source + 32b
 ```
 
-Its default strength is 0.100. The xor changes the pattern's correlations; it
-does not make the result random. The same input coordinates, channel, and
-strength always produce the same candidate, and no preceding pixel can change
-it. The formula shares the origin and design motivation documented on the
-[*a dither*](https://pippin.gimp.org/a_dither/) page.
+At 256 colors the automatic strength is 0.100; other counts follow the [automatic strength rule](#automatic-positional-strength). The xor changes the pattern's correlations; it does not make the result random. The same input coordinates, channel, and strength always produce the same candidate, and no preceding pixel can change it. The formula shares the origin and design motivation documented on the [*a dither*](https://pippin.gimp.org/a_dither/) page.
 
 This is also `Theta(P)` with constant state. It improves MS-SSIM over `none`
 at every measured `K` and is effectively baseline speed in the endpoint
@@ -469,12 +477,7 @@ b = strength * (u + v - 1)
 candidate_8bit = source + 32b
 ```
 
-The default strength is 0.055. `phase=X,Y` moves the tile without changing
-its values, while `seed=N` deterministically derives a phase when no explicit
-phase is present. `channel=mono` shares the spatial perturbation across color
-channels; `channel=rgb` applies fixed channel offsets to decorrelate them.
-`gradient_factor=G` can attenuate noise using the prepared gradient map, and
-`size` currently accepts the embedded size 64.
+At 256 colors the automatic strength is 0.055; other counts follow the [automatic strength rule](#automatic-positional-strength). `phase=X,Y` moves the tile without changing its values, while `seed=N` deterministically derives a phase when no explicit phase is present. `channel=mono` shares the spatial perturbation across color channels; `channel=rgb` applies fixed channel offsets to decorrelate them. `gradient_factor=G` can attenuate noise using the prepared gradient map, and `size` currently accepts the embedded size 64.
 
 Like the arithmetic positional methods, `bluenoise` has no neighbor-to-neighbor
 feedback. Its table is fixed-size, so lookup and perturbation are `O(1)` per
@@ -990,11 +993,7 @@ cross-section in [Encoder Working Precision](../../precision/README.md#dither-po
 shows why this matters: dither residual arithmetic changes quality, size, and
 speed rather than merely changing an internal representation.
 
-Every spatial method uses explicit raster order so the figure compares kernels
-under one scan contract. This intentionally overrides `lso2`'s normal
-serpentine default. The positional-method strengths are pinned to their current
-defaults, and the blue-noise phase and channel mode are explicit. The command
-shape is:
+Every spatial method uses explicit raster order so the figure compares kernels under one scan contract. This intentionally overrides `lso2`'s normal serpentine default. The positional-method strengths are pinned to explicit fixed values, and the blue-noise phase and channel mode are explicit. The command shape is:
 
 ```text
 img2sixel \
@@ -1133,6 +1132,19 @@ The positional migration is covered by the following focused value and dispatch 
 | POS-59 | a byte band | [tests/processing/dither/positional/precision/0059_a_byte_band.t](../../../../tests/processing/dither/positional/precision/0059_a_byte_band.t) |
 | POS-60 | x byte band | [tests/processing/dither/positional/precision/0060_x_byte_band.t](../../../../tests/processing/dither/positional/precision/0060_x_byte_band.t) |
 | POS-61 | blue byte band | [tests/processing/dither/positional/precision/0061_blue_byte_band.t](../../../../tests/processing/dither/positional/precision/0061_blue_byte_band.t) |
+| POS-62 | a auto float, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0065_a_auto_float.t](../../../../tests/processing/dither/positional/precision/0065_a_auto_float.t) |
+| POS-63 | x auto float, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0066_x_auto_float.t](../../../../tests/processing/dither/positional/precision/0066_x_auto_float.t) |
+| POS-64 | blue auto float, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0067_blue_auto_float.t](../../../../tests/processing/dither/positional/precision/0067_blue_auto_float.t) |
+| POS-65 | a auto byte, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0068_a_auto_byte.t](../../../../tests/processing/dither/positional/precision/0068_a_auto_byte.t) |
+| POS-66 | x auto byte, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0069_x_auto_byte.t](../../../../tests/processing/dither/positional/precision/0069_x_auto_byte.t) |
+| POS-67 | blue auto byte, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0070_blue_auto_byte.t](../../../../tests/processing/dither/positional/precision/0070_blue_auto_byte.t) |
+| POS-68 | a strength env, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0071_a_strength_env.t](../../../../tests/processing/dither/positional/precision/0071_a_strength_env.t) |
+| POS-69 | x strength env, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0072_x_strength_env.t](../../../../tests/processing/dither/positional/precision/0072_x_strength_env.t) |
+| POS-70 | blue strength env, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0073_blue_strength_env.t](../../../../tests/processing/dither/positional/precision/0073_blue_strength_env.t) |
+| POS-71 | a strength override, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0074_a_strength_override.t](../../../../tests/processing/dither/positional/precision/0074_a_strength_override.t) |
+| POS-72 | x strength override, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0075_x_strength_override.t](../../../../tests/processing/dither/positional/precision/0075_x_strength_override.t) |
+| POS-73 | blue strength override, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0076_blue_strength_override.t](../../../../tests/processing/dither/positional/precision/0076_blue_strength_override.t) |
+| POS-74 | GPU auto strength matches independently specified CPU amplitudes across palette reuse and a reserved omission entry | [tests/processing/gpu-palette/0004_auto_strength.t](../../../../tests/processing/gpu-palette/0004_auto_strength.t) |
 
 ### Quality regression tests
 
@@ -1146,4 +1158,4 @@ The following 64x64 snake comparisons pin the admitted float path and verify act
 
 ### Coverage limits
 
-These tests cover opaque three-channel CPU candidates and the selected native float palette path. They do not establish temporal history, GPU, transparency, or every blue-noise phase/gradient combination. Byte controls protect the serial candidate rule, which uses absolute image coordinates so that output does not depend on band boundaries. The [quality measurements](#a_dither-addition-based-positional-dither) describe their recorded configurations and do not cover every combination of candidate path, palette path, and dither method.
+These tests cover opaque three-channel CPU candidates and the selected native float palette path. The GPU control covers automatic amplitude parity and excludes a reserved omission key from its count. These tests do not establish temporal history, general transparency handling, or every blue-noise phase/gradient combination. Byte controls protect the serial candidate rule, which uses absolute image coordinates so that output does not depend on band boundaries. The [quality measurements](#a_dither-addition-based-positional-dither) describe their recorded configurations and do not cover every combination of candidate path, palette path, and dither method.

@@ -25,11 +25,49 @@
 #ifndef LIBSIXEL_DITHER_COMMON_PIPELINE_H
 #define LIBSIXEL_DITHER_COMMON_PIPELINE_H
 
+#include <math.h>
+
 #include "dither.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* Resolve only the automatic amplitude. Numeric CLI/environment overrides
+ * remain absolute amplitudes and are applied by the consuming policy.
+ * Preserve the 256-color defaults and increase smoothly as paintable colors
+ * become sparse. This inexpensive heuristic deliberately does not analyze
+ * image content or claim perceptual normalization across working spaces. */
+static inline float
+sixel_dither_positional_auto_strength(int method, int ncolors)
+{
+    double base;
+    double growth;
+
+    if (ncolors <= 1) {
+        return 0.0f;
+    }
+    if (ncolors > 256) {
+        ncolors = 256;
+    }
+    switch (method) {
+    case SIXEL_DIFFUSE_A_DITHER:
+        base = 0.150;
+        growth = 0.100;
+        break;
+    case SIXEL_DIFFUSE_X_DITHER:
+        base = 0.100;
+        growth = 0.050;
+        break;
+    case SIXEL_DIFFUSE_BLUENOISE_DITHER:
+        base = 0.055;
+        growth = 0.080;
+        break;
+    default:
+        return 0.0f;
+    }
+    return (float)(base + growth * (sqrt(256.0 / ncolors) - 1.0));
+}
 
 void
 sixel_dither_pipeline_row_notify(sixel_dither_t *dither, int row_index);

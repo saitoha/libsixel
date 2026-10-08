@@ -77,7 +77,8 @@ positional_observe(sixel_lookup_policy_interface_t const *base,
         if (observer->mode == 6 && x == 1) {
             noise = 0.0;
         }
-        if ((observer->mode == 2 || observer->mode == 7)) {
+        if ((observer->mode == 2 || observer->mode == 7 ||
+                observer->mode == 9)) {
             byte_value = observer->bytes[pos + d] +
                 (int)(noise * observer->strength * 32.0);
             expected = byte_value < 0 ? 0
@@ -140,10 +141,18 @@ positional_query_test(int method, int mode, int space)
         SIXEL_PIXELFORMAT_OKLABFLOAT32, SIXEL_PIXELFORMAT_CIELABFLOAT32,
         SIXEL_PIXELFORMAT_DIN99DFLOAT32
     };
+    /* Independent contract values for 256, 64, reserved+64, 16, 2, 1,
+     * then 256 again. Reuse must not retain the preceding palette amplitude. */
+    static int const counts[] = {256, 64, 65, 16, 2, 1, 256};
+    static double const amplitudes[3][7] = {
+        {.15, .25, .25, .45, 1.181370849898476, 0, .15},
+        {.10, .15, .15, .25, .615685424949238, 0, .10},
+        {.055, .135, .135, .295, .880096679918781, 0, .055}
+    };
     float source[162];
     float original[162];
     unsigned char bytes[162];
-    unsigned char palette[6] = { 0, 0, 0, 255, 255, 255 };
+    unsigned char palette[768] = { 0, 0, 0, 255, 255, 255 };
     unsigned char *gradient;
     sixel_index_t result[54];
     sixel_dither_t *dither;
@@ -171,8 +180,8 @@ positional_query_test(int method, int mode, int space)
         bytes[n] = n % 3 == 0 ? 0 : n % 3 == 1 ? 255 : 128;
     }
     memcpy(original, source, sizeof(source));
-    if (SIXEL_FAILED(sixel_dither_new(&dither, 2, NULL)) ||
-            SIXEL_FAILED(create[mode == 2 || mode == 7][method](
+    if (SIXEL_FAILED(sixel_dither_new(&dither, mode >= 8 ? 256 : 2, NULL)) ||
+            SIXEL_FAILED(create[mode == 2 || mode == 7 || mode == 9][method](
                 dither->allocator, &object))) {
         goto end;
     }
@@ -191,7 +200,7 @@ positional_query_test(int method, int mode, int space)
     request.height = 18;
     request.band_origin = observer.origin;
     request.output_start = observer.origin + (mode == 3 || mode == 7 ? 2 : 0);
-    request.data = (mode == 2 || mode == 7) ? bytes
+    request.data = (mode == 2 || mode == 7 || mode == 9) ? bytes
         : (unsigned char *)(void *)source;
     request.palette = palette;
     request.result = result;
@@ -212,11 +221,24 @@ positional_query_test(int method, int mode, int space)
         dither->bluenoise_gradient_factor_override = 1;
         dither->bluenoise_gradient_factor = 1.0f;
     }
-    for (pass = 0; pass < (mode == 5 ? 2 : 1); ++pass) {
+    for (pass = 0; pass < (mode >= 8 ? 7 : mode == 5 ? 2 : 1); ++pass) {
         observer.calls = observer.failed = 0;
         observer.strength = mode == 0 || pass ? 0.0 : .5;
         observer.serpentine = mode == 3 || mode == 4 || mode == 7 || pass;
         positional_config(dither, (float)observer.strength, mode == 4);
+        if (mode >= 8) {
+            dither->ncolors = counts[pass];
+            dither->keycolor_reserved = pass == 2;
+            dither->keycolor = pass == 2 ? 64 : -1;
+            observer.strength = mode <= 9 ? amplitudes[method][pass]
+                : mode == 10 ? .5 : pass == 1 ? 0.0 : .25;
+            positional_config(dither, (float)observer.strength, 0);
+            if (mode != 11) {
+                dither->a_dither_strength_override = 0;
+                dither->x_dither_strength_override = 0;
+                dither->bluenoise_strength_override = 0;
+            }
+        }
         /* Reprepare must update scan/config, independently of the residual
          * clamp setting. Position-only kernels have no error feedback. */
         if (SIXEL_FAILED(sixel_dither_set_clamp_policy(dither,
@@ -224,7 +246,7 @@ positional_query_test(int method, int mode, int space)
                 1.01))) {
             goto end;
         }
-        prepare.pixelformat = (mode == 2 || mode == 7)
+        prepare.pixelformat = (mode == 2 || mode == 7 || mode == 9)
             ? SIXEL_PIXELFORMAT_RGB888 : formats[space];
         prepare.method_for_scan = observer.serpentine
             ? SIXEL_SCAN_SERPENTINE : SIXEL_SCAN_RASTER;

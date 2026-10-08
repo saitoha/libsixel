@@ -1130,6 +1130,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
 	processing/gpu-palette/0002_reserved_key.c \
 	processing/gpu-palette/0003_fade_history.c \
+	processing/gpu-palette/0004_auto_strength.c \
 	processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
 	processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -2832,6 +2833,18 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/dither/positional/precision/0059_a_byte_band.c \
 	processing/dither/positional/precision/0060_x_byte_band.c \
 	processing/dither/positional/precision/0061_blue_byte_band.c \
+	processing/dither/positional/precision/0076_blue_strength_override.c \
+	processing/dither/positional/precision/0075_x_strength_override.c \
+	processing/dither/positional/precision/0074_a_strength_override.c \
+	processing/dither/positional/precision/0073_blue_strength_env.c \
+	processing/dither/positional/precision/0072_x_strength_env.c \
+	processing/dither/positional/precision/0071_a_strength_env.c \
+	processing/dither/positional/precision/0070_blue_auto_byte.c \
+	processing/dither/positional/precision/0069_x_auto_byte.c \
+	processing/dither/positional/precision/0068_a_auto_byte.c \
+	processing/dither/positional/precision/0067_blue_auto_float.c \
+	processing/dither/positional/precision/0066_x_auto_float.c \
+	processing/dither/positional/precision/0065_a_auto_float.c \
 	processing/dither/positional_reference.h \
 	processing/dither/positional/precision/0001_a_zero_gamma.c \
 	processing/dither/positional/precision/0002_a_zero_linear.c \
@@ -4265,6 +4278,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0002_reserved_key.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0003_fade_history.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0004_auto_strength.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.$(OBJEXT) \
@@ -5930,6 +5944,18 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0059_a_byte_band.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0060_x_byte_band.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0061_blue_byte_band.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0076_blue_strength_override.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0075_x_strength_override.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0074_a_strength_override.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0073_blue_strength_env.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0072_x_strength_env.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0071_a_strength_env.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0070_blue_auto_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0069_x_auto_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0068_a_auto_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0067_blue_auto_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0066_x_auto_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0065_a_auto_float.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0001_a_zero_gamma.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0002_a_zero_linear.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/precision/test_runner-0003_a_zero_oklab.$(OBJEXT) \
@@ -8397,6 +8423,18 @@ am__depfiles_remade =  \
 	processing/dither/positional/precision/$(DEPDIR)/test_runner-0059_a_byte_band.Po \
 	processing/dither/positional/precision/$(DEPDIR)/test_runner-0060_x_byte_band.Po \
 	processing/dither/positional/precision/$(DEPDIR)/test_runner-0061_blue_byte_band.Po \
+	processing/dither/positional/precision/$(DEPDIR)/test_runner-0065_a_auto_float.Po \
+	processing/dither/positional/precision/$(DEPDIR)/test_runner-0066_x_auto_float.Po \
+	processing/dither/positional/precision/$(DEPDIR)/test_runner-0067_blue_auto_float.Po \
+	processing/dither/positional/precision/$(DEPDIR)/test_runner-0068_a_auto_byte.Po \
+	processing/dither/positional/precision/$(DEPDIR)/test_runner-0069_x_auto_byte.Po \
+	processing/dither/positional/precision/$(DEPDIR)/test_runner-0070_blue_auto_byte.Po \
+	processing/dither/positional/precision/$(DEPDIR)/test_runner-0071_a_strength_env.Po \
+	processing/dither/positional/precision/$(DEPDIR)/test_runner-0072_x_strength_env.Po \
+	processing/dither/positional/precision/$(DEPDIR)/test_runner-0073_blue_strength_env.Po \
+	processing/dither/positional/precision/$(DEPDIR)/test_runner-0074_a_strength_override.Po \
+	processing/dither/positional/precision/$(DEPDIR)/test_runner-0075_x_strength_override.Po \
+	processing/dither/positional/precision/$(DEPDIR)/test_runner-0076_blue_strength_override.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po \
@@ -8507,6 +8545,7 @@ am__depfiles_remade =  \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0002_reserved_key.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0003_fade_history.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0004_auto_strength.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po \
@@ -11029,6 +11068,18 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_A_BYTE_BAND \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0060_X_BYTE_BAND \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_BLUE_BYTE_BAND \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0076_BLUE_STRENGTH_OVERRIDE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0075_X_STRENGTH_OVERRIDE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0074_A_STRENGTH_OVERRIDE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0073_BLUE_STRENGTH_ENV \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0072_X_STRENGTH_ENV \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0071_A_STRENGTH_ENV \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0070_BLUE_AUTO_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0069_X_AUTO_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0068_A_AUTO_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0067_BLUE_AUTO_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_X_AUTO_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_A_AUTO_FLOAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_A_ZERO_GAMMA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_A_ZERO_LINEAR \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_A_ZERO_OKLAB \
@@ -11378,6 +11429,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_RESERVED_KEY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_FADE_HISTORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_AUTO_STRENGTH \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
@@ -14390,6 +14442,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0002_reserved_key.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0003_fade_history.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0004_auto_strength.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -16097,6 +16150,18 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0059_a_byte_band.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0060_x_byte_band.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0061_blue_byte_band.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0076_blue_strength_override.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0075_x_strength_override.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0074_a_strength_override.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0073_blue_strength_env.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0072_x_strength_env.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0071_a_strength_env.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0070_blue_auto_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0069_x_auto_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0068_a_auto_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0067_blue_auto_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0066_x_auto_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0065_a_auto_float.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional_reference.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0001_a_zero_gamma.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/precision/0002_a_zero_linear.c \
@@ -19842,6 +19907,9 @@ processing/gpu-palette/test_runner-0002_reserved_key.$(OBJEXT):  \
 	processing/gpu-palette/$(am__dirstamp) \
 	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-palette/test_runner-0003_fade_history.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0004_auto_strength.$(OBJEXT):  \
 	processing/gpu-palette/$(am__dirstamp) \
 	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-dequant/$(am__dirstamp):
@@ -25254,6 +25322,42 @@ processing/dither/positional/precision/test_runner-0060_x_byte_band.$(OBJEXT):  
 processing/dither/positional/precision/test_runner-0061_blue_byte_band.$(OBJEXT):  \
 	processing/dither/positional/precision/$(am__dirstamp) \
 	processing/dither/positional/precision/$(DEPDIR)/$(am__dirstamp)
+processing/dither/positional/precision/test_runner-0076_blue_strength_override.$(OBJEXT):  \
+	processing/dither/positional/precision/$(am__dirstamp) \
+	processing/dither/positional/precision/$(DEPDIR)/$(am__dirstamp)
+processing/dither/positional/precision/test_runner-0075_x_strength_override.$(OBJEXT):  \
+	processing/dither/positional/precision/$(am__dirstamp) \
+	processing/dither/positional/precision/$(DEPDIR)/$(am__dirstamp)
+processing/dither/positional/precision/test_runner-0074_a_strength_override.$(OBJEXT):  \
+	processing/dither/positional/precision/$(am__dirstamp) \
+	processing/dither/positional/precision/$(DEPDIR)/$(am__dirstamp)
+processing/dither/positional/precision/test_runner-0073_blue_strength_env.$(OBJEXT):  \
+	processing/dither/positional/precision/$(am__dirstamp) \
+	processing/dither/positional/precision/$(DEPDIR)/$(am__dirstamp)
+processing/dither/positional/precision/test_runner-0072_x_strength_env.$(OBJEXT):  \
+	processing/dither/positional/precision/$(am__dirstamp) \
+	processing/dither/positional/precision/$(DEPDIR)/$(am__dirstamp)
+processing/dither/positional/precision/test_runner-0071_a_strength_env.$(OBJEXT):  \
+	processing/dither/positional/precision/$(am__dirstamp) \
+	processing/dither/positional/precision/$(DEPDIR)/$(am__dirstamp)
+processing/dither/positional/precision/test_runner-0070_blue_auto_byte.$(OBJEXT):  \
+	processing/dither/positional/precision/$(am__dirstamp) \
+	processing/dither/positional/precision/$(DEPDIR)/$(am__dirstamp)
+processing/dither/positional/precision/test_runner-0069_x_auto_byte.$(OBJEXT):  \
+	processing/dither/positional/precision/$(am__dirstamp) \
+	processing/dither/positional/precision/$(DEPDIR)/$(am__dirstamp)
+processing/dither/positional/precision/test_runner-0068_a_auto_byte.$(OBJEXT):  \
+	processing/dither/positional/precision/$(am__dirstamp) \
+	processing/dither/positional/precision/$(DEPDIR)/$(am__dirstamp)
+processing/dither/positional/precision/test_runner-0067_blue_auto_float.$(OBJEXT):  \
+	processing/dither/positional/precision/$(am__dirstamp) \
+	processing/dither/positional/precision/$(DEPDIR)/$(am__dirstamp)
+processing/dither/positional/precision/test_runner-0066_x_auto_float.$(OBJEXT):  \
+	processing/dither/positional/precision/$(am__dirstamp) \
+	processing/dither/positional/precision/$(DEPDIR)/$(am__dirstamp)
+processing/dither/positional/precision/test_runner-0065_a_auto_float.$(OBJEXT):  \
+	processing/dither/positional/precision/$(am__dirstamp) \
+	processing/dither/positional/precision/$(DEPDIR)/$(am__dirstamp)
 processing/dither/positional/precision/test_runner-0001_a_zero_gamma.$(OBJEXT):  \
 	processing/dither/positional/precision/$(am__dirstamp) \
 	processing/dither/positional/precision/$(DEPDIR)/$(am__dirstamp)
@@ -28784,6 +28888,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/positional/precision/$(DEPDIR)/test_runner-0059_a_byte_band.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/positional/precision/$(DEPDIR)/test_runner-0060_x_byte_band.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/positional/precision/$(DEPDIR)/test_runner-0061_blue_byte_band.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/positional/precision/$(DEPDIR)/test_runner-0065_a_auto_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/positional/precision/$(DEPDIR)/test_runner-0066_x_auto_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/positional/precision/$(DEPDIR)/test_runner-0067_blue_auto_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/positional/precision/$(DEPDIR)/test_runner-0068_a_auto_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/positional/precision/$(DEPDIR)/test_runner-0069_x_auto_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/positional/precision/$(DEPDIR)/test_runner-0070_blue_auto_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/positional/precision/$(DEPDIR)/test_runner-0071_a_strength_env.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/positional/precision/$(DEPDIR)/test_runner-0072_x_strength_env.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/positional/precision/$(DEPDIR)/test_runner-0073_blue_strength_env.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/positional/precision/$(DEPDIR)/test_runner-0074_a_strength_override.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/positional/precision/$(DEPDIR)/test_runner-0075_x_strength_override.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/positional/precision/$(DEPDIR)/test_runner-0076_blue_strength_override.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po@am__quote@ # am--include-marker
@@ -28894,6 +29010,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0002_reserved_key.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0003_fade_history.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0004_auto_strength.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po@am__quote@ # am--include-marker
@@ -43914,6 +44031,20 @@ processing/gpu-palette/test_runner-0003_fade_history.obj: processing/gpu-palette
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0003_fade_history.c' object='processing/gpu-palette/test_runner-0003_fade_history.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0003_fade_history.obj `if test -f 'processing/gpu-palette/0003_fade_history.c'; then $(CYGPATH_W) 'processing/gpu-palette/0003_fade_history.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0003_fade_history.c'; fi`
+
+processing/gpu-palette/test_runner-0004_auto_strength.o: processing/gpu-palette/0004_auto_strength.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0004_auto_strength.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0004_auto_strength.Tpo -c -o processing/gpu-palette/test_runner-0004_auto_strength.o `test -f 'processing/gpu-palette/0004_auto_strength.c' || echo '$(srcdir)/'`processing/gpu-palette/0004_auto_strength.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0004_auto_strength.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0004_auto_strength.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0004_auto_strength.c' object='processing/gpu-palette/test_runner-0004_auto_strength.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0004_auto_strength.o `test -f 'processing/gpu-palette/0004_auto_strength.c' || echo '$(srcdir)/'`processing/gpu-palette/0004_auto_strength.c
+
+processing/gpu-palette/test_runner-0004_auto_strength.obj: processing/gpu-palette/0004_auto_strength.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0004_auto_strength.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0004_auto_strength.Tpo -c -o processing/gpu-palette/test_runner-0004_auto_strength.obj `if test -f 'processing/gpu-palette/0004_auto_strength.c'; then $(CYGPATH_W) 'processing/gpu-palette/0004_auto_strength.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0004_auto_strength.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0004_auto_strength.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0004_auto_strength.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0004_auto_strength.c' object='processing/gpu-palette/test_runner-0004_auto_strength.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0004_auto_strength.obj `if test -f 'processing/gpu-palette/0004_auto_strength.c'; then $(CYGPATH_W) 'processing/gpu-palette/0004_auto_strength.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0004_auto_strength.c'; fi`
 
 processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o: processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o -MD -MP -MF processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Tpo -c -o processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o `test -f 'processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c' || echo '$(srcdir)/'`processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c
@@ -67224,6 +67355,174 @@ processing/dither/positional/precision/test_runner-0061_blue_byte_band.obj: proc
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0061_blue_byte_band.c' object='processing/dither/positional/precision/test_runner-0061_blue_byte_band.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0061_blue_byte_band.obj `if test -f 'processing/dither/positional/precision/0061_blue_byte_band.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0061_blue_byte_band.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0061_blue_byte_band.c'; fi`
+
+processing/dither/positional/precision/test_runner-0076_blue_strength_override.o: processing/dither/positional/precision/0076_blue_strength_override.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0076_blue_strength_override.o -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0076_blue_strength_override.Tpo -c -o processing/dither/positional/precision/test_runner-0076_blue_strength_override.o `test -f 'processing/dither/positional/precision/0076_blue_strength_override.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0076_blue_strength_override.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0076_blue_strength_override.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0076_blue_strength_override.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0076_blue_strength_override.c' object='processing/dither/positional/precision/test_runner-0076_blue_strength_override.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0076_blue_strength_override.o `test -f 'processing/dither/positional/precision/0076_blue_strength_override.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0076_blue_strength_override.c
+
+processing/dither/positional/precision/test_runner-0076_blue_strength_override.obj: processing/dither/positional/precision/0076_blue_strength_override.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0076_blue_strength_override.obj -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0076_blue_strength_override.Tpo -c -o processing/dither/positional/precision/test_runner-0076_blue_strength_override.obj `if test -f 'processing/dither/positional/precision/0076_blue_strength_override.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0076_blue_strength_override.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0076_blue_strength_override.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0076_blue_strength_override.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0076_blue_strength_override.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0076_blue_strength_override.c' object='processing/dither/positional/precision/test_runner-0076_blue_strength_override.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0076_blue_strength_override.obj `if test -f 'processing/dither/positional/precision/0076_blue_strength_override.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0076_blue_strength_override.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0076_blue_strength_override.c'; fi`
+
+processing/dither/positional/precision/test_runner-0075_x_strength_override.o: processing/dither/positional/precision/0075_x_strength_override.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0075_x_strength_override.o -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0075_x_strength_override.Tpo -c -o processing/dither/positional/precision/test_runner-0075_x_strength_override.o `test -f 'processing/dither/positional/precision/0075_x_strength_override.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0075_x_strength_override.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0075_x_strength_override.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0075_x_strength_override.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0075_x_strength_override.c' object='processing/dither/positional/precision/test_runner-0075_x_strength_override.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0075_x_strength_override.o `test -f 'processing/dither/positional/precision/0075_x_strength_override.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0075_x_strength_override.c
+
+processing/dither/positional/precision/test_runner-0075_x_strength_override.obj: processing/dither/positional/precision/0075_x_strength_override.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0075_x_strength_override.obj -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0075_x_strength_override.Tpo -c -o processing/dither/positional/precision/test_runner-0075_x_strength_override.obj `if test -f 'processing/dither/positional/precision/0075_x_strength_override.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0075_x_strength_override.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0075_x_strength_override.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0075_x_strength_override.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0075_x_strength_override.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0075_x_strength_override.c' object='processing/dither/positional/precision/test_runner-0075_x_strength_override.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0075_x_strength_override.obj `if test -f 'processing/dither/positional/precision/0075_x_strength_override.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0075_x_strength_override.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0075_x_strength_override.c'; fi`
+
+processing/dither/positional/precision/test_runner-0074_a_strength_override.o: processing/dither/positional/precision/0074_a_strength_override.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0074_a_strength_override.o -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0074_a_strength_override.Tpo -c -o processing/dither/positional/precision/test_runner-0074_a_strength_override.o `test -f 'processing/dither/positional/precision/0074_a_strength_override.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0074_a_strength_override.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0074_a_strength_override.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0074_a_strength_override.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0074_a_strength_override.c' object='processing/dither/positional/precision/test_runner-0074_a_strength_override.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0074_a_strength_override.o `test -f 'processing/dither/positional/precision/0074_a_strength_override.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0074_a_strength_override.c
+
+processing/dither/positional/precision/test_runner-0074_a_strength_override.obj: processing/dither/positional/precision/0074_a_strength_override.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0074_a_strength_override.obj -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0074_a_strength_override.Tpo -c -o processing/dither/positional/precision/test_runner-0074_a_strength_override.obj `if test -f 'processing/dither/positional/precision/0074_a_strength_override.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0074_a_strength_override.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0074_a_strength_override.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0074_a_strength_override.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0074_a_strength_override.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0074_a_strength_override.c' object='processing/dither/positional/precision/test_runner-0074_a_strength_override.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0074_a_strength_override.obj `if test -f 'processing/dither/positional/precision/0074_a_strength_override.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0074_a_strength_override.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0074_a_strength_override.c'; fi`
+
+processing/dither/positional/precision/test_runner-0073_blue_strength_env.o: processing/dither/positional/precision/0073_blue_strength_env.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0073_blue_strength_env.o -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0073_blue_strength_env.Tpo -c -o processing/dither/positional/precision/test_runner-0073_blue_strength_env.o `test -f 'processing/dither/positional/precision/0073_blue_strength_env.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0073_blue_strength_env.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0073_blue_strength_env.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0073_blue_strength_env.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0073_blue_strength_env.c' object='processing/dither/positional/precision/test_runner-0073_blue_strength_env.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0073_blue_strength_env.o `test -f 'processing/dither/positional/precision/0073_blue_strength_env.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0073_blue_strength_env.c
+
+processing/dither/positional/precision/test_runner-0073_blue_strength_env.obj: processing/dither/positional/precision/0073_blue_strength_env.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0073_blue_strength_env.obj -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0073_blue_strength_env.Tpo -c -o processing/dither/positional/precision/test_runner-0073_blue_strength_env.obj `if test -f 'processing/dither/positional/precision/0073_blue_strength_env.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0073_blue_strength_env.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0073_blue_strength_env.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0073_blue_strength_env.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0073_blue_strength_env.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0073_blue_strength_env.c' object='processing/dither/positional/precision/test_runner-0073_blue_strength_env.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0073_blue_strength_env.obj `if test -f 'processing/dither/positional/precision/0073_blue_strength_env.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0073_blue_strength_env.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0073_blue_strength_env.c'; fi`
+
+processing/dither/positional/precision/test_runner-0072_x_strength_env.o: processing/dither/positional/precision/0072_x_strength_env.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0072_x_strength_env.o -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0072_x_strength_env.Tpo -c -o processing/dither/positional/precision/test_runner-0072_x_strength_env.o `test -f 'processing/dither/positional/precision/0072_x_strength_env.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0072_x_strength_env.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0072_x_strength_env.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0072_x_strength_env.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0072_x_strength_env.c' object='processing/dither/positional/precision/test_runner-0072_x_strength_env.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0072_x_strength_env.o `test -f 'processing/dither/positional/precision/0072_x_strength_env.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0072_x_strength_env.c
+
+processing/dither/positional/precision/test_runner-0072_x_strength_env.obj: processing/dither/positional/precision/0072_x_strength_env.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0072_x_strength_env.obj -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0072_x_strength_env.Tpo -c -o processing/dither/positional/precision/test_runner-0072_x_strength_env.obj `if test -f 'processing/dither/positional/precision/0072_x_strength_env.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0072_x_strength_env.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0072_x_strength_env.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0072_x_strength_env.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0072_x_strength_env.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0072_x_strength_env.c' object='processing/dither/positional/precision/test_runner-0072_x_strength_env.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0072_x_strength_env.obj `if test -f 'processing/dither/positional/precision/0072_x_strength_env.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0072_x_strength_env.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0072_x_strength_env.c'; fi`
+
+processing/dither/positional/precision/test_runner-0071_a_strength_env.o: processing/dither/positional/precision/0071_a_strength_env.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0071_a_strength_env.o -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0071_a_strength_env.Tpo -c -o processing/dither/positional/precision/test_runner-0071_a_strength_env.o `test -f 'processing/dither/positional/precision/0071_a_strength_env.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0071_a_strength_env.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0071_a_strength_env.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0071_a_strength_env.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0071_a_strength_env.c' object='processing/dither/positional/precision/test_runner-0071_a_strength_env.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0071_a_strength_env.o `test -f 'processing/dither/positional/precision/0071_a_strength_env.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0071_a_strength_env.c
+
+processing/dither/positional/precision/test_runner-0071_a_strength_env.obj: processing/dither/positional/precision/0071_a_strength_env.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0071_a_strength_env.obj -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0071_a_strength_env.Tpo -c -o processing/dither/positional/precision/test_runner-0071_a_strength_env.obj `if test -f 'processing/dither/positional/precision/0071_a_strength_env.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0071_a_strength_env.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0071_a_strength_env.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0071_a_strength_env.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0071_a_strength_env.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0071_a_strength_env.c' object='processing/dither/positional/precision/test_runner-0071_a_strength_env.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0071_a_strength_env.obj `if test -f 'processing/dither/positional/precision/0071_a_strength_env.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0071_a_strength_env.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0071_a_strength_env.c'; fi`
+
+processing/dither/positional/precision/test_runner-0070_blue_auto_byte.o: processing/dither/positional/precision/0070_blue_auto_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0070_blue_auto_byte.o -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0070_blue_auto_byte.Tpo -c -o processing/dither/positional/precision/test_runner-0070_blue_auto_byte.o `test -f 'processing/dither/positional/precision/0070_blue_auto_byte.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0070_blue_auto_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0070_blue_auto_byte.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0070_blue_auto_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0070_blue_auto_byte.c' object='processing/dither/positional/precision/test_runner-0070_blue_auto_byte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0070_blue_auto_byte.o `test -f 'processing/dither/positional/precision/0070_blue_auto_byte.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0070_blue_auto_byte.c
+
+processing/dither/positional/precision/test_runner-0070_blue_auto_byte.obj: processing/dither/positional/precision/0070_blue_auto_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0070_blue_auto_byte.obj -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0070_blue_auto_byte.Tpo -c -o processing/dither/positional/precision/test_runner-0070_blue_auto_byte.obj `if test -f 'processing/dither/positional/precision/0070_blue_auto_byte.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0070_blue_auto_byte.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0070_blue_auto_byte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0070_blue_auto_byte.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0070_blue_auto_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0070_blue_auto_byte.c' object='processing/dither/positional/precision/test_runner-0070_blue_auto_byte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0070_blue_auto_byte.obj `if test -f 'processing/dither/positional/precision/0070_blue_auto_byte.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0070_blue_auto_byte.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0070_blue_auto_byte.c'; fi`
+
+processing/dither/positional/precision/test_runner-0069_x_auto_byte.o: processing/dither/positional/precision/0069_x_auto_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0069_x_auto_byte.o -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0069_x_auto_byte.Tpo -c -o processing/dither/positional/precision/test_runner-0069_x_auto_byte.o `test -f 'processing/dither/positional/precision/0069_x_auto_byte.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0069_x_auto_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0069_x_auto_byte.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0069_x_auto_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0069_x_auto_byte.c' object='processing/dither/positional/precision/test_runner-0069_x_auto_byte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0069_x_auto_byte.o `test -f 'processing/dither/positional/precision/0069_x_auto_byte.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0069_x_auto_byte.c
+
+processing/dither/positional/precision/test_runner-0069_x_auto_byte.obj: processing/dither/positional/precision/0069_x_auto_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0069_x_auto_byte.obj -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0069_x_auto_byte.Tpo -c -o processing/dither/positional/precision/test_runner-0069_x_auto_byte.obj `if test -f 'processing/dither/positional/precision/0069_x_auto_byte.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0069_x_auto_byte.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0069_x_auto_byte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0069_x_auto_byte.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0069_x_auto_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0069_x_auto_byte.c' object='processing/dither/positional/precision/test_runner-0069_x_auto_byte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0069_x_auto_byte.obj `if test -f 'processing/dither/positional/precision/0069_x_auto_byte.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0069_x_auto_byte.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0069_x_auto_byte.c'; fi`
+
+processing/dither/positional/precision/test_runner-0068_a_auto_byte.o: processing/dither/positional/precision/0068_a_auto_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0068_a_auto_byte.o -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0068_a_auto_byte.Tpo -c -o processing/dither/positional/precision/test_runner-0068_a_auto_byte.o `test -f 'processing/dither/positional/precision/0068_a_auto_byte.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0068_a_auto_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0068_a_auto_byte.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0068_a_auto_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0068_a_auto_byte.c' object='processing/dither/positional/precision/test_runner-0068_a_auto_byte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0068_a_auto_byte.o `test -f 'processing/dither/positional/precision/0068_a_auto_byte.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0068_a_auto_byte.c
+
+processing/dither/positional/precision/test_runner-0068_a_auto_byte.obj: processing/dither/positional/precision/0068_a_auto_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0068_a_auto_byte.obj -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0068_a_auto_byte.Tpo -c -o processing/dither/positional/precision/test_runner-0068_a_auto_byte.obj `if test -f 'processing/dither/positional/precision/0068_a_auto_byte.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0068_a_auto_byte.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0068_a_auto_byte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0068_a_auto_byte.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0068_a_auto_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0068_a_auto_byte.c' object='processing/dither/positional/precision/test_runner-0068_a_auto_byte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0068_a_auto_byte.obj `if test -f 'processing/dither/positional/precision/0068_a_auto_byte.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0068_a_auto_byte.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0068_a_auto_byte.c'; fi`
+
+processing/dither/positional/precision/test_runner-0067_blue_auto_float.o: processing/dither/positional/precision/0067_blue_auto_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0067_blue_auto_float.o -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0067_blue_auto_float.Tpo -c -o processing/dither/positional/precision/test_runner-0067_blue_auto_float.o `test -f 'processing/dither/positional/precision/0067_blue_auto_float.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0067_blue_auto_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0067_blue_auto_float.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0067_blue_auto_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0067_blue_auto_float.c' object='processing/dither/positional/precision/test_runner-0067_blue_auto_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0067_blue_auto_float.o `test -f 'processing/dither/positional/precision/0067_blue_auto_float.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0067_blue_auto_float.c
+
+processing/dither/positional/precision/test_runner-0067_blue_auto_float.obj: processing/dither/positional/precision/0067_blue_auto_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0067_blue_auto_float.obj -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0067_blue_auto_float.Tpo -c -o processing/dither/positional/precision/test_runner-0067_blue_auto_float.obj `if test -f 'processing/dither/positional/precision/0067_blue_auto_float.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0067_blue_auto_float.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0067_blue_auto_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0067_blue_auto_float.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0067_blue_auto_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0067_blue_auto_float.c' object='processing/dither/positional/precision/test_runner-0067_blue_auto_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0067_blue_auto_float.obj `if test -f 'processing/dither/positional/precision/0067_blue_auto_float.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0067_blue_auto_float.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0067_blue_auto_float.c'; fi`
+
+processing/dither/positional/precision/test_runner-0066_x_auto_float.o: processing/dither/positional/precision/0066_x_auto_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0066_x_auto_float.o -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0066_x_auto_float.Tpo -c -o processing/dither/positional/precision/test_runner-0066_x_auto_float.o `test -f 'processing/dither/positional/precision/0066_x_auto_float.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0066_x_auto_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0066_x_auto_float.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0066_x_auto_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0066_x_auto_float.c' object='processing/dither/positional/precision/test_runner-0066_x_auto_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0066_x_auto_float.o `test -f 'processing/dither/positional/precision/0066_x_auto_float.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0066_x_auto_float.c
+
+processing/dither/positional/precision/test_runner-0066_x_auto_float.obj: processing/dither/positional/precision/0066_x_auto_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0066_x_auto_float.obj -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0066_x_auto_float.Tpo -c -o processing/dither/positional/precision/test_runner-0066_x_auto_float.obj `if test -f 'processing/dither/positional/precision/0066_x_auto_float.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0066_x_auto_float.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0066_x_auto_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0066_x_auto_float.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0066_x_auto_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0066_x_auto_float.c' object='processing/dither/positional/precision/test_runner-0066_x_auto_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0066_x_auto_float.obj `if test -f 'processing/dither/positional/precision/0066_x_auto_float.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0066_x_auto_float.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0066_x_auto_float.c'; fi`
+
+processing/dither/positional/precision/test_runner-0065_a_auto_float.o: processing/dither/positional/precision/0065_a_auto_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0065_a_auto_float.o -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0065_a_auto_float.Tpo -c -o processing/dither/positional/precision/test_runner-0065_a_auto_float.o `test -f 'processing/dither/positional/precision/0065_a_auto_float.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0065_a_auto_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0065_a_auto_float.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0065_a_auto_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0065_a_auto_float.c' object='processing/dither/positional/precision/test_runner-0065_a_auto_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0065_a_auto_float.o `test -f 'processing/dither/positional/precision/0065_a_auto_float.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0065_a_auto_float.c
+
+processing/dither/positional/precision/test_runner-0065_a_auto_float.obj: processing/dither/positional/precision/0065_a_auto_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0065_a_auto_float.obj -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0065_a_auto_float.Tpo -c -o processing/dither/positional/precision/test_runner-0065_a_auto_float.obj `if test -f 'processing/dither/positional/precision/0065_a_auto_float.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0065_a_auto_float.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0065_a_auto_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/positional/precision/$(DEPDIR)/test_runner-0065_a_auto_float.Tpo processing/dither/positional/precision/$(DEPDIR)/test_runner-0065_a_auto_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/positional/precision/0065_a_auto_float.c' object='processing/dither/positional/precision/test_runner-0065_a_auto_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/positional/precision/test_runner-0065_a_auto_float.obj `if test -f 'processing/dither/positional/precision/0065_a_auto_float.c'; then $(CYGPATH_W) 'processing/dither/positional/precision/0065_a_auto_float.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/positional/precision/0065_a_auto_float.c'; fi`
 
 processing/dither/positional/precision/test_runner-0001_a_zero_gamma.o: processing/dither/positional/precision/0001_a_zero_gamma.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/positional/precision/test_runner-0001_a_zero_gamma.o -MD -MP -MF processing/dither/positional/precision/$(DEPDIR)/test_runner-0001_a_zero_gamma.Tpo -c -o processing/dither/positional/precision/test_runner-0001_a_zero_gamma.o `test -f 'processing/dither/positional/precision/0001_a_zero_gamma.c' || echo '$(srcdir)/'`processing/dither/positional/precision/0001_a_zero_gamma.c

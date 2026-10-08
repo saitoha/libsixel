@@ -620,7 +620,7 @@ sub-option:
 .br
 sub-option:
 .br
-\fBstrength=VALUE\fP -> floating point amplitude (default 0.150)
+\fBstrength=VALUE\fP -> fixed amplitude (unset: palette-size auto; 256 colors: 0.150)
 .br
 \fBTVALUE\fP -> short form of \fBstrength\fP
 .br
@@ -630,7 +630,7 @@ sub-option:
 .br
 sub-option:
 .br
-\fBstrength=VALUE\fP -> floating point amplitude (default 0.100)
+\fBstrength=VALUE\fP -> fixed amplitude (unset: palette-size auto; 256 colors: 0.100)
 .br
 \fBTVALUE\fP -> short form of \fBstrength\fP
 .br
@@ -640,7 +640,7 @@ sub-option:
 .br
 sub-option:
 .br
-\fBstrength=VALUE\fP -> floating point amplitude (default 0.055)
+\fBstrength=VALUE\fP -> fixed amplitude (unset: palette-size auto; 256 colors: 0.055)
 .br
 \fBgradient_factor=VALUE\fP -> gamma for gradient attenuation (\fB<=0\fP disables; default 0)
 .br
@@ -705,6 +705,17 @@ stbn source=S, diffusion=D, strength=T, motion_adapt=M,
 scene_cut_reset=C, scene_detect=E, alpha_guard=A, perceptual_weight=P,
 fastpath=F; bluenoise strength=T, gradient_factor=G, phase=P, seed=S,
 channel=C, size=Z.
+
+.br
+For a_dither, x_dither and bluenoise, an omitted strength selects automatic
+amplitude by the actual paintable palette count K, excluding a reserved
+omission key. For 2 through 256 colors, use
+base + growth * (sqrt(256/K) - 1), with (base,growth) equal to
+(0.150,0.100), (0.100,0.050) and (0.055,0.080), respectively.
+One color uses zero automatic amplitude. Numeric strength fixes the amplitude
+without scaling; the suboption overrides the environment. The same rule
+applies to byte, float and GPU paths, in their existing working coordinates.
+This is a simple heuristic, not an image-specific quality optimum.
 .TP 5
 .B \-f \fIFINDTYPE\fP, \-\-find\-largest=\fIFINDTYPE\fP
 choose method for finding the largest dimension of median
@@ -1913,7 +1924,7 @@ Overridden by \fB\-d stbn:fastpath=0|1\fP.
 .B SIXEL_DITHER_BLUENOISE_STRENGTH
 .br
 scale bluenoise ordered dither strength when \fB\-d bluenoise\fP is set.
-Accepts 0.0-2.0; defaults to 0.055.
+Numeric amplitude; unset selects palette-size auto (256 colors: 0.055).
 .TP 5
 .B SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR
 .br
@@ -1924,11 +1935,11 @@ Values <= 0 disable gradient modulation.
 .br
 override positional a_dither strength. The
 \fB\-d a_dither:strength=VALUE\fP suboption (short form \fB:TVALUE\fP)
-takes precedence. Defaults to 0.150 when unset.
+takes precedence. When unset, use palette-size auto (256 colors: 0.150).
 .TP 5
 .B SIXEL_DITHER_X_DITHER_STRENGTH
 .br
-override positional x_dither strength. Defaults to 0.100 when unset.
+override positional x_dither strength. When unset, use palette-size auto (256 colors: 0.100).
 The \fB-d x_dither:strength=VALUE\fP suboption
 (short form \fB:TVALUE\fP) takes precedence.
 .TP 5

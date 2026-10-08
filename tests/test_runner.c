@@ -719,6 +719,7 @@ int test_filter_0045_filter_binning_stream_alpha_zero_disabled(
 int test_gpupal_0001_strtoul(int argc, char **argv);
 int test_gpupal_0002_reserved_key(int argc, char **argv);
 int test_gpupal_0003_fade_history(int argc, char **argv);
+int test_gpupal_0004_auto_strength(int argc, char **argv);
 int test_positional_0048_gpu_6delta(int argc, char **argv);
 int test_bluenoise_0052_keep_offset(int argc, char **argv);
 int test_gpudeq_0001_strtoul(int argc, char **argv);
@@ -941,6 +942,18 @@ int test_extended_lookup(int argc, char **argv);
 int test_positional_0059(int argc, char **argv);
 int test_positional_0060(int argc, char **argv);
 int test_positional_0061(int argc, char **argv);
+int test_positional_0076(int argc, char **argv);
+int test_positional_0075(int argc, char **argv);
+int test_positional_0074(int argc, char **argv);
+int test_positional_0073(int argc, char **argv);
+int test_positional_0072(int argc, char **argv);
+int test_positional_0071(int argc, char **argv);
+int test_positional_0070(int argc, char **argv);
+int test_positional_0069(int argc, char **argv);
+int test_positional_0068(int argc, char **argv);
+int test_positional_0067(int argc, char **argv);
+int test_positional_0066(int argc, char **argv);
+int test_positional_0065(int argc, char **argv);
 int test_positional_0001(int argc, char **argv);
 int test_positional_0002(int argc, char **argv);
 int test_positional_0003(int argc, char **argv);
@@ -4276,6 +4289,7 @@ static test_entry_t const test_entries[] = {
       test_gpupal_0001_strtoul },
     { "gpu-palette/0002_reserved_key", test_gpupal_0002_reserved_key },
     { "gpu-palette/0003_fade_history", test_gpupal_0003_fade_history },
+    { "gpu-palette/0004_auto_strength", test_gpupal_0004_auto_strength },
     { "dither/positional/0048_gpu_6delta", test_positional_0048_gpu_6delta },
     { "dither/bluenoise/0052_keep_offset", test_bluenoise_0052_keep_offset },
     { "gpu-dequant/0001_gpu_dequant_threshold_strtoul",
@@ -4707,6 +4721,30 @@ static test_entry_t const test_entries[] = {
      test_positional_0060},
     {"dither/positional/precision/0061_blue_byte_band",
      test_positional_0061},
+    {"dither/positional/precision/0076_blue_strength_override",
+     test_positional_0076},
+    {"dither/positional/precision/0075_x_strength_override",
+     test_positional_0075},
+    {"dither/positional/precision/0074_a_strength_override",
+     test_positional_0074},
+    {"dither/positional/precision/0073_blue_strength_env",
+     test_positional_0073},
+    {"dither/positional/precision/0072_x_strength_env",
+     test_positional_0072},
+    {"dither/positional/precision/0071_a_strength_env",
+     test_positional_0071},
+    {"dither/positional/precision/0070_blue_auto_byte",
+     test_positional_0070},
+    {"dither/positional/precision/0069_x_auto_byte",
+     test_positional_0069},
+    {"dither/positional/precision/0068_a_auto_byte",
+     test_positional_0068},
+    {"dither/positional/precision/0067_blue_auto_float",
+     test_positional_0067},
+    {"dither/positional/precision/0066_x_auto_float",
+     test_positional_0066},
+    {"dither/positional/precision/0065_a_auto_float",
+     test_positional_0065},
     {"dither/positional/precision/0001_a_zero_gamma",
      test_positional_0001},
     {"dither/positional/precision/0002_a_zero_linear",

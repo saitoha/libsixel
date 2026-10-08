@@ -1,0 +1,11 @@
+/* SPDX-License-Identifier: MIT */
+/* Observe a auto byte at the consuming lookup boundary. */
+int positional_query_test(int, int, int);
+
+int
+test_positional_0068(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    return positional_query_test(0, 9, 0);
+}

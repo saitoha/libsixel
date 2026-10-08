@@ -1386,27 +1386,6 @@ sixel_dither_resolve_indexes(
     return status;
 }
 
-/*
- * Number of palette entries the nearest-color lookup may choose from.  A
- * reserved transparency key sits at the end of the palette and is excluded:
- * it is not a color the image contains, and letting it win would silently
- * turn those pixels transparent.  The key entry stays in the palette so the
- * encoder can still emit it.
- */
-static int
-sixel_dither_lookup_ncolors(sixel_dither_t const *dither)
-{
-    if (dither == NULL) {
-        return 0;
-    }
-    if (dither->keycolor_reserved != 0
-            && dither->keycolor == dither->ncolors - 1
-            && dither->ncolors > 1) {
-        return dither->ncolors - 1;
-    }
-
-    return dither->ncolors;
-}
 
 static int
 sixel_dither_rgb888_delta_within(unsigned char const *left,

@@ -91,7 +91,7 @@ sixel_bluenoise_hash32(unsigned int value)
 }
 
 static void
-sixel_bluenoise_conf_init(sixel_bluenoise_conf_t *conf)
+sixel_bluenoise_conf_init(sixel_bluenoise_conf_t *conf, int ncolors)
 {
     int seed;
     unsigned int hash;
@@ -102,7 +102,8 @@ sixel_bluenoise_conf_init(sixel_bluenoise_conf_t *conf)
         return;
     }
 
-    conf->strength = 0.055f;
+    conf->strength = sixel_dither_positional_auto_strength(
+        SIXEL_DIFFUSE_BLUENOISE_DITHER, ncolors);
     conf->gradient_factor = 0.0f;
     conf->phase_x = 0;
     conf->phase_y = 0;
@@ -456,7 +457,8 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    sixel_bluenoise_conf_init(&bluenoise_conf);
+    sixel_bluenoise_conf_init(&bluenoise_conf,
+                             sixel_dither_lookup_ncolors(dither));
     sixel_bluenoise_conf_apply_dither_overrides(&bluenoise_conf, dither);
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
@@ -659,7 +661,8 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    sixel_bluenoise_conf_init(&bluenoise_conf);
+    sixel_bluenoise_conf_init(&bluenoise_conf,
+                             sixel_dither_lookup_ncolors(dither));
     sixel_bluenoise_conf_apply_dither_overrides(&bluenoise_conf, dither);
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);

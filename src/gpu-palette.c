@@ -34,6 +34,7 @@
 #include "gpu-palette.h"
 #include "bluenoise_64x64.h"
 #include "options.h"
+#include "dither-common-pipeline.h"
 
 typedef struct sixel_gpu_bluenoise_conf {
     float strength;
@@ -165,7 +166,8 @@ sixel_gpu_palette_hash32(unsigned int value)
 }
 
 static void
-sixel_gpu_palette_bluenoise_conf_init(sixel_gpu_bluenoise_conf_t *conf)
+sixel_gpu_palette_bluenoise_conf_init(sixel_gpu_bluenoise_conf_t *conf,
+                                     int ncolors)
 {
     int seed;
     unsigned int hash;
@@ -176,7 +178,8 @@ sixel_gpu_palette_bluenoise_conf_init(sixel_gpu_bluenoise_conf_t *conf)
         return;
     }
 
-    conf->strength = 0.055f;
+    conf->strength = sixel_dither_positional_auto_strength(
+        SIXEL_DIFFUSE_BLUENOISE_DITHER, ncolors);
     conf->gradient_factor = 0.0f;
     conf->phase_x = 0;
     conf->phase_y = 0;
@@ -362,7 +365,7 @@ sixel_gpu_palette_prepare_effective_request(
 
     *effective = *request;
     memset(&bluenoise_conf, 0, sizeof(bluenoise_conf));
-    sixel_gpu_palette_bluenoise_conf_init(&bluenoise_conf);
+    sixel_gpu_palette_bluenoise_conf_init(&bluenoise_conf, request->ncolors);
     sixel_gpu_palette_apply_bluenoise_overrides(&bluenoise_conf, request);
     effective->bluenoise_strength = bluenoise_conf.strength;
     effective->bluenoise_gradient_factor = bluenoise_conf.gradient_factor;

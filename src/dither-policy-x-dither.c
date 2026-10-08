@@ -64,12 +64,12 @@ typedef struct sixel_dither_policy_x_dither_context {
  * encoder-bound suboption override it.
  */
 static float
-sixel_dither_get_x_strength(sixel_dither_t const *dither,
-                            float default_strength)
+sixel_dither_get_x_strength(sixel_dither_t const *dither)
 {
     float value;
 
-    value = default_strength;
+    value = sixel_dither_positional_auto_strength(
+        SIXEL_DIFFUSE_X_DITHER, sixel_dither_lookup_ncolors(dither));
     (void)sixel_option_resolve_registered_float_binding(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         "x_dither",
@@ -232,7 +232,7 @@ sixel_dither_apply_x_dither_8bit(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    strength = sixel_dither_get_x_strength(dither, 0.100f);
+    strength = sixel_dither_get_x_strength(dither);
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
 
@@ -421,7 +421,7 @@ sixel_dither_apply_x_dither_float32(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    strength = sixel_dither_get_x_strength(dither, 0.100f);
+    strength = sixel_dither_get_x_strength(dither);
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
 

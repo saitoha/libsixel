@@ -613,21 +613,21 @@ static cli_option_help_t const g_option_help_table[] = {
         "      a_dither   -> positionally stable arithmetic dither\n"
         "        sub-option:\n"
         "          strength=VALUE      -> floating point amplitude\n"
-        "                                 (default 0.150)\n"
+        "                                 (auto; 256 colors: 0.150)\n"
         "          TVALUE              -> short form of strength\n"
         "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
         "                                 (default raster)\n"
         "      x_dither   -> positionally stable arithmetic xor based dither\n"
         "        sub-option:\n"
         "          strength=VALUE      -> floating point amplitude\n"
-        "                                 (default 0.100)\n"
+        "                                 (auto; 256 colors: 0.100)\n"
         "          TVALUE              -> short form of strength\n"
         "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
         "                                 (default raster)\n"
         "      bluenoise  -> tileable blue-noise ordered dither\n"
         "        sub-option:\n"
         "          strength=VALUE      -> floating point amplitude\n"
-        "                                 (default 0.055)\n"
+        "                                 (auto; 256 colors: 0.055)\n"
         "          gradient_factor=VALUE\n"
         "                               -> gamma for gradient attenuation\n"
         "                                  (<=0 disables; default 0)\n"
@@ -1598,7 +1598,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DITHER_BLUENOISE_STRENGTH",
         "scale bluenoise ordered dither strength when -d bluenoise is set.\n"
-        "Accepts 0.0-2.0; defaults to 0.055."
+        "Numeric amplitude; unset selects palette-size auto (256 colors: 0.055)."
     },
     {
         "SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR",
@@ -1609,13 +1609,13 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_DITHER_A_DITHER_STRENGTH",
         "override positional a_dither strength. The -d a_dither\n"
         "suboption strength (short form TVALUE) takes precedence.\n"
-        "Defaults to 0.150 when unset."
+        "Unset selects palette-size auto (256 colors: 0.150)."
     },
     {
         "SIXEL_DITHER_X_DITHER_STRENGTH",
         "override positional x_dither strength. The -d x_dither\n"
         "suboption strength (short form TVALUE) takes precedence.\n"
-        "Defaults to 0.100 when unset."
+        "Unset selects palette-size auto (256 colors: 0.100)."
     },
     {
         "SIXEL_DITHER_BLUENOISE_PHASE",

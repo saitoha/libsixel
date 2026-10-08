@@ -994,6 +994,18 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0059_A_BYTE_BAND \
     -DBUILD_TEST_0060_X_BYTE_BAND \
     -DBUILD_TEST_0061_BLUE_BYTE_BAND \
+    -DBUILD_TEST_0076_BLUE_STRENGTH_OVERRIDE \
+    -DBUILD_TEST_0075_X_STRENGTH_OVERRIDE \
+    -DBUILD_TEST_0074_A_STRENGTH_OVERRIDE \
+    -DBUILD_TEST_0073_BLUE_STRENGTH_ENV \
+    -DBUILD_TEST_0072_X_STRENGTH_ENV \
+    -DBUILD_TEST_0071_A_STRENGTH_ENV \
+    -DBUILD_TEST_0070_BLUE_AUTO_BYTE \
+    -DBUILD_TEST_0069_X_AUTO_BYTE \
+    -DBUILD_TEST_0068_A_AUTO_BYTE \
+    -DBUILD_TEST_0067_BLUE_AUTO_FLOAT \
+    -DBUILD_TEST_0066_X_AUTO_FLOAT \
+    -DBUILD_TEST_0065_A_AUTO_FLOAT \
     -DBUILD_TEST_0001_A_ZERO_GAMMA \
     -DBUILD_TEST_0002_A_ZERO_LINEAR \
     -DBUILD_TEST_0003_A_ZERO_OKLAB \
@@ -1343,6 +1355,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0002_RESERVED_KEY \
     -DBUILD_TEST_0003_FADE_HISTORY \
+    -DBUILD_TEST_0004_AUTO_STRENGTH \
     -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
     -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
@@ -4324,6 +4337,7 @@ test_runner_SOURCES = test_runner.c \
     processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
     processing/gpu-palette/0002_reserved_key.c \
     processing/gpu-palette/0003_fade_history.c \
+    processing/gpu-palette/0004_auto_strength.c \
     processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
     processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -6031,6 +6045,18 @@ test_runner_SOURCES = test_runner.c \
     processing/dither/positional/precision/0059_a_byte_band.c \
     processing/dither/positional/precision/0060_x_byte_band.c \
     processing/dither/positional/precision/0061_blue_byte_band.c \
+    processing/dither/positional/precision/0076_blue_strength_override.c \
+    processing/dither/positional/precision/0075_x_strength_override.c \
+    processing/dither/positional/precision/0074_a_strength_override.c \
+    processing/dither/positional/precision/0073_blue_strength_env.c \
+    processing/dither/positional/precision/0072_x_strength_env.c \
+    processing/dither/positional/precision/0071_a_strength_env.c \
+    processing/dither/positional/precision/0070_blue_auto_byte.c \
+    processing/dither/positional/precision/0069_x_auto_byte.c \
+    processing/dither/positional/precision/0068_a_auto_byte.c \
+    processing/dither/positional/precision/0067_blue_auto_float.c \
+    processing/dither/positional/precision/0066_x_auto_float.c \
+    processing/dither/positional/precision/0065_a_auto_float.c \
     processing/dither/positional_reference.h \
     processing/dither/positional/precision/0001_a_zero_gamma.c \
     processing/dither/positional/precision/0002_a_zero_linear.c \
