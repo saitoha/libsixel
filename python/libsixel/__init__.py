@@ -579,7 +579,7 @@ def sixel_dither_get_palette(dither):
 def sixel_dither_set_palette(dither, palette):
     _sixel.sixel_dither_set_palette.restype = None
     _sixel.sixel_dither_set_palette.argtypes = [c_void_p, c_char_p]
-    cpalette = bytes(palette)
+    cpalette = bytes(bytearray(palette))
     _sixel.sixel_dither_set_palette(dither, cpalette)
 
 
