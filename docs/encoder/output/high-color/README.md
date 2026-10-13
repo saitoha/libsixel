@@ -43,7 +43,7 @@ High color is an alternate encoding path, not a larger value for `-p`.
 
 - It bypasses fixed-palette construction and fixed-palette nearest-color lookup. `-p`, `-b`, `-m`, and `-e` select incompatible color modes and are rejected when combined with `-I`.
 - The current CLI resolves palette-space diffusion to `none` for `-I`. Supplying `-d fs` or another diffusion method does not recreate the historical high-color diffusion path described in the 2014 article.
-- It converts source coordinates to the selected `-U gamma`, `-U linear`, `-U smpte-c` or `-U display-p3` destination before building lookup keys. Display P3 accepts RGB frames with optional separated alpha-zero masks, or gamma-coordinate packed alpha normalized before encoding, and CPU RGB or HLS SIXEL output, directly or within a terminal macro, or an ordinary PNG snapshot. See [destination samples](#destination-samples-and-precision) and [Output color space](../output-colorspace.md#scope-and-current-gaps).
+- It converts source coordinates to the selected `-U gamma`, `-U linear`, `-U smpte-c` or a [named RGB destination](../output-colorspace.md#named-destination-definitions) before building lookup keys. Display P3 accepts RGB frames with optional separated alpha-zero masks, or gamma-coordinate packed alpha normalized before encoding, and CPU RGB or HLS SIXEL output, directly or within a terminal macro, or an ordinary PNG snapshot. See [destination samples](#destination-samples-and-precision) and [Output color space](../output-colorspace.md#scope-and-current-gaps).
 - Register `#255` is an internal skip value for multi-pass painting. It also omits pixels marked by a separated source mask. Transparent offset is supported as a separate geometry feature; source alpha semantics follow the [alpha policy](../../../loader/alpha-policy/README.md).
 - Validation must use a direct decoder. A final indexed plane and final palette cannot represent the earlier colors painted before a register redefinition. Use `sixel2png --direct` (`-D`) for saved SIXEL. The encoder automatically selects direct decoding for high-color PNG snapshots, including Display P3 metadata and source omissions. See the [PNG writer boundary](../../../writers/png/README.md) for details.
 
@@ -56,6 +56,10 @@ The high-level encoder disables high-color diffusion. For float input or a nonid
 RGB888 input with identical source and destination coordinates keeps the byte path, its historical wire rounding and its lack of a converted image buffer. Converted no-diffusion input uses a temporary RGB float32 plane (12 bytes per pixel), plus a 256-entry float register table (3,072 bytes); packed byte input can also require the existing 3-byte normalization plane. The conversion validates the whole input before output begins. Nonfinite input or an invalid transform fails without writing an image; the caller's pixel format is not replaced by the temporary format, so the context remains reusable.
 
 Low-level callers that explicitly enable the legacy 15bpp diffusion routines still receive a bounded RGB888 diffusion plane after destination conversion. Those routines are not the native float palette-diffusion implementation and do not provide its clamp-policy semantics. Their float migration, source-alpha handling, retained delta history, and pass-scheduling redesign are separate limitations; the destination handoff does not establish support for them.
+
+### Named destination boundary
+
+The [named output definitions](../output-colorspace.md#named-destination-definitions) share this conversion and ownership path. Explicit `adobe-rgb` and `dci-p3` use their own primaries, white and transfer function under the same high-color restrictions. Each destination is tagged with its own ICC when saving a PNG snapshot.
 
 ### Display P3 boundary
 

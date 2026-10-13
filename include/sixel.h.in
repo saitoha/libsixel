@@ -807,6 +807,9 @@ typedef int SIXELSTATUS;
     /*   gamma   -> sRGB gamma encoded */
     /*   linear  -> linear RGB */
     /*   smpte-c -> SMPTE-C gamma encoded RGB */
+    /*   display-p3 -> P3/D65 with the sRGB transfer curve */
+    /*   adobe-rgb -> Adobe RGB (1998), D65, power 563/256 */
+    /*   dci-p3 -> P3/DCI white, power 2.6 */
 #define SIXEL_OPTFLAG_ORMODE            ('O')  /* -O, --ormode:
                                                   output ormode sixel image
                                                 */

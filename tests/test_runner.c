@@ -112,6 +112,50 @@ int test_qa_0011(int argc, char **argv);
 int test_qa_0012(int argc, char **argv);
 int test_qa_0013(int argc, char **argv);
 int test_qa_0017(int argc, char **argv);
+int test_named_output_0037(int argc, char **argv);
+int test_named_output_0038(int argc, char **argv);
+int test_named_output_0039(int argc, char **argv);
+int test_named_output_0040(int argc, char **argv);
+int test_named_output_0001(int argc, char **argv);
+int test_named_output_0002(int argc, char **argv);
+int test_named_output_0003(int argc, char **argv);
+int test_named_output_0004(int argc, char **argv);
+int test_named_output_0005(int argc, char **argv);
+int test_named_output_0006(int argc, char **argv);
+int test_named_output_0007(int argc, char **argv);
+int test_named_output_0008(int argc, char **argv);
+int test_named_output_0009(int argc, char **argv);
+int test_named_output_0010(int argc, char **argv);
+int test_named_output_0011(int argc, char **argv);
+int test_named_output_0012(int argc, char **argv);
+int test_named_output_0013(int argc, char **argv);
+int test_named_output_0014(int argc, char **argv);
+int test_named_output_0015(int argc, char **argv);
+int test_named_output_0016(int argc, char **argv);
+int test_named_output_0017(int argc, char **argv);
+int test_named_output_0018(int argc, char **argv);
+int test_named_output_0019(int argc, char **argv);
+int test_named_output_0020(int argc, char **argv);
+int test_named_output_0021(int argc, char **argv);
+int test_named_output_0022(int argc, char **argv);
+int test_named_output_0023(int argc, char **argv);
+int test_named_output_0024(int argc, char **argv);
+int test_named_output_0025(int argc, char **argv);
+int test_named_output_0026(int argc, char **argv);
+int test_named_output_0027(int argc, char **argv);
+int test_named_output_0028(int argc, char **argv);
+int test_named_output_0029(int argc, char **argv);
+int test_named_output_0030(int argc, char **argv);
+int test_named_output_0031(int argc, char **argv);
+int test_named_output_0032(int argc, char **argv);
+int test_named_output_0033(int argc, char **argv);
+int test_named_output_0034(int argc, char **argv);
+int test_png_color_0030(int argc, char **argv);
+int test_png_color_0031(int argc, char **argv);
+int test_png_color_0026(int argc, char **argv);
+int test_png_color_0027(int argc, char **argv);
+int test_png_color_0028(int argc, char **argv);
+int test_png_color_0029(int argc, char **argv);
 int test_cdef_0001(int argc, char **argv);
 int test_cdef_0002(int argc, char **argv);
 int test_cdef_0003(int argc, char **argv);
@@ -4560,6 +4604,62 @@ static test_entry_t const test_entries[] = {
     { "assessment/0012_spec_parse_invalid", test_qa_0012 },
     { "assessment/0013_pixel_delta_peak", test_qa_0013 },
     { "assessment/0017_ms_ssim_origin", test_qa_0017 },
+    { "quant/palette/named_output/0037_adobe_libpng", test_named_output_0037 },
+    { "quant/palette/named_output/0038_dci_libpng", test_named_output_0038 },
+    { "quant/palette/named_output/0039_adobe_libtiff", test_named_output_0039 },
+    { "quant/palette/named_output/0040_dci_libtiff", test_named_output_0040 },
+    { "quant/palette/named_output/0001_adobe_gamma", test_named_output_0001 },
+    { "quant/palette/named_output/0002_adobe_linear", test_named_output_0002 },
+    { "quant/palette/named_output/0003_adobe_oklab", test_named_output_0003 },
+    { "quant/palette/named_output/0004_adobe_cielab", test_named_output_0004 },
+    { "quant/palette/named_output/0005_adobe_din99d", test_named_output_0005 },
+    { "quant/palette/named_output/0006_adobe_center", test_named_output_0006 },
+    { "quant/palette/named_output/0007_adobe_medoids", test_named_output_0007 },
+    { "quant/palette/named_output/0008_adobe_heckbert",
+      test_named_output_0008 },
+    { "quant/palette/named_output/0009_adobe_highcolor",
+      test_named_output_0009 },
+    { "quant/palette/named_output/0010_adobe_reuse", test_named_output_0010 },
+    { "quant/palette/named_output/0011_adobe_snap_recovery",
+      test_named_output_0011 },
+    { "quant/palette/named_output/0012_adobe_option_atomicity",
+      test_named_output_0012 },
+    { "quant/palette/named_output/0013_adobe_xyz", test_named_output_0013 },
+    { "quant/palette/named_output/0014_adobe_icc_export",
+      test_named_output_0014 },
+    { "quant/palette/named_output/0015_dci_gamma", test_named_output_0015 },
+    { "quant/palette/named_output/0016_dci_linear", test_named_output_0016 },
+    { "quant/palette/named_output/0017_dci_oklab", test_named_output_0017 },
+    { "quant/palette/named_output/0018_dci_cielab", test_named_output_0018 },
+    { "quant/palette/named_output/0019_dci_din99d", test_named_output_0019 },
+    { "quant/palette/named_output/0020_dci_center", test_named_output_0020 },
+    { "quant/palette/named_output/0021_dci_medoids", test_named_output_0021 },
+    { "quant/palette/named_output/0022_dci_heckbert", test_named_output_0022 },
+    { "quant/palette/named_output/0023_dci_highcolor", test_named_output_0023 },
+    { "quant/palette/named_output/0024_dci_reuse", test_named_output_0024 },
+    { "quant/palette/named_output/0025_dci_snap_recovery",
+      test_named_output_0025 },
+    { "quant/palette/named_output/0026_dci_option_atomicity",
+      test_named_output_0026 },
+    { "quant/palette/named_output/0027_dci_xyz", test_named_output_0027 },
+    { "quant/palette/named_output/0028_dci_icc_export",
+      test_named_output_0028 },
+    { "quant/palette/named_output/0029_adobe_delta_switch",
+      test_named_output_0029 },
+    { "quant/palette/named_output/0030_adobe_hls", test_named_output_0030 },
+    { "quant/palette/named_output/0031_adobe_nan_recovery",
+      test_named_output_0031 },
+    { "quant/palette/named_output/0032_dci_delta_switch",
+      test_named_output_0032 },
+    { "quant/palette/named_output/0033_dci_hls", test_named_output_0033 },
+    { "quant/palette/named_output/0034_dci_nan_recovery",
+      test_named_output_0034 },
+    { "writer/png/0030_adobe_rgb_snapshot", test_png_color_0030 },
+    { "writer/png/0031_dci_p3_snapshot", test_png_color_0031 },
+    { "writer/png/0026_adobe_rgb_indexed", test_png_color_0026 },
+    { "writer/png/0027_dci_p3_indexed", test_png_color_0027 },
+    { "writer/png/0028_adobe_rgb_direct", test_png_color_0028 },
+    { "writer/png/0029_dci_p3_direct", test_png_color_0029 },
     { "cms/0001_named_xyz", test_cdef_0001 },
     { "cms/0002_simple_power", test_cdef_0002 },
     { "cms/0003_icc_source_lifetime", test_cdef_0003 },

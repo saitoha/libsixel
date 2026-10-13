@@ -697,6 +697,9 @@ SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U'  # -U OUTPUT_COLORSPACE, --output-colorspa
                                       #          gamma   -> sRGB gamma encoded output
                                       #          linear  -> linear RGB output
                                       #          smpte-c -> SMPTE-C gamma encoded output
+                                      #          display-p3 -> P3/D65 with sRGB transfer
+                                      #          adobe-rgb -> Adobe RGB (1998)
+                                      #          dci-p3 -> P3/DCI white with power 2.6
 SIXEL_OPTFLAG_ORMODE           = 'O'  # -O, --ormode: output ormode sixel image
 SIXEL_OPTFLAG_ALPHA_POLICY = 'A'  # -A POLICY, --alpha-policy=POLICY:
                                   #        select source alpha and omitted

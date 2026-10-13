@@ -289,9 +289,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/chunk-factory.h $(srcdir)/chunk-view.h \
 	$(srcdir)/cms.c $(srcdir)/png-chrm-arithmetic.c \
 	$(srcdir)/png-chrm-arithmetic.h $(srcdir)/cms.h \
-	$(srcdir)/cms-curv.h $(srcdir)/icc-parse.c \
-	$(srcdir)/icc-parse.h $(srcdir)/icc-apply.c \
-	$(srcdir)/icc-apply.h $(srcdir)/loader.c \
+	$(srcdir)/named-color.h $(srcdir)/cms-curv.h \
+	$(srcdir)/icc-parse.c $(srcdir)/icc-parse.h \
+	$(srcdir)/icc-apply.c $(srcdir)/icc-apply.h $(srcdir)/loader.c \
 	$(srcdir)/loader-gdk-pixbuf2.c \
 	$(srcdir)/loader-gnome-thumbnailer.c \
 	$(srcdir)/loader-coregraphics.c $(srcdir)/loader-quicklook.c \
@@ -1230,6 +1230,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/png-chrm-arithmetic.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/png-chrm-arithmetic.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/cms.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/named-color.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/cms-curv.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/icc-parse.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/icc-parse.h \

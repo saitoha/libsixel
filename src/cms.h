@@ -30,6 +30,7 @@
 #endif
 
 #include <stddef.h>
+#include "named-color.h"
 #include <sixel.h>
 
 #ifdef __cplusplus
@@ -263,6 +264,10 @@ typedef enum sixel_color_trc {
     SIXEL_COLOR_TRC_SRGB = 0,
     SIXEL_COLOR_TRC_POWER = 1
 } sixel_color_trc_t;
+
+/* The same registry drives encoder intent and decoder/profile export. */
+SIXEL_INTERNAL_API char const *
+sixel_cdef_named_name(int identity);
 
 SIXEL_INTERNAL_API sixel_color_def_t *
 sixel_cdef_name(char const *name);

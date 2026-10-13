@@ -3488,7 +3488,8 @@ sixel_decoder_decode(
      * Keep that basis through the file boundary; selecting a profile must
      * not reinterpret intermediate values as an sRGB conversion request. */
     if (!color.srgb) {
-        definition = sixel_cdef_name("display-p3");
+        definition = sixel_cdef_name(
+            sixel_cdef_named_name(decoder->input_colorspace));
         if (definition == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;

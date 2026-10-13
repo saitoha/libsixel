@@ -28,6 +28,7 @@
 #include <6cells.h>
 
 #include "palette-plan.h"
+#include "named-color.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -84,8 +85,10 @@ sixel_palette_build_attempt_finish(
 
 /* Private job policy; it is never a frame coordinate-space identifier. */
 enum sixel_palette_output_definition {
-    SIXEL_PALETTE_OUTPUT_LEGACY = 0,
-    SIXEL_PALETTE_OUTPUT_DISPLAY_P3 = 1
+    SIXEL_PALETTE_OUTPUT_LEGACY = SIXEL_NAMED_COLOR_SRGB,
+    SIXEL_PALETTE_OUTPUT_DISPLAY_P3 = SIXEL_NAMED_COLOR_DISPLAY_P3,
+    SIXEL_PALETTE_OUTPUT_ADOBE_RGB = SIXEL_NAMED_COLOR_ADOBE_RGB,
+    SIXEL_PALETTE_OUTPUT_DCI_P3 = SIXEL_NAMED_COLOR_DCI_P3
 };
 
 /* Keep the installed generate request ABI unchanged. This private entry

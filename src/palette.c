@@ -1777,7 +1777,7 @@ sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
 {
     sixel_palette_storage_t *storage;
     sixel_color_def_t *srgb;
-    sixel_color_def_t *p3;
+    sixel_color_def_t *destination;
     sixel_color_xform_t *forward;
     SIXELSTATUS status;
     unsigned char codes[SIXEL_PALETTE_MAX * 3];
@@ -1793,10 +1793,9 @@ sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
             (output_colorspace != SIXEL_COLORSPACE_GAMMA &&
              output_colorspace != SIXEL_COLORSPACE_LINEAR &&
              output_colorspace != SIXEL_COLORSPACE_SMPTEC) ||
-            (output_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
-             output_colorspace != SIXEL_COLORSPACE_GAMMA) ||
             (output_definition != SIXEL_PALETTE_OUTPUT_LEGACY &&
-             output_definition != SIXEL_PALETTE_OUTPUT_DISPLAY_P3) ||
+             output_colorspace != SIXEL_COLORSPACE_GAMMA) ||
+            sixel_cdef_named_name(output_definition) == NULL ||
             (source_colorspace != SIXEL_COLORSPACE_GAMMA &&
              source_colorspace != SIXEL_COLORSPACE_LINEAR &&
              source_colorspace != SIXEL_COLORSPACE_OKLAB &&
@@ -1816,15 +1815,16 @@ sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
     }
     status = SIXEL_BAD_ALLOCATION;
     srgb = NULL;
-    p3 = NULL;
+    destination = NULL;
     forward = NULL;
-    if (output_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+    if (output_definition != SIXEL_PALETTE_OUTPUT_LEGACY) {
         srgb = sixel_cdef_name("srgb");
-        p3 = sixel_cdef_name("display-p3");
-        if (srgb == NULL || p3 == NULL) {
+        destination = sixel_cdef_name(
+            sixel_cdef_named_name(output_definition));
+        if (srgb == NULL || destination == NULL) {
             goto end;
         }
-        forward = sixel_cxform_new(srgb, p3, 1);
+        forward = sixel_cxform_new(srgb, destination, 1);
         if (forward == NULL) {
             goto end;
         }
@@ -1864,9 +1864,9 @@ sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
      * Cached codes retain the same indices; no later reordering is allowed. */
     sixel_palette_clear_output(storage);
     storage->output_srgb = srgb;
-    storage->output_device = p3;
+    storage->output_device = destination;
     storage->output_colorspace = output_colorspace;
-    srgb = p3 = NULL;
+    srgb = destination = NULL;
     memcpy(storage->output_rgb101, codes, storage->entry_count * 3U);
     memcpy(storage->output_rgb_float, output_rgb,
         storage->entry_count * 3U * sizeof(float));
@@ -1875,7 +1875,7 @@ sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
 end:
     sixel_cxform_free(forward);
     sixel_cdef_free(srgb);
-    sixel_cdef_free(p3);
+    sixel_cdef_free(destination);
     return status;
 }
 

@@ -209,6 +209,7 @@ amalgamation_headers = files(
   '../src/frame.h',
   '../src/frame-normalize.h',
   '../src/scale.h',
+  '../src/named-color.h',
   '../src/options.h',
   '../src/encoder.h',
   '../src/decoder.h',

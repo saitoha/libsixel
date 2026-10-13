@@ -84,7 +84,7 @@ prefix \(dqpng:\(dq emits PNG data that reproduces the generated SIXEL
 stream. For ordinary palette SIXEL, the PNG keeps the palette indices
 and mirrors the quantized and dithered output. PNG selection preserves
 the ordinary native float palette path and the byte fast path.
-\fB\-U display-p3\fP snapshots record a Display P3 ICC profile; other
+Named \fB\-U\fP destinations record their RGB ICC profile; legacy
 output definitions retain the existing sRGB interpretation. In particular,
 linear and SMPTE-C snapshots are numeric previews, not matching-profile
 renditions. Native snapshots exclude macro/DRCS envelopes and OR mode.
@@ -1417,6 +1417,14 @@ smpte-c -> SMPTE-C gamma encoded output
 .br
 display-p3 -> Display P3 output for selected CPU palette or high-color paths
 .br
+adobe-rgb -> Adobe RGB (1998), D65 white and power 563/256
+.br
+dci-p3 -> P3 primaries, DCI white and power 2.6
+.br
+Adobe RGB and DCI-P3 use the same CPU float paths, with inactive snap.
+They are explicit output choices; auto negotiation still resolves sRGB/P3 only.
+The receiver must interpret emitted RGB in the selected space.
+.br
 auto[:timeout_ms=N] -> negotiate with the image destination on stdout
 .br
 The CLI-only auto choice uses the same stdout terminal for queries and
@@ -1787,9 +1795,9 @@ not recover higher source bit depth from the loader.
 .TP 5
 .B SIXEL_DECODER_INPUT_COLORSPACE
 .br
-set the sixel2png decoded RGB interpretation: srgb (default) or display-p3.
+set decoded RGB interpretation: srgb, display-p3, adobe-rgb or dci-p3.
 The sixel2png \fB\-T\fP option takes precedence.
-Encoder-generated PNG snapshots use Display P3 for \fB\-U display-p3\fP
+Encoder-generated PNG snapshots use the profile selected by named \fB\-U\fP
 and sRGB otherwise, independently of this default.
 .TP 5
 .B SIXEL_DEQUANTIZE_LSO_VARIANT

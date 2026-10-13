@@ -65,9 +65,10 @@ argument with "png:" keeps the CLI consistent with img2sixel so
 saving to disk.
 .TP 5
 .B \-T \fISPACE\fP, \-\-input-colorspace=\fISPACE\fP
-Interpret decoded RGB numbers as srgb (default) or display-p3.
+Interpret decoded RGB as srgb (default), display-p3, adobe-rgb or dci-p3.
 Preserve RGB samples and palette values; write an sRGB chunk or an RGB ICC
-profile respectively. This is an input interpretation, not a conversion.
+profile for other named definitions. Adobe RGB uses D65 and power 563/256;
+DCI-P3 uses DCI white and power 2.6. This interprets input, without conversion.
 Alpha is unchanged. Direct decoding with \-D retains the same interpretation.
 Resizing and dequantization operate in the decoded RGB coordinate basis.
 They retain the selected interpretation; they are not implicit CMS conversions.

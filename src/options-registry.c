@@ -990,6 +990,10 @@ enum {
 static sixel_option_value_schema_t const g_input_color_values[] = {
     { "srgb", SIXEL_OPTION_INPUT_SRGB, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
     { "display-p3", SIXEL_OPTION_INPUT_DISPLAY_P3, 0u,
+      SIXEL_OPTION_BASE_POLICY_NONE },
+    { "adobe-rgb", SIXEL_OPTION_INPUT_ADOBE_RGB, 0u,
+      SIXEL_OPTION_BASE_POLICY_NONE },
+    { "dci-p3", SIXEL_OPTION_INPUT_DCI_P3, 0u,
       SIXEL_OPTION_BASE_POLICY_NONE }
 };
 
@@ -3289,7 +3293,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_OPTION_MATCH_EXACT,
         SIXEL_OPTION_MATCH_EXACT,
         "SIXEL_DECODER_INPUT_COLORSPACE",
-        "input-colorspace accepts srgb or display-p3.",
+        "input-colorspace accepts srgb, display-p3, adobe-rgb or dci-p3.",
         SIXEL_OPTION_INPUT_SRGB,
         g_input_color_values),
 };

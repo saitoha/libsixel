@@ -13,11 +13,25 @@
 | `linear` | Linear-light RGB with the sRGB primary basis. | A consumer explicitly configured to interpret linear-light channel values. |
 | `smpte-c` | libsixel's SMPTE-C primary conversion and gamma encoding. | A consumer expecting that specific RGB representation. |
 | `display-p3` | Standard Display P3 primaries, D65 white and sRGB transfer encoding. | The [limited CPU float path](#display-p3-selected-cpu-float-path) and a receiver explicitly configured for P3 input. |
+| `adobe-rgb` | Adobe RGB (1998), D65, decoding exponent 563/256. | Selected CPU float output with inactive snap. |
+| `dci-p3` | P3 primaries, DCI white `(0.3140, 0.3510)`, decoding exponent 2.6. | Selected CPU float output with inactive snap; distinct from Display P3. |
 | `auto[:timeout_ms=N]` | CLI negotiation resolves to gamma sRGB or standard Display P3. | Only images sent directly to stdout as a TTY; other destinations retain gamma sRGB. |
 
 The parser also accepts `smptec` as an alias for `smpte-c`, folds letter case, and uses the shared [choice prefix-matching policy](../../cli/prefix-matching.md). Full names are preferable in durable commands. A repeated `-U` replaces the earlier value. `oklab`, `cielab`, and `din99d` are working/clustering choices, not accepted output choices. `-U` takes a required name, not a numeric gamma exponent or an ICC profile path.
 
 `-U` and `-_` are not generally mutually exclusive. The selected Display P3 generated-palette path accepts destination-aware snap, including when CLI negotiation selects P3; gamma, linear and SMPTE-C retain their existing snap behavior. The [snap/output boundary](../palette-construction/snap-policy/README.md#output-conversion-and-the-display-p3-boundary) defines the inverse-mapped destination lattice and stage controls.
+
+## Named destination definitions
+
+`display-p3`, `adobe-rgb` and `dci-p3` select complete RGB definitions in the shared CMS registry, separately from the frame's working-coordinate tag. The palette and high-color paths use the same relative-colorimetric transform through D50 PCS with Bradford white adaptation. Working values remain extended until the destination copy is clipped for wire serialization. Adding a named destination does not add or implicitly change `-X` or `-W`.
+
+Adobe RGB (1998) uses the [ICC registry definition](https://registry.color.org/rgb-registry/adobergb), including the exact `563/256` decoding exponent. Here `dci-p3` means P3 primaries with DCI white `(0.3140, 0.3510)` and power 2.6, one of the explicitly distinguished [DCI-P3 definitions](https://registry.color.org/rgb-registry/dcip3). It is not P3-D65/power-2.6 or Display P3, and does not control cinema reference luminance or viewing conditions. These are supported analytic definitions; this interface does not accept an arbitrary destination ICC file.
+
+Adobe RGB and DCI-P3 follow the selected CPU palette/high-color admission below, except that active snap is rejected: the implemented inverse destination lattice is specific to Display P3. Disabled snap or zero approach rate retains the unsnapped working palette. Generated and fixed palettes, RGB/HLS output and supported alternate envelopes use the selected definition. Output cache and retained delta history identities distinguish all named destinations across encoder reuse. Separate encoder objects retain independent state.
+
+Explicit choices do not negotiate with a terminal. CLI `-Uauto` still resolves only named sRGB/Display P3; receiving Adobe RGB, a simple definition or ICC does not activate these explicit modes automatically. CLI prefixes `-Ua` (auto/adobe-rgb) and `-Ud` (display-p3/dci-p3) are ambiguous; use unambiguous prefixes or full names. The library has no auto choice, so its prefix set differs accordingly.
+
+`sixel2png -T` and `lsqa -R/-T` accept the same added names for explicit decoded-input interpretation. Encoder PNG snapshots carry the selected named destination's ICC, preserving decoded numbers. Legacy mapfile `-M` remains sRGB8 independent of `-U`; this does not introduce a color-bearing palette exchange format. Raw SIXEL decode APIs still return numbers without color policy.
 
 ## Where the conversion happens
 
@@ -105,7 +119,7 @@ The selected loader integration tests use libpng P3 ICC RGB8/RGB16, an untagged 
 
 The frame retains its typed coordinates. In gamma or linear sRGB coordinates, negative and above-one components preserve P3 colors; Oklab, CIELAB and DIN99d retain their corresponding extended coordinates. The output definition is a separate job policy. All four admitted solver families retain extended values through candidate construction and float palette export. A failure in the selected float solver is reported; it cannot silently retry a byte solver or a different solver. The output-specific state is scoped to the palette build attempt; it does not change the [ordinary typed float contracts](../palette-construction/quantization/README.md#ordinary-float-iterative-solvers) of subsequent calls.
 
-Before index selection, the palette owner prepares a separate RGB101 serialization cache: it converts the canonical palette to P3, clamps only that output copy to the destination gamut, and rounds each channel to an integer in `0..100`. Both the authoritative float working palette and its compatibility byte view remain unchanged. Lookup and diffusion consume the original working coordinates. The writer consumes the cached codes without another color transform or byte round trip; palette compaction, reordering and cache reuse are disabled in this path. Early preparation of wire codes does not enable [palette snapping](../palette-construction/snap-policy/README.md); this selected path requires disabled snapping (`-_none` or a zero approach rate).
+Before index selection, the palette owner prepares a separate RGB101 serialization cache: it converts the canonical palette to P3, clamps only that output copy to the destination gamut, and rounds each channel to an integer in `0..100`. Both the authoritative float working palette and its compatibility byte view remain unchanged. Lookup and diffusion consume the original working coordinates. The writer consumes the cached codes without another color transform or byte round trip; palette compaction, reordering and cache reuse are disabled in this path. Early preparation of wire codes does not enable [palette snapping](../palette-construction/snap-policy/README.md); only the selected snap policy may modify the working values.
 
 For example, linear gray centers `0.1` and `0.11` produce P3 code values `35%` and `37%`. With snap disabled, a query of `0.106` still selects the second original center. Substituting the inverse-decoded wire colors would move the decision boundary above `0.106` and incorrectly select the first center. The direct palette tests protect unchanged float and byte working views and unchanged lookup results. Primary and intermediate-color wire tests independently protect the destination conversion.
 
@@ -1243,3 +1257,50 @@ The CIELAB export witness protects neutral float endpoints; see the [external-pa
 | PR-15 | Indexed serialization reconciles byte edits when application is bypassed. | [tests/quant/palette/retention/0015_indexed_write.t](../../../tests/quant/palette/retention/0015_indexed_write.t) |
 | PR-16 | Compatibility projection rounding cannot replace K-center float values; the compatibility byte is not a substitute for the retained representative. | [tests/quant/palette/retention/0016_kcenter_boundary.t](../../../tests/quant/palette/retention/0016_kcenter_boundary.t) |
 | PR-17 | The compatibility hard-grid K-center path retains its selected typed representatives without a byte roundtrip. | [tests/quant/palette/0043_kcenter_float_grid_values.t](../../../tests/quant/palette/0043_kcenter_float_grid_values.t) |
+
+## Named destination contracts
+
+The named destination checks use independent Decimal primary matrices, Bradford adaptation and transfer equations. XYZ arithmetic uses an absolute tolerance of `2e-10`; ICC export permits `4e-5` for signed 15.16 matrix/TRC representation. The selected two-pixel wire witnesses have at least `0.035` percentage units to a rounding boundary, above the `0.002` propagated conversion budget. Working-space setup exercises roundtrip integration; the named XYZ checks independently test the colorimetry. The libpng/libtiff witnesses derive expectations from the stored P3 ICC coefficients and original 16-bit samples, with at least `0.087` percentage units to an RGB101 rounding boundary.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| ON-01 | Adobe RGB: Convert gamma workspace samples to independently derived RGB101. | [tests/quant/palette/named_output/0001_adobe_gamma.t](../../../tests/quant/palette/named_output/0001_adobe_gamma.t) |
+| ON-02 | Adobe RGB: Convert linear workspace samples without clipping extended input. | [tests/quant/palette/named_output/0002_adobe_linear.t](../../../tests/quant/palette/named_output/0002_adobe_linear.t) |
+| ON-03 | Adobe RGB: Convert Oklab workspace samples to the selected destination. | [tests/quant/palette/named_output/0003_adobe_oklab.t](../../../tests/quant/palette/named_output/0003_adobe_oklab.t) |
+| ON-04 | Adobe RGB: Convert CIELAB workspace samples to the selected destination. | [tests/quant/palette/named_output/0004_adobe_cielab.t](../../../tests/quant/palette/named_output/0004_adobe_cielab.t) |
+| ON-05 | Adobe RGB: Convert DIN99d workspace samples to the selected destination. | [tests/quant/palette/named_output/0005_adobe_din99d.t](../../../tests/quant/palette/named_output/0005_adobe_din99d.t) |
+| ON-06 | Adobe RGB: Use the center palette builder without changing output interpretation. | [tests/quant/palette/named_output/0006_adobe_center.t](../../../tests/quant/palette/named_output/0006_adobe_center.t) |
+| ON-07 | Adobe RGB: Use the medoids palette builder without changing output interpretation. | [tests/quant/palette/named_output/0007_adobe_medoids.t](../../../tests/quant/palette/named_output/0007_adobe_medoids.t) |
+| ON-08 | Adobe RGB: Use the Heckbert palette builder without changing output interpretation. | [tests/quant/palette/named_output/0008_adobe_heckbert.t](../../../tests/quant/palette/named_output/0008_adobe_heckbert.t) |
+| ON-09 | Adobe RGB: Convert high-color representatives at the destination boundary. | [tests/quant/palette/named_output/0009_adobe_highcolor.t](../../../tests/quant/palette/named_output/0009_adobe_highcolor.t) |
+| ON-10 | Adobe RGB: Switch destinations on one encoder without stale output caches. | [tests/quant/palette/named_output/0010_adobe_reuse.t](../../../tests/quant/palette/named_output/0010_adobe_reuse.t) |
+| ON-11 | Adobe RGB: Reject active snap before output and recover with snap disabled. | [tests/quant/palette/named_output/0011_adobe_snap_recovery.t](../../../tests/quant/palette/named_output/0011_adobe_snap_recovery.t) |
+| ON-12 | Adobe RGB: Keep the previous destination after an invalid option. | [tests/quant/palette/named_output/0012_adobe_option_atomicity.t](../../../tests/quant/palette/named_output/0012_adobe_option_atomicity.t) |
+| ON-13 | Adobe RGB: Match independent D50 XYZ values for the named definition. | [tests/quant/palette/named_output/0013_adobe_xyz.t](../../../tests/quant/palette/named_output/0013_adobe_xyz.t) |
+| ON-14 | Adobe RGB: Retain matrix/TRC semantics across ICC export and import. | [tests/quant/palette/named_output/0014_adobe_icc_export.t](../../../tests/quant/palette/named_output/0014_adobe_icc_export.t) |
+| ON-15 | DCI-P3: Convert gamma workspace samples to independently derived RGB101. | [tests/quant/palette/named_output/0015_dci_gamma.t](../../../tests/quant/palette/named_output/0015_dci_gamma.t) |
+| ON-16 | DCI-P3: Convert linear workspace samples without clipping extended input. | [tests/quant/palette/named_output/0016_dci_linear.t](../../../tests/quant/palette/named_output/0016_dci_linear.t) |
+| ON-17 | DCI-P3: Convert Oklab workspace samples to the selected destination. | [tests/quant/palette/named_output/0017_dci_oklab.t](../../../tests/quant/palette/named_output/0017_dci_oklab.t) |
+| ON-18 | DCI-P3: Convert CIELAB workspace samples to the selected destination. | [tests/quant/palette/named_output/0018_dci_cielab.t](../../../tests/quant/palette/named_output/0018_dci_cielab.t) |
+| ON-19 | DCI-P3: Convert DIN99d workspace samples to the selected destination. | [tests/quant/palette/named_output/0019_dci_din99d.t](../../../tests/quant/palette/named_output/0019_dci_din99d.t) |
+| ON-20 | DCI-P3: Use the center palette builder without changing output interpretation. | [tests/quant/palette/named_output/0020_dci_center.t](../../../tests/quant/palette/named_output/0020_dci_center.t) |
+| ON-21 | DCI-P3: Use the medoids palette builder without changing output interpretation. | [tests/quant/palette/named_output/0021_dci_medoids.t](../../../tests/quant/palette/named_output/0021_dci_medoids.t) |
+| ON-22 | DCI-P3: Use the Heckbert palette builder without changing output interpretation. | [tests/quant/palette/named_output/0022_dci_heckbert.t](../../../tests/quant/palette/named_output/0022_dci_heckbert.t) |
+| ON-23 | DCI-P3: Convert high-color representatives at the destination boundary. | [tests/quant/palette/named_output/0023_dci_highcolor.t](../../../tests/quant/palette/named_output/0023_dci_highcolor.t) |
+| ON-24 | DCI-P3: Switch destinations on one encoder without stale output caches. | [tests/quant/palette/named_output/0024_dci_reuse.t](../../../tests/quant/palette/named_output/0024_dci_reuse.t) |
+| ON-25 | DCI-P3: Reject active snap before output and recover with snap disabled. | [tests/quant/palette/named_output/0025_dci_snap_recovery.t](../../../tests/quant/palette/named_output/0025_dci_snap_recovery.t) |
+| ON-26 | DCI-P3: Keep the previous destination after an invalid option. | [tests/quant/palette/named_output/0026_dci_option_atomicity.t](../../../tests/quant/palette/named_output/0026_dci_option_atomicity.t) |
+| ON-27 | DCI-P3: Match independent D50 XYZ values for the named definition. | [tests/quant/palette/named_output/0027_dci_xyz.t](../../../tests/quant/palette/named_output/0027_dci_xyz.t) |
+| ON-28 | DCI-P3: Retain matrix/TRC semantics across ICC export and import. | [tests/quant/palette/named_output/0028_dci_icc_export.t](../../../tests/quant/palette/named_output/0028_dci_icc_export.t) |
+| ON-29 | Adobe RGB: Invalidate retained delta state when the destination changes. | [tests/quant/palette/named_output/0029_adobe_delta_switch.t](../../../tests/quant/palette/named_output/0029_adobe_delta_switch.t) |
+| ON-30 | Adobe RGB: Match independently rounded HLS fields and reconstructed RGB101. | [tests/quant/palette/named_output/0030_adobe_hls.t](../../../tests/quant/palette/named_output/0030_adobe_hls.t) |
+| ON-31 | Adobe RGB: Reject non-finite input before output and recover on valid input. | [tests/quant/palette/named_output/0031_adobe_nan_recovery.t](../../../tests/quant/palette/named_output/0031_adobe_nan_recovery.t) |
+| ON-32 | DCI-P3: Invalidate retained delta state when the destination changes. | [tests/quant/palette/named_output/0032_dci_delta_switch.t](../../../tests/quant/palette/named_output/0032_dci_delta_switch.t) |
+| ON-33 | DCI-P3: Match independently rounded HLS fields and reconstructed RGB101. | [tests/quant/palette/named_output/0033_dci_hls.t](../../../tests/quant/palette/named_output/0033_dci_hls.t) |
+| ON-34 | DCI-P3: Reject non-finite input before output and recover on valid input. | [tests/quant/palette/named_output/0034_dci_nan_recovery.t](../../../tests/quant/palette/named_output/0034_dci_nan_recovery.t) |
+| ON-35 | Reject ambiguous CLI prefix `a`. | [tests/quant/palette/named_output/0035_prefix_a.t](../../../tests/quant/palette/named_output/0035_prefix_a.t) |
+| ON-36 | Reject ambiguous CLI prefix `d`. | [tests/quant/palette/named_output/0036_prefix_d.t](../../../tests/quant/palette/named_output/0036_prefix_d.t) |
+| ON-37 | Convert P3 ICC 16-bit libpng input through builtin CMS to adobe-rgb. | [tests/quant/palette/named_output/0037_adobe_libpng.t](../../../tests/quant/palette/named_output/0037_adobe_libpng.t) |
+| ON-38 | Convert P3 ICC 16-bit libpng input through builtin CMS to dci-p3. | [tests/quant/palette/named_output/0038_dci_libpng.t](../../../tests/quant/palette/named_output/0038_dci_libpng.t) |
+| ON-39 | Convert P3 ICC 16-bit libtiff input through builtin CMS to adobe-rgb. | [tests/quant/palette/named_output/0039_adobe_libtiff.t](../../../tests/quant/palette/named_output/0039_adobe_libtiff.t) |
+| ON-40 | Convert P3 ICC 16-bit libtiff input through builtin CMS to dci-p3. | [tests/quant/palette/named_output/0040_dci_libtiff.t](../../../tests/quant/palette/named_output/0040_dci_libtiff.t) |

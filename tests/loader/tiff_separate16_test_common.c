@@ -377,6 +377,8 @@ ts_tiled(TIFF *tif)
 #define sixel_cdef_icc ts_local_17
 #define sixel_cdef_matrix ts_local_18
 #define sixel_cdef_name ts_local_19
+#define sixel_cdef_named_name ts_local_19_identity
+#define sixel_named_colors ts_local_19_registry
 #define sixel_cdef_output_ready ts_local_20
 #define sixel_cdef_parse ts_local_21
 #define sixel_cdef_pcs_scale ts_local_22
@@ -782,6 +784,8 @@ ts_linear(unsigned char *pixels, int width, int height, int format,
 #undef sixel_cdef_icc
 #undef sixel_cdef_matrix
 #undef sixel_cdef_name
+#undef sixel_cdef_named_name
+#undef sixel_named_colors
 #undef sixel_cdef_output_ready
 #undef sixel_cdef_parse
 #undef sixel_cdef_pcs_scale

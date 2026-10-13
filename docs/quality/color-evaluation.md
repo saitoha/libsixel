@@ -21,6 +21,8 @@ producer | lsqa --target-colorspace=display-p3 reference.six -
 | `auto` | Keep the legacy loader's metadata and fallback policy. Plain SIXEL is interpreted as sRGB by this adapter. |
 | `srgb` | sRGB primaries, D65 white, sRGB transfer function. |
 | `display-p3` | Display P3 primaries, D65 white, sRGB transfer function. |
+| `adobe-rgb` | Adobe RGB (1998), D65 white, decoding exponent 563/256. |
+| `dci-p3` | P3 primaries, DCI white, decoding exponent 2.6. |
 | `rgb:wx,wy,rx,ry,gx,gy,bx,by:srgb` | Custom white and RGB primary xy coordinates with the sRGB transfer function. |
 | `rgb:wx,wy,rx,ry,gx,gy,bx,by:gamma=r,g,b` | The same xy layout with three positive per-channel decoding exponents, each at most 10. |
 | `icc:FILE` | RGB ICC input profile, relative colorimetric slot 1. |

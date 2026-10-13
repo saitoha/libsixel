@@ -2122,7 +2122,8 @@ static cli_option_help_t const g_option_help_table[] = {
         'R', "reference-colorspace",
         "-R SPEC, --reference-colorspace=SPEC (default auto).\n"
         "                           Original input definition: auto, srgb,\n"
-        "                           display-p3, icc:[INTENT:]FILE, or\n"
+        "                           display-p3, adobe-rgb, dci-p3,\n"
+        "                           icc:[INTENT:]FILE, or\n"
         "                           rgb:wx,wy,rx,ry,gx,gy,bx,by:srgb or\n"
         "                           rgb:wx,wy,rx,ry,gx,gy,bx,by:gamma=r,g,b.\n"
         "                           INTENT: perceptual, relative (default),\n"

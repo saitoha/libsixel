@@ -797,6 +797,51 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0147_COLORSYNC_CURV \
     -DBUILD_TEST_0181_GAMMA_OPTION \
     -DBUILD_TEST_0195_NATIVE_GAMMA \
+    -DBUILD_TEST_0001_ADOBE_GAMMA \
+    -DBUILD_TEST_0002_ADOBE_LINEAR \
+    -DBUILD_TEST_0003_ADOBE_OKLAB \
+    -DBUILD_TEST_0004_ADOBE_CIELAB \
+    -DBUILD_TEST_0005_ADOBE_DIN99D \
+    -DBUILD_TEST_0006_ADOBE_CENTER \
+    -DBUILD_TEST_0007_ADOBE_MEDOIDS \
+    -DBUILD_TEST_0008_ADOBE_HECKBERT \
+    -DBUILD_TEST_0009_ADOBE_HIGHCOLOR \
+    -DBUILD_TEST_0010_ADOBE_REUSE \
+    -DBUILD_TEST_0011_ADOBE_SNAP_RECOVERY \
+    -DBUILD_TEST_0012_ADOBE_OPTION_ATOMICITY \
+    -DBUILD_TEST_0013_ADOBE_XYZ \
+    -DBUILD_TEST_0014_ADOBE_ICC_EXPORT \
+    -DBUILD_TEST_0015_DCI_GAMMA \
+    -DBUILD_TEST_0016_DCI_LINEAR \
+    -DBUILD_TEST_0017_DCI_OKLAB \
+    -DBUILD_TEST_0018_DCI_CIELAB \
+    -DBUILD_TEST_0019_DCI_DIN99D \
+    -DBUILD_TEST_0020_DCI_CENTER \
+    -DBUILD_TEST_0021_DCI_MEDOIDS \
+    -DBUILD_TEST_0022_DCI_HECKBERT \
+    -DBUILD_TEST_0023_DCI_HIGHCOLOR \
+    -DBUILD_TEST_0024_DCI_REUSE \
+    -DBUILD_TEST_0025_DCI_SNAP_RECOVERY \
+    -DBUILD_TEST_0026_DCI_OPTION_ATOMICITY \
+    -DBUILD_TEST_0027_DCI_XYZ \
+    -DBUILD_TEST_0028_DCI_ICC_EXPORT \
+    -DBUILD_TEST_0029_ADOBE_DELTA_SWITCH \
+    -DBUILD_TEST_0030_ADOBE_HLS \
+    -DBUILD_TEST_0031_ADOBE_NAN_RECOVERY \
+    -DBUILD_TEST_0032_DCI_DELTA_SWITCH \
+    -DBUILD_TEST_0033_DCI_HLS \
+    -DBUILD_TEST_0034_DCI_NAN_RECOVERY \
+    -DBUILD_TEST_0026_ADOBE_RGB_INDEXED \
+    -DBUILD_TEST_0027_DCI_P3_INDEXED \
+    -DBUILD_TEST_0028_ADOBE_RGB_DIRECT \
+    -DBUILD_TEST_0029_DCI_P3_DIRECT \
+    -DBUILD_TEST_0030_ADOBE_RGB_SNAPSHOT \
+    -DBUILD_TEST_0031_DCI_P3_SNAPSHOT \
+    -DBUILD_TEST_0037_ADOBE_LIBPNG \
+    -DBUILD_TEST_0038_DCI_LIBPNG \
+    -DBUILD_TEST_0039_ADOBE_LIBTIFF \
+    -DBUILD_TEST_0040_DCI_LIBTIFF \
+    -DBUILD_NAMED_OUTPUT_COMMON \
     -DBUILD_TEST_0001_NAMED_XYZ \
     -DBUILD_TEST_0006_SRGB_INDEXED \
     -DBUILD_TEST_0007_P3_INDEXED \
@@ -3583,6 +3628,10 @@ test_runner_SOURCES = test_runner.c \
     writer/png/0025_p3_direct_undither_coordinates.c \
     writer/png/0006_srgb_indexed.c \
     writer/png/0007_p3_indexed.c \
+    writer/png/0026_adobe_rgb_indexed.c \
+    writer/png/0027_dci_p3_indexed.c \
+    writer/png/0028_adobe_rgb_direct.c \
+    writer/png/0029_dci_p3_direct.c \
     writer/png/0008_p3_direct_alpha.c \
     writer/png/0009_p3_register_redefinition.c \
     writer/png/0010_p3_environment.c \
@@ -5848,6 +5897,47 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/builtin_float/0025_positive_fs.c \
     quant/palette/builtin_float/0026_negative_fs.c \
     quant/palette/output_float_test_common.c \
+    writer/png/0030_adobe_rgb_snapshot.c \
+    writer/png/0031_dci_p3_snapshot.c \
+    quant/palette/named_output/0037_adobe_libpng.c \
+    quant/palette/named_output/0038_dci_libpng.c \
+    quant/palette/named_output/0039_adobe_libtiff.c \
+    quant/palette/named_output/0040_dci_libtiff.c \
+    quant/palette/named_output_common.c \
+    quant/palette/named_output/0029_adobe_delta_switch.c \
+    quant/palette/named_output/0030_adobe_hls.c \
+    quant/palette/named_output/0031_adobe_nan_recovery.c \
+    quant/palette/named_output/0032_dci_delta_switch.c \
+    quant/palette/named_output/0033_dci_hls.c \
+    quant/palette/named_output/0034_dci_nan_recovery.c \
+    quant/palette/named_output/0001_adobe_gamma.c \
+    quant/palette/named_output/0002_adobe_linear.c \
+    quant/palette/named_output/0003_adobe_oklab.c \
+    quant/palette/named_output/0004_adobe_cielab.c \
+    quant/palette/named_output/0005_adobe_din99d.c \
+    quant/palette/named_output/0006_adobe_center.c \
+    quant/palette/named_output/0007_adobe_medoids.c \
+    quant/palette/named_output/0008_adobe_heckbert.c \
+    quant/palette/named_output/0009_adobe_highcolor.c \
+    quant/palette/named_output/0010_adobe_reuse.c \
+    quant/palette/named_output/0011_adobe_snap_recovery.c \
+    quant/palette/named_output/0012_adobe_option_atomicity.c \
+    quant/palette/named_output/0013_adobe_xyz.c \
+    quant/palette/named_output/0014_adobe_icc_export.c \
+    quant/palette/named_output/0015_dci_gamma.c \
+    quant/palette/named_output/0016_dci_linear.c \
+    quant/palette/named_output/0017_dci_oklab.c \
+    quant/palette/named_output/0018_dci_cielab.c \
+    quant/palette/named_output/0019_dci_din99d.c \
+    quant/palette/named_output/0020_dci_center.c \
+    quant/palette/named_output/0021_dci_medoids.c \
+    quant/palette/named_output/0022_dci_heckbert.c \
+    quant/palette/named_output/0023_dci_highcolor.c \
+    quant/palette/named_output/0024_dci_reuse.c \
+    quant/palette/named_output/0025_dci_snap_recovery.c \
+    quant/palette/named_output/0026_dci_option_atomicity.c \
+    quant/palette/named_output/0027_dci_xyz.c \
+    quant/palette/named_output/0028_dci_icc_export.c \
     quant/palette/output_float/0001_linear_gamma.c \
     quant/palette/output_float/0002_linear_linear.c \
     quant/palette/output_float/0003_linear_oklab.c \
@@ -8570,3 +8660,9 @@ apply-shebang-check: $(SIXEL_SHEBANG_TARGETS)
 
 check-am: apply-shebang-check
 endif
+
+EXTRA_DIST += data/color-numeric/named-output.h \
+    data/color-numeric/generate-named-output.py
+
+EXTRA_DIST += data/color-numeric/named-output-p3.png \
+    data/color-numeric/named-output-p3.tif

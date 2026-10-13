@@ -156,6 +156,8 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define sixel_cdef_icc clf_local_17
 #define sixel_cdef_matrix clf_local_18
 #define sixel_cdef_name clf_local_19
+#define sixel_cdef_named_name clf_local_19_identity
+#define sixel_named_colors clf_local_19_registry
 #define sixel_cdef_output_ready clf_local_20
 #define sixel_cdef_parse clf_local_21
 #define sixel_cdef_pcs_scale clf_local_22
@@ -520,6 +522,8 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 #undef sixel_cdef_icc
 #undef sixel_cdef_matrix
 #undef sixel_cdef_name
+#undef sixel_cdef_named_name
+#undef sixel_named_colors
 #undef sixel_cdef_output_ready
 #undef sixel_cdef_parse
 #undef sixel_cdef_pcs_scale

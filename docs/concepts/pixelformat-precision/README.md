@@ -151,7 +151,7 @@ The same equality holds for the measured Oklab pair. It proves that `--precision
 
 ### Output color definition
 
-`-U display-p3` requires an effective float working format, even with `-Wgamma` and `--precision=8bit`, because its palette is converted and rounded to the sent Display P3 values with extended intermediate coordinates. The requested precision is kept separately, so leaving Display P3 restores the format required by the remaining settings. The legacy `gamma`, `linear` and `smpte-c` outputs convert only the final palette and do not request a float image buffer. See [Output color space](../../encoder/output/output-colorspace.md#display-p3-selected-cpu-float-path).
+A [named RGB output destination](../../encoder/output/output-colorspace.md#named-destination-definitions) requires an effective float working format, even with `-Wgamma` and `--precision=8bit`, because its palette is converted and rounded to the sent destination values with extended intermediate coordinates. The requested precision is kept separately, so leaving named output restores the format required by the remaining settings. The legacy `gamma`, `linear` and `smpte-c` outputs convert only the final palette and do not request a float image buffer. See [Output color space](../../encoder/output/output-colorspace.md#display-p3-selected-cpu-float-path).
 
 ### Loader CMS output
 

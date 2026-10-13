@@ -114,6 +114,7 @@
 #include "palette-common-snap.h"
 #include "pixelformat.h"
 #include "colorspace.h"
+#include "cms.h"
 #include "pthread-once.h"
 #include "clipboard.h"
 #include "compat_stub.h"
@@ -1931,7 +1932,9 @@ static sixel_option_choice_t const g_option_choices_working_colorspace[] = {
 
 static sixel_option_choice_t const g_option_choices_output_colorspace[] = {
     /* Negative parser sentinel; never stored as a frame colorspace. */
-    { "display-p3", -1 },
+    { "display-p3", -SIXEL_NAMED_COLOR_DISPLAY_P3 },
+    { "adobe-rgb", -SIXEL_NAMED_COLOR_ADOBE_RGB },
+    { "dci-p3", -SIXEL_NAMED_COLOR_DCI_P3 },
     { "gamma", SIXEL_COLORSPACE_GAMMA },
     { "linear", SIXEL_COLORSPACE_LINEAR },
     { "smpte-c", SIXEL_COLORSPACE_SMPTEC },
@@ -3460,7 +3463,7 @@ sixel_encoder_update_precision(sixel_encoder_t *encoder)
     /* Output requirements affect the effective format, never the request. */
     encoder->prefer_float32 = encoder->precision_prefer_float32 ||
         encoder->force_float32_colorspace ||
-        encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3;
+        encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY;
 }
 
 static SIXELSTATUS
@@ -5876,8 +5879,8 @@ sixel_encoder_import_srgb_palette(sixel_encoder_t *encoder,
 
     if (!preserve_float &&
             encoder->working_colorspace == SIXEL_COLORSPACE_GAMMA &&
-            encoder->output_color_definition !=
-                SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+            encoder->output_color_definition ==
+                SIXEL_PALETTE_OUTPUT_LEGACY) {
         return SIXEL_OK;
     }
     status = dither->palette->vtbl->get_entries(dither->palette, &view);
@@ -6866,9 +6869,7 @@ sixel_encoder_native_delta(sixel_encoder_t const *encoder)
     if ((encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA &&
          encoder->output_colorspace != SIXEL_COLORSPACE_LINEAR &&
          encoder->output_colorspace != SIXEL_COLORSPACE_SMPTEC) ||
-            (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY &&
-             encoder->output_color_definition !=
-                SIXEL_PALETTE_OUTPUT_DISPLAY_P3) ||
+            sixel_cdef_named_name(encoder->output_color_definition) == NULL ||
             (encoder->palette_type != SIXEL_PALETTETYPE_AUTO &&
              encoder->palette_type != SIXEL_PALETTETYPE_RGB &&
              encoder->palette_type != SIXEL_PALETTETYPE_HLS) ||
@@ -7035,8 +7036,15 @@ sixel_encoder_rgb101_restriction(sixel_encoder_t const *encoder)
     }
     if (encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE &&
             encoder->snap_policy_approach_rate > 0.0) {
-        if (encoder->output_color_definition !=
-                SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
+        /* The inverse lattice implementation currently defines P3 only.
+         * Never apply the sRGB/P3 lattice to a different destination. */
+        if (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY &&
+                encoder->output_color_definition !=
+                    SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+            return "output color definition does not support active snap.";
+        }
+        if (encoder->output_color_definition ==
+                SIXEL_PALETTE_OUTPUT_LEGACY &&
                 (encoder->snap_policy_timing !=
                     SIXEL_PALETTE_SNAP_TIMING_ONCE ||
                  (encoder->cover_policy != SIXEL_PALETTE_COVER_OFF &&
@@ -7189,7 +7197,7 @@ sixel_encoder_rgb101_frame(sixel_encoder_t const *encoder,
     if (encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
         return 0;
     }
-    if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+    if (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY) {
         return 1;
     }
     /* A non-gamma clustering view already requires float arithmetic even
@@ -7203,15 +7211,16 @@ sixel_encoder_rgb101_frame(sixel_encoder_t const *encoder,
         sixel_encoder_rgb101_candidate(encoder, frame);
 }
 
-/* Reject unconnected P3 combinations before starting any output. This CPU
- * path owns native lookup and RGB frames with optional separated masks.
+/* Reject unconnected destination combinations before starting any output.
+ * This CPU path owns native lookup and RGB frames with separated masks.
  * Its output definition never changes the meaning of frame coordinates. */
 static SIXELSTATUS
-sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
+sixel_encoder_validate_output_definition(sixel_encoder_t const *encoder)
 {
     char const *restriction;
+    char message[256];
 
-    if (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+    if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY) {
         return SIXEL_OK;
     }
     if (encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
@@ -7219,7 +7228,7 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             return SIXEL_OK;
         }
         sixel_helper_set_additional_message(
-            "display-p3 high-color requires CPU RGB/HLS SIXEL "
+            "named-color high-color requires CPU RGB/HLS SIXEL "
             "(ordinary, macro, opaque DRCS or ordinary PNG snapshot), "
             "-W gamma|linear|oklab|cielab|din99d and inactive snap; "
             "delta, OR and macro/DRCS PNG snapshots are unsupported; "
@@ -7228,28 +7237,35 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
     }
     restriction = sixel_encoder_rgb101_restriction(encoder);
     if (restriction != NULL) {
-        sixel_helper_set_additional_message(restriction);
+        if (strncmp(restriction, "display-p3 ", 11) == 0) {
+            snprintf(message, sizeof(message), "%s %s",
+                sixel_cdef_named_name(encoder->output_color_definition),
+                restriction + 11);
+            sixel_helper_set_additional_message(message);
+        } else {
+            sixel_helper_set_additional_message(restriction);
+        }
         return SIXEL_BAD_ARGUMENT;
     }
     return SIXEL_OK;
 }
 
 static SIXELSTATUS
-sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
-                                 sixel_frame_t *frame)
+sixel_encoder_validate_output_definition_frame(sixel_encoder_t const *encoder,
+                                               sixel_frame_t *frame)
 {
     SIXELSTATUS status;
 
-    status = sixel_encoder_validate_p3(encoder);
+    status = sixel_encoder_validate_output_definition(encoder);
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
+    if (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY &&
             encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
         if (encoder->fdrcs &&
                 sixel_encoder_frame_preserves_alpha_key(frame)) {
             sixel_helper_set_additional_message(
-                "display-p3 high-color DRCS requires opaque frames.");
+                "named-color high-color DRCS requires opaque frames.");
             return SIXEL_BAD_INPUT;
         }
         if (sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_RGB888 ||
@@ -7259,11 +7275,11 @@ sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
             return SIXEL_OK;
         }
         sixel_helper_set_additional_message(
-            "display-p3 high-color requires RGB frames with optional "
+            "named-color high-color requires RGB frames with optional "
             "separated masks, or gamma-coordinate packed alpha.");
         return SIXEL_BAD_INPUT;
     }
-    if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
+    if (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY &&
             ((sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGB888 &&
               !SIXEL_PIXELFORMAT_IS_FLOAT32(
                   sixel_frame_get_pixelformat(frame)) &&
@@ -7272,7 +7288,7 @@ sixel_encoder_validate_p3_frame(sixel_encoder_t const *encoder,
                 sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_GAMMA)) ||
              !sixel_encoder_rgb101_alpha(encoder, frame))) {
         sixel_helper_set_additional_message(
-            "display-p3 requires RGB or packed-alpha frames; "
+            "named-color output requires RGB or packed-alpha frames; "
             "preserved alpha "
             "requires a fixed palette or at least 2 generated slots; "
             "OR and DRCS output require opaque frames.");
@@ -9135,7 +9151,7 @@ sixel_encoder_encode_frame_internal(
         return status;
     }
 
-    status = sixel_encoder_validate_p3_frame(encoder, frame);
+    status = sixel_encoder_validate_output_definition_frame(encoder, frame);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -9263,8 +9279,8 @@ sixel_encoder_encode_frame_internal(
     if (sixel_encoder_unpack_alpha_candidate(encoder, context.frame)) {
         status = sixel_frame_unpack_alpha(context.frame, encoder->bgcolor,
             encoder->prefer_float32 ||
-            encoder->output_color_definition ==
-                SIXEL_PALETTE_OUTPUT_DISPLAY_P3 ||
+            encoder->output_color_definition !=
+                SIXEL_PALETTE_OUTPUT_LEGACY ||
             encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
             (encoder->color_option != SIXEL_COLOR_OPTION_HIGHCOLOR &&
              encoder->clustering_colorspace != SIXEL_COLORSPACE_GAMMA));
@@ -9272,7 +9288,8 @@ sixel_encoder_encode_frame_internal(
             goto end;
         }
     }
-    status = sixel_encoder_validate_p3_frame(encoder, context.frame);
+    status = sixel_encoder_validate_output_definition_frame(encoder,
+        context.frame);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -12935,9 +12952,9 @@ sixel_encoder_setopt(
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
-            encoder->output_color_definition = match_value == -1
-                ? SIXEL_PALETTE_OUTPUT_DISPLAY_P3 : SIXEL_PALETTE_OUTPUT_LEGACY;
-            encoder->output_colorspace = match_value == -1
+            encoder->output_color_definition = match_value < 0
+                ? -match_value : SIXEL_PALETTE_OUTPUT_LEGACY;
+            encoder->output_colorspace = match_value < 0
                 ? SIXEL_COLORSPACE_GAMMA : match_value;
             sixel_encoder_update_precision(encoder);
         }
@@ -14450,8 +14467,7 @@ write_png_from_sixel(char const *sixel_path,
      * convert an already converted palette twice. Legacy linear/SMPTE-C
      * snapshots retain their existing sRGB decoder interpretation. */
     status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT_COLORSPACE,
-        encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3
-            ? "display-p3" : "srgb");
+        sixel_cdef_named_name(encoder->output_color_definition));
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -14593,7 +14609,7 @@ sixel_encoder_encode(
     }
     sixel_encoder_ref(encoder);
     sixel_encoder_clear_dither_cache(encoder);
-    status = sixel_encoder_validate_p3(encoder);
+    status = sixel_encoder_validate_output_definition(encoder);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -15298,7 +15314,7 @@ sixel_encoder_encode_frame(
         return status;
     }
 
-    status = sixel_encoder_validate_p3_frame(encoder, frame);
+    status = sixel_encoder_validate_output_definition_frame(encoder, frame);
     if (SIXEL_FAILED(status)) {
         return status;
     }

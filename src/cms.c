@@ -5767,25 +5767,45 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
     return SIXEL_OK;
 }
 
+/* Named definitions contain the full colorimetry, not only a gamut label.
+ * DCI-P3 uses DCI white and power 2.6; Display P3 uses D65 and sRGB TRC.
+ * Adobe's decoding exponent is exactly 563/256, not rounded gamma 2.2. */
+static struct {
+    char const *name;
+    double xy[8];
+    sixel_color_trc_t trc;
+    double gamma[3];
+} const sixel_named_colors[SIXEL_NAMED_COLOR_COUNT] = {
+    { "srgb", {.3127, .3290, .64, .33, .30, .60, .15, .06},
+      SIXEL_COLOR_TRC_SRGB, {1.0, 1.0, 1.0} },
+    { "display-p3", {.3127, .3290, .68, .32, .265, .69, .15, .06},
+      SIXEL_COLOR_TRC_SRGB, {1.0, 1.0, 1.0} },
+    { "adobe-rgb", {.3127, .3290, .64, .33, .21, .71, .15, .06},
+      SIXEL_COLOR_TRC_POWER, {563.0 / 256.0, 563.0 / 256.0, 563.0 / 256.0} },
+    { "dci-p3", {.3140, .3510, .68, .32, .265, .69, .15, .06},
+      SIXEL_COLOR_TRC_POWER, {2.6, 2.6, 2.6} }
+};
+
+char const *
+sixel_cdef_named_name(int identity)
+{
+    return identity >= 0 && identity < SIXEL_NAMED_COLOR_COUNT
+        ? sixel_named_colors[identity].name : NULL;
+}
+
 sixel_color_def_t *
 sixel_cdef_name(char const *name)
 {
-    static double const srgb[8] = {
-        0.3127, 0.3290, 0.64, 0.33, 0.30, 0.60, 0.15, 0.06
-    };
-    static double const p3[8] = {
-        0.3127, 0.3290, 0.68, 0.32, 0.265, 0.69, 0.15, 0.06
-    };
-    static double const gamma[3] = {1.0, 1.0, 1.0};
+    int i;
 
     if (name == NULL) {
         return NULL;
     }
-    if (strcmp(name, "srgb") == 0) {
-        return sixel_cdef_rgb(srgb, SIXEL_COLOR_TRC_SRGB, gamma);
-    }
-    if (strcmp(name, "display-p3") == 0) {
-        return sixel_cdef_rgb(p3, SIXEL_COLOR_TRC_SRGB, gamma);
+    for (i = 0; i < SIXEL_NAMED_COLOR_COUNT; ++i) {
+        if (strcmp(name, sixel_named_colors[i].name) == 0) {
+            return sixel_cdef_rgb(sixel_named_colors[i].xy,
+                sixel_named_colors[i].trc, sixel_named_colors[i].gamma);
+        }
     }
     return NULL;
 }

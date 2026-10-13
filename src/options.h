@@ -27,6 +27,7 @@
 #define LIBSIXEL_OPTIONS_H
 
 #include <stddef.h>
+#include "named-color.h"
 
 #define SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_DEFAULT 24
 #define SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_MAX 441
@@ -190,8 +191,10 @@ typedef enum sixel_option_schema_id {
 } sixel_option_schema_id_t;
 
 enum {
-    SIXEL_OPTION_INPUT_SRGB = 0,
-    SIXEL_OPTION_INPUT_DISPLAY_P3 = 1
+    SIXEL_OPTION_INPUT_SRGB = SIXEL_NAMED_COLOR_SRGB,
+    SIXEL_OPTION_INPUT_DISPLAY_P3 = SIXEL_NAMED_COLOR_DISPLAY_P3,
+    SIXEL_OPTION_INPUT_ADOBE_RGB = SIXEL_NAMED_COLOR_ADOBE_RGB,
+    SIXEL_OPTION_INPUT_DCI_P3 = SIXEL_NAMED_COLOR_DCI_P3
 };
 
 /* Environment-only schemas have no CLI character or public setopt identity.

@@ -47,15 +47,15 @@ The decoder selects the writer representation as follows:
 | `sixel2png -D`, including direct output after dequantization, or an `img2sixel -I` snapshot | `RGBA8888` | Direct RGBA8 |
 | Resize or another frame operation that promotes the decoded representation | Promoted frame format, normally `RGB888` or `RGBA8888` | Matching direct 8-bit class |
 
-High-color (`-I`) snapshots select direct decoding automatically: each pixel retains the color defined when it was painted, including after a palette register is redefined. The PNG is RGBA8; omitted source pixels remain transparent. Ordinary CPU high-color snapshots support sRGB and Display P3 with the same interpretation rules above. Stable-palette snapshots retain the indexed path. As with other snapshots, animation selects the first terminated SIXEL image rather than producing APNG. High-color diffusion and alternate transport limits remain defined by the [high-color output contract](../../encoder/output/high-color/README.md#display-p3-boundary).
+High-color (`-I`) snapshots select direct decoding automatically: each pixel retains the color defined when it was painted, including after a palette register is redefined. The PNG is RGBA8; omitted source pixels remain transparent. Ordinary CPU high-color snapshots support the named RGB definitions with the same interpretation rules above. Stable-palette snapshots retain the indexed path. As with other snapshots, animation selects the first terminated SIXEL image rather than producing APNG. High-color diffusion and alternate transport limits remain defined by the [high-color output contract](../../encoder/output/high-color/README.md#display-p3-boundary).
 
 ## Decoded-input interpretation option
 
 `sixel2png` and the decoder object file frontend tag their PNG output. The existing `sixel_helper_write_image_file()` entry point retains its untagged contract; callers of that function have not supplied a color interpretation.
 
-The option is `-T SPACE`, `--input-colorspace=SPACE`, with environment default `SIXEL_DECODER_INPUT_COLORSPACE`. The initial named values are `srgb` (default) and `display-p3`. CLI values override environment defaults and the last repeated option wins. The name denotes the interpretation of decoded SIXEL RGB numbers, not a target conversion. There is no `auto`: a saved SIXEL stream carries no authoritative color definition, and querying the receiving terminal cannot recover the source interpretation.
+The option is `-T SPACE`, `--input-colorspace=SPACE`, with environment default `SIXEL_DECODER_INPUT_COLORSPACE`. The named values are `srgb` (default), `display-p3`, `adobe-rgb` and `dci-p3`; their complete definitions are owned by [output color space](../../encoder/output/output-colorspace.md#named-destination-definitions). CLI values override environment defaults and the last repeated option wins. The name denotes the interpretation of decoded SIXEL RGB numbers, not a target conversion. There is no `auto`: a saved SIXEL stream carries no authoritative color definition, and querying the receiving terminal cannot recover the source interpretation.
 
-The save policy retains decoded RGB values and records that interpretation in the PNG. An sRGB selection writes sRGB metadata; a Display P3 selection writes the corresponding RGB ICC profile. The same definition applies to indexed `PLTE` entries and direct RGB/RGBA samples. Alpha and the decoder's paint mask remain coverage information. `-D` changes how register redefinitions are rendered, not the selected color interpretation. Saving to sRGB after conversion would be a separate output request, not a hidden effect of `-T`.
+The save policy retains decoded RGB values and records that interpretation in the PNG. An sRGB selection writes sRGB metadata; other named selections write the corresponding RGB ICC profile. The same definition applies to indexed `PLTE` entries and direct RGB/RGBA samples. Alpha and the decoder's paint mask remain coverage information. `-D` changes how register redefinitions are rendered, not the selected color interpretation. Saving to sRGB after conversion would be a separate output request, not a hidden effect of `-T`.
 
 Raw decoding APIs continue to return numeric pixel values without implicit color conversion or profile assignment. The file-output frontend supplies a color definition to a common color-aware writer interface; the existing writer API remains compatible. ICC parsing, profile generation and validation belong to shared library facilities, not a converter-private CMS. Future ICC and simple RGB specifications must reuse that same definition model.
 
@@ -229,3 +229,18 @@ Before the dedicated writer tests, existing coverage established that PNG target
 The focused suite now covers the three writer output classes used by the decoder, both command entry routes, all documented `img2sixel` PNG target forms, the builtin CRC regression, and the post-SIXEL dither snapshot contract. The same format tests are backend-neutral and run in both libpng and builtin CI configurations; PW-08 is intentionally builtin-only.
 
 The suite does not currently enumerate every public input normalization format, assert the derived `PLTE` extent, inject allocator or stream failures, validate every dynamically sized chunk CRC independently, or define composed animation snapshots. High-color value tests cover a 320-key final-band image, selected HLS primaries and a source-mask hole; they do not certify every possible register schedule or receiver. Those are explicit coverage gaps rather than implied guarantees. Compressed PNG byte identity across the two backends is deliberately outside the contract.
+
+### Additional named input definitions
+
+The [named definitions](../../encoder/output/output-colorspace.md#named-destination-definitions) use the same metadata-only interpretation boundary. These tests independently check ICC matrices/TRCs and exact decoded pixels, including omitted pixels in direct output.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| PND-01 | Retain Adobe RGB indexed interpretation and samples. | [tests/writer/png/0026_adobe_rgb_indexed.t](../../../tests/writer/png/0026_adobe_rgb_indexed.t) |
+| PND-02 | Retain DCI-P3 indexed interpretation and samples. | [tests/writer/png/0027_dci_p3_indexed.t](../../../tests/writer/png/0027_dci_p3_indexed.t) |
+| PND-03 | Retain Adobe RGB direct interpretation and samples. | [tests/writer/png/0028_adobe_rgb_direct.t](../../../tests/writer/png/0028_adobe_rgb_direct.t) |
+| PND-04 | Retain DCI-P3 direct interpretation and samples. | [tests/writer/png/0029_dci_p3_direct.t](../../../tests/writer/png/0029_dci_p3_direct.t) |
+| PND-05 | Encoder Adobe RGB snapshot preserves converted pixels and matching ICC. | [tests/writer/png/0030_adobe_rgb_snapshot.t](../../../tests/writer/png/0030_adobe_rgb_snapshot.t) |
+| PND-06 | Encoder DCI-P3 snapshot preserves converted pixels and matching ICC. | [tests/writer/png/0031_dci_p3_snapshot.t](../../../tests/writer/png/0031_dci_p3_snapshot.t) |
+
+Named snapshot primaries use an independent matrix/power oracle followed by RGB101 and byte expansion. The nearest rounding boundary is 0.00277 percentage units away; the propagated conversion budget is 0.002. The signed float witnesses in the output definition tests use larger margins. These values test conversion and metadata, not image quality.

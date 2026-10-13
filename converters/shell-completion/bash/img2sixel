@@ -1055,6 +1055,8 @@ _img2sixel()
                                    linear \
                                    smpte-c \
                                    display-p3 \
+                                   adobe-rgb \
+                                   dci-p3 \
                                    auto' -- "$cur" ) )
         return 0
         ;;

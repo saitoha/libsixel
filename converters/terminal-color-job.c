@@ -139,6 +139,12 @@ img2sixel_color_job_option(img2sixel_color_job_t *job,
     suffix = strchr(argument, ':');
     base_size = suffix == NULL ? strlen(argument)
                               : (size_t)(suffix - argument);
+    /* CLI adds auto to the library's choices. Its one-letter prefix now
+     * collides with adobe-rgb; do not silently select either meaning. */
+    if (base_size == 1u && tolower((unsigned char)argument[0]) == 'a') {
+        return img2sixel_color_job_argument(
+            "ambiguous output-colorspace: a matches auto and adobe-rgb.");
+    }
     automatic = base_size > 0u && base_size <= strlen(key->base);
     for (i = 0u; automatic && i < base_size; ++i) {
         automatic = tolower((unsigned char)argument[i]) == key->base[i];

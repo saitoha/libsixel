@@ -14,6 +14,7 @@
 #include "src/icc-parse.h"
 #include "tests/loader/builtin/loader_builtin_memory_test_common.h"
 #include "tests/data/color-numeric/vectors.h"
+#include "tests/data/color-numeric/named-output.h"
 #include "color_test_common.h"
 
 /* ICC s15Fixed16 encoding of the normative sRGB inverse transfer. */
@@ -162,7 +163,16 @@ png_color_metadata(unsigned char const *data, size_t length, int space)
             for (i = 0; i < 3 && ok; ++i) {
                 for (j = 0; j < 3; ++j) {
                     ok &= fabs(profile.matrix_to_xyz_d50[j][i] -
-                        color_vectors[i][6 + j]) <= 0.5 / 65536.0;
+                        (space >= 2 ? named_matrix[space - 2][j][i]
+                            : color_vectors[i][6 + j])) <= 0.5 / 65536.0;
+                }
+                if (space >= 2) {
+                    ok &= profile.curves[i].function_type == 0u &&
+                        profile.curves[i].param_count == 1u &&
+                        fabs(profile.curves[i].params[0] -
+                            (space == 2 ? 563.0 / 256.0 : 2.6)) <=
+                                0.5 / 65536.0;
+                    continue;
                 }
                 ok &= profile.curves[i].function_type == 4u &&
                     profile.curves[i].param_count == 7u;
@@ -178,7 +188,7 @@ png_color_metadata(unsigned char const *data, size_t length, int space)
         }
     }
     ok &= srgb_count == (space == 0) &&
-        icc_count == (space == 1);
+        icc_count == (space > 0);
     return ok;
 }
 
@@ -281,7 +291,8 @@ pc_snapshot_check(int p3, int hls, int direct)
         {235, 51, 36, 117, 252, 74, 0, 0, 245}
     };
 
-    return pc_check(p3, direct, 0, rgb[p3 ? 1 + hls : 0]);
+    return pc_check(p3, direct, 0, p3 >= 2
+        ? named_primary_bytes[p3 - 2] : rgb[p3 ? 1 + hls : 0]);
 }
 
 int

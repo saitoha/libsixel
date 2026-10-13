@@ -84,7 +84,7 @@ sixel_highcolor_convert(unsigned char **prepared, int *stride,
                         sixel_output_t const *output)
 {
     sixel_color_def_t *srgb;
-    sixel_color_def_t *p3;
+    sixel_color_def_t *destination;
     sixel_color_xform_t *forward;
     SIXELSTATUS status;
     double source[3];
@@ -111,20 +111,21 @@ sixel_highcolor_convert(unsigned char **prepared, int *stride,
     if (buffer == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
-    srgb = p3 = NULL;
+    srgb = destination = NULL;
     forward = NULL;
     status = SIXEL_BAD_ALLOCATION;
     /* Build once for this frame, never per pixel or register replacement.
      * Working coordinates retain their original primaries and may extend
      * outside sRGB. Only the final destination samples become bounded. */
-    if (dither->highcolor_output_definition ==
-            SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+    if (dither->highcolor_output_definition !=
+            SIXEL_PALETTE_OUTPUT_LEGACY) {
         srgb = sixel_cdef_name("srgb");
-        p3 = sixel_cdef_name("display-p3");
-        if (srgb == NULL || p3 == NULL) {
+        destination = sixel_cdef_name(sixel_cdef_named_name(
+            dither->highcolor_output_definition));
+        if (srgb == NULL || destination == NULL) {
             goto end;
         }
-        forward = sixel_cxform_new(srgb, p3, 1);
+        forward = sixel_cxform_new(srgb, destination, 1);
         if (forward == NULL) {
             goto end;
         }
@@ -191,7 +192,7 @@ end:
     }
     sixel_cxform_free(forward);
     sixel_cdef_free(srgb);
-    sixel_cdef_free(p3);
+    sixel_cdef_free(destination);
     sixel_allocator_free(dither->allocator, buffer);
     return status;
 }
@@ -1004,8 +1005,8 @@ sixel_encode_highcolor(
 
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ||
             output->source_colorspace != output->colorspace ||
-            dither->highcolor_output_definition ==
-                SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+            dither->highcolor_output_definition !=
+                SIXEL_PALETTE_OUTPUT_LEGACY) {
         status = sixel_highcolor_convert(&converted_pixels, &stride, pixels,
             (size_t)width * (size_t)height, pixelformat, dither, output);
         if (SIXEL_FAILED(status)) {
