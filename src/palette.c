@@ -1775,6 +1775,15 @@ SIXELSTATUS
 sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
                              int output_definition, int output_colorspace)
 {
+    return sixel_palette_prepare_output_definition(palette, source_colorspace,
+        output_definition, output_colorspace, NULL);
+}
+
+SIXELSTATUS
+sixel_palette_prepare_output_definition(sixel_palette_t *palette,
+    int source_colorspace, int output_definition, int output_colorspace,
+    sixel_color_def_t const *definition)
+{
     sixel_palette_storage_t *storage;
     sixel_color_def_t *srgb;
     sixel_color_def_t *destination;
@@ -1795,7 +1804,10 @@ sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
              output_colorspace != SIXEL_COLORSPACE_SMPTEC) ||
             (output_definition != SIXEL_PALETTE_OUTPUT_LEGACY &&
              output_colorspace != SIXEL_COLORSPACE_GAMMA) ||
-            sixel_cdef_named_name(output_definition) == NULL ||
+            (definition != NULL &&
+             output_definition != SIXEL_NAMED_COLOR_COUNT) ||
+            (definition == NULL &&
+             sixel_cdef_named_name(output_definition) == NULL) ||
             (source_colorspace != SIXEL_COLORSPACE_GAMMA &&
              source_colorspace != SIXEL_COLORSPACE_LINEAR &&
              source_colorspace != SIXEL_COLORSPACE_OKLAB &&
@@ -1819,8 +1831,8 @@ sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
     forward = NULL;
     if (output_definition != SIXEL_PALETTE_OUTPUT_LEGACY) {
         srgb = sixel_cdef_name("srgb");
-        destination = sixel_cdef_name(
-            sixel_cdef_named_name(output_definition));
+        destination = definition != NULL ? sixel_cdef_clone(definition)
+            : sixel_cdef_name(sixel_cdef_named_name(output_definition));
         if (srgb == NULL || destination == NULL) {
             goto end;
         }
@@ -1857,6 +1869,12 @@ sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
             output_rgb[offset + channel] = (float)output[channel];
             codes[offset + channel] =
                 (unsigned char)(output[channel] * 100.0 + 0.5);
+            output[channel] =
+                ((codes[offset + channel] * 255 + 50) / 100) / 255.0;
+        }
+        if (destination != NULL &&
+                !sixel_cdef_to_xyz(destination, output, gamma, 1)) {
+            goto end;
         }
     }
     /* Publish only after every transform succeeds. Keep both working views

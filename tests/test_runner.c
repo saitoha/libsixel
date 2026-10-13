@@ -985,6 +985,7 @@ int test_palette_merge_float(int argc, char **argv);
 int test_palette_cover_native(int argc, char **argv);
 int test_cover_mask(int argc, char **argv);
 int test_native_snap(int argc, char **argv);
+int test_icc_output(int argc, char **argv);
 int test_destination_snap(int argc, char **argv);
 int test_p3_snap_grid(int argc, char **argv);
 int test_p3_snap_pipeline(int argc, char **argv);
@@ -6100,6 +6101,7 @@ static test_entry_t const test_entries[] = {
     { "palette/merge_float/0002_scan_contract",
       test_ward_scan_populations },
     { "palette/snap_float/0001_snap_contract", test_native_snap },
+    { "palette/icc_output/0001_icc_output", test_icc_output },
     { "palette/destination_snap/0001_destination", test_destination_snap },
     { "palette/p3_snap/0001_grid", test_p3_snap_grid },
     { "palette/p3_snap/0002_pipeline", test_p3_snap_pipeline },

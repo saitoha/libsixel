@@ -170,7 +170,7 @@ function inspect_registry(row, fields, count, option_id, name, alias,
         binding_override = fields[count]
     } else if (macro ~ /DEQUANTIZE_|LOADER_/) {
         binding = fields[count]
-    } else if (macro ~ /RUNTIME_|DIAGNOSTICS_|CLIPBOARD_|COMPLETION_/) {
+    } else if (macro ~ /RUNTIME_|DIAGNOSTICS_|CLIPBOARD_|COMPLETION_|COLOR_STRING/) {
         binding = fields[count - 1] "|" fields[count]
         binding_value = fields[count - 1]
         binding_override = fields[count]

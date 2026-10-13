@@ -73,6 +73,11 @@ Alpha is unchanged. Direct decoding with \-D retains the same interpretation.
 Resizing and dequantization operate in the decoded RGB coordinate basis.
 They retain the selected interpretation; they are not implicit CMS conversions.
 SIXEL has no embedded color definition, so auto detection is not available.
+The icc choice accepts \fBicc:path=FILE\fP or compact \fBicc:PFILE\fP
+(path=P). With no path suboption, \fBSIXEL_DECODER_INPUT_COLORSPACE_ICC_PATH\fP
+supplies the file. Explicit suboptions win. Supported RGB device/color-space
+ICC profiles are retained byte-for-byte in PNG iCCP, without transforming
+pixels. Invalid or unsupported profiles fail before image output.
 The environment default is \fBSIXEL_DECODER_INPUT_COLORSPACE\fP.
 Explicit options override it, and the last repeated option wins.
 .TP 5

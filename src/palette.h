@@ -117,6 +117,14 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
                              int output_definition, int output_colorspace);
 
+struct sixel_color_def;
+
+/* Custom endpoints follow the same finalization and own their cached model. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_prepare_output_definition(sixel_palette_t *palette,
+    int source_colorspace, int output_definition, int output_colorspace,
+    struct sixel_color_def const *definition);
+
 /* Borrow immutable wire codes until the next palette initialization. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_get_rgb101(sixel_palette_t const *palette,

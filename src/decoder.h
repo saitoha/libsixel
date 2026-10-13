@@ -44,6 +44,8 @@ struct sixel_decoder {
     int thumbnail_size;
     int direct_color;
     int input_colorspace;
+    /* Owned endpoint; frame coordinates retain their independent tag. */
+    struct sixel_color_def *input_icc;
     sixel_allocator_t *allocator;
     int clipboard_input_active;
     int clipboard_output_active;

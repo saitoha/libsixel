@@ -134,6 +134,10 @@ sixel_palette_snap_triple(double *components,
 SIXEL_INTERNAL_API void
 sixel_palette_snap_set_output(int definition, int grid_override,
                                int grid_policy);
+struct sixel_color_def;
+/* Borrow until the build override is cleared; the grid owns its clone. */
+SIXEL_INTERNAL_API void
+sixel_palette_snap_set_icc(struct sixel_color_def const *definition);
 SIXEL_INTERNAL_API int
 sixel_palette_snap_destination_active(void);
 SIXEL_INTERNAL_API SIXELSTATUS

@@ -2392,6 +2392,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/cover_float/0001_cover_contract.c \
 	quant/palette/cover_mask/0001_cover_mask.c \
 	quant/palette/snap_float/0001_snap_contract.c \
+	quant/palette/icc_output/0001_icc_output.c \
 	quant/palette/destination_snap/0001_destination.c \
 	quant/palette/p3_snap/0001_grid.c \
 	quant/palette/p3_snap/0002_pipeline.c \
@@ -5556,6 +5557,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cover_float/test_runner-0001_cover_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/cover_mask/test_runner-0001_cover_mask.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/snap_float/test_runner-0001_snap_contract.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/icc_output/test_runner-0001_icc_output.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/destination_snap/test_runner-0001_destination.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/p3_snap/test_runner-0001_grid.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/p3_snap/test_runner-0002_pipeline.$(OBJEXT) \
@@ -9390,6 +9392,7 @@ am__depfiles_remade =  \
 	quant/palette/heckbert_float/$(DEPDIR)/test_runner-0032_heckbert_subbyte_diffusion.Po \
 	quant/palette/heckbert_float/$(DEPDIR)/test_runner-0033_heckbert_repeated_population.Po \
 	quant/palette/heckbert_float/$(DEPDIR)/test_runner-0034_heckbert_repeated_subbyte.Po \
+	quant/palette/icc_output/$(DEPDIR)/test_runner-0001_icc_output.Po \
 	quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Po \
 	quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0001_mah_gamma_srgb.Po \
 	quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0002_mah_gamma_p3.Po \
@@ -11858,6 +11861,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_COVER_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_COVER_MASK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SNAP_CONTRACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ICC_OUTPUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DESTINATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GRID \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_PIPELINE \
@@ -15921,6 +15925,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cover_float/0001_cover_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/cover_mask/0001_cover_mask.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/snap_float/0001_snap_contract.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/icc_output/0001_icc_output.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/destination_snap/0001_destination.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/p3_snap/0001_grid.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/p3_snap/0002_pipeline.c \
@@ -24126,6 +24131,15 @@ quant/palette/snap_float/$(DEPDIR)/$(am__dirstamp):
 quant/palette/snap_float/test_runner-0001_snap_contract.$(OBJEXT):  \
 	quant/palette/snap_float/$(am__dirstamp) \
 	quant/palette/snap_float/$(DEPDIR)/$(am__dirstamp)
+quant/palette/icc_output/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/icc_output
+	@: >>quant/palette/icc_output/$(am__dirstamp)
+quant/palette/icc_output/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/icc_output/$(DEPDIR)
+	@: >>quant/palette/icc_output/$(DEPDIR)/$(am__dirstamp)
+quant/palette/icc_output/test_runner-0001_icc_output.$(OBJEXT):  \
+	quant/palette/icc_output/$(am__dirstamp) \
+	quant/palette/icc_output/$(DEPDIR)/$(am__dirstamp)
 quant/palette/destination_snap/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette/destination_snap
 	@: >>quant/palette/destination_snap/$(am__dirstamp)
@@ -27348,6 +27362,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/fixed_animation/*.$(OBJEXT)
 	-rm -f quant/palette/fixed_mask/*.$(OBJEXT)
 	-rm -f quant/palette/heckbert_float/*.$(OBJEXT)
+	-rm -f quant/palette/icc_output/*.$(OBJEXT)
 	-rm -f quant/palette/lookup_float/*.$(OBJEXT)
 	-rm -f quant/palette/mahalanobis_float/*.$(OBJEXT)
 	-rm -f quant/palette/map_cluster/*.$(OBJEXT)
@@ -30187,6 +30202,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_float/$(DEPDIR)/test_runner-0032_heckbert_subbyte_diffusion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_float/$(DEPDIR)/test_runner-0033_heckbert_repeated_population.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_float/$(DEPDIR)/test_runner-0034_heckbert_repeated_subbyte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/icc_output/$(DEPDIR)/test_runner-0001_icc_output.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/lookup_float/$(DEPDIR)/test_runner-0001_lookup_palette.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0001_mah_gamma_srgb.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/mahalanobis_float/$(DEPDIR)/test_runner-0002_mah_gamma_p3.Po@am__quote@ # am--include-marker
@@ -61673,6 +61689,20 @@ quant/palette/snap_float/test_runner-0001_snap_contract.obj: quant/palette/snap_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/snap_float/test_runner-0001_snap_contract.obj `if test -f 'quant/palette/snap_float/0001_snap_contract.c'; then $(CYGPATH_W) 'quant/palette/snap_float/0001_snap_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/snap_float/0001_snap_contract.c'; fi`
 
+quant/palette/icc_output/test_runner-0001_icc_output.o: quant/palette/icc_output/0001_icc_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/icc_output/test_runner-0001_icc_output.o -MD -MP -MF quant/palette/icc_output/$(DEPDIR)/test_runner-0001_icc_output.Tpo -c -o quant/palette/icc_output/test_runner-0001_icc_output.o `test -f 'quant/palette/icc_output/0001_icc_output.c' || echo '$(srcdir)/'`quant/palette/icc_output/0001_icc_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/icc_output/$(DEPDIR)/test_runner-0001_icc_output.Tpo quant/palette/icc_output/$(DEPDIR)/test_runner-0001_icc_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/icc_output/0001_icc_output.c' object='quant/palette/icc_output/test_runner-0001_icc_output.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/icc_output/test_runner-0001_icc_output.o `test -f 'quant/palette/icc_output/0001_icc_output.c' || echo '$(srcdir)/'`quant/palette/icc_output/0001_icc_output.c
+
+quant/palette/icc_output/test_runner-0001_icc_output.obj: quant/palette/icc_output/0001_icc_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/icc_output/test_runner-0001_icc_output.obj -MD -MP -MF quant/palette/icc_output/$(DEPDIR)/test_runner-0001_icc_output.Tpo -c -o quant/palette/icc_output/test_runner-0001_icc_output.obj `if test -f 'quant/palette/icc_output/0001_icc_output.c'; then $(CYGPATH_W) 'quant/palette/icc_output/0001_icc_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/icc_output/0001_icc_output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/icc_output/$(DEPDIR)/test_runner-0001_icc_output.Tpo quant/palette/icc_output/$(DEPDIR)/test_runner-0001_icc_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/icc_output/0001_icc_output.c' object='quant/palette/icc_output/test_runner-0001_icc_output.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/icc_output/test_runner-0001_icc_output.obj `if test -f 'quant/palette/icc_output/0001_icc_output.c'; then $(CYGPATH_W) 'quant/palette/icc_output/0001_icc_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/icc_output/0001_icc_output.c'; fi`
+
 quant/palette/destination_snap/test_runner-0001_destination.o: quant/palette/destination_snap/0001_destination.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/destination_snap/test_runner-0001_destination.o -MD -MP -MF quant/palette/destination_snap/$(DEPDIR)/test_runner-0001_destination.Tpo -c -o quant/palette/destination_snap/test_runner-0001_destination.o `test -f 'quant/palette/destination_snap/0001_destination.c' || echo '$(srcdir)/'`quant/palette/destination_snap/0001_destination.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/destination_snap/$(DEPDIR)/test_runner-0001_destination.Tpo quant/palette/destination_snap/$(DEPDIR)/test_runner-0001_destination.Po
@@ -75584,6 +75614,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/fixed_mask/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/heckbert_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/heckbert_float/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/icc_output/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/icc_output/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/lookup_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/lookup_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/mahalanobis_float/$(DEPDIR)/$(am__dirstamp)

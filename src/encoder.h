@@ -400,6 +400,8 @@ struct sixel_encoder {
     sixel_encoding_planner_t planner;
     /* Output interpretation is separate from frame/working coordinates. */
     int output_color_definition;
+    /* Owned endpoint; frame coordinates retain their independent tag. */
+    struct sixel_color_def *output_icc;
     /* Keep an explicit byte request distinct from automatic selection. */
     int precision_requested;
 };

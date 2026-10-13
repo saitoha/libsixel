@@ -75,6 +75,7 @@ sixel_palette_snap_float_entries(float *entries, unsigned int colors,
 
 static SIXEL_SNAP_TLS sixel_palette_snap_options_t g_snap_options;
 static SIXEL_SNAP_TLS int g_snap_output_definition;
+static SIXEL_SNAP_TLS sixel_color_def_t const *g_snap_output_icc;
 static SIXEL_SNAP_TLS int g_snap_grid_policy;
 static SIXEL_SNAP_TLS sixel_snap_grid_t *g_snap_grid;
 static SIXEL_SNAP_TLS SIXELSTATUS g_snap_status;
@@ -95,6 +96,7 @@ sixel_set_palette_snap_override(
     if (options == NULL) {
         memset(&g_snap_options, 0, sizeof(g_snap_options));
         g_snap_output_definition = 0;
+        g_snap_output_icc = NULL;
         g_snap_grid_policy = SIXEL_SNAP_GRID_AUTO;
         return;
     }
@@ -329,6 +331,7 @@ sixel_palette_snap_set_output(int definition, int grid_override,
                                int grid_policy)
 {
     g_snap_output_definition = definition;
+    g_snap_output_icc = NULL;
     g_snap_grid_policy = grid_policy;
     if (!grid_override) {
         (void)sixel_option_resolve_registered_int_binding(
@@ -336,6 +339,12 @@ sixel_palette_snap_set_output(int definition, int grid_override,
             SIXEL_SUBOPTION_BINDING_ID_2(snap_policy_grid,
                 snap_policy_grid_override), &g_snap_grid_policy);
     }
+}
+
+void
+sixel_palette_snap_set_icc(sixel_color_def_t const *definition)
+{
+    g_snap_output_icc = definition;
 }
 
 int
@@ -361,11 +370,12 @@ sixel_palette_snap_begin(int pixelformat, int quantizer,
         return SIXEL_OK;
     }
     name = sixel_cdef_named_name(g_snap_output_definition);
-    if (name == NULL) {
+    if (name == NULL && g_snap_output_icc == NULL) {
         g_snap_status = SIXEL_BAD_ARGUMENT;
         return g_snap_status;
     }
-    destination = sixel_cdef_name(name);
+    destination = g_snap_output_icc != NULL
+        ? sixel_cdef_clone(g_snap_output_icc) : sixel_cdef_name(name);
     if (destination == NULL) {
         g_snap_status = SIXEL_BAD_ALLOCATION;
         return g_snap_status;

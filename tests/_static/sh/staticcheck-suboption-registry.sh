@@ -556,6 +556,7 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_INT" ||
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_STRING" ||
         macro == "SIXEL_REGISTRY_CLIPBOARD_STRING" ||
+        macro == "SIXEL_REGISTRY_COLOR_STRING" ||
         macro == "SIXEL_REGISTRY_COMPLETION_STRING"
 }
 function inspect(row, fields, count, option_id, base, name, alias, env,
@@ -585,7 +586,7 @@ function inspect(row, fields, count, option_id, base, name, alias, env,
     if (env !~ /^"[A-Z][A-Z0-9_]+"$/) {
         fail(option_id ":" name " needs a non-empty environment variable")
     }
-    if (macro !~ /DEQUANTIZE|DECODER|ENCODER|LOADER|RUNTIME|DIAGNOSTICS|CLIPBOARD|COMPLETION/) {
+    if (macro !~ /DEQUANTIZE|DECODER|ENCODER|LOADER|RUNTIME|DIAGNOSTICS|CLIPBOARD|COMPLETION|COLOR_STRING/) {
         fail(option_id ":" name " needs a typed target binding")
     }
     if (!macro_is_approved(macro)) {
@@ -740,6 +741,7 @@ function inspect(row, fields, count, name, alias, key, macro, scope,
     expected_name[key] = name
     expected_alias[key] = alias
     scope = ""
+    if (macro == "SIXEL_REGISTRY_COLOR_STRING") scope = fields[6]
     if (macro == "SIXEL_REGISTRY_RUNTIME_SIZE") scope = fields[8]
     if (macro == "SIXEL_REGISTRY_RUNTIME_UINT" ||
         macro == "SIXEL_REGISTRY_RUNTIME_INT") scope = fields[10]
@@ -908,7 +910,7 @@ function binding_from_registry(row, fields, count, macro, binding) {
     sub(/^[[:space:]]*/, "", row)
     sub(/\),[[:space:]]*$/, "", row)
     count = split(row, fields, /,[[:space:]]*/)
-    if (macro ~ /ENCODER_SIZE|DECODER_SIZE|LOADER_SIZE_ENV_ERROR|RUNTIME_|DIAGNOSTICS_|CLIPBOARD_|COMPLETION_/) {
+    if (macro ~ /ENCODER_SIZE|DECODER_SIZE|LOADER_SIZE_ENV_ERROR|RUNTIME_|DIAGNOSTICS_|CLIPBOARD_|COMPLETION_|COLOR_STRING/) {
         binding = fields[count - 1] "," fields[count]
     } else if (macro ~ /ENCODER_MIRROR_CHOICE|ENCODER_INT_PAIR/) {
         binding = fields[count - 2] "," fields[count - 1] "," \

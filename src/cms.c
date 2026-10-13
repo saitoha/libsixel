@@ -5888,16 +5888,62 @@ sixel_cdef_free(sixel_color_def_t *definition)
     }
 }
 
+static int
+sixel_cdef_separable(sixel_color_def_t const *definition)
+{
+    unsigned int slot;
+
+    if (definition == NULL) {
+        return 0;
+    }
+    if (definition->bytes == NULL) {
+        return 1;
+    }
+    if (!definition->matrix_valid) {
+        return 0;
+    }
+    for (slot = 0; slot < SIXEL_ICC_A2B_SLOT_COUNT; ++slot) {
+        if (definition->icc.a2b_lut[slot].kind != SIXEL_ICC_LUT_INVALID ||
+            definition->icc.b2a_lut[slot].kind != SIXEL_ICC_LUT_INVALID ||
+            definition->icc.d2b_lut[slot].kind != SIXEL_ICC_LUT_INVALID ||
+            definition->icc.b2d_lut[slot].kind != SIXEL_ICC_LUT_INVALID ||
+            definition->icc.a2b_mab[slot].type != SIXEL_ICC_MAB_TYPE_INVALID ||
+            definition->icc.b2a_mab[slot].type != SIXEL_ICC_MAB_TYPE_INVALID ||
+            definition->icc.d2b_mab[slot].type != SIXEL_ICC_MAB_TYPE_INVALID ||
+            definition->icc.b2d_mab[slot].type != SIXEL_ICC_MAB_TYPE_INVALID) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 sixel_color_def_t *
 sixel_cdef_linearized(sixel_color_def_t const *definition)
 {
     sixel_color_def_t *linear;
+    int i;
 
-    if (definition == NULL || definition->bytes != NULL) {
+    if (!sixel_cdef_separable(definition)) {
         return NULL;
     }
-    linear = sixel_cdef_clone(definition);
+    /* Copy only the matrix, never ICC LUT/TRC ownership. Both endpoint
+     * kinds already store their matrices in the same D50 PCS basis. */
+    linear = calloc(1, sizeof(*linear));
     if (linear != NULL) {
+        if (definition->bytes == NULL) {
+            memcpy(linear->adaptation, definition->adaptation,
+                sizeof(linear->adaptation));
+        } else {
+            /* The derived model uses the already adapted D50 basis. Its
+             * export metadata must not carry a zero adaptation matrix. */
+            for (i = 0; i < 3; ++i) {
+                linear->adaptation[i * 3 + i] = 1.0;
+            }
+        }
+        memcpy(linear->to_xyz, definition->to_xyz, sizeof(linear->to_xyz));
+        memcpy(linear->from_xyz, definition->from_xyz,
+            sizeof(linear->from_xyz));
+        linear->matrix_valid = 1;
         linear->trc = SIXEL_COLOR_TRC_POWER;
         linear->gamma[0] = linear->gamma[1] = linear->gamma[2] = 1.0;
     }
@@ -5912,12 +5958,17 @@ sixel_cdef_transfer(sixel_color_def_t const *definition,
     double exponent;
     int i;
 
-    if (definition == NULL || definition->bytes != NULL || output == NULL ||
+    if (!sixel_cdef_separable(definition) || output == NULL ||
             !sixel_cdef_finite(input) || (encode != 0 && encode != 1)) {
         return 0;
     }
     for (i = 0; i < 3; ++i) {
-        if (definition->trc == SIXEL_COLOR_TRC_SRGB) {
+        if (definition->bytes != NULL) {
+            if (!sixel_icc_curve_device(&definition->icc.curves[i],
+                    input[i], encode, &result[i])) {
+                return 0;
+            }
+        } else if (definition->trc == SIXEL_COLOR_TRC_SRGB) {
             result[i] = encode ? sixel_color_encode_srgb(input[i])
                 : sixel_color_decode_srgb(input[i]);
         } else {
@@ -6074,7 +6125,7 @@ sixel_cdef_output_ready(sixel_color_def_t const *definition,
             return 0;
         }
     }
-    /* M6 must additionally evaluate every finalized, quantized wire entry. */
+    /* Callers must also evaluate every finalized, quantized wire entry. */
     return 1;
 }
 

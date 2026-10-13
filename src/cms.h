@@ -297,10 +297,11 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 SIXEL_INTERNAL_API sixel_color_def_t *
 sixel_cdef_clone(sixel_color_def_t const *definition);
 
-/* Analytic RGB models have separable monotone channel transfer functions.
- * ICC definitions are deliberately excluded: a LUT need not be additive.
+/* Analytic and matrix/TRC RGB models have separable channel transfers.
+ * ICC models with LUTs are excluded: a LUT need not be additive.
  * Linearization owns its result; transfer publishes only finite results,
- * accepts extended coordinates, and applies no gamut clipping. */
+ * preserves extended analytic coordinates; ICC curves retain their
+ * specified device-domain boundary. */
 SIXEL_INTERNAL_API sixel_color_def_t *
 sixel_cdef_linearized(sixel_color_def_t const *definition);
 

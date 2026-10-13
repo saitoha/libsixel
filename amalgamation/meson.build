@@ -130,6 +130,8 @@ amalgamation_units = files(
   '../src/decoder.c',
   '../src/decoder-parallel.c',
   '../src/options.c',
+  '../src/color-option.c',
+  '../src/color-option.h',
   '../src/options-registry.c',
   '../src/writer.c',
   '../src/stb_image_write.c',

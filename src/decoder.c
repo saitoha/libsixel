@@ -56,6 +56,7 @@
 #endif  /* HAVE_IO_H */
 
 #include "decoder.h"
+#include "color-option.h"
 #include "writer.h"
 #include "decoder-parallel.h"
 #include "sixel_decode_pixels.h"
@@ -432,7 +433,9 @@ sixel_decoder_new(
                                                   default allocator */
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    sixel_suboption_value_t color_value;
+    sixel_color_def_t *color_definition;
+    int color_base;
+    char const *color_environment;
     char const *gpu_policy_environment;
     sixel_option_argument_schema_t const *gpu_policy_schema;
     sixel_option_argument_resolution_t gpu_policy_resolution;
@@ -475,10 +478,15 @@ sixel_decoder_new(
     (*ppdecoder)->thumbnail_size = 0;
     (*ppdecoder)->direct_color = 0;
     (*ppdecoder)->input_colorspace = SIXEL_OPTION_INPUT_SRGB;
-    if (sixel_option_resolve_scalar_environment(
-            SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE, &color_value, NULL, 0u)
-            == SIXEL_OPTION_ENVIRONMENT_MATCH) {
-        (*ppdecoder)->input_colorspace = color_value.int_value;
+    (*ppdecoder)->input_icc = NULL;
+    color_definition = NULL;
+    color_environment = sixel_option_resolve_argument_environment(
+        SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE);
+    if (color_environment != NULL &&
+            SIXEL_SUCCEEDED(sixel_color_option_parse(color_environment,
+                1, &color_base, &color_definition))) {
+        (*ppdecoder)->input_colorspace = color_base;
+        (*ppdecoder)->input_icc = color_definition;
     }
     (*ppdecoder)->clipboard_input_active = 0;
     (*ppdecoder)->clipboard_output_active = 0;
@@ -556,6 +564,7 @@ sixel_decoder_destroy(sixel_decoder_t *decoder)
 
     if (decoder) {
         allocator = decoder->allocator;
+        sixel_cdef_free(decoder->input_icc);
         sixel_allocator_free(allocator, decoder->input);
         sixel_allocator_free(allocator, decoder->output);
         sixel_allocator_free(allocator, decoder);
@@ -2694,7 +2703,8 @@ sixel_decoder_setopt(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned int path_flags;
-    sixel_suboption_value_t color_value;
+    sixel_color_def_t *color_definition;
+    int color_base;
     int path_check;
     char const *payload = NULL;
     sixel_clipboard_spec_t clipboard_spec;
@@ -2715,13 +2725,15 @@ sixel_decoder_setopt(
 
     switch(arg) {
     case SIXEL_OPTFLAG_INPUT_COLORSPACE:  /* T */
-        status = sixel_option_parse_scalar_argument(
-            SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE,
-            SIXEL_OPTION_SCOPE_DECODER, value, &color_value, NULL, 0u);
+        color_definition = NULL;
+        status = sixel_color_option_parse(value, 1, &color_base,
+            &color_definition);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        decoder->input_colorspace = color_value.int_value;
+        sixel_cdef_free(decoder->input_icc);
+        decoder->input_icc = color_definition;
+        decoder->input_colorspace = color_base;
         break;
     case SIXEL_OPTFLAG_INPUT:  /* i */
         path_flags = SIXEL_OPTION_PATH_ALLOW_STDIN |
@@ -3488,8 +3500,9 @@ sixel_decoder_decode(
      * Keep that basis through the file boundary; selecting a profile must
      * not reinterpret intermediate values as an sRGB conversion request. */
     if (!color.srgb) {
-        definition = sixel_cdef_name(
-            sixel_cdef_named_name(decoder->input_colorspace));
+        definition = decoder->input_icc != NULL
+            ? sixel_cdef_clone(decoder->input_icc)
+            : sixel_cdef_name(sixel_cdef_named_name(decoder->input_colorspace));
         if (definition == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;

@@ -150,6 +150,7 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define loader_can_try_libtiff clf_local_12
 #define sixel_cdef_clone clf_local_13
 #define sixel_cdef_linearized clf_local_linearized
+#define sixel_cdef_separable clf_local_linearized_separable
 #define sixel_cdef_transfer clf_local_transfer
 #define sixel_cdef_export_icc clf_local_13_export
 #define sixel_cdef_finite clf_local_14
@@ -522,6 +523,7 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 #undef load_with_libtiff
 #undef loader_can_try_libtiff
 #undef sixel_cdef_clone
+#undef sixel_cdef_separable
 #undef sixel_cdef_linearized
 #undef sixel_cdef_transfer
 #undef sixel_cdef_export_icc

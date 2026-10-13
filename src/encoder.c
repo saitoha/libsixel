@@ -91,6 +91,8 @@
 #include "lookup-policy.h"
 #include "tty.h"
 #include "encoder.h"
+#include "decoder.h"
+#include "color-option.h"
 #include "frame.h"
 #include "frame-normalize.h"
 #include "frame-factory.h"
@@ -1930,16 +1932,6 @@ static sixel_option_choice_t const g_option_choices_working_colorspace[] = {
     { "din99d", SIXEL_COLORSPACE_DIN99D }
 };
 
-static sixel_option_choice_t const g_option_choices_output_colorspace[] = {
-    /* Negative parser sentinel; never stored as a frame colorspace. */
-    { "display-p3", -SIXEL_NAMED_COLOR_DISPLAY_P3 },
-    { "adobe-rgb", -SIXEL_NAMED_COLOR_ADOBE_RGB },
-    { "dci-p3", -SIXEL_NAMED_COLOR_DCI_P3 },
-    { "gamma", SIXEL_COLORSPACE_GAMMA },
-    { "linear", SIXEL_COLORSPACE_LINEAR },
-    { "smpte-c", SIXEL_COLORSPACE_SMPTEC },
-    { "smptec", SIXEL_COLORSPACE_SMPTEC }
-};
 
 static int
 sixel_encoder_pixelformat_for_colorspace(int colorspace,
@@ -6869,7 +6861,8 @@ sixel_encoder_native_delta(sixel_encoder_t const *encoder)
     if ((encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA &&
          encoder->output_colorspace != SIXEL_COLORSPACE_LINEAR &&
          encoder->output_colorspace != SIXEL_COLORSPACE_SMPTEC) ||
-            sixel_cdef_named_name(encoder->output_color_definition) == NULL ||
+            (encoder->output_icc == NULL &&
+             sixel_cdef_named_name(encoder->output_color_definition) == NULL) ||
             (encoder->palette_type != SIXEL_PALETTETYPE_AUTO &&
              encoder->palette_type != SIXEL_PALETTETYPE_RGB &&
              encoder->palette_type != SIXEL_PALETTETYPE_HLS) ||
@@ -7212,7 +7205,20 @@ sixel_encoder_validate_output_definition(sixel_encoder_t const *encoder)
 {
     char const *restriction;
     char message[256];
+    sixel_color_def_t *linear;
 
+    if (encoder->output_icc != NULL &&
+            encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
+            encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE &&
+            encoder->snap_policy_approach_rate > 0.0) {
+        linear = sixel_cdef_linearized(encoder->output_icc);
+        if (linear == NULL) {
+            sixel_helper_set_additional_message(
+                "ICC palette snap requires a matrix/TRC RGB profile.");
+            return SIXEL_BAD_ARGUMENT;
+        }
+        sixel_cdef_free(linear);
+    }
     if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY) {
         return SIXEL_OK;
     }
@@ -7232,7 +7238,8 @@ sixel_encoder_validate_output_definition(sixel_encoder_t const *encoder)
     if (restriction != NULL) {
         if (strncmp(restriction, "display-p3 ", 11) == 0) {
             snprintf(message, sizeof(message), "%s %s",
-                sixel_cdef_named_name(encoder->output_color_definition),
+                encoder->output_icc != NULL ? "icc" :
+                    sixel_cdef_named_name(encoder->output_color_definition),
                 restriction + 11);
             sixel_helper_set_additional_message(message);
         } else {
@@ -7543,6 +7550,16 @@ sixel_encoder_prepare_palette(
         if (SIXEL_SUCCEEDED(status)) {
             (*dither)->highcolor_output_definition =
                 encoder->output_color_definition;
+            /* Output changes invalidate the dither cache. A reused frame
+             * can keep the already owned ICC instead of copying it again. */
+            if (encoder->output_icc != NULL &&
+                    (*dither)->highcolor_icc == NULL) {
+                (*dither)->highcolor_icc =
+                    sixel_cdef_clone(encoder->output_icc);
+                if ((*dither)->highcolor_icc == NULL) {
+                    status = SIXEL_BAD_ALLOCATION;
+                }
+            }
         }
         goto end;
     case SIXEL_COLOR_OPTION_MONOCHROME:
@@ -8036,6 +8053,7 @@ sixel_encoder_prepare_palette(
         sixel_palette_snap_set_output(from_map_image
             ? SIXEL_PALETTE_OUTPUT_LEGACY : encoder->output_color_definition,
             encoder->snap_policy_grid_override, encoder->snap_policy_grid);
+        sixel_palette_snap_set_icc(from_map_image ? NULL : encoder->output_icc);
     }
     sixel_set_kcenter_algo_override(
         encoder->quantize_model_kcenter_algo_override,
@@ -8307,9 +8325,10 @@ end:
                 *dither, encoder->working_colorspace);
         }
         if (SIXEL_SUCCEEDED(status)) {
-            status = sixel_palette_prepare_output((*dither)->palette,
-                encoder->working_colorspace, encoder->output_color_definition,
-                encoder->output_colorspace);
+            status = sixel_palette_prepare_output_definition(
+                (*dither)->palette, encoder->working_colorspace,
+                encoder->output_color_definition, encoder->output_colorspace,
+                encoder->output_icc);
         }
         sixel_dither_set_optimize_palette(*dither, 0);
     }
@@ -9832,6 +9851,7 @@ sixel_encoder_new(
     (*ppencoder)->force_float32_colorspace = 0;
     (*ppencoder)->output_colorspace     = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->output_color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
+    (*ppencoder)->output_icc = NULL;
     (*ppencoder)->precision_prefer_float32 = 0;
     (*ppencoder)->precision_requested = SIXEL_OPTION_PRECISION_AUTO;
     (*ppencoder)->prefer_float32        = 0;
@@ -10140,6 +10160,7 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
 
     if (encoder) {
         allocator = encoder->allocator;
+        sixel_cdef_free(encoder->output_icc);
         sixel_allocator_free(allocator, encoder->mapfile);
         sixel_allocator_free(allocator, encoder->palette_output);
         sixel_allocator_free(allocator, encoder->loader_order);
@@ -10828,6 +10849,35 @@ sixel_encoder_apply_quantize_resolution(
         return status;
     }
     sixel_encoder_apply_heckbert_profile_defaults(encoder);
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_set_output_color(sixel_encoder_t *encoder, char const *value)
+{
+    sixel_color_def_t *candidate;
+    int base;
+    SIXELSTATUS status;
+
+    candidate = NULL;
+    status = sixel_color_option_parse(value, 0, &base, &candidate);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    /* Named/legacy caches already compare their definition/transfer keys,
+     * and repeated options must preserve seeded history and lookup owners.
+     * Custom ICCs share one key: only those replacements need an explicit
+     * reset, after validation and before releasing the previous profile. */
+    if (candidate != NULL || encoder->output_icc != NULL) {
+        sixel_encoder_clear_dither_cache(encoder);
+        (void)sixel_encoder_invalidate_6delta_plane(encoder);
+    }
+    sixel_cdef_free(encoder->output_icc);
+    encoder->output_icc = candidate;
+    encoder->output_color_definition = base < 0
+        ? -base : SIXEL_PALETTE_OUTPUT_LEGACY;
+    encoder->output_colorspace = base < 0 ? SIXEL_COLORSPACE_GAMMA : base;
+    sixel_encoder_update_precision(encoder);
     return SIXEL_OK;
 }
 
@@ -12916,40 +12966,9 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_OUTPUT_COLORSPACE:  /* U */
-        if (value == NULL) {
-            sixel_helper_set_additional_message(
-                "output-colorspace requires an argument.");
-            status = SIXEL_BAD_ARGUMENT;
+        status = sixel_encoder_set_output_color(encoder, value);
+        if (SIXEL_FAILED(status)) {
             goto end;
-        } else {
-            len = strlen(value);
-
-            if (len >= sizeof(lowered)) {
-                sixel_helper_set_additional_message(
-                    "specified output colorspace name is too long.");
-                status = SIXEL_BAD_ARGUMENT;
-                goto end;
-            }
-            for (i = 0; i < len; ++i) {
-                lowered[i] = (char)tolower((unsigned char)value[i]);
-            }
-            lowered[len] = '\0';
-
-            status = sixel_encoder_parse_choice_argument(
-                lowered,
-                g_option_choices_output_colorspace,
-                sizeof(g_option_choices_output_colorspace) /
-                sizeof(g_option_choices_output_colorspace[0]),
-                "unsupported output colorspace specified.",
-                &match_value);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-            encoder->output_color_definition = match_value < 0
-                ? -match_value : SIXEL_PALETTE_OUTPUT_LEGACY;
-            encoder->output_colorspace = match_value < 0
-                ? SIXEL_COLORSPACE_GAMMA : match_value;
-            sixel_encoder_update_precision(encoder);
         }
         break;
     case SIXEL_OPTFLAG_ORMODE:  /* O */
@@ -14459,8 +14478,15 @@ write_png_from_sixel(char const *sixel_path,
      * only tags the decoded snapshot; applying another transform would
      * convert an already converted palette twice. Legacy linear/SMPTE-C
      * snapshots retain their existing sRGB decoder interpretation. */
-    status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT_COLORSPACE,
-        sixel_cdef_named_name(encoder->output_color_definition));
+    if (encoder->output_icc != NULL) {
+        sixel_cdef_free(decoder->input_icc);
+        decoder->input_icc = sixel_cdef_clone(encoder->output_icc);
+        decoder->input_colorspace = SIXEL_NAMED_COLOR_COUNT;
+        status = decoder->input_icc != NULL ? SIXEL_OK : SIXEL_BAD_ALLOCATION;
+    } else {
+        status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT_COLORSPACE,
+            sixel_cdef_named_name(encoder->output_color_definition));
+    }
     if (SIXEL_FAILED(status)) {
         goto end;
     }

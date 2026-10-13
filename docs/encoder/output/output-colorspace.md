@@ -15,9 +15,10 @@
 | `display-p3` | Standard Display P3 primaries, D65 white and sRGB transfer encoding. | The [limited CPU float path](#display-p3-selected-cpu-float-path) and a receiver explicitly configured for P3 input. |
 | `adobe-rgb` | Adobe RGB (1998), D65, decoding exponent 563/256. | Selected CPU float output with destination-aware snap. |
 | `dci-p3` | P3 primaries, DCI white `(0.3140, 0.3510)`, decoding exponent 2.6. | Selected CPU float output with destination-aware snap; distinct from Display P3. |
+| `icc[:path=FILE]` | RGB defined by a supported ICC file. | Explicit output endpoint; the receiver must use the same RGB interpretation. |
 | `auto[:timeout_ms=N]` | CLI negotiation resolves to gamma sRGB or standard Display P3. | Only images sent directly to stdout as a TTY; other destinations retain gamma sRGB. |
 
-The parser also accepts `smptec` as an alias for `smpte-c`, folds letter case, and uses the shared [choice prefix-matching policy](../../cli/prefix-matching.md). Full names are preferable in durable commands. A repeated `-U` replaces the earlier value. `oklab`, `cielab`, and `din99d` are working/clustering choices, not accepted output choices. `-U` takes a required name, not a numeric gamma exponent or an ICC profile path.
+The parser also accepts `smptec` as an alias for `smpte-c`, folds letter case, and uses the shared [choice prefix-matching policy](../../cli/prefix-matching.md). Full names are preferable in durable commands. A repeated `-U` replaces the earlier value. `oklab`, `cielab`, and `din99d` are working/clustering choices, not accepted output choices. `-U` takes a required base name, optionally followed by its registered suboptions; a bare numeric gamma or filename is not a base name.
 
 `-U` and `-_` are not generally mutually exclusive. The selected Display P3, Adobe RGB and DCI-P3 generated-palette paths accept destination-aware snap, including when CLI negotiation selects P3; gamma, linear and SMPTE-C retain their existing snap behavior. The [snap/output boundary](../palette-construction/snap-policy/README.md#output-conversion-and-destination-aware-snap) defines the inverse-mapped destination lattice and stage controls.
 
@@ -25,13 +26,29 @@ The parser also accepts `smptec` as an alias for `smpte-c`, folds letter case, a
 
 `display-p3`, `adobe-rgb` and `dci-p3` select complete RGB definitions in the shared CMS registry, separately from the frame's working-coordinate tag. The palette and high-color paths use the same relative-colorimetric transform through D50 PCS with Bradford white adaptation. Working values remain extended until the destination copy is clipped for wire serialization. Adding a named destination does not add or implicitly change `-X` or `-W`.
 
-Adobe RGB (1998) uses the [ICC registry definition](https://registry.color.org/rgb-registry/adobergb), including the exact `563/256` decoding exponent. Here `dci-p3` means P3 primaries with DCI white `(0.3140, 0.3510)` and power 2.6, one of the explicitly distinguished [DCI-P3 definitions](https://registry.color.org/rgb-registry/dcip3). It is not P3-D65/power-2.6 or Display P3, and does not control cinema reference luminance or viewing conditions. These are supported analytic definitions; this interface does not accept an arbitrary destination ICC file.
+Adobe RGB (1998) uses the [ICC registry definition](https://registry.color.org/rgb-registry/adobergb), including the exact `563/256` decoding exponent. Here `dci-p3` means P3 primaries with DCI white `(0.3140, 0.3510)` and power 2.6, one of the explicitly distinguished [DCI-P3 definitions](https://registry.color.org/rgb-registry/dcip3). It is not P3-D65/power-2.6 or Display P3, and does not control cinema reference luminance or viewing conditions. These names select analytic definitions. The `icc` choice below selects a file-backed definition.
 
 Adobe RGB and DCI-P3 follow the selected CPU palette/high-color admission below. Generated palettes use the same definition-driven [destination snap contract](../palette-construction/snap-policy/README.md#output-conversion-and-destination-aware-snap), including timing, approach rate, distance weighting and grid strategy. The separate high-color path continues to reject active snap for every destination. Disabled snap or zero approach rate retains the unsnapped working palette. Generated and fixed palettes, RGB/HLS output and supported alternate envelopes use the selected definition. Output cache and retained delta history identities distinguish all named destinations across encoder reuse. Separate encoder objects retain independent state.
 
 Explicit choices do not negotiate with a terminal. CLI `-Uauto` still resolves only named sRGB/Display P3; receiving Adobe RGB, a simple definition or ICC does not activate these explicit modes automatically. CLI prefixes `-Ua` (auto/adobe-rgb) and `-Ud` (display-p3/dci-p3) are ambiguous; use unambiguous prefixes or full names. The library has no auto choice, so its prefix set differs accordingly.
 
 `sixel2png -T` and `lsqa -R/-T` accept the same added names for explicit decoded-input interpretation. Encoder PNG snapshots carry the selected named destination's ICC, preserving decoded numbers. Legacy mapfile `-M` remains sRGB8 independent of `-U`; this does not introduce a color-bearing palette exchange format. Raw SIXEL decode APIs still return numbers without color policy.
+
+## ICC file endpoints
+
+`img2sixel -U icc:path=/path/to/profile.icc` and `-U icc:P/path/to/profile.icc` select the same output endpoint. The `path` string is case-preserving and has compact key `P`. `SIXEL_OUTPUT_COLORSPACE_ICC_PATH` supplies its default, so `-U icc` is sufficient when that variable is set. An explicit path overrides the environment; an empty explicit path is an error. The path variable does not itself select ICC output. Repeating `-U` replaces the selected definition; an invalid replacement leaves the existing library configuration intact.
+
+```sh
+SIXEL_OUTPUT_COLORSPACE_ICC_PATH=/path/to/profile.icc img2sixel -U icc image.png
+img2sixel -U 'icc:path=/path/with spaces/profile.icc' image.png
+sixel2png -T icc:P/path/to/profile.icc < image.six > image.png
+```
+
+The converter option layer reads a bounded, complete file (128 bytes through 16 MiB) and passes owned bytes to the common CMS. Standard input (`-`) is not an ICC path. RGB device or color-space profiles (`mntr`, `scnr`, `prtr`, `spac`) require supported relative-colorimetric transforms in both directions. Matrix/TRC profiles and supported LUT profiles with the required relative-intent paths are admitted; CMYK, Gray, DeviceLink, abstract, named-color profiles and unsupported transforms fail rather than falling back to sRGB. This is the builtin endpoint evaluator's supported ICC subset, not full ICC conformance or selection of a loader CMS engine. A LUT is not assumed to be invertible.
+
+The encoder retains an owned profile, independent of later filesystem/environment changes. Output palette caches clone that definition. Replacing `-U` invalidates palette caches and retained delta history so two different files cannot share state merely because both select `icc`. Separate encoders own independent profiles. Generated and fixed palettes, supported high-color output and PNG snapshots use the same endpoint. Matrix/TRC profiles support destination-aware palette snap; profiles with LUTs reject active generated-palette snap because its additive grid requires separable channel transfers. High-color retains its existing inactive-snap requirement.
+
+`sixel2png -T icc:path=FILE` / `-T icc:PFILE` uses `SIXEL_DECODER_INPUT_COLORSPACE_ICC_PATH` for the omitted path. It preserves decoded RGB and alpha and embeds the original ICC bytes into PNG, including after supported resizing or dequantization in the decoded RGB basis. Encoder PNG snapshots retain the already loaded output profile rather than reopening its file. Neither raw SIXEL decoding nor legacy `-M` export acquires an ICC interpretation from this option. Terminal `-Uauto` does not yet select a supplied ICC response.
 
 ## Where the conversion happens
 
@@ -1304,3 +1321,49 @@ The named destination checks use independent Decimal primary matrices, Bradford 
 | ON-38 | Convert P3 ICC 16-bit libpng input through builtin CMS to dci-p3. | [tests/quant/palette/named_output/0038_dci_libpng.t](../../../tests/quant/palette/named_output/0038_dci_libpng.t) |
 | ON-39 | Convert P3 ICC 16-bit libtiff input through builtin CMS to adobe-rgb. | [tests/quant/palette/named_output/0039_adobe_libtiff.t](../../../tests/quant/palette/named_output/0039_adobe_libtiff.t) |
 | ON-40 | Convert P3 ICC 16-bit libtiff input through builtin CMS to dci-p3. | [tests/quant/palette/named_output/0040_dci_libtiff.t](../../../tests/quant/palette/named_output/0040_dci_libtiff.t) |
+
+### ICC file endpoint contracts
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| IO-01 | Long `path=` syntax converts extended linear-sRGB P3 primaries to exact wire endpoints. | [tests/quant/palette/icc_output/0001_p3_long.t](../../../tests/quant/palette/icc_output/0001_p3_long.t) |
+| IO-02 | Compact `P` syntax selects the same ICC endpoint. | [tests/quant/palette/icc_output/0002_p3_compact.t](../../../tests/quant/palette/icc_output/0002_p3_compact.t) |
+| IO-03 | The output path environment permits `-U icc` without an explicit path. | [tests/quant/palette/icc_output/0003_output_env.t](../../../tests/quant/palette/icc_output/0003_output_env.t) |
+| IO-04 | An explicit output path overrides an invalid environment path. | [tests/quant/palette/icc_output/0004_output_override.t](../../../tests/quant/palette/icc_output/0004_output_override.t) |
+| IO-05 | Relative-intent LUT output matches independently fixed RGB101 values. | [tests/quant/palette/icc_output/0005_relative_lut.t](../../../tests/quant/palette/icc_output/0005_relative_lut.t) |
+| IO-06 | Nearest snap uses a matrix/TRC ICC destination. | [tests/quant/palette/icc_output/0006_matrix_nearest.t](../../../tests/quant/palette/icc_output/0006_matrix_nearest.t) |
+| IO-07 | Reversible snap uses a matrix/TRC ICC destination. | [tests/quant/palette/icc_output/0007_matrix_reversible.t](../../../tests/quant/palette/icc_output/0007_matrix_reversible.t) |
+| IO-08 | High-color output converts representatives through the ICC endpoint. | [tests/quant/palette/icc_output/0008_highcolor.t](../../../tests/quant/palette/icc_output/0008_highcolor.t) |
+| IO-09 | An invalid replacement leaves the encoder's selected profile usable. | [tests/quant/palette/icc_output/0009_encoder_recovery.t](../../../tests/quant/palette/icc_output/0009_encoder_recovery.t) |
+| IO-10 | Decoder profile selection matches independent XYZ values, survives an invalid replacement, and releases the ICC on return to sRGB. | [tests/quant/palette/icc_output/0010_decoder_recovery.t](../../../tests/quant/palette/icc_output/0010_decoder_recovery.t) |
+| IO-11 | The input path environment permits `-T icc` without an explicit path. | [tests/quant/palette/icc_output/0011_input_env.t](../../../tests/quant/palette/icc_output/0011_input_env.t) |
+| IO-12 | An explicit input path overrides an invalid environment path. | [tests/quant/palette/icc_output/0012_input_override.t](../../../tests/quant/palette/icc_output/0012_input_override.t) |
+| IO-13 | ICC output without a path fails without changing the previous parsed state. | [tests/quant/palette/icc_output/0013_missing_path.t](../../../tests/quant/palette/icc_output/0013_missing_path.t) |
+| IO-14 | An explicitly empty path is rejected. | [tests/quant/palette/icc_output/0014_empty_path.t](../../../tests/quant/palette/icc_output/0014_empty_path.t) |
+| IO-15 | An ICC path cannot consume image standard input. | [tests/quant/palette/icc_output/0015_stdin_rejected.t](../../../tests/quant/palette/icc_output/0015_stdin_rejected.t) |
+| IO-16 | A bare `icc:FILE` is rejected; the path must use a declared suboption. | [tests/quant/palette/icc_output/0016_bare_path_rejected.t](../../../tests/quant/palette/icc_output/0016_bare_path_rejected.t) |
+| IO-17 | The path suboption is scoped to the ICC base. | [tests/quant/palette/icc_output/0017_wrong_base.t](../../../tests/quant/palette/icc_output/0017_wrong_base.t) |
+| IO-18 | A profile without the required reverse relative-intent transform is rejected. | [tests/quant/palette/icc_output/0018_forward_only.t](../../../tests/quant/palette/icc_output/0018_forward_only.t) |
+| IO-19 | A Gray profile is rejected as an RGB endpoint. | [tests/quant/palette/icc_output/0019_gray_rejected.t](../../../tests/quant/palette/icc_output/0019_gray_rejected.t) |
+| IO-20 | Malformed ICC bytes are rejected. | [tests/quant/palette/icc_output/0020_malformed.t](../../../tests/quant/palette/icc_output/0020_malformed.t) |
+| IO-21 | ICC input interpretation without a path is rejected. | [tests/quant/palette/icc_output/0021_input_missing.t](../../../tests/quant/palette/icc_output/0021_input_missing.t) |
+| IO-22 | Indexed PNG preserves decoded samples and ICC interpretation. | [tests/quant/palette/icc_output/0022_png_indexed.t](../../../tests/quant/palette/icc_output/0022_png_indexed.t) |
+| IO-23 | Direct PNG preserves decoded samples, alpha and ICC interpretation. | [tests/quant/palette/icc_output/0023_png_direct.t](../../../tests/quant/palette/icc_output/0023_png_direct.t) |
+| IO-24 | Nearest resize preserves the selected ICC interpretation. | [tests/quant/palette/icc_output/0024_png_resize.t](../../../tests/quant/palette/icc_output/0024_png_resize.t) |
+| IO-25 | Dequantization preserves the selected ICC interpretation on a uniform patch. | [tests/quant/palette/icc_output/0025_png_undither.t](../../../tests/quant/palette/icc_output/0025_png_undither.t) |
+| IO-26 | Encoder PNG snapshots preserve independently fixed output coordinates and ICC interpretation. | [tests/quant/palette/icc_output/0026_png_snapshot.t](../../../tests/quant/palette/icc_output/0026_png_snapshot.t) |
+| IO-27 | High-color PNG snapshots preserve independently fixed output coordinates and ICC interpretation. | [tests/quant/palette/icc_output/0027_png_highcolor_snapshot.t](../../../tests/quant/palette/icc_output/0027_png_highcolor_snapshot.t) |
+| IO-28 | Active snap rejects a LUT profile before writing SIXEL bytes. | [tests/quant/palette/icc_output/0028_lut_snap_rejected.t](../../../tests/quant/palette/icc_output/0028_lut_snap_rejected.t) |
+| IO-29 | Replacing an encoder ICC invalidates its output cache and seeded delta history while a retained palette owns its original transform. | [tests/quant/palette/icc_output/0029_profile_reuse.t](../../../tests/quant/palette/icc_output/0029_profile_reuse.t) |
+| IO-30 | Direct snap-grid evaluation matches independent values for a profile with nonzero encoded-black output. | [tests/quant/palette/icc_output/0030_black_direct.t](../../../tests/quant/palette/icc_output/0030_black_direct.t) |
+| IO-31 | The contribution table counts the ICC black baseline once. | [tests/quant/palette/icc_output/0031_black_table.t](../../../tests/quant/palette/icc_output/0031_black_table.t) |
+| IO-32 | Cached snap-grid evaluation preserves the ICC black baseline. | [tests/quant/palette/icc_output/0032_black_cache.t](../../../tests/quant/palette/icc_output/0032_black_cache.t) |
+
+### ICC option quality regression tests
+
+These image comparisons check CLI/environment equivalence and gross rendering regressions; the ICC contract tests above independently check numeric transforms and metadata.
+
+| ID | Observation | Owning test |
+| --- | --- | --- |
+| IO-171 | Output ICC path CLI/environment binding and image sanity. | [tests/cli/options/regression/0171_output_icc_path_image_regression.t](../../../tests/cli/options/regression/0171_output_icc_path_image_regression.t) |
+| IO-172 | Input ICC path CLI/environment binding and image sanity. | [tests/cli/options/regression/0172_input_icc_path_image_regression.t](../../../tests/cli/options/regression/0172_input_icc_path_image_regression.t) |

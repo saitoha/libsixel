@@ -46,6 +46,7 @@
 #endif  /* HAVE_INTTYPES_H */
 
 #include "dither.h"
+#include "cms.h"
 #include "dither-interframe-method.h"
 #include "palette-common-snap.h"
 #include "palette-factory.h"
@@ -2254,6 +2255,7 @@ sixel_dither_new(
     (*ppdither)->standalone_palette_colors = 0;
     (*ppdither)->standalone_palette_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
     (*ppdither)->highcolor_output_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
+    (*ppdither)->highcolor_icc = NULL;
     (*ppdither)->pipeline_6delta_rgb101 = 0;
     (*ppdither)->pipeline_6delta_hls = 0;
     (*ppdither)->pipeline_6delta_hls_bytes = NULL;
@@ -2418,6 +2420,7 @@ sixel_dither_destroy(
         sixel_dither_release_pipeline_accumulation_result_rgb(dither);
         sixel_dither_clear_bluenoise_gradient_map_hint(dither);
         sixel_dither_interframe_state_dispose(dither);
+        sixel_cdef_free(dither->highcolor_icc);
         sixel_allocator_free(allocator, dither);
         sixel_allocator_unref(allocator);
     }

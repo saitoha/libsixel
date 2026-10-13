@@ -700,6 +700,7 @@ SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U'  # -U OUTPUT_COLORSPACE, --output-colorspa
                                       #          display-p3 -> P3/D65 with sRGB transfer
                                       #          adobe-rgb -> Adobe RGB (1998)
                                       #          dci-p3 -> P3/DCI white with power 2.6
+                                      # icc:path=FILE / icc:PFILE; ICC_PATH env default
 SIXEL_OPTFLAG_ORMODE           = 'O'  # -O, --ormode: output ormode sixel image
 SIXEL_OPTFLAG_ALPHA_POLICY = 'A'  # -A POLICY, --alpha-policy=POLICY:
                                   #        select source alpha and omitted

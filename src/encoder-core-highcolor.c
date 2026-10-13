@@ -120,8 +120,10 @@ sixel_highcolor_convert(unsigned char **prepared, int *stride,
     if (dither->highcolor_output_definition !=
             SIXEL_PALETTE_OUTPUT_LEGACY) {
         srgb = sixel_cdef_name("srgb");
-        destination = sixel_cdef_name(sixel_cdef_named_name(
-            dither->highcolor_output_definition));
+        destination = dither->highcolor_icc != NULL
+            ? sixel_cdef_clone(dither->highcolor_icc)
+            : sixel_cdef_name(sixel_cdef_named_name(
+                dither->highcolor_output_definition));
         if (srgb == NULL || destination == NULL) {
             goto end;
         }

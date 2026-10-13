@@ -312,6 +312,8 @@ struct sixel_dither {
      * definition is refreshed on every frame, including cached contexts.
      * The core prepares one local transform before any band workers start. */
     int highcolor_output_definition;
+    /* Owned endpoint; frame coordinates retain their independent tag. */
+    struct sixel_color_def *highcolor_icc;
 };
 
 #ifdef __cplusplus

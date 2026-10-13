@@ -12,6 +12,7 @@
 #include "src/palette-snap-grid.h"
 #include "src/palette-common-snap.h"
 #include "tests/data/color-numeric/destination-snap.h"
+#include "tests/data/color-numeric/paired-lut.h"
 
 static int const destination_spaces[] = {
     SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_OKLAB,
@@ -323,7 +324,7 @@ destination_invalid(void)
                 allocator))) {
         goto end;
     }
-    icc = sixel_cdef_icc(bytes, length);
+    icc = sixel_cdef_icc(color_paired_lut, sizeof(color_paired_lut));
     if (icc == NULL || sixel_snap_grid_new(&grid, SIXEL_SNAP_GRID_TABLE,
             SIXEL_COLORSPACE_LINEAR, NULL, allocator) != SIXEL_BAD_ARGUMENT ||
             grid != NULL || sixel_snap_grid_new(&grid, SIXEL_SNAP_GRID_TABLE,

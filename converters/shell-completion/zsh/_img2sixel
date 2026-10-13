@@ -256,6 +256,11 @@ _outputcolorspace() {
   current=${words[CURRENT]}
   if [[ ${current} == *:* ]]; then
     case ${current%%:*} in
+    [iI]|[iI][cC]|[iI][cC][cC])
+      prefix=${current%:*}:
+      compadd -- "${prefix}path=" "${prefix}P"
+      return
+      ;;
       [aA]|[aA][uU]|[aA][uU][tT]|[aA][uU][tT][oO]) ;;
       *) return ;;
     esac
@@ -271,6 +276,7 @@ _outputcolorspace() {
     'display-p3[Display P3: limited CPU float palette path]' \
     'adobe-rgb[Adobe RGB (1998): CPU float, destination snap]' \
     'dci-p3[DCI white, gamma 2.6: CPU float, destination snap]' \
+    'icc[RGB ICC file; path=FILE or PFILE]' \
     'auto[negotiate only with the stdout image terminal]'
 }
 

@@ -1205,7 +1205,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "(selected CPU palette/high-color paths)\n"
         "      adobe-rgb -> Adobe RGB (1998), D65, power 563/256\n"
         "      dci-p3 -> P3 primaries, DCI white, power 2.6\n"
-        "    Named destinations use CPU float; Adobe/DCI require -_none.\n"
+        "      icc[:path=FILE] -> RGB ICC endpoint (compact :PFILE)\n"
+        "    icc: path=P; SIXEL_OUTPUT_COLORSPACE_ICC_PATH supplies default\n"
+        "    Named/ICC destinations use CPU float; ICC snap needs matrix/TRC.\n"
         "      auto[:timeout_ms=N] -> negotiate only with stdout's TTY\n"
         "    auto: timeout_ms=T, decimal 1..10000, default 200 ms per\n"
         "    exchange/write; file/pipe output uses gamma, no stderr fallback\n"
@@ -1359,6 +1361,14 @@ static cli_env_help_t const g_env_help_table[] = {
         "separately; this variable takes a base name without suboptions."
     },
     {
+        "SIXEL_OUTPUT_COLORSPACE_ICC_PATH",
+        "ICC file path for -U icc. Explicit icc:path=FILE (icc:PFILE) wins."
+    },
+    {
+        "SIXEL_DECODER_INPUT_COLORSPACE_ICC_PATH",
+        "ICC file path for sixel2png -T icc. Explicit path=FILE wins."
+    },
+    {
         "SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS",
         "img2sixel auto exchange/write deadline in milliseconds.\n"
         "Decimal 1..10000; empty/unset defaults to 200.\n"
@@ -1458,9 +1468,10 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_DECODER_INPUT_COLORSPACE",
-        "sixel2png RGB interpretation: srgb, display-p3, adobe-rgb or dci-p3.\n"
-        "Overridden by -T. Encoder PNG profiles follow named -U choices; "
-        "otherwise sRGB."
+        "sixel2png RGB interpretation: srgb, display-p3, adobe-rgb, "
+        "dci-p3, icc.\n"
+        "Overridden by -T. Encoder PNG profiles follow named or ICC -U "
+        "choices; otherwise sRGB."
     },
     {
         "SIXEL_DEQUANTIZE_LSO_VARIANT",

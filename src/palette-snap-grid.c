@@ -36,6 +36,7 @@ struct sixel_snap_grid {
     double levels[3][101];
     double contribution[3][101][3];
     double forward[3][3];
+    double black[3];
     sixel_snap_grid_cell_t *cache;
     double *full;
     unsigned long queries;
@@ -75,7 +76,8 @@ sixel_snap_grid_table(sixel_snap_grid_t *grid, unsigned int code,
     for (channel = 0; channel < 3; ++channel) {
         linear[channel] = grid->contribution[0][r][channel]
             + grid->contribution[1][g][channel]
-            + grid->contribution[2][b][channel];
+            + grid->contribution[2][b][channel]
+            - 2.0 * grid->black[channel];
     }
     ++grid->conversions;
     return sixel_color_convert(target, linear, SIXEL_COLORSPACE_LINEAR,
@@ -219,6 +221,12 @@ sixel_snap_grid_new(sixel_snap_grid_t **result, int policy, int colorspace,
             grid->forward[channel][axis] = linear[channel];
         }
     }
+    /* ICC curves may map device black above zero. Axis contributions
+     * each contain that common baseline; count it once, not three times. */
+    memset(rgb, 0, sizeof(rgb));
+    if (!sixel_cxform_apply(grid->to_linear, rgb, grid->black)) {
+        goto end;
+    }
     for (q = 0; q <= 100; ++q) {
         grid->tones[q] = ((q * 255 + 50) / 100) / 255.0;
         rgb[0] = rgb[1] = rgb[2] = grid->tones[q];
@@ -226,6 +234,9 @@ sixel_snap_grid_new(sixel_snap_grid_t **result, int policy, int colorspace,
             goto end;
         }
         for (axis = 0; axis < 3; ++axis) {
+            if (q > 0 && linear[axis] < grid->levels[axis][q - 1]) {
+                goto end;
+            }
             grid->levels[axis][q] = linear[axis];
         }
         if (policy == SIXEL_SNAP_GRID_DIRECT) {

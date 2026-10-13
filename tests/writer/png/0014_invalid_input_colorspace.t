@@ -17,7 +17,7 @@ test "${status}" != 0 || {
     exit 0
 }
 case "${result}" in
-    *"input-colorspace accepts srgb, display-p3, adobe-rgb or dci-p3"*) ;;
+    *'unknown option base value "auto"'*'srgb, display-p3, adobe-rgb, dci-p3, icc'*) ;;
     *) echo "not ok 1 - missing diagnostic"; exit 0 ;;
 esac
 echo "ok 1 - invalid_input_colorspace"

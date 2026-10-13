@@ -1421,6 +1421,11 @@ adobe-rgb -> Adobe RGB (1998), D65 white and power 563/256
 .br
 dci-p3 -> P3 primaries, DCI white and power 2.6
 .br
+icc[:path=FILE] -> RGB ICC endpoint (compact icc:PFILE; path=P)
+.br
+The omitted path comes from SIXEL_OUTPUT_COLORSPACE_ICC_PATH.
+CLI path overrides the environment. ICC palette snap requires matrix/TRC.
+.br
 Adobe RGB and DCI-P3 use the same CPU float paths and destination-aware
 snap controls as Display P3. Snap uses the selected definition's primaries,
 white point and transfer function. High-color output still requires
@@ -1689,6 +1694,15 @@ The value is a base name without suboptions; explicit \fB-U\fP wins.
 Empty or unset leaves the gamma default. This is a CLI setting, not a
 library terminal-discovery policy.
 .TP 5
+.B SIXEL_OUTPUT_COLORSPACE_ICC_PATH
+ICC file path for \fB-U icc\fP. Explicit \fBicc:path=FILE\fP or
+\fBicc:PFILE\fP takes precedence (path=P). The profile is read once and
+owned by the encoder. RGB matrix/TRC or supported bidirectional relative
+LUT transforms are required. Active snap requires matrix/TRC.
+.TP 5
+.B SIXEL_DECODER_INPUT_COLORSPACE_ICC_PATH
+ICC file path for \fBsixel2png -T icc\fP. Explicit path=P takes precedence.
+.TP 5
 .B SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS
 Set the auto exchange/write deadline to a decimal integer in 1..10000
 milliseconds. Empty or unset defaults to 200. The CLI suboption
@@ -1798,10 +1812,10 @@ not recover higher source bit depth from the loader.
 .TP 5
 .B SIXEL_DECODER_INPUT_COLORSPACE
 .br
-set decoded RGB interpretation: srgb, display-p3, adobe-rgb or dci-p3.
+set decoded RGB interpretation: srgb, display-p3, adobe-rgb, dci-p3 or icc.
 The sixel2png \fB\-T\fP option takes precedence.
-Encoder-generated PNG snapshots use the profile selected by named \fB\-U\fP
-and sRGB otherwise, independently of this default.
+Encoder-generated PNG snapshots use the profile selected by named or ICC
+\fB\-U\fP and sRGB otherwise, independently of this default.
 .TP 5
 .B SIXEL_DEQUANTIZE_LSO_VARIANT
 .br

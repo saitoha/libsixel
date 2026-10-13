@@ -371,6 +371,7 @@ ts_tiled(TIFF *tif)
 #define loader_can_try_libtiff ts_local_12
 #define sixel_cdef_clone ts_local_13
 #define sixel_cdef_linearized ts_local_linearized
+#define sixel_cdef_separable ts_local_linearized_separable
 #define sixel_cdef_transfer ts_local_transfer
 #define sixel_cdef_export_icc ts_local_13_export
 #define sixel_cdef_finite ts_local_14
@@ -784,6 +785,7 @@ ts_linear(unsigned char *pixels, int width, int height, int format,
 #undef load_with_libtiff
 #undef loader_can_try_libtiff
 #undef sixel_cdef_clone
+#undef sixel_cdef_separable
 #undef sixel_cdef_linearized
 #undef sixel_cdef_transfer
 #undef sixel_cdef_export_icc

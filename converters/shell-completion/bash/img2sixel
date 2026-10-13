@@ -1042,6 +1042,13 @@ _img2sixel()
         if [[ $cur == *:* ]]; then
             local color_prefix
             case ${cur%%:*} in
+            [iI]|[iI][cC]|[iI][cC][cC])
+                color_prefix=${cur%:*}:
+                COMPREPLY=( $( compgen -W "${color_prefix}path=
+                                           ${color_prefix}P" -- "$cur" ) )
+                compopt -o nospace 2>/dev/null
+                return 0
+                ;;
             [aA]|[aA][uU]|[aA][uU][tT]|[aA][uU][tT][oO]) ;;
             *) return 0 ;;
             esac
@@ -1057,6 +1064,7 @@ _img2sixel()
                                    display-p3 \
                                    adobe-rgb \
                                    dci-p3 \
+                                   icc \
                                    auto' -- "$cur" ) )
         return 0
         ;;

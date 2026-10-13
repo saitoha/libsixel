@@ -810,6 +810,7 @@ typedef int SIXELSTATUS;
     /*   display-p3 -> P3/D65 with the sRGB transfer curve */
     /*   adobe-rgb -> Adobe RGB (1998), D65, power 563/256 */
     /*   dci-p3 -> P3/DCI white, power 2.6 */
+    /*   icc:path=FILE or icc:PFILE; path environment supplies the default */
 #define SIXEL_OPTFLAG_ORMODE            ('O')  /* -O, --ormode:
                                                   output ormode sixel image
                                                 */

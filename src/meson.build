@@ -161,6 +161,8 @@ srcs = [
   'chunk.h',
   'chunk-factory.h',
   'chunk-view.h',
+  'color-option.c',
+  'color-option.h',
   'cms.c',
   'png-chrm-arithmetic.c',
   'png-chrm-arithmetic.h',

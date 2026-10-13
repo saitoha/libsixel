@@ -987,6 +987,20 @@ enum {
     SIXEL_DEQUANTIZE_BASE_SELECTIVE_BLUR
 };
 
+static sixel_option_value_schema_t const g_output_color_values[] = {
+    { "gamma", SIXEL_COLORSPACE_GAMMA, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "linear", SIXEL_COLORSPACE_LINEAR, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "smpte-c", SIXEL_COLORSPACE_SMPTEC, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "smptec", SIXEL_COLORSPACE_SMPTEC, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "display-p3", -SIXEL_NAMED_COLOR_DISPLAY_P3, 0u,
+      SIXEL_OPTION_BASE_POLICY_NONE },
+    { "adobe-rgb", -SIXEL_NAMED_COLOR_ADOBE_RGB, 0u,
+      SIXEL_OPTION_BASE_POLICY_NONE },
+    { "dci-p3", -SIXEL_NAMED_COLOR_DCI_P3, 0u,
+      SIXEL_OPTION_BASE_POLICY_NONE },
+    { "icc", -SIXEL_NAMED_COLOR_COUNT, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+};
+
 static sixel_option_value_schema_t const g_input_color_values[] = {
     { "srgb", SIXEL_OPTION_INPUT_SRGB, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
     { "display-p3", SIXEL_OPTION_INPUT_DISPLAY_P3, 0u,
@@ -994,7 +1008,8 @@ static sixel_option_value_schema_t const g_input_color_values[] = {
     { "adobe-rgb", SIXEL_OPTION_INPUT_ADOBE_RGB, 0u,
       SIXEL_OPTION_BASE_POLICY_NONE },
     { "dci-p3", SIXEL_OPTION_INPUT_DCI_P3, 0u,
-      SIXEL_OPTION_BASE_POLICY_NONE }
+      SIXEL_OPTION_BASE_POLICY_NONE },
+    { "icc", SIXEL_NAMED_COLOR_COUNT, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
 };
 
 static sixel_option_value_schema_t const g_dequantize_values[] = {
@@ -1732,7 +1747,37 @@ static sixel_suboption_choice_t const g_loader_hdr_tonemap_choices[] = {
  * Common rows keep orthogonal controls identical without copying definitions
  * into every quantizer or diffusion method.
  */
+#define SIXEL_REGISTRY_COLOR_STRING( \
+    id_, base_, name_, short_, env_, scope_, field_, override_) \
+    { \
+        (id_), (base_), (scope_), (name_), (short_), (env_), NULL, NULL, \
+        SIXEL_SUBOPTION_VALUE_STRING, NULL, 0u, NULL, 0u, \
+        0.0, 0.0, 0, 0, 0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, \
+        "ICC path must not be empty.", NULL, \
+        { \
+            ((scope_) == SIXEL_OPTION_SCOPE_DECODER \
+                ? SIXEL_SUBOPTION_TARGET_INPUT_COLOR_FILE \
+                : SIXEL_SUBOPTION_TARGET_OUTPUT_COLOR_FILE), \
+            SIXEL_SUBOPTION_STORAGE_STRING, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_color_file_options_t, field_, char const *), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_color_file_options_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL, 0ULL \
+    }
+
 static sixel_suboption_key_t const g_suboptions[] = {
+    SIXEL_REGISTRY_COLOR_STRING(
+        SIXEL_OPTION_SCHEMA_OUTPUT_COLORSPACE, g_output_color_values + 7,
+        "path", 'P', "SIXEL_OUTPUT_COLORSPACE_ICC_PATH",
+        SIXEL_OPTION_SCOPE_ENCODER, path, path_override),
+    SIXEL_REGISTRY_COLOR_STRING(
+        SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE, g_input_color_values + 4,
+        "path", 'P', "SIXEL_DECODER_INPUT_COLORSPACE_ICC_PATH",
+        SIXEL_OPTION_SCOPE_DECODER, path, path_override),
     SIXEL_REGISTRY_ENCODER_UINT(
         SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
         "threshold", 'T', "SIXEL_UPDATE_DELTA_THRESHOLD", NULL, NULL,
@@ -3285,17 +3330,26 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_DITHER_CLAMP_AUTO,
         g_clamp_policy_values,
         "SIXEL_DITHER_CLAMP_POLICY"),
-    SIXEL_REGISTRY_SCALAR_CHOICE(
+    SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE,
         SIXEL_OPTION_SCOPE_DECODER,
         SIXEL_OPTFLAG_INPUT_COLORSPACE,
         "input-colorspace",
-        SIXEL_OPTION_MATCH_EXACT,
-        SIXEL_OPTION_MATCH_EXACT,
-        "SIXEL_DECODER_INPUT_COLORSPACE",
-        "input-colorspace accepts srgb, display-p3, adobe-rgb or dci-p3.",
+        SIXEL_OPTION_ARGUMENT_SINGLE,
+        SIXEL_OPTION_DEFAULT_FIXED,
         SIXEL_OPTION_INPUT_SRGB,
-        g_input_color_values),
+        g_input_color_values,
+        "SIXEL_DECODER_INPUT_COLORSPACE"),
+    SIXEL_REGISTRY_OPTION_SCHEMA(
+        SIXEL_OPTION_SCHEMA_OUTPUT_COLORSPACE,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        SIXEL_OPTFLAG_OUTPUT_COLORSPACE,
+        "output-colorspace",
+        SIXEL_OPTION_ARGUMENT_SINGLE,
+        SIXEL_OPTION_DEFAULT_FIXED,
+        SIXEL_COLORSPACE_GAMMA,
+        g_output_color_values,
+        NULL),
 };
 
 typedef char sixel_option_count_check[
@@ -4192,10 +4246,12 @@ sixel_option_registry_binding_scope_is_valid(
 
     switch (key->binding.target_class) {
     case SIXEL_SUBOPTION_TARGET_ENCODER:
+    case SIXEL_SUBOPTION_TARGET_OUTPUT_COLOR_FILE:
     case SIXEL_SUBOPTION_TARGET_LOADER:
         allowed_scope = SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE;
         break;
     case SIXEL_SUBOPTION_TARGET_DECODER:
+    case SIXEL_SUBOPTION_TARGET_INPUT_COLOR_FILE:
     case SIXEL_SUBOPTION_TARGET_DEQUANTIZE:
         allowed_scope = SIXEL_REGISTRY_DECODER_CONSUMER_SCOPE;
         break;

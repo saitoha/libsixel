@@ -120,7 +120,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "input-colorspace",
         "-T SPACE, --input-colorspace=SPACE\n"
         "                           interpret decoded RGB as srgb (default)\n"
-        "                           display-p3, adobe-rgb or dci-p3.\n"
+        "                           display-p3, adobe-rgb, dci-p3 or icc.\n"
+        "                           icc:path=FILE (compact icc:PFILE); path=P\n"
+        "                           default path from\n"
+        "                           SIXEL_DECODER_INPUT_COLORSPACE_ICC_PATH\n"
         "                           Tag PNG without converting RGB.\n"
         "                           env: SIXEL_DECODER_INPUT_COLORSPACE\n"
     },

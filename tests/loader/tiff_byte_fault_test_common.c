@@ -248,6 +248,7 @@ bf_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define loader_can_try_libtiff bf_local_12
 #define sixel_cdef_clone bf_local_13
 #define sixel_cdef_linearized bf_local_linearized
+#define sixel_cdef_separable bf_local_linearized_separable
 #define sixel_cdef_transfer bf_local_transfer
 #define sixel_cdef_export_icc bf_local_13_export
 #define sixel_cdef_finite bf_local_14
@@ -646,6 +647,7 @@ bf_linear(unsigned char *pixels, int width, int height, int format,
 #undef load_with_libtiff
 #undef loader_can_try_libtiff
 #undef sixel_cdef_clone
+#undef sixel_cdef_separable
 #undef sixel_cdef_linearized
 #undef sixel_cdef_transfer
 #undef sixel_cdef_export_icc

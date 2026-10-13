@@ -1625,6 +1625,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_COVER_CONTRACT \
     -DBUILD_TEST_0001_COVER_MASK \
     -DBUILD_TEST_0001_SNAP_CONTRACT \
+    -DBUILD_TEST_0001_ICC_OUTPUT \
     -DBUILD_TEST_0001_DESTINATION \
     -DBUILD_TEST_0001_GRID \
     -DBUILD_TEST_0002_PIPELINE \
@@ -5657,6 +5658,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/cover_float/0001_cover_contract.c \
     quant/palette/cover_mask/0001_cover_mask.c \
     quant/palette/snap_float/0001_snap_contract.c \
+    quant/palette/icc_output/0001_icc_output.c \
     quant/palette/destination_snap/0001_destination.c \
     quant/palette/p3_snap/0001_grid.c \
     quant/palette/p3_snap/0002_pipeline.c \

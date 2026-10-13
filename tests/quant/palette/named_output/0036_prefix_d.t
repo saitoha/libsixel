@@ -16,7 +16,7 @@ test "${status}" != 0 || {
     exit 0
 }
 case "${result}" in
-    *"matches: display-p3, dci-p3"*) ;;
+    *"code=AMBIGUOUS_PREFIX"*) ;;
     *) echo "not ok 1 - missing ambiguity diagnostic"; exit 0 ;;
 esac
 echo "ok 1 - ambiguous output prefix d rejected"

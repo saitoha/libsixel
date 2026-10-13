@@ -97,7 +97,9 @@ typedef enum sixel_suboption_target_class {
     SIXEL_SUBOPTION_TARGET_DEQUANTIZE,
     SIXEL_SUBOPTION_TARGET_RUNTIME,
     SIXEL_SUBOPTION_TARGET_DIAGNOSTICS,
-    SIXEL_SUBOPTION_TARGET_CLIPBOARD
+    SIXEL_SUBOPTION_TARGET_CLIPBOARD,
+    SIXEL_SUBOPTION_TARGET_OUTPUT_COLOR_FILE,
+    SIXEL_SUBOPTION_TARGET_INPUT_COLOR_FILE
 } sixel_suboption_target_class_t;
 
 typedef enum sixel_suboption_storage_kind {
@@ -187,6 +189,7 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_COLORSYNC_NATIVE_GAMMA,
     SIXEL_OPTION_SCHEMA_CLAMP_POLICY,
     SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE,
+    SIXEL_OPTION_SCHEMA_OUTPUT_COLORSPACE,
     SIXEL_OPTION_SCHEMA_COUNT
 } sixel_option_schema_id_t;
 
@@ -496,6 +499,12 @@ typedef enum sixel_diagnostics_mode {
     SIXEL_DIAGNOSTICS_MODE_HUMAN = 0,
     SIXEL_DIAGNOSTICS_MODE_CODE
 } sixel_diagnostics_mode_t;
+
+/* Transient strings are consumed before the parsed resolution is freed. */
+typedef struct sixel_color_file_options {
+    char const *path;
+    int path_override;
+} sixel_color_file_options_t;
 
 typedef struct sixel_clipboard_policy_options {
     int backend;
