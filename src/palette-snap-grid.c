@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* P3 targets model the decoder's RGB101 -> RGB8 -> device RGB contract.
+/* Model the decoder's RGB101 -> RGB8 -> destination RGB contract.
  * Cache strategies change computation only, never the target definition. */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
@@ -29,10 +29,11 @@ struct sixel_snap_grid {
     sixel_snap_grid_vtbl_t const *vtbl;
     sixel_allocator_t *allocator;
     sixel_color_xform_t *to_linear;
+    sixel_color_def_t *destination;
     int colorspace;
     int policy;
     double tones[101];
-    double levels[101];
+    double levels[3][101];
     double contribution[3][101][3];
     double forward[3][3];
     sixel_snap_grid_cell_t *cache;
@@ -131,6 +132,7 @@ sixel_snap_grid_destroy(sixel_snap_grid_t *grid)
         grid->policy, grid->queries, grid->hits, grid->conversions);
     allocator = grid->allocator;
     sixel_cxform_free(grid->to_linear);
+    sixel_cdef_free(grid->destination);
     sixel_allocator_free(allocator, grid->cache);
     sixel_allocator_free(allocator, grid->full);
     sixel_allocator_free(allocator, grid);
@@ -139,6 +141,7 @@ sixel_snap_grid_destroy(sixel_snap_grid_t *grid)
 
 SIXELSTATUS
 sixel_snap_grid_new(sixel_snap_grid_t **result, int policy, int colorspace,
+                     sixel_color_def_t const *destination,
                      sixel_allocator_t *allocator)
 {
     static char const *const policies[] = {
@@ -147,14 +150,10 @@ sixel_snap_grid_new(sixel_snap_grid_t **result, int policy, int colorspace,
     static double const srgb_xy[8] = {
         .3127, .3290, .64, .33, .30, .60, .15, .06
     };
-    static double const p3_xy[8] = {
-        .3127, .3290, .68, .32, .265, .69, .15, .06
-    };
     static double const unity[3] = {1.0, 1.0, 1.0};
     sixel_snap_grid_t *grid;
     sixel_color_def_t *srgb;
-    sixel_color_def_t *p3;
-    sixel_color_def_t *p3_linear;
+    sixel_color_def_t *destination_linear;
     sixel_color_xform_t *forward;
     SIXELSTATUS status;
     double rgb[3];
@@ -176,6 +175,12 @@ sixel_snap_grid_new(sixel_snap_grid_t **result, int policy, int colorspace,
              colorspace != SIXEL_COLORSPACE_DIN99D)) {
         return SIXEL_BAD_ARGUMENT;
     }
+    /* The additive table and linear bracketing require separable TRCs.
+     * Do not approximate a general ICC LUT by its primary-axis samples. */
+    memset(rgb, 0, sizeof(rgb));
+    if (!sixel_cdef_transfer(destination, rgb, linear, 0)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     /* Palette-sized cold queries favor the small contribution table.
      * Reuse-heavy experiments can request CACHE/FULL explicitly rather
      * than making every ordinary palette pay their storage/setup cost. */
@@ -192,15 +197,15 @@ sixel_snap_grid_new(sixel_snap_grid_t **result, int policy, int colorspace,
     grid->colorspace = colorspace;
     grid->vtbl = &sixel_snap_grid_methods[policy];
     srgb = sixel_cdef_rgb(srgb_xy, SIXEL_COLOR_TRC_POWER, unity);
-    p3 = sixel_cdef_name("display-p3");
-    p3_linear = sixel_cdef_rgb(p3_xy, SIXEL_COLOR_TRC_POWER, unity);
-    forward = sixel_cxform_new(srgb, p3_linear, 1);
-    grid->to_linear = sixel_cxform_new(p3, srgb, 1);
-    sixel_cdef_free(p3_linear);
-    sixel_cdef_free(p3);
+    grid->destination = sixel_cdef_clone(destination);
+    destination_linear = sixel_cdef_linearized(destination);
+    forward = sixel_cxform_new(srgb, destination_linear, 1);
+    grid->to_linear = sixel_cxform_new(destination, srgb, 1);
+    sixel_cdef_free(destination_linear);
     sixel_cdef_free(srgb);
     status = SIXEL_BAD_ALLOCATION;
-    if (forward == NULL || grid->to_linear == NULL) {
+    if (forward == NULL || grid->to_linear == NULL ||
+            grid->destination == NULL) {
         goto end;
     }
     status = SIXEL_BAD_INPUT;
@@ -216,9 +221,13 @@ sixel_snap_grid_new(sixel_snap_grid_t **result, int policy, int colorspace,
     }
     for (q = 0; q <= 100; ++q) {
         grid->tones[q] = ((q * 255 + 50) / 100) / 255.0;
-        grid->levels[q] = grid->tones[q] <= .04045
-            ? grid->tones[q] / 12.92
-            : pow((grid->tones[q] + .055) / 1.055, 2.4);
+        rgb[0] = rgb[1] = rgb[2] = grid->tones[q];
+        if (!sixel_cdef_transfer(destination, rgb, linear, 0)) {
+            goto end;
+        }
+        for (axis = 0; axis < 3; ++axis) {
+            grid->levels[axis][q] = linear[axis];
+        }
         if (policy == SIXEL_SNAP_GRID_DIRECT) {
             continue;
         }
@@ -286,7 +295,8 @@ sixel_snap_grid_project(sixel_snap_grid_t *grid, double const source[3],
     double candidate[3];
     double best[3];
     double weights[3];
-    double encoded;
+    double encoded[3];
+    double bounded;
     double distance;
     double delta;
     unsigned int code;
@@ -326,11 +336,16 @@ sixel_snap_grid_project(sixel_snap_grid_t *grid, double const source[3],
         if (!isfinite(device[row])) {
             return SIXEL_BAD_INPUT;
         }
+    }
+    if (!nearest && !sixel_cdef_transfer(grid->destination,
+            device, encoded, 1)) {
+        return SIXEL_BAD_INPUT;
+    }
+    for (row = 0; row < 3; ++row) {
         if (!nearest) {
-            encoded = device[row] <= .0031308 ? 12.92 * device[row]
-                : 1.055 * pow(device[row], 1.0 / 2.4) - .055;
-            encoded = encoded < 0.0 ? 0.0 : encoded > 1.0 ? 1.0 : encoded;
-            byte = (int)(encoded * 255.0 + .5);
+            bounded = encoded[row] < 0.0 ? 0.0
+                : encoded[row] > 1.0 ? 1.0 : encoded[row];
+            byte = (int)(bounded * 255.0 + .5);
             lower[row] = upper[row] = (byte * 100 + 127) / 255;
             continue;
         }
@@ -340,14 +355,14 @@ sixel_snap_grid_project(sixel_snap_grid_t *grid, double const source[3],
         hi = 100;
         while (lo < hi) {
             mid = (lo + hi) / 2;
-            if (grid->levels[mid] < device[row]) {
+            if (grid->levels[row][mid] < device[row]) {
                 lo = mid + 1;
             } else {
                 hi = mid;
             }
         }
         upper[row] = lo;
-        lower[row] = lo > 0 && device[row] < grid->levels[lo]
+        lower[row] = lo > 0 && device[row] < grid->levels[row][lo]
             ? lo - 1 : lo;
     }
     found = 0;

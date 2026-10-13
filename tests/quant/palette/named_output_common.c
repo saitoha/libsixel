@@ -197,15 +197,9 @@ test_named_output(int kind, int space, int model, int mode)
                 named_output_names[selected]))) {
             goto end;
         }
-        if (mode == 3) {
-            if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '_', "nearest"))) {
-                goto end;
-            }
-            status = sixel_encoder_encode_frame(encoder, frame, output);
-            if (status != SIXEL_BAD_ARGUMENT || capture.size != 0 ||
-                    SIXEL_FAILED(sixel_encoder_setopt(encoder, '_', "none"))) {
-                goto end;
-            }
+        if (mode == 3 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
+                '_', "nearest:rate=0"))) {
+            goto end;
         }
         if (mode == 4) {
             status = sixel_encoder_setopt(encoder, 'U', "not-a-color");

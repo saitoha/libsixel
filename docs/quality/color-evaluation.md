@@ -53,7 +53,7 @@ assessment/lsqa -L'builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!' 
 
 The full JSON records each input's effective coordinate/format and the target definition. Its physical color metrics and [regional means](#per-pixel-and-regional-differences) complement MS-SSIM when studying destination rounding or a proposed destination-aware snap. The evaluator decodes SIXEL percentage values to RGB8 before interpretation; such measurements include that decoder's rounding, and do not model a receiver retaining exact `q/100` values. They also do not measure display calibration or operating-system color filters.
 
-[Destination-aware snap](../encoder/palette-construction/snap-policy/README.md#output-conversion-and-the-display-p3-boundary) can be compared by changing only `-_none` to `-_nearest` or a selected timing/grid strategy. Existing sRGB snap results do not demonstrate a P3 benefit. Hold input interpretation and other encoding controls fixed; the [measurement policy](measurement-policy.md#controlled-comparisons) owns those controls.
+[Destination-aware snap](../encoder/palette-construction/snap-policy/README.md#output-conversion-and-destination-aware-snap) can be compared by changing only `-_none` to `-_nearest` or a selected timing/grid strategy. Existing sRGB snap results do not demonstrate a P3 benefit. Hold input interpretation and other encoding controls fixed; the [measurement policy](measurement-policy.md#controlled-comparisons) owns those controls.
 
 ## SIXEL drawing mode
 

@@ -74,7 +74,7 @@ The default is `none`, preserving the unconstrained palette pipeline unless snap
 
 ### `auto`
 
-`auto` selects `nearest`. Its default timing remains `once`; explicit timing and rate overrides are honored. For Display P3, `grid=auto` selects the small contribution table. This bounds setup/storage while retaining the decoded-color target, without an image-analysis pass or speculative early solver constraints. The measured tradeoffs below do not justify making sample/iteration snap or the complete lattice the default.
+`auto` selects `nearest`. Its default timing remains `once`; explicit timing and rate overrides are honored. For named wide-gamut output, `grid=auto` selects the small contribution table. This bounds setup/storage while retaining the decoded-color target, without an image-analysis pass or speculative early solver constraints. The measured tradeoffs below do not justify making sample/iteration snap or the complete lattice the default.
 
 ### `nearest`
 
@@ -94,7 +94,7 @@ The final palette pass uses the typed coordinates when available and repacks the
 
 `reversible` selects the legacy independent-channel mapping. Each 8-bit sRGB channel is replaced by its precomputed fixed point without comparing the other corners of the surrounding safe-tone cell in the working color space. It is cheaper and historically direct, but it can be a worse geometric choice for a palette represented in a Lab-family space.
 
-For Display P3 output, both policies use the destination interpretation described [below](#output-conversion-and-the-display-p3-boundary), instead of a safe sRGB cube. Both `nearest` and `reversible` target the same 101-level set. Their difference is how a target RGB triplet is selected, not whether the result is SIXEL-representable.
+For named wide-gamut output, both policies use the destination interpretation described [below](#output-conversion-and-destination-aware-snap), instead of a safe sRGB cube. Both `nearest` and `reversible` target the same 101-level set. Their difference is how a target RGB triplet is selected, not whether the result is SIXEL-representable.
 
 ## Timing policy
 
@@ -108,7 +108,7 @@ The `timing` suboption retains the following additive ladder. Some existing cons
 | `resolve` | `merge` plus quantizer iterations |
 | `all` | `resolve` plus initial seeds |
 
-Display P3 also provides isolated comparisons against `once`:
+Named wide-gamut output also provides isolated comparisons against `once`:
 
 | Value | Additional stage, or replacement final stage |
 | --- | --- |
@@ -181,21 +181,25 @@ The numeric fixtures use independently derived transfer, matrix and opponent-spa
 
 Final typed palette passes and existing K-means seed/iteration hooks use one safe-tone target search. An inactive typed hook (disabled by its caller or policy, excluded by timing, or given `rate=0`) preserves the solver's original double coordinates exactly. An active hook uses sign-preserving double colorspace conversion and blends from the original coordinates. Negative and above-nominal components are bounded only when selecting a safe target, not before interpolation; partial rates can therefore leave them outside the nominal range. Solver hooks retain double precision until the generator stores the palette as float32. The byte hook retains its bounded integer-coordinate contract.
 
-The ordinary final float pass uses the same `nearest` versus `reversible` distinction in gamma RGB as in the other four typed spaces. It stages the complete palette before publication; a nonfinite entry leaves that float palette unchanged. The sRGB native builder retains its final-only admission restriction; the destination-aware P3 stages below have their own consumers. Generator-specific histogram bounds, export bounds and precision-losing retries remain separate limitations; the common snap helper cannot repair a value already narrowed by those boundaries.
+The ordinary final float pass uses the same `nearest` versus `reversible` distinction in gamma RGB as in the other four typed spaces. It stages the complete palette before publication; a nonfinite entry leaves that float palette unchanged. The sRGB native builder retains its final-only admission restriction; the destination-aware stages below have their own consumers. Generator-specific histogram bounds, export bounds and precision-losing retries remain separate limitations; the common snap helper cannot repair a value already narrowed by those boundaries.
 
 Early-hook and ordinary-final numerical fixtures use the same independent source/target equations and `2e-5` typed-coordinate budget as the native final tests. Gamma-only double interpolation uses `1e-14`, with no matrix or nonlinear transform. Reduced-color K-means fixtures use `2e-7` for the means of stored float inputs and subsequent palette stores, far below the separation between one and two quarter-rate applications. They assert actual float entries, the requested quantizer and zero retries. These checks establish stage behavior, not image-quality improvement.
 
-## Output conversion and the Display P3 boundary
+<a id="output-conversion-and-the-display-p3-boundary"></a>
 
-The generated-palette Display P3 path accepts active snap and promotes input to float when required, including an explicit `-.8bit` preference. Its destination lattice consists of `floor((255*q + 50)/100)/255` interpreted as encoded Display P3, converted back to the canonical typed clustering space without intermediate gamut clipping. It models the decoder's RGB8 reconstruction, rather than a receiver retaining exact `q/100` values. Output negotiation selecting Display P3 uses the same contract.
+## Output conversion and destination-aware snap
+
+The generated-palette `display-p3`, `adobe-rgb` and `dci-p3` paths accept active snap and promote input to float when required, including an explicit `-.8bit` preference. Each destination lattice consists of `floor((255*q + 50)/100)/255` interpreted in the selected destination, converted back to the canonical typed clustering space without intermediate gamut clipping. It models the decoder's RGB8 reconstruction, rather than a receiver retaining exact `q/100` values. Output negotiation selecting Display P3 uses the same contract.
+
+The grid consumes an owned copy of the shared analytic RGB definition. Primaries, white adaptation and channel transfer functions come from that definition, rather than a Display P3 flag. Adobe RGB therefore uses its power transfer and DCI-P3 uses both its DCI white and power transfer. Analytic definitions with different decoding exponents per channel also satisfy the grid contract. ICC definitions are not admitted to this additive-table implementation: an arbitrary LUT need not decompose into three independent channel contributions. This internal capability does not add a custom-profile CLI option.
 
 `nearest` brackets each encoded destination component on that 101-level set and compares up to eight inverse-mapped corners using the metric above. It is a local-cell search, not a global nearest-neighbor guarantee in a skewed or nonlinear lattice. `reversible` first rounds the encoded destination value to RGB8, then chooses its reversible percentage code. Partial rates interpolate from the original typed source; only full-rate targets are exact lattice points. Neither policy first narrows the source to sRGB8.
 
 All five clustering spaces are supported. The selected target is retained as float32 through conversion to `-W`, used by lookup and diffusion, and converted to the destination only for emission. Full-rate RGB output retains the independently selected percentage codes across this round trip. Partial rates emit their blended values rather than forcing the full-rate target. HLS serialization has its own additional rounding and does not promise RGB101 fixed-point identity. Fixed-palette inputs retain their accepted no-op snap contract. The separate high-color path still excludes active snap because it bypasses ordinary palette construction.
 
-The grid strategy is private to each palette build; concurrent encoder objects do not share mutable caches. `direct` evaluates the common inverse P3 transform for each candidate. `table` precomputes 101 decoded levels and three primary contributions per level, then evaluates the selected working transform. `cache` adds 8192 direct-mapped, lazily populated typed entries (256 KiB) to that table. `full` precomputes all 1,030,301 typed triplets (about 23.6 MiB). The small table occupies less than 10 KiB. A cache changes computation and storage only, not the candidate definition or distance metric. Allocation or transformation failure is returned; it must not silently select another precision or grid strategy.
+The grid strategy is private to each palette build; concurrent encoder objects do not share mutable caches. `direct` evaluates the common inverse destination transform for each candidate. `table` precomputes 101 decoded levels for each channel and three primary contributions per level, then evaluates the selected working transform. `cache` adds 8192 direct-mapped, lazily populated typed entries (256 KiB) to that table. `full` precomputes all 1,030,301 typed triplets (about 23.6 MiB). The level and contribution tables occupy less than 12 KiB, independently of the definition objects. A cache changes computation and storage only, not the candidate definition or distance metric. Allocation or transformation failure is returned; it must not silently select another precision or grid strategy.
 
-The independent oracle generator derives RGB primary matrices from chromaticities and evaluates the working transforms without invoking libsixel. Grid and pipeline comparisons use `2e-5` typed units; paired gray-stage witnesses use `2e-7` and exclude nearest-target ties. Wire expectations are checked separately against half-bin boundaries. Grid cache isolation, invalid-input recovery, source preservation, partial rates, actual float dispatch and the individual stage consumers have value tests. These establish numerical behavior; quality and speed require the measurements described above.
+The independent oracle generator derives RGB primary matrices from chromaticities and evaluates the working transforms without invoking libsixel. Grid and pipeline comparisons use `2e-5` typed units; paired gray-stage witnesses use `2e-7` and exclude nearest-target ties. Wire expectations are checked separately against half-bin boundaries. Grid cache isolation, invalid-input recovery, source preservation, partial rates and actual float dispatch have value tests for the named destinations. P3 witnesses exercise individual solver stage consumers; Adobe RGB/DCI-P3 witnesses separately check the selected definition at all seven shared hooks. An unnamed model with three different channel exponents guards against assuming a single common transfer curve. These establish numerical behavior; quality and speed require the measurements described above.
 
 ## Display P3 auto measurements
 
@@ -415,3 +419,74 @@ The focused suite covers top-level enablement, registered option binding, final 
 | SH-13 | Each timing value enables only its additive solver stages. | [tests/quant/palette/snap_hooks/0013_stage_ladder.t](../../../../tests/quant/palette/snap_hooks/0013_stage_ladder.t) |
 | SH-14 | Reduced K-means palette executes the requested snap stages exactly once. | [tests/quant/palette/snap_hooks/0014_kmeans_once.t](../../../../tests/quant/palette/snap_hooks/0014_kmeans_once.t) |
 | SH-15 | Reduced K-means palette executes the requested snap stages exactly once. | [tests/quant/palette/snap_hooks/0015_kmeans_all.t](../../../../tests/quant/palette/snap_hooks/0015_kmeans_all.t) |
+### Destination definition contract tests
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| DS-01 | adobe direct grid in gamma: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0001_adobe_direct_gamma.t](../../../../tests/quant/palette/destination_snap/0001_adobe_direct_gamma.t) |
+| DS-02 | adobe direct grid in linear: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0002_adobe_direct_linear.t](../../../../tests/quant/palette/destination_snap/0002_adobe_direct_linear.t) |
+| DS-03 | adobe direct grid in oklab: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0003_adobe_direct_oklab.t](../../../../tests/quant/palette/destination_snap/0003_adobe_direct_oklab.t) |
+| DS-04 | adobe direct grid in cielab: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0004_adobe_direct_cielab.t](../../../../tests/quant/palette/destination_snap/0004_adobe_direct_cielab.t) |
+| DS-05 | adobe direct grid in din99d: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0005_adobe_direct_din99d.t](../../../../tests/quant/palette/destination_snap/0005_adobe_direct_din99d.t) |
+| DS-06 | adobe table grid in gamma: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0006_adobe_table_gamma.t](../../../../tests/quant/palette/destination_snap/0006_adobe_table_gamma.t) |
+| DS-07 | adobe table grid in linear: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0007_adobe_table_linear.t](../../../../tests/quant/palette/destination_snap/0007_adobe_table_linear.t) |
+| DS-08 | adobe table grid in oklab: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0008_adobe_table_oklab.t](../../../../tests/quant/palette/destination_snap/0008_adobe_table_oklab.t) |
+| DS-09 | adobe table grid in cielab: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0009_adobe_table_cielab.t](../../../../tests/quant/palette/destination_snap/0009_adobe_table_cielab.t) |
+| DS-10 | adobe table grid in din99d: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0010_adobe_table_din99d.t](../../../../tests/quant/palette/destination_snap/0010_adobe_table_din99d.t) |
+| DS-11 | adobe cache grid in gamma: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0011_adobe_cache_gamma.t](../../../../tests/quant/palette/destination_snap/0011_adobe_cache_gamma.t) |
+| DS-12 | adobe cache grid in linear: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0012_adobe_cache_linear.t](../../../../tests/quant/palette/destination_snap/0012_adobe_cache_linear.t) |
+| DS-13 | adobe cache grid in oklab: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0013_adobe_cache_oklab.t](../../../../tests/quant/palette/destination_snap/0013_adobe_cache_oklab.t) |
+| DS-14 | adobe cache grid in cielab: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0014_adobe_cache_cielab.t](../../../../tests/quant/palette/destination_snap/0014_adobe_cache_cielab.t) |
+| DS-15 | adobe cache grid in din99d: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0015_adobe_cache_din99d.t](../../../../tests/quant/palette/destination_snap/0015_adobe_cache_din99d.t) |
+| DS-16 | adobe full grid in linear coordinates. | [tests/quant/palette/destination_snap/0016_adobe_full_linear.t](../../../../tests/quant/palette/destination_snap/0016_adobe_full_linear.t) |
+| DS-17 | adobe nearest pipeline in gamma: float entries and exact wire codes. | [tests/quant/palette/destination_snap/0017_adobe_pipeline_gamma.t](../../../../tests/quant/palette/destination_snap/0017_adobe_pipeline_gamma.t) |
+| DS-18 | adobe nearest pipeline in linear: float entries and exact wire codes. | [tests/quant/palette/destination_snap/0018_adobe_pipeline_linear.t](../../../../tests/quant/palette/destination_snap/0018_adobe_pipeline_linear.t) |
+| DS-19 | adobe nearest pipeline in oklab: float entries and exact wire codes. | [tests/quant/palette/destination_snap/0019_adobe_pipeline_oklab.t](../../../../tests/quant/palette/destination_snap/0019_adobe_pipeline_oklab.t) |
+| DS-20 | adobe nearest pipeline in cielab: float entries and exact wire codes. | [tests/quant/palette/destination_snap/0020_adobe_pipeline_cielab.t](../../../../tests/quant/palette/destination_snap/0020_adobe_pipeline_cielab.t) |
+| DS-21 | adobe nearest pipeline in din99d: float entries and exact wire codes. | [tests/quant/palette/destination_snap/0021_adobe_pipeline_din99d.t](../../../../tests/quant/palette/destination_snap/0021_adobe_pipeline_din99d.t) |
+| DS-22 | adobe reversible snap pipeline values. | [tests/quant/palette/destination_snap/0022_adobe_reversible.t](../../../../tests/quant/palette/destination_snap/0022_adobe_reversible.t) |
+| DS-23 | adobe partial snap pipeline values. | [tests/quant/palette/destination_snap/0023_adobe_partial.t](../../../../tests/quant/palette/destination_snap/0023_adobe_partial.t) |
+| DS-24 | adobe center snap pipeline values. | [tests/quant/palette/destination_snap/0024_adobe_center.t](../../../../tests/quant/palette/destination_snap/0024_adobe_center.t) |
+| DS-25 | adobe medoids snap pipeline values. | [tests/quant/palette/destination_snap/0025_adobe_medoids.t](../../../../tests/quant/palette/destination_snap/0025_adobe_medoids.t) |
+| DS-26 | adobe heckbert snap pipeline values. | [tests/quant/palette/destination_snap/0026_adobe_heckbert.t](../../../../tests/quant/palette/destination_snap/0026_adobe_heckbert.t) |
+| DS-27 | adobe apply snap pipeline values. | [tests/quant/palette/destination_snap/0027_adobe_apply.t](../../../../tests/quant/palette/destination_snap/0027_adobe_apply.t) |
+| DS-28 | adobe auto snap pipeline values. | [tests/quant/palette/destination_snap/0028_adobe_auto.t](../../../../tests/quant/palette/destination_snap/0028_adobe_auto.t) |
+| DS-29 | adobe all seven destination hook values at quarter rate. | [tests/quant/palette/destination_snap/0029_adobe_stages.t](../../../../tests/quant/palette/destination_snap/0029_adobe_stages.t) |
+| DS-30 | dci direct grid in gamma: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0030_dci_direct_gamma.t](../../../../tests/quant/palette/destination_snap/0030_dci_direct_gamma.t) |
+| DS-31 | dci direct grid in linear: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0031_dci_direct_linear.t](../../../../tests/quant/palette/destination_snap/0031_dci_direct_linear.t) |
+| DS-32 | dci direct grid in oklab: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0032_dci_direct_oklab.t](../../../../tests/quant/palette/destination_snap/0032_dci_direct_oklab.t) |
+| DS-33 | dci direct grid in cielab: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0033_dci_direct_cielab.t](../../../../tests/quant/palette/destination_snap/0033_dci_direct_cielab.t) |
+| DS-34 | dci direct grid in din99d: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0034_dci_direct_din99d.t](../../../../tests/quant/palette/destination_snap/0034_dci_direct_din99d.t) |
+| DS-35 | dci table grid in gamma: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0035_dci_table_gamma.t](../../../../tests/quant/palette/destination_snap/0035_dci_table_gamma.t) |
+| DS-36 | dci table grid in linear: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0036_dci_table_linear.t](../../../../tests/quant/palette/destination_snap/0036_dci_table_linear.t) |
+| DS-37 | dci table grid in oklab: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0037_dci_table_oklab.t](../../../../tests/quant/palette/destination_snap/0037_dci_table_oklab.t) |
+| DS-38 | dci table grid in cielab: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0038_dci_table_cielab.t](../../../../tests/quant/palette/destination_snap/0038_dci_table_cielab.t) |
+| DS-39 | dci table grid in din99d: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0039_dci_table_din99d.t](../../../../tests/quant/palette/destination_snap/0039_dci_table_din99d.t) |
+| DS-40 | dci cache grid in gamma: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0040_dci_cache_gamma.t](../../../../tests/quant/palette/destination_snap/0040_dci_cache_gamma.t) |
+| DS-41 | dci cache grid in linear: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0041_dci_cache_linear.t](../../../../tests/quant/palette/destination_snap/0041_dci_cache_linear.t) |
+| DS-42 | dci cache grid in oklab: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0042_dci_cache_oklab.t](../../../../tests/quant/palette/destination_snap/0042_dci_cache_oklab.t) |
+| DS-43 | dci cache grid in cielab: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0043_dci_cache_cielab.t](../../../../tests/quant/palette/destination_snap/0043_dci_cache_cielab.t) |
+| DS-44 | dci cache grid in din99d: independent nearest/reversible values. | [tests/quant/palette/destination_snap/0044_dci_cache_din99d.t](../../../../tests/quant/palette/destination_snap/0044_dci_cache_din99d.t) |
+| DS-45 | dci full grid in linear coordinates. | [tests/quant/palette/destination_snap/0045_dci_full_linear.t](../../../../tests/quant/palette/destination_snap/0045_dci_full_linear.t) |
+| DS-46 | dci nearest pipeline in gamma: float entries and exact wire codes. | [tests/quant/palette/destination_snap/0046_dci_pipeline_gamma.t](../../../../tests/quant/palette/destination_snap/0046_dci_pipeline_gamma.t) |
+| DS-47 | dci nearest pipeline in linear: float entries and exact wire codes. | [tests/quant/palette/destination_snap/0047_dci_pipeline_linear.t](../../../../tests/quant/palette/destination_snap/0047_dci_pipeline_linear.t) |
+| DS-48 | dci nearest pipeline in oklab: float entries and exact wire codes. | [tests/quant/palette/destination_snap/0048_dci_pipeline_oklab.t](../../../../tests/quant/palette/destination_snap/0048_dci_pipeline_oklab.t) |
+| DS-49 | dci nearest pipeline in cielab: float entries and exact wire codes. | [tests/quant/palette/destination_snap/0049_dci_pipeline_cielab.t](../../../../tests/quant/palette/destination_snap/0049_dci_pipeline_cielab.t) |
+| DS-50 | dci nearest pipeline in din99d: float entries and exact wire codes. | [tests/quant/palette/destination_snap/0050_dci_pipeline_din99d.t](../../../../tests/quant/palette/destination_snap/0050_dci_pipeline_din99d.t) |
+| DS-51 | dci reversible snap pipeline values. | [tests/quant/palette/destination_snap/0051_dci_reversible.t](../../../../tests/quant/palette/destination_snap/0051_dci_reversible.t) |
+| DS-52 | dci partial snap pipeline values. | [tests/quant/palette/destination_snap/0052_dci_partial.t](../../../../tests/quant/palette/destination_snap/0052_dci_partial.t) |
+| DS-53 | dci center snap pipeline values. | [tests/quant/palette/destination_snap/0053_dci_center.t](../../../../tests/quant/palette/destination_snap/0053_dci_center.t) |
+| DS-54 | dci medoids snap pipeline values. | [tests/quant/palette/destination_snap/0054_dci_medoids.t](../../../../tests/quant/palette/destination_snap/0054_dci_medoids.t) |
+| DS-55 | dci heckbert snap pipeline values. | [tests/quant/palette/destination_snap/0055_dci_heckbert.t](../../../../tests/quant/palette/destination_snap/0055_dci_heckbert.t) |
+| DS-56 | dci apply snap pipeline values. | [tests/quant/palette/destination_snap/0056_dci_apply.t](../../../../tests/quant/palette/destination_snap/0056_dci_apply.t) |
+| DS-57 | dci auto snap pipeline values. | [tests/quant/palette/destination_snap/0057_dci_auto.t](../../../../tests/quant/palette/destination_snap/0057_dci_auto.t) |
+| DS-58 | dci all seven destination hook values at quarter rate. | [tests/quant/palette/destination_snap/0058_dci_stages.t](../../../../tests/quant/palette/destination_snap/0058_dci_stages.t) |
+| DS-59 | Unnamed per-channel gamma model in gamma. | [tests/quant/palette/destination_snap/0059_custom_trc_gamma.t](../../../../tests/quant/palette/destination_snap/0059_custom_trc_gamma.t) |
+| DS-60 | Unnamed per-channel gamma model in linear. | [tests/quant/palette/destination_snap/0060_custom_trc_linear.t](../../../../tests/quant/palette/destination_snap/0060_custom_trc_linear.t) |
+| DS-61 | Unnamed per-channel gamma model in oklab. | [tests/quant/palette/destination_snap/0061_custom_trc_oklab.t](../../../../tests/quant/palette/destination_snap/0061_custom_trc_oklab.t) |
+| DS-62 | Unnamed per-channel gamma model in cielab. | [tests/quant/palette/destination_snap/0062_custom_trc_cielab.t](../../../../tests/quant/palette/destination_snap/0062_custom_trc_cielab.t) |
+| DS-63 | Unnamed per-channel gamma model in din99d. | [tests/quant/palette/destination_snap/0063_custom_trc_din99d.t](../../../../tests/quant/palette/destination_snap/0063_custom_trc_din99d.t) |
+| DS-64 | Live destination caches own distinct transforms. | [tests/quant/palette/destination_snap/0064_cache_isolation.t](../../../../tests/quant/palette/destination_snap/0064_cache_isolation.t) |
+| DS-65 | Nonanalytic grid rejection and atomic transfer failure with recovery. | [tests/quant/palette/destination_snap/0065_invalid_recovery.t](../../../../tests/quant/palette/destination_snap/0065_invalid_recovery.t) |
+| DS-66 | Active snap rebuilds its definition across adobe encoder reuse. | [tests/quant/palette/destination_snap/0066_adobe_reuse.t](../../../../tests/quant/palette/destination_snap/0066_adobe_reuse.t) |
+| DS-67 | Active snap rebuilds its definition across dci encoder reuse. | [tests/quant/palette/destination_snap/0067_dci_reuse.t](../../../../tests/quant/palette/destination_snap/0067_dci_reuse.t) |

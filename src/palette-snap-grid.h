@@ -4,6 +4,7 @@
 #define LIBSIXEL_PALETTE_SNAP_GRID_H
 
 #include <sixel.h>
+#include "cms.h"
 
 typedef struct sixel_snap_grid sixel_snap_grid_t;
 
@@ -15,8 +16,11 @@ enum sixel_snap_grid_policy {
     SIXEL_SNAP_GRID_FULL
 };
 
+/* The grid owns the analytic destination model after successful creation.
+ * Caller definitions may be freed immediately; ICC LUT models are rejected. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_snap_grid_new(sixel_snap_grid_t **grid, int policy, int colorspace,
+                     sixel_color_def_t const *destination,
                      sixel_allocator_t *allocator);
 
 SIXEL_INTERNAL_API void

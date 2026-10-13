@@ -2218,12 +2218,12 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_PALETTE_SNAP_TIMING_POLICY",
         "Decide when snaps run: 'once', 'polish', 'merge', 'resolve', or\n"
-        "'all'. P3 also accepts sample/seed/iteration/premerge/\n"
-        "merge-iteration/apply. Defaults to 'once'."
+        "'all'. Named wide-gamut output also accepts sample/seed/\n"
+        "iteration/premerge/merge-iteration/apply. Default: 'once'."
     },
     {
         "SIXEL_PALETTE_SNAP_GRID",
-        "P3 candidate computation: auto, direct, table, cache or full."
+        "Destination candidate computation: auto, direct, table, cache or full."
     },
     {
         "SIXEL_PALETTE_SNAP_APPROACH_RATE",

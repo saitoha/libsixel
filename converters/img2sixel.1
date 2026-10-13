@@ -407,16 +407,16 @@ Supported suboptions:
 .br
 \fBtiming\fP (short form \fBIVALUE\fP): \fBonce\fP,
 \fBpolish\fP, \fBmerge\fP, \fBresolve\fP, or \fBall\fP.
-Display P3 also accepts \fBsample\fP, \fBseed\fP,
+Named wide-gamut output also accepts \fBsample\fP, \fBseed\fP,
 \fBiteration\fP, \fBpremerge\fP, \fBmerge-iteration\fP,
 and \fBapply\fP. The first five add their stage to final snap;
 apply moves that final pass after cover, before lookup construction.
 K-means owns the centroid seed/update stages; other solvers retain their
 discrete representative algorithms. Sample snap changes only the training copy.
 .br
-\fBgrid\fP (short form \fBGVALUE\fP): P3 candidate computation
+\fBgrid\fP (short form \fBGVALUE\fP): destination candidate computation
 \fBauto\fP, \fBdirect\fP, \fBtable\fP, \fBcache\fP, or
-\fBfull\fP. These share the RGB101 to RGB8 to Display P3 target model.
+\fBfull\fP. These share the RGB101 to RGB8 to selected destination target model.
 Automatic grid selection uses the small primary-contribution table.
 The lazy cache adds 256 KiB, and the full grid uses about 23.6 MiB per build.
 .br
@@ -1421,7 +1421,10 @@ adobe-rgb -> Adobe RGB (1998), D65 white and power 563/256
 .br
 dci-p3 -> P3 primaries, DCI white and power 2.6
 .br
-Adobe RGB and DCI-P3 use the same CPU float paths, with inactive snap.
+Adobe RGB and DCI-P3 use the same CPU float paths and destination-aware
+snap controls as Display P3. Snap uses the selected definition's primaries,
+white point and transfer function. High-color output still requires
+inactive snap.
 They are explicit output choices; auto negotiation still resolves sRGB/P3 only.
 The receiver must interpret emitted RGB in the selected space.
 .br
@@ -2535,12 +2538,12 @@ or "none" to disable snapping.
 .B SIXEL_PALETTE_SNAP_TIMING_POLICY
 .br
 decide when snaps run: "once", "polish", "merge", "resolve", or "all".
-Display P3 also accepts "sample", "seed", "iteration", "premerge",
+Named wide-gamut output also accepts "sample", "seed", "iteration", "premerge",
 "merge-iteration" and "apply".
 Defaults to "once".
 .TP 5
 .B SIXEL_PALETTE_SNAP_GRID
-P3 candidate computation: "auto", "direct", "table", "cache", or "full".
+Destination candidate computation: "auto", "direct", "table", "cache", or "full".
 "auto" selects the small contribution table.
 Explicit snap suboptions override this environment default.
 .TP 5

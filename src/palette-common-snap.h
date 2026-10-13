@@ -132,7 +132,8 @@ sixel_palette_snap_triple(double *components,
 /* Destination and grid policy are scoped to the encoder's build override.
  * A build owns its mutable cache; another encoder cannot reuse that state. */
 SIXEL_INTERNAL_API void
-sixel_palette_snap_set_output(int p3, int grid_override, int grid_policy);
+sixel_palette_snap_set_output(int definition, int grid_override,
+                               int grid_policy);
 SIXEL_INTERNAL_API int
 sixel_palette_snap_destination_active(void);
 SIXEL_INTERNAL_API SIXELSTATUS

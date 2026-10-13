@@ -5888,6 +5888,51 @@ sixel_cdef_free(sixel_color_def_t *definition)
     }
 }
 
+sixel_color_def_t *
+sixel_cdef_linearized(sixel_color_def_t const *definition)
+{
+    sixel_color_def_t *linear;
+
+    if (definition == NULL || definition->bytes != NULL) {
+        return NULL;
+    }
+    linear = sixel_cdef_clone(definition);
+    if (linear != NULL) {
+        linear->trc = SIXEL_COLOR_TRC_POWER;
+        linear->gamma[0] = linear->gamma[1] = linear->gamma[2] = 1.0;
+    }
+    return linear;
+}
+
+int
+sixel_cdef_transfer(sixel_color_def_t const *definition,
+                     double const input[3], double output[3], int encode)
+{
+    double result[3];
+    double exponent;
+    int i;
+
+    if (definition == NULL || definition->bytes != NULL || output == NULL ||
+            !sixel_cdef_finite(input) || (encode != 0 && encode != 1)) {
+        return 0;
+    }
+    for (i = 0; i < 3; ++i) {
+        if (definition->trc == SIXEL_COLOR_TRC_SRGB) {
+            result[i] = encode ? sixel_color_encode_srgb(input[i])
+                : sixel_color_decode_srgb(input[i]);
+        } else {
+            exponent = encode ? 1.0 / definition->gamma[i]
+                : definition->gamma[i];
+            result[i] = copysign(pow(fabs(input[i]), exponent), input[i]);
+        }
+    }
+    if (!sixel_cdef_finite(result)) {
+        return 0;
+    }
+    memcpy(output, result, sizeof(result));
+    return 1;
+}
+
 int
 sixel_cdef_to_xyz(sixel_color_def_t const *definition,
                    double const rgb[3], double xyz[3], int intent)
@@ -5935,10 +5980,8 @@ sixel_cdef_to_xyz(sixel_color_def_t const *definition,
             sixel_cdef_matrix(definition->to_xyz, linear, result);
         }
     } else {
-        for (i = 0; i < 3; ++i) {
-            linear[i] = definition->trc == SIXEL_COLOR_TRC_SRGB
-                ? sixel_color_decode_srgb(rgb[i])
-                : copysign(pow(fabs(rgb[i]), definition->gamma[i]), rgb[i]);
+        if (!sixel_cdef_transfer(definition, rgb, linear, 0)) {
+            return 0;
         }
         sixel_cdef_matrix(definition->to_xyz, linear, result);
     }
@@ -5997,11 +6040,8 @@ sixel_cdef_from_xyz(sixel_color_def_t const *definition,
         }
     } else {
         sixel_cdef_matrix(definition->from_xyz, xyz, linear);
-        for (i = 0; i < 3; ++i) {
-            result[i] = definition->trc == SIXEL_COLOR_TRC_SRGB
-                ? sixel_color_encode_srgb(linear[i])
-                : copysign(pow(fabs(linear[i]), 1.0 / definition->gamma[i]),
-                           linear[i]);
+        if (!sixel_cdef_transfer(definition, linear, result, 1)) {
+            return 0;
         }
     }
     if (!sixel_cdef_finite(result)) {

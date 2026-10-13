@@ -131,6 +131,8 @@ cmf_apply(ColorSyncTransformRef tr, size_t w, size_t h,
 #define g_sixel_cms_engine_mutex_ready cmf_local_7
 #define g_sixel_cms_engine_once cmf_local_8
 #define sixel_cdef_clone cmf_local_13
+#define sixel_cdef_linearized cmf_local_linearized
+#define sixel_cdef_transfer cmf_local_transfer
 #define sixel_cdef_export_icc cmf_local_13_export
 #define sixel_cdef_finite cmf_local_14
 #define sixel_cdef_free cmf_local_15
@@ -400,6 +402,11 @@ sixel_cdef_parse(char const *text, sixel_color_def_t **definition,
                   char const **icc_path, int *intent);
 SIXEL_INTERNAL_API sixel_color_def_t *
 sixel_cdef_clone(sixel_color_def_t const *definition);
+SIXEL_INTERNAL_API sixel_color_def_t *
+sixel_cdef_linearized(sixel_color_def_t const *definition);
+SIXEL_INTERNAL_API int
+sixel_cdef_transfer(sixel_color_def_t const *definition,
+                     double const input[3], double output[3], int encode);
 SIXEL_INTERNAL_API void
 sixel_cdef_free(sixel_color_def_t *definition);
 SIXEL_INTERNAL_API int
@@ -446,6 +453,8 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 #undef g_sixel_cms_engine_mutex_ready
 #undef g_sixel_cms_engine_once
 #undef sixel_cdef_clone
+#undef sixel_cdef_linearized
+#undef sixel_cdef_transfer
 #undef sixel_cdef_export_icc
 #undef sixel_cdef_finite
 #undef sixel_cdef_free

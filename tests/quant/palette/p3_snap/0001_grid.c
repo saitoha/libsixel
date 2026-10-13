@@ -11,6 +11,20 @@
 #include "src/palette.h"
 #include "tests/data/color-numeric/p3-snap.h"
 
+static SIXELSTATUS
+p3_test_grid_new(sixel_snap_grid_t **grid, int policy, int colorspace,
+                   sixel_allocator_t *allocator)
+{
+    sixel_color_def_t *destination;
+    SIXELSTATUS status;
+
+    destination = sixel_cdef_name("display-p3");
+    status = sixel_snap_grid_new(grid, policy, colorspace, destination,
+                                allocator);
+    sixel_cdef_free(destination);
+    return status;
+}
+
 static int const p3_grid_spaces[5] = {
     SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_OKLAB,
     SIXEL_COLORSPACE_CIELAB, SIXEL_COLORSPACE_DIN99D
@@ -50,7 +64,7 @@ p3_grid_values(int strategy, int space)
     allocator = NULL;
     ok = 0;
     if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL)) ||
-            SIXEL_FAILED(sixel_snap_grid_new(&grid, strategy,
+            SIXEL_FAILED(p3_test_grid_new(&grid, strategy,
                 p3_grid_spaces[space], allocator))) {
         goto end;
     }
@@ -96,9 +110,9 @@ p3_grid_isolation(void)
     ok = 0;
     code = p3_snap_codes[0][0][0];
     if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL)) ||
-            SIXEL_FAILED(sixel_snap_grid_new(&first, SIXEL_SNAP_GRID_CACHE,
+            SIXEL_FAILED(p3_test_grid_new(&first, SIXEL_SNAP_GRID_CACHE,
                 SIXEL_COLORSPACE_GAMMA, allocator)) ||
-            SIXEL_FAILED(sixel_snap_grid_new(&second, SIXEL_SNAP_GRID_CACHE,
+            SIXEL_FAILED(p3_test_grid_new(&second, SIXEL_SNAP_GRID_CACHE,
                 SIXEL_COLORSPACE_LINEAR, allocator)) ||
             SIXEL_FAILED(sixel_snap_grid_target(first, code, actual)) ||
             !p3_grid_close(actual, p3_snap_values[0][0][1]) ||
@@ -133,11 +147,11 @@ p3_grid_invalid(void)
     ok = 0;
     memcpy(saved, actual, sizeof(saved));
     if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL)) ||
-            SIXEL_SUCCEEDED(sixel_snap_grid_new(&grid, -1,
+            SIXEL_SUCCEEDED(p3_test_grid_new(&grid, -1,
                 SIXEL_COLORSPACE_LINEAR, allocator)) || grid != NULL ||
-            SIXEL_SUCCEEDED(sixel_snap_grid_new(&grid, SIXEL_SNAP_GRID_TABLE,
+            SIXEL_SUCCEEDED(p3_test_grid_new(&grid, SIXEL_SNAP_GRID_TABLE,
                 -1, allocator)) || grid != NULL ||
-            SIXEL_FAILED(sixel_snap_grid_new(&grid, SIXEL_SNAP_GRID_TABLE,
+            SIXEL_FAILED(p3_test_grid_new(&grid, SIXEL_SNAP_GRID_TABLE,
                 SIXEL_COLORSPACE_LINEAR, allocator))) {
         goto end;
     }
@@ -323,7 +337,7 @@ p3_grid_failure(int full)
      * method silently or leak its already-created profile/allocator owner. */
     for (allocation = 0; allocation < 2; ++allocation) {
         p3_grid_fail_after = allocation;
-        if (sixel_snap_grid_new(&grid, full ? SIXEL_SNAP_GRID_FULL
+        if (p3_test_grid_new(&grid, full ? SIXEL_SNAP_GRID_FULL
                 : SIXEL_SNAP_GRID_CACHE, SIXEL_COLORSPACE_LINEAR,
                 allocator) != SIXEL_BAD_ALLOCATION || grid != NULL ||
                 p3_grid_live != baseline) {
@@ -331,7 +345,7 @@ p3_grid_failure(int full)
         }
     }
     p3_grid_fail_after = -1;
-    ok = SIXEL_SUCCEEDED(sixel_snap_grid_new(&grid, SIXEL_SNAP_GRID_TABLE,
+    ok = SIXEL_SUCCEEDED(p3_test_grid_new(&grid, SIXEL_SNAP_GRID_TABLE,
         SIXEL_COLORSPACE_LINEAR, allocator));
 end:
     sixel_snap_grid_destroy(grid);

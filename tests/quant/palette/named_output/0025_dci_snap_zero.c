@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Verify named destination dci snap recovery. */
+/* Verify named destination dci zero-rate snap identity. */
 int test_named_output(int, int, int, int);
 int test_named_definition(int, int);
 

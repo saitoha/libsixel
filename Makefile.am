@@ -52,6 +52,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
     tools/generate_cover_anchor_fixtures.py \
     tools/generate_clamp_band_fixtures.py \
     tools/generate_snap_native_fixtures.py \
+    tools/generate_destination_snap_fixtures.py \
     tools/generate_p3_snap_fixtures.py \
     tools/generate_output_native_fixtures.py \
     tools/generate_builtin_native_fixtures.py \

@@ -74,7 +74,7 @@ sixel_palette_snap_float_entries(float *entries, unsigned int colors,
 #endif
 
 static SIXEL_SNAP_TLS sixel_palette_snap_options_t g_snap_options;
-static SIXEL_SNAP_TLS int g_snap_output_p3;
+static SIXEL_SNAP_TLS int g_snap_output_definition;
 static SIXEL_SNAP_TLS int g_snap_grid_policy;
 static SIXEL_SNAP_TLS sixel_snap_grid_t *g_snap_grid;
 static SIXEL_SNAP_TLS SIXELSTATUS g_snap_status;
@@ -94,7 +94,7 @@ sixel_set_palette_snap_override(
     timing_name = "once";
     if (options == NULL) {
         memset(&g_snap_options, 0, sizeof(g_snap_options));
-        g_snap_output_p3 = 0;
+        g_snap_output_definition = 0;
         g_snap_grid_policy = SIXEL_SNAP_GRID_AUTO;
         return;
     }
@@ -325,9 +325,10 @@ sixel_palette_should_snap(enum sixel_palette_snap_stage stage)
 }
 
 void
-sixel_palette_snap_set_output(int p3, int grid_override, int grid_policy)
+sixel_palette_snap_set_output(int definition, int grid_override,
+                               int grid_policy)
 {
-    g_snap_output_p3 = p3;
+    g_snap_output_definition = definition;
     g_snap_grid_policy = grid_policy;
     if (!grid_override) {
         (void)sixel_option_resolve_registered_int_binding(
@@ -340,13 +341,16 @@ sixel_palette_snap_set_output(int p3, int grid_override, int grid_policy)
 int
 sixel_palette_snap_destination_active(void)
 {
-    return g_snap_output_p3 && sixel_palette_snap_is_enabled();
+    return g_snap_output_definition && sixel_palette_snap_is_enabled();
 }
 
 SIXELSTATUS
 sixel_palette_snap_begin(int pixelformat, int quantizer,
                           sixel_allocator_t *allocator)
 {
+    sixel_color_def_t *destination;
+    char const *name;
+
     if (g_snap_grid != NULL) {
         return SIXEL_LOGIC_ERROR;
     }
@@ -356,8 +360,20 @@ sixel_palette_snap_begin(int pixelformat, int quantizer,
     if (!sixel_palette_snap_destination_active()) {
         return SIXEL_OK;
     }
+    name = sixel_cdef_named_name(g_snap_output_definition);
+    if (name == NULL) {
+        g_snap_status = SIXEL_BAD_ARGUMENT;
+        return g_snap_status;
+    }
+    destination = sixel_cdef_name(name);
+    if (destination == NULL) {
+        g_snap_status = SIXEL_BAD_ALLOCATION;
+        return g_snap_status;
+    }
     g_snap_status = sixel_snap_grid_new(&g_snap_grid, g_snap_grid_policy,
-        sixel_palette_determine_colorspace(pixelformat), allocator);
+        sixel_palette_determine_colorspace(pixelformat), destination,
+        allocator);
+    sixel_cdef_free(destination);
     return g_snap_status;
 }
 

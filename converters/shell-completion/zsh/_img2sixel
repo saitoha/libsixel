@@ -269,8 +269,8 @@ _outputcolorspace() {
     'linear[linear RGB output]' \
     'smpte-c[SMPTE-C gamma encoded output]' \
     'display-p3[Display P3: limited CPU float palette path]' \
-    'adobe-rgb[Adobe RGB (1998): CPU float, inactive snap]' \
-    'dci-p3[DCI white, gamma 2.6: CPU float, inactive snap]' \
+    'adobe-rgb[Adobe RGB (1998): CPU float, destination snap]' \
+    'dci-p3[DCI white, gamma 2.6: CPU float, destination snap]' \
     'auto[negotiate only with the stdout image terminal]'
 }
 

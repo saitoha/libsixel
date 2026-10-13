@@ -807,7 +807,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0008_ADOBE_HECKBERT \
     -DBUILD_TEST_0009_ADOBE_HIGHCOLOR \
     -DBUILD_TEST_0010_ADOBE_REUSE \
-    -DBUILD_TEST_0011_ADOBE_SNAP_RECOVERY \
+    -DBUILD_TEST_0011_ADOBE_SNAP_ZERO \
     -DBUILD_TEST_0012_ADOBE_OPTION_ATOMICITY \
     -DBUILD_TEST_0013_ADOBE_XYZ \
     -DBUILD_TEST_0014_ADOBE_ICC_EXPORT \
@@ -821,7 +821,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0022_DCI_HECKBERT \
     -DBUILD_TEST_0023_DCI_HIGHCOLOR \
     -DBUILD_TEST_0024_DCI_REUSE \
-    -DBUILD_TEST_0025_DCI_SNAP_RECOVERY \
+    -DBUILD_TEST_0025_DCI_SNAP_ZERO \
     -DBUILD_TEST_0026_DCI_OPTION_ATOMICITY \
     -DBUILD_TEST_0027_DCI_XYZ \
     -DBUILD_TEST_0028_DCI_ICC_EXPORT \
@@ -1625,6 +1625,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_COVER_CONTRACT \
     -DBUILD_TEST_0001_COVER_MASK \
     -DBUILD_TEST_0001_SNAP_CONTRACT \
+    -DBUILD_TEST_0001_DESTINATION \
     -DBUILD_TEST_0001_GRID \
     -DBUILD_TEST_0002_PIPELINE \
     -DBUILD_TEST_0002_SCAN_CONTRACT \
@@ -5656,6 +5657,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/cover_float/0001_cover_contract.c \
     quant/palette/cover_mask/0001_cover_mask.c \
     quant/palette/snap_float/0001_snap_contract.c \
+    quant/palette/destination_snap/0001_destination.c \
     quant/palette/p3_snap/0001_grid.c \
     quant/palette/p3_snap/0002_pipeline.c \
     quant/palette/merge_float/0002_scan_contract.c \
@@ -5920,7 +5922,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/named_output/0008_adobe_heckbert.c \
     quant/palette/named_output/0009_adobe_highcolor.c \
     quant/palette/named_output/0010_adobe_reuse.c \
-    quant/palette/named_output/0011_adobe_snap_recovery.c \
+    quant/palette/named_output/0011_adobe_snap_zero.c \
     quant/palette/named_output/0012_adobe_option_atomicity.c \
     quant/palette/named_output/0013_adobe_xyz.c \
     quant/palette/named_output/0014_adobe_icc_export.c \
@@ -5934,7 +5936,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/named_output/0022_dci_heckbert.c \
     quant/palette/named_output/0023_dci_highcolor.c \
     quant/palette/named_output/0024_dci_reuse.c \
-    quant/palette/named_output/0025_dci_snap_recovery.c \
+    quant/palette/named_output/0025_dci_snap_zero.c \
     quant/palette/named_output/0026_dci_option_atomicity.c \
     quant/palette/named_output/0027_dci_xyz.c \
     quant/palette/named_output/0028_dci_icc_export.c \
@@ -8661,7 +8663,8 @@ apply-shebang-check: $(SIXEL_SHEBANG_TARGETS)
 check-am: apply-shebang-check
 endif
 
-EXTRA_DIST += data/color-numeric/named-output.h \
+EXTRA_DIST += data/color-numeric/destination-snap.h \
+    data/color-numeric/named-output.h \
     data/color-numeric/generate-named-output.py
 
 EXTRA_DIST += data/color-numeric/named-output-p3.png \

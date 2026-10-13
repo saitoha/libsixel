@@ -7036,13 +7036,6 @@ sixel_encoder_rgb101_restriction(sixel_encoder_t const *encoder)
     }
     if (encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE &&
             encoder->snap_policy_approach_rate > 0.0) {
-        /* The inverse lattice implementation currently defines P3 only.
-         * Never apply the sRGB/P3 lattice to a different destination. */
-        if (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY &&
-                encoder->output_color_definition !=
-                    SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
-            return "output color definition does not support active snap.";
-        }
         if (encoder->output_color_definition ==
                 SIXEL_PALETTE_OUTPUT_LEGACY &&
                 (encoder->snap_policy_timing !=
@@ -8040,8 +8033,8 @@ sixel_encoder_prepare_palette(
         snap_options.channel_factor_l =
             encoder->snap_policy_channel_factor_l;
         sixel_set_palette_snap_override(&snap_options);
-        sixel_palette_snap_set_output(!from_map_image &&
-            encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3,
+        sixel_palette_snap_set_output(from_map_image
+            ? SIXEL_PALETTE_OUTPUT_LEGACY : encoder->output_color_definition,
             encoder->snap_policy_grid_override, encoder->snap_policy_grid);
     }
     sixel_set_kcenter_algo_override(

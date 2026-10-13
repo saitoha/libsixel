@@ -985,6 +985,7 @@ int test_palette_merge_float(int argc, char **argv);
 int test_palette_cover_native(int argc, char **argv);
 int test_cover_mask(int argc, char **argv);
 int test_native_snap(int argc, char **argv);
+int test_destination_snap(int argc, char **argv);
 int test_p3_snap_grid(int argc, char **argv);
 int test_p3_snap_pipeline(int argc, char **argv);
 int test_ward_scan_populations(int argc, char **argv);
@@ -4620,7 +4621,7 @@ static test_entry_t const test_entries[] = {
     { "quant/palette/named_output/0009_adobe_highcolor",
       test_named_output_0009 },
     { "quant/palette/named_output/0010_adobe_reuse", test_named_output_0010 },
-    { "quant/palette/named_output/0011_adobe_snap_recovery",
+    { "quant/palette/named_output/0011_adobe_snap_zero",
       test_named_output_0011 },
     { "quant/palette/named_output/0012_adobe_option_atomicity",
       test_named_output_0012 },
@@ -4637,7 +4638,7 @@ static test_entry_t const test_entries[] = {
     { "quant/palette/named_output/0022_dci_heckbert", test_named_output_0022 },
     { "quant/palette/named_output/0023_dci_highcolor", test_named_output_0023 },
     { "quant/palette/named_output/0024_dci_reuse", test_named_output_0024 },
-    { "quant/palette/named_output/0025_dci_snap_recovery",
+    { "quant/palette/named_output/0025_dci_snap_zero",
       test_named_output_0025 },
     { "quant/palette/named_output/0026_dci_option_atomicity",
       test_named_output_0026 },
@@ -6099,6 +6100,7 @@ static test_entry_t const test_entries[] = {
     { "palette/merge_float/0002_scan_contract",
       test_ward_scan_populations },
     { "palette/snap_float/0001_snap_contract", test_native_snap },
+    { "palette/destination_snap/0001_destination", test_destination_snap },
     { "palette/p3_snap/0001_grid", test_p3_snap_grid },
     { "palette/p3_snap/0002_pipeline", test_p3_snap_pipeline },
     { "quant/palette/cover_mask/0001_cover_mask", test_cover_mask },
