@@ -4688,7 +4688,7 @@ static test_entry_t const test_entries[] = {
     { "assessment/0011_spec_parse_valid", test_qa_0011 },
     { "assessment/0012_spec_parse_invalid", test_qa_0012 },
     { "assessment/0013_pixel_delta_peak", test_qa_0013 },
-    { "assessment/0017_ms_ssim_origin", test_qa_0017 },
+    { "assessment/0017_ms_ssim", test_qa_0017 },
     { "loader/image_values", test_image_values },
     { "loader/image_display_values", test_image_values },
     { "loader/image_black_values", test_image_values },

@@ -404,7 +404,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/assessment/0011_spec_parse_valid.c \
 	processing/assessment/0012_spec_parse_invalid.c \
 	processing/assessment/0013_pixel_delta_peak.c \
-	processing/assessment/0017_ms_ssim_origin.c \
+	processing/assessment/0017_ms_ssim.c \
 	loader/image_values_test_common.c \
 	processing/cms/0011_separate_intents.c \
 	processing/cms/0012_engine_independence.c \
@@ -3701,7 +3701,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0011_spec_parse_valid.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0012_spec_parse_invalid.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0013_pixel_delta_peak.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0017_ms_ssim_origin.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0017_ms_ssim.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-image_values_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0011_separate_intents.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0012_engine_independence.$(OBJEXT) \
@@ -8307,7 +8307,7 @@ am__depfiles_remade =  \
 	processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Po \
 	processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po \
 	processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Po \
-	processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim_origin.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim.Po \
 	processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po \
 	processing/chunk/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Po \
 	processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po \
@@ -11259,7 +11259,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_SPEC_PARSE_VALID \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_SPEC_PARSE_INVALID \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_PIXEL_DELTA_PEAK \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_MS_SSIM_ORIGIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_MS_SSIM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_IMAGE_VALUES_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_EXTENDED_FAILURE_ATOMIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_INVALID_RGB_DEFINITION \
@@ -14192,7 +14192,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0011_spec_parse_valid.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0012_spec_parse_invalid.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0013_pixel_delta_peak.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0017_ms_ssim_origin.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0017_ms_ssim.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/image_values_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0011_separate_intents.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0012_engine_independence.c \
@@ -18345,7 +18345,7 @@ processing/assessment/test_runner-0012_spec_parse_invalid.$(OBJEXT):  \
 processing/assessment/test_runner-0013_pixel_delta_peak.$(OBJEXT):  \
 	processing/assessment/$(am__dirstamp) \
 	processing/assessment/$(DEPDIR)/$(am__dirstamp)
-processing/assessment/test_runner-0017_ms_ssim_origin.$(OBJEXT):  \
+processing/assessment/test_runner-0017_ms_ssim.$(OBJEXT):  \
 	processing/assessment/$(am__dirstamp) \
 	processing/assessment/$(DEPDIR)/$(am__dirstamp)
 loader/$(am__dirstamp):
@@ -29523,7 +29523,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim_origin.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/chunk/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po@am__quote@ # am--include-marker
@@ -35344,19 +35344,19 @@ processing/assessment/test_runner-0013_pixel_delta_peak.obj: processing/assessme
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0013_pixel_delta_peak.obj `if test -f 'processing/assessment/0013_pixel_delta_peak.c'; then $(CYGPATH_W) 'processing/assessment/0013_pixel_delta_peak.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0013_pixel_delta_peak.c'; fi`
 
-processing/assessment/test_runner-0017_ms_ssim_origin.o: processing/assessment/0017_ms_ssim_origin.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0017_ms_ssim_origin.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim_origin.Tpo -c -o processing/assessment/test_runner-0017_ms_ssim_origin.o `test -f 'processing/assessment/0017_ms_ssim_origin.c' || echo '$(srcdir)/'`processing/assessment/0017_ms_ssim_origin.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim_origin.Tpo processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim_origin.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0017_ms_ssim_origin.c' object='processing/assessment/test_runner-0017_ms_ssim_origin.o' libtool=no @AMDEPBACKSLASH@
+processing/assessment/test_runner-0017_ms_ssim.o: processing/assessment/0017_ms_ssim.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0017_ms_ssim.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim.Tpo -c -o processing/assessment/test_runner-0017_ms_ssim.o `test -f 'processing/assessment/0017_ms_ssim.c' || echo '$(srcdir)/'`processing/assessment/0017_ms_ssim.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim.Tpo processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0017_ms_ssim.c' object='processing/assessment/test_runner-0017_ms_ssim.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0017_ms_ssim_origin.o `test -f 'processing/assessment/0017_ms_ssim_origin.c' || echo '$(srcdir)/'`processing/assessment/0017_ms_ssim_origin.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0017_ms_ssim.o `test -f 'processing/assessment/0017_ms_ssim.c' || echo '$(srcdir)/'`processing/assessment/0017_ms_ssim.c
 
-processing/assessment/test_runner-0017_ms_ssim_origin.obj: processing/assessment/0017_ms_ssim_origin.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0017_ms_ssim_origin.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim_origin.Tpo -c -o processing/assessment/test_runner-0017_ms_ssim_origin.obj `if test -f 'processing/assessment/0017_ms_ssim_origin.c'; then $(CYGPATH_W) 'processing/assessment/0017_ms_ssim_origin.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0017_ms_ssim_origin.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim_origin.Tpo processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim_origin.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0017_ms_ssim_origin.c' object='processing/assessment/test_runner-0017_ms_ssim_origin.obj' libtool=no @AMDEPBACKSLASH@
+processing/assessment/test_runner-0017_ms_ssim.obj: processing/assessment/0017_ms_ssim.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0017_ms_ssim.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim.Tpo -c -o processing/assessment/test_runner-0017_ms_ssim.obj `if test -f 'processing/assessment/0017_ms_ssim.c'; then $(CYGPATH_W) 'processing/assessment/0017_ms_ssim.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0017_ms_ssim.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim.Tpo processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0017_ms_ssim.c' object='processing/assessment/test_runner-0017_ms_ssim.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0017_ms_ssim_origin.obj `if test -f 'processing/assessment/0017_ms_ssim_origin.c'; then $(CYGPATH_W) 'processing/assessment/0017_ms_ssim_origin.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0017_ms_ssim_origin.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0017_ms_ssim.obj `if test -f 'processing/assessment/0017_ms_ssim.c'; then $(CYGPATH_W) 'processing/assessment/0017_ms_ssim.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0017_ms_ssim.c'; fi`
 
 loader/test_runner-image_values_test_common.o: loader/image_values_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-image_values_test_common.o -MD -MP -MF loader/$(DEPDIR)/test_runner-image_values_test_common.Tpo -c -o loader/test_runner-image_values_test_common.o `test -f 'loader/image_values_test_common.c' || echo '$(srcdir)/'`loader/image_values_test_common.c

@@ -882,7 +882,6 @@ load_input_frame(char const *path, char const *spec, int direct,
 
 typedef struct Metrics {
     float ms_ssim;
-    float ms_ssim_origin;
     float high_freq_out;
     float high_freq_ref;
     float high_freq_delta;
@@ -924,8 +923,6 @@ static const MetricBinding g_metric_bindings[] = {
      SIXEL_ASSESSMENT_METRIC_REGION_MEAN},
     {"DE00_region_max", offsetof(Metrics, region_max),
      SIXEL_ASSESSMENT_METRIC_REGION_MAX},
-    {"MS-SSIM-origin", offsetof(Metrics, ms_ssim_origin),
-     SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN},
     {"MS-SSIM", offsetof(Metrics, ms_ssim),
      SIXEL_ASSESSMENT_METRIC_MS_SSIM},
     {"HighFreqRatio_out", offsetof(Metrics, high_freq_out),
@@ -991,8 +988,6 @@ static const MetricSpec sixel_metric_specs[] = {
      SIXEL_ASSESSMENT_METRIC_REGION_MEAN},
     {"DE00_region_max", "DE00_region_max",
      SIXEL_ASSESSMENT_METRIC_REGION_MAX},
-    {"MS-SSIM-origin", "MS-SSIM-origin",
-     SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN},
     {"MS-SSIM", "MS-SSIM", SIXEL_ASSESSMENT_METRIC_MS_SSIM},
     /* Keep established prefixes, including -mm, on the canonical name. */
     {"M", "MS-SSIM", SIXEL_ASSESSMENT_METRIC_MS_SSIM},
@@ -1413,7 +1408,6 @@ verbose_print(const Metrics *m)
 {
     MetricItem items[] = {
         {"MS-SSIM", m->ms_ssim},
-        {"MS-SSIM-origin", m->ms_ssim_origin},
         {"HighFreqRatio_out", m->high_freq_out},
         {"HighFreqRatio_ref", m->high_freq_ref},
         {"HighFreqRatio_delta", m->high_freq_delta},
@@ -2499,9 +2493,8 @@ show_help(void)
     lsqa_print_option_help(stdout);
     fprintf(stdout,
             "\n"
-            "MS-SSIM metrics:\n"
+            "MS-SSIM metric:\n"
             "  MS-SSIM         reference five-scale product (>=176x176)\n"
-            "  MS-SSIM-origin  compatibility name for MS-SSIM\n"
             "                  unavailable results print nan; JSON uses null\n"
             "\n"
             "Environment overrides:\n"

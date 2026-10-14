@@ -74,7 +74,7 @@ The situation changes when the whole display is dim: a low-brightness setting, a
 
 ### Consequences for `lsqa`
 
-`lsqa` computes CIELAB relative to the ICC D50 white with no flare term and no absolute luminance. Dark chromatic differences are discounted only through CIELAB compression, and differences between near-black colors are somewhat overstated compared with what a viewer sees on a real display. The compression is nevertheless strong enough that a palette whose darkest entry is slightly above black usually produces only a small ΔE00, even where the luma-based MS-SSIM penalizes the same area heavily; see the near-black example in [image-quality metrics](metrics.md#the-lsqa-ms-ssim).
+`lsqa` computes CIELAB relative to the ICC D50 white with no flare term and no absolute luminance. Dark chromatic differences are discounted only through CIELAB compression, and differences between near-black colors are somewhat overstated compared with what a viewer sees on a real display. The compression is nevertheless strong enough that a palette whose darkest entry is slightly above black usually produces only a small ΔE00, even where the luma-based MS-SSIM penalizes the same area heavily; see the near-black example in [image-quality metrics](metrics.md#reference-ms-ssim).
 
 Two extensions would model dark viewing more faithfully. Neither is implemented:
 

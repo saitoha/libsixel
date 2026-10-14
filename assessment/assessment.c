@@ -138,7 +138,6 @@ typedef struct sixel_assessment_complex {
 typedef struct sixel_assessment_metrics {
     unsigned int valid_mask; /* bit mask for computed metrics */
     float ms_ssim;
-    float ms_ssim_origin;
     float high_freq_out;
     float high_freq_ref;
     float high_freq_delta;
@@ -1377,12 +1376,11 @@ separable_conv2d(const sixel_assessment_float_buffer_t *img, int width,
 
 /* Wang's five-scale reference uses valid Gaussian windows and the product
  * of mean contrast/structure at scales 1--4 and mean full SSIM at scale 5.
- * MS-SSIM and its origin compatibility name share this computation.
  * Double moments avoid cancellation in flat patches and double pooling
  * avoids image-size-dependent float summation error. */
 static double
-ssim_origin_scale(double const *a, double const *b, double *horizontal,
-                  int width, int height, double const kernel[11], int last)
+ms_ssim_scale(double const *a, double const *b, double *horizontal,
+              int width, int height, double const kernel[11], int last)
 {
     double moments[5];
     double av;
@@ -1454,7 +1452,7 @@ ssim_origin_scale(double const *a, double const *b, double *horizontal,
  * column is reflected onto itself, retaining ceil(size/2) samples. Earlier
  * compacted outputs never overwrite an input still needed by this pass. */
 static void
-ssim_origin_downsample(double *pixels, int width, int height)
+ms_ssim_downsample(double *pixels, int width, int height)
 {
     int row;
     int column;
@@ -1532,8 +1530,8 @@ ms_ssim_luma(sixel_assessment_float_buffer_t const *ref,
     }
     product = 1.0;
     for (level = 0; level < 5; ++level) {
-        factor = ssim_origin_scale(a, b, horizontal, width, height,
-                                    kernel, level == 4);
+        factor = ms_ssim_scale(a, b, horizontal, width, height,
+                               kernel, level == 4);
         /* Fractional powers of negative mean factors are not real-valued.
          * Report an unavailable metric, not a silently clipped substitute.
          * Tiny overshoot above one is only bounded at the final result. */
@@ -1543,8 +1541,8 @@ ms_ssim_luma(sixel_assessment_float_buffer_t const *ref,
         }
         product *= pow(factor, weights[level]);
         if (level < 4) {
-            ssim_origin_downsample(a, width, height);
-            ssim_origin_downsample(b, width, height);
+            ms_ssim_downsample(a, width, height);
+            ms_ssim_downsample(b, width, height);
             width = width / 2 + width % 2;
             height = height / 2 + height % 2;
         }
@@ -2612,7 +2610,6 @@ evaluate_metrics(sixel_assessment_t *assessment,
     int threshold;
 
     int want_ms_ssim;
-    int want_ms_ssim_origin;
     int want_high_freq_out;
     int want_high_freq_ref;
     int want_high_freq_delta;
@@ -2663,8 +2660,6 @@ evaluate_metrics(sixel_assessment_t *assessment,
 
     want_ms_ssim = assessment_metric_selected(assessment,
                    SIXEL_ASSESSMENT_METRIC_MS_SSIM);
-    want_ms_ssim_origin = assessment_metric_selected(assessment,
-        SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN);
     want_high_freq_delta = assessment_metric_selected(assessment,
                            SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_DELTA);
     want_high_freq_out = assessment_metric_selected(assessment,
@@ -2735,7 +2730,7 @@ evaluate_metrics(sixel_assessment_t *assessment,
                  SIXEL_ASSESSMENT_METRIC_GMSD);
     want_psnr_y = assessment_metric_selected(assessment,
                    SIXEL_ASSESSMENT_METRIC_PSNR_Y);
-    need_luma = want_ms_ssim || want_ms_ssim_origin ||
+    need_luma = want_ms_ssim ||
                 want_high_freq_out || want_high_freq_ref ||
                 want_stripe_out || want_stripe_ref || want_banding_run_rel ||
                 want_banding_grad_rel || want_gmsd || want_psnr_y;
@@ -2747,22 +2742,11 @@ evaluate_metrics(sixel_assessment_t *assessment,
         ref_luma = pixels_to_luma709(ref_pixels, width, height);
         out_luma = pixels_to_luma709(out_pixels, width, height);
     }
-    if (want_ms_ssim || want_ms_ssim_origin) {
-        /* Compute the reference product once, even for a full report. Keep
-         * both result slots selectable without reviving the incorrect
-         * arithmetic-average score or marking an unrequested slot valid. */
+    if (want_ms_ssim) {
         metrics.ms_ssim = ms_ssim_luma(&ref_luma, &out_luma,
                                       width, height);
-        metrics.ms_ssim_origin = metrics.ms_ssim;
-        if (want_ms_ssim) {
-            assessment_metric_mark(&metrics,
-                SIXEL_ASSESSMENT_METRIC_MS_SSIM, metrics.ms_ssim);
-        }
-        if (want_ms_ssim_origin) {
-            assessment_metric_mark(&metrics,
-                SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN,
-                metrics.ms_ssim_origin);
-        }
+        assessment_metric_mark(&metrics,
+            SIXEL_ASSESSMENT_METRIC_MS_SSIM, metrics.ms_ssim);
     }
     if (need_luma && (want_high_freq_out || want_high_freq_delta)) {
         high_freq_out_value = high_frequency_ratio(&out_luma,
@@ -3066,7 +3050,6 @@ typedef struct MetricDescriptor {
 
 static const MetricDescriptor g_metric_table[] = {
     {SIXEL_ASSESSMENT_METRIC_MS_SSIM, "MS-SSIM"},
-    {SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN, "MS-SSIM-origin"},
     {SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT, "HighFreqRatio_out"},
     {SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_REF, "HighFreqRatio_ref"},
     {SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_DELTA, "HighFreqRatio_delta"},
@@ -3127,8 +3110,6 @@ store_metrics(sixel_assessment_t *assessment,
                           mask,
                           SIXEL_ASSESSMENT_METRIC_MS_SSIM,
                           metrics->ms_ssim);
-    store_metric_if_valid(results, mask,
-        SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN, metrics->ms_ssim_origin);
     store_metric_if_valid(results,
                           mask,
                           SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT,

@@ -143,7 +143,7 @@ Skip output must explain the unavailable capability. A missing optional dependen
 
 ## Image-quality tests
 
-Every test that measures MS-SSIM must compare images whose width and height are both at least 176 pixels, as required by the [MS-SSIM fixture policy](../quality/measurement-policy.md#standard-inputs). This applies after cropping, resizing, frame selection and any other comparison preparation, and to both `MS-SSIM` and `MS-SSIM-origin`. Tests specifically asserting rejection or unavailability below that boundary deliberately use smaller inputs and must check that outcome instead of a quality threshold.
+Every test that measures MS-SSIM must compare images whose width and height are both at least 176 pixels, as required by the [MS-SSIM fixture policy](../quality/measurement-policy.md#standard-inputs). This applies after cropping, resizing, frame selection and any other comparison preparation. Tests specifically asserting rejection or unavailability below that boundary deliberately use smaller inputs and must check that outcome instead of a quality threshold.
 
 Before replacing an undersized fixture, decide what the test must establish:
 

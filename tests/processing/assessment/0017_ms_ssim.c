@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Reference values: tests/data/assessment/ms_ssim_origin_reference.py. */
+/* Reference values: tests/data/assessment/ms_ssim_reference.py. */
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,8 +15,9 @@ test_qa_0017(int argc, char **argv)
     float *reference;
     float *target;
     unsigned int mask;
-    unsigned int canonical_mask;
-    unsigned int origin_mask;
+    unsigned int ms_ssim_mask;
+    unsigned int companion_mask;
+    unsigned int expected_mask;
     double expected;
     double actual;
     float av;
@@ -30,8 +31,6 @@ test_qa_0017(int argc, char **argv)
     int value;
     int index;
     int selection;
-    int canonical_index;
-    int origin_index;
     int ok;
     int available;
     size_t offset;
@@ -94,22 +93,19 @@ test_qa_0017(int argc, char **argv)
         goto end;
     }
     qa->signal_space = SIXEL_COLORSPACE_GAMMA;
-    canonical_mask = SIXEL_ASSESSMENT_METRIC_MASK(
+    ms_ssim_mask = SIXEL_ASSESSMENT_METRIC_MASK(
         SIXEL_ASSESSMENT_METRIC_MS_SSIM);
-    origin_mask = SIXEL_ASSESSMENT_METRIC_MASK(
-        SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN);
-    canonical_index = SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_MS_SSIM);
-    origin_index = SIXEL_ASSESSMENT_INDEX(
-        SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN);
-    /* The same independent oracle applies to each spelling and to a full
-     * report. Exact masks also catch accidental publication of an alias
-     * which the caller did not select. */
+    companion_mask = SIXEL_ASSESSMENT_METRIC_MASK(
+        SIXEL_ASSESSMENT_METRIC_GMSD);
+    index = SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_MS_SSIM);
+    /* The independent oracle also applies when another metric is selected.
+     * Exact masks ensure unavailable MS-SSIM does not suppress that metric
+     * or publish an unrequested result. */
     ok = 1;
-    for (selection = 0; selection < 3 && ok; ++selection) {
+    for (selection = 0; selection < 2 && ok; ++selection) {
         ok = 0;
-        mask = selection == 0 ? canonical_mask : selection == 1 ? origin_mask
-            : canonical_mask | origin_mask;
-        index = selection == 1 ? origin_index : canonical_index;
+        expected_mask = selection == 0 ? 0u : companion_mask;
+        mask = ms_ssim_mask | expected_mask;
         if (scenario == 8) {
             width = 176;
             height = 176;
@@ -132,12 +128,10 @@ test_qa_0017(int argc, char **argv)
         /* 1.5e-5 covers propagated input/luma error (at most 1.1e-5 for these
          * fixtures), double moments/pooling/pow and float result storage. The
          * independent 2-D generator also derives the input error bound. */
-        ok = qa->results_valid_mask == (available ? mask : 0u) &&
+        ok = qa->results_valid_mask ==
+                (expected_mask | (available ? ms_ssim_mask : 0u)) &&
             (!available || (isfinite(actual) &&
                 fabs(actual - expected) <= 1.5e-5));
-        if (selection == 2 && available && ok) {
-            ok = qa->results[canonical_index] == qa->results[origin_index];
-        }
         if (scenario == 8 && ok) {
             /* Valid -> unavailable must not publish the preceding score. Both
              * narrow orientations are below the reference size boundary. */
@@ -151,9 +145,8 @@ test_qa_0017(int argc, char **argv)
                         SIXEL_FAILED(sixel_assessment_analyze(qa, a, b))) {
                     ok = 0;
                 } else {
-                    ok = qa->results_valid_mask == 0u &&
-                        qa->results[canonical_index] == 0.0 &&
-                        qa->results[origin_index] == 0.0;
+                    ok = qa->results_valid_mask == expected_mask &&
+                        qa->results[index] == 0.0;
                 }
             }
         }

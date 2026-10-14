@@ -6,7 +6,7 @@ echo "1..1"
 set -v
 
 expected=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none \
-    -m MS-SSIM-origin "${TOP_SRCDIR}/images/snake.png" \
+    -m MS-SSIM "${TOP_SRCDIR}/images/snake.png" \
     "${TOP_SRCDIR}/images/snake.jpg") || {
     echo "not ok 1 - reference metric"
     exit 0
