@@ -370,6 +370,8 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
     } else if (color_auto_is(name, "timeout-cli-over-env")) {
         color_option = "-Uauto:timeout_ms=20";
         setenv("SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS", "invalid", 1);
+    } else if (color_auto_is(name, "edge")) {
+        color_option = "-Uauto:gamut=edge-seeker:T200";
     } else if (color_auto_is(name, "gamut")) {
         color_option = "-Uauto:gamut=local-minde:T200";
     } else if (color_auto_is(name, "prefix")) {
@@ -406,7 +408,9 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
     } else {
         arguments[count++] = baseline
             ? (color_auto_is(name, "gamut")
-                ? "-Ugamma:gamut=local-minde" : "-Ugamma")
+                ? "-Ugamma:gamut=local-minde"
+                : color_auto_is(name, "edge")
+                    ? "-Ugamma:gamut=edge-seeker" : "-Ugamma")
             : (char *)color_option;
     }
     if (!baseline && color_auto_is(name, "drcs-gamma")) {
@@ -688,7 +692,7 @@ color_auto_script(color_auto_peer_t *peer, char const *name,
 
     saved = strncmp(name, "save-", 5u) == 0 ? name[5] - '0' : 0;
     selected = color_auto_is(name, "srgb") ||
-        color_auto_is(name, "gamut") ||
+        color_auto_is(name, "gamut") || color_auto_is(name, "edge") ||
         color_auto_is(name, "unsupported") ||
         color_auto_is(name, "simple") || color_auto_is(name, "icc") ||
         color_auto_is(name, "p3-no-s2") ? 1 : 2;
@@ -908,7 +912,7 @@ test_cli_0039_color_auto(int argc, char **argv)
         "timeout-env",
         "timeout-cli-over-env",
         "prefix",
-        "gamut",
+        "gamut", "edge",
         "bad-zero",
         "bad-limit",
         "bad-signed",

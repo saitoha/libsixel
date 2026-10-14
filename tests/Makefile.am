@@ -182,6 +182,24 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_SRGB_IDENTITY \
+    -DBUILD_TEST_0038_EDGE_LINEAR_REFERENCE \
+    -DBUILD_TEST_0030_EDGE_FULL_FRAME_SAMPLES \
+    -DBUILD_TEST_0031_EDGE_ADAPTIVE_SAMPLES \
+    -DBUILD_TEST_0032_EDGE_OKLAB_WORKSPACE \
+    -DBUILD_TEST_0033_EDGE_HIGHCOLOR \
+    -DBUILD_TEST_0034_EDGE_LUT_REJECTED \
+    -DBUILD_TEST_0035_EDGE_ENVIRONMENT_PRECEDENCE \
+    -DBUILD_TEST_0036_EDGE_ENCODER_ISOLATION \
+    -DBUILD_TEST_0020_EDGE_SRGB_REFERENCE \
+    -DBUILD_TEST_0021_EDGE_P3_REFERENCE \
+    -DBUILD_TEST_0022_EDGE_ADOBE_REFERENCE \
+    -DBUILD_TEST_0023_EDGE_DCI_REFERENCE \
+    -DBUILD_TEST_0024_EDGE_IDENTITY \
+    -DBUILD_TEST_0025_EDGE_ENDPOINTS \
+    -DBUILD_TEST_0026_EDGE_NONFINITE_ATOMIC \
+    -DBUILD_TEST_0027_EDGE_MATRIX_ICC \
+    -DBUILD_TEST_0028_EDGE_INVALID_BOUNDARY \
+    -DBUILD_TEST_0029_EDGE_BOUNDS \
     -DBUILD_TEST_0002_P3_EXTENDED_IDENTITY \
     -DBUILD_TEST_0003_SRGB_REFERENCE \
     -DBUILD_TEST_0004_P3_REFERENCE \
@@ -5686,6 +5704,25 @@ test_runner_SOURCES = test_runner.c \
     processing/gamut/0007_nonfinite_atomic.c \
     processing/gamut/0008_policy_atomicity.c \
     processing/gamut/gamut_test_common.h \
+    processing/gamut/edge_test_common.h \
+    processing/gamut/0038_edge_linear_reference.c \
+    processing/gamut/0030_edge_full_frame_samples.c \
+    processing/gamut/0031_edge_adaptive_samples.c \
+    processing/gamut/0032_edge_oklab_workspace.c \
+    processing/gamut/0033_edge_highcolor.c \
+    processing/gamut/0034_edge_lut_rejected.c \
+    processing/gamut/0035_edge_environment_precedence.c \
+    processing/gamut/0036_edge_encoder_isolation.c \
+    processing/gamut/0020_edge_srgb_reference.c \
+    processing/gamut/0021_edge_p3_reference.c \
+    processing/gamut/0022_edge_adobe_reference.c \
+    processing/gamut/0023_edge_dci_reference.c \
+    processing/gamut/0024_edge_identity.c \
+    processing/gamut/0025_edge_endpoints.c \
+    processing/gamut/0026_edge_nonfinite_atomic.c \
+    processing/gamut/0027_edge_matrix_icc.c \
+    processing/gamut/0028_edge_invalid_boundary.c \
+    processing/gamut/0029_edge_bounds.c \
     processing/gamut/0013_matrix_icc.c \
     processing/gamut/0014_lut_rejected.c \
     processing/gamut/0015_encoder_isolation.c \
@@ -8712,3 +8749,6 @@ EXTRA_DIST += data/color-numeric/named-output-p3.png \
 
 EXTRA_DIST += data/color-numeric/gamut-reference.py \
     data/color-numeric/gamut-reference.h
+
+EXTRA_DIST += data/color-numeric/edge-reference.py \
+    data/color-numeric/edge-reference.h

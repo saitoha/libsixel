@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+"""Independent CSS Color 4 EdgeSeeker oracle, 2026-10-09 sections 14.2.3-4.
+
+Derives matrices from chromaticities; no production code is used. The circle
+is fitted by solving its linear equation, and intersected using its center
+(the C implementation uses a curvature-scaled quadratic instead).
+"""
+import bisect
+import colorsys
+import importlib.util
+import math
+from pathlib import Path
+
+spec = importlib.util.spec_from_file_location(
+    'reference', Path(__file__).with_name('gamut-reference.py'))
+r = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(r)
+
+
+def interpolate(a, b, h):
+    # Unwrap both ends relative to the first for fold bridges across zero.
+    offset = (h - a[2] + 180) % 360 - 180
+    t = min(1, max(0, offset / ((b[2] - a[2]) % 360)))
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, h]
+
+
+def unfold(points):
+    kept = [points[0]]
+    i = 1
+    while i < len(points):
+        if (points[i][2] - points[i - 1][2]) % 360 <= 180:
+            kept.append(points[i])
+            i += 1
+            continue
+        j = i
+        while j < len(points) - 1 and (points[j + 1][2] - points[j][2]) % 360 > 180:
+            j += 1
+        resume = points[j]
+        first = next(k for k, p in enumerate(kept)
+                     if (resume[2] - p[2]) % 360 > 180)
+        assert first > 0
+        h = (resume[2] - .0001) % 360
+        bridge = interpolate(kept[first - 1], kept[first], h)
+        kept = kept[:first]
+        if 0 < (h - kept[-1][2]) % 360 <= 180:
+            kept.append(bridge)
+        kept.append(resume)
+        i = j + 1
+    return kept
+
+
+def lookup(points, h):
+    i = min(len(points) - 1, max(1, bisect.bisect_right([p[2] for p in points], h)))
+    a, b = points[i - 1], points[i]
+    t = (h - a[2]) / (b[2] - a[2])
+    return [a[j] + (b[j] - a[j]) * t for j in range(len(a))]
+
+
+def build(matrix, white, decode):
+    def canonical(rgb):
+        return r.mul(r.inverse(r.RGB), r.adapted(r.mul(matrix, rgb), white, False))
+    tables = []
+    for lightness in [.5, .75]:
+        points = []
+        for region in range(6):
+            sampled = []
+            for i in range(400):
+                rgb = colorsys.hls_to_rgb((region + i / 399) / 6, lightness, 1)
+                L, a, b = r.lab(canonical([decode(v) for v in rgb]))
+                sampled.append([L, math.hypot(a, b), math.degrees(math.atan2(b, a)) % 360])
+            points += unfold(sampled)[:-1]
+        points.sort(key=lambda p: p[2])
+        end = interpolate(points[-1], points[0], 360)
+        points = [[*end[:2], 0]] + points + [[*end[:2], 360]]
+        tables.append(points)
+    lut = []
+    for L, C, h in tables[0]:
+        L2, C2, _ = lookup(tables[1], h)
+        x, y = (1 - L2) / (1 - L), C2 / C
+        if abs(x - y) < 1e-15:
+            k = 0
+        else:
+            # Circle: x^2+y^2 - 2*cx*x - 2*cy*y = 0; cx+cy=1.
+            cx = (x*x + y*y - 2*y) / (2*(x - y))
+            cy = 1 - cx
+            k = math.copysign(1 / math.hypot(cx, cy), cx - cy)
+        assert 0 < L < 1 and C > 0 and abs(k) < 1, (L, C, h, k)
+        lut.append([L, C, h, k])
+    return lut
+
+
+def mapping(origin, matrix, white, lut):
+    def device(rgb):
+        return r.mul(r.inverse(matrix), r.adapted(r.mul(r.RGB, rgb), white, True))
+    def canonical(rgb):
+        return r.mul(r.inverse(r.RGB), r.adapted(r.mul(matrix, rgb), white, False))
+    if all(-2e-7 <= c <= 1 + 2e-7 for c in device(origin)):
+        return origin
+    L, a, b = r.lab(origin)
+    if L <= 0 or L >= 1:
+        return canonical([float(L >= 1)] * 3)
+    C, h = math.hypot(a, b), math.degrees(math.atan2(b, a)) % 360
+    lc, cc, _, k = lookup(lut, h)
+    if L <= lc:
+        limit = L / lc * cc
+    else:
+        x = (1 - L) / (1 - lc)
+        if abs(k) < 1e-12:
+            y = x
+        else:
+            radius = abs(1 / k)
+            offset = math.copysign(math.sqrt(radius**2 - .5) / math.sqrt(2), k)
+            cx, cy = .5 + offset, .5 - offset
+            root = math.sqrt(max(0, radius**2 - (x - cx)**2))
+            y = cy + root if k > 0 else cy - root
+        limit = cc * y
+    scale = min(1, limit / C) if C else 1
+    return canonical([min(1, max(0, c)) for c in device(r.linear([L, a*scale, b*scale]))])
+
+
+def decode(name, value):
+    if name == 'linear':
+        return value
+    if name in ('srgb', 'display-p3'):
+        return value / 12.92 if value <= .04045 else ((value + .055) / 1.055)**2.4
+    return value ** (2.6 if name == 'dci-p3' else 563/256)
+
+
+origins = r.origins + [r.linear([L, C*math.cos(math.radians(h)), C*math.sin(math.radians(h))])
+                       for L, C, h in [(0.4, .5, 0), (.9, .3, 359.999),
+                                      (.5, .4, 264), (.7, .4, 265),
+                                      (.95, .4, 110), (.05, .3, 30)]]
+if __name__ == '__main__':
+    lines = ['/* Generated by edge-reference.py, independently of libsixel. */',
+             'static double const edge_origins[][3] = {']
+    def vector(value, indent):
+        return indent + '{\n' + ',\n'.join(indent + '    ' + format(v, '.17g') for v in value) + '\n' + indent + '},'
+    lines += [vector(v, '    ') for v in origins]
+    lines += ['};', f'static double const edge_expected[][{len(origins)}][3] = {{']
+    for name, white, primaries in r.spaces + [('linear', r.D65, r.spaces[0][2])]:
+        matrix = r.rgb_matrix(white, primaries)
+        lut = build(matrix, white, lambda v: decode(name, v))
+        lines.append('    { /* ' + name + ' */')
+        lines += [vector(mapping(v, matrix, white, lut), '        ') for v in origins]
+        lines.append('    },')
+    lines.append('};')
+    Path(__file__).with_suffix('.h').write_text('\n'.join(lines) + '\n')

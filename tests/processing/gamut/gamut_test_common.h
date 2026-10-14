@@ -24,7 +24,7 @@ gamut_fixture_init(gamut_fixture_t *fixture, char const *name)
         SIXEL_SUCCEEDED(sixel_allocator_new(&fixture->allocator,
             NULL, NULL, NULL, NULL)) &&
         SIXEL_SUCCEEDED(sixel_gamut_new(&fixture->mapper,
-            fixture->definition, SIXEL_COLORSPACE_GAMMA,
+            fixture->definition, SIXEL_COLORSPACE_GAMMA, SIXEL_GAMUT_LOCAL_MINDE,
             fixture->allocator));
 }
 

@@ -9,5 +9,5 @@ test_gamut_0012_highcolor(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return gamut_encode_check("full-frame", "linear", 1);
+    return gamut_encode_check("full-frame", "linear", 1, 0);
 }

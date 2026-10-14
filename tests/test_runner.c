@@ -986,6 +986,24 @@ int test_palette_cover_native(int argc, char **argv);
 int test_cover_mask(int argc, char **argv);
 int test_native_snap(int argc, char **argv);
 int test_icc_output(int argc, char **argv);
+int test_gamut_0020_edge_srgb_reference(int argc, char **argv);
+int test_gamut_0021_edge_p3_reference(int argc, char **argv);
+int test_gamut_0022_edge_adobe_reference(int argc, char **argv);
+int test_gamut_0023_edge_dci_reference(int argc, char **argv);
+int test_gamut_0024_edge_identity(int argc, char **argv);
+int test_gamut_0025_edge_endpoints(int argc, char **argv);
+int test_gamut_0026_edge_nonfinite_atomic(int argc, char **argv);
+int test_gamut_0027_edge_matrix_icc(int argc, char **argv);
+int test_gamut_0028_edge_invalid_boundary(int argc, char **argv);
+int test_gamut_0029_edge_bounds(int argc, char **argv);
+int test_gamut_0030_edge_full_frame_samples(int argc, char **argv);
+int test_gamut_0031_edge_adaptive_samples(int argc, char **argv);
+int test_gamut_0032_edge_oklab_workspace(int argc, char **argv);
+int test_gamut_0033_edge_highcolor(int argc, char **argv);
+int test_gamut_0034_edge_lut_rejected(int argc, char **argv);
+int test_gamut_0035_edge_environment_precedence(int argc, char **argv);
+int test_gamut_0036_edge_encoder_isolation(int argc, char **argv);
+int test_gamut_0038_edge_linear_reference(int argc, char **argv);
 int test_gamut_0013_matrix_icc(int argc, char **argv);
 int test_gamut_0014_lut_rejected(int argc, char **argv);
 int test_gamut_0015_encoder_isolation(int argc, char **argv);
@@ -6123,6 +6141,42 @@ static test_entry_t const test_entries[] = {
       test_ward_scan_populations },
     { "palette/snap_float/0001_snap_contract", test_native_snap },
     { "palette/icc_output/0001_icc_output", test_icc_output },
+    { "gamut/0020_edge_srgb_reference",
+      test_gamut_0020_edge_srgb_reference },
+    { "gamut/0021_edge_p3_reference",
+      test_gamut_0021_edge_p3_reference },
+    { "gamut/0022_edge_adobe_reference",
+      test_gamut_0022_edge_adobe_reference },
+    { "gamut/0023_edge_dci_reference",
+      test_gamut_0023_edge_dci_reference },
+    { "gamut/0024_edge_identity",
+      test_gamut_0024_edge_identity },
+    { "gamut/0025_edge_endpoints",
+      test_gamut_0025_edge_endpoints },
+    { "gamut/0026_edge_nonfinite_atomic",
+      test_gamut_0026_edge_nonfinite_atomic },
+    { "gamut/0027_edge_matrix_icc",
+      test_gamut_0027_edge_matrix_icc },
+    { "gamut/0028_edge_invalid_boundary",
+      test_gamut_0028_edge_invalid_boundary },
+    { "gamut/0029_edge_bounds",
+      test_gamut_0029_edge_bounds },
+    { "gamut/0030_edge_full_frame_samples",
+      test_gamut_0030_edge_full_frame_samples },
+    { "gamut/0031_edge_adaptive_samples",
+      test_gamut_0031_edge_adaptive_samples },
+    { "gamut/0032_edge_oklab_workspace",
+      test_gamut_0032_edge_oklab_workspace },
+    { "gamut/0033_edge_highcolor",
+      test_gamut_0033_edge_highcolor },
+    { "gamut/0034_edge_lut_rejected",
+      test_gamut_0034_edge_lut_rejected },
+    { "gamut/0035_edge_environment_precedence",
+      test_gamut_0035_edge_environment_precedence },
+    { "gamut/0036_edge_encoder_isolation",
+      test_gamut_0036_edge_encoder_isolation },
+    { "gamut/0038_edge_linear_reference",
+      test_gamut_0038_edge_linear_reference },
     { "gamut/0013_matrix_icc",
       test_gamut_0013_matrix_icc },
     { "gamut/0014_lut_rejected",

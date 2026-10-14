@@ -52,7 +52,7 @@ The encoder retains an owned profile, independent of later filesystem/environmen
 
 ## Gamut mapping
 
-Every output choice accepts `gamut=auto|clip|local-minde` (compact `G`), with environment default `SIXEL_OUTPUT_COLORSPACE_GAMUT`. See [output gamut mapping](gamut-mapping.md) for the algorithm, float source/palette preparation, ICC restrictions and interaction with sampling, snap and diffusion. The conversion-only pipeline below describes the default `auto`/`clip` behavior.
+Every output choice accepts `gamut=auto|clip|local-minde|edge-seeker` (compact `G`), with environment default `SIXEL_OUTPUT_COLORSPACE_GAMUT`. See [output gamut mapping](gamut-mapping.md) for the algorithm, float source/palette preparation, ICC restrictions and interaction with sampling, snap and diffusion. The conversion-only pipeline below describes the default `auto`/`clip` behavior.
 
 ## Where the conversion happens
 

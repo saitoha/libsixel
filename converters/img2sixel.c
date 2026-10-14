@@ -1207,9 +1207,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "      dci-p3 -> P3 primaries, DCI white, power 2.6\n"
         "      icc[:path=FILE] -> RGB ICC endpoint (compact :PFILE)\n"
         "    icc: path=P; SIXEL_OUTPUT_COLORSPACE_ICC_PATH supplies default\n"
-        "    all: gamut=G accepts auto(default), clip, local-minde;\n"
+        "    all: gamut=G accepts auto(default), clip, local-minde,\n"
+        "         edge-seeker;\n"
         "    SIXEL_OUTPUT_COLORSPACE_GAMUT supplies its default.\n"
-        "    local-minde needs CPU float and an analytic/matrix-TRC gamut.\n"
+        "    mapping needs CPU float and a supported matrix/TRC gamut.\n"
         "    Named/ICC destinations use CPU float; ICC snap needs matrix/TRC.\n"
         "      auto[:timeout_ms=N] -> negotiate only with stdout's TTY\n"
         "    auto: timeout_ms=T, decimal 1..10000, default 200 ms per\n"
@@ -1365,7 +1366,7 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_OUTPUT_COLORSPACE_GAMUT",
-        "Output gamut policy: auto (clip), clip, or local-minde.\n"
+        "Output gamut policy: auto (clip), clip, local-minde, edge-seeker.\n"
         "Explicit -U gamut=G overrides this environment default."
     },
     {

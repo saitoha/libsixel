@@ -20,7 +20,8 @@ test_gamut_0013_matrix_icc(int argc, char **argv)
         SIXEL_SUCCEEDED(sixel_allocator_new(&fixture.allocator,
             NULL, NULL, NULL, NULL)) &&
         SIXEL_SUCCEEDED(sixel_gamut_new(&fixture.mapper, fixture.definition,
-            SIXEL_COLORSPACE_GAMMA, fixture.allocator)) &&
+            SIXEL_COLORSPACE_GAMMA, SIXEL_GAMUT_LOCAL_MINDE,
+            fixture.allocator)) &&
         sixel_gamut_apply(fixture.mapper, gamut_origins[0], result,
             SIXEL_COLORSPACE_LINEAR);
     for (c = 0; ok && c < 3; ++c) {

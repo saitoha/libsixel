@@ -257,7 +257,8 @@ _outputcolorspace() {
   if [[ ${current} == *:* ]]; then
     prefix=${current%:*}:
     compadd -- "${prefix}gamut=auto" "${prefix}gamut=clip" \
-      "${prefix}gamut=local-minde" "${prefix}Glocal-minde"
+      "${prefix}gamut=local-minde" "${prefix}Glocal-minde" \
+      "${prefix}gamut=edge-seeker" "${prefix}Gedge-seeker"
     case ${current%%:*} in
     [iI]|[iI][cC]|[iI][cC][cC])
       prefix=${current%:*}:

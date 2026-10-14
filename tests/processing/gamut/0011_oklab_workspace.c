@@ -9,5 +9,5 @@ test_gamut_0011_oklab_workspace(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return gamut_encode_check("full-frame", "oklab", 0);
+    return gamut_encode_check("full-frame", "oklab", 0, 0);
 }

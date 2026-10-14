@@ -9,7 +9,8 @@
 enum {
     SIXEL_GAMUT_AUTO = 0,
     SIXEL_GAMUT_CLIP,
-    SIXEL_GAMUT_LOCAL_MINDE
+    SIXEL_GAMUT_LOCAL_MINDE,
+    SIXEL_GAMUT_EDGE_SEEKER
 };
 
 typedef struct sixel_gamut sixel_gamut_t;
@@ -18,7 +19,8 @@ typedef struct sixel_gamut sixel_gamut_t;
  * never rounds to the wire grid or limits diffusion compensation. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_gamut_new(sixel_gamut_t **out, sixel_color_def_t const *destination,
-                 int legacy_colorspace, sixel_allocator_t *allocator);
+                 int legacy_colorspace, int policy,
+                 sixel_allocator_t *allocator);
 
 SIXEL_INTERNAL_API int
 sixel_gamut_apply(sixel_gamut_t const *mapper, double const input[3],

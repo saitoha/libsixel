@@ -3395,7 +3395,7 @@ sixel_encoder_map_gamut(sixel_encoder_t const *encoder, sixel_frame_t *frame)
         if (!sixel_gamut_apply(encoder->gamut_mapper, input, output,
                 view.colorspace)) {
             sixel_helper_set_additional_message(
-                "local-minde cannot map this source color.");
+                "gamut mapping cannot map this source color.");
             return SIXEL_BAD_INPUT;
         }
         for (c = 0; c < 3; ++c) {
@@ -3522,7 +3522,7 @@ sixel_encoder_update_precision(sixel_encoder_t *encoder)
     /* Output requirements affect the effective format, never the request. */
     encoder->prefer_float32 = encoder->precision_prefer_float32 ||
         encoder->force_float32_colorspace ||
-        encoder->output_gamut == SIXEL_GAMUT_LOCAL_MINDE ||
+        encoder->gamut_mapper != NULL ||
         encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY;
 }
 
@@ -7308,7 +7308,7 @@ sixel_encoder_validate_output_definition(sixel_encoder_t const *encoder)
         if (strncmp(restriction, "display-p3 ", 11) == 0) {
             snprintf(message, sizeof(message), "%s %s",
                 encoder->output_icc != NULL ? "icc" :
-                    (encoder->gamut_mapper != NULL ? "local-minde" :
+                    (encoder->gamut_mapper != NULL ? "gamut mapping" :
                      sixel_cdef_named_name(encoder->output_color_definition)),
                 restriction + 11);
             sixel_helper_set_additional_message(message);
@@ -10978,14 +10978,16 @@ sixel_encoder_set_output_color(sixel_encoder_t *encoder, char const *value)
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    if (gamut == SIXEL_GAMUT_LOCAL_MINDE) {
+    if (gamut == SIXEL_GAMUT_LOCAL_MINDE ||
+            gamut == SIXEL_GAMUT_EDGE_SEEKER) {
         named = base < 0 && candidate == NULL
             ? sixel_cdef_name(sixel_cdef_named_name(-base)) : NULL;
         if (base < 0 && candidate == NULL && named == NULL) {
             return SIXEL_BAD_ALLOCATION;
         }
         status = sixel_gamut_new(&mapper,
-            candidate != NULL ? candidate : named, base, encoder->allocator);
+            candidate != NULL ? candidate : named, base, gamut,
+            encoder->allocator);
         sixel_cdef_free(named);
         if (SIXEL_FAILED(status)) {
             sixel_cdef_free(candidate);

@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: MIT
  * Copyright (c) 2026 libsixel developers. See `AUTHORS`.
  *
- * Binary search with local MINDE, CSS Color 4, 2026-10-09 section 14.2.2.
- * Search in Cartesian Oklab along a constant-L, constant-hue ray. Clipping
+ * CSS Color 4, 2026-10-09: local MINDE and EdgeSeeker gamut mapping.
+ * Reduce Oklab chroma along a constant-L, constant-hue ray. Clipping
  * is evaluated in the destination's linear device domain, BEFORE any ICC
  * inverse curve can hide out-of-gamut values. Monotone channel transfers
  * make this equivalent to clipping encoded destination RGB.
@@ -11,6 +11,7 @@
 # include "config.h"
 #endif
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 #include "gamut.h"
 #include "colorspace.h"
@@ -20,6 +21,10 @@ typedef struct sixel_gamut_vtbl {
     void (*destroy)(sixel_gamut_t *);
 } sixel_gamut_vtbl_t;
 
+typedef struct sixel_edge_entry {
+    double l, c, h, k;
+} sixel_edge_entry_t;
+
 struct sixel_gamut {
     sixel_gamut_vtbl_t const *vtbl;
     sixel_allocator_t *allocator;
@@ -27,6 +32,8 @@ struct sixel_gamut {
     double backward[9];
     double minimum[3];
     double maximum[3];
+    sixel_edge_entry_t *edge;
+    int edge_count;
 };
 
 static void
@@ -80,6 +87,10 @@ sixel_gamut_clip(sixel_gamut_t const *mapper, double const lab[3],
             fmin(mapper->maximum[i], device[i]));
     }
     sixel_gamut_matrix(mapper->backward, device, clipped);
+    if (delta == NULL) {
+        /* EdgeSeeker only needs the bounded color, not a clipping error. */
+        return 1;
+    }
     if (!sixel_color_convert(result, clipped, SIXEL_COLORSPACE_LINEAR,
             SIXEL_COLORSPACE_OKLAB)) {
         return 0;
@@ -176,12 +187,352 @@ sixel_gamut_local_minde(sixel_gamut_t const *mapper, double const input[3],
     return 1;
 }
 
+/* EdgeSeeker samples six RGB edges in encoded device coordinates. The
+ * table is immutable after construction; no worker builds or mutates it.
+ * N=400 samples per region is the CSS reference's example resolution. */
+#define SIXEL_EDGE_SAMPLES 400
+#define SIXEL_EDGE_CAPACITY (6 * SIXEL_EDGE_SAMPLES + 2)
+
+typedef struct sixel_edge_scratch {
+    sixel_edge_entry_t cusp[SIXEL_EDGE_CAPACITY];
+    sixel_edge_entry_t curve[SIXEL_EDGE_CAPACITY];
+    sixel_edge_entry_t region[SIXEL_EDGE_SAMPLES];
+    sixel_edge_entry_t kept[SIXEL_EDGE_SAMPLES + 1];
+} sixel_edge_scratch_t;
+
+static double
+sixel_edge_step(double a, double b)
+{
+    double step;
+
+    step = fmod(b - a, 360.0);
+    return step < 0.0 ? step + 360.0 : step;
+}
+
+static sixel_edge_entry_t
+sixel_edge_lerp(sixel_edge_entry_t a, sixel_edge_entry_t b, double h)
+{
+    sixel_edge_entry_t result;
+    double t;
+    double span;
+    double offset;
+
+    span = sixel_edge_step(a.h, b.h);
+    offset = sixel_edge_step(a.h, h);
+    /* A fold bridge can lie just BEFORE the lower endpoint. Unwrap to
+     * its nearest hue before clamping, rather than treating it as +360. */
+    if (offset > 180.0) {
+        offset -= 360.0;
+    }
+    t = span == 0.0 ? 0.0 : offset / span;
+    t = fmax(0.0, fmin(1.0, t));
+    result.l = a.l + t * (b.l - a.l);
+    result.c = a.c + t * (b.c - a.c);
+    result.h = h;
+    result.k = a.k + t * (b.k - a.k);
+    return result;
+}
+
+static int
+sixel_edge_compare(void const *left, void const *right)
+{
+    sixel_edge_entry_t const *a;
+    sixel_edge_entry_t const *b;
+
+    a = left;
+    b = right;
+    return a->h < b->h ? -1 : a->h > b->h;
+}
+
+static sixel_edge_entry_t
+sixel_edge_lookup(sixel_edge_entry_t const *table, int count, double h)
+{
+    int low;
+    int high;
+    int mid;
+
+    low = 0;
+    high = count - 1;
+    while (high - low > 1) {
+        mid = low + (high - low) / 2;
+        if (table[mid].h <= h) {
+            low = mid;
+        } else {
+            high = mid;
+        }
+    }
+    return sixel_edge_lerp(table[low], table[high], h);
+}
+
+static int
+sixel_edge_unfold(sixel_edge_scratch_t *scratch)
+{
+    sixel_edge_entry_t *samples;
+    sixel_edge_entry_t *kept;
+    sixel_edge_entry_t resume;
+    sixel_edge_entry_t bridge;
+    double step;
+    int count;
+    int i;
+    int j;
+    int first;
+
+    samples = scratch->region;
+    kept = scratch->kept;
+    kept[0] = samples[0];
+    count = 1;
+    for (i = 1; i < SIXEL_EDGE_SAMPLES; i = j + 1) {
+        j = i;
+        if (sixel_edge_step(samples[i - 1].h, samples[i].h) <= 180.0) {
+            kept[count++] = samples[i];
+            continue;
+        }
+        while (j + 1 < SIXEL_EDGE_SAMPLES &&
+                sixel_edge_step(samples[j].h, samples[j + 1].h) > 180.0) {
+            ++j;
+        }
+        resume = samples[j];
+        for (first = 0; first < count; ++first) {
+            if (sixel_edge_step(kept[first].h, resume.h) > 180.0) {
+                break;
+            }
+        }
+        if (first == 0 || first == count) {
+            return 0;
+        }
+        /* Remove the overshoot BEFORE a hue fold. Discarding only the
+         * backward samples keeps the wrong edge near the blue cusp. */
+        bridge = sixel_edge_lerp(kept[first - 1], kept[first],
+            sixel_edge_step(0.0, resume.h - 0.0001));
+        count = first;
+        step = sixel_edge_step(kept[count - 1].h, bridge.h);
+        if (step > 0.0 && step <= 180.0) {
+            kept[count++] = bridge;
+        }
+        kept[count++] = resume;
+    }
+    return count;
+}
+
+static int
+sixel_edge_samples(sixel_gamut_t const *mapper,
+                     sixel_color_def_t const *definition, int transfer,
+                     sixel_edge_scratch_t *scratch, int upper)
+{
+    static double const vertices[7][3] = {
+        {1, 0, 0}, {1, 1, 0}, {0, 1, 0}, {0, 1, 1},
+        {0, 0, 1}, {1, 0, 1}, {1, 0, 0}
+    };
+    sixel_edge_entry_t *table;
+    sixel_edge_entry_t end;
+    double rgb[3];
+    double device[3];
+    double linear[3];
+    double lab[3];
+    double t;
+    int region;
+    int i;
+    int c;
+    int count;
+    int kept;
+
+    table = upper ? scratch->curve : scratch->cusp;
+    count = 1;
+    for (region = 0; region < 6; ++region) {
+        for (i = 0; i < SIXEL_EDGE_SAMPLES; ++i) {
+            t = (double)i / (SIXEL_EDGE_SAMPLES - 1);
+            for (c = 0; c < 3; ++c) {
+                rgb[c] = vertices[region][c] + t *
+                    (vertices[region + 1][c] - vertices[region][c]);
+                if (upper) {
+                    rgb[c] = 0.5 + 0.5 * rgb[c];
+                }
+                if (transfer == SIXEL_COLORSPACE_SMPTEC) {
+                    device[c] = pow(rgb[c], 2.2);
+                } else {
+                    device[c] = rgb[c];
+                }
+            }
+            if (transfer != SIXEL_COLORSPACE_SMPTEC &&
+                    transfer != SIXEL_COLORSPACE_LINEAR &&
+                    !sixel_cdef_transfer(definition, rgb, device, 0)) {
+                return 0;
+            }
+            sixel_gamut_matrix(mapper->backward, device, linear);
+            if (!sixel_color_convert(lab, linear, SIXEL_COLORSPACE_LINEAR,
+                    SIXEL_COLORSPACE_OKLAB)) {
+                return 0;
+            }
+            scratch->region[i].l = lab[0];
+            scratch->region[i].c = hypot(lab[1], lab[2]);
+            scratch->region[i].h = sixel_edge_step(0.0,
+                atan2(lab[2], lab[1]) * (180.0 / 3.14159265358979323846));
+            scratch->region[i].k = 0.0;
+        }
+        kept = sixel_edge_unfold(scratch);
+        if (kept < 2 || count + kept > SIXEL_EDGE_CAPACITY) {
+            return 0;
+        }
+        memcpy(table + count, scratch->kept,
+            (size_t)(kept - 1) * sizeof(*table));
+        count += kept - 1;
+    }
+    qsort(table + 1, (size_t)(count - 1), sizeof(*table), sixel_edge_compare);
+    end = sixel_edge_lerp(table[count - 1], table[1], 360.0);
+    table[count++] = end;
+    end.h = 0.0;
+    table[0] = end;
+    /* Coalesce exact duplicate hues at the seam or at a region boundary.
+     * Fold bridges remain distinct and must not be pruned away. */
+    kept = 1;
+    for (i = 1; i < count; ++i) {
+        if (table[i].h > table[kept - 1].h) {
+            table[kept++] = table[i];
+        }
+    }
+    return kept;
+}
+
+static SIXELSTATUS
+sixel_edge_build(sixel_gamut_t *mapper, sixel_color_def_t const *definition,
+                   int transfer, sixel_allocator_t *allocator)
+{
+    sixel_edge_scratch_t *scratch;
+    sixel_edge_entry_t cusp;
+    sixel_edge_entry_t curve;
+    double x;
+    double y;
+    double a;
+    double b;
+    double k;
+    int count;
+    int curves;
+    int i;
+    int ok;
+
+    /* This construction assumes neutral black/white at the cube ends.
+     * Offset or unnormalized ICC curves require another boundary model. */
+    for (i = 0; i < 3; ++i) {
+        if (fabs(mapper->minimum[i]) > 2e-7 ||
+                fabs(mapper->maximum[i] - 1.0) > 2e-7) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+    }
+    scratch = sixel_allocator_calloc(allocator, 1u, sizeof(*scratch));
+    if (scratch == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    count = sixel_edge_samples(mapper, definition, transfer, scratch, 0);
+    curves = sixel_edge_samples(mapper, definition, transfer, scratch, 1);
+    ok = count > 2 && curves > 2;
+    for (i = 0; ok && i < count; ++i) {
+        cusp = scratch->cusp[i];
+        curve = sixel_edge_lookup(scratch->curve, curves, cusp.h);
+        ok = cusp.l > 0.0 && cusp.l < 1.0 && cusp.c > 0.0;
+        if (!ok) {
+            break;
+        }
+        x = (1.0 - curve.l) / (1.0 - cusp.l);
+        y = curve.c / cusp.c;
+        /* The fitted circle has center (A/D, B/D). Cancel D before
+         * taking the radius: no distant center or near-zero division.
+         * Signed curvature is sign((A-B)/D) * abs(D)/hypot(A,B). */
+        a = x * x + y * y - 2.0 * y;
+        b = 2.0 * x - x * x - y * y;
+        k = (a >= b ? 2.0 : -2.0) * (x - y) / hypot(a, b);
+        ok = isfinite(k) && fabs(k) < 1.0;
+        scratch->cusp[i].k = k;
+    }
+    if (ok) {
+        mapper->edge = sixel_allocator_malloc(allocator,
+            (size_t)count * sizeof(*mapper->edge));
+        if (mapper->edge == NULL) {
+            sixel_allocator_free(allocator, scratch);
+            return SIXEL_BAD_ALLOCATION;
+        }
+        memcpy(mapper->edge, scratch->cusp,
+            (size_t)count * sizeof(*mapper->edge));
+        mapper->edge_count = count;
+    }
+    sixel_allocator_free(allocator, scratch);
+    return ok ? SIXEL_OK : SIXEL_BAD_ARGUMENT;
+}
+
+static int
+sixel_gamut_edge_seeker(sixel_gamut_t const *mapper, double const input[3],
+                        double output[3], int colorspace)
+{
+    sixel_edge_entry_t cusp;
+    double linear[3];
+    double device[3];
+    double lab[3];
+    double clipped[3];
+    double result[3];
+    double chroma;
+    double limit;
+    double hue;
+    double x;
+    double t;
+    double b;
+    double d;
+
+    if (!sixel_color_convert(linear, input, colorspace,
+            SIXEL_COLORSPACE_LINEAR)) {
+        return 0;
+    }
+    sixel_gamut_matrix(mapper->forward, linear, device);
+    if (sixel_gamut_contains(mapper, device)) {
+        memcpy(output, input, 3u * sizeof(double));
+        return 1;
+    }
+    if (!sixel_color_convert(lab, linear, SIXEL_COLORSPACE_LINEAR,
+            SIXEL_COLORSPACE_OKLAB)) {
+        return 0;
+    }
+    if (lab[0] >= 1.0 || lab[0] <= 0.0) {
+        sixel_gamut_matrix(mapper->backward,
+            lab[0] >= 1.0 ? mapper->maximum : mapper->minimum, clipped);
+    } else {
+        chroma = hypot(lab[1], lab[2]);
+        hue = sixel_edge_step(0.0, atan2(lab[2], lab[1]) *
+            (180.0 / 3.14159265358979323846));
+        cusp = sixel_edge_lookup(mapper->edge, mapper->edge_count, hue);
+        if (lab[0] <= cusp.l) {
+            limit = lab[0] / cusp.l * cusp.c;
+        } else {
+            x = (1.0 - lab[0]) / (1.0 - cusp.l);
+            t = sqrt(2.0 - cusp.k * cusp.k);
+            b = t - cusp.k;
+            d = x * (t + cusp.k * (1.0 - x));
+            /* Rationalized circle intersection remains stable at k=0. */
+            limit = cusp.c * (2.0 * d) /
+                (b + sqrt(fmax(0.0, b * b + 4.0 * cusp.k * d)));
+        }
+        if (chroma > limit) {
+            lab[1] *= limit / chroma;
+            lab[2] *= limit / chroma;
+        }
+        /* The fitted boundary is approximate. A final destination clip
+         * is part of EdgeSeeker, not a local-MINDE search or wire snap. */
+        if (!sixel_gamut_clip(mapper, lab, clipped, NULL)) {
+            return 0;
+        }
+    }
+    if (!sixel_color_convert(result, clipped, SIXEL_COLORSPACE_LINEAR,
+            colorspace)) {
+        return 0;
+    }
+    memcpy(output, result, sizeof(result));
+    return 1;
+}
+
 static void
 sixel_gamut_destroy(sixel_gamut_t *mapper)
 {
     sixel_allocator_t *allocator;
 
     allocator = mapper->allocator;
+    sixel_allocator_free(allocator, mapper->edge);
     sixel_allocator_free(allocator, mapper);
     sixel_allocator_unref(allocator);
 }
@@ -190,9 +541,14 @@ static sixel_gamut_vtbl_t const sixel_gamut_local_minde_vtbl = {
     sixel_gamut_local_minde, sixel_gamut_destroy
 };
 
+static sixel_gamut_vtbl_t const sixel_gamut_edge_seeker_vtbl = {
+    sixel_gamut_edge_seeker, sixel_gamut_destroy
+};
+
 SIXELSTATUS
 sixel_gamut_new(sixel_gamut_t **out, sixel_color_def_t const *destination,
-                 int legacy_colorspace, sixel_allocator_t *allocator)
+                 int legacy_colorspace, int policy,
+                 sixel_allocator_t *allocator)
 {
     sixel_gamut_t *mapper;
     sixel_color_def_t *srgb;
@@ -207,11 +563,17 @@ sixel_gamut_new(sixel_gamut_t **out, sixel_color_def_t const *destination,
     int i;
     int j;
     int ok;
+    SIXELSTATUS status;
 
     if (out == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     *out = NULL;
+    if (policy != SIXEL_GAMUT_LOCAL_MINDE &&
+            policy != SIXEL_GAMUT_EDGE_SEEKER) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = SIXEL_OK;
     srgb = sixel_cdef_name("srgb");
     source = sixel_cdef_linearized(srgb);
     target = sixel_cdef_linearized(destination != NULL ? destination : srgb);
@@ -250,19 +612,31 @@ sixel_gamut_new(sixel_gamut_t **out, sixel_color_def_t const *destination,
             mapper->backward[j * 3 + i] = backward[j];
         }
     }
+    if (ok && policy == SIXEL_GAMUT_EDGE_SEEKER) {
+        status = sixel_edge_build(mapper,
+            destination != NULL ? destination : srgb,
+            destination == NULL ? legacy_colorspace
+                : SIXEL_COLORSPACE_GAMMA, allocator);
+        ok = SIXEL_SUCCEEDED(status);
+    }
     sixel_cdef_free(target);
     sixel_cdef_free(source);
     sixel_cdef_free(srgb);
     if (!ok) {
-        if (mapper == NULL) {
+        if (mapper == NULL || status == SIXEL_BAD_ALLOCATION) {
+            sixel_allocator_free(allocator, mapper);
             return SIXEL_BAD_ALLOCATION;
         }
         sixel_allocator_free(allocator, mapper);
         sixel_helper_set_additional_message(
-            "local-minde requires a supported matrix/TRC RGB gamut.");
+            policy == SIXEL_GAMUT_EDGE_SEEKER
+            ? "edge-seeker requires a supported matrix/TRC RGB gamut "
+              "with normalized endpoints and a valid boundary table."
+            : "local-minde requires a supported matrix/TRC RGB gamut.");
         return SIXEL_BAD_ARGUMENT;
     }
-    mapper->vtbl = &sixel_gamut_local_minde_vtbl;
+    mapper->vtbl = policy == SIXEL_GAMUT_EDGE_SEEKER
+        ? &sixel_gamut_edge_seeker_vtbl : &sixel_gamut_local_minde_vtbl;
     mapper->allocator = allocator;
     sixel_allocator_ref(allocator);
     *out = mapper;

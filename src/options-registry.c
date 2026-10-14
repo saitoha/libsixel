@@ -1780,7 +1780,8 @@ static sixel_suboption_choice_t const g_loader_hdr_tonemap_choices[] = {
 static sixel_suboption_choice_t const g_gamut_choices[] = {
     { "auto", SIXEL_GAMUT_AUTO },
     { "clip", SIXEL_GAMUT_CLIP },
-    { "local-minde", SIXEL_GAMUT_LOCAL_MINDE }
+    { "local-minde", SIXEL_GAMUT_LOCAL_MINDE },
+    { "edge-seeker", SIXEL_GAMUT_EDGE_SEEKER }
 };
 
 static sixel_suboption_key_t const g_suboptions[] = {
