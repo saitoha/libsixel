@@ -976,6 +976,17 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/concepts/gamut-mapping/figures/p3-hue-lightness.png \
 	docs/concepts/gamut-mapping/figures/pipeline.svg \
 	docs/concepts/gamut-mapping/measurements/examples.json \
+	docs/concepts/gamut-mapping/figures/ramp-chroma.svg \
+	docs/concepts/gamut-mapping/figures/ramp-lightness-hue.svg \
+	docs/concepts/gamut-mapping/figures/rose-adobe-rgb.png \
+	docs/concepts/gamut-mapping/figures/rose-clip.png \
+	docs/concepts/gamut-mapping/figures/rose-comparison.svg \
+	docs/concepts/gamut-mapping/figures/rose-edge-seeker.png \
+	docs/concepts/gamut-mapping/figures/rose-red-plateau-mask.png \
+	docs/concepts/gamut-mapping/figures/rose-region.svg \
+	docs/concepts/gamut-mapping/measurements/ramp-coordinates.csv \
+	docs/concepts/gamut-mapping/measurements/rose-strip.csv \
+	docs/concepts/gamut-mapping/measurements/rose.json \
     docs/encoder/output/output-colorspace.md \
 	docs/encoder/palette-construction/merge-policy/README.md \
 	docs/encoder/palette-construction/merge-policy/measurements/merge-policy-comparison.csv \

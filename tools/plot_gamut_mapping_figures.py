@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import colorsys
+import csv
 import hashlib
 import io
 import json
@@ -25,7 +26,7 @@ import zlib
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch
+from matplotlib.patches import FancyBboxPatch, Rectangle
 import numpy as np
 from PIL import Image, PngImagePlugin, __version__ as pillow_version
 
@@ -152,6 +153,128 @@ def ramps(data, directory):
     save_plot(fig, directory / "continuous-ramps.svg")
 
 
+def ramp_profiles(data, directory, measurements):
+    """Plot undifferentiated coordinates so a lost gradient becomes a plateau.
+
+    All plots use the original floating samples, not colors read back from
+    the 8-bit preview. A chroma plateau alone is not proof of identical
+    colors; the stored full Oklab triples establish that distinction.
+    """
+    saturation = np.linspace(0, 1, data.shape[1])
+    lab = data[:, :, :, 3:]
+    chroma = np.linalg.norm(lab[:, :, :, 1:], axis=-1)
+    hue = np.degrees(np.arctan2(lab[:, :, :, 2], lab[:, :, :, 1])) % 360
+    hue[chroma < 1e-4] = np.nan
+    steps = np.linalg.norm(np.diff(lab, axis=1), axis=-1)
+    assert np.all(steps[:, :, 0] > 0)
+    styles = ("-", "-.", "-", "--")
+    boundaries = []
+    for h in range(len(HUES)):
+        source = data[h, :, 0, :3]
+        outside = np.any((source < -2e-7) | (source > 1 + 2e-7), axis=1)
+        boundaries.append(saturation[np.flatnonzero(outside)[0]])
+
+    # Keep all coordinates, including the input, for independent inspection.
+    with (measurements / "ramp-coordinates.csv").open("w", newline="") as file:
+        writer = csv.writer(file, lineterminator="\n")
+        writer.writerow(["hue_degrees", "saturation"] +
+                        [f"{name}_{axis}" for name in ("source", *POLICIES)
+                         for axis in ("L", "a", "b")])
+        for h, angle in enumerate(HUES):
+            for s, coordinates in zip(saturation, lab[h]):
+                writer.writerow([angle, format(s, ".17g")] +
+                                [format(x, ".17g") for x in coordinates.ravel()])
+
+    def draw(ax, h, values):
+        ax.axvspan(boundaries[h], 1, color="#f1f5f9", zorder=0)
+        ax.axvline(boundaries[h], color="#64748b", linestyle=":", lw=1)
+        ax.plot(saturation, values[:, 0], color="#172033", linestyle=":",
+                lw=2, label="Original P3")
+        for m in range(4):
+            ax.plot(saturation, values[:, m + 1], color=COLORS[m],
+                    linestyle=styles[m], lw=1.6, label=LABELS[m])
+        ax.set(xlim=(0, 1), xticks=(0, .25, .5, .75, 1))
+        ax.grid(alpha=.18)
+        ax.tick_params(labelsize=9)
+
+    fig, axes = plt.subplots(2, 3, figsize=(11.6, 6.7), sharex=True, sharey=True)
+    fig.subplots_adjust(left=.085, right=.985, bottom=.19, top=.80,
+                        wspace=.14, hspace=.34)
+    fig.suptitle("When input chroma keeps rising, does output chroma follow?", fontsize=16)
+    fig.text(.54, .925, "The same six P3 saturation ramps, shown as coordinates rather than color swatches",
+             ha="center", fontsize=10, color="#475569")
+    for h, ax in enumerate(axes.flat):
+        draw(ax, h, chroma[h])
+        ax.set(title=NAMES[h], ylim=(-.006, np.max(chroma) * 1.08))
+        if h % 3 == 0:
+            ax.set_ylabel("Oklab chroma C", fontsize=10)
+        if h >= 3:
+            ax.set_xlabel("Position along ramp / P3 saturation", fontsize=9)
+        if h in (0, 5):
+            flat = np.flatnonzero(steps[h, :, 1] < 1e-12)
+            if len(flat):
+                index = flat[len(flat) // 2]
+                ax.annotate("clip: flat", (saturation[index], chroma[h, index, 1]),
+                            xytext=(.68, .08), fontsize=9, color=COLORS[0],
+                            arrowprops={"arrowstyle": "->", "color": COLORS[0]})
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(.54, .895),
+               ncol=5, frameon=False, fontsize=10)
+    fig.text(.54, .075, "A horizontal curve means chroma no longer changes; a rising curve retains chroma variation, possibly at a different rate.",
+             ha="center", fontsize=9)
+    fig.text(.54, .027, "Shading: source outside sRGB. Original floating coordinates, 192 samples per ramp; no differentiation or smoothing.",
+             ha="center", fontsize=9, color="#475569")
+    save_plot(fig, directory / "ramp-chroma.svg")
+
+    selected = (0, 1, 5)
+    # Give the different hue regions equal vertical spans, while retaining
+    # their actual degree labels. A shared absolute 0..360 axis hides shifts.
+    hue_span = max(np.nanmax(hue[h]) - np.nanmin(hue[h]) for h in selected) * 1.15
+    fig, axes = plt.subplots(2, 3, figsize=(11.6, 6.5), sharex=True)
+    fig.subplots_adjust(left=.09, right=.985, bottom=.15, top=.80,
+                        wspace=.23, hspace=.27)
+    fig.suptitle("Chroma is only part of the gradient", fontsize=16)
+    fig.text(.54, .925, "Actual lightness and hue along three of the same ramps — these are values, not derivatives",
+             ha="center", fontsize=10, color="#475569")
+    for col, h in enumerate(selected):
+        draw(axes[0, col], h, lab[h, :, :, 0])
+        draw(axes[1, col], h, hue[h])
+        axes[0, col].set(title=NAMES[h], ylim=(
+            np.min(lab[list(selected), :, :, 0]) - .005,
+            np.max(lab[list(selected), :, :, 0]) + .005))
+        center = (np.nanmin(hue[h]) + np.nanmax(hue[h])) / 2
+        axes[1, col].set(ylim=(center - hue_span / 2, center + hue_span / 2),
+                         xlabel="Position along ramp / P3 saturation")
+        axes[1, col].xaxis.label.set_fontsize(9)
+    axes[0, 0].set_ylabel("Oklab lightness L", fontsize=10)
+    axes[1, 0].set_ylabel("Oklab hue (degrees)", fontsize=10)
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(.54, .895),
+               ncol=5, frameon=False, fontsize=10)
+    fig.text(.54, .072, "Hue panels have different origins but equal degree spans. Hue is omitted near neutral (chroma < 0.0001).",
+             ha="center", fontsize=9)
+    fig.text(.54, .027, "Encoded P3 HSL lightness is 0.5 throughout; that does not make Oklab lightness or hue constant.",
+             ha="center", fontsize=9, color="#475569")
+    save_plot(fig, directory / "ramp-lightness-hue.svg")
+
+    return {
+        "samples_per_strip": int(data.shape[1]),
+        "coordinate_data": "ramp-coordinates.csv",
+        "plotted_values": "Oklab L, C=sqrt(a*a+b*b), h=atan2(b,a) in degrees",
+        "flat_reporting_threshold_delta_e_ok": 1e-12,
+        "hue_neutral_chroma_cutoff": 1e-4,
+        "strips": [{
+            "name": name, "hue_degrees": HUES[h],
+            "first_outside_sample_saturation": float(boundaries[h]),
+            "methods": [{
+                "policy": policy,
+                "last_step_ratio": float(steps[h, -1, m + 1] / steps[h, -1, 0]),
+                "flat_intervals": int(np.count_nonzero(steps[h, :, m + 1] < 1e-12)),
+            } for m, policy in enumerate(POLICIES)],
+        } for h, name in enumerate(NAMES)],
+    }
+
+
 def png16(rgb, profile):
     def chunk(name, data):
         return (struct.pack(">I", len(data)) + name + data +
@@ -272,10 +395,159 @@ def encode_comparison(build, source, continuous, directory, manifest):
     save_plot(fig, directory / "encoded-comparison.svg")
 
 
+ROSE_SOURCE = {
+    "title": "Adobe RGB 2017-07-02 17-15-33.jpg (Rose Nostalgie from Tantau)",
+    "author": "Berthold Werner",
+    "source_page": "https://commons.wikimedia.org/wiki/File:Adobe_RGB_2017-07-02_17-15-33.jpg",
+    "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/30/Adobe_RGB_2017-07-02_17-15-33.jpg",
+    "original_sha1": "2023983e5a3f9d2828ab0774544baa74a9020e81",
+    "original_dimensions": [6016, 4000],
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "crop_xyxy": [1320, 800, 2440, 1920],
+    "resized_dimensions": [560, 560],
+    "preparation": "Crop, then Pillow BOX 2:1 reduction in encoded source RGB; retain embedded ICC; no saturation adjustment",
+}
+
+
+def prepare_rose(original, figures):
+    """Keep a small reproducible photograph input instead of a 12 MB JPEG."""
+    path = figures / "rose-adobe-rgb.png"
+    if original:
+        assert hashlib.sha1(original.read_bytes()).hexdigest() == ROSE_SOURCE["original_sha1"]
+        with Image.open(original) as image:
+            profile = image.info["icc_profile"]
+            crop = image.crop(ROSE_SOURCE["crop_xyxy"])
+            crop = crop.resize(ROSE_SOURCE["resized_dimensions"], Image.Resampling.BOX)
+            # Do not carry unrelated EXIF or write a misleading sRGB tag.
+            clean = Image.fromarray(np.asarray(crop))
+            clean.save(path, icc_profile=profile)
+    elif path != DOC / "figures/rose-adobe-rgb.png":
+        path.write_bytes((DOC / "figures/rose-adobe-rgb.png").read_bytes())
+    return path
+
+
+def photograph(probe, source, tmp, figures, measurements):
+    """Measure spatially extended channel plateaus before output rounding.
+
+    A flat RGB component is a lost degree of freedom, not proof that all
+    visible detail disappeared. Preserve both that distinction and the
+    spatial scale; palette runs or single clipped pixels are not regions.
+    """
+    with Image.open(source) as image:
+        rgb = np.asarray(image) / 255.
+        profile = image.info["icc_profile"]
+    profile_path = tmp / "rose.icc"
+    profile_path.write_bytes(profile)
+    height, width, _ = rgb.shape
+    data = sample(probe, rgb, profile_path).reshape(height, width, 5, 6)
+    previews = encode_srgb(data[:, :, 1:, :3])
+    info = PngImagePlugin.PngInfo()
+    info.add(b"sRGB", b"\0")
+    for m in (0, 2):
+        Image.fromarray(np.floor(previews[:, :, m] * 255 + .5).astype(np.uint8)).save(
+            figures / f"rose-{POLICIES[m]}.png", pnginfo=info)
+
+    scales = []
+    for side in (8, 16, 32):
+        rows, cols = height // side, width // side
+        tiles = data[:rows * side, :cols * side].reshape(rows, side, cols, side, 5, 6)
+        ranges = np.ptp(tiles, axis=(1, 3))
+        # All pixels in a complete tile must have the same clipped red.
+        # Source variation must be appreciable in linear-R coordinates.
+        red = (ranges[:, :, 0, 0] >= .025) & (ranges[:, :, 1, 0] <= 1e-12)
+        full_rgb = np.all(ranges[:, :, 1, :3] <= 1e-12, axis=-1) & red
+        scales.append({"tile_side": side, "complete_tiles": rows * cols,
+                       "red_plateau_tiles": int(red.sum()),
+                       "also_flat_in_all_rgb_channels": int(full_rgb.sum()),
+                       "red_plateau_tile_xy": np.argwhere(red)[:, ::-1].tolist()})
+        if side == 16:
+            mask = np.repeat(np.repeat(red, side, axis=0), side, axis=1)
+            assert mask.shape == (height, width)
+            Image.fromarray(mask.astype(np.uint8) * 255).save(figures / "rose-red-plateau-mask.png")
+
+    # The diagnostic background is gray so the detected red-channel loss
+    # is not confused with an out-of-gamut or merely high-saturation mask.
+    gray = previews[:, :, 0].mean(axis=-1) * .65
+    diagnostic = np.repeat(gray[:, :, None], 3, axis=-1)
+    diagnostic[mask] = [.98, .76, .08]
+    fig, axes = plt.subplots(1, 3, figsize=(11.6, 5.1))
+    fig.subplots_adjust(left=.02, right=.98, bottom=.19, top=.81, wspace=.04)
+    fig.suptitle("What clipping removes from a rose photograph", fontsize=16)
+    fig.text(.5, .90, "Embedded Adobe RGB → sRGB; continuous colors, before palette selection or dithering",
+             ha="center", fontsize=10, color="#475569")
+    for ax, pixels, title in zip(axes, (previews[:, :, 0], previews[:, :, 2], diagnostic),
+                                 ("RGB clip", "EdgeSeeker", "Detected red-channel plateaus")):
+        ax.imshow(pixels, interpolation="nearest")
+        ax.set(title=title, xticks=[], yticks=[])
+        # This strip is measured below; it covers six detected 16×16 tiles.
+        ax.add_patch(Rectangle((271.5, 127.5), 48, 32, fill=False, edgecolor="white", lw=2.2))
+        ax.add_patch(Rectangle((271.5, 127.5), 48, 32, fill=False, edgecolor="#172033", lw=.9))
+    for tx, ty in scales[1]["red_plateau_tile_xy"]:
+        axes[2].add_patch(Rectangle((tx * 16 - .5, ty * 16 - .5), 16, 16,
+                         fill=False, edgecolor="#172033", lw=.5))
+    fig.text(.5, .13, "Yellow cells: 16×16 pixels with source linear-R range ≥ 0.025, but clipped R is constant throughout.",
+             ha="center", fontsize=9)
+    fig.text(.5, .087, f"{scales[1]['red_plateau_tiles']} cells detected. Green/blue still vary: this is lost red gradation, not complete loss of texture.",
+             ha="center", fontsize=9)
+    fig.text(.5, .035, "Photo: Berthold Werner / Wikimedia Commons, CC BY-SA 3.0. Cropped, reduced, mapped and annotated.",
+             ha="center", fontsize=9, color="#475569")
+    save_plot(fig, figures / "rose-comparison.svg")
+
+    # Average over a 32-pixel-high strip and non-overlapping 8-pixel-wide
+    # bins. Plot the values themselves: no differentiation or smoothing.
+    roi = data[128:160, 272:320]
+    line = roi.reshape(32, 6, 8, 5, 6).mean(axis=(0, 2))
+    positions = np.arange(6) * 8 + 275.5
+    with (measurements / "rose-strip.csv").open("w", newline="") as file:
+        writer = csv.writer(file, lineterminator="\n")
+        writer.writerow(["center_x", "policy", "mean_linear_R", "mean_oklab_L", "mean_oklab_a", "mean_oklab_b"])
+        for x, point in zip(positions, line):
+            for name, row in zip(("source", *POLICIES), point):
+                writer.writerow([x, name, *[format(value, ".17g") for value in row[[0, 3, 4, 5]]]])
+    fig, axes = plt.subplots(1, 2, figsize=(10.6, 4.3))
+    fig.subplots_adjust(left=.085, right=.975, bottom=.24, top=.73, wspace=.24)
+    fig.suptitle("A broad patch can lose one gradation while retaining others", fontsize=15)
+    fig.text(.5, .90, "Marked 48×32-pixel region; each point averages an 8×32-pixel area, before 8-bit preview rounding",
+             ha="center", fontsize=9, color="#475569")
+    for ax, index, title in zip(axes, (0, 3), ("Linear sRGB red component", "Oklab lightness L")):
+        ax.plot(positions, line[:, 0, index], ":", color="#172033", label="Source", lw=2, marker=".")
+        for m in (0, 1, 2):
+            ax.plot(positions, line[:, m + 1, index], color=COLORS[m],
+                    linestyle=("-", "-.", "--")[m], label=LABELS[m], lw=1.6)
+        ax.set(title=title, xlabel="Horizontal position in the 560×560 crop", xticks=positions[::2])
+        ax.grid(alpha=.2)
+    axes[0].set_ylim(.97, 1.33)
+    axes[1].set_ylim(.70, .83)
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(.5, .855), ncol=4, frameon=False)
+    fig.text(.5, .10, "Clip removes the source R variation. EdgeSeeker also approaches R=1, but changes G/B to preserve lightness.",
+             ha="center", fontsize=9)
+    fig.text(.5, .045, "The lightness curve is not flat: a channel plateau must not be described as identical RGB colors.",
+             ha="center", fontsize=9, color="#475569")
+    save_plot(fig, figures / "rose-region.svg")
+    manifest = dict(ROSE_SOURCE)
+    manifest.update({
+        "input_png_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+        "icc_sha256": hashlib.sha256(profile).hexdigest(),
+        "destination": "srgb", "stage": "continuous mapping, no palette or dithering",
+        "source_red_range_min": .025, "output_red_range_max": 1e-12,
+        "threshold_scope": "Illustration-specific channel-plateau detector, not a perceptual threshold or a regression tolerance",
+        "scales": scales, "strip_xyxy": [272, 128, 320, 160],
+        "strip_bin_dimensions": [8, 32],
+        "region_source_linear_R_minmax": [float(roi[:, :, 0, 0].min()), float(roi[:, :, 0, 0].max())],
+        "region_clip_linear_R_minmax": [float(roi[:, :, 1, 0].min()), float(roi[:, :, 1, 0].max())],
+        "region_mean_oklab_L": {name: float(roi[:, :, m, 3].mean()) for m, name in enumerate(("source", *POLICIES))},
+    })
+    (measurements / "rose.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-dir", type=Path, default=ROOT)
     parser.add_argument("--output-dir", type=Path, default=DOC)
+    parser.add_argument("--rose-original", type=Path,
+                        help="recreate the photo input from the hash-checked original JPEG")
     args = parser.parse_args()
     build = args.build_dir.resolve()
     out = args.output_dir.resolve()
@@ -300,6 +572,8 @@ def main():
              "-I" + str(build / "include"), "-I" + str(ROOT / "include"),
              ROOT / "tools/gamut_mapping_samples.c", build / "src/libsixel.la",
              "-o", probe])
+        rose = prepare_rose(args.rose_original, figures)
+        photograph(probe, rose, tmp, figures, measurements)
         orange = sample(probe, np.array([[1., .45, 0.]]))[0]
         geometry(orange, figures)
         pipeline(figures)
@@ -307,6 +581,7 @@ def main():
                             for s in np.linspace(0, 1, 192)] for h in HUES])
         data = sample(probe, inputs).reshape(6, 192, 5, 6)
         ramps(data, figures)
+        profiles = ramp_profiles(data, figures, measurements)
         fixture = ROOT / "tests/data/color-numeric/png-p3-16-rgb.png"
         with Image.open(fixture) as image:
             profile = image.info["icc_profile"]
@@ -339,6 +614,7 @@ def main():
                         "encoded_srgb": encode_srgb(row[:3]).tolist() if i else None}
                        for i, (name, row) in enumerate(zip(("source", *POLICIES), orange))],
             "encoding_flags": FLAGS,
+            "ramp_profiles": profiles,
         }
         # Preserve a small, inspectable specimen of the visible Ray Trace
         # discontinuity. This is an observation, not an accepted error budget.

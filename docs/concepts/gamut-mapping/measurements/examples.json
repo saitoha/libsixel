@@ -153,6 +153,177 @@
     "-=",
     "2"
   ],
+  "ramp_profiles": {
+    "samples_per_strip": 192,
+    "coordinate_data": "ramp-coordinates.csv",
+    "plotted_values": "Oklab L, C=sqrt(a*a+b*b), h=atan2(b,a) in degrees",
+    "flat_reporting_threshold_delta_e_ok": 1e-12,
+    "hue_neutral_chroma_cutoff": 0.0001,
+    "strips": [
+      {
+        "name": "Red",
+        "hue_degrees": 0,
+        "first_outside_sample_saturation": 0.6492146596858639,
+        "methods": [
+          {
+            "policy": "clip",
+            "last_step_ratio": 0.0,
+            "flat_intervals": 32
+          },
+          {
+            "policy": "local-minde",
+            "last_step_ratio": 1.2737486024846252,
+            "flat_intervals": 27
+          },
+          {
+            "policy": "edge-seeker",
+            "last_step_ratio": 1.1669845499517792,
+            "flat_intervals": 0
+          },
+          {
+            "policy": "ray-trace",
+            "last_step_ratio": 1.1642180400790263,
+            "flat_intervals": 0
+          }
+        ]
+      },
+      {
+        "name": "Orange",
+        "hue_degrees": 30,
+        "first_outside_sample_saturation": 0.6439790575916231,
+        "methods": [
+          {
+            "policy": "clip",
+            "last_step_ratio": 0.11748955019206128,
+            "flat_intervals": 0
+          },
+          {
+            "policy": "local-minde",
+            "last_step_ratio": 0.8158197892990201,
+            "flat_intervals": 0
+          },
+          {
+            "policy": "edge-seeker",
+            "last_step_ratio": 1.083710881924416,
+            "flat_intervals": 0
+          },
+          {
+            "policy": "ray-trace",
+            "last_step_ratio": 1.0836215192955527,
+            "flat_intervals": 0
+          }
+        ]
+      },
+      {
+        "name": "Yellow-green",
+        "hue_degrees": 90,
+        "first_outside_sample_saturation": 0.5392670157068064,
+        "methods": [
+          {
+            "policy": "clip",
+            "last_step_ratio": 0.17610205117211483,
+            "flat_intervals": 0
+          },
+          {
+            "policy": "local-minde",
+            "last_step_ratio": 0.08627450676306112,
+            "flat_intervals": 0
+          },
+          {
+            "policy": "edge-seeker",
+            "last_step_ratio": 0.9311369986003294,
+            "flat_intervals": 0
+          },
+          {
+            "policy": "ray-trace",
+            "last_step_ratio": 0.9311455796370701,
+            "flat_intervals": 0
+          }
+        ]
+      },
+      {
+        "name": "Green",
+        "hue_degrees": 140,
+        "first_outside_sample_saturation": 0.3769633507853403,
+        "methods": [
+          {
+            "policy": "clip",
+            "last_step_ratio": 0.1951555926124694,
+            "flat_intervals": 0
+          },
+          {
+            "policy": "local-minde",
+            "last_step_ratio": 0.9091216036140748,
+            "flat_intervals": 0
+          },
+          {
+            "policy": "edge-seeker",
+            "last_step_ratio": 0.8998783094154674,
+            "flat_intervals": 0
+          },
+          {
+            "policy": "ray-trace",
+            "last_step_ratio": 0.8998160602091495,
+            "flat_intervals": 0
+          }
+        ]
+      },
+      {
+        "name": "Cyan",
+        "hue_degrees": 190,
+        "first_outside_sample_saturation": 0.42408376963350786,
+        "methods": [
+          {
+            "policy": "clip",
+            "last_step_ratio": 0.9314135952080335,
+            "flat_intervals": 0
+          },
+          {
+            "policy": "local-minde",
+            "last_step_ratio": 0.9708474978282524,
+            "flat_intervals": 0
+          },
+          {
+            "policy": "edge-seeker",
+            "last_step_ratio": 0.9659750299104573,
+            "flat_intervals": 0
+          },
+          {
+            "policy": "ray-trace",
+            "last_step_ratio": 0.9658314495150959,
+            "flat_intervals": 0
+          }
+        ]
+      },
+      {
+        "name": "Magenta",
+        "hue_degrees": 300,
+        "first_outside_sample_saturation": 0.6492146596858639,
+        "methods": [
+          {
+            "policy": "clip",
+            "last_step_ratio": 0.0,
+            "flat_intervals": 12
+          },
+          {
+            "policy": "local-minde",
+            "last_step_ratio": 1.5204703967483952,
+            "flat_intervals": 0
+          },
+          {
+            "policy": "edge-seeker",
+            "last_step_ratio": 1.3969180706180842,
+            "flat_intervals": 0
+          },
+          {
+            "policy": "ray-trace",
+            "last_step_ratio": 1.3969065866439934,
+            "flat_intervals": 0
+          }
+        ]
+      }
+    ]
+  },
   "ray_trace_largest_horizontal_step": {
     "xy": [
       162,

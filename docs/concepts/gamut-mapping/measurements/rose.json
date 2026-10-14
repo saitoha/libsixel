@@ -1,0 +1,414 @@
+{
+  "title": "Adobe RGB 2017-07-02 17-15-33.jpg (Rose Nostalgie from Tantau)",
+  "author": "Berthold Werner",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Adobe_RGB_2017-07-02_17-15-33.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/30/Adobe_RGB_2017-07-02_17-15-33.jpg",
+  "original_sha1": "2023983e5a3f9d2828ab0774544baa74a9020e81",
+  "original_dimensions": [
+    6016,
+    4000
+  ],
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "crop_xyxy": [
+    1320,
+    800,
+    2440,
+    1920
+  ],
+  "resized_dimensions": [
+    560,
+    560
+  ],
+  "preparation": "Crop, then Pillow BOX 2:1 reduction in encoded source RGB; retain embedded ICC; no saturation adjustment",
+  "input_png_sha256": "08a79074af101ec67ac3c03cbde780e1b439704b01664e794ef59feda1879238",
+  "icc_sha256": "304f569a83c1e5eddaddac54e99ed03339333db013738bb499ab64f049887e28",
+  "destination": "srgb",
+  "stage": "continuous mapping, no palette or dithering",
+  "source_red_range_min": 0.025,
+  "output_red_range_max": 1e-12,
+  "threshold_scope": "Illustration-specific channel-plateau detector, not a perceptual threshold or a regression tolerance",
+  "scales": [
+    {
+      "tile_side": 8,
+      "complete_tiles": 4900,
+      "red_plateau_tiles": 75,
+      "also_flat_in_all_rgb_channels": 0,
+      "red_plateau_tile_xy": [
+        [
+          62,
+          0
+        ],
+        [
+          63,
+          0
+        ],
+        [
+          64,
+          0
+        ],
+        [
+          65,
+          1
+        ],
+        [
+          28,
+          15
+        ],
+        [
+          29,
+          15
+        ],
+        [
+          37,
+          15
+        ],
+        [
+          38,
+          15
+        ],
+        [
+          33,
+          16
+        ],
+        [
+          34,
+          16
+        ],
+        [
+          35,
+          16
+        ],
+        [
+          36,
+          16
+        ],
+        [
+          37,
+          16
+        ],
+        [
+          38,
+          16
+        ],
+        [
+          39,
+          16
+        ],
+        [
+          24,
+          17
+        ],
+        [
+          25,
+          17
+        ],
+        [
+          26,
+          17
+        ],
+        [
+          32,
+          17
+        ],
+        [
+          33,
+          17
+        ],
+        [
+          34,
+          17
+        ],
+        [
+          35,
+          17
+        ],
+        [
+          36,
+          17
+        ],
+        [
+          37,
+          17
+        ],
+        [
+          38,
+          17
+        ],
+        [
+          39,
+          17
+        ],
+        [
+          40,
+          17
+        ],
+        [
+          24,
+          18
+        ],
+        [
+          31,
+          18
+        ],
+        [
+          32,
+          18
+        ],
+        [
+          33,
+          18
+        ],
+        [
+          34,
+          18
+        ],
+        [
+          35,
+          18
+        ],
+        [
+          36,
+          18
+        ],
+        [
+          37,
+          18
+        ],
+        [
+          38,
+          18
+        ],
+        [
+          39,
+          18
+        ],
+        [
+          40,
+          18
+        ],
+        [
+          31,
+          19
+        ],
+        [
+          32,
+          19
+        ],
+        [
+          33,
+          19
+        ],
+        [
+          34,
+          19
+        ],
+        [
+          35,
+          19
+        ],
+        [
+          36,
+          19
+        ],
+        [
+          37,
+          19
+        ],
+        [
+          38,
+          19
+        ],
+        [
+          39,
+          19
+        ],
+        [
+          40,
+          19
+        ],
+        [
+          36,
+          20
+        ],
+        [
+          48,
+          21
+        ],
+        [
+          48,
+          22
+        ],
+        [
+          37,
+          24
+        ],
+        [
+          38,
+          24
+        ],
+        [
+          43,
+          24
+        ],
+        [
+          28,
+          25
+        ],
+        [
+          42,
+          25
+        ],
+        [
+          43,
+          25
+        ],
+        [
+          44,
+          25
+        ],
+        [
+          45,
+          25
+        ],
+        [
+          27,
+          26
+        ],
+        [
+          28,
+          26
+        ],
+        [
+          29,
+          26
+        ],
+        [
+          42,
+          26
+        ],
+        [
+          45,
+          26
+        ],
+        [
+          40,
+          27
+        ],
+        [
+          41,
+          27
+        ],
+        [
+          43,
+          27
+        ],
+        [
+          39,
+          28
+        ],
+        [
+          40,
+          28
+        ],
+        [
+          41,
+          28
+        ],
+        [
+          39,
+          29
+        ],
+        [
+          40,
+          29
+        ],
+        [
+          44,
+          29
+        ],
+        [
+          40,
+          30
+        ],
+        [
+          33,
+          43
+        ]
+      ]
+    },
+    {
+      "tile_side": 16,
+      "complete_tiles": 1225,
+      "red_plateau_tiles": 7,
+      "also_flat_in_all_rgb_channels": 0,
+      "red_plateau_tile_xy": [
+        [
+          17,
+          8
+        ],
+        [
+          18,
+          8
+        ],
+        [
+          19,
+          8
+        ],
+        [
+          16,
+          9
+        ],
+        [
+          17,
+          9
+        ],
+        [
+          18,
+          9
+        ],
+        [
+          19,
+          9
+        ]
+      ]
+    },
+    {
+      "tile_side": 32,
+      "complete_tiles": 289,
+      "red_plateau_tiles": 1,
+      "also_flat_in_all_rgb_channels": 0,
+      "red_plateau_tile_xy": [
+        [
+          9,
+          4
+        ]
+      ]
+    }
+  ],
+  "strip_xyxy": [
+    272,
+    128,
+    320,
+    160
+  ],
+  "strip_bin_dimensions": [
+    8,
+    32
+  ],
+  "region_source_linear_R_minmax": [
+    1.0281127106801993,
+    1.3570349601203773
+  ],
+  "region_clip_linear_R_minmax": [
+    1.0,
+    1.0
+  ],
+  "region_mean_oklab_L": {
+    "source": 0.7864258343996827,
+    "clip": 0.7526185070832895,
+    "local-minde": 0.7718301180721315,
+    "edge-seeker": 0.786414139889008,
+    "ray-trace": 0.7864252934981093
+  }
+}

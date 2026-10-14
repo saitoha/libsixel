@@ -1,8 +1,24 @@
 # Gamut mapping: choosing a color the output can reproduce
 
+A vivid rose is not just one red. Small color differences describe the curvature of its petals, while other differences separate its leaves from the background. When a photograph contains colors beyond the output gamut, choosing replacements can change those relationships. Making every RGB value fit is necessary, but it does not by itself preserve the picture's gradations.
+
+![A cropped rose photograph mapped to sRGB by RGB clipping and EdgeSeeker, beside a diagnostic image marking seven 16-by-16-pixel regions where clipping removes all variation in the red component.](figures/rose-comparison.svg)
+
+Photo: [Berthold Werner / Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Adobe_RGB_2017-07-02_17-15-33.jpg), [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/); cropped, reduced, mapped and annotated.
+
+The photograph has an embedded Adobe RGB profile. Both color previews above are sRGB replacements, produced by the built library **before palette quantization or dithering**. The yellow cells identify regions where the input red component varies across a whole 16 × 16-pixel area, but clipping makes it constant. They are not simply an out-of-gamut mask: many out-of-gamut regions retain gradation and are not marked.
+
+**A lost channel gradation is not the same as a completely flat picture.** Green and blue still vary in these cells, so some petal shading remains. This example does not demonstrate a large patch of identical RGB colors, nor does it establish that every mapper preserves every kind of detail better. It makes a narrower problem visible: clipping removes one part of the color variation, and another mapping rule can distribute the change differently.
+
+![Coordinate plots across the marked rose region show the source red variation replaced by a constant clipped red component; the accompanying lightness plot shows retained but altered shading.](figures/rose-region.svg)
+
+The outlined 48 × 32-pixel region has source linear-sRGB red values from about `1.028` to `1.357`. All become exactly `1` under clipping. Its mean Oklab lightness changes from about `0.7864` to `0.7526`. EdgeSeeker also brings red close to its upper limit, but adjusts green and blue to retain lightness more closely (`0.7864` here). Thus a red-channel plateau alone cannot rank the methods: the other coordinates matter too. The curves plot values, not derivatives; each point averages an 8 × 32-pixel area.
+
+## Conversion is not replacement
+
 A color-space conversion asks, “What coordinates describe this color in another space?” Gamut mapping asks a different question: “If the output cannot reproduce this color, which reproducible color should replace it?” Conversion can preserve the color while producing negative RGB values or values above one. Mapping deliberately changes the color. Keeping these two operations separate is essential to wide-gamut encoding.
 
-This chapter builds that distinction from one orange pixel to a complete SIXEL pipeline. It explains the implemented methods and illustrates their results. The [output gamut-mapping reference](../../encoder/output/gamut-mapping.md) owns option syntax, defaults, numeric tolerances, supported profiles and regression contracts. For the underlying coordinates, see [primaries and white points](../colorspace/primaries-and-white-points.md) and [transfer functions](../colorspace/transfer-functions.md).
+This chapter starts with a photograph, then builds from individual colors to a complete SIXEL pipeline. It explains the implemented methods and illustrates their results. The [output gamut-mapping reference](../../encoder/output/gamut-mapping.md) owns option syntax, defaults, numeric tolerances, supported profiles and regression contracts. For the underlying coordinates, see [primaries and white points](../colorspace/primaries-and-white-points.md) and [transfer functions](../colorspace/transfer-functions.md).
 
 For example, these commands choose the same sRGB output interpretation but different handling of colors that do not fit it:
 
@@ -86,6 +102,22 @@ Look near the right side of the orange and yellow-green strips for changes in li
 
 This figure excludes palette selection, snap, dithering and RGB101 rounding. It answers “How does the continuous color change?” rather than “What image does `img2sixel` finally send?”
 
+### Read the same ramps as coordinate curves
+
+Small differences between colored strips can be hard to judge. Plotting the actual coordinates exposes a plateau without requiring the reader to distinguish nearly identical swatches:
+
+![Six coordinate plots show source and mapped Oklab chroma against position along each saturation ramp. Clipped red and magenta develop horizontal tails.](figures/ramp-chroma.svg)
+
+The horizontal axis is position along the same 192-sample ramp; the vertical axis is Oklab chroma. A horizontal segment means the output no longer follows that part of the input chroma gradient. These are the values themselves, with no differentiation, smoothing or image readback. Shading begins at the first sample outside sRGB.
+
+For the red ramp, clipping gives 32 adjacent intervals out of 191 with unchanged full Oklab coordinates, even while the input continues changing. Magenta has 12 such intervals. Local MINDE also has 27 flat intervals in the red example: allowing a small local clipping error does not guarantee preservation of every gradient. The orange clip curve continues changing, but its last color step is only about 12% of the corresponding input step. The [raw coordinates](measurements/ramp-coordinates.csv) and [summary measurements](measurements/examples.json) retain those distinctions; `10⁻¹²` Delta E OK is used only to report numerically flat intervals.
+
+Chroma alone does not determine whether two colors are identical. In particular, EdgeSeeker and Ray Trace can reduce chroma as the end of the red ramp becomes lighter. Inspect lightness and hue alongside it:
+
+![Undifferentiated Oklab lightness and hue curves for red, orange and magenta ramps distinguish a chroma plateau from loss of all color variation.](figures/ramp-lightness-hue.svg)
+
+The clipped red and magenta tails become constant in lightness and hue as well as chroma. The other methods can retain changes in lightness while changing chroma differently. Hue panels use different origins with the same degree span, and omit near-neutral samples where hue is unstable. A steeper curve is not automatically better: exaggerated changes or discontinuities are also possible. The graphs explain where the differences occur rather than assigning a universal quality ranking.
+
 ### Add palette quantization and SIXEL
 
 Now use a two-dimensional P3 pattern: hue varies horizontally, and encoded HSL lightness decreases from top to bottom. The top row maps the continuous colors using the source's actual embedded profile. The next two rows encode the same 192 × 96, 16-bit, ICC-tagged PNG into 32 colors, then decode the actual SIXEL bytes as sRGB: first without dithering, then with Floyd–Steinberg and the soft feedback limiter.
@@ -144,7 +176,17 @@ Nor is gamut mapping the `-0` diffusion limiter. After B has selected the target
 
 ## Reading and reproducing the examples
 
-All comparison outputs are encoded sRGB illustrations. A color-managed viewer is needed for meaningful display. The [P3 source PNG](figures/p3-hue-lightness.png) is provided as input data, not as an sRGB preview; its embedded ICC profile must be honored. None of the sRGB figures claims to show the original out-of-gamut colors. The continuous-color previews use 8-bit sRGB image storage; the JSON retains floating-point coordinates. Browser scaling, screen characteristics and ambient light can make subtle differences harder to see, which is why the first example includes numerical coordinates.
+### Photograph source and region measurement
+
+The detector requires a source red range of at least `0.025` in linear RGB, and a clipped range no greater than `10⁻¹²`, throughout a complete square. At 8-, 16- and 32-pixel scales it finds 75, 7 and 1 red-channel plateaus respectively; none is also flat in all three channels. These are illustration-specific criteria, not visibility thresholds or production regression tolerances. Detection uses floating values before preview rounding. The [measurement record](measurements/rose.json), [marked-region coordinates](measurements/rose-strip.csv) and [binary 16-pixel mask](figures/rose-red-plateau-mask.png) make the selection inspectable.
+
+For a **quantized** image, repeated palette indices alone would be a poor detector: small flat runs are expected, and dither deliberately adds pixel-scale variation. A comparison must examine larger-scale structure and separate changes introduced by continuous gamut mapping from those introduced by palette construction and application. The region analysis above establishes the former only; it is not a quality test for decoded SIXEL.
+
+Photo: [*Rose Nostalgie from Tantau*, Berthold Werner](https://commons.wikimedia.org/wiki/File:Adobe_RGB_2017-07-02_17-15-33.jpg), [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/). The [560 × 560 input](figures/rose-adobe-rgb.png) is cropped and reduced 2:1 from the original, with its ICC profile retained and no saturation enhancement. The photograph, its mapped previews and photo-derived annotated figures in this chapter are distributed under the same CC BY-SA 3.0 license. Cropping, reduction, mapping and annotations are the modifications; this attribution does not imply the photographer's endorsement. The original JPEG checksum and crop rectangle are recorded with the measurements.
+
+### Reproduction
+
+All comparison outputs are encoded sRGB illustrations. A color-managed viewer is needed for meaningful display. The [Adobe RGB rose input](figures/rose-adobe-rgb.png) and [P3 source PNG](figures/p3-hue-lightness.png) are provided as input data, not as sRGB previews; their embedded ICC profiles must be honored. None of the sRGB figures claims to show the original out-of-gamut colors. The continuous-color previews use 8-bit sRGB image storage; the JSON retains floating-point coordinates. Browser scaling, screen characteristics and ambient light can make subtle differences harder to see, which is why the first example includes numerical coordinates.
 
 The figures are generated by [plot_gamut_mapping_figures.py](../../../tools/plot_gamut_mapping_figures.py). It compiles [gamut_mapping_samples.c](../../../tools/gamut_mapping_samples.c) against a built static libsixel to call the actual mapper, then runs the built converters for the encoded comparison. It does not carry a second implementation of the mapping algorithms. The continuous `RGB clip` row applies destination-channel bounding directly; it is explicitly not an emulation of the encoder's entire `clip` pipeline.
 
@@ -155,6 +197,8 @@ python3 tools/plot_gamut_mapping_figures.py --build-dir .
 # Write a separate copy for comparison without replacing checked-in figures:
 python3 tools/plot_gamut_mapping_figures.py --build-dir . --output-dir /tmp/gamut-figures
 ```
+
+The photo input is checked in, so ordinary regeneration needs no download. To recreate it from the original JPEG linked in the [photo record](measurements/rose.json), add `--rose-original /path/to/Adobe_RGB_2017-07-02_17-15-33.jpg`; the tool verifies its SHA-1 before cropping and reducing it. Photo detection runs on the 560 × 560 input, not the original 6016 × 4000 image; spatial scales refer to that prepared input. The source reduction uses a box average in encoded Adobe RGB before measurement, and the exact prepared input is retained so this preprocessing is not confused with gamut mapping.
 
 The generator clears `SIXEL_*` tuning variables, fixes the encoding options, checks finite bounded results and an in-gamut identity control, and stores the measured values in JSON. It also saves each decoded image as a separate tagged sRGB PNG for inspection at native size. SVG layout can depend on plotting-library versions, which are recorded; small floating-point differences across compilers are not a reason to require byte-identical measurement data on every platform.
 
