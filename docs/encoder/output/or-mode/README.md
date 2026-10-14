@@ -52,7 +52,7 @@ The color chart has not changed, and reconstructing the same number selects exac
 
 A palette of 16 entries needs four bit planes; 256 entries need eight. In a busy, dithered image, one plane can describe positions belonging to many different colors together. In a flat-color area, ordinary SIXEL may already describe the pixels with very few operations. The arrangement of repeated patterns and the encoder's optimizations determine the actual byte count, so counting planes alone does not predict the saving.
 
-The display-memory arrangement described in arakiken's article also suggests a receiver that consumes these planes directly. A receiver that needs complete pixel colors must instead reconstruct the indices and look them up. Our [measurements](scaling.md#photo-set-decoder-results) show why that distinction matters: smaller OR streams usually decoded more slowly in the measured libsixel CPU decoder. Use OR mode with a compatible receiver and evaluate size, encoding time, and decoding time separately.
+The display-memory arrangement described in arakiken's article also suggests a receiver that consumes these planes directly. A receiver that needs complete pixel colors must instead reconstruct the indices and look them up. Our [measurements](scaling.md#photo-set-decoder-results) show why that distinction matters: smaller OR streams usually decoded more slowly in the measured libsixel CPU decoder. Use OR mode with a compatible receiver and evaluate size, encoding time, and decoding time separately. The [X68030 console study](x68k.md) explains the conditions under which the dialect was faster: a fixed eight-color planar text console whose kernel parsed every byte on the same 25 MHz CPU that serialized the image.
 
 ## From a grid image to actual output
 
@@ -185,7 +185,7 @@ Fewer candidate planes can reduce output size, especially when many palette colo
 
 Compare stream byte counts and decoded images using the same source, loader, palette, dithering, geometry, encode policy, and thread budget. Distinguish complete conversion time from body serialization and terminal rendering. The measured comparison below follows the [quality measurement policy](../../../quality/measurement-policy.md). Terminal rendering and transport latency remain outside its scope.
 
-For color-count and thread-count curves, plus indexed/RGBA decoder timing, see the [scaling and decoding study](scaling.md).
+For color-count and thread-count curves, plus indexed/RGBA decoder timing, see the [scaling and decoding study](scaling.md). For the original NetBSD/x68k receiver and a work-count model of why OR mode was faster there, see [OR mode on the X68030 console](x68k.md).
 
 ## Measured comparison
 

@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640" role="img" aria-labelledby="title desc">
+<title id="title">How the NetBSD/x68k console receives SIXEL</title>
+<desc id="desc">The sender and the console share one 25 MHz MC68EC030. Each SIXEL data byte is parsed by the kernel and ORed into a one-band column buffer in main memory. At each band advance the buffer is transposed into 16-pixel words and stored once into each text VRAM plane over the 16-bit video bus. Palette index bit k is text VRAM plane k; OR-mode selectors #1, #2 and #4 name planes 0, 1 and 2. For a 768-pixel band with eight colors, averaged over 100 photos, normal SIXEL needs about seven color passes and 3,480 column updates; OR mode needs three plane passes and 2,295 column updates. Both write the same 864 VRAM words.</desc>
+<rect x="0" y="0" width="960" height="640" fill="#ffffff"/>
+<g font-family="Arial, sans-serif" fill="#172b40">
+<text x="24" y="36" font-size="26" font-weight="700">One CPU, one byte at a time, three bit planes</text>
+<text x="24" y="64" font-size="16">NetBSD/x68k ite SIXEL path on an X68030 (MC68EC030, 25 MHz)</text>
+
+<!-- pipeline boxes -->
+<rect x="20" y="88" width="196" height="150" rx="10" fill="#f4f7fa" stroke="#dce4ec"/>
+<text x="34" y="114" font-size="17" font-weight="700">1  Sender</text>
+<text x="34" y="140" font-size="14">image client in user space</text>
+<text x="34" y="160" font-size="14">quantize, then serialize</text>
+<text x="34" y="180" font-size="14">to SIXEL text</text>
+<text x="34" y="214" font-size="13" fill="#5a6b7c">same CPU as the console</text>
+
+<rect x="250" y="88" width="210" height="150" rx="10" fill="#f4f7fa" stroke="#dce4ec"/>
+<text x="264" y="114" font-size="17" font-weight="700">2  Kernel parser</text>
+<text x="264" y="140" font-size="14">tty → ite_dcs(), per byte</text>
+<text x="264" y="162" font-size="14" font-family="Menlo, Consolas, monospace">buf[x] |= table[c-'?']</text>
+<text x="264" y="182" font-size="14" font-family="Menlo, Consolas, monospace">          * register</text>
+<text x="264" y="214" font-size="13" fill="#5a6b7c">palette definitions ignored</text>
+
+<rect x="494" y="88" width="210" height="150" rx="10" fill="#f4f7fa" stroke="#dce4ec"/>
+<text x="508" y="114" font-size="17" font-weight="700">3  Band buffer</text>
+<text x="508" y="140" font-size="14">main RAM, 32-bit bus</text>
+<text x="508" y="160" font-size="14">768 columns × 32 bits</text>
+<text x="508" y="180" font-size="14">6 rows × 4-bit index</text>
+<text x="508" y="214" font-size="13" fill="#5a6b7c">always combined with OR</text>
+
+<rect x="738" y="88" width="202" height="150" rx="10" fill="#f4f7fa" stroke="#dce4ec"/>
+<text x="752" y="114" font-size="17" font-weight="700">4  On '-'</text>
+<text x="752" y="140" font-size="14">tv_sixel() transposes</text>
+<text x="752" y="160" font-size="14">to 16-pixel words and</text>
+<text x="752" y="180" font-size="14">stores each word once</text>
+<text x="752" y="214" font-size="13" fill="#5a6b7c">no VRAM read-back</text>
+
+<g stroke="#172b40" stroke-width="2" fill="none">
+<path d="M216 163 H242"/><path d="M236 157 L244 163 L236 169"/>
+<path d="M460 163 H486"/><path d="M480 157 L488 163 L480 169"/>
+<path d="M704 163 H730"/><path d="M724 157 L732 163 L724 169"/>
+<path d="M839 238 V268"/><path d="M833 262 L839 270 L845 262"/>
+</g>
+
+<!-- VRAM planes -->
+<text x="24" y="298" font-size="17" font-weight="700">Text VRAM is planar: index bit k is plane k</text>
+<text x="24" y="322" font-size="14">Four 128 KiB planes of 1024 × 1024 one-bit pixels.</text>
+<text x="24" y="342" font-size="14">One 16-bit word holds 16 pixels of one plane.</text>
+
+<g font-family="Menlo, Consolas, monospace" font-size="14">
+<rect x="520" y="276" width="420" height="38" rx="6" fill="#e6f2f1" stroke="#9cc9c4"/>
+<text x="534" y="300">plane 0  $E00000   #1 = index bit 0</text>
+<rect x="520" y="320" width="420" height="38" rx="6" fill="#e6f2f1" stroke="#9cc9c4"/>
+<text x="534" y="344">plane 1  $E20000   #2 = index bit 1</text>
+<rect x="520" y="364" width="420" height="38" rx="6" fill="#e6f2f1" stroke="#9cc9c4"/>
+<text x="534" y="388">plane 2  $E40000   #4 = index bit 2</text>
+</g>
+<text x="24" y="366" font-size="14">Index 5 = 101: planes 0 and 2 set, plane 1 clear.</text>
+<text x="24" y="386" font-size="14">The text palette turns the bits into a color.</text>
+<text x="24" y="410" font-size="13" fill="#5a6b7c">Video memory sits on the X68000-compatible 16-bit bus.</text>
+
+<!-- comparison -->
+<text x="24" y="448" font-size="17" font-weight="700">One 768-pixel band, 8 colors (mean over 100 photos)</text>
+<rect x="20" y="462" width="456" height="160" rx="10" fill="#fbf4ea" stroke="#ead7b8"/>
+<text x="36" y="490" font-size="17" font-weight="700">Normal SIXEL</text>
+<text x="36" y="518" font-size="15">≈ 7 color passes  (#c … $)</text>
+<text x="36" y="542" font-size="15">3,480 column updates in the kernel</text>
+<text x="36" y="566" font-size="15">sender: rescans the band for each color</text>
+<text x="36" y="600" font-size="15" font-weight="700">VRAM: 864 word stores</text>
+
+<rect x="484" y="462" width="456" height="160" rx="10" fill="#e6f2f1" stroke="#9cc9c4"/>
+<text x="500" y="490" font-size="17" font-weight="700">OR mode (#1, #2, #4)</text>
+<text x="500" y="518" font-size="15">3 plane passes</text>
+<text x="500" y="542" font-size="15">2,295 column updates in the kernel</text>
+<text x="500" y="566" font-size="15">sender: one multiply-and-mask per pixel</text>
+<text x="500" y="600" font-size="15" font-weight="700">VRAM: the same 864 word stores</text>
+</g>
+</svg>

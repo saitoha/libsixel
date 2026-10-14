@@ -1,0 +1,38 @@
+{
+  "revision": "cf4cb3439aedec252b68bbc3674b10aa2bf0145f",
+  "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "width": 768,
+  "cases": [
+    {
+      "colors": 8,
+      "ite_mask": 7
+    },
+    {
+      "colors": 16,
+      "ite_mask": 15
+    }
+  ],
+  "variants": {
+    "fast": [
+      "-Efast"
+    ],
+    "size": [
+      "-Esize"
+    ],
+    "or": [
+      "-Esize",
+      "-O"
+    ]
+  },
+  "receiver_model": "tools/ormode/ite-model.c",
+  "receiver_sources": {
+    "ite.c": "NetBSD sys/arch/x68k/dev/ite.c 1.73",
+    "ite_tv.c": "NetBSD sys/arch/x68k/dev/ite_tv.c 1.21",
+    "itevar.h": "NetBSD sys/arch/x68k/dev/itevar.h 1.18"
+  },
+  "binary_sha256": {
+    "img2sixel": "d27a23d3a090651e89ac94a039151bf8e4f5bb37104d50da2dc498532cb2f9e0",
+    "libsixel": "fe525ded019a9cf7a485b6d49310cf4f2cdcaa0c8914e1af07fdbc067996e49e",
+    "ite-model": "df5e747c06916776ce15e6f81f790db641fa09877a8a5012bf9903fdb6f24ead"
+  }
+}

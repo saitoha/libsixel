@@ -214,6 +214,14 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	tools/ormode/decode-bench.c \
 	tools/ormode/sweeps.py \
 	tools/ormode/render_sweeps.py \
+	docs/encoder/output/or-mode/x68k.md \
+	docs/encoder/output/or-mode/x68k-console.svg \
+	docs/encoder/output/or-mode/x68k-model/metadata.json \
+	docs/encoder/output/or-mode/x68k-model/results.json \
+	docs/encoder/output/or-mode/x68k-model/x68k-model.png \
+	tools/ormode/ite-model.c \
+	tools/ormode/x68k_model.py \
+	tools/ormode/render_x68k.py \
 	docs/encoder/output/or-mode/measurements/alpha.json \
 	docs/encoder/output/or-mode/measurements/comparison.png \
 	docs/encoder/output/or-mode/measurements/controls.json \
