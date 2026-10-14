@@ -137,6 +137,7 @@ int test_video_decode_0089(int argc, char **argv);
 int test_video_decode_0090(int argc, char **argv);
 int test_decoder_0091(int argc, char **argv);
 int test_decoder_0092(int argc, char **argv);
+int test_decoder_0093(int argc, char **argv);
 int test_named_output_0037(int argc, char **argv);
 int test_named_output_0038(int argc, char **argv);
 int test_named_output_0039(int argc, char **argv);
@@ -5728,6 +5729,7 @@ static test_entry_t const test_entries[] = {
     { "decoder/0090_animation_default_palette", test_video_decode_0090 },
     { "decoder/0091_parallel_inherited_register", test_decoder_0091 },
     { "decoder/0092_parallel_prefix_clipping", test_decoder_0092 },
+    { "decoder/0093_parallel_large_clipped_scan", test_decoder_0093 },
     { "quant/palette/named_output/0037_adobe_libpng", test_named_output_0037 },
     { "quant/palette/named_output/0038_dci_libpng", test_named_output_0038 },
     { "quant/palette/named_output/0039_adobe_libtiff", test_named_output_0039 },

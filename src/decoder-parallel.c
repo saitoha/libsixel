@@ -633,6 +633,7 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     unsigned char *dst;
     unsigned char ch;
     size_t global_index;
+    size_t written;
     int assigned;
     int bits;
     int repeat;
@@ -649,7 +650,6 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     int pixel_size;
     int depth;
     int starts_after_newline;
-    int written;
     int status;
     int i;
     int r;
@@ -684,7 +684,7 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     pixel_size = context->pixel_size;
     depth = context->depth;
     starts_after_newline = 0;
-    written = 0;
+    written = 0u;
     status = (-1);
 
     context->runtime_error = 0;
@@ -905,7 +905,9 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
                         color_index > max_color_index) {
                     max_color_index = color_index;
                 }
-                written += effective_repeat;
+                /* Scan counts visits before vertical clipping. Even a tiny
+                 * trusted raster can receive more than INT_MAX visits. */
+                written += (size_t)effective_repeat;
             }
 
             cursor += 1;
@@ -1019,7 +1021,7 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
                           0,
                           context->start_offset,
                           context->end_offset,
-                          "worker %d direct wrote=%d status=%d",
+                          "worker %d direct wrote=%zu status=%d",
                           context->index,
                           written,
                           status);
