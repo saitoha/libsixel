@@ -2118,12 +2118,13 @@ AC_ARG_ENABLE([appkit],
               [],
               [enable_appkit=yes])
 
+# Require opt-in because installing the extension changes user applications.
 AC_ARG_ENABLE([quicklook-extension],
               [AS_HELP_STRING([--enable-quicklook-extension],
                               [build the macOS Quick Look extension
-                               (default: auto)])],
+                               (default: no)])],
               [],
-              [enable_quicklook_extension=auto])
+              [enable_quicklook_extension=no])
 
 AC_ARG_ENABLE([quicklook-preview],
               [AS_HELP_STRING([--enable-quicklook-preview],

@@ -122,7 +122,7 @@ or provide the desired directory path explicitly.
 | `--disable-img2sixel` | disabled (builds by default) | Skip building the `img2sixel` CLI tool. |
 | `--disable-sixel2png` | disabled (builds by default) | Skip building the `sixel2png` CLI tool. |
 | `--enable-abort-trace` | `auto` | Enable abort stack trace support for CLI tools (unsupported on Emscripten and Windows targets). |
-| `--enable-quicklook-extension` | `auto` | Build the macOS Quick Look extension bundle (requires macOS ≥ 10.15). |
+| `--enable-quicklook-extension` | disabled | Build the macOS Quick Look extension bundle (requires macOS ≥ 10.15). |
 | `--enable-quicklook-preview` | `auto` | Use macOS Quick Look to render previews for non-image inputs. |
 | `--disable-appkit` | enabled | Build the macOS clipboard backend without AppKit (default uses AppKit when available). |
 | `--enable-thumbnailer-command` | `auto` | Enable the FreeDesktop.org thumbnailer command bridge used by GNOME, Cinnamon, MATE, and Xfce (via Tumbler) as well as other desktops that honour `.thumbnailer` definitions. |
@@ -190,11 +190,7 @@ in Meson to turn this behavior off.
 
 #### macOS Quick Look extension
 
-To build and install the Quick Look extension, ensure you are running on macOS
-10.15 or later and pass `--enable-quicklook-extension`. After `make install`,
-the script `tools/quicklook-extension.bash` is called automatically to register
-the Preview and Thumbnail extensions for the current user.  To unregister them,
-run:
+The Quick Look extension is disabled by default. To build and install it, ensure you are running on macOS 10.15 or later and pass `--enable-quicklook-extension`. After `make install`, the script `tools/quicklook-extension.bash` is called automatically to register the Preview and Thumbnail extensions for the current user, unless `DESTDIR` is set. This option is independent of the Quick Look input loader controlled by `--enable-quicklook-preview`. To unregister the extensions, run:
 
 ```sh
 tools/quicklook-extension.bash uninstall \
@@ -336,7 +332,7 @@ meson setup builddir
 | `-Dcoregraphics=` | feature, `auto` | Use the CoreGraphics framework on macOS. |
 | `-Dmetal=` | feature, `auto` | Use the Metal framework for macOS GPU helpers. |
 | `-Dappkit=` | feature, `enabled` | Control AppKit clipboard backend support on macOS. |
-| `-Dquicklook_extension=` | feature, `auto` | Build the macOS Quick Look extension bundle. |
+| `-Dquicklook_extension=` | feature, `disabled` | Build the macOS Quick Look extension bundle. |
 | `-Dquicklook_preview=` | feature, `auto` | Use macOS Quick Look to render previews for non-image inputs. |
 | `-Dwic=` | feature, `auto` | Use Windows Imaging Component (WIC) libraries. |
 | `-Dwiccodec=` | feature, `auto` | Build the Windows WIC codec DLL. |
@@ -443,11 +439,7 @@ tools/check_makefile_recipes.sh path/to/Makefile.am
 
 ### macOS Quick Look (Meson)
 
-Quick Look support is controlled by the feature option `-Dquicklook_extension`.
-When the extension is built and you run `meson install`, Meson executes
-`tools/quicklook-extension.bash install …` automatically to register the
-extensions for the current user.  If you are staging into a `DESTDIR`, the user
-registration step is skipped.  To unregister later, invoke the run target:
+The Quick Look extension is disabled by default; enable it with `-Dquicklook_extension=enabled`. This option is independent of the Quick Look input loader controlled by `-Dquicklook_preview`. `meson install` places the app bundles under `libexecdir/libsixel`; use `ninja -C builddir install-quicklook-extension` to install and register the extensions for the current user. To unregister later, invoke the run target:
 
 ```sh
 ninja -C builddir uninstall-quicklook-extension

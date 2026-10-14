@@ -37,7 +37,7 @@ option('metal', type: 'feature', value: 'auto',
 option('appkit', type: 'feature', value: 'enabled',
        description: 'Use AppKit clipboard backend on macOS')
 option('quicklook_preview', type: 'feature', value: 'auto', description: 'Use macOS Quick Look for preview extraction')
-option('quicklook_extension', type: 'feature', value: 'auto', description: 'Build macOS Quick Look extension bundle')
+option('quicklook_extension', type: 'feature', value: 'disabled', description: 'Build macOS Quick Look extension bundle')
 option('wic', type: 'feature', value: 'auto', description: 'Use Windows Imaging Component')
 option('wiccodec', type: 'feature', value: 'auto', description: 'Build WIC codec DLL')
 option('register_dll', type: 'boolean', value: false, description: 'Register WIC codec DLL during installation')

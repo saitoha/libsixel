@@ -1815,7 +1815,7 @@ Optional Features:
   --disable-appkit        build the macOS clipboard backend without AppKit
                           (default: enable AppKit when available)
   --enable-quicklook-extension
-                          build the macOS Quick Look extension (default: auto)
+                          build the macOS Quick Look extension (default: no)
   --enable-quicklook-preview
                           use macOS Quick Look for preview extraction
                           (default: auto)
@@ -18254,12 +18254,13 @@ esac
 fi
 
 
+# Require opt-in because installing the extension changes user applications.
 # Check whether --enable-quicklook-extension was given.
 if test ${enable_quicklook_extension+y}
 then :
   enableval=$enable_quicklook_extension;
 else case e in #(
-  e) enable_quicklook_extension=auto ;;
+  e) enable_quicklook_extension=no ;;
 esac
 fi
 
