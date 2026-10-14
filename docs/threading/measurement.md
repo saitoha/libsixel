@@ -59,6 +59,8 @@ and third arguments replace the static and animation fixtures respectively.
 Changing a fixture or protocol produces a different experiment and must be
 reported as such.
 
+A decoder-only refresh retains the encoder and animation artifacts and their original top-level provenance. Its `decoder_refresh` object in `threading-run.json` owns the decoder CSV files, timelines and figures, including its own source revision, build, input commands, binary hashes and verified library load paths. The artifact checker validates both provenance records separately. A complete reproduction replaces the whole artifact set and needs only the top-level record.
+
 ## Controlled encoder configuration
 
 The encoder experiments use a controlled 900 by 675 smooth-gradient source.

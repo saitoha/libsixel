@@ -75,6 +75,14 @@ typedef struct sixel_decoder_worker_context {
     int index;
     int direct_mode;
     int initial_color_index;
+    /* Scan results reused by paint; byte-span counts exclude alignment. */
+    int body_offset;
+    int span_newlines;
+    int boundary_newlines;
+    int row_offset;
+    int last_set_row;
+    int decode_offset;
+    int decode_color_index;
     int const *palette;
     int palette_limit;
     int width;
@@ -505,15 +513,58 @@ sixel_decoder_parallel_count_newlines(unsigned char const *begin,
     lines = 0;
     scan = begin;
     while (scan != NULL && scan < end) {
-        if (*scan == '-') {
-            if (sixel_decoder_parallel_add_line_count(&lines) != 0) {
-                return (-1);
-            }
+        scan = (unsigned char const *)memchr(scan, '-', (size_t)(end - scan));
+        if (scan == NULL) {
+            break;
+        }
+        if (sixel_decoder_parallel_add_line_count(&lines) != 0) {
+            return (-1);
         }
         ++scan;
     }
 
     return lines;
+}
+
+/* Only a color command can contain '#'. Search for the nearest selection,
+ * then parse its digits forward with the same bound as the body parser.
+ * A palette definition also selects its register; the owning scan rejects
+ * the definition itself before any shared destination can be written. */
+static int
+sixel_decoder_parallel_initial_color(unsigned char const *anchor,
+                                      unsigned char const *cursor,
+                                      int initial, int *color)
+{
+    unsigned char const *scan;
+    unsigned char const *p;
+    int value;
+
+    *color = initial < 0 ? 0 : initial;
+    if (*color >= SIXEL_PALETTE_MAX_DECODER) {
+        *color = SIXEL_PALETTE_MAX_DECODER - 1;
+    }
+    scan = cursor;
+    while (scan > anchor) {
+        --scan;
+        if (*scan != '#') {
+            continue;
+        }
+        value = 0;
+        p = scan + 1;
+        while (p < cursor && *p >= '0' && *p <= '9') {
+            if (value > SIXEL_PALETTE_MAX_DECODER / 10 ||
+                    (value == SIXEL_PALETTE_MAX_DECODER / 10 &&
+                    (*p - '0') > SIXEL_PALETTE_MAX_DECODER % 10)) {
+                return (-1);
+            }
+            value = value * 10 + (*p - '0');
+            ++p;
+        }
+        *color = value >= SIXEL_PALETTE_MAX_DECODER ?
+            SIXEL_PALETTE_MAX_DECODER - 1 : value;
+        break;
+    }
+    return 0;
 }
 
 static void
@@ -574,7 +625,6 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     sixel_decoder_worker_chain_t *chain;
     sixel_decoder_direct_mode_t mode;
     unsigned char *anchor;
-    unsigned char *scan;
     unsigned char *cursor;
     unsigned char *stop;
     unsigned char *limit;
@@ -590,7 +640,6 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     int max_color_index;
     int pos_x;
     int pos_y;
-    int line_count;
     int row_offset;
     int value;
     int effective_repeat;
@@ -612,7 +661,6 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     chain = context->chain;
     mode = context->direct_mode_kind;
     anchor = context->anchor;
-    scan = NULL;
     cursor = NULL;
     stop = NULL;
     limit = NULL;
@@ -627,7 +675,6 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     max_color_index = (-1);
     pos_x = 0;
     pos_y = 0;
-    line_count = 0;
     row_offset = 0;
     value = 0;
     effective_repeat = 0;
@@ -645,6 +692,7 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     context->first_painted_row = (-1);
     context->last_painted_row = (-1);
     context->max_color_index = (-1);
+    context->last_set_row = (-1);
 
     if (context->logger != NULL) {
         /*
@@ -690,71 +738,63 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
         color_index = SIXEL_PALETTE_MAX_DECODER - 1;
     }
 
-    cursor = start;
-    if (context->index > 0) {
-        starts_after_newline = start > anchor && start[-1] == '-';
-        if (!starts_after_newline) {
-            cursor = (unsigned char *)memchr(start,
-                                             '-',
-                                             (size_t)(context->length -
-                                             context->start_offset));
-            if (cursor != NULL &&
-                    cursor + 1 < context->input + context->length) {
-                cursor += 1;
-            } else {
-                cursor = start;
+    if (mode == SIXEL_DECODER_DIRECT_SCAN) {
+        cursor = start;
+        if (context->index > 0) {
+            starts_after_newline = start > anchor && start[-1] == '-';
+            if (!starts_after_newline) {
+                cursor = (unsigned char *)memchr(start,
+                                                 '-',
+                                                 (size_t)(context->length -
+                                                 context->start_offset));
+                if (cursor != NULL &&
+                        cursor + 1 < context->input + context->length) {
+                    cursor += 1;
+                } else {
+                    cursor = start;
+                }
             }
         }
-    }
-    if (context->index > 0 && cursor == start && !starts_after_newline) {
-        goto fail;
-    }
-
-    if (anchor < cursor) {
-        scan = anchor;
-        while (scan < cursor) {
-            if (*scan == '-') {
-                if (sixel_decoder_parallel_add_line_count(
-                        &line_count) != 0) {
-                    status = (-1);
-                    goto fail;
-                }
-                scan += 1;
-                continue;
-            }
-            if (*scan == '#') {
-                value = 0;
-                p = scan + 1;
-                while (p < cursor && *p >= '0' && *p <= '9') {
-                    if (value > SIXEL_PALETTE_MAX_DECODER / 10 ||
-                            (value == SIXEL_PALETTE_MAX_DECODER / 10 &&
-                            (*p - '0') >
-                            SIXEL_PALETTE_MAX_DECODER % 10)) {
-                        status = (-1);
-                        goto fail;
-                    }
-                    value = value * 10 + (*p - '0');
-                    p += 1;
-                }
-                color_index = value;
-                if (color_index < 0) {
-                    color_index = 0;
-                }
-                if (color_index >= SIXEL_PALETTE_MAX_DECODER) {
-                    color_index = SIXEL_PALETTE_MAX_DECODER - 1;
-                }
-                if (p < cursor && *p == ';') {
-                    scan = p;
-                    continue;
-                }
-                scan = p;
-                continue;
-            }
-            scan += 1;
+        if (context->index > 0 && cursor == start && !starts_after_newline) {
+            goto fail;
         }
+        /* Count each original byte span exactly once. Counting only the
+         * aligned decode range would double-count bands when several small
+         * spans converge on the same '-' boundary. memchr keeps this bounded
+         * pass over disjoint spans cheap, even for a one-color payload. */
+        context->span_newlines = sixel_decoder_parallel_count_newlines(
+            start, context->input + context->end_offset + 1);
+        context->boundary_newlines = cursor > start ? 1 : 0;
+        context->body_offset = (int)(cursor - context->input);
+        context->decode_offset = context->body_offset;
+        context->decode_color_index = color_index;
+        if (context->span_newlines < 0 ||
+                sixel_decoder_parallel_initial_color(anchor, cursor,
+                    color_index, &color_index) != 0) {
+            goto fail;
+        }
+        context->initial_color_index = color_index;
+        context->body_local_start = 0;
+        if (context->undither != NULL && context->undither->enabled) {
+            p = sixel_decoder_parallel_find_fast4_halo(anchor, cursor);
+            context->body_local_start =
+                sixel_decoder_parallel_count_newlines(p, cursor);
+            if (context->body_local_start < 0 ||
+                    sixel_decoder_parallel_initial_color(anchor, p,
+                        context->decode_color_index,
+                        &context->decode_color_index) != 0) {
+                goto fail;
+            }
+            context->body_local_start *= 6;
+            context->decode_offset = (int)(p - context->input);
+        }
+    } else {
+        /* Paint uses only the state certified by the joined scan. It never
+         * searches for a boundary or reads the preceding payload again. */
+        cursor = context->input + context->body_offset;
+        row_offset = context->row_offset;
     }
 
-    row_offset = line_count * 6;
     stop = context->input + context->end_offset;
     limit = context->input + context->length;
     status = 0;
@@ -796,7 +836,11 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
                     status = (-1);
                     goto fail;
                 }
-                if (global_y >= height) {
+                if (global_y > context->last_set_row) {
+                    context->last_set_row = global_y;
+                }
+                if (mode == SIXEL_DECODER_DIRECT_PAINT &&
+                        global_y >= height) {
                     if (context->trust_raster_size) {
                         context->painted_outside_raster = 1;
                         continue;
@@ -818,9 +862,9 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
                     continue;
                 }
                 /*
-                 * Scan mode reaches the same validated samples as paint mode.
-                 * Retain its exact row bounds so request_start() can prove that
-                 * shared-buffer writes are disjoint before releasing paint.
+                 * Scan records relative rows; the controller adds the prefix
+                 * band count and applies vertical clipping after joining all
+                 * scans. Paint repeats those checks with the certified offset.
                  */
                 if (context->first_painted_row < 0 ||
                         global_y < context->first_painted_row) {
@@ -1055,6 +1099,57 @@ sixel_decoder_parallel_direct_worker(void *arg)
     return status;
 }
 
+/* Resolve absolute rows only after all relative scans finish. Newlines are
+ * counted in the original disjoint byte spans, plus at most one delimiter
+ * skipped to align the useful start. This also gives identical offsets to
+ * spans that converge on one band, so the overlap guard remains effective. */
+static int
+sixel_decoder_parallel_resolve_rows(sixel_decoder_worker_context_t *contexts,
+                                    int threads)
+{
+    sixel_decoder_worker_context_t *context;
+    int lines;
+    int offset;
+    int i;
+
+    lines = 0;
+    for (i = 0; i < threads; ++i) {
+        context = &contexts[i];
+        if (lines > INT_MAX / 6 - context->boundary_newlines) {
+            return 0;
+        }
+        offset = (lines + context->boundary_newlines) * 6;
+        context->row_offset = offset;
+        if (context->body_local_start > offset ||
+                (context->last_set_row >= 0 &&
+                 offset > INT_MAX - context->last_set_row)) {
+            return 0;
+        }
+        if (context->last_set_row >= 0 &&
+                offset + context->last_set_row >= context->height) {
+            if (!context->trust_raster_size) {
+                return 0;
+            }
+            context->painted_outside_raster = 1;
+        }
+        if (context->first_painted_row >= 0) {
+            context->first_painted_row += offset;
+            context->last_painted_row += offset;
+            if (context->first_painted_row >= context->height) {
+                context->first_painted_row = (-1);
+                context->last_painted_row = (-1);
+            } else if (context->last_painted_row >= context->height) {
+                context->last_painted_row = context->height - 1;
+            }
+        }
+        if (lines > INT_MAX / 6 - context->span_newlines) {
+            return 0;
+        }
+        lines += context->span_newlines;
+    }
+    return 1;
+}
+
 static int
 sixel_decoder_parallel_direct_rows_disjoint(
     sixel_decoder_worker_context_t const *contexts,
@@ -1264,9 +1359,9 @@ sixel_decoder_parallel_write_fast4_rows(
 #endif
 
 /*
- * Worker entry for the fast sixel parser.  Each thread jumps to the next
- * '-' marker from its assigned offset, then walks tokens until the first
- * '-' after its scheduled end offset.
+ * Local-buffer parser entry. The validation pass has cached this worker's
+ * aligned body, top halo, selected register and absolute row offset. Walk
+ * tokens until the first '-' after the scheduled end offset.
  *
  * Supported tokens: palette switches ('#n'), carriage return ('$'), next
  * line ('-'), and raster data ('?' - '~').  Any raster attribute reset '"',
@@ -1280,11 +1375,7 @@ sixel_decoder_parallel_worker(void *arg)
     sixel_decoder_worker_chain_t *chain;
     sixel_local_buffer_t local_buffer;
     sixel_decoder_local_chunk_t *chunk_cursor = NULL;
-    unsigned char *anchor = NULL;
-    unsigned char *scan = NULL;
     unsigned char *cursor = NULL;
-    unsigned char *body_cursor = NULL;
-    unsigned char *decode_cursor = NULL;
     unsigned char *stop = NULL;
     unsigned char *limit = NULL;
     unsigned char *start = NULL;
@@ -1302,7 +1393,6 @@ sixel_decoder_parallel_worker(void *arg)
     int row_base = 0;
     int r = 0;
     int row_offset = 0;
-    int line_count = 0;
     int i;
     int fallback = 0;
     int status = (-1);
@@ -1311,14 +1401,18 @@ sixel_decoder_parallel_worker(void *arg)
     int pixel_size = 0;
     int depth = 0;
     int height = 0;
-    int starts_after_newline = 0;
     int max_color_index = (-1);
     int effective_repeat = 0;
     int global_y = 0;
     int local_rows = 0;
     int publish_start = 0;
     int publish_end = 0;
+    int rows;
+    size_t chunk_bytes;
+    size_t chunk_offset;
     unsigned char ch;
+    unsigned char *p;
+    int value;
 
     context = (sixel_decoder_worker_context_t *)arg;
     if (context == NULL) {
@@ -1336,7 +1430,6 @@ sixel_decoder_parallel_worker(void *arg)
     }
 
     logger = context->logger;
-    anchor = context->anchor;
     if (context->input == NULL || context->length <= 0) {
         sixel_decoder_parallel_finish_decode(chain, status);
         context->result = status;
@@ -1383,18 +1476,6 @@ sixel_decoder_parallel_worker(void *arg)
         return status;
     }
 
-    /*
-     * The controller starts workers after palette/raster attributes are
-     * established.  Carry the current palette index across that anchor;
-     * otherwise chunks that begin with raster data would silently use color 0.
-     */
-    color_index = context->initial_color_index;
-    if (color_index < 0) {
-        color_index = 0;
-    } else if (color_index >= SIXEL_PALETTE_MAX_DECODER) {
-        color_index = SIXEL_PALETTE_MAX_DECODER - 1;
-    }
-
     status = 0;
 
     if (logger != NULL) {
@@ -1418,100 +1499,12 @@ sixel_decoder_parallel_worker(void *arg)
                           context->end_offset);
     }
 
-    cursor = start;
-    if (context->index > 0) {
-        /*
-         * A byte span can start immediately after DECGNL ('-') when the
-         * previous worker's inclusive end offset landed on that delimiter.
-         * In that case this worker is already positioned at the next sixel
-         * band. Searching for another '-' would skip exactly one 6-pixel band.
-         */
-        starts_after_newline = start > anchor && start[-1] == '-';
-        if (!starts_after_newline) {
-            cursor = (unsigned char *)memchr(start,
-                                             '-',
-                                             (size_t)(context->length -
-                                             context->start_offset));
-            if (cursor != NULL &&
-                    cursor + 1 < context->input + context->length) {
-                cursor += 1;
-            } else {
-                cursor = start;
-            }
-        }
-    }
-    if (context->index > 0 && cursor == start && !starts_after_newline) {
-        status = (-1);
-        sixel_decoder_parallel_finish_decode(chain, status);
-        context->result = status;
-        return status;
-    }
-
-    body_cursor = cursor;
-    decode_cursor = body_cursor;
-    context->body_local_start = 0;
-    if (context->undither != NULL && context->undither->enabled) {
-        decode_cursor = sixel_decoder_parallel_find_fast4_halo(
-            anchor,
-            body_cursor);
-        context->body_local_start =
-            sixel_decoder_parallel_count_newlines(
-                decode_cursor,
-                body_cursor);
-        if (context->body_local_start < 0) {
-            status = (-1);
-            sixel_decoder_parallel_finish_decode(chain, status);
-            context->result = status;
-            return status;
-        }
-        context->body_local_start *= 6;
-        cursor = decode_cursor;
-    }
-
-    if (anchor != NULL && anchor < cursor) {
-        scan = anchor;
-        while (scan < cursor) {
-            if (*scan == '-') {
-                if (sixel_decoder_parallel_add_line_count(
-                        &line_count) != 0) {
-                    status = (-1);
-                    sixel_decoder_parallel_finish_decode(chain, status);
-                    context->result = status;
-                    return status;
-                }
-                scan += 1;
-                continue;
-            }
-
-            if (*scan == '#') {
-                int value;
-                unsigned char *p;
-
-                value = 0;
-                p = scan + 1;
-                while (p < cursor && *p >= '0' && *p <= '9') {
-                    value = value * 10 + (*p - '0');
-                    p += 1;
-                }
-                color_index = value;
-                if (color_index < 0) {
-                    color_index = 0;
-                }
-                if (color_index >= SIXEL_PALETTE_MAX_DECODER) {
-                    color_index = SIXEL_PALETTE_MAX_DECODER - 1;
-                }
-                if (p < cursor && *p == ';') {
-                    scan = p;
-                    continue;
-                }
-                scan = p;
-                continue;
-            }
-
-            scan += 1;
-        }
-    }
-    row_offset = line_count * 6;
+    /* The shared validation pass already found the body/halo boundary and
+     * its selected register. Halo rows remain local filter input; they are
+     * excluded from publication by body_local_start as before. */
+    cursor = context->input + context->decode_offset;
+    color_index = context->decode_color_index;
+    row_offset = context->row_offset - context->body_local_start;
 
     capacity = (int)((double)chain->global_capacity *
         ((double)assigned / (double)context->payload_len));
@@ -1671,9 +1664,6 @@ sixel_decoder_parallel_worker(void *arg)
         }
 
         if (ch == '#') {
-            int value;
-            unsigned char *p;
-
             value = 0;
             p = cursor + 1;
             while (p < limit && *p >= '0' && *p <= '9') {
@@ -1697,9 +1687,6 @@ sixel_decoder_parallel_worker(void *arg)
         }
 
         if (ch == '!') {
-            int value;
-            unsigned char *p;
-
             value = 0;
             p = cursor + 1;
             while (p < limit && *p >= '0' && *p <= '9') {
@@ -1850,10 +1837,6 @@ sixel_decoder_parallel_worker(void *arg)
     if (max_relative >= 0) {
         chunk_cursor = local_buffer.head;
         while (chunk_cursor != NULL) {
-            int rows;
-            size_t chunk_bytes;
-            size_t chunk_offset;
-
             rows = chunk_cursor->rows;
             if (chunk_cursor->start_row + rows >
                     (max_relative / width) + 1) {
@@ -2343,46 +2326,63 @@ sixel_decoder_parallel_request_start(int direct_mode,
         contexts[i].undither = undither_prepared ? undither : NULL;
     }
 
-    if (!undither_prepared) {
-        created = 0;
-        for (i = 0; i < threads; ++i) {
-            contexts[i].result = (-1);
-            contexts[i].runtime_error = 0;
-            contexts[i].first_painted_row = (-1);
-            contexts[i].last_painted_row = (-1);
-            contexts[i].max_color_index = (-1);
-            contexts[i].painted_outside_raster = 0;
-            contexts[i].direct_mode_kind = SIXEL_DECODER_DIRECT_SCAN;
-            status = sixel_thread_create(&workers[i],
-                                         sixel_decoder_parallel_direct_worker,
-                                         &contexts[i]);
-            if (SIXEL_FAILED(status)) {
-                parallel_failed = 1;
-                break;
-            }
-            created += 1;
+    created = 0;
+    for (i = 0; i < threads; ++i) {
+        contexts[i].result = (-1);
+        contexts[i].runtime_error = 0;
+        contexts[i].first_painted_row = (-1);
+        contexts[i].last_painted_row = (-1);
+        contexts[i].max_color_index = (-1);
+        contexts[i].painted_outside_raster = 0;
+        contexts[i].direct_mode_kind = SIXEL_DECODER_DIRECT_SCAN;
+        status = sixel_thread_create(&workers[i],
+                                     sixel_decoder_parallel_direct_worker,
+                                     &contexts[i]);
+        if (SIXEL_FAILED(status)) {
+            parallel_failed = 1;
+            break;
         }
+        created += 1;
+    }
 
-        for (i = 0; i < created; ++i) {
-            sixel_thread_join(&workers[i]);
-            if (contexts[i].result != 0) {
-                parallel_failed = 1;
-            }
-            if (contexts[i].runtime_error) {
-                runtime_error = 1;
-            }
-            if (contexts[i].painted_outside_raster &&
-                    painted_outside_raster != NULL) {
-                *painted_outside_raster = 1;
-            }
-        }
-
-        if (!runtime_error && !parallel_failed && created == threads &&
-                !sixel_decoder_parallel_direct_rows_disjoint(
-                    contexts, threads)) {
+    for (i = 0; i < created; ++i) {
+        sixel_thread_join(&workers[i]);
+        if (contexts[i].result != 0) {
             parallel_failed = 1;
         }
+        if (contexts[i].runtime_error) {
+            runtime_error = 1;
+        }
+        if (contexts[i].painted_outside_raster &&
+                painted_outside_raster != NULL) {
+            *painted_outside_raster = 1;
+        }
+    }
 
+    /* Direct paint needs exclusive rows. Local fast4 windows may converge
+     * on the same band and must retain their established halo semantics. */
+    if (!runtime_error && !parallel_failed && created == threads &&
+            (!sixel_decoder_parallel_resolve_rows(contexts, threads) ||
+             (!undither_prepared &&
+              !sixel_decoder_parallel_direct_rows_disjoint(contexts,
+                                                           threads)))) {
+        parallel_failed = 1;
+    }
+
+    /* Vertical clipping is known only after row offsets have been resolved. */
+    for (i = 0; i < created; ++i) {
+        if (contexts[i].painted_outside_raster &&
+                painted_outside_raster != NULL) {
+            *painted_outside_raster = 1;
+        }
+    }
+
+    if (runtime_error || parallel_failed || created < threads) {
+        status = runtime_error ? SIXEL_RUNTIME_ERROR : SIXEL_FALSE;
+        goto cleanup;
+    }
+
+    if (!undither_prepared) {
         if (!runtime_error && !parallel_failed && created == threads) {
             max_color_index = (-1);
             created = 0;

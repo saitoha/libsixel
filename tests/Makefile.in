@@ -427,6 +427,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/decoder/0088_animation_clear_canvas.c \
 	processing/decoder/0089_animation_malformed_tail.c \
 	processing/decoder/0090_animation_default_palette.c \
+	processing/decoder/0091_parallel_inherited_register.c \
+	processing/decoder/0092_parallel_prefix_clipping.c \
 	processing/cms/0011_separate_intents.c \
 	processing/cms/0012_engine_independence.c \
 	processing/cms/0013_queued_transform_lifetime.c \
@@ -4117,6 +4119,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0088_animation_clear_canvas.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0089_animation_malformed_tail.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0090_animation_default_palette.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0091_parallel_inherited_register.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0092_parallel_prefix_clipping.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0011_separate_intents.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0012_engine_independence.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0013_queued_transform_lifetime.$(OBJEXT) \
@@ -9394,6 +9398,8 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0088_animation_clear_canvas.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0089_animation_malformed_tail.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0090_animation_default_palette.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0091_parallel_inherited_register.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0092_parallel_prefix_clipping.Po \
 	processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po \
@@ -12684,6 +12690,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0088_ANIMATION_CLEAR_CANVAS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0089_ANIMATION_MALFORMED_TAIL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0090_ANIMATION_DEFAULT_PALETTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0091_PARALLEL_INHERITED_REGISTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0092_PARALLEL_PREFIX_CLIPPING \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SOURCE_SNAPSHOT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_HISTORY_REVISIONS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_PALETTE_KEEP_COST \
@@ -15782,6 +15790,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0088_animation_clear_canvas.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0089_animation_malformed_tail.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0090_animation_default_palette.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0091_parallel_inherited_register.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0092_parallel_prefix_clipping.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0011_separate_intents.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0012_engine_independence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0013_queued_transform_lifetime.c \
@@ -20383,6 +20393,12 @@ processing/decoder/test_runner-0089_animation_malformed_tail.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/test_runner-0090_animation_default_palette.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0091_parallel_inherited_register.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0092_parallel_prefix_clipping.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/cms/$(am__dirstamp):
@@ -32982,6 +32998,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0088_animation_clear_canvas.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0089_animation_malformed_tail.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0090_animation_default_palette.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0091_parallel_inherited_register.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0092_parallel_prefix_clipping.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po@am__quote@ # am--include-marker
@@ -39214,6 +39232,34 @@ processing/decoder/test_runner-0090_animation_default_palette.obj: processing/de
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0090_animation_default_palette.c' object='processing/decoder/test_runner-0090_animation_default_palette.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0090_animation_default_palette.obj `if test -f 'processing/decoder/0090_animation_default_palette.c'; then $(CYGPATH_W) 'processing/decoder/0090_animation_default_palette.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0090_animation_default_palette.c'; fi`
+
+processing/decoder/test_runner-0091_parallel_inherited_register.o: processing/decoder/0091_parallel_inherited_register.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0091_parallel_inherited_register.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0091_parallel_inherited_register.Tpo -c -o processing/decoder/test_runner-0091_parallel_inherited_register.o `test -f 'processing/decoder/0091_parallel_inherited_register.c' || echo '$(srcdir)/'`processing/decoder/0091_parallel_inherited_register.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0091_parallel_inherited_register.Tpo processing/decoder/$(DEPDIR)/test_runner-0091_parallel_inherited_register.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0091_parallel_inherited_register.c' object='processing/decoder/test_runner-0091_parallel_inherited_register.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0091_parallel_inherited_register.o `test -f 'processing/decoder/0091_parallel_inherited_register.c' || echo '$(srcdir)/'`processing/decoder/0091_parallel_inherited_register.c
+
+processing/decoder/test_runner-0091_parallel_inherited_register.obj: processing/decoder/0091_parallel_inherited_register.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0091_parallel_inherited_register.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0091_parallel_inherited_register.Tpo -c -o processing/decoder/test_runner-0091_parallel_inherited_register.obj `if test -f 'processing/decoder/0091_parallel_inherited_register.c'; then $(CYGPATH_W) 'processing/decoder/0091_parallel_inherited_register.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0091_parallel_inherited_register.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0091_parallel_inherited_register.Tpo processing/decoder/$(DEPDIR)/test_runner-0091_parallel_inherited_register.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0091_parallel_inherited_register.c' object='processing/decoder/test_runner-0091_parallel_inherited_register.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0091_parallel_inherited_register.obj `if test -f 'processing/decoder/0091_parallel_inherited_register.c'; then $(CYGPATH_W) 'processing/decoder/0091_parallel_inherited_register.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0091_parallel_inherited_register.c'; fi`
+
+processing/decoder/test_runner-0092_parallel_prefix_clipping.o: processing/decoder/0092_parallel_prefix_clipping.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0092_parallel_prefix_clipping.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0092_parallel_prefix_clipping.Tpo -c -o processing/decoder/test_runner-0092_parallel_prefix_clipping.o `test -f 'processing/decoder/0092_parallel_prefix_clipping.c' || echo '$(srcdir)/'`processing/decoder/0092_parallel_prefix_clipping.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0092_parallel_prefix_clipping.Tpo processing/decoder/$(DEPDIR)/test_runner-0092_parallel_prefix_clipping.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0092_parallel_prefix_clipping.c' object='processing/decoder/test_runner-0092_parallel_prefix_clipping.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0092_parallel_prefix_clipping.o `test -f 'processing/decoder/0092_parallel_prefix_clipping.c' || echo '$(srcdir)/'`processing/decoder/0092_parallel_prefix_clipping.c
+
+processing/decoder/test_runner-0092_parallel_prefix_clipping.obj: processing/decoder/0092_parallel_prefix_clipping.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0092_parallel_prefix_clipping.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0092_parallel_prefix_clipping.Tpo -c -o processing/decoder/test_runner-0092_parallel_prefix_clipping.obj `if test -f 'processing/decoder/0092_parallel_prefix_clipping.c'; then $(CYGPATH_W) 'processing/decoder/0092_parallel_prefix_clipping.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0092_parallel_prefix_clipping.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0092_parallel_prefix_clipping.Tpo processing/decoder/$(DEPDIR)/test_runner-0092_parallel_prefix_clipping.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0092_parallel_prefix_clipping.c' object='processing/decoder/test_runner-0092_parallel_prefix_clipping.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0092_parallel_prefix_clipping.obj `if test -f 'processing/decoder/0092_parallel_prefix_clipping.c'; then $(CYGPATH_W) 'processing/decoder/0092_parallel_prefix_clipping.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0092_parallel_prefix_clipping.c'; fi`
 
 processing/cms/test_runner-0011_separate_intents.o: processing/cms/0011_separate_intents.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0011_separate_intents.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Tpo -c -o processing/cms/test_runner-0011_separate_intents.o `test -f 'processing/cms/0011_separate_intents.c' || echo '$(srcdir)/'`processing/cms/0011_separate_intents.c

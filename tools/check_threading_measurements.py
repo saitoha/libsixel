@@ -682,21 +682,8 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main() -> int:
-    """Validate the complete artifact set."""
-    args = parse_args()
-    root = args.directory.resolve()
-    for name in REQUIRED_FILES:
-        path = root / name
-        if not path.is_file():
-            raise FileNotFoundError(f"missing threading artifact: {name}")
-        if path.suffix == ".png":
-            validate_png(path)
-    with (root / "threading-run.json").open("r", encoding="utf-8") as handle:
-        metadata = json.load(handle)
-    if int(metadata["schema_version"]) != 7:
-        raise ValueError("threading metadata schema is not version 7")
-    revision = str(metadata["source"]["revision"])
+def validate_provenance(metadata: Dict[str, object]) -> None:
+    """Validate a complete run or an independently refreshed decoder run."""
     if metadata["source"]["tracked_worktree_state_at_start"] != "clean":
         raise ValueError("threading artifacts were not recorded from clean source")
     runtime = metadata["runtime"]
@@ -724,7 +711,29 @@ def main() -> int:
         record = metadata["programs"][name]
         if not record["launcher_sha256"] or not record["payload_sha256"]:
             raise ValueError(f"program provenance is incomplete for {name}")
-    decoder_input = metadata["inputs"]["decoder"]
+
+
+def main() -> int:
+    """Validate the complete artifact set."""
+    args = parse_args()
+    root = args.directory.resolve()
+    for name in REQUIRED_FILES:
+        path = root / name
+        if not path.is_file():
+            raise FileNotFoundError(f"missing threading artifact: {name}")
+        if path.suffix == ".png":
+            validate_png(path)
+    with (root / "threading-run.json").open("r", encoding="utf-8") as handle:
+        metadata = json.load(handle)
+    if int(metadata["schema_version"]) != 7:
+        raise ValueError("threading metadata schema is not version 7")
+    revision = str(metadata["source"]["revision"])
+    validate_provenance(metadata)
+    decoder_metadata = metadata.get("decoder_refresh", metadata)
+    if decoder_metadata is not metadata:
+        validate_provenance(decoder_metadata)
+    decoder_revision = str(decoder_metadata["source"]["revision"])
+    decoder_input = decoder_metadata["inputs"]["decoder"]
     encoder_input = metadata["inputs"]["static"]
     if (int(encoder_input["width"]) != 1920
             or int(encoder_input["height"]) != 1080
@@ -739,7 +748,7 @@ def main() -> int:
     expected_sizes = [item[:3] for item in DECODER_SIZES]
     if raster_sizes != expected_sizes:
         raise ValueError("decoder metadata does not cover the controlled sizes")
-    fixture_commands = metadata["protocol"]["decoder_fixture_commands"]
+    fixture_commands = decoder_metadata["protocol"]["decoder_fixture_commands"]
     if len(fixture_commands) != len(DECODER_SIZES):
         raise ValueError("decoder fixture command count changed")
     for command, (_, width, height, _) in zip(
@@ -821,9 +830,9 @@ def main() -> int:
     validate_decoder_sizes(
         root / "decoder-size-comparison.csv",
         root,
-        revision,
+        decoder_revision,
     )
-    scaling = metadata["protocol"]["decoder_scaling"]
+    scaling = decoder_metadata["protocol"]["decoder_scaling"]
     scaling_threads = tuple(int(value) for value in scaling["thread_counts"])
     if scaling_threads != DECODER_SCALING_THREADS:
         raise ValueError("decoder scaling does not cover threads 1 through 16")
@@ -840,7 +849,7 @@ def main() -> int:
         raise ValueError("decoder scaling repeat protocol changed")
     validate_decoder_scaling(
         root / "decoder-thread-scaling.csv",
-        revision,
+        decoder_revision,
         scaling_threads,
         warmups,
         repeats,

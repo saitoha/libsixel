@@ -1072,6 +1072,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0088_ANIMATION_CLEAR_CANVAS \
     -DBUILD_TEST_0089_ANIMATION_MALFORMED_TAIL \
     -DBUILD_TEST_0090_ANIMATION_DEFAULT_PALETTE \
+    -DBUILD_TEST_0091_PARALLEL_INHERITED_REGISTER \
+    -DBUILD_TEST_0092_PARALLEL_PREFIX_CLIPPING \
     -DBUILD_TEST_0001_SOURCE_SNAPSHOT \
     -DBUILD_TEST_0002_HISTORY_REVISIONS \
     -DBUILD_TEST_0003_PALETTE_KEEP_COST \
@@ -4139,6 +4141,8 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0088_animation_clear_canvas.c \
     processing/decoder/0089_animation_malformed_tail.c \
     processing/decoder/0090_animation_default_palette.c \
+    processing/decoder/0091_parallel_inherited_register.c \
+    processing/decoder/0092_parallel_prefix_clipping.c \
     processing/cms/0011_separate_intents.c \
     processing/cms/0012_engine_independence.c \
     processing/cms/0013_queued_transform_lifetime.c \
