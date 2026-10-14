@@ -9,5 +9,6 @@ test_gamut_0033_edge_highcolor(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return gamut_encode_check("full-frame", "linear", 1, 1);
+    return gamut_encode_check("full-frame", "linear", 1,
+        SIXEL_GAMUT_EDGE_SEEKER);
 }

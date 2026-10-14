@@ -1208,7 +1208,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      icc[:path=FILE] -> RGB ICC endpoint (compact :PFILE)\n"
         "    icc: path=P; SIXEL_OUTPUT_COLORSPACE_ICC_PATH supplies default\n"
         "    all: gamut=G accepts auto(default), clip, local-minde,\n"
-        "         edge-seeker;\n"
+        "         edge-seeker, ray-trace;\n"
         "    SIXEL_OUTPUT_COLORSPACE_GAMUT supplies its default.\n"
         "    mapping needs CPU float and a supported matrix/TRC gamut.\n"
         "    Named/ICC destinations use CPU float; ICC snap needs matrix/TRC.\n"
@@ -1366,7 +1366,8 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_OUTPUT_COLORSPACE_GAMUT",
-        "Output gamut policy: auto (clip), clip, local-minde, edge-seeker.\n"
+        "Output gamut policy: auto (clip), clip, local-minde, edge-seeker,\n"
+        "ray-trace.\n"
         "Explicit -U gamut=G overrides this environment default."
     },
     {

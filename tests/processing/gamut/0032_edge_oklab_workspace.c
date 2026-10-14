@@ -9,5 +9,6 @@ test_gamut_0032_edge_oklab_workspace(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return gamut_encode_check("full-frame", "oklab", 0, 1);
+    return gamut_encode_check("full-frame", "oklab", 0,
+        SIXEL_GAMUT_EDGE_SEEKER);
 }

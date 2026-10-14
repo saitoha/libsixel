@@ -183,6 +183,25 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_SRGB_IDENTITY \
     -DBUILD_TEST_0038_EDGE_LINEAR_REFERENCE \
+    -DBUILD_TEST_0039_RAY_SRGB_REFERENCE \
+    -DBUILD_TEST_0040_RAY_P3_REFERENCE \
+    -DBUILD_TEST_0041_RAY_ADOBE_REFERENCE \
+    -DBUILD_TEST_0042_RAY_DCI_REFERENCE \
+    -DBUILD_TEST_0043_RAY_IDENTITY \
+    -DBUILD_TEST_0044_RAY_ENDPOINTS \
+    -DBUILD_TEST_0045_RAY_NONFINITE_ATOMIC \
+    -DBUILD_TEST_0046_RAY_MATRIX_ICC \
+    -DBUILD_TEST_0047_RAY_BOUNDS \
+    -DBUILD_TEST_0048_RAY_FULL_FRAME_SAMPLES \
+    -DBUILD_TEST_0049_RAY_ADAPTIVE_SAMPLES \
+    -DBUILD_TEST_0050_RAY_OKLAB_WORKSPACE \
+    -DBUILD_TEST_0051_RAY_HIGHCOLOR \
+    -DBUILD_TEST_0052_RAY_LUT_REJECTED \
+    -DBUILD_TEST_0053_RAY_ENVIRONMENT_PRECEDENCE \
+    -DBUILD_TEST_0054_RAY_ENCODER_ISOLATION \
+    -DBUILD_TEST_0056_RAY_GEOMETRY \
+    -DBUILD_TEST_0057_RAY_CACHE_RESET \
+    -DBUILD_TEST_0058_RAY_LINEAR_REFERENCE \
     -DBUILD_TEST_0030_EDGE_FULL_FRAME_SAMPLES \
     -DBUILD_TEST_0031_EDGE_ADAPTIVE_SAMPLES \
     -DBUILD_TEST_0032_EDGE_OKLAB_WORKSPACE \
@@ -5705,6 +5724,26 @@ test_runner_SOURCES = test_runner.c \
     processing/gamut/0008_policy_atomicity.c \
     processing/gamut/gamut_test_common.h \
     processing/gamut/edge_test_common.h \
+    processing/gamut/ray_test_common.h \
+    processing/gamut/0039_ray_srgb_reference.c \
+    processing/gamut/0040_ray_p3_reference.c \
+    processing/gamut/0041_ray_adobe_reference.c \
+    processing/gamut/0042_ray_dci_reference.c \
+    processing/gamut/0043_ray_identity.c \
+    processing/gamut/0044_ray_endpoints.c \
+    processing/gamut/0045_ray_nonfinite_atomic.c \
+    processing/gamut/0046_ray_matrix_icc.c \
+    processing/gamut/0047_ray_bounds.c \
+    processing/gamut/0048_ray_full_frame_samples.c \
+    processing/gamut/0049_ray_adaptive_samples.c \
+    processing/gamut/0050_ray_oklab_workspace.c \
+    processing/gamut/0051_ray_highcolor.c \
+    processing/gamut/0052_ray_lut_rejected.c \
+    processing/gamut/0053_ray_environment_precedence.c \
+    processing/gamut/0054_ray_encoder_isolation.c \
+    processing/gamut/0056_ray_geometry.c \
+    processing/gamut/0057_ray_cache_reset.c \
+    processing/gamut/0058_ray_linear_reference.c \
     processing/gamut/0038_edge_linear_reference.c \
     processing/gamut/0030_edge_full_frame_samples.c \
     processing/gamut/0031_edge_adaptive_samples.c \
@@ -8752,3 +8791,6 @@ EXTRA_DIST += data/color-numeric/gamut-reference.py \
 
 EXTRA_DIST += data/color-numeric/edge-reference.py \
     data/color-numeric/edge-reference.h
+
+EXTRA_DIST += data/color-numeric/ray-reference.py \
+    data/color-numeric/ray-reference.h

@@ -10979,7 +10979,8 @@ sixel_encoder_set_output_color(sixel_encoder_t *encoder, char const *value)
         return status;
     }
     if (gamut == SIXEL_GAMUT_LOCAL_MINDE ||
-            gamut == SIXEL_GAMUT_EDGE_SEEKER) {
+            gamut == SIXEL_GAMUT_EDGE_SEEKER ||
+            gamut == SIXEL_GAMUT_RAY_TRACE) {
         named = base < 0 && candidate == NULL
             ? sixel_cdef_name(sixel_cdef_named_name(-base)) : NULL;
         if (base < 0 && candidate == NULL && named == NULL) {

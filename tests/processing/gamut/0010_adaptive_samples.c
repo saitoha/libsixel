@@ -9,5 +9,6 @@ test_gamut_0010_adaptive_samples(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return gamut_encode_check("adaptive-grid", "linear", 0, 0);
+    return gamut_encode_check("adaptive-grid", "linear", 0,
+        SIXEL_GAMUT_LOCAL_MINDE);
 }

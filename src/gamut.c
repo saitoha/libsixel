@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT
  * Copyright (c) 2026 libsixel developers. See `AUTHORS`.
  *
- * CSS Color 4, 2026-10-09: local MINDE and EdgeSeeker gamut mapping.
+ * CSS Color 4, 2026-10-09: local MINDE, EdgeSeeker and Ray Trace.
  * Reduce Oklab chroma along a constant-L, constant-hue ray. Clipping
  * is evaluated in the destination's linear device domain, BEFORE any ICC
  * inverse curve can hide out-of-gamut values. Monotone channel transfers
@@ -526,6 +526,173 @@ sixel_gamut_edge_seeker(sixel_gamut_t const *mapper, double const input[3],
     return 1;
 }
 
+/* Intersect a forward ray with the destination's linear RGB box. The
+ * slab intervals also handle an outside anchor and parallel directions.
+ * An inside anchor uses the exit, not a segment limited to t <= 1. */
+static int
+sixel_ray_box(sixel_gamut_t const *mapper, double const start[3],
+                double const end[3], double hit[3])
+{
+    double tnear = -INFINITY;
+    double tfar = INFINITY;
+    double direction[3];
+    double t1;
+    double t2;
+    int c;
+
+    for (c = 0; c < 3; ++c) {
+        direction[c] = end[c] - start[c];
+        if (!isfinite(start[c]) || !isfinite(direction[c])) {
+            return 0;
+        }
+        if (fabs(direction[c]) > 1e-12) {
+            t1 = (mapper->minimum[c] - start[c]) / direction[c];
+            t2 = (mapper->maximum[c] - start[c]) / direction[c];
+            tnear = fmax(tnear, fmin(t1, t2));
+            tfar = fmin(tfar, fmax(t1, t2));
+        } else if (start[c] < mapper->minimum[c] ||
+                start[c] > mapper->maximum[c]) {
+            return 0;
+        }
+    }
+    if (tnear > tfar || tfar < 0.0) {
+        return 0;
+    }
+    if (tnear < 0.0) {
+        tnear = tfar;
+    }
+    if (!isfinite(tnear)) {
+        return 0;
+    }
+    for (c = 0; c < 3; ++c) {
+        hit[c] = start[c] + direction[c] * tnear;
+        if (!isfinite(hit[c])) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/* CSS Color 4 Ray Trace, pinned to the 2026-10-09 draft. Keep the
+ * original lightness/hue while successive RGB intersections approximate
+ * the constant-lightness Oklab boundary. No boundary table is required. */
+static int
+sixel_gamut_ray_trace(sixel_gamut_t const *mapper, double const input[3],
+                       double output[3], int colorspace)
+{
+    double linear[3];
+    double device[3];
+    double lab[3];
+    double anchor[3];
+    double hit[3];
+    double last[3];
+    double result[3];
+    double lightness;
+    double chroma;
+    double hue_a;
+    double hue_b;
+    int iteration;
+    int inside;
+    int c;
+
+    if (!sixel_color_convert(linear, input, colorspace,
+            SIXEL_COLORSPACE_LINEAR)) {
+        return 0;
+    }
+    sixel_gamut_matrix(mapper->forward, linear, device);
+    for (c = 0; c < 3; ++c) {
+        if (!isfinite(device[c])) {
+            return 0;
+        }
+    }
+    if (sixel_gamut_contains(mapper, device)) {
+        memcpy(output, input, 3u * sizeof(double));
+        return 1;
+    }
+    if (!sixel_color_convert(lab, linear, SIXEL_COLORSPACE_LINEAR,
+            SIXEL_COLORSPACE_OKLAB)) {
+        return 0;
+    }
+    lightness = lab[0];
+    if (lightness >= 1.0 || lightness <= 0.0) {
+        memcpy(device, lightness >= 1.0 ? mapper->maximum : mapper->minimum,
+            sizeof(device));
+    } else {
+        chroma = hypot(lab[1], lab[2]);
+        hue_a = chroma > 0.0 ? lab[1] / chroma : 0.0;
+        hue_b = chroma > 0.0 ? lab[2] / chroma : 0.0;
+        lab[1] = lab[2] = 0.0;
+        if (!sixel_color_convert(linear, lab, SIXEL_COLORSPACE_OKLAB,
+                SIXEL_COLORSPACE_LINEAR)) {
+            return 0;
+        }
+        sixel_gamut_matrix(mapper->forward, linear, anchor);
+        for (c = 0; c < 3; ++c) {
+            if (!isfinite(anchor[c])) {
+                return 0;
+            }
+        }
+        memcpy(last, device, sizeof(last));
+        for (iteration = 0; iteration < 4; ++iteration) {
+            if (iteration > 0) {
+                sixel_gamut_matrix(mapper->backward, device, linear);
+                if (!sixel_color_convert(lab, linear,
+                        SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_OKLAB)) {
+                    return 0;
+                }
+                chroma = hypot(lab[1], lab[2]);
+                lab[0] = lightness;
+                lab[1] = hue_a * chroma;
+                lab[2] = hue_b * chroma;
+                if (!sixel_color_convert(linear, lab,
+                        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_LINEAR)) {
+                    return 0;
+                }
+                sixel_gamut_matrix(mapper->forward, linear, device);
+            }
+            /* Arithmetic failure is not the geometric no-hit recovery. */
+            for (c = 0; c < 3; ++c) {
+                if (!isfinite(device[c])) {
+                    return 0;
+                }
+            }
+            if (!sixel_ray_box(mapper, anchor, device, hit)) {
+                /* Extreme imaginary colors can miss the box after a
+                 * correction. Retain the last hit, as specified, rather
+                 * than selecting another gamut mapping algorithm. */
+                memcpy(device, last, sizeof(device));
+                break;
+            }
+            inside = iteration > 0;
+            for (c = 0; c < 3; ++c) {
+                inside = inside && device[c] > mapper->minimum[c] + 1e-12
+                    && device[c] < mapper->maximum[c] - 1e-12;
+            }
+            if (inside) {
+                /* An inward correction advances the anchor; it must not
+                 * terminate the search before the next boundary hit. */
+                memcpy(anchor, device, sizeof(anchor));
+            }
+            memcpy(device, hit, sizeof(device));
+            memcpy(last, hit, sizeof(last));
+        }
+    }
+    for (c = 0; c < 3; ++c) {
+        if (!isfinite(device[c])) {
+            return 0;
+        }
+        device[c] = fmax(mapper->minimum[c],
+            fmin(mapper->maximum[c], device[c]));
+    }
+    sixel_gamut_matrix(mapper->backward, device, linear);
+    if (!sixel_color_convert(result, linear, SIXEL_COLORSPACE_LINEAR,
+            colorspace)) {
+        return 0;
+    }
+    memcpy(output, result, sizeof(result));
+    return 1;
+}
+
 static void
 sixel_gamut_destroy(sixel_gamut_t *mapper)
 {
@@ -543,6 +710,10 @@ static sixel_gamut_vtbl_t const sixel_gamut_local_minde_vtbl = {
 
 static sixel_gamut_vtbl_t const sixel_gamut_edge_seeker_vtbl = {
     sixel_gamut_edge_seeker, sixel_gamut_destroy
+};
+
+static sixel_gamut_vtbl_t const sixel_gamut_ray_trace_vtbl = {
+    sixel_gamut_ray_trace, sixel_gamut_destroy
 };
 
 SIXELSTATUS
@@ -570,7 +741,8 @@ sixel_gamut_new(sixel_gamut_t **out, sixel_color_def_t const *destination,
     }
     *out = NULL;
     if (policy != SIXEL_GAMUT_LOCAL_MINDE &&
-            policy != SIXEL_GAMUT_EDGE_SEEKER) {
+            policy != SIXEL_GAMUT_EDGE_SEEKER &&
+            policy != SIXEL_GAMUT_RAY_TRACE) {
         return SIXEL_BAD_ARGUMENT;
     }
     status = SIXEL_OK;
@@ -632,11 +804,14 @@ sixel_gamut_new(sixel_gamut_t **out, sixel_color_def_t const *destination,
             policy == SIXEL_GAMUT_EDGE_SEEKER
             ? "edge-seeker requires a supported matrix/TRC RGB gamut "
               "with normalized endpoints and a valid boundary table."
+            : policy == SIXEL_GAMUT_RAY_TRACE
+            ? "ray-trace requires a supported matrix/TRC RGB gamut."
             : "local-minde requires a supported matrix/TRC RGB gamut.");
         return SIXEL_BAD_ARGUMENT;
     }
     mapper->vtbl = policy == SIXEL_GAMUT_EDGE_SEEKER
-        ? &sixel_gamut_edge_seeker_vtbl : &sixel_gamut_local_minde_vtbl;
+        ? &sixel_gamut_edge_seeker_vtbl : policy == SIXEL_GAMUT_RAY_TRACE
+        ? &sixel_gamut_ray_trace_vtbl : &sixel_gamut_local_minde_vtbl;
     mapper->allocator = allocator;
     sixel_allocator_ref(allocator);
     *out = mapper;

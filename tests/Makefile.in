@@ -2403,6 +2403,26 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/gamut/0008_policy_atomicity.c \
 	processing/gamut/gamut_test_common.h \
 	processing/gamut/edge_test_common.h \
+	processing/gamut/ray_test_common.h \
+	processing/gamut/0039_ray_srgb_reference.c \
+	processing/gamut/0040_ray_p3_reference.c \
+	processing/gamut/0041_ray_adobe_reference.c \
+	processing/gamut/0042_ray_dci_reference.c \
+	processing/gamut/0043_ray_identity.c \
+	processing/gamut/0044_ray_endpoints.c \
+	processing/gamut/0045_ray_nonfinite_atomic.c \
+	processing/gamut/0046_ray_matrix_icc.c \
+	processing/gamut/0047_ray_bounds.c \
+	processing/gamut/0048_ray_full_frame_samples.c \
+	processing/gamut/0049_ray_adaptive_samples.c \
+	processing/gamut/0050_ray_oklab_workspace.c \
+	processing/gamut/0051_ray_highcolor.c \
+	processing/gamut/0052_ray_lut_rejected.c \
+	processing/gamut/0053_ray_environment_precedence.c \
+	processing/gamut/0054_ray_encoder_isolation.c \
+	processing/gamut/0056_ray_geometry.c \
+	processing/gamut/0057_ray_cache_reset.c \
+	processing/gamut/0058_ray_linear_reference.c \
 	processing/gamut/0038_edge_linear_reference.c \
 	processing/gamut/0030_edge_full_frame_samples.c \
 	processing/gamut/0031_edge_adaptive_samples.c \
@@ -5605,6 +5625,25 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0006_dci_reference.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0007_nonfinite_atomic.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0008_policy_atomicity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0039_ray_srgb_reference.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0040_ray_p3_reference.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0041_ray_adobe_reference.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0042_ray_dci_reference.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0043_ray_identity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0044_ray_endpoints.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0045_ray_nonfinite_atomic.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0046_ray_matrix_icc.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0047_ray_bounds.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0048_ray_full_frame_samples.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0049_ray_adaptive_samples.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0050_ray_oklab_workspace.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0051_ray_highcolor.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0052_ray_lut_rejected.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0053_ray_environment_precedence.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0054_ray_encoder_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0056_ray_geometry.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0057_ray_cache_reset.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0058_ray_linear_reference.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0038_edge_linear_reference.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0030_edge_full_frame_samples.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0031_edge_adaptive_samples.$(OBJEXT) \
@@ -8758,6 +8797,25 @@ am__depfiles_remade =  \
 	processing/gamut/$(DEPDIR)/test_runner-0035_edge_environment_precedence.Po \
 	processing/gamut/$(DEPDIR)/test_runner-0036_edge_encoder_isolation.Po \
 	processing/gamut/$(DEPDIR)/test_runner-0038_edge_linear_reference.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0039_ray_srgb_reference.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0040_ray_p3_reference.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0041_ray_adobe_reference.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0042_ray_dci_reference.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0043_ray_identity.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0044_ray_endpoints.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0045_ray_nonfinite_atomic.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0046_ray_matrix_icc.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0047_ray_bounds.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0048_ray_full_frame_samples.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0049_ray_adaptive_samples.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0050_ray_oklab_workspace.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0051_ray_highcolor.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0052_ray_lut_rejected.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0053_ray_environment_precedence.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0054_ray_encoder_isolation.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0056_ray_geometry.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0057_ray_cache_reset.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0058_ray_linear_reference.Po \
 	processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po \
 	processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po \
 	processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po \
@@ -10530,6 +10588,25 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SRGB_IDENTITY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_EDGE_LINEAR_REFERENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_RAY_SRGB_REFERENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_RAY_P3_REFERENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_RAY_ADOBE_REFERENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_RAY_DCI_REFERENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_RAY_IDENTITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_RAY_ENDPOINTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_RAY_NONFINITE_ATOMIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0046_RAY_MATRIX_ICC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0047_RAY_BOUNDS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_RAY_FULL_FRAME_SAMPLES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0049_RAY_ADAPTIVE_SAMPLES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_RAY_OKLAB_WORKSPACE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_RAY_HIGHCOLOR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_RAY_LUT_REJECTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_RAY_ENVIRONMENT_PRECEDENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_RAY_ENCODER_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0056_RAY_GEOMETRY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_RAY_CACHE_RESET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_RAY_LINEAR_REFERENCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_EDGE_FULL_FRAME_SAMPLES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_EDGE_ADAPTIVE_SAMPLES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_EDGE_OKLAB_WORKSPACE \
@@ -16083,6 +16160,26 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0008_policy_atomicity.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/gamut_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/edge_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/ray_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0039_ray_srgb_reference.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0040_ray_p3_reference.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0041_ray_adobe_reference.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0042_ray_dci_reference.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0043_ray_identity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0044_ray_endpoints.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0045_ray_nonfinite_atomic.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0046_ray_matrix_icc.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0047_ray_bounds.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0048_ray_full_frame_samples.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0049_ray_adaptive_samples.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0050_ray_oklab_workspace.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0051_ray_highcolor.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0052_ray_lut_rejected.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0053_ray_environment_precedence.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0054_ray_encoder_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0056_ray_geometry.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0057_ray_cache_reset.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0058_ray_linear_reference.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0038_edge_linear_reference.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0030_edge_full_frame_samples.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0031_edge_adaptive_samples.c \
@@ -17228,7 +17325,9 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	data/color-numeric/gamut-reference.py \
 	data/color-numeric/gamut-reference.h \
 	data/color-numeric/edge-reference.py \
-	data/color-numeric/edge-reference.h
+	data/color-numeric/edge-reference.h \
+	data/color-numeric/ray-reference.py \
+	data/color-numeric/ray-reference.h
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
@@ -24360,6 +24459,63 @@ processing/gamut/test_runner-0007_nonfinite_atomic.$(OBJEXT):  \
 processing/gamut/test_runner-0008_policy_atomicity.$(OBJEXT):  \
 	processing/gamut/$(am__dirstamp) \
 	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0039_ray_srgb_reference.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0040_ray_p3_reference.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0041_ray_adobe_reference.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0042_ray_dci_reference.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0043_ray_identity.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0044_ray_endpoints.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0045_ray_nonfinite_atomic.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0046_ray_matrix_icc.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0047_ray_bounds.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0048_ray_full_frame_samples.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0049_ray_adaptive_samples.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0050_ray_oklab_workspace.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0051_ray_highcolor.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0052_ray_lut_rejected.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0053_ray_environment_precedence.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0054_ray_encoder_isolation.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0056_ray_geometry.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0057_ray_cache_reset.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0058_ray_linear_reference.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
 processing/gamut/test_runner-0038_edge_linear_reference.$(OBJEXT):  \
 	processing/gamut/$(am__dirstamp) \
 	processing/gamut/$(DEPDIR)/$(am__dirstamp)
@@ -29798,6 +29954,25 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0035_edge_environment_precedence.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0036_edge_encoder_isolation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0038_edge_linear_reference.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0039_ray_srgb_reference.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0040_ray_p3_reference.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0041_ray_adobe_reference.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0042_ray_dci_reference.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0043_ray_identity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0044_ray_endpoints.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0045_ray_nonfinite_atomic.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0046_ray_matrix_icc.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0047_ray_bounds.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0048_ray_full_frame_samples.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0049_ray_adaptive_samples.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0050_ray_oklab_workspace.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0051_ray_highcolor.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0052_ray_lut_rejected.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0053_ray_environment_precedence.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0054_ray_encoder_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0056_ray_geometry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0057_ray_cache_reset.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0058_ray_linear_reference.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po@am__quote@ # am--include-marker
@@ -62155,6 +62330,272 @@ processing/gamut/test_runner-0008_policy_atomicity.obj: processing/gamut/0008_po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0008_policy_atomicity.c' object='processing/gamut/test_runner-0008_policy_atomicity.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0008_policy_atomicity.obj `if test -f 'processing/gamut/0008_policy_atomicity.c'; then $(CYGPATH_W) 'processing/gamut/0008_policy_atomicity.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0008_policy_atomicity.c'; fi`
+
+processing/gamut/test_runner-0039_ray_srgb_reference.o: processing/gamut/0039_ray_srgb_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0039_ray_srgb_reference.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0039_ray_srgb_reference.Tpo -c -o processing/gamut/test_runner-0039_ray_srgb_reference.o `test -f 'processing/gamut/0039_ray_srgb_reference.c' || echo '$(srcdir)/'`processing/gamut/0039_ray_srgb_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0039_ray_srgb_reference.Tpo processing/gamut/$(DEPDIR)/test_runner-0039_ray_srgb_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0039_ray_srgb_reference.c' object='processing/gamut/test_runner-0039_ray_srgb_reference.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0039_ray_srgb_reference.o `test -f 'processing/gamut/0039_ray_srgb_reference.c' || echo '$(srcdir)/'`processing/gamut/0039_ray_srgb_reference.c
+
+processing/gamut/test_runner-0039_ray_srgb_reference.obj: processing/gamut/0039_ray_srgb_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0039_ray_srgb_reference.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0039_ray_srgb_reference.Tpo -c -o processing/gamut/test_runner-0039_ray_srgb_reference.obj `if test -f 'processing/gamut/0039_ray_srgb_reference.c'; then $(CYGPATH_W) 'processing/gamut/0039_ray_srgb_reference.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0039_ray_srgb_reference.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0039_ray_srgb_reference.Tpo processing/gamut/$(DEPDIR)/test_runner-0039_ray_srgb_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0039_ray_srgb_reference.c' object='processing/gamut/test_runner-0039_ray_srgb_reference.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0039_ray_srgb_reference.obj `if test -f 'processing/gamut/0039_ray_srgb_reference.c'; then $(CYGPATH_W) 'processing/gamut/0039_ray_srgb_reference.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0039_ray_srgb_reference.c'; fi`
+
+processing/gamut/test_runner-0040_ray_p3_reference.o: processing/gamut/0040_ray_p3_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0040_ray_p3_reference.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0040_ray_p3_reference.Tpo -c -o processing/gamut/test_runner-0040_ray_p3_reference.o `test -f 'processing/gamut/0040_ray_p3_reference.c' || echo '$(srcdir)/'`processing/gamut/0040_ray_p3_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0040_ray_p3_reference.Tpo processing/gamut/$(DEPDIR)/test_runner-0040_ray_p3_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0040_ray_p3_reference.c' object='processing/gamut/test_runner-0040_ray_p3_reference.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0040_ray_p3_reference.o `test -f 'processing/gamut/0040_ray_p3_reference.c' || echo '$(srcdir)/'`processing/gamut/0040_ray_p3_reference.c
+
+processing/gamut/test_runner-0040_ray_p3_reference.obj: processing/gamut/0040_ray_p3_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0040_ray_p3_reference.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0040_ray_p3_reference.Tpo -c -o processing/gamut/test_runner-0040_ray_p3_reference.obj `if test -f 'processing/gamut/0040_ray_p3_reference.c'; then $(CYGPATH_W) 'processing/gamut/0040_ray_p3_reference.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0040_ray_p3_reference.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0040_ray_p3_reference.Tpo processing/gamut/$(DEPDIR)/test_runner-0040_ray_p3_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0040_ray_p3_reference.c' object='processing/gamut/test_runner-0040_ray_p3_reference.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0040_ray_p3_reference.obj `if test -f 'processing/gamut/0040_ray_p3_reference.c'; then $(CYGPATH_W) 'processing/gamut/0040_ray_p3_reference.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0040_ray_p3_reference.c'; fi`
+
+processing/gamut/test_runner-0041_ray_adobe_reference.o: processing/gamut/0041_ray_adobe_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0041_ray_adobe_reference.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0041_ray_adobe_reference.Tpo -c -o processing/gamut/test_runner-0041_ray_adobe_reference.o `test -f 'processing/gamut/0041_ray_adobe_reference.c' || echo '$(srcdir)/'`processing/gamut/0041_ray_adobe_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0041_ray_adobe_reference.Tpo processing/gamut/$(DEPDIR)/test_runner-0041_ray_adobe_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0041_ray_adobe_reference.c' object='processing/gamut/test_runner-0041_ray_adobe_reference.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0041_ray_adobe_reference.o `test -f 'processing/gamut/0041_ray_adobe_reference.c' || echo '$(srcdir)/'`processing/gamut/0041_ray_adobe_reference.c
+
+processing/gamut/test_runner-0041_ray_adobe_reference.obj: processing/gamut/0041_ray_adobe_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0041_ray_adobe_reference.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0041_ray_adobe_reference.Tpo -c -o processing/gamut/test_runner-0041_ray_adobe_reference.obj `if test -f 'processing/gamut/0041_ray_adobe_reference.c'; then $(CYGPATH_W) 'processing/gamut/0041_ray_adobe_reference.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0041_ray_adobe_reference.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0041_ray_adobe_reference.Tpo processing/gamut/$(DEPDIR)/test_runner-0041_ray_adobe_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0041_ray_adobe_reference.c' object='processing/gamut/test_runner-0041_ray_adobe_reference.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0041_ray_adobe_reference.obj `if test -f 'processing/gamut/0041_ray_adobe_reference.c'; then $(CYGPATH_W) 'processing/gamut/0041_ray_adobe_reference.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0041_ray_adobe_reference.c'; fi`
+
+processing/gamut/test_runner-0042_ray_dci_reference.o: processing/gamut/0042_ray_dci_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0042_ray_dci_reference.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0042_ray_dci_reference.Tpo -c -o processing/gamut/test_runner-0042_ray_dci_reference.o `test -f 'processing/gamut/0042_ray_dci_reference.c' || echo '$(srcdir)/'`processing/gamut/0042_ray_dci_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0042_ray_dci_reference.Tpo processing/gamut/$(DEPDIR)/test_runner-0042_ray_dci_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0042_ray_dci_reference.c' object='processing/gamut/test_runner-0042_ray_dci_reference.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0042_ray_dci_reference.o `test -f 'processing/gamut/0042_ray_dci_reference.c' || echo '$(srcdir)/'`processing/gamut/0042_ray_dci_reference.c
+
+processing/gamut/test_runner-0042_ray_dci_reference.obj: processing/gamut/0042_ray_dci_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0042_ray_dci_reference.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0042_ray_dci_reference.Tpo -c -o processing/gamut/test_runner-0042_ray_dci_reference.obj `if test -f 'processing/gamut/0042_ray_dci_reference.c'; then $(CYGPATH_W) 'processing/gamut/0042_ray_dci_reference.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0042_ray_dci_reference.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0042_ray_dci_reference.Tpo processing/gamut/$(DEPDIR)/test_runner-0042_ray_dci_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0042_ray_dci_reference.c' object='processing/gamut/test_runner-0042_ray_dci_reference.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0042_ray_dci_reference.obj `if test -f 'processing/gamut/0042_ray_dci_reference.c'; then $(CYGPATH_W) 'processing/gamut/0042_ray_dci_reference.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0042_ray_dci_reference.c'; fi`
+
+processing/gamut/test_runner-0043_ray_identity.o: processing/gamut/0043_ray_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0043_ray_identity.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0043_ray_identity.Tpo -c -o processing/gamut/test_runner-0043_ray_identity.o `test -f 'processing/gamut/0043_ray_identity.c' || echo '$(srcdir)/'`processing/gamut/0043_ray_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0043_ray_identity.Tpo processing/gamut/$(DEPDIR)/test_runner-0043_ray_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0043_ray_identity.c' object='processing/gamut/test_runner-0043_ray_identity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0043_ray_identity.o `test -f 'processing/gamut/0043_ray_identity.c' || echo '$(srcdir)/'`processing/gamut/0043_ray_identity.c
+
+processing/gamut/test_runner-0043_ray_identity.obj: processing/gamut/0043_ray_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0043_ray_identity.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0043_ray_identity.Tpo -c -o processing/gamut/test_runner-0043_ray_identity.obj `if test -f 'processing/gamut/0043_ray_identity.c'; then $(CYGPATH_W) 'processing/gamut/0043_ray_identity.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0043_ray_identity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0043_ray_identity.Tpo processing/gamut/$(DEPDIR)/test_runner-0043_ray_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0043_ray_identity.c' object='processing/gamut/test_runner-0043_ray_identity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0043_ray_identity.obj `if test -f 'processing/gamut/0043_ray_identity.c'; then $(CYGPATH_W) 'processing/gamut/0043_ray_identity.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0043_ray_identity.c'; fi`
+
+processing/gamut/test_runner-0044_ray_endpoints.o: processing/gamut/0044_ray_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0044_ray_endpoints.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0044_ray_endpoints.Tpo -c -o processing/gamut/test_runner-0044_ray_endpoints.o `test -f 'processing/gamut/0044_ray_endpoints.c' || echo '$(srcdir)/'`processing/gamut/0044_ray_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0044_ray_endpoints.Tpo processing/gamut/$(DEPDIR)/test_runner-0044_ray_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0044_ray_endpoints.c' object='processing/gamut/test_runner-0044_ray_endpoints.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0044_ray_endpoints.o `test -f 'processing/gamut/0044_ray_endpoints.c' || echo '$(srcdir)/'`processing/gamut/0044_ray_endpoints.c
+
+processing/gamut/test_runner-0044_ray_endpoints.obj: processing/gamut/0044_ray_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0044_ray_endpoints.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0044_ray_endpoints.Tpo -c -o processing/gamut/test_runner-0044_ray_endpoints.obj `if test -f 'processing/gamut/0044_ray_endpoints.c'; then $(CYGPATH_W) 'processing/gamut/0044_ray_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0044_ray_endpoints.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0044_ray_endpoints.Tpo processing/gamut/$(DEPDIR)/test_runner-0044_ray_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0044_ray_endpoints.c' object='processing/gamut/test_runner-0044_ray_endpoints.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0044_ray_endpoints.obj `if test -f 'processing/gamut/0044_ray_endpoints.c'; then $(CYGPATH_W) 'processing/gamut/0044_ray_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0044_ray_endpoints.c'; fi`
+
+processing/gamut/test_runner-0045_ray_nonfinite_atomic.o: processing/gamut/0045_ray_nonfinite_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0045_ray_nonfinite_atomic.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0045_ray_nonfinite_atomic.Tpo -c -o processing/gamut/test_runner-0045_ray_nonfinite_atomic.o `test -f 'processing/gamut/0045_ray_nonfinite_atomic.c' || echo '$(srcdir)/'`processing/gamut/0045_ray_nonfinite_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0045_ray_nonfinite_atomic.Tpo processing/gamut/$(DEPDIR)/test_runner-0045_ray_nonfinite_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0045_ray_nonfinite_atomic.c' object='processing/gamut/test_runner-0045_ray_nonfinite_atomic.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0045_ray_nonfinite_atomic.o `test -f 'processing/gamut/0045_ray_nonfinite_atomic.c' || echo '$(srcdir)/'`processing/gamut/0045_ray_nonfinite_atomic.c
+
+processing/gamut/test_runner-0045_ray_nonfinite_atomic.obj: processing/gamut/0045_ray_nonfinite_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0045_ray_nonfinite_atomic.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0045_ray_nonfinite_atomic.Tpo -c -o processing/gamut/test_runner-0045_ray_nonfinite_atomic.obj `if test -f 'processing/gamut/0045_ray_nonfinite_atomic.c'; then $(CYGPATH_W) 'processing/gamut/0045_ray_nonfinite_atomic.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0045_ray_nonfinite_atomic.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0045_ray_nonfinite_atomic.Tpo processing/gamut/$(DEPDIR)/test_runner-0045_ray_nonfinite_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0045_ray_nonfinite_atomic.c' object='processing/gamut/test_runner-0045_ray_nonfinite_atomic.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0045_ray_nonfinite_atomic.obj `if test -f 'processing/gamut/0045_ray_nonfinite_atomic.c'; then $(CYGPATH_W) 'processing/gamut/0045_ray_nonfinite_atomic.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0045_ray_nonfinite_atomic.c'; fi`
+
+processing/gamut/test_runner-0046_ray_matrix_icc.o: processing/gamut/0046_ray_matrix_icc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0046_ray_matrix_icc.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0046_ray_matrix_icc.Tpo -c -o processing/gamut/test_runner-0046_ray_matrix_icc.o `test -f 'processing/gamut/0046_ray_matrix_icc.c' || echo '$(srcdir)/'`processing/gamut/0046_ray_matrix_icc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0046_ray_matrix_icc.Tpo processing/gamut/$(DEPDIR)/test_runner-0046_ray_matrix_icc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0046_ray_matrix_icc.c' object='processing/gamut/test_runner-0046_ray_matrix_icc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0046_ray_matrix_icc.o `test -f 'processing/gamut/0046_ray_matrix_icc.c' || echo '$(srcdir)/'`processing/gamut/0046_ray_matrix_icc.c
+
+processing/gamut/test_runner-0046_ray_matrix_icc.obj: processing/gamut/0046_ray_matrix_icc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0046_ray_matrix_icc.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0046_ray_matrix_icc.Tpo -c -o processing/gamut/test_runner-0046_ray_matrix_icc.obj `if test -f 'processing/gamut/0046_ray_matrix_icc.c'; then $(CYGPATH_W) 'processing/gamut/0046_ray_matrix_icc.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0046_ray_matrix_icc.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0046_ray_matrix_icc.Tpo processing/gamut/$(DEPDIR)/test_runner-0046_ray_matrix_icc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0046_ray_matrix_icc.c' object='processing/gamut/test_runner-0046_ray_matrix_icc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0046_ray_matrix_icc.obj `if test -f 'processing/gamut/0046_ray_matrix_icc.c'; then $(CYGPATH_W) 'processing/gamut/0046_ray_matrix_icc.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0046_ray_matrix_icc.c'; fi`
+
+processing/gamut/test_runner-0047_ray_bounds.o: processing/gamut/0047_ray_bounds.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0047_ray_bounds.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0047_ray_bounds.Tpo -c -o processing/gamut/test_runner-0047_ray_bounds.o `test -f 'processing/gamut/0047_ray_bounds.c' || echo '$(srcdir)/'`processing/gamut/0047_ray_bounds.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0047_ray_bounds.Tpo processing/gamut/$(DEPDIR)/test_runner-0047_ray_bounds.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0047_ray_bounds.c' object='processing/gamut/test_runner-0047_ray_bounds.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0047_ray_bounds.o `test -f 'processing/gamut/0047_ray_bounds.c' || echo '$(srcdir)/'`processing/gamut/0047_ray_bounds.c
+
+processing/gamut/test_runner-0047_ray_bounds.obj: processing/gamut/0047_ray_bounds.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0047_ray_bounds.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0047_ray_bounds.Tpo -c -o processing/gamut/test_runner-0047_ray_bounds.obj `if test -f 'processing/gamut/0047_ray_bounds.c'; then $(CYGPATH_W) 'processing/gamut/0047_ray_bounds.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0047_ray_bounds.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0047_ray_bounds.Tpo processing/gamut/$(DEPDIR)/test_runner-0047_ray_bounds.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0047_ray_bounds.c' object='processing/gamut/test_runner-0047_ray_bounds.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0047_ray_bounds.obj `if test -f 'processing/gamut/0047_ray_bounds.c'; then $(CYGPATH_W) 'processing/gamut/0047_ray_bounds.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0047_ray_bounds.c'; fi`
+
+processing/gamut/test_runner-0048_ray_full_frame_samples.o: processing/gamut/0048_ray_full_frame_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0048_ray_full_frame_samples.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0048_ray_full_frame_samples.Tpo -c -o processing/gamut/test_runner-0048_ray_full_frame_samples.o `test -f 'processing/gamut/0048_ray_full_frame_samples.c' || echo '$(srcdir)/'`processing/gamut/0048_ray_full_frame_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0048_ray_full_frame_samples.Tpo processing/gamut/$(DEPDIR)/test_runner-0048_ray_full_frame_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0048_ray_full_frame_samples.c' object='processing/gamut/test_runner-0048_ray_full_frame_samples.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0048_ray_full_frame_samples.o `test -f 'processing/gamut/0048_ray_full_frame_samples.c' || echo '$(srcdir)/'`processing/gamut/0048_ray_full_frame_samples.c
+
+processing/gamut/test_runner-0048_ray_full_frame_samples.obj: processing/gamut/0048_ray_full_frame_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0048_ray_full_frame_samples.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0048_ray_full_frame_samples.Tpo -c -o processing/gamut/test_runner-0048_ray_full_frame_samples.obj `if test -f 'processing/gamut/0048_ray_full_frame_samples.c'; then $(CYGPATH_W) 'processing/gamut/0048_ray_full_frame_samples.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0048_ray_full_frame_samples.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0048_ray_full_frame_samples.Tpo processing/gamut/$(DEPDIR)/test_runner-0048_ray_full_frame_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0048_ray_full_frame_samples.c' object='processing/gamut/test_runner-0048_ray_full_frame_samples.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0048_ray_full_frame_samples.obj `if test -f 'processing/gamut/0048_ray_full_frame_samples.c'; then $(CYGPATH_W) 'processing/gamut/0048_ray_full_frame_samples.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0048_ray_full_frame_samples.c'; fi`
+
+processing/gamut/test_runner-0049_ray_adaptive_samples.o: processing/gamut/0049_ray_adaptive_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0049_ray_adaptive_samples.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0049_ray_adaptive_samples.Tpo -c -o processing/gamut/test_runner-0049_ray_adaptive_samples.o `test -f 'processing/gamut/0049_ray_adaptive_samples.c' || echo '$(srcdir)/'`processing/gamut/0049_ray_adaptive_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0049_ray_adaptive_samples.Tpo processing/gamut/$(DEPDIR)/test_runner-0049_ray_adaptive_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0049_ray_adaptive_samples.c' object='processing/gamut/test_runner-0049_ray_adaptive_samples.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0049_ray_adaptive_samples.o `test -f 'processing/gamut/0049_ray_adaptive_samples.c' || echo '$(srcdir)/'`processing/gamut/0049_ray_adaptive_samples.c
+
+processing/gamut/test_runner-0049_ray_adaptive_samples.obj: processing/gamut/0049_ray_adaptive_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0049_ray_adaptive_samples.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0049_ray_adaptive_samples.Tpo -c -o processing/gamut/test_runner-0049_ray_adaptive_samples.obj `if test -f 'processing/gamut/0049_ray_adaptive_samples.c'; then $(CYGPATH_W) 'processing/gamut/0049_ray_adaptive_samples.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0049_ray_adaptive_samples.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0049_ray_adaptive_samples.Tpo processing/gamut/$(DEPDIR)/test_runner-0049_ray_adaptive_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0049_ray_adaptive_samples.c' object='processing/gamut/test_runner-0049_ray_adaptive_samples.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0049_ray_adaptive_samples.obj `if test -f 'processing/gamut/0049_ray_adaptive_samples.c'; then $(CYGPATH_W) 'processing/gamut/0049_ray_adaptive_samples.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0049_ray_adaptive_samples.c'; fi`
+
+processing/gamut/test_runner-0050_ray_oklab_workspace.o: processing/gamut/0050_ray_oklab_workspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0050_ray_oklab_workspace.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0050_ray_oklab_workspace.Tpo -c -o processing/gamut/test_runner-0050_ray_oklab_workspace.o `test -f 'processing/gamut/0050_ray_oklab_workspace.c' || echo '$(srcdir)/'`processing/gamut/0050_ray_oklab_workspace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0050_ray_oklab_workspace.Tpo processing/gamut/$(DEPDIR)/test_runner-0050_ray_oklab_workspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0050_ray_oklab_workspace.c' object='processing/gamut/test_runner-0050_ray_oklab_workspace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0050_ray_oklab_workspace.o `test -f 'processing/gamut/0050_ray_oklab_workspace.c' || echo '$(srcdir)/'`processing/gamut/0050_ray_oklab_workspace.c
+
+processing/gamut/test_runner-0050_ray_oklab_workspace.obj: processing/gamut/0050_ray_oklab_workspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0050_ray_oklab_workspace.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0050_ray_oklab_workspace.Tpo -c -o processing/gamut/test_runner-0050_ray_oklab_workspace.obj `if test -f 'processing/gamut/0050_ray_oklab_workspace.c'; then $(CYGPATH_W) 'processing/gamut/0050_ray_oklab_workspace.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0050_ray_oklab_workspace.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0050_ray_oklab_workspace.Tpo processing/gamut/$(DEPDIR)/test_runner-0050_ray_oklab_workspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0050_ray_oklab_workspace.c' object='processing/gamut/test_runner-0050_ray_oklab_workspace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0050_ray_oklab_workspace.obj `if test -f 'processing/gamut/0050_ray_oklab_workspace.c'; then $(CYGPATH_W) 'processing/gamut/0050_ray_oklab_workspace.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0050_ray_oklab_workspace.c'; fi`
+
+processing/gamut/test_runner-0051_ray_highcolor.o: processing/gamut/0051_ray_highcolor.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0051_ray_highcolor.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0051_ray_highcolor.Tpo -c -o processing/gamut/test_runner-0051_ray_highcolor.o `test -f 'processing/gamut/0051_ray_highcolor.c' || echo '$(srcdir)/'`processing/gamut/0051_ray_highcolor.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0051_ray_highcolor.Tpo processing/gamut/$(DEPDIR)/test_runner-0051_ray_highcolor.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0051_ray_highcolor.c' object='processing/gamut/test_runner-0051_ray_highcolor.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0051_ray_highcolor.o `test -f 'processing/gamut/0051_ray_highcolor.c' || echo '$(srcdir)/'`processing/gamut/0051_ray_highcolor.c
+
+processing/gamut/test_runner-0051_ray_highcolor.obj: processing/gamut/0051_ray_highcolor.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0051_ray_highcolor.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0051_ray_highcolor.Tpo -c -o processing/gamut/test_runner-0051_ray_highcolor.obj `if test -f 'processing/gamut/0051_ray_highcolor.c'; then $(CYGPATH_W) 'processing/gamut/0051_ray_highcolor.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0051_ray_highcolor.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0051_ray_highcolor.Tpo processing/gamut/$(DEPDIR)/test_runner-0051_ray_highcolor.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0051_ray_highcolor.c' object='processing/gamut/test_runner-0051_ray_highcolor.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0051_ray_highcolor.obj `if test -f 'processing/gamut/0051_ray_highcolor.c'; then $(CYGPATH_W) 'processing/gamut/0051_ray_highcolor.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0051_ray_highcolor.c'; fi`
+
+processing/gamut/test_runner-0052_ray_lut_rejected.o: processing/gamut/0052_ray_lut_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0052_ray_lut_rejected.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0052_ray_lut_rejected.Tpo -c -o processing/gamut/test_runner-0052_ray_lut_rejected.o `test -f 'processing/gamut/0052_ray_lut_rejected.c' || echo '$(srcdir)/'`processing/gamut/0052_ray_lut_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0052_ray_lut_rejected.Tpo processing/gamut/$(DEPDIR)/test_runner-0052_ray_lut_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0052_ray_lut_rejected.c' object='processing/gamut/test_runner-0052_ray_lut_rejected.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0052_ray_lut_rejected.o `test -f 'processing/gamut/0052_ray_lut_rejected.c' || echo '$(srcdir)/'`processing/gamut/0052_ray_lut_rejected.c
+
+processing/gamut/test_runner-0052_ray_lut_rejected.obj: processing/gamut/0052_ray_lut_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0052_ray_lut_rejected.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0052_ray_lut_rejected.Tpo -c -o processing/gamut/test_runner-0052_ray_lut_rejected.obj `if test -f 'processing/gamut/0052_ray_lut_rejected.c'; then $(CYGPATH_W) 'processing/gamut/0052_ray_lut_rejected.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0052_ray_lut_rejected.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0052_ray_lut_rejected.Tpo processing/gamut/$(DEPDIR)/test_runner-0052_ray_lut_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0052_ray_lut_rejected.c' object='processing/gamut/test_runner-0052_ray_lut_rejected.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0052_ray_lut_rejected.obj `if test -f 'processing/gamut/0052_ray_lut_rejected.c'; then $(CYGPATH_W) 'processing/gamut/0052_ray_lut_rejected.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0052_ray_lut_rejected.c'; fi`
+
+processing/gamut/test_runner-0053_ray_environment_precedence.o: processing/gamut/0053_ray_environment_precedence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0053_ray_environment_precedence.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0053_ray_environment_precedence.Tpo -c -o processing/gamut/test_runner-0053_ray_environment_precedence.o `test -f 'processing/gamut/0053_ray_environment_precedence.c' || echo '$(srcdir)/'`processing/gamut/0053_ray_environment_precedence.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0053_ray_environment_precedence.Tpo processing/gamut/$(DEPDIR)/test_runner-0053_ray_environment_precedence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0053_ray_environment_precedence.c' object='processing/gamut/test_runner-0053_ray_environment_precedence.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0053_ray_environment_precedence.o `test -f 'processing/gamut/0053_ray_environment_precedence.c' || echo '$(srcdir)/'`processing/gamut/0053_ray_environment_precedence.c
+
+processing/gamut/test_runner-0053_ray_environment_precedence.obj: processing/gamut/0053_ray_environment_precedence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0053_ray_environment_precedence.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0053_ray_environment_precedence.Tpo -c -o processing/gamut/test_runner-0053_ray_environment_precedence.obj `if test -f 'processing/gamut/0053_ray_environment_precedence.c'; then $(CYGPATH_W) 'processing/gamut/0053_ray_environment_precedence.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0053_ray_environment_precedence.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0053_ray_environment_precedence.Tpo processing/gamut/$(DEPDIR)/test_runner-0053_ray_environment_precedence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0053_ray_environment_precedence.c' object='processing/gamut/test_runner-0053_ray_environment_precedence.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0053_ray_environment_precedence.obj `if test -f 'processing/gamut/0053_ray_environment_precedence.c'; then $(CYGPATH_W) 'processing/gamut/0053_ray_environment_precedence.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0053_ray_environment_precedence.c'; fi`
+
+processing/gamut/test_runner-0054_ray_encoder_isolation.o: processing/gamut/0054_ray_encoder_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0054_ray_encoder_isolation.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0054_ray_encoder_isolation.Tpo -c -o processing/gamut/test_runner-0054_ray_encoder_isolation.o `test -f 'processing/gamut/0054_ray_encoder_isolation.c' || echo '$(srcdir)/'`processing/gamut/0054_ray_encoder_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0054_ray_encoder_isolation.Tpo processing/gamut/$(DEPDIR)/test_runner-0054_ray_encoder_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0054_ray_encoder_isolation.c' object='processing/gamut/test_runner-0054_ray_encoder_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0054_ray_encoder_isolation.o `test -f 'processing/gamut/0054_ray_encoder_isolation.c' || echo '$(srcdir)/'`processing/gamut/0054_ray_encoder_isolation.c
+
+processing/gamut/test_runner-0054_ray_encoder_isolation.obj: processing/gamut/0054_ray_encoder_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0054_ray_encoder_isolation.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0054_ray_encoder_isolation.Tpo -c -o processing/gamut/test_runner-0054_ray_encoder_isolation.obj `if test -f 'processing/gamut/0054_ray_encoder_isolation.c'; then $(CYGPATH_W) 'processing/gamut/0054_ray_encoder_isolation.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0054_ray_encoder_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0054_ray_encoder_isolation.Tpo processing/gamut/$(DEPDIR)/test_runner-0054_ray_encoder_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0054_ray_encoder_isolation.c' object='processing/gamut/test_runner-0054_ray_encoder_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0054_ray_encoder_isolation.obj `if test -f 'processing/gamut/0054_ray_encoder_isolation.c'; then $(CYGPATH_W) 'processing/gamut/0054_ray_encoder_isolation.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0054_ray_encoder_isolation.c'; fi`
+
+processing/gamut/test_runner-0056_ray_geometry.o: processing/gamut/0056_ray_geometry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0056_ray_geometry.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0056_ray_geometry.Tpo -c -o processing/gamut/test_runner-0056_ray_geometry.o `test -f 'processing/gamut/0056_ray_geometry.c' || echo '$(srcdir)/'`processing/gamut/0056_ray_geometry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0056_ray_geometry.Tpo processing/gamut/$(DEPDIR)/test_runner-0056_ray_geometry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0056_ray_geometry.c' object='processing/gamut/test_runner-0056_ray_geometry.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0056_ray_geometry.o `test -f 'processing/gamut/0056_ray_geometry.c' || echo '$(srcdir)/'`processing/gamut/0056_ray_geometry.c
+
+processing/gamut/test_runner-0056_ray_geometry.obj: processing/gamut/0056_ray_geometry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0056_ray_geometry.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0056_ray_geometry.Tpo -c -o processing/gamut/test_runner-0056_ray_geometry.obj `if test -f 'processing/gamut/0056_ray_geometry.c'; then $(CYGPATH_W) 'processing/gamut/0056_ray_geometry.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0056_ray_geometry.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0056_ray_geometry.Tpo processing/gamut/$(DEPDIR)/test_runner-0056_ray_geometry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0056_ray_geometry.c' object='processing/gamut/test_runner-0056_ray_geometry.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0056_ray_geometry.obj `if test -f 'processing/gamut/0056_ray_geometry.c'; then $(CYGPATH_W) 'processing/gamut/0056_ray_geometry.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0056_ray_geometry.c'; fi`
+
+processing/gamut/test_runner-0057_ray_cache_reset.o: processing/gamut/0057_ray_cache_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0057_ray_cache_reset.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0057_ray_cache_reset.Tpo -c -o processing/gamut/test_runner-0057_ray_cache_reset.o `test -f 'processing/gamut/0057_ray_cache_reset.c' || echo '$(srcdir)/'`processing/gamut/0057_ray_cache_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0057_ray_cache_reset.Tpo processing/gamut/$(DEPDIR)/test_runner-0057_ray_cache_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0057_ray_cache_reset.c' object='processing/gamut/test_runner-0057_ray_cache_reset.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0057_ray_cache_reset.o `test -f 'processing/gamut/0057_ray_cache_reset.c' || echo '$(srcdir)/'`processing/gamut/0057_ray_cache_reset.c
+
+processing/gamut/test_runner-0057_ray_cache_reset.obj: processing/gamut/0057_ray_cache_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0057_ray_cache_reset.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0057_ray_cache_reset.Tpo -c -o processing/gamut/test_runner-0057_ray_cache_reset.obj `if test -f 'processing/gamut/0057_ray_cache_reset.c'; then $(CYGPATH_W) 'processing/gamut/0057_ray_cache_reset.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0057_ray_cache_reset.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0057_ray_cache_reset.Tpo processing/gamut/$(DEPDIR)/test_runner-0057_ray_cache_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0057_ray_cache_reset.c' object='processing/gamut/test_runner-0057_ray_cache_reset.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0057_ray_cache_reset.obj `if test -f 'processing/gamut/0057_ray_cache_reset.c'; then $(CYGPATH_W) 'processing/gamut/0057_ray_cache_reset.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0057_ray_cache_reset.c'; fi`
+
+processing/gamut/test_runner-0058_ray_linear_reference.o: processing/gamut/0058_ray_linear_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0058_ray_linear_reference.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0058_ray_linear_reference.Tpo -c -o processing/gamut/test_runner-0058_ray_linear_reference.o `test -f 'processing/gamut/0058_ray_linear_reference.c' || echo '$(srcdir)/'`processing/gamut/0058_ray_linear_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0058_ray_linear_reference.Tpo processing/gamut/$(DEPDIR)/test_runner-0058_ray_linear_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0058_ray_linear_reference.c' object='processing/gamut/test_runner-0058_ray_linear_reference.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0058_ray_linear_reference.o `test -f 'processing/gamut/0058_ray_linear_reference.c' || echo '$(srcdir)/'`processing/gamut/0058_ray_linear_reference.c
+
+processing/gamut/test_runner-0058_ray_linear_reference.obj: processing/gamut/0058_ray_linear_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0058_ray_linear_reference.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0058_ray_linear_reference.Tpo -c -o processing/gamut/test_runner-0058_ray_linear_reference.obj `if test -f 'processing/gamut/0058_ray_linear_reference.c'; then $(CYGPATH_W) 'processing/gamut/0058_ray_linear_reference.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0058_ray_linear_reference.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0058_ray_linear_reference.Tpo processing/gamut/$(DEPDIR)/test_runner-0058_ray_linear_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0058_ray_linear_reference.c' object='processing/gamut/test_runner-0058_ray_linear_reference.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0058_ray_linear_reference.obj `if test -f 'processing/gamut/0058_ray_linear_reference.c'; then $(CYGPATH_W) 'processing/gamut/0058_ray_linear_reference.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0058_ray_linear_reference.c'; fi`
 
 processing/gamut/test_runner-0038_edge_linear_reference.o: processing/gamut/0038_edge_linear_reference.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0038_edge_linear_reference.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0038_edge_linear_reference.Tpo -c -o processing/gamut/test_runner-0038_edge_linear_reference.o `test -f 'processing/gamut/0038_edge_linear_reference.c' || echo '$(srcdir)/'`processing/gamut/0038_edge_linear_reference.c

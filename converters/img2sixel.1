@@ -1407,13 +1407,15 @@ din99d -> operate in DIN99d float32 for palette decisions
 .B \-U \fICOLORSPACE\fP, \-\-output\-colorspace=\fICOLORSPACE\fP
 select output color space
 .PP
-All output spaces accept gamut=auto|clip|local-minde|edge-seeker (compact G).
+All output spaces accept gamut=auto|clip|local-minde|edge-seeker|ray-trace
+(compact G).
 SIXEL_OUTPUT_COLORSPACE_GAMUT supplies the default; explicit tuning wins.
 Auto currently selects clip and retains compatibility output.
 Local-minde uses a chroma search with local clipping tolerance.
 Edge-seeker uses a precomputed hue boundary table and chroma reduction.
-Both map source colors and the application palette in Oklab, using the
-destination gamut, before lookup and diffusion. Both require
+Ray-trace uses up to four linear RGB ray intersections and Oklab corrections.
+These methods map source colors and the application palette in Oklab, using the
+destination gamut, before lookup and diffusion. They require
 CPU float processing and an analytic or supported matrix/TRC RGB gamut;
 ICC LUT destinations reject these policies. Edge-seeker also requires
 normalized device endpoints and a valid single-valued boundary model.
@@ -1710,7 +1712,8 @@ Empty or unset leaves the gamma default. This is a CLI setting, not a
 library terminal-discovery policy.
 .TP
 .B SIXEL_OUTPUT_COLORSPACE_GAMUT
-Default for the -U gamut=G suboption: auto (clip), clip, local-minde or edge-seeker.
+Default for the -U gamut=G suboption: auto (clip), clip, local-minde,
+edge-seeker or ray-trace.
 Explicit -U tuning overrides it.
 .TP 5
 .B SIXEL_OUTPUT_COLORSPACE_ICC_PATH

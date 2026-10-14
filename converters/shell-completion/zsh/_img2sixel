@@ -258,7 +258,8 @@ _outputcolorspace() {
     prefix=${current%:*}:
     compadd -- "${prefix}gamut=auto" "${prefix}gamut=clip" \
       "${prefix}gamut=local-minde" "${prefix}Glocal-minde" \
-      "${prefix}gamut=edge-seeker" "${prefix}Gedge-seeker"
+      "${prefix}gamut=edge-seeker" "${prefix}Gedge-seeker" \
+      "${prefix}gamut=ray-trace" "${prefix}Gray-trace"
     case ${current%%:*} in
     [iI]|[iI][cC]|[iI][cC][cC])
       prefix=${current%:*}:

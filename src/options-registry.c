@@ -1781,7 +1781,8 @@ static sixel_suboption_choice_t const g_gamut_choices[] = {
     { "auto", SIXEL_GAMUT_AUTO },
     { "clip", SIXEL_GAMUT_CLIP },
     { "local-minde", SIXEL_GAMUT_LOCAL_MINDE },
-    { "edge-seeker", SIXEL_GAMUT_EDGE_SEEKER }
+    { "edge-seeker", SIXEL_GAMUT_EDGE_SEEKER },
+    { "ray-trace", SIXEL_GAMUT_RAY_TRACE }
 };
 
 static sixel_suboption_key_t const g_suboptions[] = {

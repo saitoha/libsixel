@@ -6,6 +6,7 @@
 | --- | --- |
 | `auto` | Default; resolves to `clip`. |
 | `clip` | Retains the compatibility pipeline: no source mapping, and destination channels are bounded at output. |
+| `ray-trace` | Maps colors with up to four linear RGB ray intersections and Oklab lightness/hue corrections. Already representable colors are unchanged. |
 | `edge-seeker` | Maps colors using a precomputed hue boundary table and constant-lightness chroma reduction in Oklab. Already representable colors are unchanged. |
 | `local-minde` | Maps source colors and the application palette using binary search with local MINDE in Oklab. Already representable colors are unchanged, within the numerical boundary tolerance below. |
 
@@ -15,11 +16,12 @@
 img2sixel image.png -U display-p3:gamut=local-minde
 img2sixel image.png -U gamma:Glocal-minde
 img2sixel image.png -U display-p3:gamut=edge-seeker
+img2sixel image.png -U display-p3:gamut=ray-trace
 img2sixel image.png -U icc:path=/path/to/profile.icc:gamut=local-minde
 img2sixel image.png -U auto:gamut=local-minde:timeout_ms=200
 ```
 
-`local-minde` and `edge-seeker` identify specific algorithms, not space selectors. Explicit selection does not permit substitution of another algorithm. A future recommendation change belongs to `auto`. There is no `oklch` alias, because Oklch is a coordinate representation shared by distinct algorithms.
+`local-minde`, `edge-seeker` and `ray-trace` identify specific algorithms, not space selectors. Explicit selection does not permit substitution of another algorithm. A future recommendation change belongs to `auto`. There is no `oklch` alias, because Oklch is a coordinate representation shared by distinct algorithms.
 
 ## Numeric contract
 
@@ -39,17 +41,25 @@ Construction rejects a boundary which cannot be represented by this model: inval
 
 The table has at most 2,402 entries, each containing four doubles (about 75 KiB per encoder), plus temporary construction storage of about 176 KiB. Construction is performed when selecting the policy/destination, not per frame. In-gamut pixels take the common identity path; out-of-gamut pixels require table lookup and a geometric evaluation. There is no per-pixel allocation or iterative gamut search. This describes computational structure, not a measured speed advantage on every workload.
 
+### Ray Trace
+
+The reference is [CSS Color 4, 9 October 2026, Ray Trace](https://www.w3.org/TR/2026/CRD-css-color-4-20261009/#GMA-RayTrace). For an out-of-gamut color, a ray starts at the neutral color of the same Oklab lightness and intersects the destination's linear RGB box. Up to four intersections are performed. Before each subsequent intersection, the current intersection is converted to Oklab and corrected to the original lightness and hue while retaining its current chroma. This approximates constant-lightness chroma reduction; final clipping contains numerical error. SDR lightness endpoints map to destination black or white.
+
+The ray is unbounded, not limited to the segment between anchor and candidate. When a corrected candidate lies strictly inside the box, it advances the anchor after the intersection is found; it does not terminate the search. Parallel-axis handling and the strict-interior test use `1e-12` in double-precision linear destination coordinates. If a ray has no forward intersection, the last successful intersection (or the original candidate before any hit) is retained and finally clipped, as specified by the algorithm. This recovery is not substitution of another gamut policy.
+
+The destination box uses decoded device endpoints, including non-unit ranges of supported matrix/TRC definitions. Unlike EdgeSeeker, Ray Trace constructs no hue table and imposes no single-valued hue-boundary model. All mapping state except the immutable destination matrices/ranges is local to the call. The iteration limit bounds per-color work but does not establish a measured performance or quality advantage.
+
 ### Shared destination rules
 
 Gamut membership is evaluated in the destination's linear channel domain before inverse transfer curves can clamp it. Named definitions use their primaries, white adaptation and transfer; supported matrix/TRC ICCs use the matrix and channel ranges between their decoded device endpoints. A tolerance of `2e-7` per linear destination channel covers float storage and matrix boundary error. An in-gamut input is returned directly, without a conversion round trip. Intermediate arithmetic uses double, and invalid/nonfinite conversions fail rather than publishing nonfinite output.
 
-ICC LUT profiles cannot use `local-minde` or `edge-seeker`: a bounded inverse LUT is not a gamut-membership oracle. The mapper requires separable, supported, invertible channel curves and an invertible RGB matrix. `clip` continues to admit the existing supported ICC output subset; it does not override a LUT's own rendering behavior. Explicit unsupported mapping never silently falls back to clipping.
+ICC LUT profiles cannot use `local-minde`, `edge-seeker` or `ray-trace`: a bounded inverse LUT is not a gamut-membership oracle. The mapper requires separable, supported, invertible channel curves and an invertible RGB matrix. `clip` continues to admit the existing supported ICC output subset; it does not override a LUT's own rendering behavior. Explicit unsupported mapping never silently falls back to clipping.
 
 ## Pipeline and policy boundaries
 
 The mapper belongs to the shared encoder library, not the loader. Its immutable object owns the destination matrices and endpoint ranges. Separate encoders have separate policy objects; palette workers only read them. Changing gamut policy invalidates incompatible palette and delta caches. No environment access or allocation occurs in per-color mapping.
 
-With `local-minde` or `edge-seeker`, encoding owns a private float frame. After geometry preprocessing, visible source pixels are mapped before lookup/diffusion. Palette-construction samples are also mapped before clustering. The existing sampling policy still determines the sample source: full-frame uses the preprocessed frame, while adaptive-grid uses its loaded-frame samples. The mapper does not silently change that policy or move adaptive sampling after resizing. Omitted pixels are excluded from mapping.
+With `local-minde`, `edge-seeker` or `ray-trace`, encoding owns a private float frame. After geometry preprocessing, visible source pixels are mapped before lookup/diffusion. Palette-construction samples are also mapped before clustering. The existing sampling policy still determines the sample source: full-frame uses the preprocessed frame, while adaptive-grid uses its loaded-frame samples. The mapper does not silently change that policy or move adaptive sampling after resizing. Omitted pixels are excluded from mapping.
 
 Generated palettes are checked again after clustering, merge, cover and workspace conversion, because those operations can produce new out-of-gamut representatives. Fixed palettes are mapped in their application copy; the original palette definition remains separate. The continuous float palette and its compatibility byte view are published consistently before lookup or serialization. High-color maps its source plane before destination conversion and cell construction.
 
@@ -68,7 +78,7 @@ The mapper uses the selected CPU float palette/high-color paths and their existi
 
 The algorithm's published reference is not evidence that it improves every photograph. Default selection remains `clip` until photograph, wide-gamut, gradient and saturated highlight/shadow comparisons establish an acceptable quality/performance tradeoff. A future compression policy that changes near-boundary in-gamut colors is a different contract.
 
-Use the [quality measurement policy](../../quality/measurement-policy.md) and [numerical assertion rules](../../testing/guide.md#intermediate-floating-point-error). Mapping error relative to the original and quantization error relative to the mapped reference are distinct observations. Inspect hue changes, flattened gradients and localized color errors in addition to aggregate metrics. Mapping may inspect every pixel; the chroma search or boundary lookup is restricted to out-of-gamut colors.
+Use the [quality measurement policy](../../quality/measurement-policy.md) and [numerical assertion rules](../../testing/guide.md#intermediate-floating-point-error). Mapping error relative to the original and quantization error relative to the mapped reference are distinct observations. Inspect hue changes, flattened gradients and localized color errors in addition to aggregate metrics. Mapping may inspect every pixel; the chroma search, boundary lookup or ray iteration is restricted to out-of-gamut colors.
 
 ## Test coverage
 
@@ -116,10 +126,32 @@ Use the [quality measurement policy](../../quality/measurement-policy.md) and [n
 | GM-36 | Separate EdgeSeeker encoders retain independent table lifetimes. | [tests/processing/gamut/0036_edge_encoder_isolation.t](../../../tests/processing/gamut/0036_edge_encoder_isolation.t) ([tests/processing/gamut/0036_edge_encoder_isolation.c](../../../tests/processing/gamut/0036_edge_encoder_isolation.c)) |
 | GM-37 | Negotiated output retains EdgeSeeker tuning through an isolated fake-terminal PTY. | [tests/processing/gamut/0037_edge_auto_tty.t](../../../tests/processing/gamut/0037_edge_auto_tty.t) |
 | GM-38 | Linear output uses the linear destination transfer when constructing its boundary. | [tests/processing/gamut/0038_edge_linear_reference.t](../../../tests/processing/gamut/0038_edge_linear_reference.t) ([tests/processing/gamut/0038_edge_linear_reference.c](../../../tests/processing/gamut/0038_edge_linear_reference.c)) |
+| GM-39 | Ray Trace sRGB output agrees with independent six-face intersection values. | [tests/processing/gamut/0039_ray_srgb_reference.t](../../../tests/processing/gamut/0039_ray_srgb_reference.t) ([tests/processing/gamut/0039_ray_srgb_reference.c](../../../tests/processing/gamut/0039_ray_srgb_reference.c)) |
+| GM-40 | Ray Trace uses the P3 gamut boundary. | [tests/processing/gamut/0040_ray_p3_reference.t](../../../tests/processing/gamut/0040_ray_p3_reference.t) ([tests/processing/gamut/0040_ray_p3_reference.c](../../../tests/processing/gamut/0040_ray_p3_reference.c)) |
+| GM-41 | Ray Trace uses the Adobe RGB gamut boundary. | [tests/processing/gamut/0041_ray_adobe_reference.t](../../../tests/processing/gamut/0041_ray_adobe_reference.t) ([tests/processing/gamut/0041_ray_adobe_reference.c](../../../tests/processing/gamut/0041_ray_adobe_reference.c)) |
+| GM-42 | Ray Trace includes DCI-P3 white adaptation. | [tests/processing/gamut/0042_ray_dci_reference.t](../../../tests/processing/gamut/0042_ray_dci_reference.t) ([tests/processing/gamut/0042_ray_dci_reference.c](../../../tests/processing/gamut/0042_ray_dci_reference.c)) |
+| GM-43 | Ray Trace retains in-gamut colors, including extended canonical P3 values, exactly. | [tests/processing/gamut/0043_ray_identity.t](../../../tests/processing/gamut/0043_ray_identity.t) ([tests/processing/gamut/0043_ray_identity.c](../../../tests/processing/gamut/0043_ray_identity.c)) |
+| GM-44 | Ray Trace maps out-of-range SDR lightness to black or white. | [tests/processing/gamut/0044_ray_endpoints.t](../../../tests/processing/gamut/0044_ray_endpoints.t) ([tests/processing/gamut/0044_ray_endpoints.c](../../../tests/processing/gamut/0044_ray_endpoints.c)) |
+| GM-45 | Ray Trace rejects nonfinite input without modifying output. | [tests/processing/gamut/0045_ray_nonfinite_atomic.t](../../../tests/processing/gamut/0045_ray_nonfinite_atomic.t) ([tests/processing/gamut/0045_ray_nonfinite_atomic.c](../../../tests/processing/gamut/0045_ray_nonfinite_atomic.c)) |
+| GM-46 | Ray Trace matrix/TRC ICC values agree with the independent P3 reference. | [tests/processing/gamut/0046_ray_matrix_icc.t](../../../tests/processing/gamut/0046_ray_matrix_icc.t) ([tests/processing/gamut/0046_ray_matrix_icc.c](../../../tests/processing/gamut/0046_ray_matrix_icc.c)) |
+| GM-47 | Ray Trace remains bounded and idempotent across a hue/lightness sweep. | [tests/processing/gamut/0047_ray_bounds.t](../../../tests/processing/gamut/0047_ray_bounds.t) ([tests/processing/gamut/0047_ray_bounds.c](../../../tests/processing/gamut/0047_ray_bounds.c)) |
+| GM-48 | Ray Trace maps full-frame samples before clustering and preserves borrowed input. | [tests/processing/gamut/0048_ray_full_frame_samples.t](../../../tests/processing/gamut/0048_ray_full_frame_samples.t) ([tests/processing/gamut/0048_ray_full_frame_samples.c](../../../tests/processing/gamut/0048_ray_full_frame_samples.c)) |
+| GM-49 | Ray Trace maps adaptive samples before clustering. | [tests/processing/gamut/0049_ray_adaptive_samples.t](../../../tests/processing/gamut/0049_ray_adaptive_samples.t) ([tests/processing/gamut/0049_ray_adaptive_samples.c](../../../tests/processing/gamut/0049_ray_adaptive_samples.c)) |
+| GM-50 | Ray Trace retains mapped colors in the Oklab workspace. | [tests/processing/gamut/0050_ray_oklab_workspace.t](../../../tests/processing/gamut/0050_ray_oklab_workspace.t) ([tests/processing/gamut/0050_ray_oklab_workspace.c](../../../tests/processing/gamut/0050_ray_oklab_workspace.c)) |
+| GM-51 | Ray Trace high-color output matches independently derived RGB101 bins. | [tests/processing/gamut/0051_ray_highcolor.t](../../../tests/processing/gamut/0051_ray_highcolor.t) ([tests/processing/gamut/0051_ray_highcolor.c](../../../tests/processing/gamut/0051_ray_highcolor.c)) |
+| GM-52 | Ray Trace rejects LUT destinations without replacing existing configuration. | [tests/processing/gamut/0052_ray_lut_rejected.t](../../../tests/processing/gamut/0052_ray_lut_rejected.t) ([tests/processing/gamut/0052_ray_lut_rejected.c](../../../tests/processing/gamut/0052_ray_lut_rejected.c)) |
+| GM-53 | The Ray Trace environment default applies without `-U`; explicit tuning overrides it. | [tests/processing/gamut/0053_ray_environment_precedence.t](../../../tests/processing/gamut/0053_ray_environment_precedence.t) ([tests/processing/gamut/0053_ray_environment_precedence.c](../../../tests/processing/gamut/0053_ray_environment_precedence.c)) |
+| GM-54 | Separate Ray Trace encoders retain independent destination lifetimes. | [tests/processing/gamut/0054_ray_encoder_isolation.t](../../../tests/processing/gamut/0054_ray_encoder_isolation.t) ([tests/processing/gamut/0054_ray_encoder_isolation.c](../../../tests/processing/gamut/0054_ray_encoder_isolation.c)) |
+| GM-55 | Negotiated output retains Ray Trace tuning through an isolated fake-terminal PTY. | [tests/processing/gamut/0055_ray_auto_tty.t](../../../tests/processing/gamut/0055_ray_auto_tty.t) |
+| GM-56 | Ray-box geometry handles parallel, zero, outside and unbounded rays; a miss retains and clips the last candidate, including non-unit boxes, while matrix overflow fails atomically. | [tests/processing/gamut/0056_ray_geometry.t](../../../tests/processing/gamut/0056_ray_geometry.t) ([tests/processing/gamut/0056_ray_geometry.c](../../../tests/processing/gamut/0056_ray_geometry.c)) |
+| GM-57 | Switching from EdgeSeeker to Ray Trace invalidates accumulated output. | [tests/processing/gamut/0057_ray_cache_reset.t](../../../tests/processing/gamut/0057_ray_cache_reset.t) ([tests/processing/gamut/0057_ray_cache_reset.c](../../../tests/processing/gamut/0057_ray_cache_reset.c)) |
+| GM-58 | Linear output uses the same Ray Trace linear gamut geometry as sRGB. | [tests/processing/gamut/0058_ray_linear_reference.t](../../../tests/processing/gamut/0058_ray_linear_reference.t) ([tests/processing/gamut/0058_ray_linear_reference.c](../../../tests/processing/gamut/0058_ray_linear_reference.c)) |
 
 Reference comparisons allow absolute error `3e-5` per canonical linear-sRGB channel for independently rounded matrices and binary-search endpoints. The matrix/TRC ICC case allows `3e-4` for its additional 15.16 colorant quantization; the mapped-centroid checks allow `4e-5` after float storage and workspace conversion. These budgets remain separate from the membership and local-MINDE search tolerances above.
 
 The scalar reference generator and stored vectors are [gamut-reference.py](../../../tests/data/color-numeric/gamut-reference.py) and [gamut-reference.h](../../../tests/data/color-numeric/gamut-reference.h). They derive RGB matrices from chromaticities and independently invert Oklab matrices without calling the production implementation. [edge-reference.py](../../../tests/data/color-numeric/edge-reference.py) and [edge-reference.h](../../../tests/data/color-numeric/edge-reference.h) independently fit and intersect circles using their centers to check the production curvature-scaled calculation; they use the same `3e-5` channel budget and `3e-4` ICC budget. The EdgeSeeker vectors include both boundary branches, the hue seam, and blue-region folds.
+
+[ray-reference.py](../../../tests/data/color-numeric/ray-reference.py) and [ray-reference.h](../../../tests/data/color-numeric/ray-reference.h) derive the Ray Trace expectations by testing six faces, independently of the production slab intersection. They cover inward corrections that advance the anchor, saturated highlights/shadows and the hue seam, with the same `3e-5` channel and `3e-4` ICC budgets. Exact comparisons are reserved for retained input, synthetic ray geometry and wire bins away from rounding thresholds.
 
 ### Quality regression tests
 

@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 #include "gamut_test_common.h"
 #include "tests/data/color-numeric/edge-reference.h"
+#include "tests/data/color-numeric/ray-reference.h"
 
 typedef struct gamut_capture {
     unsigned char bytes[8192];
@@ -26,7 +27,7 @@ gamut_capture_write(char *bytes, int size, void *context)
  * of out-of-gamut samples. This observes mapping BEFORE construction. */
 static inline int
 gamut_encode_check(char const *sampling, char const *working, int highcolor,
-                   int edge)
+                   int policy)
 {
     sixel_encoder_t *encoder = NULL;
     sixel_output_t *output = NULL;
@@ -55,7 +56,9 @@ gamut_encode_check(char const *sampling, char const *working, int highcolor,
                 &capture, NULL)) ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                edge ? "gamma:gamut=edge-seeker"
+                policy == SIXEL_GAMUT_RAY_TRACE ? "gamma:gamut=ray-trace"
+                    : policy == SIXEL_GAMUT_EDGE_SEEKER
+                    ? "gamma:gamut=edge-seeker"
                     : "gamma:gamut=local-minde")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Q', "kmeans:seed=1")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "linear")) ||
@@ -78,9 +81,10 @@ gamut_encode_check(char const *sampling, char const *working, int highcolor,
     }
     if (highcolor) {
         /* RGB101 bins are independently derived from the reference. The
-         * local MINDE gives (100,9,46), EdgeSeeker (100,22,47). */
-        ok = decoded[0] == 255 && decoded[1] == (edge ? 56 : 23) &&
-            decoded[2] == (edge ? 120 : 117);
+         * local MINDE gives (100,9,46), both other methods (100,22,47). */
+        ok = decoded[0] == 255 &&
+            decoded[1] == (policy == SIXEL_GAMUT_LOCAL_MINDE ? 23 : 56) &&
+            decoded[2] == (policy == SIXEL_GAMUT_LOCAL_MINDE ? 117 : 120);
         goto end;
     }
     dither = encoder->diagnostic_dither;
@@ -89,7 +93,9 @@ gamut_encode_check(char const *sampling, char const *working, int highcolor,
         goto end;
     }
     for (c = 0; c < 3; ++c) {
-        expected[c] = edge
+        expected[c] = policy == SIXEL_GAMUT_RAY_TRACE
+            ? (ray_expected[0][0][c] + ray_expected[0][4][c]) * .5
+            : policy == SIXEL_GAMUT_EDGE_SEEKER
             ? (edge_expected[0][0][c] + edge_expected[0][4][c]) * .5
             : (gamut_expected[0][0][c] + gamut_expected[0][4][c]) * .5;
     }

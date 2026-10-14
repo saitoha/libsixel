@@ -10,7 +10,8 @@ enum {
     SIXEL_GAMUT_AUTO = 0,
     SIXEL_GAMUT_CLIP,
     SIXEL_GAMUT_LOCAL_MINDE,
-    SIXEL_GAMUT_EDGE_SEEKER
+    SIXEL_GAMUT_EDGE_SEEKER,
+    SIXEL_GAMUT_RAY_TRACE
 };
 
 typedef struct sixel_gamut sixel_gamut_t;

@@ -1046,7 +1046,9 @@ _img2sixel()
                         ${color_prefix}gamut=local-minde
                         ${color_prefix}Glocal-minde
                         ${color_prefix}gamut=edge-seeker
-                        ${color_prefix}Gedge-seeker"
+                        ${color_prefix}Gedge-seeker
+                        ${color_prefix}gamut=ray-trace
+                        ${color_prefix}Gray-trace"
             case ${cur%%:*} in
             [iI]|[iI][cC]|[iI][cC][cC])
                 color_prefix=${cur%:*}:

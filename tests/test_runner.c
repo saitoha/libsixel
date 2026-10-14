@@ -1004,6 +1004,25 @@ int test_gamut_0034_edge_lut_rejected(int argc, char **argv);
 int test_gamut_0035_edge_environment_precedence(int argc, char **argv);
 int test_gamut_0036_edge_encoder_isolation(int argc, char **argv);
 int test_gamut_0038_edge_linear_reference(int argc, char **argv);
+int test_gamut_0039_ray_srgb_reference(int argc, char **argv);
+int test_gamut_0040_ray_p3_reference(int argc, char **argv);
+int test_gamut_0041_ray_adobe_reference(int argc, char **argv);
+int test_gamut_0042_ray_dci_reference(int argc, char **argv);
+int test_gamut_0043_ray_identity(int argc, char **argv);
+int test_gamut_0044_ray_endpoints(int argc, char **argv);
+int test_gamut_0045_ray_nonfinite_atomic(int argc, char **argv);
+int test_gamut_0046_ray_matrix_icc(int argc, char **argv);
+int test_gamut_0047_ray_bounds(int argc, char **argv);
+int test_gamut_0048_ray_full_frame_samples(int argc, char **argv);
+int test_gamut_0049_ray_adaptive_samples(int argc, char **argv);
+int test_gamut_0050_ray_oklab_workspace(int argc, char **argv);
+int test_gamut_0051_ray_highcolor(int argc, char **argv);
+int test_gamut_0052_ray_lut_rejected(int argc, char **argv);
+int test_gamut_0053_ray_environment_precedence(int argc, char **argv);
+int test_gamut_0054_ray_encoder_isolation(int argc, char **argv);
+int test_gamut_0056_ray_geometry(int argc, char **argv);
+int test_gamut_0057_ray_cache_reset(int argc, char **argv);
+int test_gamut_0058_ray_linear_reference(int argc, char **argv);
 int test_gamut_0013_matrix_icc(int argc, char **argv);
 int test_gamut_0014_lut_rejected(int argc, char **argv);
 int test_gamut_0015_encoder_isolation(int argc, char **argv);
@@ -6177,6 +6196,44 @@ static test_entry_t const test_entries[] = {
       test_gamut_0036_edge_encoder_isolation },
     { "gamut/0038_edge_linear_reference",
       test_gamut_0038_edge_linear_reference },
+    { "gamut/0039_ray_srgb_reference",
+      test_gamut_0039_ray_srgb_reference },
+    { "gamut/0040_ray_p3_reference",
+      test_gamut_0040_ray_p3_reference },
+    { "gamut/0041_ray_adobe_reference",
+      test_gamut_0041_ray_adobe_reference },
+    { "gamut/0042_ray_dci_reference",
+      test_gamut_0042_ray_dci_reference },
+    { "gamut/0043_ray_identity",
+      test_gamut_0043_ray_identity },
+    { "gamut/0044_ray_endpoints",
+      test_gamut_0044_ray_endpoints },
+    { "gamut/0045_ray_nonfinite_atomic",
+      test_gamut_0045_ray_nonfinite_atomic },
+    { "gamut/0046_ray_matrix_icc",
+      test_gamut_0046_ray_matrix_icc },
+    { "gamut/0047_ray_bounds",
+      test_gamut_0047_ray_bounds },
+    { "gamut/0048_ray_full_frame_samples",
+      test_gamut_0048_ray_full_frame_samples },
+    { "gamut/0049_ray_adaptive_samples",
+      test_gamut_0049_ray_adaptive_samples },
+    { "gamut/0050_ray_oklab_workspace",
+      test_gamut_0050_ray_oklab_workspace },
+    { "gamut/0051_ray_highcolor",
+      test_gamut_0051_ray_highcolor },
+    { "gamut/0052_ray_lut_rejected",
+      test_gamut_0052_ray_lut_rejected },
+    { "gamut/0053_ray_environment_precedence",
+      test_gamut_0053_ray_environment_precedence },
+    { "gamut/0054_ray_encoder_isolation",
+      test_gamut_0054_ray_encoder_isolation },
+    { "gamut/0056_ray_geometry",
+      test_gamut_0056_ray_geometry },
+    { "gamut/0057_ray_cache_reset",
+      test_gamut_0057_ray_cache_reset },
+    { "gamut/0058_ray_linear_reference",
+      test_gamut_0058_ray_linear_reference },
     { "gamut/0013_matrix_icc",
       test_gamut_0013_matrix_icc },
     { "gamut/0014_lut_rejected",
