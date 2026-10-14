@@ -593,6 +593,7 @@ sixel_gamut_ray_trace(sixel_gamut_t const *mapper, double const input[3],
     double hue_b;
     int iteration;
     int inside;
+    int converged;
     int c;
 
     if (!sixel_color_convert(linear, input, colorspace,
@@ -655,6 +656,21 @@ sixel_gamut_ray_trace(sixel_gamut_t const *mapper, double const input[3],
                 if (!isfinite(device[c])) {
                     return 0;
                 }
+            }
+            /* Once the correction is within the float/matrix error budget,
+             * the last hit already represents this boundary point. A tiny
+             * inward correction past an advanced anchor can reverse the
+             * ray; extending it to the opposite face amplifies matrix
+             * round-trip error into a visible hue discontinuity. Measure
+             * all channels relative to their decoded destination range. */
+            converged = iteration > 0;
+            for (c = 0; c < 3; ++c) {
+                converged = converged && fabs(device[c] - last[c]) <=
+                    2e-7 * (mapper->maximum[c] - mapper->minimum[c]);
+            }
+            if (converged) {
+                memcpy(device, last, sizeof(device));
+                break;
             }
             if (!sixel_ray_box(mapper, anchor, device, hit)) {
                 /* Extreme imaginary colors can miss the box after a

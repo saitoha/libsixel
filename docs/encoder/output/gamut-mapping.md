@@ -49,6 +49,8 @@ The reference is [CSS Color 4, 9 October 2026, Ray Trace](https://www.w3.org/TR/
 
 The ray is unbounded, not limited to the segment between anchor and candidate. When a corrected candidate lies strictly inside the box, it advances the anchor after the intersection is found; it does not terminate the search. Parallel-axis handling and the strict-interior test use `1e-12` in double-precision linear destination coordinates. If a ray has no forward intersection, the last successful intersection (or the original candidate before any hit) is retained and finally clipped, as specified by the algorithm. This recovery is not substitution of another gamut policy.
 
+Before tracing a corrected point, the implementation checks convergence against the last successful intersection: if every linear destination channel changes by at most `2e-7` times that channel's decoded range, it retains the last intersection and stops. This is a numerical safeguard added to the referenced pseudocode. The tolerance covers float storage and the rounded Oklab matrix pair near the boundary; it is not a perceptual chroma-compression threshold. Without it, a correction can step minutely behind an advanced anchor, reverse the ray, and be magnified into an opposite-face intersection. Rays which have not converged remain unbounded, and an ordinary inward correction still advances the anchor rather than ending the search.
+
 The destination box uses decoded device endpoints, including non-unit ranges of supported matrix/TRC definitions. Unlike EdgeSeeker, Ray Trace constructs no hue table and imposes no single-valued hue-boundary model. All mapping state except the immutable destination matrices/ranges is local to the call. The iteration limit bounds per-color work but does not establish a measured performance or quality advantage.
 
 ### Shared destination rules
@@ -91,17 +93,7 @@ The mapper uses the selected CPU float palette/high-color paths and their existi
 
 The algorithm's published reference is not evidence that it improves every photograph. Default selection remains `clip` until photograph, wide-gamut, gradient and saturated highlight/shadow comparisons establish an acceptable quality/performance tradeoff. A future compression policy that changes near-boundary in-gamut colors is a different contract.
 
-The [illustrated comparison](../../concepts/gamut-mapping/README.md#add-palette-quantization-and-sixel) includes a Ray Trace numerical discontinuity on a saturated P3 hue/lightness pattern. It appears before palette construction; reference-vector agreement alone does not establish smoothness over a whole color volume. For source pixel `(163, 46)`, the fourth pass has the following destination-linear values:
-
-```text
-anchor red:     0.99999997058627033
-corrected red:  0.99999996858686657
-ray direction: -0.00000000199940376   (red component)
-exit parameter: 500149091.3227337
-intersection:  (-2.7e-17, 0.4891678154, 0.1383148634)
-```
-
-The correction has passed slightly behind the advanced anchor near the red=1 face. The unrestricted forward ray therefore exits at the opposite red=0 face instead of retaining the nearly converged magenta boundary point. Final clipping cannot repair this hue reversal. This records an unresolved convergence defect in the current implementation, not a permitted error threshold; the observed trace does not by itself establish which correction to the implementation or reference algorithm should be adopted.
+The [illustrated comparison](../../concepts/gamut-mapping/README.md#add-palette-quantization-and-sixel) separates continuous mapping from quantization and dithering. Reference-vector agreement and bounded RGB output alone do not establish local continuity: a wrong-face ray intersection can still return valid RGB numbers. The convergence regression therefore compares neighboring magenta-boundary inputs, including float workspace storage, against independently bisected constant-lightness/hue boundary values. Its `3e-5` absolute tolerance in canonical linear-sRGB channels covers the four-intersection approximation and matrix/storage rounding on that near-converged patch; it is not a global accuracy promise for every color or profile.
 
 Use the [quality measurement policy](../../quality/measurement-policy.md) and [numerical assertion rules](../../testing/guide.md#intermediate-floating-point-error). Mapping error relative to the original and quantization error relative to the mapped reference are distinct observations. Inspect hue changes, flattened gradients and localized color errors in addition to aggregate metrics. Mapping may inspect every pixel; the chroma search, boundary lookup or ray iteration is restricted to out-of-gamut colors.
 
@@ -171,6 +163,7 @@ Use the [quality measurement policy](../../quality/measurement-policy.md) and [n
 | GM-56 | Ray-box geometry handles parallel, zero, outside and unbounded rays; a miss retains and clips the last candidate, including non-unit boxes, while matrix overflow fails atomically. | [tests/processing/gamut/0056_ray_geometry.t](../../../tests/processing/gamut/0056_ray_geometry.t) ([tests/processing/gamut/0056_ray_geometry.c](../../../tests/processing/gamut/0056_ray_geometry.c)) |
 | GM-57 | Switching from EdgeSeeker to Ray Trace invalidates accumulated output. | [tests/processing/gamut/0057_ray_cache_reset.t](../../../tests/processing/gamut/0057_ray_cache_reset.t) ([tests/processing/gamut/0057_ray_cache_reset.c](../../../tests/processing/gamut/0057_ray_cache_reset.c)) |
 | GM-58 | Linear output uses the same Ray Trace linear gamut geometry as sRGB. | [tests/processing/gamut/0058_ray_linear_reference.t](../../../tests/processing/gamut/0058_ray_linear_reference.t) ([tests/processing/gamut/0058_ray_linear_reference.c](../../../tests/processing/gamut/0058_ray_linear_reference.c)) |
+| GM-59 | Near-converged boundary colors retain the same hue-side intersection through linear, gamma and Oklab float workspaces, within the scoped independent-boundary error budget. | [tests/processing/gamut/0059_ray_convergence.t](../../../tests/processing/gamut/0059_ray_convergence.t) ([tests/processing/gamut/0059_ray_convergence.c](../../../tests/processing/gamut/0059_ray_convergence.c)) |
 
 Reference comparisons allow absolute error `3e-5` per canonical linear-sRGB channel for independently rounded matrices and binary-search endpoints. The matrix/TRC ICC case allows `3e-4` for its additional 15.16 colorant quantization; the mapped-centroid checks allow `4e-5` after float storage and workspace conversion. These budgets remain separate from the membership and local-MINDE search tolerances above.
 

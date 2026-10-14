@@ -668,8 +668,9 @@ def main():
             "encoding_flags": FLAGS,
             "ramp_profiles": profiles,
         }
-        # Preserve a small, inspectable specimen of the visible Ray Trace
-        # discontinuity. This is an observation, not an accepted error budget.
+        # Record the largest adjacent change so local behavior remains
+        # inspectable separately from aggregate quality or quantization.
+        # This observation does not define an accepted error budget.
         grid = continuous.reshape(96, 192, 5, 6)
         jumps = np.linalg.norm(np.diff(grid[:, :, 4, 3:], axis=1), axis=-1)
         y, x = np.unravel_index(np.argmax(jumps), jumps.shape)

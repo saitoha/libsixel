@@ -14,7 +14,7 @@
     "pillow": "12.3.0"
   },
   "implementation_sources": {
-    "src/gamut.c": "15e181bffc8d719e106781ba073cdf6bc18df827f31de8b4fcff4326e0d814bc",
+    "src/gamut.c": "d7b039013a78efd3cc1a696c5c2390cc566f75baed2b962a87eb1addba6ca695",
     "src/colorspace.c": "e68fa997125a065567b890ed8714faaf448afd72fa664ee93f8196772ecf3614",
     "src/cms.c": "90a7830c233d76ea3f415fe2b345b73d605fc072cbcd5cbf40bf21b3ca8fb2be",
     "src/encoder.c": "e9f2582e8462012fa5ad208abf2f378a2d09d2bdb4d471e279b95628851fec77",
@@ -206,15 +206,15 @@
           },
           {
             "policy": "ray-trace",
-            "last_step_ratio": 1.1642180400790263,
+            "last_step_ratio": 1.1642181523642838,
             "flat_intervals": 0,
             "peak_chroma_saturation": 0.9057591623036649,
             "peak_chroma": 0.257033205732914,
-            "endpoint_chroma": 0.23753217405330976,
+            "endpoint_chroma": 0.23753216604798147,
             "endpoint_linear_srgb": [
               1.0000000000000002,
-              0.03419947585811311,
-              0.02168080987781949
+              0.034199469774490295,
+              0.02168091123000376
             ]
           }
         ]
@@ -518,35 +518,35 @@
   },
   "ray_trace_largest_horizontal_step": {
     "xy": [
-      162,
-      46
+      158,
+      47
     ],
     "source_p3": [
       [
-        0.9755550469214923,
-        0.046555275806820784,
-        0.8928664072632945
+        0.9406271457999542,
+        0.03218127718013275,
+        0.9751888303959716
       ],
       [
-        0.9755550469214923,
-        0.046555275806820784,
-        0.8636758983749142
+        0.970244907301442,
+        0.03218127718013275,
+        0.9751888303959716
       ]
     ],
     "mapped_linear_srgb": [
       [
         1.0000000000000002,
-        0.03726062003335616,
-        0.7311350243113036
+        0.000563384941887783,
+        0.9515907463097826
       ],
       [
-        -1.5750502225908244e-17,
-        0.4891678154341163,
-        0.1383148634320344
+        1.0000000000000002,
+        0.03629900450482819,
+        0.8869755150018112
       ]
     ],
-    "mapped_delta_e_ok": 0.4527011441095064,
-    "source_delta_e_ok": 0.011657989482630344
+    "mapped_delta_e_ok": 0.030112702646929182,
+    "source_delta_e_ok": 0.015825804113625032
   },
   "encodings": [
     {
@@ -570,8 +570,8 @@
     {
       "policy": "ray-trace",
       "dither": "none",
-      "sixel_bytes": 4000,
-      "decoded_rgb_sha256": "27bd7d32461d5879d9a4676657131227440c9659ce1181c01257319fefa8f0da"
+      "sixel_bytes": 3728,
+      "decoded_rgb_sha256": "583510a4f6d32cdabd93c2c32fa9fedcdb7a0fd4e8a0adf35287b68c38809247"
     },
     {
       "policy": "clip",
@@ -594,8 +594,8 @@
     {
       "policy": "ray-trace",
       "dither": "fs",
-      "sixel_bytes": 9306,
-      "decoded_rgb_sha256": "bbed1aa932c5701f8317ed1fb6d02707dfdbb841750140bf2ace6ab0ff9f8977"
+      "sixel_bytes": 8891,
+      "decoded_rgb_sha256": "1bfe9f86d2e55a185008fc4a612851c0c490b6640dc8f87dbd1115797cb6f9e8"
     }
   ]
 }

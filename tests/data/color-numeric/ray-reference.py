@@ -72,6 +72,39 @@ origins = base.origins + [base.linear([L, C * math.cos(h), C * math.sin(h)])
                                         (.6, .6, 4.7), (.5, .8, 0),
                                         (.7, .6, -.001), (.7, .6, .001),
                                         (.39, 1.27, -1.66)]]
+# Canonical linear-sRGB inputs sampled around the near-converged magenta
+# boundary in the documentation's ICC-tagged P3 hue/lightness pattern.
+# These are fixed inputs, not expected implementation outputs.
+convergence_origins = [
+    [1.1584134651335052, -0.0329396117648211, 0.8996753506774907],
+    [1.1584134651335052, -0.0329396117648211, 0.8372309501548819],
+    [1.1584134651335054, -0.03293961176482122, 0.7773349529311374],
+    [1.1584134651335054, -0.03293961176482123, 0.7199567440340184],
+    [1.1571061975015575, -0.03597008872719999, 0.8946590375709019],
+    [1.1571061975015577, -0.03597008872719998, 0.8305227696001505],
+    [1.1571061975015577, -0.035970088727200034, 0.7690930629130435],
+    [1.157106197501558, -0.0359700887272001, 0.7103662826987517],
+    [1.1367390484060569, -0.037042364461903066, 0.8760694091513728],
+    [1.1367390484060569, -0.03704236446190303, 0.811789519625304],
+    [1.1367390484060569, -0.03704236446190307, 0.750319221477657],
+    [1.136739048406057, -0.03704236446190323, 0.6915893274106889],
+]
+
+
+def chroma_boundary(origin):
+    """Independent constant-L/h root; no ray, anchor or iteration policy."""
+    L, a, b = base.lab(origin)
+    low, high = 0.0, 1.0
+    for _ in range(64):
+        scale = (low + high) / 2
+        value = base.linear([L, scale * a, scale * b])
+        if all(0 <= v <= 1 for v in value):
+            low = scale
+        else:
+            high = scale
+    return base.linear([L, low * a, low * b])
+
+
 if __name__ == '__main__':
     assert intersection([.5] * 3, [2, .5, .5]) == [1, .5, .5]
     assert intersection([2, .5, .5], [3, .5, .5]) is None
@@ -93,5 +126,14 @@ if __name__ == '__main__':
             lines.append('        {\n            ' + ',\n            '.join(
                 format(x, '.17g') for x in result) + '\n        },')
         lines.append('    },')
-    lines += ['};', '#endif']
+    lines.append('};')
+    for name, values in (
+            ('ray_convergence_origins', convergence_origins),
+            ('ray_convergence_expected', map(chroma_boundary, convergence_origins))):
+        lines.append('static double const ' + name + '[][3] = {')
+        for v in values:
+            lines.append('    {\n        ' + ',\n        '.join(
+                format(x, '.17g') for x in v) + '\n    },')
+        lines.append('};')
+    lines.append('#endif')
     Path(__file__).with_suffix('.h').write_text('\n'.join(lines) + '\n')

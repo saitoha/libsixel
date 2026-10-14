@@ -2423,6 +2423,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/gamut/0056_ray_geometry.c \
 	processing/gamut/0057_ray_cache_reset.c \
 	processing/gamut/0058_ray_linear_reference.c \
+	processing/gamut/0059_ray_convergence.c \
 	processing/gamut/0038_edge_linear_reference.c \
 	processing/gamut/0030_edge_full_frame_samples.c \
 	processing/gamut/0031_edge_adaptive_samples.c \
@@ -5644,6 +5645,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0056_ray_geometry.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0057_ray_cache_reset.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0058_ray_linear_reference.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0059_ray_convergence.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0038_edge_linear_reference.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0030_edge_full_frame_samples.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gamut/test_runner-0031_edge_adaptive_samples.$(OBJEXT) \
@@ -8816,6 +8818,7 @@ am__depfiles_remade =  \
 	processing/gamut/$(DEPDIR)/test_runner-0056_ray_geometry.Po \
 	processing/gamut/$(DEPDIR)/test_runner-0057_ray_cache_reset.Po \
 	processing/gamut/$(DEPDIR)/test_runner-0058_ray_linear_reference.Po \
+	processing/gamut/$(DEPDIR)/test_runner-0059_ray_convergence.Po \
 	processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po \
 	processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po \
 	processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po \
@@ -10607,6 +10610,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0056_RAY_GEOMETRY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_RAY_CACHE_RESET \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_RAY_LINEAR_REFERENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_RAY_CONVERGENCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_EDGE_FULL_FRAME_SAMPLES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_EDGE_ADAPTIVE_SAMPLES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_EDGE_OKLAB_WORKSPACE \
@@ -16180,6 +16184,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0056_ray_geometry.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0057_ray_cache_reset.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0058_ray_linear_reference.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0059_ray_convergence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0038_edge_linear_reference.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0030_edge_full_frame_samples.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gamut/0031_edge_adaptive_samples.c \
@@ -24516,6 +24521,9 @@ processing/gamut/test_runner-0057_ray_cache_reset.$(OBJEXT):  \
 processing/gamut/test_runner-0058_ray_linear_reference.$(OBJEXT):  \
 	processing/gamut/$(am__dirstamp) \
 	processing/gamut/$(DEPDIR)/$(am__dirstamp)
+processing/gamut/test_runner-0059_ray_convergence.$(OBJEXT):  \
+	processing/gamut/$(am__dirstamp) \
+	processing/gamut/$(DEPDIR)/$(am__dirstamp)
 processing/gamut/test_runner-0038_edge_linear_reference.$(OBJEXT):  \
 	processing/gamut/$(am__dirstamp) \
 	processing/gamut/$(DEPDIR)/$(am__dirstamp)
@@ -29973,6 +29981,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0056_ray_geometry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0057_ray_cache_reset.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0058_ray_linear_reference.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gamut/$(DEPDIR)/test_runner-0059_ray_convergence.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po@am__quote@ # am--include-marker
@@ -62596,6 +62605,20 @@ processing/gamut/test_runner-0058_ray_linear_reference.obj: processing/gamut/005
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0058_ray_linear_reference.c' object='processing/gamut/test_runner-0058_ray_linear_reference.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0058_ray_linear_reference.obj `if test -f 'processing/gamut/0058_ray_linear_reference.c'; then $(CYGPATH_W) 'processing/gamut/0058_ray_linear_reference.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0058_ray_linear_reference.c'; fi`
+
+processing/gamut/test_runner-0059_ray_convergence.o: processing/gamut/0059_ray_convergence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0059_ray_convergence.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0059_ray_convergence.Tpo -c -o processing/gamut/test_runner-0059_ray_convergence.o `test -f 'processing/gamut/0059_ray_convergence.c' || echo '$(srcdir)/'`processing/gamut/0059_ray_convergence.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0059_ray_convergence.Tpo processing/gamut/$(DEPDIR)/test_runner-0059_ray_convergence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0059_ray_convergence.c' object='processing/gamut/test_runner-0059_ray_convergence.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0059_ray_convergence.o `test -f 'processing/gamut/0059_ray_convergence.c' || echo '$(srcdir)/'`processing/gamut/0059_ray_convergence.c
+
+processing/gamut/test_runner-0059_ray_convergence.obj: processing/gamut/0059_ray_convergence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0059_ray_convergence.obj -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0059_ray_convergence.Tpo -c -o processing/gamut/test_runner-0059_ray_convergence.obj `if test -f 'processing/gamut/0059_ray_convergence.c'; then $(CYGPATH_W) 'processing/gamut/0059_ray_convergence.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0059_ray_convergence.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gamut/$(DEPDIR)/test_runner-0059_ray_convergence.Tpo processing/gamut/$(DEPDIR)/test_runner-0059_ray_convergence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gamut/0059_ray_convergence.c' object='processing/gamut/test_runner-0059_ray_convergence.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gamut/test_runner-0059_ray_convergence.obj `if test -f 'processing/gamut/0059_ray_convergence.c'; then $(CYGPATH_W) 'processing/gamut/0059_ray_convergence.c'; else $(CYGPATH_W) '$(srcdir)/processing/gamut/0059_ray_convergence.c'; fi`
 
 processing/gamut/test_runner-0038_edge_linear_reference.o: processing/gamut/0038_edge_linear_reference.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gamut/test_runner-0038_edge_linear_reference.o -MD -MP -MF processing/gamut/$(DEPDIR)/test_runner-0038_edge_linear_reference.Tpo -c -o processing/gamut/test_runner-0038_edge_linear_reference.o `test -f 'processing/gamut/0038_edge_linear_reference.c' || echo '$(srcdir)/'`processing/gamut/0038_edge_linear_reference.c
