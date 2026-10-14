@@ -2610,6 +2610,151 @@ sixel_encoder_6delta_accumulation_active(sixel_encoder_t const *encoder)
         encoder->accumulation_colorspace == encoder->output_colorspace;
 }
 
+/* Configuration remains a request: resolve auto after all environment and
+ * explicit assignments so suffix order cannot change the metric. */
+static int
+sixel_encoder_delta_metric(sixel_encoder_t const *encoder)
+{
+    return encoder->sixdelta_metric == SIXEL_DELTA_METRIC_AUTO
+        ? (encoder->residual_enabled ? SIXEL_DELTA_METRIC_RGB241
+                                    : SIXEL_DELTA_METRIC_MAX)
+        : encoder->sixdelta_metric;
+}
+
+static void
+sixel_encoder_residual_defaults(sixel_encoder_t *encoder)
+{
+    encoder->residual_enabled = 0;
+    encoder->residual_override = 0;
+    encoder->sixdelta_metric = SIXEL_DELTA_METRIC_AUTO;
+    encoder->sixdelta_metric_override = 0;
+    encoder->residual_threshold = 1.5;
+    encoder->residual_threshold_override = 0;
+    encoder->residual_keep_threshold = 0U;
+    encoder->residual_keep_override = 0;
+    encoder->residual_frames = 3U;
+    encoder->residual_frames_override = 0;
+}
+
+static SIXELSTATUS
+sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
+    int attached_repair)
+{
+    if (!encoder->residual_enabled &&
+            sixel_encoder_delta_metric(encoder) != SIXEL_DELTA_METRIC_RGB241) {
+        return SIXEL_OK;
+    }
+    if (encoder->update_policy != SIXEL_UPDATE_POLICY_DELTA ||
+            encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
+            encoder->palette_type == SIXEL_PALETTETYPE_HLS ||
+            encoder->precision_requested == SIXEL_OPTION_PRECISION_FLOAT32 ||
+            (encoder->method_for_diffuse != SIXEL_DIFFUSE_AUTO &&
+             encoder->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
+             encoder->method_for_diffuse != SIXEL_DIFFUSE_A_DITHER &&
+             encoder->method_for_diffuse != SIXEL_DIFFUSE_X_DITHER &&
+             encoder->method_for_diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER)) {
+        sixel_helper_set_additional_message(
+            "delta residual/rgb241 requires gamma RGB8, RGB output "
+            "and none, a_dither, x_dither or bluenoise dither.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (encoder->residual_enabled &&
+            (sixel_encoder_delta_metric(encoder) != SIXEL_DELTA_METRIC_RGB241 ||
+             encoder->progressive_enabled || attached_repair)) {
+        sixel_helper_set_additional_message(
+            "delta residual requires rgb241 and no progressive context.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return SIXEL_OK;
+}
+
+/* Analyze the preprocessed target before output can write a cursor prefix.
+ * Palette construction and lookup do not participate in this measurement. */
+static SIXELSTATUS
+sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
+    sixel_frame_t *frame, sixel_dither_t const *dither)
+{
+    sixel_frame_transparency_t transparency;
+    unsigned char const *target;
+    unsigned char const *acc;
+    unsigned char const *valid;
+    unsigned int threshold;
+    size_t i, count;
+    int width, height;
+    SIXELSTATUS status;
+
+    if (!encoder->residual_enabled &&
+            sixel_encoder_delta_metric(encoder) != SIXEL_DELTA_METRIC_RGB241) {
+        return SIXEL_OK;
+    }
+    status = sixel_encoder_validate_residual(encoder,
+        encoder->progressive_context != NULL);
+    if (status != SIXEL_OK) return status;
+    width = sixel_frame_get_width(frame);
+    height = sixel_frame_get_height(frame);
+    if (width <= 0 || height <= 0 ||
+            sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGB888 ||
+            sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_GAMMA ||
+            (dither->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
+             dither->method_for_diffuse != SIXEL_DIFFUSE_A_DITHER &&
+             dither->method_for_diffuse != SIXEL_DIFFUSE_X_DITHER &&
+             dither->method_for_diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER)) {
+        sixel_helper_set_additional_message(
+            "delta residual/rgb241 needs an RGB8 target and "
+            "none, a_dither, x_dither or bluenoise application.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (!encoder->residual_enabled) return SIXEL_OK;
+    if (encoder->sixdelta_origin_x || encoder->sixdelta_origin_y ||
+            (encoder->sixdelta_plane_width &&
+             (encoder->sixdelta_plane_width != width ||
+              encoder->sixdelta_plane_height != height))) {
+        sixel_helper_set_additional_message(
+            "delta residual requires a full-plane frame at origin zero.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = sixel_encoder_frame_get_transparency(frame, &transparency);
+    if (status != SIXEL_OK) return status;
+    count = (size_t)width * height;
+    if (transparency.transparent_mask != NULL) {
+        if (transparency.transparent_mask_size < count) return SIXEL_BAD_INPUT;
+        for (i = 0; i < count; ++i) {
+            if (transparency.transparent_mask[i]) {
+                sixel_helper_set_additional_message(
+                    "delta residual requires an opaque target.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+        }
+    }
+    threshold = encoder->sixdelta_threshold < encoder->sixdelta_threshold_limit
+        ? encoder->sixdelta_threshold : encoder->sixdelta_threshold_limit;
+    target = sixel_frame_get_pixels(frame);
+    acc = NULL;
+    valid = NULL;
+    if (threshold && sixel_encoder_6delta_accumulation_active(encoder) &&
+            encoder->accumulation_width == width &&
+            encoder->accumulation_height == height &&
+            encoder->accumulation_pixels_size >= count * 3U &&
+            encoder->accumulation_valid_mask_size >= count) {
+        acc = encoder->accumulation_pixels;
+        valid = encoder->accumulation_valid_mask;
+    }
+    sixel_delta_residual_prepare(&encoder->residual_state, target, acc, valid,
+        width, height, encoder->residual_threshold, encoder->residual_frames,
+        encoder->residual_keep_threshold);
+    if (encoder->verbose) {
+        fprintf(stderr,
+            "delta: residual=1 metric=rgb241 T=%u H=%g K=%u F=%u "
+            "selected=%lu/%lu\n", threshold, encoder->residual_threshold,
+            encoder->residual_keep_threshold, encoder->residual_frames,
+            (unsigned long)encoder->residual_state.selected_pixels,
+            (unsigned long)count);
+    }
+    return SIXEL_OK;
+}
+
 static int
 sixel_encoder_6delta_reserves_alpha_key(
     sixel_encoder_t const *encoder)
@@ -5519,7 +5664,8 @@ sixel_encode_dag_node_dither_plan(sixel_encode_dag_context_t *context)
         return status;
     }
 
-    return SIXEL_OK;
+    return sixel_encoder_prepare_residual(context->encoder,
+        context->frame, context->dither);
 }
 
 static SIXELSTATUS
@@ -9162,6 +9308,10 @@ sixel_encoder_output_without_macro(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    dither->pipeline_6delta_metric = sixel_encoder_delta_metric(encoder);
+    if (encoder->residual_enabled) {
+        dither->pipeline_residual_mask = encoder->residual_state.mask;
+    }
     status = sixel_encode(p, width, height, depth, dither, output);
     if (status != SIXEL_OK) {
         goto end;
@@ -9831,6 +9981,15 @@ end:
         sixel_dither_unref(context.dither);
     }
     if (status == SIXEL_OK) {
+        if (encoder->residual_state.pending) {
+            memcpy(encoder->residual_state.age,
+                   encoder->residual_state.next_age,
+                   sizeof(encoder->residual_state.age));
+            encoder->residual_state.width = encoder->residual_state.mask.width;
+            encoder->residual_state.height =
+                encoder->residual_state.mask.height;
+            encoder->residual_state.pending = 0;
+        }
         sixel_encoder_revision_advance(encoder, &encoder->history_revision);
         sixel_encoder_revision_advance(encoder, &encoder->ordinary_revision);
     } else {
@@ -10374,6 +10533,9 @@ sixel_encoder_new(
     (*ppencoder)->presentation = NULL;
     (*ppencoder)->sixdelta_enabled      = 0;
     (*ppencoder)->sixdelta_threshold    = 0u;
+    sixel_encoder_residual_defaults(*ppencoder);
+    memset(&(*ppencoder)->residual_state, 0,
+           sizeof((*ppencoder)->residual_state));
     (*ppencoder)->sixdelta_threshold_limit = 255U;
     (*ppencoder)->sixdelta_refinement_needed = 0;
     (*ppencoder)->sixdelta_painted_pixels = 0u;
@@ -10634,6 +10796,9 @@ sixel_encoder_new(
     (*ppencoder)->operation_initialized = 1;
 #endif
 
+    status = sixel_encoder_validate_residual(*ppencoder, 0);
+    if (status != SIXEL_OK) goto error;
+
     /* Common output tuning applies even when -U is omitted. The default
      * endpoint is still sRGB; an ICC path never selects ICC on its own. */
     status = sixel_encoder_set_output_color(*ppencoder, "gamma");
@@ -10845,6 +11010,7 @@ sixel_encoder_set_6delta_plane_origin_owned(
         return SIXEL_BAD_ARGUMENT;
     }
     if (encoder->sixdelta_origin_x != x || encoder->sixdelta_origin_y != y) {
+        memset(&encoder->residual_state, 0, sizeof(encoder->residual_state));
     }
     encoder->sixdelta_origin_x = x;
     encoder->sixdelta_origin_y = y;
@@ -10868,6 +11034,7 @@ sixel_encoder_invalidate_6delta_plane_owned(
         return SIXEL_OK;
     }
 
+    memset(&encoder->residual_state, 0, sizeof(encoder->residual_state));
     sixel_encoder_revision_advance(encoder, &encoder->history_revision);
     sixel_allocator_free(encoder->allocator, encoder->accumulation_pixels);
     encoder->accumulation_pixels = NULL;
@@ -10976,6 +11143,7 @@ sixel_encoder_set_accumulation_buffer_owned(
             encoder->output_color_definition;
         encoder->accumulation_colorspace = encoder->output_colorspace;
         encoder->accumulation_valid = 0;
+        memset(&encoder->residual_state, 0, sizeof(encoder->residual_state));
         sixel_encoder_revision_advance(encoder, &encoder->history_revision);
         return SIXEL_OK;
     }
@@ -11024,6 +11192,7 @@ sixel_encoder_set_accumulation_buffer_owned(
     encoder->sixdelta_plane_width = width;
     encoder->sixdelta_plane_height = height;
     rgb = NULL;
+    memset(&encoder->residual_state, 0, sizeof(encoder->residual_state));
     sixel_encoder_revision_advance(encoder, &encoder->history_revision);
     status = SIXEL_OK;
 
@@ -12204,6 +12373,7 @@ sixel_encoder_apply_update_policy_option(
     encoder->progressive_seconds_override = 0;
     encoder->sixdelta_threshold = 0u;
     encoder->sixdelta_threshold_override = 0;
+    sixel_encoder_residual_defaults(encoder);
     encoder->sixdelta_error_mode = SIXEL_6DELTA_ERROR_DIFFUSE;
     encoder->sixdelta_error_mode_override = 0;
     status = sixel_encoder_apply_bound_suboptions(encoder, schema, &resolution);
@@ -13711,6 +13881,10 @@ sixel_encoder_setopt_owned(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    status = sixel_encoder_validate_residual(encoder,
+        destination->progressive_context != NULL);
+    if (status != SIXEL_OK) goto end;
+
     /* All candidate state is valid now. Resource preparation can still
      * fail, but it owns no live descriptor/path. No fallible work follows
      * a successful external side effect and the subsequent publication. */
@@ -13783,6 +13957,23 @@ sixel_encoder_setopt_owned(
 
 end:
     if (status == SIXEL_OK) {
+        /* Reapplying the same effective policy preserves persistence. */
+        if (encoder->residual_enabled != destination->residual_enabled ||
+                sixel_encoder_delta_metric(encoder) !=
+                    sixel_encoder_delta_metric(destination) ||
+                (encoder->residual_enabled &&
+                 (encoder->residual_threshold !=
+                    destination->residual_threshold ||
+                  encoder->residual_keep_threshold !=
+                    destination->residual_keep_threshold ||
+                  encoder->residual_frames != destination->residual_frames ||
+                  encoder->working_colorspace !=
+                    destination->working_colorspace ||
+                  encoder->output_colorspace !=
+                    destination->output_colorspace))) {
+            memset(&encoder->residual_state, 0,
+                   sizeof(encoder->residual_state));
+        }
         sixel_encoder_option_release_replaced(destination, encoder, arg);
         memcpy((char *)destination + settings_offset,
                (char const *)encoder + settings_offset,

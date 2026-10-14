@@ -68,6 +68,10 @@ typedef struct sixel_gpu_metal_params {
     uint32_t accumulation_valid_mask_size;
     uint32_t accumulation_keycolor;
     uint32_t sixdelta_threshold;
+    uint32_t sixdelta_metric;
+    uint32_t residual_threshold;
+    uint32_t residual_columns, residual_rows;
+    uint32_t residual_cells[128];
     uint32_t accumulation_result_mask_size;
     float positional_strength;
     float bluenoise_strength;
@@ -177,6 +181,10 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    uint accumulation_valid_mask_size;\n"
 "    uint accumulation_keycolor;\n"
 "    uint sixdelta_threshold;\n"
+"    uint sixdelta_metric;\n"
+"    uint residual_threshold;\n"
+"    uint residual_columns, residual_rows;\n"
+"    uint residual_cells[128];\n"
 "    uint accumulation_result_mask_size;\n"
 "    float positional_strength;\n"
 "    float bluenoise_strength;\n"
@@ -374,6 +382,8 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    uint best;\n"
 "    uint best_dist;\n"
 "    uchar q[3];\n"
+"    uint local_threshold, cell;\n"
+"    bool within;\n"
 "    uchar3 source;\n"
 "    uchar3 retained;\n"
 "    int dr;\n"
@@ -406,9 +416,22 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "        dr = dr < 0 ? -dr : dr;\n"
 "        dg = dg < 0 ? -dg : dg;\n"
 "        db = db < 0 ? -db : db;\n"
-"        if (uint(dr) <= params.sixdelta_threshold &&\n"
-"            uint(dg) <= params.sixdelta_threshold &&\n"
-"            uint(db) <= params.sixdelta_threshold) {\n"
+"        local_threshold = params.sixdelta_threshold;\n"
+"        if (params.residual_columns != 0u) {\n"
+"            cell = (((y + 1u) * params.residual_rows - 1u) /\n"
+"                params.height) * params.residual_columns +\n"
+"                ((x + 1u) * params.residual_columns - 1u) / params.width;\n"
+"            if ((params.residual_cells[cell / 32u] &\n"
+"                    (1u << (cell % 32u))) != 0u)\n"
+"                local_threshold = min(local_threshold,\n"
+"                    params.residual_threshold);\n"
+"        }\n"
+"        within = uint(dr) <= local_threshold &&\n"
+"            uint(dg) <= local_threshold && uint(db) <= local_threshold;\n"
+"        if (params.sixdelta_metric == 2u)\n"
+"            within = uint(2*dr*dr + 4*dg*dg + db*db) <=\n"
+"                7u * local_threshold * local_threshold;\n"
+"        if (within) {\n"
 "            result[gid] = uchar(params.accumulation_keycolor);\n"
 "            if (gid < params.accumulation_result_mask_size) {\n"
 "                accumulation_result_mask[gid] =\n"
@@ -1017,6 +1040,14 @@ sixel_gpu_palette_metal_fill_params(
             (uint32_t)request->accumulation_keycolor;
         params->sixdelta_threshold =
             (uint32_t)request->sixdelta_threshold;
+        params->sixdelta_metric = (uint32_t)request->sixdelta_metric;
+        if (request->residual_mask != NULL) {
+            params->residual_columns = request->residual_mask->columns;
+            params->residual_rows = request->residual_mask->rows;
+            params->residual_threshold = request->residual_mask->threshold;
+            memcpy(params->residual_cells, request->residual_mask->cells,
+                   sizeof(params->residual_cells));
+        }
         params->accumulation_result_mask_size =
             (uint32_t)request->accumulation_result_mask_size;
         /* Lookup keeps its working palette; only keep uses emitted colors.

@@ -212,6 +212,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-common-pipeline.h \
                 $(srcdir)/gpu-dequant.c \
                 $(srcdir)/gpu-dequant.h \
+                $(srcdir)/delta-residual.c \
+                $(srcdir)/delta-residual.h \
                 $(srcdir)/gpu-palette.c \
                 $(srcdir)/progressive-gpu.c \
                 $(srcdir)/progressive-gpu.h \

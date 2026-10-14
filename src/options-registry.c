@@ -1517,6 +1517,12 @@ static sixel_option_value_schema_t const g_update_policy_values[] = {
 #define SIXEL_UPDATE_BASE_SET_REPAIR \
     (SIXEL_REGISTRY_BASE_BIT(1) | SIXEL_REGISTRY_BASE_BIT(2))
 
+static sixel_suboption_choice_t const g_update_metric_choices[] = {
+    {"auto", SIXEL_DELTA_METRIC_AUTO},
+    {"max", SIXEL_DELTA_METRIC_MAX},
+    {"rgb241", SIXEL_DELTA_METRIC_RGB241}
+};
+
 static sixel_suboption_choice_t const g_update_error_choices[] = {
     { "diffuse", SIXEL_6DELTA_ERROR_DIFFUSE },
     { "skip", SIXEL_6DELTA_ERROR_SKIP }
@@ -1841,6 +1847,34 @@ static sixel_suboption_key_t const g_suboptions[] = {
         0.0, 255.0, 1,
         "delta threshold must be an integer in range 0..255.",
         sixdelta_threshold, sixdelta_threshold_override),
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
+        "residual", 'R', "SIXEL_UPDATE_DELTA_RESIDUAL", NULL, NULL,
+        residual_enabled, residual_override),
+    SIXEL_REGISTRY_ENCODER_CHOICE(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
+        "threshold_metric", 'D', "SIXEL_UPDATE_DELTA_THRESHOLD_METRIC",
+        NULL, NULL, g_update_metric_choices,
+        sixdelta_metric, sixdelta_metric_override),
+    SIXEL_REGISTRY_ENCODER_DOUBLE(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
+        "residual_threshold", 'H', "SIXEL_UPDATE_DELTA_RESIDUAL_THRESHOLD",
+        NULL, NULL, 0.0, 255.0,
+        "residual_threshold must be a finite number in range 0..255.",
+        residual_threshold, residual_threshold_override),
+    SIXEL_REGISTRY_ENCODER_UINT(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
+        "residual_keep_threshold", 'K',
+        "SIXEL_UPDATE_DELTA_RESIDUAL_KEEP_THRESHOLD", NULL, NULL,
+        0.0, 255.0, 1,
+        "residual_keep_threshold must be an integer in range 0..255.",
+        residual_keep_threshold, residual_keep_override),
+    SIXEL_REGISTRY_ENCODER_UINT(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
+        "residual_frames", 'F', "SIXEL_UPDATE_DELTA_RESIDUAL_FRAMES",
+        NULL, NULL, 1.0, 255.0, 0,
+        "residual_frames must be an integer in range 1..255.",
+        residual_frames, residual_frames_override),
     SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
         "progressive", 'P', "SIXEL_UPDATE_DELTA_PROGRESSIVE", NULL, NULL,

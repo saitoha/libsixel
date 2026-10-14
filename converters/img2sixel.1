@@ -1149,6 +1149,13 @@ Select full output (default), retained-plane delta updates or progressive still 
 \fBfull\fP disables temporal keeps and discards retained history, while preserving source-alpha handling.
 \fBdelta\fP enables 6delta with optional \fB:threshold=0..255\fP (short form :Tvalue) and \fB:error=diffuse|skip\fP (short form :Evalue).
 Defaults are threshold=0, error=diffuse and progressive=0; full accepts no suboptions.
+The delta suboption \fB:residual=0|1\fP (:Rvalue, default 0) lowers the early-keep threshold in persistent residual cells without sending extra packets. Use \fB-Zdelta:R1:T8\fP.
+\fB:threshold_metric=auto|max|rgb241\fP (:Dvalue, default auto) selects the early-keep metric. Auto resolves to max for R0 and rgb241 for R1. Max uses the greatest component difference; rgb241 compares (2*dR*dR+4*dG*dG+dB*dB)/7 with T*T in gamma RGB8 units.
+\fB:residual_threshold=0..255\fP (:Hvalue, finite, default 1.5) is the strict threshold on signed Gaussian-filtered residual magnitude, not Delta E. \fB:residual_keep_threshold=0..255\fP (:Kvalue, integer, default 0) caps T in selected cells. \fB:residual_frames=1..255\fP (:Fvalue, integer, default 3) counts consecutive successful input observations.
+The mask uses sigma 4 pixels, radius 12, and up to 64 by 64 screen cells. History commits only after successful output. Source drops do not count; frame numbers need not be consecutive. No extra work runs after the last input.
+R1 requires full-plane opaque gamma RGB8 targets, RGB output and none, a_dither, x_dither or bluenoise application; CPU and Metal use the same mask. R1 conflicts with P1 and explicit max metric. Other workspaces, float targets, alpha holes and partial updates are unsupported. R0 preserves ordinary delta behavior.
+Each -Z selection resets its suboptions to defaults, environment, then explicit suffixes. R1 alone preserves the default T0, which already bypasses approximate early keeps.
+
 The delta suboption \fB:progressive=1|0\fP (short form :P1 or :P0) pairs ordinary animation updates with at most one non-overlapping repair image per source interval, using an independent residual palette.
 The repair excludes positions painted by that ordinary update, uses the latest source and prioritizes luminance structure. Both images share one source delay and the available time/output budget; there is no combined palette or extra playback delay.
 It preserves absolute source-frame deadlines and refines the final frame after finite playback.
@@ -2140,6 +2147,26 @@ Elapsed time starts after the initial image; 0 disables the time cap.
 .br
 Set delta:threshold (0..255, default 0). Invalid values keep 0.
 Does not enable delta. An explicit threshold suboption takes precedence.
+.TP 5
+.B SIXEL_UPDATE_DELTA_RESIDUAL
+Set delta:residual (0|1, default 0). Does not enable delta.
+Invalid values keep defaults; explicit suboptions take precedence.
+.TP 5
+.B SIXEL_UPDATE_DELTA_THRESHOLD_METRIC
+Set delta:threshold_metric (auto|max|rgb241, default auto). Does not enable delta.
+Invalid values keep defaults; explicit suboptions take precedence.
+.TP 5
+.B SIXEL_UPDATE_DELTA_RESIDUAL_THRESHOLD
+Set delta:residual_threshold (0..255, default 1.5). Does not enable delta.
+Invalid values keep defaults; explicit suboptions take precedence.
+.TP 5
+.B SIXEL_UPDATE_DELTA_RESIDUAL_KEEP_THRESHOLD
+Set delta:residual_keep_threshold (0..255, default 0). Does not enable delta.
+Invalid values keep defaults; explicit suboptions take precedence.
+.TP 5
+.B SIXEL_UPDATE_DELTA_RESIDUAL_FRAMES
+Set delta:residual_frames (1..255, default 3). Does not enable delta.
+Invalid values keep defaults; explicit suboptions take precedence.
 .TP 5
 .B SIXEL_UPDATE_DELTA_ERROR
 .br

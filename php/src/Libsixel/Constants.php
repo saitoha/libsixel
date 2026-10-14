@@ -134,6 +134,7 @@ final class Constants
     public const SIXEL_UPDATE_POLICY_PROGRESSIVE = 2;
 
     public const SIXEL_HAVE_ENCODER_6DELTA_PROGRESSIVE = 1;
+    public const SIXEL_HAVE_ENCODER_6DELTA_RESIDUAL = 1;
     public const SIXEL_PROGRESSIVE_NONE = 0;
     public const SIXEL_PROGRESSIVE_FRAME_EMITTED = 1;
     public const SIXEL_PROGRESSIVE_YIELDED = 2;

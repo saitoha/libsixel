@@ -36,6 +36,30 @@ An explicit policy overrides `SIXEL_UPDATE_POLICY`. Within delta, explicit subop
 
 The canonical error-mode names are `diffuse` and `skip`; `carry` is rejected. Explicit `--alpha-policy=clear` or `--alpha-policy=composite` conflicts with 6delta and is rejected. A process-level alpha default does not prevent the feature from resolving to `keep`; see [alpha-policy precedence](../../loader/alpha-policy/README.md).
 
+## Persistent residual threshold control
+
+Use `img2sixel input.apng -p64 -dbluenoise -Zdelta:R1:T8` to reduce stale low-frequency color errors during ordinary delta updates. The encoder analyzes the difference between the current target and the displayed-color model, then lowers T locally. It uses the ordinary palette and emits one ordinary delta image per input; it does not generate extra repair packets, perform palette feedback, or continue working after the final input. The separate `progressive` option keeps its own meaning.
+
+| Delta suboption | Compact key | Accepted values | Default |
+| --- | --- | --- | --- |
+| `residual` | R | 0 or 1 | 0 |
+| `threshold_metric` | D | auto, max, rgb241 (value prefixes accepted) | auto |
+| `residual_threshold` | H | finite number 0..255 | 1.5 |
+| `residual_keep_threshold` | K | integer 0..255 | 0 |
+| `residual_frames` | F | integer 1..255 | 3 |
+
+The explicit profile is `-Zdelta:R1:T8:H1.5:K0:F3`. T retains its default zero: R1 alone does not silently increase it. H measures signed Gaussian-filtered residual with the same normalized 2:4:1 metric as the early gate. It is not Delta E, S-CIELAB, or a portable threshold for other working spaces. Filter each signed component before taking its magnitude, so fine alternating errors can cancel. The filter has sigma 4 pixels and radius 12, with support clipped and renormalized over valid history. Up to 64 by 64 screen cells are sampled at their centers. Strictly exceeding H (with a 1e-10 roundoff guard) for F consecutive observations selects the whole cell. This is screen-coordinate persistence, without motion compensation.
+
+F counts successful encode observations, including zero-paint updates, rather than source indices, seconds or repair passes. Clients need not set frame numbers. Inputs dropped before encoding are not observations. Failed output cannot publish speculative age; potentially partial output invalidates history and age. Seeding/invalidation, geometry changes and effective residual-policy changes reset age; reapplying the same policy preserves it. Turning residual off clears age without discarding valid displayed colors.
+
+The effective outside threshold is `min(T, runtime_limit)` and the inside threshold is `min(T, runtime_limit, K)`. A mask cannot relax the outside gate. Runtime limit zero remains authoritative and clears age after a successful observation; T0 still permits post-lookup keeps and is not a forced repaint.
+
+R1 currently requires an opaque, full-plane gamma RGB8 target at origin zero, native sRGB RGB output, and none, a_dither, x_dither or bluenoise application. Alpha holes, partial updates, float targets and other working/output spaces are rejected before image output. Explicit rgb241 without a mask also requires gamma RGB8 and none/a_dither/x_dither/bluenoise, but does not require a full plane. R1 with max metric, progressive=1 or an attached progressive context is rejected. R0 retains the ordinary delta support boundaries. CPU analysis produces one immutable grid used by CPU and Metal application; AUTO/OFF provide the same residual semantics on CPU, while FORCE follows the GPU admission contract. CPU analysis is bounded by the grid rather than a full-resolution residual image. Verbose output reports the resolved residual profile and selected area; existing GPU diagnostics identify the application backend.
+
+Configure the C API with `sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY, "delta:residual=1:threshold=8")`, check its status, then use the existing encode/frame/byte calls. `SIXEL_HAVE_ENCODER_6DELTA_RESIDUAL` is 1. No new context or caller-owned mask is required: the encoder owns persistence and accumulation, and the client owns frame timing, ordered output, backpressure and external-paint invalidation. Existing painted-pixel and refinement queries retain their meanings; they do not certify convergence or an empty residual mask.
+
+The associated environment variables are `SIXEL_UPDATE_DELTA_RESIDUAL`, `SIXEL_UPDATE_DELTA_THRESHOLD_METRIC`, `SIXEL_UPDATE_DELTA_RESIDUAL_THRESHOLD`, `SIXEL_UPDATE_DELTA_RESIDUAL_KEEP_THRESHOLD`, and `SIXEL_UPDATE_DELTA_RESIDUAL_FRAMES`. They do not select the delta base by themselves. Each update-policy selection resolves defaults, environment and explicit suffixes in that order; explicit values win. Invalid individual environment values preserve defaults, whereas invalid explicit values fail. Unsupported resolved combinations fail atomically, including later changes to dependent options.
+
 ## What is retained
 
 The encoder maintains an RGB888 plane plus a validity mask. This plane models the palette colors painted by earlier frames, rather than their original, unquantized source RGB or their old palette indices. Palette indices can change meaning between frames, and the source may have a color that quantization never displayed.
@@ -58,9 +82,9 @@ The retained plane is an encoder-side model, not a readback from the terminal. P
 
 ## How a pixel is selected
 
-### Early keep: a per-channel shortcut
+### Early keep: a configurable shortcut
 
-Let `S` be the RGB888 sample used for this pixel's keep comparison, `R` its valid retained RGB, and `T` the threshold. The early gate keeps the pixel when all three conditions hold:
+Let `S` be the RGB888 sample used for this pixel's keep comparison, `R` its valid retained RGB, and `T` the threshold. With the default `threshold_metric=max`, the early gate keeps the pixel when all three conditions hold:
 
 ```text
 abs(S.red   - R.red)   <= T
@@ -68,7 +92,7 @@ abs(S.green - R.green) <= T
 abs(S.blue  - R.blue)  <= T
 ```
 
-This is a byte-component tolerance, not a percentage, a Euclidean distance, or a perceptual Delta E. At `T=0`, it succeeds for an exact RGB match. If it succeeds, the palette lookup can be skipped. If it fails, the pixel still has another opportunity to be kept after lookup.
+The default max metric is a byte-component tolerance, not a percentage or a perceptual Delta E. `threshold_metric=rgb241` instead compares `(2*dR*dR + 4*dG*dG + dB*dB) <= 7*T*T`, a normalized weighted Euclidean distance in gamma RGB8 units. It changes neither palette lookup nor post-lookup acceptance. `threshold_metric=auto` resolves to max with residual disabled and rgb241 with residual enabled. At `T=0`, it succeeds for an exact RGB match. If it succeeds, the palette lookup can be skipped. If it fails, the pixel still has another opportunity to be kept after lookup.
 
 A positive threshold admits approximate matches before checking whether the palette could represent the sample more accurately. At `T=255`, every valid retained RGB888 pixel satisfies the gate, even after a large content change. This can leave old content indefinitely; it is not merely a more aggressive lossless compression level. Newly invalid positions and source transparency follow their own rules.
 
@@ -679,8 +703,6 @@ The IDs below map to existing assertions. A representative fixture establishes i
 | GW-05 | HLS blue noise uses the same reconstructed view. | [tests/processing/gpu-palette/0009_wire_hls_bluenoise.t](../../../tests/processing/gpu-palette/0009_wire_hls_bluenoise.t) |
 | GW-06 | Standalone GPU application retains supplied-candidate semantics. | [tests/processing/gpu-palette/0010_comparison_default.t](../../../tests/processing/gpu-palette/0010_comparison_default.t) |
 | GW-07 | A short comparison view is rejected before any GPU access. | [tests/processing/gpu-palette/0011_comparison_short.t](../../../tests/processing/gpu-palette/0011_comparison_short.t) |
-| GW-08 | CPU/Metal A dither uses unperturbed targets and emitted RGB/HLS colors for post-lookup acceptance with direct/Eytzinger lookup. | [tests/processing/gpu-palette/0018_wire_a.t](../../../tests/processing/gpu-palette/0018_wire_a.t) |
-| GW-09 | CPU/Metal X dither uses unperturbed targets and emitted RGB/HLS colors for post-lookup acceptance with direct/Eytzinger lookup. | [tests/processing/gpu-palette/0019_wire_x.t](../../../tests/processing/gpu-palette/0019_wire_x.t) |
 
 The encode witnesses assert literal keep masks and decoded paints independently on CPU and forced GPU, preserve the working palette, and verify that comparison hints are cleared after the call. They establish byte RGB/HLS comparison behavior, not perceptual improvement for every video or support for legacy float-backed comparison.
 
@@ -901,3 +923,42 @@ The CPU comparison establishes backend consistency, not an independent reference
 | PC-39 | `din99d` | `display-p3` | RGB | [tests/processing/progressive/0236_gpu_din99d_display_p3_rgb.t](../../../tests/processing/progressive/0236_gpu_din99d_display_p3_rgb.t) |
 | PC-40 | `din99d` | `display-p3` | HLS | [tests/processing/progressive/0237_gpu_din99d_display_p3_hls.t](../../../tests/processing/progressive/0237_gpu_din99d_display_p3_hls.t) |
 | PC-41 | Ordinary encoding | `display-p3` | GPU admission still rejects before output | [tests/processing/progressive/0238_gpu_p3_ordinary_boundary.t](../../../tests/processing/progressive/0238_gpu_p3_ordinary_boundary.t) |
+
+### Residual threshold contract tests
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| DR-0001 | Defaults. | [tests/processing/delta-residual/0001_defaults.t](../../../tests/processing/delta-residual/0001_defaults.t) |
+| DR-0002 | Option routes. | [tests/processing/delta-residual/0002_option_routes.t](../../../tests/processing/delta-residual/0002_option_routes.t) |
+| DR-0003 | Invalid option atomicity. | [tests/processing/delta-residual/0003_invalid_option_atomicity.t](../../../tests/processing/delta-residual/0003_invalid_option_atomicity.t) |
+| DR-0004 | Dependent option atomicity. | [tests/processing/delta-residual/0004_dependent_option_atomicity.t](../../../tests/processing/delta-residual/0004_dependent_option_atomicity.t) |
+| DR-0005 | Policy age reset. | [tests/processing/delta-residual/0005_policy_age_reset.t](../../../tests/processing/delta-residual/0005_policy_age_reset.t) |
+| DR-0006 | Metric boundaries. | [tests/processing/delta-residual/0006_metric_boundaries.t](../../../tests/processing/delta-residual/0006_metric_boundaries.t) |
+| DR-0007 | Signed filter. | [tests/processing/delta-residual/0007_signed_filter.t](../../../tests/processing/delta-residual/0007_signed_filter.t) |
+| DR-0008 | Filter threshold boundary. | [tests/processing/delta-residual/0008_filter_threshold_boundary.t](../../../tests/processing/delta-residual/0008_filter_threshold_boundary.t) |
+| DR-0009 | Cell boundaries. | [tests/processing/delta-residual/0009_cell_boundaries.t](../../../tests/processing/delta-residual/0009_cell_boundaries.t) |
+| DR-0010 | Cpu three observations. | [tests/processing/delta-residual/0010_cpu_three_observations.t](../../../tests/processing/delta-residual/0010_cpu_three_observations.t) |
+| DR-0011 | Gpu three observations. | [tests/processing/delta-residual/0011_gpu_three_observations.t](../../../tests/processing/delta-residual/0011_gpu_three_observations.t) |
+| DR-0012 | Gpu bluenoise observations. | [tests/processing/delta-residual/0012_gpu_bluenoise_observations.t](../../../tests/processing/delta-residual/0012_gpu_bluenoise_observations.t) |
+| DR-0013 | Runtime ceiling. | [tests/processing/delta-residual/0013_runtime_ceiling.t](../../../tests/processing/delta-residual/0013_runtime_ceiling.t) |
+| DR-0014 | History reset. | [tests/processing/delta-residual/0014_history_reset.t](../../../tests/processing/delta-residual/0014_history_reset.t) |
+| DR-0015 | Output failure. | [tests/processing/delta-residual/0015_output_failure.t](../../../tests/processing/delta-residual/0015_output_failure.t) |
+| DR-0016 | Partial frame rejection. | [tests/processing/delta-residual/0016_partial_frame_rejection.t](../../../tests/processing/delta-residual/0016_partial_frame_rejection.t) |
+| DR-0017 | Progressive conflict. | [tests/processing/delta-residual/0017_progressive_conflict.t](../../../tests/processing/delta-residual/0017_progressive_conflict.t) |
+| DR-0018 | Metric without mask. | [tests/processing/delta-residual/0018_metric_without_mask.t](../../../tests/processing/delta-residual/0018_metric_without_mask.t) |
+| DR-0019 | gpu metric none. | [tests/processing/delta-residual/0019_gpu_metric_none.t](../../../tests/processing/delta-residual/0019_gpu_metric_none.t) |
+| DR-0020 | gpu metric bluenoise. | [tests/processing/delta-residual/0020_gpu_metric_bluenoise.t](../../../tests/processing/delta-residual/0020_gpu_metric_bluenoise.t) |
+| DR-0021 | gpu cell edges none. | [tests/processing/delta-residual/0021_gpu_cell_edges_none.t](../../../tests/processing/delta-residual/0021_gpu_cell_edges_none.t) |
+| DR-0022 | gpu cell edges bluenoise. | [tests/processing/delta-residual/0022_gpu_cell_edges_bluenoise.t](../../../tests/processing/delta-residual/0022_gpu_cell_edges_bluenoise.t) |
+| DR-0023 | cpu a observations with the existing observation/keep contract. | [tests/processing/delta-residual/0023_cpu_a_observations.t](../../../tests/processing/delta-residual/0023_cpu_a_observations.t) |
+| DR-0024 | cpu x observations with the existing observation/keep contract. | [tests/processing/delta-residual/0024_cpu_x_observations.t](../../../tests/processing/delta-residual/0024_cpu_x_observations.t) |
+| DR-0025 | gpu a observations with the existing observation/keep contract. | [tests/processing/delta-residual/0025_gpu_a_observations.t](../../../tests/processing/delta-residual/0025_gpu_a_observations.t) |
+| DR-0026 | gpu x observations with the existing observation/keep contract. | [tests/processing/delta-residual/0026_gpu_x_observations.t](../../../tests/processing/delta-residual/0026_gpu_x_observations.t) |
+| DR-0027 | gpu metric a with the existing observation/keep contract. | [tests/processing/delta-residual/0027_gpu_metric_a.t](../../../tests/processing/delta-residual/0027_gpu_metric_a.t) |
+| DR-0028 | gpu metric x with the existing observation/keep contract. | [tests/processing/delta-residual/0028_gpu_metric_x.t](../../../tests/processing/delta-residual/0028_gpu_metric_x.t) |
+| DR-0029 | gpu cells a with the existing observation/keep contract. | [tests/processing/delta-residual/0029_gpu_cells_a.t](../../../tests/processing/delta-residual/0029_gpu_cells_a.t) |
+| DR-0030 | gpu cells x with the existing observation/keep contract. | [tests/processing/delta-residual/0030_gpu_cells_x.t](../../../tests/processing/delta-residual/0030_gpu_cells_x.t) |
+| DR-0031 | CPU/Metal A dither uses unperturbed targets and emitted RGB/HLS colors for post-lookup acceptance with direct/Eytzinger lookup. | [tests/processing/gpu-palette/0018_wire_a.t](../../../tests/processing/gpu-palette/0018_wire_a.t) |
+| DR-0032 | CPU/Metal X dither uses unperturbed targets and emitted RGB/HLS colors for post-lookup acceptance with direct/Eytzinger lookup. | [tests/processing/gpu-palette/0019_wire_x.t](../../../tests/processing/gpu-palette/0019_wire_x.t) |
+
+These numeric and decoded-output witnesses cover configured mask semantics, not a general perceptual quality gain. GPU tests require an available Metal application backend. Filter scale is in pixels; gains measured at one resolution do not establish gains at another.

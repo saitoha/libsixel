@@ -1561,7 +1561,7 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
     }
     /*
      * The early keep gate.  When the desired RGB is already inside the
-     * caller's per-channel threshold, the policy can emit keycolor without
+     * caller's selected threshold metric, the policy can emit keycolor without
      * paying for a nearest-palette lookup.  This is a speed shortcut and
      * nothing more: what the caller is really owed is the post-lookup rule in
      * sixel_dither_pipeline_6delta_try_keep_after_lookup(), which keeps a
@@ -1574,7 +1574,8 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
     accumulation = dither->pipeline_accumulation_pixels;
     valid_mask = dither->pipeline_accumulation_valid_mask;
     keycolor = dither->pipeline_accumulation_keycolor;
-    threshold = dither->pipeline_6delta_threshold;
+    threshold = sixel_delta_mask_threshold(&dither->pipeline_residual_mask,
+        x, y, dither->pipeline_6delta_threshold);
     if (!sixel_dither_accumulation_plane_index(dither, x, y, &plane_index)) {
         return 0;
     }
@@ -1585,9 +1586,10 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
         return 0;
     }
     accumulation_pixel = accumulation + plane_index * 3u;
-    if (!sixel_dither_rgb888_delta_within(rgb,
-                                          accumulation_pixel,
-                                          threshold)) {
+    if (!(dither->pipeline_6delta_metric == SIXEL_DELTA_METRIC_RGB241
+            ? sixel_delta_rgb241_within(rgb, accumulation_pixel, threshold)
+            : sixel_dither_rgb888_delta_within(rgb, accumulation_pixel,
+                                              threshold))) {
         return 0;
     }
     if (record_result != 0 &&
@@ -3511,6 +3513,9 @@ sixel_dither_clear_pipeline_accumulation_buffer_hint(
     dither->pipeline_accumulation_keycolor = (-1);
     dither->pipeline_6delta_enabled = 0;
     dither->pipeline_6delta_threshold = 0u;
+    dither->pipeline_6delta_metric = SIXEL_DELTA_METRIC_MAX;
+    memset(&dither->pipeline_residual_mask, 0,
+           sizeof(dither->pipeline_residual_mask));
     dither->pipeline_6delta_error_mode = SIXEL_6DELTA_ERROR_DIFFUSE;
 }
 
@@ -4813,6 +4818,8 @@ sixel_dither_apply_palette_with_mode(
                 dither->pipeline_accumulation_keycolor;
             gpu_request.sixdelta_threshold =
                 dither->pipeline_6delta_threshold;
+            gpu_request.sixdelta_metric = dither->pipeline_6delta_metric;
+            gpu_request.residual_mask = &dither->pipeline_residual_mask;
             gpu_request.accumulation_result_mask =
                 dither->pipeline_accumulation_result_mask;
             gpu_request.accumulation_result_mask_size =

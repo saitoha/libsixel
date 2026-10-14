@@ -2112,6 +2112,8 @@ sixel_encoder_invalidate_6delta_plane(
 
 #define SIXEL_HAVE_ENCODER_6DELTA_REFINEMENT 2
 
+/* UPDATE_POLICY delta:R1 enables persistent residual threshold control. */
+#define SIXEL_HAVE_ENCODER_6DELTA_RESIDUAL 1
 
 /* Limit the effective delta threshold without changing its configured maximum
  * or the retained plane. 0 requests exact-threshold refinement; 255 removes

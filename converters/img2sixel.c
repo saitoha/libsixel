@@ -1003,6 +1003,16 @@ static cli_option_help_t const g_option_help_table[] = {
         "    delta suboptions: progressive=1|0 (:P1 or :P0),\n"
         "                      threshold=0..255 (:Tvalue),\n"
         "                      error=diffuse|skip (:Evalue).\n"
+        "    Residual controls (delta only):\n"
+        "      residual=0|1 (:Rvalue, default 0)\n"
+        "      threshold_metric=auto|max|rgb241 (:Dvalue, default auto)\n"
+        "      residual_threshold=0..255 (:Hvalue, default 1.5)\n"
+        "      residual_keep_threshold=0..255 (:Kvalue, default 0)\n"
+        "      residual_frames=1..255 (:Fvalue, default 3)\n"
+        "    delta:R1:T8 lowers T in persistent residual cells. Auto metric\n"
+        "    selects rgb241 for R1, max otherwise. Requires opaque full-plane\n"
+        "    gamma RGB8, RGB output, none/a_dither/x_dither/bluenoise; no P1.\n"
+        "    No extra packets; F counts successful input observations.\n"
         "    delta:P1 pairs each update with a disjoint repair image,\n"
         "    using its own palette within the same source interval.\n"
         "    Progressive controls (also accepted by delta):\n"
@@ -1513,6 +1523,31 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_UPDATE_DELTA_THRESHOLD",
         "set delta:threshold (0..255, default 0). Does not enable delta.\n"
         "The update-policy suboption takes precedence."
+    },
+    {
+        "SIXEL_UPDATE_DELTA_RESIDUAL",
+        "set delta:residual (0|1, default 0).\n"
+        "Does not enable delta. Explicit suboptions take precedence."
+    },
+    {
+        "SIXEL_UPDATE_DELTA_THRESHOLD_METRIC",
+        "set delta:threshold_metric (auto|max|rgb241, default auto).\n"
+        "Does not enable delta. Explicit suboptions take precedence."
+    },
+    {
+        "SIXEL_UPDATE_DELTA_RESIDUAL_THRESHOLD",
+        "set delta:residual_threshold (0..255, default 1.5).\n"
+        "Does not enable delta. Explicit suboptions take precedence."
+    },
+    {
+        "SIXEL_UPDATE_DELTA_RESIDUAL_KEEP_THRESHOLD",
+        "set delta:residual_keep_threshold (0..255, default 0).\n"
+        "Does not enable delta. Explicit suboptions take precedence."
+    },
+    {
+        "SIXEL_UPDATE_DELTA_RESIDUAL_FRAMES",
+        "set delta:residual_frames (1..255, default 3).\n"
+        "Does not enable delta. Explicit suboptions take precedence."
     },
     {
         "SIXEL_UPDATE_DELTA_ERROR",

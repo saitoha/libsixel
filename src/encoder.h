@@ -32,6 +32,7 @@
 #include "timeline-logger.h"
 
 #include "planner.h"
+#include "delta-residual.h"
 #include <stdint.h>
 
 /* The caller serializes encoder access. Returns an owned, unquantized
@@ -404,6 +405,18 @@ struct sixel_encoder {
     struct sixel_presentation *presentation;
     int sixdelta_enabled;
     unsigned int sixdelta_threshold;
+    int residual_enabled;
+    int residual_override;
+    int sixdelta_metric;
+    int sixdelta_metric_override;
+    double residual_threshold;
+    int residual_threshold_override;
+    unsigned int residual_keep_threshold;
+    int residual_keep_override;
+    unsigned int residual_frames;
+    int residual_frames_override;
+    /* Tentative observations live here until the output owner commits. */
+    sixel_delta_residual_t residual_state;
     /* Runtime ceiling does not mutate the configured maximum or history. */
     unsigned int sixdelta_threshold_limit;
     int sixdelta_refinement_needed;

@@ -26,6 +26,7 @@
 #define LIBSIXEL_GPU_PALETTE_H
 
 #include <stddef.h>
+#include "delta-residual.h"
 
 #include <sixel.h>
 
@@ -80,6 +81,8 @@ typedef struct sixel_gpu_palette_request {
     size_t accumulation_valid_mask_size;
     int accumulation_keycolor;
     unsigned int sixdelta_threshold;
+    int sixdelta_metric;
+    sixel_delta_mask_t const *residual_mask;
     /* Optional emitted RGB888 candidates for post-lookup keep only.
      * NULL preserves standalone application of the supplied palette. */
     unsigned char const *sixdelta_comparison_palette;

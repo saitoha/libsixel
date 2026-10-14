@@ -127,6 +127,8 @@ srcs = [
   'dither-clamp.c',
   'dither-clamp.h',
   'dither-common-pipeline.c',
+  'delta-residual.c',
+  'delta-residual.h',
   'gpu-palette.c',
   'progressive-gpu.c',
   'progressive-gpu.h',

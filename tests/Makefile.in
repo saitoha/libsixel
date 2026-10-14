@@ -1452,6 +1452,38 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/filter_binning_stream_alpha_zero_test_common.h \
 	processing/filter/filter_transparent_mask_fence_test_common.c \
 	processing/filter/filter_transparent_mask_fence_test_common.h \
+	processing/delta-residual/0001_defaults.c \
+	processing/delta-residual/0002_option_routes.c \
+	processing/delta-residual/0003_invalid_option_atomicity.c \
+	processing/delta-residual/0004_dependent_option_atomicity.c \
+	processing/delta-residual/0005_policy_age_reset.c \
+	processing/delta-residual/0006_metric_boundaries.c \
+	processing/delta-residual/0007_signed_filter.c \
+	processing/delta-residual/0008_filter_threshold_boundary.c \
+	processing/delta-residual/0009_cell_boundaries.c \
+	processing/delta-residual/0010_cpu_three_observations.c \
+	processing/delta-residual/0011_gpu_three_observations.c \
+	processing/delta-residual/0012_gpu_bluenoise_observations.c \
+	processing/delta-residual/0013_runtime_ceiling.c \
+	processing/delta-residual/0014_history_reset.c \
+	processing/delta-residual/0015_output_failure.c \
+	processing/delta-residual/0016_partial_frame_rejection.c \
+	processing/delta-residual/0017_progressive_conflict.c \
+	processing/delta-residual/0018_metric_without_mask.c \
+	processing/delta-residual/0019_gpu_metric_none.c \
+	processing/delta-residual/0020_gpu_metric_bluenoise.c \
+	processing/delta-residual/0021_gpu_cell_edges_none.c \
+	processing/delta-residual/0022_gpu_cell_edges_bluenoise.c \
+	processing/delta-residual/0023_cpu_a_observations.c \
+	processing/delta-residual/0024_cpu_x_observations.c \
+	processing/delta-residual/0025_gpu_a_observations.c \
+	processing/delta-residual/0026_gpu_x_observations.c \
+	processing/delta-residual/0027_gpu_metric_a.c \
+	processing/delta-residual/0028_gpu_metric_x.c \
+	processing/delta-residual/0029_gpu_cells_a.c \
+	processing/delta-residual/0030_gpu_cells_x.c \
+	processing/delta-residual/gate_test_common.c \
+	processing/delta-residual/residual_test_common.c \
 	processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
 	processing/gpu-palette/0002_reserved_key.c \
 	processing/gpu-palette/0003_fade_history.c \
@@ -5052,6 +5084,38 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-filter_transparent_mask_fence_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0001_defaults.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0002_option_routes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0003_invalid_option_atomicity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0004_dependent_option_atomicity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0005_policy_age_reset.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0006_metric_boundaries.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0007_signed_filter.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0008_filter_threshold_boundary.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0009_cell_boundaries.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0010_cpu_three_observations.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0011_gpu_three_observations.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0012_gpu_bluenoise_observations.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0013_runtime_ceiling.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0014_history_reset.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0015_output_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0016_partial_frame_rejection.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0017_progressive_conflict.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0018_metric_without_mask.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0019_gpu_metric_none.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0020_gpu_metric_bluenoise.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0021_gpu_cell_edges_none.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0022_gpu_cell_edges_bluenoise.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0023_cpu_a_observations.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0024_cpu_x_observations.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0025_gpu_a_observations.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0026_gpu_x_observations.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0027_gpu_metric_a.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0028_gpu_metric_x.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0029_gpu_cells_a.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0030_gpu_cells_x.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-gate_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-residual_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0002_reserved_key.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0003_fade_history.$(OBJEXT) \
@@ -9263,6 +9327,38 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0001_defaults.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0002_option_routes.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0004_dependent_option_atomicity.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0005_policy_age_reset.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0006_metric_boundaries.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0007_signed_filter.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0008_filter_threshold_boundary.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0009_cell_boundaries.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0010_cpu_three_observations.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0011_gpu_three_observations.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0012_gpu_bluenoise_observations.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0013_runtime_ceiling.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0014_history_reset.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0015_output_failure.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0016_partial_frame_rejection.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0017_progressive_conflict.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0018_metric_without_mask.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0019_gpu_metric_none.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0020_gpu_metric_bluenoise.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0021_gpu_cell_edges_none.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0022_gpu_cell_edges_bluenoise.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0023_cpu_a_observations.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0024_cpu_x_observations.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0025_gpu_a_observations.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0026_gpu_x_observations.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0027_gpu_metric_a.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0028_gpu_metric_x.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0029_gpu_cells_a.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-0030_gpu_cells_x.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Po \
+	processing/delta-residual/$(DEPDIR)/test_runner-residual_test_common.Po \
 	processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po \
 	processing/dither/$(DEPDIR)/test_runner-positional_test_common.Po \
 	processing/dither/bluenoise/$(DEPDIR)/test_runner-0052_positional_8bit_bluenoise_gpu_force_keep_offset.Po \
@@ -11604,6 +11700,38 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DEFAULTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_OPTION_ROUTES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_INVALID_OPTION_ATOMICITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_DEPENDENT_OPTION_ATOMICITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_POLICY_AGE_RESET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_METRIC_BOUNDARIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_SIGNED_FILTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_FILTER_THRESHOLD_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_CELL_BOUNDARIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_CPU_THREE_OBSERVATIONS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_GPU_THREE_OBSERVATIONS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_GPU_BLUENOISE_OBSERVATIONS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_RUNTIME_CEILING \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_HISTORY_RESET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_OUTPUT_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_PARTIAL_FRAME_REJECTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PROGRESSIVE_CONFLICT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_METRIC_WITHOUT_MASK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_GPU_METRIC_NONE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_GPU_METRIC_BLUENOISE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_GPU_CELL_EDGES_NONE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_GPU_CELL_EDGES_BLUENOISE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_CPU_A_OBSERVATIONS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_CPU_X_OBSERVATIONS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_GPU_A_OBSERVATIONS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_GPU_X_OBSERVATIONS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_GPU_METRIC_A \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_GPU_METRIC_X \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_GPU_CELLS_A \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_GPU_CELLS_X \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_GATE_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RESIDUAL_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0150_VIDEO_PAIR_DISJOINT_PALETTES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0151_VIDEO_STABLE_RESIDUAL_AGE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0152_VIDEO_LATEST_SOURCE_REVALIDATION \
@@ -16559,6 +16687,38 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_binning_stream_alpha_zero_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_transparent_mask_fence_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_transparent_mask_fence_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0001_defaults.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0002_option_routes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0003_invalid_option_atomicity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0004_dependent_option_atomicity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0005_policy_age_reset.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0006_metric_boundaries.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0007_signed_filter.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0008_filter_threshold_boundary.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0009_cell_boundaries.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0010_cpu_three_observations.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0011_gpu_three_observations.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0012_gpu_bluenoise_observations.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0013_runtime_ceiling.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0014_history_reset.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0015_output_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0016_partial_frame_rejection.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0017_progressive_conflict.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0018_metric_without_mask.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0019_gpu_metric_none.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0020_gpu_metric_bluenoise.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0021_gpu_cell_edges_none.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0022_gpu_cell_edges_bluenoise.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0023_cpu_a_observations.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0024_cpu_x_observations.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0025_gpu_a_observations.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0026_gpu_x_observations.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0027_gpu_metric_a.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0028_gpu_metric_x.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0029_gpu_cells_a.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0030_gpu_cells_x.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/gate_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/residual_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0002_reserved_key.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0003_fade_history.c \
@@ -23125,6 +23285,108 @@ processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.$(OBJ
 processing/filter/test_runner-filter_transparent_mask_fence_test_common.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/$(am__dirstamp):
+	@$(MKDIR_P) processing/delta-residual
+	@: >>processing/delta-residual/$(am__dirstamp)
+processing/delta-residual/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/delta-residual/$(DEPDIR)
+	@: >>processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0001_defaults.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0002_option_routes.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0003_invalid_option_atomicity.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0004_dependent_option_atomicity.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0005_policy_age_reset.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0006_metric_boundaries.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0007_signed_filter.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0008_filter_threshold_boundary.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0009_cell_boundaries.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0010_cpu_three_observations.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0011_gpu_three_observations.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0012_gpu_bluenoise_observations.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0013_runtime_ceiling.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0014_history_reset.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0015_output_failure.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0016_partial_frame_rejection.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0017_progressive_conflict.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0018_metric_without_mask.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0019_gpu_metric_none.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0020_gpu_metric_bluenoise.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0021_gpu_cell_edges_none.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0022_gpu_cell_edges_bluenoise.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0023_cpu_a_observations.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0024_cpu_x_observations.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0025_gpu_a_observations.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0026_gpu_x_observations.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0027_gpu_metric_a.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0028_gpu_metric_x.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0029_gpu_cells_a.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-0030_gpu_cells_x.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-gate_test_common.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-residual/test_runner-residual_test_common.$(OBJEXT):  \
+	processing/delta-residual/$(am__dirstamp) \
+	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-palette/$(am__dirstamp):
 	@$(MKDIR_P) processing/gpu-palette
 	@: >>processing/gpu-palette/$(am__dirstamp)
@@ -30497,6 +30759,7 @@ mostlyclean-compile:
 	-rm -f processing/cms/*.$(OBJEXT)
 	-rm -f processing/colorspace/*.$(OBJEXT)
 	-rm -f processing/decoder/*.$(OBJEXT)
+	-rm -f processing/delta-residual/*.$(OBJEXT)
 	-rm -f processing/dither/*.$(OBJEXT)
 	-rm -f processing/dither/bluenoise/*.$(OBJEXT)
 	-rm -f processing/dither/clamp/*.$(OBJEXT)
@@ -32466,6 +32729,38 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0001_defaults.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0002_option_routes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0004_dependent_option_atomicity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0005_policy_age_reset.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0006_metric_boundaries.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0007_signed_filter.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0008_filter_threshold_boundary.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0009_cell_boundaries.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0010_cpu_three_observations.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0011_gpu_three_observations.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0012_gpu_bluenoise_observations.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0013_runtime_ceiling.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0014_history_reset.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0015_output_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0016_partial_frame_rejection.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0017_progressive_conflict.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0018_metric_without_mask.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0019_gpu_metric_none.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0020_gpu_metric_bluenoise.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0021_gpu_cell_edges_none.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0022_gpu_cell_edges_bluenoise.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0023_cpu_a_observations.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0024_cpu_x_observations.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0025_gpu_a_observations.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0026_gpu_x_observations.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0027_gpu_metric_a.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0028_gpu_metric_x.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0029_gpu_cells_a.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0030_gpu_cells_x.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-residual_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/$(DEPDIR)/test_runner-positional_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/bluenoise/$(DEPDIR)/test_runner-0052_positional_8bit_bluenoise_gpu_force_keep_offset.Po@am__quote@ # am--include-marker
@@ -52612,6 +52907,454 @@ processing/filter/test_runner-filter_transparent_mask_fence_test_common.obj: pro
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/filter_transparent_mask_fence_test_common.c' object='processing/filter/test_runner-filter_transparent_mask_fence_test_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-filter_transparent_mask_fence_test_common.obj `if test -f 'processing/filter/filter_transparent_mask_fence_test_common.c'; then $(CYGPATH_W) 'processing/filter/filter_transparent_mask_fence_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/filter_transparent_mask_fence_test_common.c'; fi`
+
+processing/delta-residual/test_runner-0001_defaults.o: processing/delta-residual/0001_defaults.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0001_defaults.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0001_defaults.Tpo -c -o processing/delta-residual/test_runner-0001_defaults.o `test -f 'processing/delta-residual/0001_defaults.c' || echo '$(srcdir)/'`processing/delta-residual/0001_defaults.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0001_defaults.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0001_defaults.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0001_defaults.c' object='processing/delta-residual/test_runner-0001_defaults.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0001_defaults.o `test -f 'processing/delta-residual/0001_defaults.c' || echo '$(srcdir)/'`processing/delta-residual/0001_defaults.c
+
+processing/delta-residual/test_runner-0001_defaults.obj: processing/delta-residual/0001_defaults.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0001_defaults.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0001_defaults.Tpo -c -o processing/delta-residual/test_runner-0001_defaults.obj `if test -f 'processing/delta-residual/0001_defaults.c'; then $(CYGPATH_W) 'processing/delta-residual/0001_defaults.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0001_defaults.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0001_defaults.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0001_defaults.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0001_defaults.c' object='processing/delta-residual/test_runner-0001_defaults.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0001_defaults.obj `if test -f 'processing/delta-residual/0001_defaults.c'; then $(CYGPATH_W) 'processing/delta-residual/0001_defaults.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0001_defaults.c'; fi`
+
+processing/delta-residual/test_runner-0002_option_routes.o: processing/delta-residual/0002_option_routes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0002_option_routes.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0002_option_routes.Tpo -c -o processing/delta-residual/test_runner-0002_option_routes.o `test -f 'processing/delta-residual/0002_option_routes.c' || echo '$(srcdir)/'`processing/delta-residual/0002_option_routes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0002_option_routes.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0002_option_routes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0002_option_routes.c' object='processing/delta-residual/test_runner-0002_option_routes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0002_option_routes.o `test -f 'processing/delta-residual/0002_option_routes.c' || echo '$(srcdir)/'`processing/delta-residual/0002_option_routes.c
+
+processing/delta-residual/test_runner-0002_option_routes.obj: processing/delta-residual/0002_option_routes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0002_option_routes.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0002_option_routes.Tpo -c -o processing/delta-residual/test_runner-0002_option_routes.obj `if test -f 'processing/delta-residual/0002_option_routes.c'; then $(CYGPATH_W) 'processing/delta-residual/0002_option_routes.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0002_option_routes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0002_option_routes.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0002_option_routes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0002_option_routes.c' object='processing/delta-residual/test_runner-0002_option_routes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0002_option_routes.obj `if test -f 'processing/delta-residual/0002_option_routes.c'; then $(CYGPATH_W) 'processing/delta-residual/0002_option_routes.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0002_option_routes.c'; fi`
+
+processing/delta-residual/test_runner-0003_invalid_option_atomicity.o: processing/delta-residual/0003_invalid_option_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0003_invalid_option_atomicity.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Tpo -c -o processing/delta-residual/test_runner-0003_invalid_option_atomicity.o `test -f 'processing/delta-residual/0003_invalid_option_atomicity.c' || echo '$(srcdir)/'`processing/delta-residual/0003_invalid_option_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0003_invalid_option_atomicity.c' object='processing/delta-residual/test_runner-0003_invalid_option_atomicity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0003_invalid_option_atomicity.o `test -f 'processing/delta-residual/0003_invalid_option_atomicity.c' || echo '$(srcdir)/'`processing/delta-residual/0003_invalid_option_atomicity.c
+
+processing/delta-residual/test_runner-0003_invalid_option_atomicity.obj: processing/delta-residual/0003_invalid_option_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0003_invalid_option_atomicity.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Tpo -c -o processing/delta-residual/test_runner-0003_invalid_option_atomicity.obj `if test -f 'processing/delta-residual/0003_invalid_option_atomicity.c'; then $(CYGPATH_W) 'processing/delta-residual/0003_invalid_option_atomicity.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0003_invalid_option_atomicity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0003_invalid_option_atomicity.c' object='processing/delta-residual/test_runner-0003_invalid_option_atomicity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0003_invalid_option_atomicity.obj `if test -f 'processing/delta-residual/0003_invalid_option_atomicity.c'; then $(CYGPATH_W) 'processing/delta-residual/0003_invalid_option_atomicity.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0003_invalid_option_atomicity.c'; fi`
+
+processing/delta-residual/test_runner-0004_dependent_option_atomicity.o: processing/delta-residual/0004_dependent_option_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0004_dependent_option_atomicity.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0004_dependent_option_atomicity.Tpo -c -o processing/delta-residual/test_runner-0004_dependent_option_atomicity.o `test -f 'processing/delta-residual/0004_dependent_option_atomicity.c' || echo '$(srcdir)/'`processing/delta-residual/0004_dependent_option_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0004_dependent_option_atomicity.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0004_dependent_option_atomicity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0004_dependent_option_atomicity.c' object='processing/delta-residual/test_runner-0004_dependent_option_atomicity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0004_dependent_option_atomicity.o `test -f 'processing/delta-residual/0004_dependent_option_atomicity.c' || echo '$(srcdir)/'`processing/delta-residual/0004_dependent_option_atomicity.c
+
+processing/delta-residual/test_runner-0004_dependent_option_atomicity.obj: processing/delta-residual/0004_dependent_option_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0004_dependent_option_atomicity.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0004_dependent_option_atomicity.Tpo -c -o processing/delta-residual/test_runner-0004_dependent_option_atomicity.obj `if test -f 'processing/delta-residual/0004_dependent_option_atomicity.c'; then $(CYGPATH_W) 'processing/delta-residual/0004_dependent_option_atomicity.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0004_dependent_option_atomicity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0004_dependent_option_atomicity.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0004_dependent_option_atomicity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0004_dependent_option_atomicity.c' object='processing/delta-residual/test_runner-0004_dependent_option_atomicity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0004_dependent_option_atomicity.obj `if test -f 'processing/delta-residual/0004_dependent_option_atomicity.c'; then $(CYGPATH_W) 'processing/delta-residual/0004_dependent_option_atomicity.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0004_dependent_option_atomicity.c'; fi`
+
+processing/delta-residual/test_runner-0005_policy_age_reset.o: processing/delta-residual/0005_policy_age_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0005_policy_age_reset.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0005_policy_age_reset.Tpo -c -o processing/delta-residual/test_runner-0005_policy_age_reset.o `test -f 'processing/delta-residual/0005_policy_age_reset.c' || echo '$(srcdir)/'`processing/delta-residual/0005_policy_age_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0005_policy_age_reset.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0005_policy_age_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0005_policy_age_reset.c' object='processing/delta-residual/test_runner-0005_policy_age_reset.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0005_policy_age_reset.o `test -f 'processing/delta-residual/0005_policy_age_reset.c' || echo '$(srcdir)/'`processing/delta-residual/0005_policy_age_reset.c
+
+processing/delta-residual/test_runner-0005_policy_age_reset.obj: processing/delta-residual/0005_policy_age_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0005_policy_age_reset.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0005_policy_age_reset.Tpo -c -o processing/delta-residual/test_runner-0005_policy_age_reset.obj `if test -f 'processing/delta-residual/0005_policy_age_reset.c'; then $(CYGPATH_W) 'processing/delta-residual/0005_policy_age_reset.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0005_policy_age_reset.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0005_policy_age_reset.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0005_policy_age_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0005_policy_age_reset.c' object='processing/delta-residual/test_runner-0005_policy_age_reset.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0005_policy_age_reset.obj `if test -f 'processing/delta-residual/0005_policy_age_reset.c'; then $(CYGPATH_W) 'processing/delta-residual/0005_policy_age_reset.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0005_policy_age_reset.c'; fi`
+
+processing/delta-residual/test_runner-0006_metric_boundaries.o: processing/delta-residual/0006_metric_boundaries.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0006_metric_boundaries.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0006_metric_boundaries.Tpo -c -o processing/delta-residual/test_runner-0006_metric_boundaries.o `test -f 'processing/delta-residual/0006_metric_boundaries.c' || echo '$(srcdir)/'`processing/delta-residual/0006_metric_boundaries.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0006_metric_boundaries.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0006_metric_boundaries.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0006_metric_boundaries.c' object='processing/delta-residual/test_runner-0006_metric_boundaries.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0006_metric_boundaries.o `test -f 'processing/delta-residual/0006_metric_boundaries.c' || echo '$(srcdir)/'`processing/delta-residual/0006_metric_boundaries.c
+
+processing/delta-residual/test_runner-0006_metric_boundaries.obj: processing/delta-residual/0006_metric_boundaries.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0006_metric_boundaries.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0006_metric_boundaries.Tpo -c -o processing/delta-residual/test_runner-0006_metric_boundaries.obj `if test -f 'processing/delta-residual/0006_metric_boundaries.c'; then $(CYGPATH_W) 'processing/delta-residual/0006_metric_boundaries.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0006_metric_boundaries.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0006_metric_boundaries.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0006_metric_boundaries.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0006_metric_boundaries.c' object='processing/delta-residual/test_runner-0006_metric_boundaries.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0006_metric_boundaries.obj `if test -f 'processing/delta-residual/0006_metric_boundaries.c'; then $(CYGPATH_W) 'processing/delta-residual/0006_metric_boundaries.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0006_metric_boundaries.c'; fi`
+
+processing/delta-residual/test_runner-0007_signed_filter.o: processing/delta-residual/0007_signed_filter.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0007_signed_filter.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0007_signed_filter.Tpo -c -o processing/delta-residual/test_runner-0007_signed_filter.o `test -f 'processing/delta-residual/0007_signed_filter.c' || echo '$(srcdir)/'`processing/delta-residual/0007_signed_filter.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0007_signed_filter.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0007_signed_filter.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0007_signed_filter.c' object='processing/delta-residual/test_runner-0007_signed_filter.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0007_signed_filter.o `test -f 'processing/delta-residual/0007_signed_filter.c' || echo '$(srcdir)/'`processing/delta-residual/0007_signed_filter.c
+
+processing/delta-residual/test_runner-0007_signed_filter.obj: processing/delta-residual/0007_signed_filter.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0007_signed_filter.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0007_signed_filter.Tpo -c -o processing/delta-residual/test_runner-0007_signed_filter.obj `if test -f 'processing/delta-residual/0007_signed_filter.c'; then $(CYGPATH_W) 'processing/delta-residual/0007_signed_filter.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0007_signed_filter.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0007_signed_filter.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0007_signed_filter.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0007_signed_filter.c' object='processing/delta-residual/test_runner-0007_signed_filter.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0007_signed_filter.obj `if test -f 'processing/delta-residual/0007_signed_filter.c'; then $(CYGPATH_W) 'processing/delta-residual/0007_signed_filter.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0007_signed_filter.c'; fi`
+
+processing/delta-residual/test_runner-0008_filter_threshold_boundary.o: processing/delta-residual/0008_filter_threshold_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0008_filter_threshold_boundary.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0008_filter_threshold_boundary.Tpo -c -o processing/delta-residual/test_runner-0008_filter_threshold_boundary.o `test -f 'processing/delta-residual/0008_filter_threshold_boundary.c' || echo '$(srcdir)/'`processing/delta-residual/0008_filter_threshold_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0008_filter_threshold_boundary.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0008_filter_threshold_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0008_filter_threshold_boundary.c' object='processing/delta-residual/test_runner-0008_filter_threshold_boundary.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0008_filter_threshold_boundary.o `test -f 'processing/delta-residual/0008_filter_threshold_boundary.c' || echo '$(srcdir)/'`processing/delta-residual/0008_filter_threshold_boundary.c
+
+processing/delta-residual/test_runner-0008_filter_threshold_boundary.obj: processing/delta-residual/0008_filter_threshold_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0008_filter_threshold_boundary.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0008_filter_threshold_boundary.Tpo -c -o processing/delta-residual/test_runner-0008_filter_threshold_boundary.obj `if test -f 'processing/delta-residual/0008_filter_threshold_boundary.c'; then $(CYGPATH_W) 'processing/delta-residual/0008_filter_threshold_boundary.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0008_filter_threshold_boundary.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0008_filter_threshold_boundary.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0008_filter_threshold_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0008_filter_threshold_boundary.c' object='processing/delta-residual/test_runner-0008_filter_threshold_boundary.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0008_filter_threshold_boundary.obj `if test -f 'processing/delta-residual/0008_filter_threshold_boundary.c'; then $(CYGPATH_W) 'processing/delta-residual/0008_filter_threshold_boundary.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0008_filter_threshold_boundary.c'; fi`
+
+processing/delta-residual/test_runner-0009_cell_boundaries.o: processing/delta-residual/0009_cell_boundaries.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0009_cell_boundaries.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0009_cell_boundaries.Tpo -c -o processing/delta-residual/test_runner-0009_cell_boundaries.o `test -f 'processing/delta-residual/0009_cell_boundaries.c' || echo '$(srcdir)/'`processing/delta-residual/0009_cell_boundaries.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0009_cell_boundaries.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0009_cell_boundaries.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0009_cell_boundaries.c' object='processing/delta-residual/test_runner-0009_cell_boundaries.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0009_cell_boundaries.o `test -f 'processing/delta-residual/0009_cell_boundaries.c' || echo '$(srcdir)/'`processing/delta-residual/0009_cell_boundaries.c
+
+processing/delta-residual/test_runner-0009_cell_boundaries.obj: processing/delta-residual/0009_cell_boundaries.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0009_cell_boundaries.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0009_cell_boundaries.Tpo -c -o processing/delta-residual/test_runner-0009_cell_boundaries.obj `if test -f 'processing/delta-residual/0009_cell_boundaries.c'; then $(CYGPATH_W) 'processing/delta-residual/0009_cell_boundaries.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0009_cell_boundaries.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0009_cell_boundaries.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0009_cell_boundaries.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0009_cell_boundaries.c' object='processing/delta-residual/test_runner-0009_cell_boundaries.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0009_cell_boundaries.obj `if test -f 'processing/delta-residual/0009_cell_boundaries.c'; then $(CYGPATH_W) 'processing/delta-residual/0009_cell_boundaries.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0009_cell_boundaries.c'; fi`
+
+processing/delta-residual/test_runner-0010_cpu_three_observations.o: processing/delta-residual/0010_cpu_three_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0010_cpu_three_observations.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0010_cpu_three_observations.Tpo -c -o processing/delta-residual/test_runner-0010_cpu_three_observations.o `test -f 'processing/delta-residual/0010_cpu_three_observations.c' || echo '$(srcdir)/'`processing/delta-residual/0010_cpu_three_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0010_cpu_three_observations.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0010_cpu_three_observations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0010_cpu_three_observations.c' object='processing/delta-residual/test_runner-0010_cpu_three_observations.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0010_cpu_three_observations.o `test -f 'processing/delta-residual/0010_cpu_three_observations.c' || echo '$(srcdir)/'`processing/delta-residual/0010_cpu_three_observations.c
+
+processing/delta-residual/test_runner-0010_cpu_three_observations.obj: processing/delta-residual/0010_cpu_three_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0010_cpu_three_observations.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0010_cpu_three_observations.Tpo -c -o processing/delta-residual/test_runner-0010_cpu_three_observations.obj `if test -f 'processing/delta-residual/0010_cpu_three_observations.c'; then $(CYGPATH_W) 'processing/delta-residual/0010_cpu_three_observations.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0010_cpu_three_observations.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0010_cpu_three_observations.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0010_cpu_three_observations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0010_cpu_three_observations.c' object='processing/delta-residual/test_runner-0010_cpu_three_observations.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0010_cpu_three_observations.obj `if test -f 'processing/delta-residual/0010_cpu_three_observations.c'; then $(CYGPATH_W) 'processing/delta-residual/0010_cpu_three_observations.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0010_cpu_three_observations.c'; fi`
+
+processing/delta-residual/test_runner-0011_gpu_three_observations.o: processing/delta-residual/0011_gpu_three_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0011_gpu_three_observations.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0011_gpu_three_observations.Tpo -c -o processing/delta-residual/test_runner-0011_gpu_three_observations.o `test -f 'processing/delta-residual/0011_gpu_three_observations.c' || echo '$(srcdir)/'`processing/delta-residual/0011_gpu_three_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0011_gpu_three_observations.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0011_gpu_three_observations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0011_gpu_three_observations.c' object='processing/delta-residual/test_runner-0011_gpu_three_observations.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0011_gpu_three_observations.o `test -f 'processing/delta-residual/0011_gpu_three_observations.c' || echo '$(srcdir)/'`processing/delta-residual/0011_gpu_three_observations.c
+
+processing/delta-residual/test_runner-0011_gpu_three_observations.obj: processing/delta-residual/0011_gpu_three_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0011_gpu_three_observations.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0011_gpu_three_observations.Tpo -c -o processing/delta-residual/test_runner-0011_gpu_three_observations.obj `if test -f 'processing/delta-residual/0011_gpu_three_observations.c'; then $(CYGPATH_W) 'processing/delta-residual/0011_gpu_three_observations.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0011_gpu_three_observations.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0011_gpu_three_observations.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0011_gpu_three_observations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0011_gpu_three_observations.c' object='processing/delta-residual/test_runner-0011_gpu_three_observations.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0011_gpu_three_observations.obj `if test -f 'processing/delta-residual/0011_gpu_three_observations.c'; then $(CYGPATH_W) 'processing/delta-residual/0011_gpu_three_observations.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0011_gpu_three_observations.c'; fi`
+
+processing/delta-residual/test_runner-0012_gpu_bluenoise_observations.o: processing/delta-residual/0012_gpu_bluenoise_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0012_gpu_bluenoise_observations.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0012_gpu_bluenoise_observations.Tpo -c -o processing/delta-residual/test_runner-0012_gpu_bluenoise_observations.o `test -f 'processing/delta-residual/0012_gpu_bluenoise_observations.c' || echo '$(srcdir)/'`processing/delta-residual/0012_gpu_bluenoise_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0012_gpu_bluenoise_observations.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0012_gpu_bluenoise_observations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0012_gpu_bluenoise_observations.c' object='processing/delta-residual/test_runner-0012_gpu_bluenoise_observations.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0012_gpu_bluenoise_observations.o `test -f 'processing/delta-residual/0012_gpu_bluenoise_observations.c' || echo '$(srcdir)/'`processing/delta-residual/0012_gpu_bluenoise_observations.c
+
+processing/delta-residual/test_runner-0012_gpu_bluenoise_observations.obj: processing/delta-residual/0012_gpu_bluenoise_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0012_gpu_bluenoise_observations.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0012_gpu_bluenoise_observations.Tpo -c -o processing/delta-residual/test_runner-0012_gpu_bluenoise_observations.obj `if test -f 'processing/delta-residual/0012_gpu_bluenoise_observations.c'; then $(CYGPATH_W) 'processing/delta-residual/0012_gpu_bluenoise_observations.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0012_gpu_bluenoise_observations.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0012_gpu_bluenoise_observations.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0012_gpu_bluenoise_observations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0012_gpu_bluenoise_observations.c' object='processing/delta-residual/test_runner-0012_gpu_bluenoise_observations.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0012_gpu_bluenoise_observations.obj `if test -f 'processing/delta-residual/0012_gpu_bluenoise_observations.c'; then $(CYGPATH_W) 'processing/delta-residual/0012_gpu_bluenoise_observations.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0012_gpu_bluenoise_observations.c'; fi`
+
+processing/delta-residual/test_runner-0013_runtime_ceiling.o: processing/delta-residual/0013_runtime_ceiling.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0013_runtime_ceiling.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0013_runtime_ceiling.Tpo -c -o processing/delta-residual/test_runner-0013_runtime_ceiling.o `test -f 'processing/delta-residual/0013_runtime_ceiling.c' || echo '$(srcdir)/'`processing/delta-residual/0013_runtime_ceiling.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0013_runtime_ceiling.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0013_runtime_ceiling.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0013_runtime_ceiling.c' object='processing/delta-residual/test_runner-0013_runtime_ceiling.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0013_runtime_ceiling.o `test -f 'processing/delta-residual/0013_runtime_ceiling.c' || echo '$(srcdir)/'`processing/delta-residual/0013_runtime_ceiling.c
+
+processing/delta-residual/test_runner-0013_runtime_ceiling.obj: processing/delta-residual/0013_runtime_ceiling.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0013_runtime_ceiling.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0013_runtime_ceiling.Tpo -c -o processing/delta-residual/test_runner-0013_runtime_ceiling.obj `if test -f 'processing/delta-residual/0013_runtime_ceiling.c'; then $(CYGPATH_W) 'processing/delta-residual/0013_runtime_ceiling.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0013_runtime_ceiling.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0013_runtime_ceiling.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0013_runtime_ceiling.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0013_runtime_ceiling.c' object='processing/delta-residual/test_runner-0013_runtime_ceiling.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0013_runtime_ceiling.obj `if test -f 'processing/delta-residual/0013_runtime_ceiling.c'; then $(CYGPATH_W) 'processing/delta-residual/0013_runtime_ceiling.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0013_runtime_ceiling.c'; fi`
+
+processing/delta-residual/test_runner-0014_history_reset.o: processing/delta-residual/0014_history_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0014_history_reset.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0014_history_reset.Tpo -c -o processing/delta-residual/test_runner-0014_history_reset.o `test -f 'processing/delta-residual/0014_history_reset.c' || echo '$(srcdir)/'`processing/delta-residual/0014_history_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0014_history_reset.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0014_history_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0014_history_reset.c' object='processing/delta-residual/test_runner-0014_history_reset.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0014_history_reset.o `test -f 'processing/delta-residual/0014_history_reset.c' || echo '$(srcdir)/'`processing/delta-residual/0014_history_reset.c
+
+processing/delta-residual/test_runner-0014_history_reset.obj: processing/delta-residual/0014_history_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0014_history_reset.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0014_history_reset.Tpo -c -o processing/delta-residual/test_runner-0014_history_reset.obj `if test -f 'processing/delta-residual/0014_history_reset.c'; then $(CYGPATH_W) 'processing/delta-residual/0014_history_reset.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0014_history_reset.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0014_history_reset.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0014_history_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0014_history_reset.c' object='processing/delta-residual/test_runner-0014_history_reset.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0014_history_reset.obj `if test -f 'processing/delta-residual/0014_history_reset.c'; then $(CYGPATH_W) 'processing/delta-residual/0014_history_reset.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0014_history_reset.c'; fi`
+
+processing/delta-residual/test_runner-0015_output_failure.o: processing/delta-residual/0015_output_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0015_output_failure.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0015_output_failure.Tpo -c -o processing/delta-residual/test_runner-0015_output_failure.o `test -f 'processing/delta-residual/0015_output_failure.c' || echo '$(srcdir)/'`processing/delta-residual/0015_output_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0015_output_failure.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0015_output_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0015_output_failure.c' object='processing/delta-residual/test_runner-0015_output_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0015_output_failure.o `test -f 'processing/delta-residual/0015_output_failure.c' || echo '$(srcdir)/'`processing/delta-residual/0015_output_failure.c
+
+processing/delta-residual/test_runner-0015_output_failure.obj: processing/delta-residual/0015_output_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0015_output_failure.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0015_output_failure.Tpo -c -o processing/delta-residual/test_runner-0015_output_failure.obj `if test -f 'processing/delta-residual/0015_output_failure.c'; then $(CYGPATH_W) 'processing/delta-residual/0015_output_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0015_output_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0015_output_failure.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0015_output_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0015_output_failure.c' object='processing/delta-residual/test_runner-0015_output_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0015_output_failure.obj `if test -f 'processing/delta-residual/0015_output_failure.c'; then $(CYGPATH_W) 'processing/delta-residual/0015_output_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0015_output_failure.c'; fi`
+
+processing/delta-residual/test_runner-0016_partial_frame_rejection.o: processing/delta-residual/0016_partial_frame_rejection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0016_partial_frame_rejection.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0016_partial_frame_rejection.Tpo -c -o processing/delta-residual/test_runner-0016_partial_frame_rejection.o `test -f 'processing/delta-residual/0016_partial_frame_rejection.c' || echo '$(srcdir)/'`processing/delta-residual/0016_partial_frame_rejection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0016_partial_frame_rejection.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0016_partial_frame_rejection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0016_partial_frame_rejection.c' object='processing/delta-residual/test_runner-0016_partial_frame_rejection.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0016_partial_frame_rejection.o `test -f 'processing/delta-residual/0016_partial_frame_rejection.c' || echo '$(srcdir)/'`processing/delta-residual/0016_partial_frame_rejection.c
+
+processing/delta-residual/test_runner-0016_partial_frame_rejection.obj: processing/delta-residual/0016_partial_frame_rejection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0016_partial_frame_rejection.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0016_partial_frame_rejection.Tpo -c -o processing/delta-residual/test_runner-0016_partial_frame_rejection.obj `if test -f 'processing/delta-residual/0016_partial_frame_rejection.c'; then $(CYGPATH_W) 'processing/delta-residual/0016_partial_frame_rejection.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0016_partial_frame_rejection.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0016_partial_frame_rejection.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0016_partial_frame_rejection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0016_partial_frame_rejection.c' object='processing/delta-residual/test_runner-0016_partial_frame_rejection.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0016_partial_frame_rejection.obj `if test -f 'processing/delta-residual/0016_partial_frame_rejection.c'; then $(CYGPATH_W) 'processing/delta-residual/0016_partial_frame_rejection.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0016_partial_frame_rejection.c'; fi`
+
+processing/delta-residual/test_runner-0017_progressive_conflict.o: processing/delta-residual/0017_progressive_conflict.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0017_progressive_conflict.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0017_progressive_conflict.Tpo -c -o processing/delta-residual/test_runner-0017_progressive_conflict.o `test -f 'processing/delta-residual/0017_progressive_conflict.c' || echo '$(srcdir)/'`processing/delta-residual/0017_progressive_conflict.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0017_progressive_conflict.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0017_progressive_conflict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0017_progressive_conflict.c' object='processing/delta-residual/test_runner-0017_progressive_conflict.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0017_progressive_conflict.o `test -f 'processing/delta-residual/0017_progressive_conflict.c' || echo '$(srcdir)/'`processing/delta-residual/0017_progressive_conflict.c
+
+processing/delta-residual/test_runner-0017_progressive_conflict.obj: processing/delta-residual/0017_progressive_conflict.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0017_progressive_conflict.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0017_progressive_conflict.Tpo -c -o processing/delta-residual/test_runner-0017_progressive_conflict.obj `if test -f 'processing/delta-residual/0017_progressive_conflict.c'; then $(CYGPATH_W) 'processing/delta-residual/0017_progressive_conflict.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0017_progressive_conflict.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0017_progressive_conflict.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0017_progressive_conflict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0017_progressive_conflict.c' object='processing/delta-residual/test_runner-0017_progressive_conflict.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0017_progressive_conflict.obj `if test -f 'processing/delta-residual/0017_progressive_conflict.c'; then $(CYGPATH_W) 'processing/delta-residual/0017_progressive_conflict.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0017_progressive_conflict.c'; fi`
+
+processing/delta-residual/test_runner-0018_metric_without_mask.o: processing/delta-residual/0018_metric_without_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0018_metric_without_mask.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0018_metric_without_mask.Tpo -c -o processing/delta-residual/test_runner-0018_metric_without_mask.o `test -f 'processing/delta-residual/0018_metric_without_mask.c' || echo '$(srcdir)/'`processing/delta-residual/0018_metric_without_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0018_metric_without_mask.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0018_metric_without_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0018_metric_without_mask.c' object='processing/delta-residual/test_runner-0018_metric_without_mask.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0018_metric_without_mask.o `test -f 'processing/delta-residual/0018_metric_without_mask.c' || echo '$(srcdir)/'`processing/delta-residual/0018_metric_without_mask.c
+
+processing/delta-residual/test_runner-0018_metric_without_mask.obj: processing/delta-residual/0018_metric_without_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0018_metric_without_mask.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0018_metric_without_mask.Tpo -c -o processing/delta-residual/test_runner-0018_metric_without_mask.obj `if test -f 'processing/delta-residual/0018_metric_without_mask.c'; then $(CYGPATH_W) 'processing/delta-residual/0018_metric_without_mask.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0018_metric_without_mask.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0018_metric_without_mask.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0018_metric_without_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0018_metric_without_mask.c' object='processing/delta-residual/test_runner-0018_metric_without_mask.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0018_metric_without_mask.obj `if test -f 'processing/delta-residual/0018_metric_without_mask.c'; then $(CYGPATH_W) 'processing/delta-residual/0018_metric_without_mask.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0018_metric_without_mask.c'; fi`
+
+processing/delta-residual/test_runner-0019_gpu_metric_none.o: processing/delta-residual/0019_gpu_metric_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0019_gpu_metric_none.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0019_gpu_metric_none.Tpo -c -o processing/delta-residual/test_runner-0019_gpu_metric_none.o `test -f 'processing/delta-residual/0019_gpu_metric_none.c' || echo '$(srcdir)/'`processing/delta-residual/0019_gpu_metric_none.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0019_gpu_metric_none.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0019_gpu_metric_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0019_gpu_metric_none.c' object='processing/delta-residual/test_runner-0019_gpu_metric_none.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0019_gpu_metric_none.o `test -f 'processing/delta-residual/0019_gpu_metric_none.c' || echo '$(srcdir)/'`processing/delta-residual/0019_gpu_metric_none.c
+
+processing/delta-residual/test_runner-0019_gpu_metric_none.obj: processing/delta-residual/0019_gpu_metric_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0019_gpu_metric_none.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0019_gpu_metric_none.Tpo -c -o processing/delta-residual/test_runner-0019_gpu_metric_none.obj `if test -f 'processing/delta-residual/0019_gpu_metric_none.c'; then $(CYGPATH_W) 'processing/delta-residual/0019_gpu_metric_none.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0019_gpu_metric_none.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0019_gpu_metric_none.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0019_gpu_metric_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0019_gpu_metric_none.c' object='processing/delta-residual/test_runner-0019_gpu_metric_none.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0019_gpu_metric_none.obj `if test -f 'processing/delta-residual/0019_gpu_metric_none.c'; then $(CYGPATH_W) 'processing/delta-residual/0019_gpu_metric_none.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0019_gpu_metric_none.c'; fi`
+
+processing/delta-residual/test_runner-0020_gpu_metric_bluenoise.o: processing/delta-residual/0020_gpu_metric_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0020_gpu_metric_bluenoise.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0020_gpu_metric_bluenoise.Tpo -c -o processing/delta-residual/test_runner-0020_gpu_metric_bluenoise.o `test -f 'processing/delta-residual/0020_gpu_metric_bluenoise.c' || echo '$(srcdir)/'`processing/delta-residual/0020_gpu_metric_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0020_gpu_metric_bluenoise.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0020_gpu_metric_bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0020_gpu_metric_bluenoise.c' object='processing/delta-residual/test_runner-0020_gpu_metric_bluenoise.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0020_gpu_metric_bluenoise.o `test -f 'processing/delta-residual/0020_gpu_metric_bluenoise.c' || echo '$(srcdir)/'`processing/delta-residual/0020_gpu_metric_bluenoise.c
+
+processing/delta-residual/test_runner-0020_gpu_metric_bluenoise.obj: processing/delta-residual/0020_gpu_metric_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0020_gpu_metric_bluenoise.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0020_gpu_metric_bluenoise.Tpo -c -o processing/delta-residual/test_runner-0020_gpu_metric_bluenoise.obj `if test -f 'processing/delta-residual/0020_gpu_metric_bluenoise.c'; then $(CYGPATH_W) 'processing/delta-residual/0020_gpu_metric_bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0020_gpu_metric_bluenoise.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0020_gpu_metric_bluenoise.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0020_gpu_metric_bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0020_gpu_metric_bluenoise.c' object='processing/delta-residual/test_runner-0020_gpu_metric_bluenoise.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0020_gpu_metric_bluenoise.obj `if test -f 'processing/delta-residual/0020_gpu_metric_bluenoise.c'; then $(CYGPATH_W) 'processing/delta-residual/0020_gpu_metric_bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0020_gpu_metric_bluenoise.c'; fi`
+
+processing/delta-residual/test_runner-0021_gpu_cell_edges_none.o: processing/delta-residual/0021_gpu_cell_edges_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0021_gpu_cell_edges_none.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0021_gpu_cell_edges_none.Tpo -c -o processing/delta-residual/test_runner-0021_gpu_cell_edges_none.o `test -f 'processing/delta-residual/0021_gpu_cell_edges_none.c' || echo '$(srcdir)/'`processing/delta-residual/0021_gpu_cell_edges_none.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0021_gpu_cell_edges_none.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0021_gpu_cell_edges_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0021_gpu_cell_edges_none.c' object='processing/delta-residual/test_runner-0021_gpu_cell_edges_none.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0021_gpu_cell_edges_none.o `test -f 'processing/delta-residual/0021_gpu_cell_edges_none.c' || echo '$(srcdir)/'`processing/delta-residual/0021_gpu_cell_edges_none.c
+
+processing/delta-residual/test_runner-0021_gpu_cell_edges_none.obj: processing/delta-residual/0021_gpu_cell_edges_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0021_gpu_cell_edges_none.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0021_gpu_cell_edges_none.Tpo -c -o processing/delta-residual/test_runner-0021_gpu_cell_edges_none.obj `if test -f 'processing/delta-residual/0021_gpu_cell_edges_none.c'; then $(CYGPATH_W) 'processing/delta-residual/0021_gpu_cell_edges_none.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0021_gpu_cell_edges_none.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0021_gpu_cell_edges_none.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0021_gpu_cell_edges_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0021_gpu_cell_edges_none.c' object='processing/delta-residual/test_runner-0021_gpu_cell_edges_none.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0021_gpu_cell_edges_none.obj `if test -f 'processing/delta-residual/0021_gpu_cell_edges_none.c'; then $(CYGPATH_W) 'processing/delta-residual/0021_gpu_cell_edges_none.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0021_gpu_cell_edges_none.c'; fi`
+
+processing/delta-residual/test_runner-0022_gpu_cell_edges_bluenoise.o: processing/delta-residual/0022_gpu_cell_edges_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0022_gpu_cell_edges_bluenoise.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0022_gpu_cell_edges_bluenoise.Tpo -c -o processing/delta-residual/test_runner-0022_gpu_cell_edges_bluenoise.o `test -f 'processing/delta-residual/0022_gpu_cell_edges_bluenoise.c' || echo '$(srcdir)/'`processing/delta-residual/0022_gpu_cell_edges_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0022_gpu_cell_edges_bluenoise.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0022_gpu_cell_edges_bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0022_gpu_cell_edges_bluenoise.c' object='processing/delta-residual/test_runner-0022_gpu_cell_edges_bluenoise.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0022_gpu_cell_edges_bluenoise.o `test -f 'processing/delta-residual/0022_gpu_cell_edges_bluenoise.c' || echo '$(srcdir)/'`processing/delta-residual/0022_gpu_cell_edges_bluenoise.c
+
+processing/delta-residual/test_runner-0022_gpu_cell_edges_bluenoise.obj: processing/delta-residual/0022_gpu_cell_edges_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0022_gpu_cell_edges_bluenoise.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0022_gpu_cell_edges_bluenoise.Tpo -c -o processing/delta-residual/test_runner-0022_gpu_cell_edges_bluenoise.obj `if test -f 'processing/delta-residual/0022_gpu_cell_edges_bluenoise.c'; then $(CYGPATH_W) 'processing/delta-residual/0022_gpu_cell_edges_bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0022_gpu_cell_edges_bluenoise.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0022_gpu_cell_edges_bluenoise.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0022_gpu_cell_edges_bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0022_gpu_cell_edges_bluenoise.c' object='processing/delta-residual/test_runner-0022_gpu_cell_edges_bluenoise.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0022_gpu_cell_edges_bluenoise.obj `if test -f 'processing/delta-residual/0022_gpu_cell_edges_bluenoise.c'; then $(CYGPATH_W) 'processing/delta-residual/0022_gpu_cell_edges_bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0022_gpu_cell_edges_bluenoise.c'; fi`
+
+processing/delta-residual/test_runner-0023_cpu_a_observations.o: processing/delta-residual/0023_cpu_a_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0023_cpu_a_observations.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0023_cpu_a_observations.Tpo -c -o processing/delta-residual/test_runner-0023_cpu_a_observations.o `test -f 'processing/delta-residual/0023_cpu_a_observations.c' || echo '$(srcdir)/'`processing/delta-residual/0023_cpu_a_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0023_cpu_a_observations.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0023_cpu_a_observations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0023_cpu_a_observations.c' object='processing/delta-residual/test_runner-0023_cpu_a_observations.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0023_cpu_a_observations.o `test -f 'processing/delta-residual/0023_cpu_a_observations.c' || echo '$(srcdir)/'`processing/delta-residual/0023_cpu_a_observations.c
+
+processing/delta-residual/test_runner-0023_cpu_a_observations.obj: processing/delta-residual/0023_cpu_a_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0023_cpu_a_observations.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0023_cpu_a_observations.Tpo -c -o processing/delta-residual/test_runner-0023_cpu_a_observations.obj `if test -f 'processing/delta-residual/0023_cpu_a_observations.c'; then $(CYGPATH_W) 'processing/delta-residual/0023_cpu_a_observations.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0023_cpu_a_observations.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0023_cpu_a_observations.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0023_cpu_a_observations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0023_cpu_a_observations.c' object='processing/delta-residual/test_runner-0023_cpu_a_observations.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0023_cpu_a_observations.obj `if test -f 'processing/delta-residual/0023_cpu_a_observations.c'; then $(CYGPATH_W) 'processing/delta-residual/0023_cpu_a_observations.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0023_cpu_a_observations.c'; fi`
+
+processing/delta-residual/test_runner-0024_cpu_x_observations.o: processing/delta-residual/0024_cpu_x_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0024_cpu_x_observations.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0024_cpu_x_observations.Tpo -c -o processing/delta-residual/test_runner-0024_cpu_x_observations.o `test -f 'processing/delta-residual/0024_cpu_x_observations.c' || echo '$(srcdir)/'`processing/delta-residual/0024_cpu_x_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0024_cpu_x_observations.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0024_cpu_x_observations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0024_cpu_x_observations.c' object='processing/delta-residual/test_runner-0024_cpu_x_observations.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0024_cpu_x_observations.o `test -f 'processing/delta-residual/0024_cpu_x_observations.c' || echo '$(srcdir)/'`processing/delta-residual/0024_cpu_x_observations.c
+
+processing/delta-residual/test_runner-0024_cpu_x_observations.obj: processing/delta-residual/0024_cpu_x_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0024_cpu_x_observations.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0024_cpu_x_observations.Tpo -c -o processing/delta-residual/test_runner-0024_cpu_x_observations.obj `if test -f 'processing/delta-residual/0024_cpu_x_observations.c'; then $(CYGPATH_W) 'processing/delta-residual/0024_cpu_x_observations.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0024_cpu_x_observations.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0024_cpu_x_observations.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0024_cpu_x_observations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0024_cpu_x_observations.c' object='processing/delta-residual/test_runner-0024_cpu_x_observations.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0024_cpu_x_observations.obj `if test -f 'processing/delta-residual/0024_cpu_x_observations.c'; then $(CYGPATH_W) 'processing/delta-residual/0024_cpu_x_observations.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0024_cpu_x_observations.c'; fi`
+
+processing/delta-residual/test_runner-0025_gpu_a_observations.o: processing/delta-residual/0025_gpu_a_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0025_gpu_a_observations.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0025_gpu_a_observations.Tpo -c -o processing/delta-residual/test_runner-0025_gpu_a_observations.o `test -f 'processing/delta-residual/0025_gpu_a_observations.c' || echo '$(srcdir)/'`processing/delta-residual/0025_gpu_a_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0025_gpu_a_observations.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0025_gpu_a_observations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0025_gpu_a_observations.c' object='processing/delta-residual/test_runner-0025_gpu_a_observations.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0025_gpu_a_observations.o `test -f 'processing/delta-residual/0025_gpu_a_observations.c' || echo '$(srcdir)/'`processing/delta-residual/0025_gpu_a_observations.c
+
+processing/delta-residual/test_runner-0025_gpu_a_observations.obj: processing/delta-residual/0025_gpu_a_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0025_gpu_a_observations.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0025_gpu_a_observations.Tpo -c -o processing/delta-residual/test_runner-0025_gpu_a_observations.obj `if test -f 'processing/delta-residual/0025_gpu_a_observations.c'; then $(CYGPATH_W) 'processing/delta-residual/0025_gpu_a_observations.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0025_gpu_a_observations.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0025_gpu_a_observations.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0025_gpu_a_observations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0025_gpu_a_observations.c' object='processing/delta-residual/test_runner-0025_gpu_a_observations.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0025_gpu_a_observations.obj `if test -f 'processing/delta-residual/0025_gpu_a_observations.c'; then $(CYGPATH_W) 'processing/delta-residual/0025_gpu_a_observations.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0025_gpu_a_observations.c'; fi`
+
+processing/delta-residual/test_runner-0026_gpu_x_observations.o: processing/delta-residual/0026_gpu_x_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0026_gpu_x_observations.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0026_gpu_x_observations.Tpo -c -o processing/delta-residual/test_runner-0026_gpu_x_observations.o `test -f 'processing/delta-residual/0026_gpu_x_observations.c' || echo '$(srcdir)/'`processing/delta-residual/0026_gpu_x_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0026_gpu_x_observations.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0026_gpu_x_observations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0026_gpu_x_observations.c' object='processing/delta-residual/test_runner-0026_gpu_x_observations.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0026_gpu_x_observations.o `test -f 'processing/delta-residual/0026_gpu_x_observations.c' || echo '$(srcdir)/'`processing/delta-residual/0026_gpu_x_observations.c
+
+processing/delta-residual/test_runner-0026_gpu_x_observations.obj: processing/delta-residual/0026_gpu_x_observations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0026_gpu_x_observations.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0026_gpu_x_observations.Tpo -c -o processing/delta-residual/test_runner-0026_gpu_x_observations.obj `if test -f 'processing/delta-residual/0026_gpu_x_observations.c'; then $(CYGPATH_W) 'processing/delta-residual/0026_gpu_x_observations.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0026_gpu_x_observations.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0026_gpu_x_observations.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0026_gpu_x_observations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0026_gpu_x_observations.c' object='processing/delta-residual/test_runner-0026_gpu_x_observations.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0026_gpu_x_observations.obj `if test -f 'processing/delta-residual/0026_gpu_x_observations.c'; then $(CYGPATH_W) 'processing/delta-residual/0026_gpu_x_observations.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0026_gpu_x_observations.c'; fi`
+
+processing/delta-residual/test_runner-0027_gpu_metric_a.o: processing/delta-residual/0027_gpu_metric_a.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0027_gpu_metric_a.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0027_gpu_metric_a.Tpo -c -o processing/delta-residual/test_runner-0027_gpu_metric_a.o `test -f 'processing/delta-residual/0027_gpu_metric_a.c' || echo '$(srcdir)/'`processing/delta-residual/0027_gpu_metric_a.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0027_gpu_metric_a.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0027_gpu_metric_a.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0027_gpu_metric_a.c' object='processing/delta-residual/test_runner-0027_gpu_metric_a.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0027_gpu_metric_a.o `test -f 'processing/delta-residual/0027_gpu_metric_a.c' || echo '$(srcdir)/'`processing/delta-residual/0027_gpu_metric_a.c
+
+processing/delta-residual/test_runner-0027_gpu_metric_a.obj: processing/delta-residual/0027_gpu_metric_a.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0027_gpu_metric_a.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0027_gpu_metric_a.Tpo -c -o processing/delta-residual/test_runner-0027_gpu_metric_a.obj `if test -f 'processing/delta-residual/0027_gpu_metric_a.c'; then $(CYGPATH_W) 'processing/delta-residual/0027_gpu_metric_a.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0027_gpu_metric_a.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0027_gpu_metric_a.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0027_gpu_metric_a.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0027_gpu_metric_a.c' object='processing/delta-residual/test_runner-0027_gpu_metric_a.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0027_gpu_metric_a.obj `if test -f 'processing/delta-residual/0027_gpu_metric_a.c'; then $(CYGPATH_W) 'processing/delta-residual/0027_gpu_metric_a.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0027_gpu_metric_a.c'; fi`
+
+processing/delta-residual/test_runner-0028_gpu_metric_x.o: processing/delta-residual/0028_gpu_metric_x.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0028_gpu_metric_x.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0028_gpu_metric_x.Tpo -c -o processing/delta-residual/test_runner-0028_gpu_metric_x.o `test -f 'processing/delta-residual/0028_gpu_metric_x.c' || echo '$(srcdir)/'`processing/delta-residual/0028_gpu_metric_x.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0028_gpu_metric_x.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0028_gpu_metric_x.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0028_gpu_metric_x.c' object='processing/delta-residual/test_runner-0028_gpu_metric_x.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0028_gpu_metric_x.o `test -f 'processing/delta-residual/0028_gpu_metric_x.c' || echo '$(srcdir)/'`processing/delta-residual/0028_gpu_metric_x.c
+
+processing/delta-residual/test_runner-0028_gpu_metric_x.obj: processing/delta-residual/0028_gpu_metric_x.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0028_gpu_metric_x.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0028_gpu_metric_x.Tpo -c -o processing/delta-residual/test_runner-0028_gpu_metric_x.obj `if test -f 'processing/delta-residual/0028_gpu_metric_x.c'; then $(CYGPATH_W) 'processing/delta-residual/0028_gpu_metric_x.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0028_gpu_metric_x.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0028_gpu_metric_x.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0028_gpu_metric_x.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0028_gpu_metric_x.c' object='processing/delta-residual/test_runner-0028_gpu_metric_x.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0028_gpu_metric_x.obj `if test -f 'processing/delta-residual/0028_gpu_metric_x.c'; then $(CYGPATH_W) 'processing/delta-residual/0028_gpu_metric_x.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0028_gpu_metric_x.c'; fi`
+
+processing/delta-residual/test_runner-0029_gpu_cells_a.o: processing/delta-residual/0029_gpu_cells_a.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0029_gpu_cells_a.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0029_gpu_cells_a.Tpo -c -o processing/delta-residual/test_runner-0029_gpu_cells_a.o `test -f 'processing/delta-residual/0029_gpu_cells_a.c' || echo '$(srcdir)/'`processing/delta-residual/0029_gpu_cells_a.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0029_gpu_cells_a.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0029_gpu_cells_a.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0029_gpu_cells_a.c' object='processing/delta-residual/test_runner-0029_gpu_cells_a.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0029_gpu_cells_a.o `test -f 'processing/delta-residual/0029_gpu_cells_a.c' || echo '$(srcdir)/'`processing/delta-residual/0029_gpu_cells_a.c
+
+processing/delta-residual/test_runner-0029_gpu_cells_a.obj: processing/delta-residual/0029_gpu_cells_a.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0029_gpu_cells_a.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0029_gpu_cells_a.Tpo -c -o processing/delta-residual/test_runner-0029_gpu_cells_a.obj `if test -f 'processing/delta-residual/0029_gpu_cells_a.c'; then $(CYGPATH_W) 'processing/delta-residual/0029_gpu_cells_a.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0029_gpu_cells_a.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0029_gpu_cells_a.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0029_gpu_cells_a.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0029_gpu_cells_a.c' object='processing/delta-residual/test_runner-0029_gpu_cells_a.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0029_gpu_cells_a.obj `if test -f 'processing/delta-residual/0029_gpu_cells_a.c'; then $(CYGPATH_W) 'processing/delta-residual/0029_gpu_cells_a.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0029_gpu_cells_a.c'; fi`
+
+processing/delta-residual/test_runner-0030_gpu_cells_x.o: processing/delta-residual/0030_gpu_cells_x.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0030_gpu_cells_x.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0030_gpu_cells_x.Tpo -c -o processing/delta-residual/test_runner-0030_gpu_cells_x.o `test -f 'processing/delta-residual/0030_gpu_cells_x.c' || echo '$(srcdir)/'`processing/delta-residual/0030_gpu_cells_x.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0030_gpu_cells_x.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0030_gpu_cells_x.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0030_gpu_cells_x.c' object='processing/delta-residual/test_runner-0030_gpu_cells_x.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0030_gpu_cells_x.o `test -f 'processing/delta-residual/0030_gpu_cells_x.c' || echo '$(srcdir)/'`processing/delta-residual/0030_gpu_cells_x.c
+
+processing/delta-residual/test_runner-0030_gpu_cells_x.obj: processing/delta-residual/0030_gpu_cells_x.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-0030_gpu_cells_x.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-0030_gpu_cells_x.Tpo -c -o processing/delta-residual/test_runner-0030_gpu_cells_x.obj `if test -f 'processing/delta-residual/0030_gpu_cells_x.c'; then $(CYGPATH_W) 'processing/delta-residual/0030_gpu_cells_x.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0030_gpu_cells_x.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-0030_gpu_cells_x.Tpo processing/delta-residual/$(DEPDIR)/test_runner-0030_gpu_cells_x.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/0030_gpu_cells_x.c' object='processing/delta-residual/test_runner-0030_gpu_cells_x.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0030_gpu_cells_x.obj `if test -f 'processing/delta-residual/0030_gpu_cells_x.c'; then $(CYGPATH_W) 'processing/delta-residual/0030_gpu_cells_x.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0030_gpu_cells_x.c'; fi`
+
+processing/delta-residual/test_runner-gate_test_common.o: processing/delta-residual/gate_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-gate_test_common.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Tpo -c -o processing/delta-residual/test_runner-gate_test_common.o `test -f 'processing/delta-residual/gate_test_common.c' || echo '$(srcdir)/'`processing/delta-residual/gate_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Tpo processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/gate_test_common.c' object='processing/delta-residual/test_runner-gate_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-gate_test_common.o `test -f 'processing/delta-residual/gate_test_common.c' || echo '$(srcdir)/'`processing/delta-residual/gate_test_common.c
+
+processing/delta-residual/test_runner-gate_test_common.obj: processing/delta-residual/gate_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-gate_test_common.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Tpo -c -o processing/delta-residual/test_runner-gate_test_common.obj `if test -f 'processing/delta-residual/gate_test_common.c'; then $(CYGPATH_W) 'processing/delta-residual/gate_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/gate_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Tpo processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/gate_test_common.c' object='processing/delta-residual/test_runner-gate_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-gate_test_common.obj `if test -f 'processing/delta-residual/gate_test_common.c'; then $(CYGPATH_W) 'processing/delta-residual/gate_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/gate_test_common.c'; fi`
+
+processing/delta-residual/test_runner-residual_test_common.o: processing/delta-residual/residual_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-residual_test_common.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-residual_test_common.Tpo -c -o processing/delta-residual/test_runner-residual_test_common.o `test -f 'processing/delta-residual/residual_test_common.c' || echo '$(srcdir)/'`processing/delta-residual/residual_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-residual_test_common.Tpo processing/delta-residual/$(DEPDIR)/test_runner-residual_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/residual_test_common.c' object='processing/delta-residual/test_runner-residual_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-residual_test_common.o `test -f 'processing/delta-residual/residual_test_common.c' || echo '$(srcdir)/'`processing/delta-residual/residual_test_common.c
+
+processing/delta-residual/test_runner-residual_test_common.obj: processing/delta-residual/residual_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-residual_test_common.obj -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-residual_test_common.Tpo -c -o processing/delta-residual/test_runner-residual_test_common.obj `if test -f 'processing/delta-residual/residual_test_common.c'; then $(CYGPATH_W) 'processing/delta-residual/residual_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/residual_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-residual_test_common.Tpo processing/delta-residual/$(DEPDIR)/test_runner-residual_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-residual/residual_test_common.c' object='processing/delta-residual/test_runner-residual_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-residual_test_common.obj `if test -f 'processing/delta-residual/residual_test_common.c'; then $(CYGPATH_W) 'processing/delta-residual/residual_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/residual_test_common.c'; fi`
 
 processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o: processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Tpo -c -o processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o `test -f 'processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c' || echo '$(srcdir)/'`processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c
@@ -84614,6 +85357,8 @@ distclean-generic:
 	-$(am__rm_f) processing/colorspace/$(am__dirstamp)
 	-$(am__rm_f) processing/decoder/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/decoder/$(am__dirstamp)
+	-$(am__rm_f) processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/delta-residual/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/bluenoise/$(DEPDIR)/$(am__dirstamp)

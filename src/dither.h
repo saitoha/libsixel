@@ -27,6 +27,7 @@
 
 #include <sixel.h>
 #include <stdint.h>
+#include "delta-residual.h"
 
 #include "sixel_atomic.h"
 #include "palette.h"
@@ -277,7 +278,9 @@ struct sixel_dither {
     /* Output-owned byte HLS table; borrowed only during one encode call. */
     unsigned char const *pipeline_6delta_hls_bytes;
     unsigned int pipeline_6delta_hls_count;
-    unsigned int pipeline_6delta_threshold; /* per-channel keep threshold */
+    unsigned int pipeline_6delta_threshold; /* early-keep threshold */
+    int pipeline_6delta_metric;
+    sixel_delta_mask_t pipeline_residual_mask;
     int pipeline_6delta_error_mode; /* kept-pixel error handling */
     /* Nonzero omits the pixel. Bit 1 additionally records a nonexact
      * threshold keep. Distinct pixel writes need no shared worker counter. */

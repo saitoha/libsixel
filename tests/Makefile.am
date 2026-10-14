@@ -181,6 +181,38 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0001_DEFAULTS \
+    -DBUILD_TEST_0002_OPTION_ROUTES \
+    -DBUILD_TEST_0003_INVALID_OPTION_ATOMICITY \
+    -DBUILD_TEST_0004_DEPENDENT_OPTION_ATOMICITY \
+    -DBUILD_TEST_0005_POLICY_AGE_RESET \
+    -DBUILD_TEST_0006_METRIC_BOUNDARIES \
+    -DBUILD_TEST_0007_SIGNED_FILTER \
+    -DBUILD_TEST_0008_FILTER_THRESHOLD_BOUNDARY \
+    -DBUILD_TEST_0009_CELL_BOUNDARIES \
+    -DBUILD_TEST_0010_CPU_THREE_OBSERVATIONS \
+    -DBUILD_TEST_0011_GPU_THREE_OBSERVATIONS \
+    -DBUILD_TEST_0012_GPU_BLUENOISE_OBSERVATIONS \
+    -DBUILD_TEST_0013_RUNTIME_CEILING \
+    -DBUILD_TEST_0014_HISTORY_RESET \
+    -DBUILD_TEST_0015_OUTPUT_FAILURE \
+    -DBUILD_TEST_0016_PARTIAL_FRAME_REJECTION \
+    -DBUILD_TEST_0017_PROGRESSIVE_CONFLICT \
+    -DBUILD_TEST_0018_METRIC_WITHOUT_MASK \
+    -DBUILD_TEST_0019_GPU_METRIC_NONE \
+    -DBUILD_TEST_0020_GPU_METRIC_BLUENOISE \
+    -DBUILD_TEST_0021_GPU_CELL_EDGES_NONE \
+    -DBUILD_TEST_0022_GPU_CELL_EDGES_BLUENOISE \
+    -DBUILD_TEST_0023_CPU_A_OBSERVATIONS \
+    -DBUILD_TEST_0024_CPU_X_OBSERVATIONS \
+    -DBUILD_TEST_0025_GPU_A_OBSERVATIONS \
+    -DBUILD_TEST_0026_GPU_X_OBSERVATIONS \
+    -DBUILD_TEST_0027_GPU_METRIC_A \
+    -DBUILD_TEST_0028_GPU_METRIC_X \
+    -DBUILD_TEST_0029_GPU_CELLS_A \
+    -DBUILD_TEST_0030_GPU_CELLS_X \
+    -DBUILD_GATE_TEST_COMMON \
+    -DBUILD_RESIDUAL_TEST_COMMON \
     -DBUILD_TEST_0150_VIDEO_PAIR_DISJOINT_PALETTES \
     -DBUILD_TEST_0151_VIDEO_STABLE_RESIDUAL_AGE \
     -DBUILD_TEST_0152_VIDEO_LATEST_SOURCE_REVALIDATION \
@@ -5105,6 +5137,38 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/filter_binning_stream_alpha_zero_test_common.h \
     processing/filter/filter_transparent_mask_fence_test_common.c \
     processing/filter/filter_transparent_mask_fence_test_common.h \
+    processing/delta-residual/0001_defaults.c \
+    processing/delta-residual/0002_option_routes.c \
+    processing/delta-residual/0003_invalid_option_atomicity.c \
+    processing/delta-residual/0004_dependent_option_atomicity.c \
+    processing/delta-residual/0005_policy_age_reset.c \
+    processing/delta-residual/0006_metric_boundaries.c \
+    processing/delta-residual/0007_signed_filter.c \
+    processing/delta-residual/0008_filter_threshold_boundary.c \
+    processing/delta-residual/0009_cell_boundaries.c \
+    processing/delta-residual/0010_cpu_three_observations.c \
+    processing/delta-residual/0011_gpu_three_observations.c \
+    processing/delta-residual/0012_gpu_bluenoise_observations.c \
+    processing/delta-residual/0013_runtime_ceiling.c \
+    processing/delta-residual/0014_history_reset.c \
+    processing/delta-residual/0015_output_failure.c \
+    processing/delta-residual/0016_partial_frame_rejection.c \
+    processing/delta-residual/0017_progressive_conflict.c \
+    processing/delta-residual/0018_metric_without_mask.c \
+    processing/delta-residual/0019_gpu_metric_none.c \
+    processing/delta-residual/0020_gpu_metric_bluenoise.c \
+    processing/delta-residual/0021_gpu_cell_edges_none.c \
+    processing/delta-residual/0022_gpu_cell_edges_bluenoise.c \
+    processing/delta-residual/0023_cpu_a_observations.c \
+    processing/delta-residual/0024_cpu_x_observations.c \
+    processing/delta-residual/0025_gpu_a_observations.c \
+    processing/delta-residual/0026_gpu_x_observations.c \
+    processing/delta-residual/0027_gpu_metric_a.c \
+    processing/delta-residual/0028_gpu_metric_x.c \
+    processing/delta-residual/0029_gpu_cells_a.c \
+    processing/delta-residual/0030_gpu_cells_x.c \
+    processing/delta-residual/gate_test_common.c \
+    processing/delta-residual/residual_test_common.c \
     processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
     processing/gpu-palette/0002_reserved_key.c \
     processing/gpu-palette/0003_fade_history.c \

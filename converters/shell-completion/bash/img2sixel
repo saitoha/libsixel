@@ -971,7 +971,7 @@ _img2sixel()
         return 0
         ;;
     -Z|--update-policy)
-        COMPREPLY=( $( compgen -W 'full delta progressive progressive:stop_threshold=auto progressive:max_passes=10 progressive:max_seconds=2 progressive:Sauto:N10:M2 delta:progressive=1 delta:progressive=0 delta:progressive=1:stop_threshold=auto delta:progressive=1:max_passes=10 delta:progressive=1:max_seconds=2 delta:threshold=0:error=diffuse delta:threshold=0:error=skip' -- "$cur" ) )
+        COMPREPLY=( $( compgen -W 'full delta progressive progressive:stop_threshold=auto progressive:max_passes=10 progressive:max_seconds=2 progressive:Sauto:N10:M2 delta:progressive=1 delta:progressive=0 delta:progressive=1:stop_threshold=auto delta:progressive=1:max_passes=10 delta:progressive=1:max_seconds=2 delta:residual=1 delta:residual=0 delta:R1:T8:H1.5:K0:F3 delta:threshold_metric=auto delta:threshold_metric=max delta:threshold_metric=rgb241 delta:residual_threshold=1.5 delta:residual_keep_threshold=0 delta:residual_frames=3 delta:threshold=0:error=diffuse delta:threshold=0:error=skip' -- "$cur" ) )
         return 0
         ;;
     -L|--loaders)

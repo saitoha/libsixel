@@ -258,7 +258,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-policy-interframe.h $(srcdir)/dither-clamp.c \
 	$(srcdir)/dither-clamp.h $(srcdir)/dither-common-pipeline.c \
 	$(srcdir)/dither-common-pipeline.h $(srcdir)/gpu-dequant.c \
-	$(srcdir)/gpu-dequant.h $(srcdir)/gpu-palette.c \
+	$(srcdir)/gpu-dequant.h $(srcdir)/delta-residual.c \
+	$(srcdir)/delta-residual.h $(srcdir)/gpu-palette.c \
 	$(srcdir)/progressive-gpu.c $(srcdir)/progressive-gpu.h \
 	$(srcdir)/gpu-palette.h $(srcdir)/bluenoise_64x64.h \
 	$(srcdir)/dither-interframe-method.c \
@@ -443,6 +444,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-clamp.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-common-pipeline.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-dequant.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-delta-residual.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-palette.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-gpu.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-interframe-method.lo \
@@ -585,6 +587,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-cpu.Plo \
 	./$(DEPDIR)/libsixel_la-decoder-parallel.Plo \
 	./$(DEPDIR)/libsixel_la-decoder.Plo \
+	./$(DEPDIR)/libsixel_la-delta-residual.Plo \
 	./$(DEPDIR)/libsixel_la-dither-clamp.Plo \
 	./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo \
 	./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo \
@@ -1221,6 +1224,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-common-pipeline.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-dequant.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-dequant.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/delta-residual.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/delta-residual.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-gpu.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-gpu.h \
@@ -1658,6 +1663,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-cpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder-parallel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-delta-residual.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-clamp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo@am__quote@ # am--include-marker
@@ -2338,6 +2344,13 @@ libsixel_la-gpu-dequant.lo: gpu-dequant.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gpu-dequant.c' object='libsixel_la-gpu-dequant.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-gpu-dequant.lo `test -f 'gpu-dequant.c' || echo '$(srcdir)/'`gpu-dequant.c
+
+libsixel_la-delta-residual.lo: delta-residual.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-delta-residual.lo -MD -MP -MF $(DEPDIR)/libsixel_la-delta-residual.Tpo -c -o libsixel_la-delta-residual.lo `test -f 'delta-residual.c' || echo '$(srcdir)/'`delta-residual.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-delta-residual.Tpo $(DEPDIR)/libsixel_la-delta-residual.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta-residual.c' object='libsixel_la-delta-residual.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-delta-residual.lo `test -f 'delta-residual.c' || echo '$(srcdir)/'`delta-residual.c
 
 libsixel_la-gpu-palette.lo: gpu-palette.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-palette.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-palette.Tpo -c -o libsixel_la-gpu-palette.lo `test -f 'gpu-palette.c' || echo '$(srcdir)/'`gpu-palette.c
@@ -3259,6 +3272,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-cpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder-parallel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-delta-residual.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-clamp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo
@@ -3474,6 +3488,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-cpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder-parallel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-delta-residual.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-clamp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo

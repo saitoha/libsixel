@@ -145,6 +145,16 @@ sixel_gpu_palette_accumulation_is_supported(
     if (request->pixel_count > SIZE_MAX / 3U) {
         return 0;
     }
+    if (request->sixdelta_metric < SIXEL_DELTA_METRIC_AUTO ||
+            request->sixdelta_metric > SIXEL_DELTA_METRIC_RGB241) return 0;
+    if (request->residual_mask != NULL &&
+            request->residual_mask->columns != 0U &&
+            (request->residual_mask->columns > 64U ||
+             request->residual_mask->rows == 0U ||
+             request->residual_mask->rows > 64U ||
+             request->residual_mask->width != request->width ||
+             request->residual_mask->height != request->height ||
+             request->residual_mask->threshold > 255U)) return 0;
     expected_size = request->pixel_count * 3U;
     if (request->accumulation_pixels_size < expected_size) {
         return 0;

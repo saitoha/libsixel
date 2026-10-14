@@ -270,6 +270,36 @@ int test_progressive_0155(int argc, char **argv);
 int test_progressive_0156(int argc, char **argv);
 int test_progressive_0187(int argc, char **argv);
 int test_progressive_0191(int argc, char **argv);
+int test_residual_0001(int argc, char **argv);
+int test_residual_0002(int argc, char **argv);
+int test_residual_0003(int argc, char **argv);
+int test_residual_0004(int argc, char **argv);
+int test_residual_0005(int argc, char **argv);
+int test_residual_0006(int argc, char **argv);
+int test_residual_0007(int argc, char **argv);
+int test_residual_0008(int argc, char **argv);
+int test_residual_0009(int argc, char **argv);
+int test_residual_0010(int argc, char **argv);
+int test_residual_0011(int argc, char **argv);
+int test_residual_0012(int argc, char **argv);
+int test_residual_0013(int argc, char **argv);
+int test_residual_0014(int argc, char **argv);
+int test_residual_0015(int argc, char **argv);
+int test_residual_0016(int argc, char **argv);
+int test_residual_0017(int argc, char **argv);
+int test_residual_0018(int argc, char **argv);
+int test_residual_0019(int argc, char **argv);
+int test_residual_0020(int argc, char **argv);
+int test_residual_0021(int argc, char **argv);
+int test_residual_0022(int argc, char **argv);
+int test_residual_0023(int argc, char **argv);
+int test_residual_0024(int argc, char **argv);
+int test_residual_0025(int argc, char **argv);
+int test_residual_0026(int argc, char **argv);
+int test_residual_0027(int argc, char **argv);
+int test_residual_0028(int argc, char **argv);
+int test_residual_0029(int argc, char **argv);
+int test_residual_0030(int argc, char **argv);
 int test_progressive_0001(int argc, char **argv);
 int test_progressive_0002(int argc, char **argv);
 int test_progressive_0003(int argc, char **argv);
@@ -5027,6 +5057,44 @@ static test_entry_t const test_entries[] = {
       test_progressive_0187 },
     { "progressive/0191_gpu_video_pair",
       test_progressive_0191 },
+    { "delta-residual/0001_defaults", test_residual_0001 },
+    { "delta-residual/0002_option_routes", test_residual_0002 },
+    { "delta-residual/0003_invalid_option_atomicity", test_residual_0003 },
+    { "delta-residual/0004_dependent_option_atomicity", test_residual_0004 },
+    { "delta-residual/0005_policy_age_reset", test_residual_0005 },
+    { "delta-residual/0006_metric_boundaries", test_residual_0006 },
+    { "delta-residual/0007_signed_filter", test_residual_0007 },
+    { "delta-residual/0008_filter_threshold_boundary", test_residual_0008 },
+    { "delta-residual/0009_cell_boundaries", test_residual_0009 },
+    { "delta-residual/0010_cpu_three_observations", test_residual_0010 },
+    { "delta-residual/0011_gpu_three_observations", test_residual_0011 },
+    { "delta-residual/0012_gpu_bluenoise_observations", test_residual_0012 },
+    { "delta-residual/0013_runtime_ceiling", test_residual_0013 },
+    { "delta-residual/0014_history_reset", test_residual_0014 },
+    { "delta-residual/0015_output_failure", test_residual_0015 },
+    { "delta-residual/0016_partial_frame_rejection", test_residual_0016 },
+    { "delta-residual/0017_progressive_conflict", test_residual_0017 },
+    { "delta-residual/0018_metric_without_mask", test_residual_0018 },
+    { "delta-residual/0019_gpu_metric_none", test_residual_0019 },
+    { "delta-residual/0020_gpu_metric_bluenoise", test_residual_0020 },
+    { "delta-residual/0021_gpu_cell_edges_none", test_residual_0021 },
+    { "delta-residual/0022_gpu_cell_edges_bluenoise", test_residual_0022 },
+    { "delta-residual/0023_cpu_a_observations",
+      test_residual_0023 },
+    { "delta-residual/0024_cpu_x_observations",
+      test_residual_0024 },
+    { "delta-residual/0025_gpu_a_observations",
+      test_residual_0025 },
+    { "delta-residual/0026_gpu_x_observations",
+      test_residual_0026 },
+    { "delta-residual/0027_gpu_metric_a",
+      test_residual_0027 },
+    { "delta-residual/0028_gpu_metric_x",
+      test_residual_0028 },
+    { "delta-residual/0029_gpu_cells_a",
+      test_residual_0029 },
+    { "delta-residual/0030_gpu_cells_x",
+      test_residual_0030 },
     { "progressive/0001_source_snapshot",
       test_progressive_0001 },
     { "progressive/0002_history_revisions",

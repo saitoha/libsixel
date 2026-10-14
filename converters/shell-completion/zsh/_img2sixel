@@ -203,6 +203,15 @@ _updatepolicy() {
     'progressive:max_seconds=2[cap elapsed time after initial image]' \
     'progressive:Sauto:N10:M2[compact progressive limits]' \
     'delta:progressive=1:stop_threshold=auto[per-source quality target]' \
+    'delta:residual=1[enable persistent residual threshold control]' \
+    'delta:residual=0[disable residual threshold control]' \
+    'delta:R1:T8:H1.5:K0:F3[residual threshold profile]' \
+    'delta:threshold_metric=auto[resolve metric from residual policy]' \
+    'delta:threshold_metric=max[component maximum distance]' \
+    'delta:threshold_metric=rgb241[normalized weighted RGB distance]' \
+    'delta:residual_threshold=1.5[filtered residual threshold]' \
+    'delta:residual_keep_threshold=0[keep threshold inside mask]' \
+    'delta:residual_frames=3[consecutive successful observations]' \
     'delta:progressive=1:max_passes=10[per-source pass cap]' \
     'delta:progressive=1:max_seconds=2[per-source time cap]' \
     'delta:progressive=1[repair during animation slack]' \

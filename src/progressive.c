@@ -186,7 +186,7 @@ sixel_repair_context_new_owned(sixel_repair_context_t **context,
     }
     status = SIXEL_BAD_ARGUMENT;
     if (!encoder->sixdelta_enabled || encoder->revision_exhausted ||
-            encoder->progressive_context != NULL) {
+            encoder->residual_enabled || encoder->progressive_context != NULL) {
         goto end;
     }
     if (allocator == NULL) {
