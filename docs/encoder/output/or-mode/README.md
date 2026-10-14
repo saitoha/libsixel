@@ -361,7 +361,7 @@ The native centroid and sub-byte cases compare working coordinates with an absol
 | OR-08 | Direct decoding resolves the composed index. | [tests/processing/decoder/0004_decoder_ormode_direct_overlay.t](../../../../tests/processing/decoder/0004_decoder_ormode_direct_overlay.t) |
 | OR-09 | Repeat runs preserve OR composition. | [tests/processing/decoder/0005_decoder_ormode_repeat_overlay.t](../../../../tests/processing/decoder/0005_decoder_ormode_repeat_overlay.t) |
 | OR-10 | The legacy decode API follows OR composition. | [tests/processing/decoder/0006_decoder_ormode_legacy_api.t](../../../../tests/processing/decoder/0006_decoder_ormode_legacy_api.t) |
-| OR-11 | The parallel request path accumulates OR indices. | [tests/processing/decoder/0007_decoder_ormode_parallel_request.t](../../../../tests/processing/decoder/0007_decoder_ormode_parallel_request.t) |
+| OR-11 | The parallel request path declines an OR direct-color request without touching the band planes or RGBA output. | [tests/processing/decoder/0007_decoder_ormode_parallel_request.t](../../../../tests/processing/decoder/0007_decoder_ormode_parallel_request.t) |
 | OR-12 | Selective-blur dequantization retains opaque OR raster cells. | [tests/processing/decoder/0022_ormode_selective_blur_opaque.t](../../../../tests/processing/decoder/0022_ormode_selective_blur_opaque.t) |
 | OR-13 | Builtin palette OR output ignores clustering-space selection. | [tests/quant/palette/usage/0137_builtin_palette_ormode_clustering_colorspace_ignored_output.t](../../../../tests/quant/palette/usage/0137_builtin_palette_ormode_clustering_colorspace_ignored_output.t) |
 | OR-14 | PAL mapfile OR output ignores clustering-space selection. | [tests/quant/palette/usage/0138_mapfile_pal_ormode_clustering_colorspace_ignored_output.t](../../../../tests/quant/palette/usage/0138_mapfile_pal_ormode_clustering_colorspace_ignored_output.t) |
@@ -397,7 +397,7 @@ The native centroid and sub-byte cases compare working coordinates with an absol
 | OR-44 | The public indexed decoder returns every expected index at two workers. | [tests/processing/decoder/0035_ormode_parallel_indexed.t](../../../../tests/processing/decoder/0035_ormode_parallel_indexed.t) |
 | OR-45 | RGBA output remains exact after an injected paint-worker launch failure. | [tests/processing/decoder/0036_ormode_fallback_rgba.t](../../../../tests/processing/decoder/0036_ormode_fallback_rgba.t) |
 | OR-46 | Indexed output remains exact after an injected paint-worker launch failure. | [tests/processing/decoder/0037_ormode_fallback_indexed.t](../../../../tests/processing/decoder/0037_ormode_fallback_indexed.t) |
-| OR-47 | The internal parallel indexed request completes and composes every index. | [tests/processing/decoder/0038_ormode_parallel_indexed_request.t](../../../../tests/processing/decoder/0038_ormode_parallel_indexed_request.t) |
+| OR-47 | The parallel request path declines an OR indexed request without touching the band planes or index raster. | [tests/processing/decoder/0038_ormode_parallel_indexed_request.t](../../../../tests/processing/decoder/0038_ormode_parallel_indexed_request.t) |
 | OR-48 | Reusing a decoder for a normal stream after OR restores overwrite rules. | [tests/processing/decoder/0039_ormode_decoder_reuse_resets_mode.t](../../../../tests/processing/decoder/0039_ormode_decoder_reuse_resets_mode.t) |
 | OR-49 | An untouched OR pixel resolves palette zero with alpha 255. | [tests/processing/decoder/0040_ormode_direct_zero_is_opaque.t](../../../../tests/processing/decoder/0040_ormode_direct_zero_is_opaque.t) |
 | OR-50 | The long --ormode option selects the OR-mode DCS header. | [tests/cli/options/general/0009_ormode_long_header.t](../../../../tests/cli/options/general/0009_ormode_long_header.t) |
@@ -424,7 +424,7 @@ The native centroid and sub-byte cases compare working coordinates with an absol
 | OR-71 | A partial final band gathers only its valid rows and keeps zero opaque. | [tests/processing/decoder/0057_ormode_tail_band.t](../../../../tests/processing/decoder/0057_ormode_tail_band.t) |
 | OR-72 | OR resolves HLS definitions after painting, including palette zero. | [tests/processing/decoder/0058_ormode_hls_redefinition.t](../../../../tests/processing/decoder/0058_ormode_hls_redefinition.t) |
 | OR-73 | Without raster attributes, wide planes grow and crop to painted bounds. | [tests/processing/decoder/0059_ormode_implicit_raster.t](../../../../tests/processing/decoder/0059_ormode_implicit_raster.t) |
-| OR-74 | A worker inherits the selected OR register across band boundaries without a new color command. | [tests/processing/decoder/0060_ormode_inherited_register.t](../../../../tests/processing/decoder/0060_ormode_inherited_register.t) |
+| OR-74 | A register selected in an earlier band applies to later bands without a new color command, at every configured worker budget. | [tests/processing/decoder/0060_ormode_inherited_register.t](../../../../tests/processing/decoder/0060_ormode_inherited_register.t) |
 | OR-75 | The returned palette count includes the maximum composed index even if no command selected or defined it. | [tests/processing/decoder/0061_ormode_composed_color_count.t](../../../../tests/processing/decoder/0061_ormode_composed_color_count.t) |
 
 ### Defensive and malformed-input tests

@@ -271,67 +271,100 @@ image_buffer_enable_ormode(image_buffer_t *image,
 
 /* Resolve only after the final palette definition and final raster resize.
  * Index zero is opaque, including untouched cells. No paint-mask writes or
- * per-pixel maxima are needed while accumulating the received planes. */
+ * per-pixel maxima are needed while accumulating the received planes.
+ *
+ * Rows are written front to back so each output row is one sequential
+ * stream.  The common shapes (byte indices or RGBA from the low eight planes)
+ * get their own loops; the per-pixel depth and upper-plane tests stay in the
+ * general loop for 16-bit output and wide registers. */
 SIXEL_INTERNAL_API void
 image_buffer_finalize_ormode(image_buffer_t *image)
 {
     uint64_t const *low;
     uint64_t const *high;
-    uint64_t word;
-    uint64_t high_word;
+    unsigned char lut[256][4];
+    unsigned char *bytes;
     unsigned char *dst;
     unsigned int index;
-    int max_index;
+    unsigned int max_index;
+    size_t width;
+    size_t row;
+    int band;
+    int bands;
+    int rows;
     int color;
-    int y;
     int r;
     int x;
-    int rows;
-    size_t pos;
 
     if (image == NULL || image->ormode_planes == NULL) {
         return;
     }
-    max_index = 0;
-    for (y = 0; y < image->height; y += 6) {
-        low = image->ormode_planes + (size_t)(y / 6) * image->width;
+    width = (size_t)image->width;
+    bands = (image->height + 5) / 6;
+    max_index = 0u;
+    if (image->depth == 4U && image->ormode_high_planes == NULL) {
+        for (x = 0; x < 256; ++x) {
+            color = image->palette[x];
+            lut[x][0] = (unsigned char)(color >> 16);
+            lut[x][1] = (unsigned char)(color >> 8);
+            lut[x][2] = (unsigned char)color;
+            lut[x][3] = 255u;
+        }
+    }
+    for (band = 0; band < bands; ++band) {
+        low = image->ormode_planes + (size_t)band * width;
         high = image->ormode_high_planes == NULL ? NULL :
-            image->ormode_high_planes + (size_t)(y / 6) * image->width;
-        rows = image->height - y;
+            image->ormode_high_planes + (size_t)band * width;
+        rows = image->height - band * 6;
         if (rows > 6) {
             rows = 6;
         }
-        for (x = 0; x < image->width; ++x) {
-            word = low[x];
-            high_word = high == NULL ? 0 : high[x];
-            for (r = 0; r < rows; ++r) {
-                index = sixel_ormode_gather(word, r);
-                if (high != NULL) {
-                    index |= sixel_ormode_gather(high_word, r) << 8;
+        for (r = 0; r < rows; ++r) {
+            row = ((size_t)band * 6u + (size_t)r) * width;
+            if (high == NULL && image->depth == 1U) {
+                bytes = image->pixels.in_bytes + row;
+                for (x = 0; x < image->width; ++x) {
+                    index = sixel_ormode_gather(low[x], r);
+                    max_index = index > max_index ? index : max_index;
+                    bytes[x] = (unsigned char)index;
                 }
-                if ((int)index > max_index) {
-                    max_index = (int)index;
+            } else if (high == NULL && image->depth == 4U) {
+                bytes = image->pixels.in_bytes + row * 4u;
+                for (x = 0; x < image->width; ++x) {
+                    index = sixel_ormode_gather(low[x], r);
+                    max_index = index > max_index ? index : max_index;
+                    memcpy(bytes + (size_t)x * 4u, lut[index], 4u);
                 }
-                pos = (size_t)(y + r) * image->width + (size_t)x;
-                if (image->depth == 1) {
-                    image->pixels.in_bytes[pos] = (unsigned char)index;
-                } else if (image->depth == 2) {
-                    image->pixels.in_shorts[pos] = (unsigned short)index;
-                } else {
-                    color = image->palette[index];
-                    dst = image->pixels.in_bytes + pos * 4u;
-                    dst[0] = (unsigned char)(color >> 16);
-                    dst[1] = (unsigned char)(color >> 8);
-                    dst[2] = (unsigned char)color;
-                    dst[3] = 255u;
+            } else {
+                for (x = 0; x < image->width; ++x) {
+                    index = sixel_ormode_gather(low[x], r);
+                    if (high != NULL) {
+                        index |= sixel_ormode_gather(high[x], r) << 8;
+                    }
+                    max_index = index > max_index ? index : max_index;
+                    if (image->depth == 1U) {
+                        image->pixels.in_bytes[row + (size_t)x] =
+                            (unsigned char)index;
+                    } else if (image->depth == 2U) {
+                        image->pixels.in_shorts[row + (size_t)x] =
+                            (unsigned short)index;
+                    } else {
+                        color = image->palette[index];
+                        dst = image->pixels.in_bytes +
+                            (row + (size_t)x) * 4u;
+                        dst[0] = (unsigned char)(color >> 16);
+                        dst[1] = (unsigned char)(color >> 8);
+                        dst[2] = (unsigned char)color;
+                        dst[3] = 255u;
+                    }
                 }
             }
         }
     }
     /* Retain the existing palette-definition/default floor as well as every
      * composed index. A register need not be selected itself to be produced. */
-    if (max_index + 1 > image->ncolors) {
-        image->ncolors = max_index + 1;
+    if ((int)max_index + 1 > image->ncolors) {
+        image->ncolors = (int)max_index + 1;
     }
     if (image->paint_mask != NULL) {
         memset(image->paint_mask, 0xff,

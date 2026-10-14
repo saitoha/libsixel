@@ -1,8 +1,9 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Verify that the parallel decoder worker can compose OR-mode bit planes into
- * the indexed output buffer.
+ * Verify that the parallel decoder declines an OR-mode indexed request before
+ * touching the shared band planes or the index raster.  OR streams always
+ * decode serially; the caller continues on that path.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -28,10 +29,8 @@ test_or_dec_0038(int argc, char **argv)
     sixel_allocator_t *allocator;
     image_buffer_t *image;
     int ok;
-    int x;
-    int y;
-    int expected;
-    int actual;
+    size_t n;
+    size_t words;
 
     (void)argc;
     (void)argv;
@@ -80,32 +79,24 @@ test_or_dec_0038(int argc, char **argv)
         0U,
         NULL,
         NULL);
-    if (status != SIXEL_OK) {
+    if (status != SIXEL_FALSE) {
         fprintf(stderr, "OR-mode parallel request returned %04x\n", status);
         goto end;
     }
 
-    image_buffer_finalize_ormode(image);
-    for (y = 0; y < image->height; ++y) {
-        if (y == 0 || y == 6) {
-            expected = 3;
-        } else if (y < 6) {
-            expected = 1;
-        } else {
-            expected = 2;
+    words = (size_t)image->width * (size_t)((image->height + 5) / 6);
+    for (n = 0; n < words; ++n) {
+        if (image->ormode_planes[n] != 0) {
+            fprintf(stderr, "declined request changed plane word %lu\n",
+                    (unsigned long)n);
+            goto end;
         }
-        for (x = 0; x < image->width; ++x) {
-            actual = ((unsigned char *)image->pixels.p)[
-                y * image->width + x];
-            if (actual != expected) {
-                fprintf(stderr,
-                        "OR-mode index at %d,%d is %d, expected %d\n",
-                        x,
-                        y,
-                        actual,
-                        expected);
-                goto end;
-            }
+    }
+    for (n = 0; n < (size_t)image->width * (size_t)image->height; ++n) {
+        if (image->pixels.in_bytes[n] != 0) {
+            fprintf(stderr, "declined request changed index %lu\n",
+                    (unsigned long)n);
+            goto end;
         }
     }
 

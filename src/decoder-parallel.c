@@ -38,7 +38,6 @@
 
 #include "decoder.h"
 #include "decoder-parallel.h"
-#include "decoder-ormode.h"
 #if SIXEL_ENABLE_THREADS
 # include "timeline-logger.h"
 #endif
@@ -75,7 +74,6 @@ typedef struct sixel_decoder_worker_context {
     int end_offset;
     int index;
     int direct_mode;
-    int ormode;
     int initial_color_index;
     int const *palette;
     int palette_limit;
@@ -590,8 +588,6 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     int repeat;
     int color_index;
     int max_color_index;
-    int store_bits;
-    uint64_t spread;
     int pos_x;
     int pos_y;
     int line_count;
@@ -629,8 +625,6 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     repeat = 1;
     color_index = context->initial_color_index;
     max_color_index = (-1);
-    store_bits = 0;
-    spread = sixel_ormode_spread((unsigned int)color_index);
     pos_x = 0;
     pos_y = 0;
     line_count = 0;
@@ -760,14 +754,6 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
         }
     }
 
-    if (context->ormode) {
-        /* A span can inherit a selection from an earlier band without
-         * encountering another # command in its own useful payload. */
-        if (color_index >= 256) {
-            goto fail;
-        }
-        spread = sixel_ormode_spread((unsigned int)color_index);
-    }
     row_offset = line_count * 6;
     stop = context->input + context->end_offset;
     limit = context->input + context->length;
@@ -796,7 +782,6 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
                     effective_repeat = width - pos_x;
                 }
             }
-            store_bits = 0;
             for (i = 0; i < 6; ++i) {
                 if ((bits & (1 << i)) == 0) {
                     continue;
@@ -844,11 +829,6 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
                 if (global_y > context->last_painted_row) {
                     context->last_painted_row = global_y;
                 }
-                store_bits |= 1 << i;
-                if (context->ormode) {
-                    written += effective_repeat;
-                    continue;
-                }
                 if (mode == SIXEL_DECODER_DIRECT_PAINT) {
                     global_index = (size_t)global_y *
                         (size_t)width + (size_t)pos_x;
@@ -877,19 +857,11 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
                                0xff,
                                (size_t)effective_repeat);
                     }
-                } else if (!context->ormode && pixel_size == 1 &&
+                } else if (pixel_size == 1 &&
                         color_index > max_color_index) {
                     max_color_index = color_index;
                 }
                 written += effective_repeat;
-            }
-
-            if (context->ormode && store_bits != 0 &&
-                    mode == SIXEL_DECODER_DIRECT_PAINT) {
-                global_index = (size_t)((row_offset + pos_y) / 6) *
-                    (size_t)width + (size_t)pos_x;
-                sixel_ormode_store((uint64_t *)chain->global_buffer +
-                    global_index, spread, store_bits, effective_repeat);
             }
 
             cursor += 1;
@@ -925,16 +897,6 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
             }
             if (color_index >= SIXEL_PALETTE_MAX_DECODER) {
                 color_index = SIXEL_PALETTE_MAX_DECODER - 1;
-            }
-            if (context->ormode) {
-                /* The serial path allocates upper planes with the caller's
-                 * allocator. Reject wide selections during the read-only
-                 * scan, before any shared plane can be changed. */
-                if (color_index >= 256) {
-                    status = (-1);
-                    goto fail;
-                }
-                spread = sixel_ormode_spread((unsigned int)color_index);
             }
             cursor = p;
             continue;
@@ -1113,10 +1075,6 @@ sixel_decoder_parallel_direct_rows_disjoint(
         last_row = contexts[i].last_painted_row;
         if (first_row < 0 && last_row < 0) {
             continue;
-        }
-        if (contexts[i].ormode && first_row >= 0 && last_row >= 0) {
-            first_row /= 6;
-            last_row /= 6;
         }
         if (first_row < 0 || last_row < first_row ||
                 first_row <= previous_last_row) {
@@ -2239,19 +2197,17 @@ sixel_decoder_parallel_request_start(int direct_mode,
 
     pixel_size = sixel_decoder_parallel_pixel_size(image->depth);
     if (ormode) {
-        /* Fused undither consumes raster indices, not plane words. Complete
-         * serial gather before filtering. Wide registers likewise need the
-         * caller-allocated upper plane buffer; no worker has painted yet. */
-        if ((undither != NULL && undither->enabled) ||
-                initial_color_index >= 256 ||
-                image->ormode_high_planes != NULL) {
-            status = SIXEL_FALSE;
-            goto cleanup;
-        }
-        if (image->ormode_planes == NULL) {
-            runtime_error = 1;
-            goto cleanup;
-        }
+        /*
+         * OR streams always decode serially.  The serial parser stores a run
+         * of data characters as one band-plane word each, and the final
+         * gather is one pass over the planes.  A parallel request would add
+         * a validation scan, worker launch and join, and per-row bookkeeping
+         * in front of the same serial gather; on the retained photo and Full
+         * HD streams that made every measured budget from 2 to 12 workers
+         * slower than one worker.  Decline before anything is shared.
+         */
+        status = SIXEL_FALSE;
+        goto cleanup;
     }
 
     payload_start = (int)(anchor - input);
@@ -2312,16 +2268,12 @@ sixel_decoder_parallel_request_start(int direct_mode,
         runtime_error = 1;
         goto cleanup;
     }
-    if (ormode) {
-        chain.global_buffer = (unsigned char *)image->ormode_planes;
-    } else {
-        chain.global_buffer = (unsigned char *)image->pixels.p;
-    }
+    chain.global_buffer = (unsigned char *)image->pixels.p;
     if (chain.global_buffer == NULL) {
         runtime_error = 1;
         goto cleanup;
     }
-    chain.global_mask = ormode ? NULL : image->paint_mask;
+    chain.global_mask = image->paint_mask;
     chain.pixel_size = pixel_size;
     chain.thread_count = threads;
     chain.global_capacity = global_capacity;
@@ -2374,7 +2326,6 @@ sixel_decoder_parallel_request_start(int direct_mode,
         }
         contexts[i].index = i;
         contexts[i].direct_mode = direct_mode;
-        contexts[i].ormode = ormode;
         contexts[i].initial_color_index = initial_color_index;
         contexts[i].palette = palette;
         contexts[i].palette_limit = palette_limit;
@@ -2443,7 +2394,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
 
             /*
              * The direct paint pass writes into the shared destination image.
-             * The scan proved disjoint rows (whole bands for OR planes).
+             * The validation scan proved that every span owns disjoint rows.
              * Hold every paint worker at a barrier until all threads exist so
              * a partial thread-creation failure cannot dirty the serial
              * fallback image.
@@ -2511,10 +2462,6 @@ sixel_decoder_parallel_request_start(int direct_mode,
         } else if (parallel_failed || created < threads) {
             status = SIXEL_FALSE;
         } else {
-            if (ormode && max_color_index >= 0 &&
-                    max_color_index + 1 > image->ncolors) {
-                image->ncolors = max_color_index + 1;
-            }
             status = SIXEL_OK;
         }
         goto cleanup;
@@ -2556,10 +2503,6 @@ sixel_decoder_parallel_request_start(int direct_mode,
     } else if (parallel_failed || created < threads) {
         status = SIXEL_FALSE;
     } else {
-        if (ormode && max_color_index >= 0 &&
-                max_color_index + 1 > image->ncolors) {
-            image->ncolors = max_color_index + 1;
-        }
         status = SIXEL_OK;
     }
 

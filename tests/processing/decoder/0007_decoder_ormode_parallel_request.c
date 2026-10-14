@@ -1,8 +1,9 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Verify that the parallel decoder worker can compose OR-mode bit planes into
- * the band planes used by direct-color output.
+ * Verify that the parallel decoder declines an OR-mode direct-color request
+ * before touching the shared band planes or the output raster.  OR streams
+ * always decode serially; the caller continues on that path.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -16,7 +17,6 @@
 #include <sixel.h>
 
 #include "src/decoder-image.h"
-#include "src/decoder-ormode.h"
 #include "src/decoder-parallel.h"
 
 static unsigned char g_ormode_parallel_payload[] =
@@ -29,10 +29,8 @@ test_decoder_0007_decoder_ormode_parallel_request(int argc, char **argv)
     sixel_allocator_t *allocator;
     image_buffer_t *image;
     int ok;
-    int x;
-    int y;
-    int expected;
-    int actual;
+    size_t n;
+    size_t words;
 
     (void)argc;
     (void)argv;
@@ -81,31 +79,24 @@ test_decoder_0007_decoder_ormode_parallel_request(int argc, char **argv)
         0U,
         NULL,
         NULL);
-    if (status != SIXEL_OK) {
+    if (status != SIXEL_FALSE) {
         fprintf(stderr, "OR-mode parallel request returned %04x\n", status);
         goto end;
     }
 
-    for (y = 0; y < image->height; ++y) {
-        if (y == 0 || y == 6) {
-            expected = 3;
-        } else if (y < 6) {
-            expected = 1;
-        } else {
-            expected = 2;
+    words = (size_t)image->width * (size_t)((image->height + 5) / 6);
+    for (n = 0; n < words; ++n) {
+        if (image->ormode_planes[n] != 0) {
+            fprintf(stderr, "declined request changed plane word %lu\n",
+                    (unsigned long)n);
+            goto end;
         }
-        for (x = 0; x < image->width; ++x) {
-            actual = (int)sixel_ormode_gather(image->ormode_planes[
-                (y / 6) * image->width + x], y % 6);
-            if (actual != expected) {
-                fprintf(stderr,
-                        "OR-mode index at %d,%d is %d, expected %d\n",
-                        x,
-                        y,
-                        actual,
-                        expected);
-                goto end;
-            }
+    }
+    for (n = 0; n < (size_t)image->width * (size_t)image->height * 4U; ++n) {
+        if (image->pixels.in_bytes[n] != 0) {
+            fprintf(stderr, "declined request changed output byte %lu\n",
+                    (unsigned long)n);
+            goto end;
         }
     }
 

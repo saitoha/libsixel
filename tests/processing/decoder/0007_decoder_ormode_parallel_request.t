@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/encoder/output/or-mode/README.md
-# Run the OR-mode parallel decoder request unit test.
+# Require the parallel decoder to decline an OR-mode direct-color request.
 
 set -eux
 

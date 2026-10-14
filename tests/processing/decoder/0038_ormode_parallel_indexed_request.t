@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/encoder/output/or-mode/README.md
-# Require the internal parallel indexed request to complete.
+# Require the parallel decoder to decline an OR-mode indexed request.
 set -eux
 
 test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
