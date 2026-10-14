@@ -819,6 +819,7 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/threading/measurement.md \
 	docs/threading/measurements/animation-thread4-timeline.png \
 	docs/threading/measurements/animation-thread4.jsonl \
+	docs/threading/measurements/decoder-api-scaling.json \
 	docs/threading/measurements/decoder-size-comparison.csv \
 	docs/threading/measurements/decoder-thread-scaling.csv \
 	docs/threading/measurements/decoder-thread-scaling.png \

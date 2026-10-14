@@ -8,6 +8,143 @@
     "directory": ".",
     "ldflags": ""
   },
+  "decoder_refresh": {
+    "build": {
+      "cc": "gcc",
+      "cflags": "-O3 -std=c99",
+      "compiler_version": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin27.0.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+      "configure_arguments": "CFLAGS=-O3 --without-libcurl --without-jpeg --without-png --without-gd --without-gdk-pixbuf2 --disable-quicklook-extension BASH=/bin/sh",
+      "cppflags": " -D_DARWIN_C_SOURCE=1",
+      "directory": ".",
+      "ldflags": ""
+    },
+    "generated_at_utc": "2026-10-14T20:34:31.404798+00:00",
+    "host": {
+      "logical_cpu_count": 14,
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O"
+    },
+    "inputs": {
+      "decoder": {
+        "encoded_rasters": [
+          {
+            "height": 675,
+            "id": "900x675",
+            "width": 900
+          },
+          {
+            "height": 1080,
+            "id": "1920x1080",
+            "width": 1920
+          }
+        ],
+        "path": "images/measurements/palette-pipeline/smooth-gradient-1920x1080.png",
+        "sha256": "4cdc997bbbc80d048ee68add843bcda896bdb809a370bc77d43e299c7c8b2317"
+      }
+    },
+    "programs": {
+      "checker": {
+        "launcher": "tools/check_threading_measurements.py",
+        "launcher_sha256": "0deab561f344c81c7725816e9e5c401f3b8f36c1c5187033e7810fa2a9d85bc7",
+        "payload": "tools/check_threading_measurements.py",
+        "payload_sha256": "0deab561f344c81c7725816e9e5c401f3b8f36c1c5187033e7810fa2a9d85bc7"
+      },
+      "generator": {
+        "launcher": "tools/plot_threading_measurements.py",
+        "launcher_sha256": "0c52377fd1e6cb049710c56fb879ce0192e2e3b361f7f8dd18b7565e6d2ce895",
+        "payload": "tools/plot_threading_measurements.py",
+        "payload_sha256": "0c52377fd1e6cb049710c56fb879ce0192e2e3b361f7f8dd18b7565e6d2ce895"
+      },
+      "img2sixel": {
+        "launcher": "converters/img2sixel",
+        "launcher_sha256": "8383101ca994b376aa5d3c4c7bac8d2227162b0fa9b0f50acac261f38b72a88a",
+        "payload": "converters/.libs/img2sixel",
+        "payload_sha256": "0682a0e6b3e45a52822a4144de0c2a66cae2ac4d9debf83b90d987b4d215a570"
+      },
+      "sixel2png": {
+        "launcher": "converters/sixel2png",
+        "launcher_sha256": "c752970fd8aa0d0ab948cd3a963af2c3acab606a1b42f38d4523e1e355d6037c",
+        "payload": "converters/.libs/sixel2png",
+        "payload_sha256": "2868785cd4c2bb99859cdfb85053742817b59b95c7bdcbee68ca10f4fe71f2f2"
+      },
+      "timeline": {
+        "launcher": "tools/timeline.py",
+        "launcher_sha256": "1894bc957503c5dc4e676dbccfc20a58467a82debfe017bef3ca947ba6aad520",
+        "payload": "tools/timeline.py",
+        "payload_sha256": "1894bc957503c5dc4e676dbccfc20a58467a82debfe017bef3ca947ba6aad520"
+      }
+    },
+    "protocol": {
+      "decoder_commands": [
+        "'{sixel2png}' --threads=8 --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'",
+        "'{sixel2png}' --threads=8 --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'"
+      ],
+      "decoder_fixture_commands": [
+        "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 900 -h 675 -o '{decoder_sixel}' '{input}'",
+        "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -o '{decoder_sixel}' '{input}'"
+      ],
+      "decoder_scaling": {
+        "command": "'{sixel2png}' '--threads={threads}' --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'",
+        "thread_counts": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "timed_runs_per_thread": 9,
+        "warmup_runs_per_thread": 2,
+        "worker_count_order": "alternating ascending and descending rounds"
+      }
+    },
+    "runtime": {
+      "dependencies_unchanged_during_measurement": true,
+      "libsixel": {
+        "path": "src/.libs/libsixel.1.dylib",
+        "sha256": "0eda3e12d79579d238098f2e70ba318b3cb9f633f15805760ee0367c950f08d5"
+      },
+      "load_probes": {
+        "img2sixel": {
+          "command": "'{img2sixel_payload}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -o '{null}' '{input}'",
+          "loaded_path": "src/.libs/libsixel.1.dylib",
+          "loaded_sha256": "0eda3e12d79579d238098f2e70ba318b3cb9f633f15805760ee0367c950f08d5",
+          "method": "DYLD_PRINT_LIBRARIES",
+          "payload": "converters/.libs/img2sixel",
+          "required_diagnostic": "scale plan active=0 width=1920 height=1080",
+          "required_diagnostic_observed": true,
+          "search_directory": "src/.libs",
+          "search_variable": "DYLD_LIBRARY_PATH",
+          "verified": true
+        },
+        "sixel2png": {
+          "command": "'{sixel2png_payload}' --threads=1 --gpu-policy=off -i '{decoder_sixel}' -o '{null}'",
+          "loaded_path": "src/.libs/libsixel.1.dylib",
+          "loaded_sha256": "0eda3e12d79579d238098f2e70ba318b3cb9f633f15805760ee0367c950f08d5",
+          "method": "DYLD_PRINT_LIBRARIES",
+          "payload": "converters/.libs/sixel2png",
+          "required_diagnostic": null,
+          "required_diagnostic_observed": false,
+          "search_directory": "src/.libs",
+          "search_variable": "DYLD_LIBRARY_PATH",
+          "verified": true
+        }
+      }
+    },
+    "source": {
+      "revision": "51e088471d6d5cb27224ca304173c26f7d9b2bc4",
+      "tracked_worktree_state_at_start": "clean"
+    }
+  },
   "generated_at_utc": "2026-09-06T08:29:04.322429+00:00",
   "host": {
     "logical_cpu_count": 14,

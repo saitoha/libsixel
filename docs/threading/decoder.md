@@ -67,32 +67,48 @@ Each point is the median of nine instrumented runs after two warm-ups. The shade
 
 *Figure: Full HD decoder intervals measured inside `sixel2png`. PNG serialization is measured separately but intentionally omitted from these worker-scaling lines.*
 
-The one-worker serial path took 15.605 ms at the median. Two workers took 18.396 ms, 17.9 percent longer: the parallel path pays for a validation scan, a joined independence check, worker creation, and a separate paint pass, while too little work is available to amortize them. Time then fell through ten workers, where the best observed decoder median was 5.256 ms, or 2.97 times faster than the one-worker path. Counts from eleven through sixteen did not produce a consistent further reduction; their medians ranged from 6.122 to 6.652 ms.
+The one-worker serial path took 14.294 ms at the median, and two workers took 15.529 ms. The fastest observed median was 3.846 ms with 10 workers, or 3.72 times faster than one worker. These intervals include instrumentation, worker creation, the validation join and the paint barrier. The two sequential phases and controller work keep total time above the ideal `T(1) / N` guide.
 
-Both validation scan and direct paint scale through the useful range, then flatten near 2.2 to 3.2 ms. This explains why the complete decoder curve remains well above the ideal `T(1) / N` guide: the two phases are sequential, and each retains scheduling, barrier, and controller costs. The associated PNG phase was approximately 66 to 67 ms and did not improve with worker count.
-
-These numbers characterize this fixture, binary, and host. Diagnostic JSONL logging perturbs short phases, and no CPU affinity, exclusive host, frequency control, or confidence-interval claim is implied. The retained [`decoder-thread-scaling.csv`](measurements/decoder-thread-scaling.csv) contains all 144 timed observations rather than only the plotted summaries. It also retains the 32 warm-up executions and their exact schedule positions.
+These numbers characterize this fixture, binary and host. No CPU affinity, exclusive host, frequency control or confidence-interval claim is implied. The retained [`decoder-thread-scaling.csv`](measurements/decoder-thread-scaling.csv) contains all 144 timed observations and 32 warm-ups with their schedule positions. Decoder-specific source, build and verified library provenance are recorded under `decoder_refresh` in [`threading-run.json`](measurements/threading-run.json); encoder and animation records retain their separate provenance.
 
 ## Raster-size comparison
 
-The same source and encoder policy were used to create two dedicated decoder fixtures. These are single diagnostic observations, not repeated performance benchmarks:
-
-*Table: Single-run raster-size observations measured through `sixel2png`. `PNG wall` is the command's downstream output-serialization phase, not part of the libsixel decoder interval.*
+The same source and encoder policy produce two dedicated decoder fixtures. These are single diagnostic observations, not repeated performance benchmarks. `PNG wall` measures the command's downstream output serialization separately from decoding.
 
 | Raster | SIXEL bytes | Scan wall | Parallel paint wall | Decoder wall | PNG wall |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 900 x 675 | 334,858 | 1.444 ms | 2.265 ms | 4.204 ms | 27.038 ms |
-| 1920 x 1080 | 1,114,189 | 2.757 ms | 3.428 ms | 6.576 ms | 69.280 ms |
+| 900 x 675 | 295,821 | 0.672 ms | 0.841 ms | 1.794 ms | 17.316 ms |
+| 1920 x 1080 | 960,950 | 1.883 ms | 2.328 ms | 4.564 ms | 61.364 ms |
 
-Increasing the raster from 607,500 to 2,073,600 pixels multiplied the pixel count by 3.41, scan wall time by approximately 1.91, parallel-paint wall time by approximately 1.51, and the complete decoder interval by approximately 1.56 in this run. These two points include visible single-run scheduling and cache noise and must not be read as a scaling curve. At Full HD, scan and paint occupy 41.9 and 52.1 percent of the decoder interval, respectively. PNG serialization remains much longer than either decoder phase in both observations.
+These two points include scheduling and cache noise and must not be read as a scaling curve. [`decoder-size-comparison.csv`](measurements/decoder-size-comparison.csv) and both raw timelines retain the phase bounds and scan/paint fractions. Calling this only “band decoding” hides two facts: initial work units are encoded byte spans, and direct paint becomes row-parallel only after validation proves independence.
 
-The percentages use the complete decoder interval as their denominator. Scan, paint, and controller gaps do not form a perfectly additive partition, and PNG serialization is deliberately excluded. The retained [`decoder-size-comparison.csv`](measurements/decoder-size-comparison.csv) and both raw timelines allow this observation to be recalculated.
+## In-process API scaling
 
-Calling this only “band decoding” hides two facts: the initial work units are encoded byte spans, and destination paint becomes row-parallel only after the validation pass has proved independence.
+The retained `snake-fullhd-p256-t1.0.six` fixture decodes to 1920 x 1080 RGBA through `sixel_decode_direct`. The table compares develop `a3ef14a007d9f02ca11ac7b86b4b155507377c37` with cached boundary state and prefix-derived row offsets at `51e088471d6d5cb27224ca304173c26f7d9b2bc4`. Each cell is the median of 21 timed calls after two warm-ups, with the inclusive interquartile interval in brackets. Input loading, output freeing, PNG serialization and timeline logging are excluded. No builds or test suites run alongside this experiment; ordinary desktop activity remains uncontrolled.
+
+| Workers | Before, ms [Q1, Q3] | Cached state, ms [Q1, Q3] | Before / after |
+| ---: | ---: | ---: | ---: |
+| 1 | 16.152 [15.748, 16.321] | 15.522 [15.480, 15.604] | 1.04x |
+| 2 | 15.893 [15.706, 15.977] | 15.477 [15.419, 15.537] | 1.03x |
+| 4 | 10.143 [9.922, 10.227] | 8.889 [8.797, 8.986] | 1.14x |
+| 8 | 6.875 [6.806, 6.928] | 5.105 [5.048, 5.145] | 1.35x |
+| 12 | 6.256 [6.155, 6.413] | 4.361 [4.243, 4.435] | 1.43x |
+
+Both builds are fastest at 12 workers among the measured budgets. Their speedups over their own one-worker result are 2.58x before and 3.56x after. Two workers remain close to serial performance. The serial path is unchanged by this optimization, so its observed difference must not be attributed to eliminating parallel prefix scans.
+
+For the 100 retained photographs, the per-image median-call speed ratios are:
+
+| Workers | Median speed ratio | Range |
+| ---: | ---: | ---: |
+| 1 | 1.00x | 0.96–1.05x |
+| 4 | 1.14x | 0.96–1.47x |
+| 12 | 1.51x | 1.26–2.14x |
+
+[`decoder-api-scaling.json`](measurements/decoder-api-scaling.json) retains every timed call, input hash, source revision, configure arguments and verified library path. These API measurements use different input streams and timing boundaries from the instrumented scaling chart, so their absolute values should not be combined.
 
 ## Local-buffer and undither path
 
-When decoder-side undithering is prepared, the same validation pass resolves row offsets and caches the start of the existing top halo and its inherited register. Local workers decode that halo and their body into private row chunks, then filter and publish only body rows. The halo is filter input, so its byte and newline semantics remain separate from the prefix sum. Converging spans retain the existing local filtering windows; the disjoint-row fallback applies to direct paint. Local buffers reduce direct write conflicts and permit more work to remain inside the parallel worker lifetime. This path has different allocation and copying costs from direct paint and must be measured separately.
+When decoder-side undithering is prepared, the same validation pass resolves row offsets and caches the start of the existing top halo and its inherited register. Local workers decode that halo and their body into private row chunks, then filter and publish only body rows. The halo is filter input, so its byte and newline semantics remain separate from the prefix sum. Converging spans retain the existing local filtering windows; the disjoint-row fallback applies to direct paint. A local worker whose scheduled end falls inside its halo publishes no body rows, so direct-scan row bounds cannot be used as its publication bounds. Local buffers reduce direct write conflicts and permit more work to remain inside the parallel worker lifetime. This path has different allocation and copying costs from direct paint and must be measured separately.
 
 Do not infer behavior for decoder undithering from the direct-path chart. A timeline should identify scan, decode, paint, local-copy, and output stages explicitly whenever those paths are compared.
 
