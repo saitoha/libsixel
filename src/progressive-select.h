@@ -22,6 +22,8 @@ typedef struct sixel_repair_selection {
     sixel_allocator_t *allocator;
     float const *source;
     double const *errors;
+    double const *priority;
+    double priority_maximum;
     unsigned char const *domain;
     sixel_palette_t const *transform;
     size_t count;

@@ -57,6 +57,9 @@ sixel_repair_packet_reset(sixel_repair_context_t *context)
     context->packet_stage = REPAIR_PACKET_RESTORE;
     context->packet_cursor = context->packet_kept = context->packet_count = 0;
     context->packet_order = context->packet_scratch = NULL;
+    context->video_guard_stage = 0;
+    context->video_before_loss = context->video_after_loss = 0;
+    context->video_cursor = 0;
 }
 
 static void
@@ -77,6 +80,8 @@ sixel_repair_work_reset(sixel_repair_context_t *context)
     context->selection = NULL;
     memset(&context->solver, 0, sizeof(context->solver));
     context->prepare_stage = REPAIR_PREPARE_SELECT;
+    context->video_stage = 0;
+    context->video_maximum = 0;
     context->zero_noise = context->rescue_used = 0;
     context->rescue_count = 0;
     context->rescue_position = 0;
@@ -84,6 +89,14 @@ sixel_repair_work_reset(sixel_repair_context_t *context)
     sixel_repair_ladder_sync(context);
 }
 
+void
+sixel_repair_video_disable_owned(sixel_repair_context_t *context)
+{
+    if (!context->video_active) return;
+    context->video_active = 0;
+    sixel_repair_work_reset(context);
+    context->audit_started = 0;
+}
 
 SIXELSTATUS
 sixel_repair_ladder_enable(sixel_progressive_t *context,
@@ -234,6 +247,16 @@ sixel_repair_binding_release(sixel_repair_context_t *context)
     sixel_allocator_free(context->allocator, context->gains);
     sixel_allocator_free(context->allocator, context->gpu_retained);
     context->gpu_retained = NULL;
+    sixel_allocator_free(context->allocator, context->video_excluded);
+    sixel_allocator_free(context->allocator, context->video_age);
+    sixel_allocator_free(context->allocator, context->video_error);
+    sixel_allocator_free(context->allocator, context->video_luma);
+    sixel_allocator_free(context->allocator, context->video_after);
+    sixel_allocator_free(context->allocator, context->video_priority);
+    context->video_excluded = context->video_age = NULL;
+    context->video_error = context->video_after = NULL;
+    context->video_luma = NULL;
+    context->video_priority = NULL;
     context->indices = context->paint = NULL;
     context->gains = NULL;
     sixel_frame_unref(context->source);
@@ -337,6 +360,9 @@ sixel_repair_context_bind_owned(sixel_repair_context_t *context,
     sixel_encoder_t *encoder;
     SIXELSTATUS status;
     double stop;
+    size_t position;
+    float const *old_pixels;
+    float const *new_pixels;
 
     if (context == NULL || source == NULL || x < 0 || y < 0 ||
             generation == 0) {
@@ -410,6 +436,32 @@ sixel_repair_context_bind_owned(sixel_repair_context_t *context,
     replacement.ordinary_revision = encoder->ordinary_revision;
     replacement.configuration_revision = encoder->configuration_revision;
     replacement.history_revision = encoder->history_revision;
+    /* Carry age only where the target and interpretation really survived.
+     * An omitted ordinary pixel is not evidence of an unchanged source. */
+    if (context->video_age != NULL &&
+            context->width == replacement.width &&
+            context->height == replacement.height &&
+            context->origin_x == x && context->origin_y == y &&
+            context->configuration_revision ==
+                replacement.configuration_revision) {
+        replacement.video_age = sixel_allocator_calloc(context->allocator,
+            replacement.count, 1);
+        if (replacement.video_age == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        old_pixels = (float const *)sixel_frame_get_pixels(context->source);
+        new_pixels = (float const *)sixel_frame_get_pixels(replacement.source);
+        for (position = 0; position < replacement.count; ++position) {
+            if (context->domain[position] && replacement.domain[position] &&
+                    memcmp(old_pixels + position * 3,
+                        new_pixels + position * 3, 3 * sizeof(float)) == 0) {
+                replacement.video_age[position] =
+                    context->video_age[position] < 255
+                    ? context->video_age[position] + 1 : 255;
+            }
+        }
+    }
     /* Publish once. Rejected refreshes cannot revive stale generations or
      * discard a valid in-progress audit. Acc and ordinary origin stay put. */
     sixel_repair_binding_release(context);
@@ -531,6 +583,8 @@ sixel_repair_context_audit_owned(sixel_repair_context_t *context,
     float const *source;
     float retained[3];
     double error;
+    double target_luma;
+    double retained_luma;
     size_t position;
     size_t plane_position;
     int gamma_history;
@@ -619,7 +673,7 @@ sixel_repair_context_audit_owned(sixel_repair_context_t *context,
         }
         /* The identity output/work transform needs only the same byte
          * normalization as decode_output. Avoid per-pixel CMS dispatch in
-         * the common gamma path while preserving the same decoded colors. */
+         * the common video path, including the ordinary-painted halo. */
         if (gamma_history) {
             for (channel = 0; channel < 3; ++channel) {
                 retained[channel] = (float)(encoder->accumulation_pixels[
@@ -636,6 +690,21 @@ sixel_repair_context_audit_owned(sixel_repair_context_t *context,
         if (context->gpu_retained != NULL) {
             memcpy(context->gpu_retained + position * 3, retained,
                 sizeof(retained));
+        }
+        if (context->video_active) {
+            if (!sixel_repair_video_luma(source + position * 3,
+                    context->workspace, &target_luma) ||
+                    !sixel_repair_video_luma(retained, context->workspace,
+                        &retained_luma)) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            context->video_error[position] = target_luma - retained_luma;
+            context->video_luma[position] = target_luma;
+            if (context->video_excluded[position]) {
+                context->errors[position] = 0;
+                continue;
+            }
         }
         ++work->distance_evaluations;
         ++context->audit.eligible_count;
@@ -774,7 +843,7 @@ sixel_repair_application_setup(sixel_repair_context_t *context)
     application->origin_y = context->origin_y;
     application->protected_position = context->selection->protected_position;
     application->strength = context->zero_noise
-        ? 0 : context->config.noise_strength;
+        || context->video_active ? 0 : context->config.noise_strength;
     application->phase_x = context->config.noise_phase_x;
     application->phase_y = context->config.noise_phase_y;
     application->channel_rgb = context->config.noise_channel_rgb;
@@ -910,21 +979,30 @@ sixel_repair_context_prepare_owned(sixel_repair_context_t *context,
                 SIXEL_REPAIR_MEASURE_SELECT, work);
             if (selection == NULL) {
                 sixel_repair_ladder_sync(context);
+                if (context->video_active) {
+                    status = sixel_repair_video_select(context, work, &done);
+                    if (status != SIXEL_OK) goto end;
+                    if (!done) break;
+                }
                 status = sixel_repair_selection_new(&context->selection,
                     (float const *)sixel_frame_get_pixels(context->source),
                     context->errors, context->domain, context->count,
                     context->transform, context->workspace,
                     encoder->palette_type, context->stop_squared,
                     context->config.selection_fraction,
-                    context->full_selection,
-                    context->config.sample_limit,
-                    context->config.candidate_limit,
+                    context->video_active || context->full_selection,
+                    context->video_active ? 128 : context->config.sample_limit,
+                    context->video_active ? context->config.max_colors
+                        : context->config.candidate_limit,
                     context->allocator);
                 if (status != SIXEL_OK) {
                     goto end;
                 }
                 selection = context->selection;
-                if (context->ladder.allowance) {
+                if (context->video_active) {
+                    selection->priority = context->video_priority;
+                    selection->priority_maximum = context->video_maximum;
+                } else if (context->ladder.allowance) {
                     selection->ladder = &context->ladder;
                 }
                 status = sixel_repair_selection_gpu_setup(context);
@@ -957,7 +1035,7 @@ sixel_repair_context_prepare_owned(sixel_repair_context_t *context,
                     selection->color_count, context->config.max_colors,
                     selection->protected_color,
                     context->config.min_gain_ratio,
-                    context->config.swap_limit);
+                    context->video_active ? 0 : context->config.swap_limit);
                 if (status != SIXEL_OK) {
                     goto end;
                 }
@@ -994,6 +1072,8 @@ sixel_repair_context_prepare_owned(sixel_repair_context_t *context,
             }
             if (context->application.painted) {
                 context->prepare_stage = REPAIR_PREPARE_READY;
+            } else if (context->video_active) {
+                context->prepare_stage = REPAIR_PREPARE_STALLED;
             } else if (context->ladder.allowance &&
                     sixel_repair_ladder_descend(&context->ladder,
                         SIXEL_REPAIR_LADDER_NO_PAINT)) {
@@ -1398,6 +1478,8 @@ sixel_repair_context_step(sixel_repair_context_t *context,
     int ready;
     int next_full;
     int pending;
+    int accepted;
+    size_t position;
     sixel_output_t *default_output;
 
     if (result == NULL) {
@@ -1500,6 +1582,32 @@ sixel_repair_context_step(sixel_repair_context_t *context,
         result->audit.outcome = SIXEL_REPAIR_BUDGET_TOO_SMALL;
         goto end;
     }
+    /* Fitting may change which neighbors are repainted. Test the actual
+     * packet, including the unchanged halo, before admitting any bytes. */
+    if (context->video_active) {
+        ready = 0;
+        while (!ready) {
+            if (sixel_encoder_is_cancel_requested(encoder)) {
+                status = SIXEL_INTERRUPTED;
+                goto end;
+            }
+            if (work->pixel_visits >= work->pixel_limit ||
+                    (context->yield_requested != NULL &&
+                     context->yield_requested(context->yield_priv))) {
+                result->audit.outcome = SIXEL_REPAIR_YIELDED;
+                result->audit.yield_reason =
+                    SIXEL_PROGRESSIVE_YIELD_WORK_BUDGET;
+                goto end;
+            }
+            status = sixel_repair_video_guard(context, work, &ready,
+                                               &accepted);
+            if (status != SIXEL_OK) goto end;
+        }
+        if (!accepted) {
+            result->audit.outcome = SIXEL_REPAIR_STALLED;
+            goto end;
+        }
+    }
     if (output == NULL) {
         status = sixel_encoder_core_create_output_from_factory(
             &default_output, sixel_repair_write_all, encoder,
@@ -1543,6 +1651,11 @@ sixel_repair_context_step(sixel_repair_context_t *context,
     sixel_repair_measure_phase(context, SIXEL_REPAIR_MEASURE_COMMIT, work);
     sixel_encoder_commit_repair(encoder, context->commit,
                                  context->commit_count);
+    if (context->video_active) {
+        for (position = 0; position < context->count; ++position) {
+            if (context->paint[position]) context->video_age[position] = 0;
+        }
+    }
     result->painted = context->commit_count;
     result->packet_bytes = context->packet->bytes;
     result->transmitted_colors = context->packet->colors;

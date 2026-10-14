@@ -56,6 +56,13 @@ typedef struct sixel_presentation {
     int transport_stop;
     SIXELSTATUS transport_status;
     uint64_t generation;
+    unsigned char *ordinary_paint;
+    size_t ordinary_count;
+    int ordinary_width;
+    int ordinary_height;
+    int video_pair;
+    size_t ordinary_bytes;
+    double ordinary_write_seconds;
     sixel_progressive_budget_t budget;
 } sixel_presentation_t;
 
@@ -74,6 +81,9 @@ sixel_presentation_begin_image(sixel_presentation_t *presentation,
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_presentation_bind_owned(sixel_presentation_t *presentation,
                               sixel_frame_t *source);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_presentation_capture_owned(sixel_presentation_t *presentation,
+    int width, int height);
 /* Pure admission policy over measured transport and clock observations. */
 SIXEL_INTERNAL_API int
 sixel_presentation_admission(double now, double deadline, double quantum,

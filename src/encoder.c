@@ -3154,6 +3154,11 @@ sixel_encoder_update_accumulation_from_frame(
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
+    if (encoder->presentation != NULL && encoder->presentation->video_pair) {
+        status = sixel_presentation_capture_owned(encoder->presentation,
+            view.width, view.height);
+        if (status != SIXEL_OK) goto end;
+    }
 
     /*
      * A frame that does not fit the declared plane cannot describe what the
@@ -3288,6 +3293,10 @@ sixel_encoder_update_accumulation_from_frame(
                 continue;
             }
             update_rgb = encoded_rgb + index * 3u;
+            if (encoder->presentation != NULL &&
+                    encoder->presentation->video_pair) {
+                encoder->presentation->ordinary_paint[index] = 1;
+            }
             ++painted_pixels;
             memcpy(encoder->accumulation_pixels + plane_index * 3u,
                    update_rgb,
@@ -13859,6 +13868,19 @@ sixel_encoder_present_frame(sixel_encoder_t *encoder, sixel_frame_t *frame,
     SIXELSTATUS status;
 
     work_frame = NULL;
+    presentation->video_pair =
+        encoder->update_policy == SIXEL_UPDATE_POLICY_DELTA &&
+        !encoder->fstatic && !encoder->fignore_delay &&
+        (metadata != NULL ? metadata->multiframe
+            : sixel_frame_get_multiframe(frame)) &&
+        (metadata != NULL ? metadata->delay : sixel_frame_get_delay(frame)) > 0;
+    if (encoder->verbose && presentation->generation == 0) {
+        fprintf(stderr,
+            "progressive: playback paired=%d delay=%d static=%d ignore=%d\n",
+            presentation->video_pair,
+            metadata != NULL ? metadata->delay : sixel_frame_get_delay(frame),
+            encoder->fstatic, encoder->fignore_delay);
+    }
     status = sixel_presentation_before_frame(presentation);
     if (status != SIXEL_OK) {
         return status;

@@ -1261,6 +1261,16 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/progressive/0037_audit_oklab.c \
 	processing/progressive/0038_audit_cielab.c \
 	processing/progressive/0039_audit_din99d.c \
+	processing/progressive/0150_video_pair_disjoint_palettes.c \
+	processing/progressive/0151_video_stable_residual_age.c \
+	processing/progressive/0152_video_latest_source_revalidation.c \
+	processing/progressive/0153_video_structure_guard.c \
+	processing/progressive/0154_video_pair_deadline.c \
+	processing/progressive/0155_video_pair_write_failure.c \
+	processing/progressive/0156_video_final_full_domain.c \
+	processing/progressive/0187_gpu_selection_video_priority.c \
+	processing/progressive/0191_gpu_video_pair.c \
+	processing/progressive/progressive_video_test_common.c \
 	processing/progressive/progressive_context_test_common.c \
 	processing/progressive/0100_public_admission_snapshot.c \
 	processing/progressive/0095_public_statistics_resume.c \
@@ -4852,6 +4862,16 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-0037_audit_oklab.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-0038_audit_cielab.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-0039_audit_din99d.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-0150_video_pair_disjoint_palettes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-0151_video_stable_residual_age.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-0152_video_latest_source_revalidation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-0153_video_structure_guard.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-0154_video_pair_deadline.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-0155_video_pair_write_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-0156_video_final_full_domain.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-0187_gpu_selection_video_priority.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-0191_gpu_video_pair.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-progressive_video_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-progressive_context_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-0100_public_admission_snapshot.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/progressive/test_runner-0095_public_statistics_resume.$(OBJEXT) \
@@ -9861,6 +9881,13 @@ am__depfiles_remade =  \
 	processing/progressive/$(DEPDIR)/test_runner-0147_animation_pass_limit_clock.Po \
 	processing/progressive/$(DEPDIR)/test_runner-0148_animation_tail_time_limit.Po \
 	processing/progressive/$(DEPDIR)/test_runner-0149_presentation_final_no_noise.Po \
+	processing/progressive/$(DEPDIR)/test_runner-0150_video_pair_disjoint_palettes.Po \
+	processing/progressive/$(DEPDIR)/test_runner-0151_video_stable_residual_age.Po \
+	processing/progressive/$(DEPDIR)/test_runner-0152_video_latest_source_revalidation.Po \
+	processing/progressive/$(DEPDIR)/test_runner-0153_video_structure_guard.Po \
+	processing/progressive/$(DEPDIR)/test_runner-0154_video_pair_deadline.Po \
+	processing/progressive/$(DEPDIR)/test_runner-0155_video_pair_write_failure.Po \
+	processing/progressive/$(DEPDIR)/test_runner-0156_video_final_full_domain.Po \
 	processing/progressive/$(DEPDIR)/test_runner-0157_progressive_boolean_syntax.Po \
 	processing/progressive/$(DEPDIR)/test_runner-0158_gpu_request_validation.Po \
 	processing/progressive/$(DEPDIR)/test_runner-0159_gpu_policy_admission.Po \
@@ -9891,9 +9918,11 @@ am__depfiles_remade =  \
 	processing/progressive/$(DEPDIR)/test_runner-0184_gpu_selection_global_samples.Po \
 	processing/progressive/$(DEPDIR)/test_runner-0185_gpu_selection_budget_resume.Po \
 	processing/progressive/$(DEPDIR)/test_runner-0186_gpu_selection_threshold_guard.Po \
+	processing/progressive/$(DEPDIR)/test_runner-0187_gpu_selection_video_priority.Po \
 	processing/progressive/$(DEPDIR)/test_runner-0188_gpu_selection_auto_fallback.Po \
 	processing/progressive/$(DEPDIR)/test_runner-0189_gpu_selection_ladder.Po \
 	processing/progressive/$(DEPDIR)/test_runner-0190_gpu_scan_update_rebind.Po \
+	processing/progressive/$(DEPDIR)/test_runner-0191_gpu_video_pair.Po \
 	processing/progressive/$(DEPDIR)/test_runner-0192_gpu_scan_pending_update.Po \
 	processing/progressive/$(DEPDIR)/test_runner-0193_gpu_lookup_pending_update.Po \
 	processing/progressive/$(DEPDIR)/test_runner-0194_gpu_pending_before_admission.Po \
@@ -9959,6 +9988,7 @@ am__depfiles_remade =  \
 	processing/progressive/$(DEPDIR)/test_runner-progressive_projection_test_common.Po \
 	processing/progressive/$(DEPDIR)/test_runner-progressive_schedule_test_common.Po \
 	processing/progressive/$(DEPDIR)/test_runner-progressive_selection_test_common.Po \
+	processing/progressive/$(DEPDIR)/test_runner-progressive_video_test_common.Po \
 	processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po \
 	processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po \
 	processing/scale/$(DEPDIR)/test_runner-0003_resample_allocation_failure.Po \
@@ -11574,6 +11604,16 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0150_VIDEO_PAIR_DISJOINT_PALETTES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0151_VIDEO_STABLE_RESIDUAL_AGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0152_VIDEO_LATEST_SOURCE_REVALIDATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0153_VIDEO_STRUCTURE_GUARD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0154_VIDEO_PAIR_DEADLINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0155_VIDEO_PAIR_WRITE_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0156_VIDEO_FINAL_FULL_DOMAIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0187_GPU_SELECTION_VIDEO_PRIORITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0191_GPU_VIDEO_PAIR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PROGRESSIVE_VIDEO_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ARITHMETIC_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_A_CANDIDATES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_X_CANDIDATES \
@@ -16325,6 +16365,16 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/0037_audit_oklab.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/0038_audit_cielab.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/0039_audit_din99d.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/0150_video_pair_disjoint_palettes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/0151_video_stable_residual_age.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/0152_video_latest_source_revalidation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/0153_video_structure_guard.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/0154_video_pair_deadline.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/0155_video_pair_write_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/0156_video_final_full_domain.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/0187_gpu_selection_video_priority.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/0191_gpu_video_pair.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/progressive_video_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/progressive_context_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/0100_public_admission_snapshot.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/progressive/0095_public_statistics_resume.c \
@@ -22474,6 +22524,36 @@ processing/progressive/test_runner-0038_audit_cielab.$(OBJEXT):  \
 	processing/progressive/$(am__dirstamp) \
 	processing/progressive/$(DEPDIR)/$(am__dirstamp)
 processing/progressive/test_runner-0039_audit_din99d.$(OBJEXT):  \
+	processing/progressive/$(am__dirstamp) \
+	processing/progressive/$(DEPDIR)/$(am__dirstamp)
+processing/progressive/test_runner-0150_video_pair_disjoint_palettes.$(OBJEXT):  \
+	processing/progressive/$(am__dirstamp) \
+	processing/progressive/$(DEPDIR)/$(am__dirstamp)
+processing/progressive/test_runner-0151_video_stable_residual_age.$(OBJEXT):  \
+	processing/progressive/$(am__dirstamp) \
+	processing/progressive/$(DEPDIR)/$(am__dirstamp)
+processing/progressive/test_runner-0152_video_latest_source_revalidation.$(OBJEXT):  \
+	processing/progressive/$(am__dirstamp) \
+	processing/progressive/$(DEPDIR)/$(am__dirstamp)
+processing/progressive/test_runner-0153_video_structure_guard.$(OBJEXT):  \
+	processing/progressive/$(am__dirstamp) \
+	processing/progressive/$(DEPDIR)/$(am__dirstamp)
+processing/progressive/test_runner-0154_video_pair_deadline.$(OBJEXT):  \
+	processing/progressive/$(am__dirstamp) \
+	processing/progressive/$(DEPDIR)/$(am__dirstamp)
+processing/progressive/test_runner-0155_video_pair_write_failure.$(OBJEXT):  \
+	processing/progressive/$(am__dirstamp) \
+	processing/progressive/$(DEPDIR)/$(am__dirstamp)
+processing/progressive/test_runner-0156_video_final_full_domain.$(OBJEXT):  \
+	processing/progressive/$(am__dirstamp) \
+	processing/progressive/$(DEPDIR)/$(am__dirstamp)
+processing/progressive/test_runner-0187_gpu_selection_video_priority.$(OBJEXT):  \
+	processing/progressive/$(am__dirstamp) \
+	processing/progressive/$(DEPDIR)/$(am__dirstamp)
+processing/progressive/test_runner-0191_gpu_video_pair.$(OBJEXT):  \
+	processing/progressive/$(am__dirstamp) \
+	processing/progressive/$(DEPDIR)/$(am__dirstamp)
+processing/progressive/test_runner-progressive_video_test_common.$(OBJEXT):  \
 	processing/progressive/$(am__dirstamp) \
 	processing/progressive/$(DEPDIR)/$(am__dirstamp)
 processing/progressive/test_runner-progressive_context_test_common.$(OBJEXT):  \
@@ -33004,6 +33084,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0147_animation_pass_limit_clock.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0148_animation_tail_time_limit.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0149_presentation_final_no_noise.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0150_video_pair_disjoint_palettes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0151_video_stable_residual_age.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0152_video_latest_source_revalidation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0153_video_structure_guard.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0154_video_pair_deadline.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0155_video_pair_write_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0156_video_final_full_domain.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0157_progressive_boolean_syntax.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0158_gpu_request_validation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0159_gpu_policy_admission.Po@am__quote@ # am--include-marker
@@ -33034,9 +33121,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0184_gpu_selection_global_samples.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0185_gpu_selection_budget_resume.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0186_gpu_selection_threshold_guard.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0187_gpu_selection_video_priority.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0188_gpu_selection_auto_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0189_gpu_selection_ladder.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0190_gpu_scan_update_rebind.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0191_gpu_video_pair.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0192_gpu_scan_pending_update.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0193_gpu_lookup_pending_update.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-0194_gpu_pending_before_admission.Po@am__quote@ # am--include-marker
@@ -33102,6 +33191,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-progressive_projection_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-progressive_schedule_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-progressive_selection_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/progressive/$(DEPDIR)/test_runner-progressive_video_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0003_resample_allocation_failure.Po@am__quote@ # am--include-marker
@@ -49862,6 +49952,146 @@ processing/progressive/test_runner-0039_audit_din99d.obj: processing/progressive
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0039_audit_din99d.c' object='processing/progressive/test_runner-0039_audit_din99d.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0039_audit_din99d.obj `if test -f 'processing/progressive/0039_audit_din99d.c'; then $(CYGPATH_W) 'processing/progressive/0039_audit_din99d.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0039_audit_din99d.c'; fi`
+
+processing/progressive/test_runner-0150_video_pair_disjoint_palettes.o: processing/progressive/0150_video_pair_disjoint_palettes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0150_video_pair_disjoint_palettes.o -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0150_video_pair_disjoint_palettes.Tpo -c -o processing/progressive/test_runner-0150_video_pair_disjoint_palettes.o `test -f 'processing/progressive/0150_video_pair_disjoint_palettes.c' || echo '$(srcdir)/'`processing/progressive/0150_video_pair_disjoint_palettes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0150_video_pair_disjoint_palettes.Tpo processing/progressive/$(DEPDIR)/test_runner-0150_video_pair_disjoint_palettes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0150_video_pair_disjoint_palettes.c' object='processing/progressive/test_runner-0150_video_pair_disjoint_palettes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0150_video_pair_disjoint_palettes.o `test -f 'processing/progressive/0150_video_pair_disjoint_palettes.c' || echo '$(srcdir)/'`processing/progressive/0150_video_pair_disjoint_palettes.c
+
+processing/progressive/test_runner-0150_video_pair_disjoint_palettes.obj: processing/progressive/0150_video_pair_disjoint_palettes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0150_video_pair_disjoint_palettes.obj -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0150_video_pair_disjoint_palettes.Tpo -c -o processing/progressive/test_runner-0150_video_pair_disjoint_palettes.obj `if test -f 'processing/progressive/0150_video_pair_disjoint_palettes.c'; then $(CYGPATH_W) 'processing/progressive/0150_video_pair_disjoint_palettes.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0150_video_pair_disjoint_palettes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0150_video_pair_disjoint_palettes.Tpo processing/progressive/$(DEPDIR)/test_runner-0150_video_pair_disjoint_palettes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0150_video_pair_disjoint_palettes.c' object='processing/progressive/test_runner-0150_video_pair_disjoint_palettes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0150_video_pair_disjoint_palettes.obj `if test -f 'processing/progressive/0150_video_pair_disjoint_palettes.c'; then $(CYGPATH_W) 'processing/progressive/0150_video_pair_disjoint_palettes.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0150_video_pair_disjoint_palettes.c'; fi`
+
+processing/progressive/test_runner-0151_video_stable_residual_age.o: processing/progressive/0151_video_stable_residual_age.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0151_video_stable_residual_age.o -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0151_video_stable_residual_age.Tpo -c -o processing/progressive/test_runner-0151_video_stable_residual_age.o `test -f 'processing/progressive/0151_video_stable_residual_age.c' || echo '$(srcdir)/'`processing/progressive/0151_video_stable_residual_age.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0151_video_stable_residual_age.Tpo processing/progressive/$(DEPDIR)/test_runner-0151_video_stable_residual_age.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0151_video_stable_residual_age.c' object='processing/progressive/test_runner-0151_video_stable_residual_age.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0151_video_stable_residual_age.o `test -f 'processing/progressive/0151_video_stable_residual_age.c' || echo '$(srcdir)/'`processing/progressive/0151_video_stable_residual_age.c
+
+processing/progressive/test_runner-0151_video_stable_residual_age.obj: processing/progressive/0151_video_stable_residual_age.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0151_video_stable_residual_age.obj -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0151_video_stable_residual_age.Tpo -c -o processing/progressive/test_runner-0151_video_stable_residual_age.obj `if test -f 'processing/progressive/0151_video_stable_residual_age.c'; then $(CYGPATH_W) 'processing/progressive/0151_video_stable_residual_age.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0151_video_stable_residual_age.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0151_video_stable_residual_age.Tpo processing/progressive/$(DEPDIR)/test_runner-0151_video_stable_residual_age.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0151_video_stable_residual_age.c' object='processing/progressive/test_runner-0151_video_stable_residual_age.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0151_video_stable_residual_age.obj `if test -f 'processing/progressive/0151_video_stable_residual_age.c'; then $(CYGPATH_W) 'processing/progressive/0151_video_stable_residual_age.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0151_video_stable_residual_age.c'; fi`
+
+processing/progressive/test_runner-0152_video_latest_source_revalidation.o: processing/progressive/0152_video_latest_source_revalidation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0152_video_latest_source_revalidation.o -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0152_video_latest_source_revalidation.Tpo -c -o processing/progressive/test_runner-0152_video_latest_source_revalidation.o `test -f 'processing/progressive/0152_video_latest_source_revalidation.c' || echo '$(srcdir)/'`processing/progressive/0152_video_latest_source_revalidation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0152_video_latest_source_revalidation.Tpo processing/progressive/$(DEPDIR)/test_runner-0152_video_latest_source_revalidation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0152_video_latest_source_revalidation.c' object='processing/progressive/test_runner-0152_video_latest_source_revalidation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0152_video_latest_source_revalidation.o `test -f 'processing/progressive/0152_video_latest_source_revalidation.c' || echo '$(srcdir)/'`processing/progressive/0152_video_latest_source_revalidation.c
+
+processing/progressive/test_runner-0152_video_latest_source_revalidation.obj: processing/progressive/0152_video_latest_source_revalidation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0152_video_latest_source_revalidation.obj -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0152_video_latest_source_revalidation.Tpo -c -o processing/progressive/test_runner-0152_video_latest_source_revalidation.obj `if test -f 'processing/progressive/0152_video_latest_source_revalidation.c'; then $(CYGPATH_W) 'processing/progressive/0152_video_latest_source_revalidation.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0152_video_latest_source_revalidation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0152_video_latest_source_revalidation.Tpo processing/progressive/$(DEPDIR)/test_runner-0152_video_latest_source_revalidation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0152_video_latest_source_revalidation.c' object='processing/progressive/test_runner-0152_video_latest_source_revalidation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0152_video_latest_source_revalidation.obj `if test -f 'processing/progressive/0152_video_latest_source_revalidation.c'; then $(CYGPATH_W) 'processing/progressive/0152_video_latest_source_revalidation.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0152_video_latest_source_revalidation.c'; fi`
+
+processing/progressive/test_runner-0153_video_structure_guard.o: processing/progressive/0153_video_structure_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0153_video_structure_guard.o -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0153_video_structure_guard.Tpo -c -o processing/progressive/test_runner-0153_video_structure_guard.o `test -f 'processing/progressive/0153_video_structure_guard.c' || echo '$(srcdir)/'`processing/progressive/0153_video_structure_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0153_video_structure_guard.Tpo processing/progressive/$(DEPDIR)/test_runner-0153_video_structure_guard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0153_video_structure_guard.c' object='processing/progressive/test_runner-0153_video_structure_guard.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0153_video_structure_guard.o `test -f 'processing/progressive/0153_video_structure_guard.c' || echo '$(srcdir)/'`processing/progressive/0153_video_structure_guard.c
+
+processing/progressive/test_runner-0153_video_structure_guard.obj: processing/progressive/0153_video_structure_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0153_video_structure_guard.obj -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0153_video_structure_guard.Tpo -c -o processing/progressive/test_runner-0153_video_structure_guard.obj `if test -f 'processing/progressive/0153_video_structure_guard.c'; then $(CYGPATH_W) 'processing/progressive/0153_video_structure_guard.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0153_video_structure_guard.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0153_video_structure_guard.Tpo processing/progressive/$(DEPDIR)/test_runner-0153_video_structure_guard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0153_video_structure_guard.c' object='processing/progressive/test_runner-0153_video_structure_guard.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0153_video_structure_guard.obj `if test -f 'processing/progressive/0153_video_structure_guard.c'; then $(CYGPATH_W) 'processing/progressive/0153_video_structure_guard.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0153_video_structure_guard.c'; fi`
+
+processing/progressive/test_runner-0154_video_pair_deadline.o: processing/progressive/0154_video_pair_deadline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0154_video_pair_deadline.o -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0154_video_pair_deadline.Tpo -c -o processing/progressive/test_runner-0154_video_pair_deadline.o `test -f 'processing/progressive/0154_video_pair_deadline.c' || echo '$(srcdir)/'`processing/progressive/0154_video_pair_deadline.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0154_video_pair_deadline.Tpo processing/progressive/$(DEPDIR)/test_runner-0154_video_pair_deadline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0154_video_pair_deadline.c' object='processing/progressive/test_runner-0154_video_pair_deadline.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0154_video_pair_deadline.o `test -f 'processing/progressive/0154_video_pair_deadline.c' || echo '$(srcdir)/'`processing/progressive/0154_video_pair_deadline.c
+
+processing/progressive/test_runner-0154_video_pair_deadline.obj: processing/progressive/0154_video_pair_deadline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0154_video_pair_deadline.obj -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0154_video_pair_deadline.Tpo -c -o processing/progressive/test_runner-0154_video_pair_deadline.obj `if test -f 'processing/progressive/0154_video_pair_deadline.c'; then $(CYGPATH_W) 'processing/progressive/0154_video_pair_deadline.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0154_video_pair_deadline.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0154_video_pair_deadline.Tpo processing/progressive/$(DEPDIR)/test_runner-0154_video_pair_deadline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0154_video_pair_deadline.c' object='processing/progressive/test_runner-0154_video_pair_deadline.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0154_video_pair_deadline.obj `if test -f 'processing/progressive/0154_video_pair_deadline.c'; then $(CYGPATH_W) 'processing/progressive/0154_video_pair_deadline.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0154_video_pair_deadline.c'; fi`
+
+processing/progressive/test_runner-0155_video_pair_write_failure.o: processing/progressive/0155_video_pair_write_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0155_video_pair_write_failure.o -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0155_video_pair_write_failure.Tpo -c -o processing/progressive/test_runner-0155_video_pair_write_failure.o `test -f 'processing/progressive/0155_video_pair_write_failure.c' || echo '$(srcdir)/'`processing/progressive/0155_video_pair_write_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0155_video_pair_write_failure.Tpo processing/progressive/$(DEPDIR)/test_runner-0155_video_pair_write_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0155_video_pair_write_failure.c' object='processing/progressive/test_runner-0155_video_pair_write_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0155_video_pair_write_failure.o `test -f 'processing/progressive/0155_video_pair_write_failure.c' || echo '$(srcdir)/'`processing/progressive/0155_video_pair_write_failure.c
+
+processing/progressive/test_runner-0155_video_pair_write_failure.obj: processing/progressive/0155_video_pair_write_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0155_video_pair_write_failure.obj -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0155_video_pair_write_failure.Tpo -c -o processing/progressive/test_runner-0155_video_pair_write_failure.obj `if test -f 'processing/progressive/0155_video_pair_write_failure.c'; then $(CYGPATH_W) 'processing/progressive/0155_video_pair_write_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0155_video_pair_write_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0155_video_pair_write_failure.Tpo processing/progressive/$(DEPDIR)/test_runner-0155_video_pair_write_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0155_video_pair_write_failure.c' object='processing/progressive/test_runner-0155_video_pair_write_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0155_video_pair_write_failure.obj `if test -f 'processing/progressive/0155_video_pair_write_failure.c'; then $(CYGPATH_W) 'processing/progressive/0155_video_pair_write_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0155_video_pair_write_failure.c'; fi`
+
+processing/progressive/test_runner-0156_video_final_full_domain.o: processing/progressive/0156_video_final_full_domain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0156_video_final_full_domain.o -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0156_video_final_full_domain.Tpo -c -o processing/progressive/test_runner-0156_video_final_full_domain.o `test -f 'processing/progressive/0156_video_final_full_domain.c' || echo '$(srcdir)/'`processing/progressive/0156_video_final_full_domain.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0156_video_final_full_domain.Tpo processing/progressive/$(DEPDIR)/test_runner-0156_video_final_full_domain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0156_video_final_full_domain.c' object='processing/progressive/test_runner-0156_video_final_full_domain.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0156_video_final_full_domain.o `test -f 'processing/progressive/0156_video_final_full_domain.c' || echo '$(srcdir)/'`processing/progressive/0156_video_final_full_domain.c
+
+processing/progressive/test_runner-0156_video_final_full_domain.obj: processing/progressive/0156_video_final_full_domain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0156_video_final_full_domain.obj -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0156_video_final_full_domain.Tpo -c -o processing/progressive/test_runner-0156_video_final_full_domain.obj `if test -f 'processing/progressive/0156_video_final_full_domain.c'; then $(CYGPATH_W) 'processing/progressive/0156_video_final_full_domain.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0156_video_final_full_domain.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0156_video_final_full_domain.Tpo processing/progressive/$(DEPDIR)/test_runner-0156_video_final_full_domain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0156_video_final_full_domain.c' object='processing/progressive/test_runner-0156_video_final_full_domain.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0156_video_final_full_domain.obj `if test -f 'processing/progressive/0156_video_final_full_domain.c'; then $(CYGPATH_W) 'processing/progressive/0156_video_final_full_domain.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0156_video_final_full_domain.c'; fi`
+
+processing/progressive/test_runner-0187_gpu_selection_video_priority.o: processing/progressive/0187_gpu_selection_video_priority.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0187_gpu_selection_video_priority.o -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0187_gpu_selection_video_priority.Tpo -c -o processing/progressive/test_runner-0187_gpu_selection_video_priority.o `test -f 'processing/progressive/0187_gpu_selection_video_priority.c' || echo '$(srcdir)/'`processing/progressive/0187_gpu_selection_video_priority.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0187_gpu_selection_video_priority.Tpo processing/progressive/$(DEPDIR)/test_runner-0187_gpu_selection_video_priority.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0187_gpu_selection_video_priority.c' object='processing/progressive/test_runner-0187_gpu_selection_video_priority.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0187_gpu_selection_video_priority.o `test -f 'processing/progressive/0187_gpu_selection_video_priority.c' || echo '$(srcdir)/'`processing/progressive/0187_gpu_selection_video_priority.c
+
+processing/progressive/test_runner-0187_gpu_selection_video_priority.obj: processing/progressive/0187_gpu_selection_video_priority.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0187_gpu_selection_video_priority.obj -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0187_gpu_selection_video_priority.Tpo -c -o processing/progressive/test_runner-0187_gpu_selection_video_priority.obj `if test -f 'processing/progressive/0187_gpu_selection_video_priority.c'; then $(CYGPATH_W) 'processing/progressive/0187_gpu_selection_video_priority.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0187_gpu_selection_video_priority.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0187_gpu_selection_video_priority.Tpo processing/progressive/$(DEPDIR)/test_runner-0187_gpu_selection_video_priority.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0187_gpu_selection_video_priority.c' object='processing/progressive/test_runner-0187_gpu_selection_video_priority.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0187_gpu_selection_video_priority.obj `if test -f 'processing/progressive/0187_gpu_selection_video_priority.c'; then $(CYGPATH_W) 'processing/progressive/0187_gpu_selection_video_priority.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0187_gpu_selection_video_priority.c'; fi`
+
+processing/progressive/test_runner-0191_gpu_video_pair.o: processing/progressive/0191_gpu_video_pair.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0191_gpu_video_pair.o -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0191_gpu_video_pair.Tpo -c -o processing/progressive/test_runner-0191_gpu_video_pair.o `test -f 'processing/progressive/0191_gpu_video_pair.c' || echo '$(srcdir)/'`processing/progressive/0191_gpu_video_pair.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0191_gpu_video_pair.Tpo processing/progressive/$(DEPDIR)/test_runner-0191_gpu_video_pair.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0191_gpu_video_pair.c' object='processing/progressive/test_runner-0191_gpu_video_pair.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0191_gpu_video_pair.o `test -f 'processing/progressive/0191_gpu_video_pair.c' || echo '$(srcdir)/'`processing/progressive/0191_gpu_video_pair.c
+
+processing/progressive/test_runner-0191_gpu_video_pair.obj: processing/progressive/0191_gpu_video_pair.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-0191_gpu_video_pair.obj -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-0191_gpu_video_pair.Tpo -c -o processing/progressive/test_runner-0191_gpu_video_pair.obj `if test -f 'processing/progressive/0191_gpu_video_pair.c'; then $(CYGPATH_W) 'processing/progressive/0191_gpu_video_pair.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0191_gpu_video_pair.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-0191_gpu_video_pair.Tpo processing/progressive/$(DEPDIR)/test_runner-0191_gpu_video_pair.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/0191_gpu_video_pair.c' object='processing/progressive/test_runner-0191_gpu_video_pair.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-0191_gpu_video_pair.obj `if test -f 'processing/progressive/0191_gpu_video_pair.c'; then $(CYGPATH_W) 'processing/progressive/0191_gpu_video_pair.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/0191_gpu_video_pair.c'; fi`
+
+processing/progressive/test_runner-progressive_video_test_common.o: processing/progressive/progressive_video_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-progressive_video_test_common.o -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-progressive_video_test_common.Tpo -c -o processing/progressive/test_runner-progressive_video_test_common.o `test -f 'processing/progressive/progressive_video_test_common.c' || echo '$(srcdir)/'`processing/progressive/progressive_video_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-progressive_video_test_common.Tpo processing/progressive/$(DEPDIR)/test_runner-progressive_video_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/progressive_video_test_common.c' object='processing/progressive/test_runner-progressive_video_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-progressive_video_test_common.o `test -f 'processing/progressive/progressive_video_test_common.c' || echo '$(srcdir)/'`processing/progressive/progressive_video_test_common.c
+
+processing/progressive/test_runner-progressive_video_test_common.obj: processing/progressive/progressive_video_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-progressive_video_test_common.obj -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-progressive_video_test_common.Tpo -c -o processing/progressive/test_runner-progressive_video_test_common.obj `if test -f 'processing/progressive/progressive_video_test_common.c'; then $(CYGPATH_W) 'processing/progressive/progressive_video_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/progressive_video_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/progressive/$(DEPDIR)/test_runner-progressive_video_test_common.Tpo processing/progressive/$(DEPDIR)/test_runner-progressive_video_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/progressive/progressive_video_test_common.c' object='processing/progressive/test_runner-progressive_video_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/progressive/test_runner-progressive_video_test_common.obj `if test -f 'processing/progressive/progressive_video_test_common.c'; then $(CYGPATH_W) 'processing/progressive/progressive_video_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/progressive/progressive_video_test_common.c'; fi`
 
 processing/progressive/test_runner-progressive_context_test_common.o: processing/progressive/progressive_context_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/progressive/test_runner-progressive_context_test_common.o -MD -MP -MF processing/progressive/$(DEPDIR)/test_runner-progressive_context_test_common.Tpo -c -o processing/progressive/test_runner-progressive_context_test_common.o `test -f 'processing/progressive/progressive_context_test_common.c' || echo '$(srcdir)/'`processing/progressive/progressive_context_test_common.c

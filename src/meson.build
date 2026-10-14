@@ -70,6 +70,7 @@ srcs = [
   'progressive-select.h',
   'progressive-apply.h',
   'progressive.c',
+  'progressive-video.c',
   'progressive-measure.c',
   'progressive-measure.h',
   'progressive-predict.c',

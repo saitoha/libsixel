@@ -262,7 +262,8 @@ sixel_repair_selection_scan(sixel_repair_selection_t *selection,
     for (i = 0; i < count; ++i) {
         position = selection->cursor + i;
         filter[i] = request.preselected ? selection->selected[position]
-            : 1;
+            : selection->priority == NULL ||
+                selection->priority[position] > 0;
     }
     /* A failed attempt has spent its admitted work too. Do not advance the
      * CPU cursor or reuse that allowance when AUTO retries on the CPU. */
@@ -375,7 +376,9 @@ sixel_repair_selection_advance(sixel_repair_selection_t *selection,
             position = selection->cursor++;
             selected = selection->domain[position] &&
                 selection->errors[position] > selection->stop_squared &&
-                selection->errors[position] >= selection->threshold;
+                selection->errors[position] >= selection->threshold &&
+                (selection->priority == NULL ||
+                 selection->priority[position] > 0);
             if (selection->gpu_policy != SIXEL_GPU_POLICY_OFF) {
                 proposed = selection->gpu_sample <
                     selection->gpu_result.summary.sample_count &&
@@ -453,6 +456,14 @@ sixel_repair_selection_advance(sixel_repair_selection_t *selection,
                     sample->position = position;
                     sample->error = candidate.error;
                     sample->population = finish - start;
+                    /* Video weights come from spatial luminance error;
+                     * canonical retained-aware color costs stay in -W. */
+                    if (selection->priority != NULL &&
+                            selection->priority_maximum > 0) {
+                        sample->population *= 1 + (size_t)(15 *
+                            selection->priority[position] /
+                            selection->priority_maximum);
+                    }
                     selection->raw[selection->sample++] = candidate;
                 }
                 ++selection->ordinal;

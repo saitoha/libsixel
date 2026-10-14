@@ -181,6 +181,16 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0150_VIDEO_PAIR_DISJOINT_PALETTES \
+    -DBUILD_TEST_0151_VIDEO_STABLE_RESIDUAL_AGE \
+    -DBUILD_TEST_0152_VIDEO_LATEST_SOURCE_REVALIDATION \
+    -DBUILD_TEST_0153_VIDEO_STRUCTURE_GUARD \
+    -DBUILD_TEST_0154_VIDEO_PAIR_DEADLINE \
+    -DBUILD_TEST_0155_VIDEO_PAIR_WRITE_FAILURE \
+    -DBUILD_TEST_0156_VIDEO_FINAL_FULL_DOMAIN \
+    -DBUILD_TEST_0187_GPU_SELECTION_VIDEO_PRIORITY \
+    -DBUILD_TEST_0191_GPU_VIDEO_PAIR \
+    -DBUILD_PROGRESSIVE_VIDEO_TEST_COMMON \
     -DBUILD_ARITHMETIC_TEST_COMMON \
     -DBUILD_TEST_0012_A_CANDIDATES \
     -DBUILD_TEST_0013_X_CANDIDATES \
@@ -4901,6 +4911,16 @@ test_runner_SOURCES = test_runner.c \
     processing/progressive/0037_audit_oklab.c \
     processing/progressive/0038_audit_cielab.c \
     processing/progressive/0039_audit_din99d.c \
+    processing/progressive/0150_video_pair_disjoint_palettes.c \
+    processing/progressive/0151_video_stable_residual_age.c \
+    processing/progressive/0152_video_latest_source_revalidation.c \
+    processing/progressive/0153_video_structure_guard.c \
+    processing/progressive/0154_video_pair_deadline.c \
+    processing/progressive/0155_video_pair_write_failure.c \
+    processing/progressive/0156_video_final_full_domain.c \
+    processing/progressive/0187_gpu_selection_video_priority.c \
+    processing/progressive/0191_gpu_video_pair.c \
+    processing/progressive/progressive_video_test_common.c \
     processing/progressive/progressive_context_test_common.c \
     processing/progressive/0100_public_admission_snapshot.c \
     processing/progressive/0095_public_statistics_resume.c \

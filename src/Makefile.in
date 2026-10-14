@@ -217,7 +217,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/progressive-select.c $(srcdir)/progressive-apply.c \
 	$(srcdir)/progressive-palette.h $(srcdir)/progressive-select.h \
 	$(srcdir)/progressive-apply.h $(srcdir)/progressive.c \
-	$(srcdir)/progressive-measure.c \
+	$(srcdir)/progressive-video.c $(srcdir)/progressive-measure.c \
 	$(srcdir)/progressive-measure.h \
 	$(srcdir)/progressive-predict.c \
 	$(srcdir)/progressive-predict.h $(srcdir)/progressive-ladder.c \
@@ -416,6 +416,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-select.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-apply.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-video.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-measure.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-predict.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-ladder.lo \
@@ -720,6 +721,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-progressive-palette.Plo \
 	./$(DEPDIR)/libsixel_la-progressive-predict.Plo \
 	./$(DEPDIR)/libsixel_la-progressive-select.Plo \
+	./$(DEPDIR)/libsixel_la-progressive-video.Plo \
 	./$(DEPDIR)/libsixel_la-progressive.Plo \
 	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
 	./$(DEPDIR)/libsixel_la-sample-stream.Plo \
@@ -1162,6 +1164,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-select.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-apply.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-video.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-measure.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-measure.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-predict.c \
@@ -1791,6 +1794,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-palette.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-predict.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-select.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-video.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sample-stream.Plo@am__quote@ # am--include-marker
@@ -2145,6 +2149,13 @@ libsixel_la-progressive.lo: progressive.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='progressive.c' object='libsixel_la-progressive.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-progressive.lo `test -f 'progressive.c' || echo '$(srcdir)/'`progressive.c
+
+libsixel_la-progressive-video.lo: progressive-video.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-progressive-video.lo -MD -MP -MF $(DEPDIR)/libsixel_la-progressive-video.Tpo -c -o libsixel_la-progressive-video.lo `test -f 'progressive-video.c' || echo '$(srcdir)/'`progressive-video.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-progressive-video.Tpo $(DEPDIR)/libsixel_la-progressive-video.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='progressive-video.c' object='libsixel_la-progressive-video.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-progressive-video.lo `test -f 'progressive-video.c' || echo '$(srcdir)/'`progressive-video.c
 
 libsixel_la-progressive-measure.lo: progressive-measure.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-progressive-measure.lo -MD -MP -MF $(DEPDIR)/libsixel_la-progressive-measure.Tpo -c -o libsixel_la-progressive-measure.lo `test -f 'progressive-measure.c' || echo '$(srcdir)/'`progressive-measure.c
@@ -3384,6 +3395,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-predict.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-select.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-video.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sample-stream.Plo
@@ -3598,6 +3610,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-predict.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-select.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-video.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sample-stream.Plo

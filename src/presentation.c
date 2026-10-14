@@ -267,8 +267,14 @@ sixel_presentation_write(char *data, int size, void *priv)
     }
     result = sixel_presentation_write_raw(data, size, presentation);
     elapsed = presentation->now(presentation->clock_priv) - start;
+    if (presentation->video_pair && size > 0) {
+        if ((size_t)size <= SIZE_MAX - presentation->ordinary_bytes) {
+            presentation->ordinary_bytes += (size_t)size;
+            if (elapsed > 0) presentation->ordinary_write_seconds += elapsed;
+        }
+    }
     /* Ordinary writes happen only after draining; the worker is idle. */
-    if (elapsed > 0 &&
+    if (!presentation->video_pair && elapsed > 0 &&
             elapsed / size > presentation->seconds_per_byte) {
         presentation->seconds_per_byte = elapsed / size;
     }
@@ -370,6 +376,8 @@ sixel_presentation_dispose_owned(sixel_presentation_t *presentation)
     if (presentation->encoder != NULL) {
         sixel_allocator_free(presentation->encoder->allocator,
             presentation->transport_buffer);
+        sixel_allocator_free(presentation->encoder->allocator,
+            presentation->ordinary_paint);
     }
     retained = sixel_repair_context_detach_owned(presentation->repair);
     sixel_output_unref(presentation->output);
@@ -377,6 +385,32 @@ sixel_presentation_dispose_owned(sixel_presentation_t *presentation)
     memset(presentation, 0, sizeof(*presentation));
 }
 
+SIXELSTATUS
+sixel_presentation_capture_owned(sixel_presentation_t *presentation,
+    int width, int height)
+{
+    unsigned char *paint;
+    size_t count;
+
+    if (width <= 0 || height <= 0 ||
+            (size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    count = (size_t)width * height;
+    if (count != presentation->ordinary_count) {
+        paint = sixel_allocator_malloc(presentation->encoder->allocator,
+                                        count);
+        if (paint == NULL) return SIXEL_BAD_ALLOCATION;
+        sixel_allocator_free(presentation->encoder->allocator,
+            presentation->ordinary_paint);
+        presentation->ordinary_paint = paint;
+        presentation->ordinary_count = count;
+    }
+    presentation->ordinary_width = width;
+    presentation->ordinary_height = height;
+    memset(presentation->ordinary_paint, 0, count);
+    return SIXEL_OK;
+}
 
 SIXELSTATUS
 sixel_presentation_begin_image(sixel_presentation_t *presentation, int height)
@@ -392,6 +426,8 @@ sixel_presentation_begin_image(sixel_presentation_t *presentation, int height)
     }
     presentation->prepared = 1;
     presentation->prefix_pending = 1;
+    presentation->ordinary_bytes = 0;
+    presentation->ordinary_write_seconds = 0;
     return SIXEL_OK;
 }
 
@@ -415,6 +451,14 @@ sixel_presentation_bind_owned(sixel_presentation_t *presentation,
         presentation->encoder->sixdelta_origin_x,
         presentation->encoder->sixdelta_origin_y,
         presentation->generation + 1);
+    if (status == SIXEL_OK && presentation->video_pair) {
+        if (presentation->ordinary_width != presentation->repair->width ||
+                presentation->ordinary_height != presentation->repair->height) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        status = sixel_repair_video_enable_owned(presentation->repair,
+            presentation->ordinary_paint, presentation->ordinary_count);
+    }
     if (status == SIXEL_OK) {
         ++presentation->generation;
         presentation->finished = 0;
@@ -434,6 +478,13 @@ sixel_presentation_finish(sixel_presentation_t *presentation)
     if (presentation->repair == NULL || presentation->generation == 0) {
         return SIXEL_OK;
     }
+    /* A final still may repair the last ordinary update as well. Restricted
+     * pair exhaustion was never a claim that the full source had converged. */
+    status = sixel_encoder_operation_enter(presentation->encoder,
+        SIXEL_ENCODER_OPERATION_PLAYBACK);
+    if (status != SIXEL_OK) return status;
+    sixel_repair_video_disable_owned(presentation->repair);
+    sixel_encoder_operation_leave(presentation->encoder);
     memset(&stats, 0, sizeof(stats));
     stats.struct_size = sizeof(stats);
     while (!presentation->finished) {
@@ -561,6 +612,80 @@ sixel_presentation_admission(double now, double deadline, double quantum,
 /* One independent repair image belongs to this source interval. Its budget
  * is reserved immediately after the ordinary image, not after an idle timer.
  * Neither a queued next source nor prefetch occupancy cancels this slot. */
+static SIXELSTATUS
+sixel_presentation_pair(sixel_presentation_t *presentation, int delay)
+{
+    sixel_progressive_budget_t budget;
+    sixel_progressive_stats_t stats;
+    SIXELSTATUS status;
+    double now;
+    double available;
+    double rate;
+    size_t bytes;
+
+    status = sixel_presentation_check_limit(presentation);
+    if (status != SIXEL_OK || presentation->finished) return status;
+    now = sixel_presentation_clock(presentation);
+    available = presentation->deadline - now;
+    if (available <= 0) {
+        if (presentation->verbose) {
+            fprintf(stderr, "progressive: pair=%" PRIu64
+                " deferred=deadline late_ms=%.3f\n",
+                presentation->generation, -available * 1000);
+        }
+        return SIXEL_OK;
+    }
+    rate = presentation->seconds_per_byte;
+    /* A one-byte flush has fixed syscall overhead, not the throughput of a
+     * complete repair packet. Measure the whole ordinary frame's writes. */
+    if (presentation->ordinary_bytes != 0) {
+        rate = presentation->ordinary_write_seconds /
+            presentation->ordinary_bytes;
+    }
+    budget = presentation->budget;
+    budget.max_pixel_visits = 32768;
+    budget.max_distance_evaluations = 65536;
+    if (rate > 0) {
+        available = fmin(available, delay / 100.0);
+        bytes = available / (4 * rate) >= budget.max_packet_bytes
+            ? budget.max_packet_bytes : (size_t)(available / (4 * rate));
+        if (bytes <= 66) return SIXEL_OK;
+        budget.max_packet_bytes = bytes - 2;
+    }
+    presentation->admission_deadline = fmin(presentation->deadline -
+        2 * rate * (budget.max_packet_bytes + 2), now + delay / 100.0 * .5);
+    presentation->timed = 1;
+    presentation->async_submission = presentation->transport_started;
+    memset(&stats, 0, sizeof(stats));
+    stats.struct_size = sizeof(stats);
+    while (!sixel_presentation_deadline_reached(presentation)) {
+        presentation->prefix_pending = 1;
+        status = sixel_progressive_step(presentation->repair, &budget,
+            presentation->output, &stats);
+        if (status != SIXEL_OK) break;
+        if (stats.outcome == SIXEL_PROGRESSIVE_FRAME_EMITTED) {
+            ++presentation->passes;
+            break;
+        }
+        if (stats.outcome != SIXEL_PROGRESSIVE_YIELDED ||
+                stats.yield_reason != SIXEL_PROGRESSIVE_YIELD_WORK_BUDGET) {
+            break;
+        }
+    }
+    presentation->timed = 0;
+    presentation->async_submission = 0;
+    if (presentation->verbose) {
+        fprintf(stderr, "progressive: pair=%" PRIu64
+            " outcome=%d pixels=%zu bytes=%zu visits=%" PRIu64
+            " distances=%" PRIu64 " elapsed_ms=%.3f\n",
+            presentation->generation, stats.outcome,
+            stats.painted_pixels, stats.packet_bytes,
+            presentation->repair->total_pixel_visits,
+            presentation->repair->total_distance_evaluations,
+            1000 * (sixel_presentation_clock(presentation) - now));
+    }
+    return status;
+}
 
 SIXELSTATUS
 sixel_presentation_after_frame(sixel_presentation_t *presentation,
@@ -591,6 +716,22 @@ sixel_presentation_after_frame(sixel_presentation_t *presentation,
     /* Only source durations advance this clock. Repair count and queue
      * prefetch never extend the next ordinary frame's absolute deadline. */
     presentation->deadline += delay / 100.0;
+    if (presentation->video_pair) {
+        status = sixel_presentation_pair(presentation, delay);
+        if (status != SIXEL_OK) return status;
+        /* The two images share one source delay. Do not run a second idle
+         * repair loop or restart the absolute source clock after the pair. */
+        while (!sixel_encoder_is_cancel_requested(encoder)) {
+            slack = presentation->deadline -
+                sixel_presentation_clock(presentation);
+            if (slack <= 0) return SIXEL_OK;
+            sleep_usec = slack >= .001 ? 1000
+                : (unsigned int)(slack * 1000000) + 1;
+            presentation->wait(sleep_usec, presentation->clock_priv);
+            presentation->clock_floor += sleep_usec / 1000000.0;
+        }
+        return SIXEL_INTERRUPTED;
+    }
     budget = presentation->budget;
     budget.max_pixel_visits = 256;
     budget.max_distance_evaluations = 2048;

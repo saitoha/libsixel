@@ -147,6 +147,7 @@ test_progressive_gpu_selection_case(int mode)
     float source[SELECT_GPU_COUNT * 3];
     float retained[SELECT_GPU_COUNT * 3] = {0};
     double errors[SELECT_GPU_COUNT];
+    double priority[SELECT_GPU_COUNT];
     unsigned char domain[SELECT_GPU_COUNT];
     size_t positions[SELECT_GPU_COUNT];
     size_t population;
@@ -183,7 +184,8 @@ test_progressive_gpu_selection_case(int mode)
         value = source[i * 3];
         errors[i] = value * value;
         domain[i] = i % 7 != 0;
-        if (domain[i]) {
+        priority[i] = i % 5 == 0 ? 0 : i % 3 + 1;
+        if (domain[i] && (mode != 187 || priority[i] > 0)) {
             positions[population++] = i;
         }
     }
@@ -221,6 +223,10 @@ test_progressive_gpu_selection_case(int mode)
             SIXEL_PALETTETYPE_RGB, stop, .4, mode != 189, samples, 8,
             allocator) == SIXEL_OK);
         selection = selections[pass];
+        if (mode == 187) {
+            selection->priority = priority;
+            selection->priority_maximum = 3;
+        }
         if (mode == 189) {
             ladders[pass].allowance = 2;
             selection->ladder = ladders + pass;
@@ -277,6 +283,7 @@ test_progressive_gpu_selection_case(int mode)
         finish = (i + 1) * population / selections[0]->sample_count;
         position = positions[begin + (finish - begin - 1) / 2];
         weight = finish - begin;
+        if (mode == 187) weight *= 1 + (size_t)(15 * priority[position] / 3);
         SELECT_GPU_REQUIRE(selections[0]->samples[i].position == position &&
             selections[0]->samples[i].population == weight &&
             selections[0]->samples[i].error == errors[position]);

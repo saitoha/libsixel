@@ -155,6 +155,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/progressive-select.h \
                 $(srcdir)/progressive-apply.h \
                 $(srcdir)/progressive.c \
+                $(srcdir)/progressive-video.c \
                 $(srcdir)/progressive-measure.c \
                 $(srcdir)/progressive-measure.h \
                 $(srcdir)/progressive-predict.c \

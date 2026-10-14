@@ -1003,6 +1003,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    delta suboptions: progressive=1|0 (:P1 or :P0),\n"
         "                      threshold=0..255 (:Tvalue),\n"
         "                      error=diffuse|skip (:Evalue).\n"
+        "    delta:P1 pairs each update with a disjoint repair image,\n"
+        "    using its own palette within the same source interval.\n"
         "    Progressive controls (also accepted by delta):\n"
         "      stop_threshold=auto|0..1e154 (:Svalue, default auto)\n"
         "      max_passes=0..4294967295 (:Nvalue, default 0)\n"

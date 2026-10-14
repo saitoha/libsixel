@@ -72,6 +72,7 @@ amalgamation_units = files(
   '../src/progressive-select.c',
   '../src/progressive-apply.c',
   '../src/progressive.c',
+  '../src/progressive-video.c',
   '../src/progressive-measure.c',
   '../src/progressive-predict.c',
   '../src/progressive-ladder.c',

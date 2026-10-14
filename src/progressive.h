@@ -70,6 +70,21 @@ typedef struct sixel_progressive {
      * audit. It never becomes a second owner of committed display history. */
     float *gpu_retained;
     int gpu_retained_disabled;
+    /* Video pairs exclude the preceding ordinary paint, while retaining the
+     * complete source domain for final still refinement and validity checks. */
+    unsigned char *video_excluded;
+    unsigned char *video_age;
+    double *video_error;
+    double *video_luma;
+    double *video_after;
+    double *video_priority;
+    size_t video_cursor;
+    int video_stage;
+    int video_active;
+    int video_guard_stage;
+    double video_maximum;
+    double video_before_loss;
+    double video_after_loss;
     sixel_palette_t *transform;
     size_t count;
     int width;
@@ -127,6 +142,20 @@ typedef struct sixel_progressive {
     size_t sort_finish;
     size_t sort_destination;
 } sixel_repair_context_t;
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_repair_video_enable_owned(sixel_repair_context_t *context,
+    unsigned char const *paint, size_t count);
+SIXEL_INTERNAL_API void
+sixel_repair_video_disable_owned(sixel_repair_context_t *context);
+SIXEL_INTERNAL_API int
+sixel_repair_video_luma(float const color[3], int workspace, double *luma);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_repair_video_select(sixel_repair_context_t *context,
+    sixel_repair_work_t *work, int *done);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_repair_video_guard(sixel_repair_context_t *context,
+    sixel_repair_work_t *work, int *done, int *accepted);
 
 /* Playback holds the encoder gate and owns an independent encoder reference.
  * Detach transfers the context's encoder reference; the caller releases it. */

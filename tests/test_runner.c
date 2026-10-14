@@ -261,6 +261,15 @@ int test_sequence_0082(int argc, char **argv);
 int test_sequence_0083(int argc, char **argv);
 int test_sequence_0084(int argc, char **argv);
 int test_sequence_0085(int argc, char **argv);
+int test_progressive_0150(int argc, char **argv);
+int test_progressive_0151(int argc, char **argv);
+int test_progressive_0152(int argc, char **argv);
+int test_progressive_0153(int argc, char **argv);
+int test_progressive_0154(int argc, char **argv);
+int test_progressive_0155(int argc, char **argv);
+int test_progressive_0156(int argc, char **argv);
+int test_progressive_0187(int argc, char **argv);
+int test_progressive_0191(int argc, char **argv);
 int test_progressive_0001(int argc, char **argv);
 int test_progressive_0002(int argc, char **argv);
 int test_progressive_0003(int argc, char **argv);
@@ -5000,6 +5009,24 @@ static test_entry_t const test_entries[] = {
       test_sequence_0084 },
     { "decoder/0085_multi_pass_option_atomicity",
       test_sequence_0085 },
+    { "progressive/0150_video_pair_disjoint_palettes",
+      test_progressive_0150 },
+    { "progressive/0151_video_stable_residual_age",
+      test_progressive_0151 },
+    { "progressive/0152_video_latest_source_revalidation",
+      test_progressive_0152 },
+    { "progressive/0153_video_structure_guard",
+      test_progressive_0153 },
+    { "progressive/0154_video_pair_deadline",
+      test_progressive_0154 },
+    { "progressive/0155_video_pair_write_failure",
+      test_progressive_0155 },
+    { "progressive/0156_video_final_full_domain",
+      test_progressive_0156 },
+    { "progressive/0187_gpu_selection_video_priority",
+      test_progressive_0187 },
+    { "progressive/0191_gpu_video_pair",
+      test_progressive_0191 },
     { "progressive/0001_source_snapshot",
       test_progressive_0001 },
     { "progressive/0002_history_revisions",

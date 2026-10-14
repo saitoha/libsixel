@@ -1149,8 +1149,10 @@ Select full output (default), retained-plane delta updates or progressive still 
 \fBfull\fP disables temporal keeps and discards retained history, while preserving source-alpha handling.
 \fBdelta\fP enables 6delta with optional \fB:threshold=0..255\fP (short form :Tvalue) and \fB:error=diffuse|skip\fP (short form :Evalue).
 Defaults are threshold=0, error=diffuse and progressive=0; full accepts no suboptions.
-The delta suboption \fB:progressive=1|0\fP (short form :P1 or :P0) uses available animation slack for bounded repair and refines the final frame after finite playback.
-\fB-g\fP and zero-duration frames skip intermediate repair. Direct calls remain caller-paced.
+The delta suboption \fB:progressive=1|0\fP (short form :P1 or :P0) pairs ordinary animation updates with at most one non-overlapping repair image per source interval, using an independent residual palette.
+The repair excludes positions painted by that ordinary update, uses the latest source and prioritizes luminance structure. Both images share one source delay and the available time/output budget; there is no combined palette or extra playback delay.
+It preserves absolute source-frame deadlines and refines the final frame after finite playback.
+\fB-g\fP and zero-duration frames skip intermediate repair. Thread-disabled builds send pairs synchronously.
 Host output acceptance does not acknowledge terminal presentation; blocking host writes cannot guarantee a hard frame deadline.
 \fBprogressive\fP selects one composed still from any input and repeatedly overlays sparse repairs until convergence, a representable-color stall or a resource limit.
 Both progressive and delta accept \fB:stop_threshold=auto|0..1e154\fP (short form :Svalue, default auto), \fB:max_passes=0..4294967295\fP (:Nvalue, default 0), and \fB:max_seconds=SECONDS\fP (:Mvalue, default 5).
