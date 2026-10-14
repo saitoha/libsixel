@@ -1019,6 +1019,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0010_EXTENDED_DIN99D_FORWARD \
     -DBUILD_TEST_0011_EXTENDED_DIN99D_INVERSE \
     -DBUILD_TEST_0053_PERCENTAGE_RGB8 \
+    -DBUILD_TEST_0054_ORMODE_COMPOSITE_REGISTER \
+    -DBUILD_TEST_0055_ORMODE_WIDE_REGISTER \
+    -DBUILD_TEST_0056_ORMODE_RASTER_GROWTH \
+    -DBUILD_TEST_0057_ORMODE_TAIL_BAND \
+    -DBUILD_TEST_0058_ORMODE_HLS_REDEFINITION \
+    -DBUILD_TEST_0059_ORMODE_IMPLICIT_RASTER \
+    -DBUILD_TEST_0060_ORMODE_INHERITED_REGISTER \
+    -DBUILD_TEST_0061_ORMODE_COMPOSED_COLOR_COUNT \
     -DBUILD_TEST_0001_DIN99D_FORWARD \
     -DBUILD_TEST_0045_SNAP_OUTPUT_GRID \
     -DBUILD_TEST_0048_SNAP_PARTIAL_ONCE \
@@ -5323,6 +5331,14 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0050_palette_map_identity.c \
     processing/decoder/0051_palette_map_gpu.c \
     processing/decoder/0052_palette_map_parallel_fallback.c \
+    processing/decoder/0054_ormode_composite_register.c \
+    processing/decoder/0055_ormode_wide_register.c \
+    processing/decoder/0056_ormode_raster_growth.c \
+    processing/decoder/0057_ormode_tail_band.c \
+    processing/decoder/0058_ormode_hls_redefinition.c \
+    processing/decoder/0059_ormode_implicit_raster.c \
+    processing/decoder/0060_ormode_inherited_register.c \
+    processing/decoder/0061_ormode_composed_color_count.c \
     processing/decoder/palette_map_test_common.c \
     processing/decoder/palette_map_test_common.h \
     processing/decoder/ormode_test_common.c \

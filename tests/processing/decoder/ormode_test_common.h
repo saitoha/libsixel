@@ -6,4 +6,8 @@ int test_or_decode(char const *stream, unsigned char const *expected,
                    int width, int height, int threads, int direct);
 int test_or_dequant(char const *method);
 
+int test_or_planar(char const *stream, unsigned short const *expected,
+                   unsigned char const *rgba, int width, int height,
+                   int ncolors);
+
 #endif

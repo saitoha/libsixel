@@ -38,6 +38,7 @@
 
 #include "decoder.h"
 #include "decoder-parallel.h"
+#include "decoder-ormode.h"
 #if SIXEL_ENABLE_THREADS
 # include "timeline-logger.h"
 #endif
@@ -337,46 +338,6 @@ sixel_decoder_parallel_store_pixel(unsigned char *dst,
     dst[3] = 255u;
 }
 
-static int
-sixel_decoder_parallel_store_ormode_span(unsigned char *dst,
-                                         int depth,
-                                         int color_index,
-                                         int repeat)
-{
-    unsigned char *bytes;
-    unsigned short *shorts;
-    int composed_index;
-    int max_index;
-    int n;
-
-    if (dst == NULL || repeat <= 0) {
-        return (-1);
-    }
-
-    max_index = (-1);
-    if (depth == 1) {
-        bytes = dst;
-        for (n = 0; n < repeat; ++n) {
-            composed_index = bytes[n] | color_index;
-            bytes[n] = (unsigned char)composed_index;
-            if (max_index < composed_index) {
-                max_index = composed_index;
-            }
-        }
-    } else {
-        shorts = (unsigned short *)dst;
-        for (n = 0; n < repeat; ++n) {
-            composed_index = shorts[n] | color_index;
-            shorts[n] = (unsigned short)composed_index;
-            if (max_index < composed_index) {
-                max_index = composed_index;
-            }
-        }
-    }
-
-    return max_index;
-}
-
 static void
 sixel_local_buffer_init(sixel_local_buffer_t *buffer,
                         int width,
@@ -629,7 +590,8 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     int repeat;
     int color_index;
     int max_color_index;
-    int span_max_index;
+    int store_bits;
+    uint64_t spread;
     int pos_x;
     int pos_y;
     int line_count;
@@ -667,7 +629,8 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     repeat = 1;
     color_index = context->initial_color_index;
     max_color_index = (-1);
-    span_max_index = (-1);
+    store_bits = 0;
+    spread = sixel_ormode_spread((unsigned int)color_index);
     pos_x = 0;
     pos_y = 0;
     line_count = 0;
@@ -797,6 +760,14 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
         }
     }
 
+    if (context->ormode) {
+        /* A span can inherit a selection from an earlier band without
+         * encountering another # command in its own useful payload. */
+        if (color_index >= 256) {
+            goto fail;
+        }
+        spread = sixel_ormode_spread((unsigned int)color_index);
+    }
     row_offset = line_count * 6;
     stop = context->input + context->end_offset;
     limit = context->input + context->length;
@@ -825,6 +796,7 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
                     effective_repeat = width - pos_x;
                 }
             }
+            store_bits = 0;
             for (i = 0; i < 6; ++i) {
                 if ((bits & (1 << i)) == 0) {
                     continue;
@@ -872,22 +844,17 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
                 if (global_y > context->last_painted_row) {
                     context->last_painted_row = global_y;
                 }
+                store_bits |= 1 << i;
+                if (context->ormode) {
+                    written += effective_repeat;
+                    continue;
+                }
                 if (mode == SIXEL_DECODER_DIRECT_PAINT) {
                     global_index = (size_t)global_y *
                         (size_t)width + (size_t)pos_x;
                     dst = chain->global_buffer + global_index *
                         (size_t)pixel_size;
-                    if (context->ormode) {
-                        span_max_index =
-                            sixel_decoder_parallel_store_ormode_span(
-                                dst,
-                                depth,
-                                color_index,
-                                effective_repeat);
-                        if (span_max_index > max_color_index) {
-                            max_color_index = span_max_index;
-                        }
-                    } else if (pixel_size == 1 && effective_repeat > 3) {
+                    if (pixel_size == 1 && effective_repeat > 3) {
                         memset(dst, color_index, (size_t)effective_repeat);
                         if (color_index > max_color_index) {
                             max_color_index = color_index;
@@ -915,6 +882,14 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
                     max_color_index = color_index;
                 }
                 written += effective_repeat;
+            }
+
+            if (context->ormode && store_bits != 0 &&
+                    mode == SIXEL_DECODER_DIRECT_PAINT) {
+                global_index = (size_t)((row_offset + pos_y) / 6) *
+                    (size_t)width + (size_t)pos_x;
+                sixel_ormode_store((uint64_t *)chain->global_buffer +
+                    global_index, spread, store_bits, effective_repeat);
             }
 
             cursor += 1;
@@ -950,6 +925,16 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
             }
             if (color_index >= SIXEL_PALETTE_MAX_DECODER) {
                 color_index = SIXEL_PALETTE_MAX_DECODER - 1;
+            }
+            if (context->ormode) {
+                /* The serial path allocates upper planes with the caller's
+                 * allocator. Reject wide selections during the read-only
+                 * scan, before any shared plane can be changed. */
+                if (color_index >= 256) {
+                    status = (-1);
+                    goto fail;
+                }
+                spread = sixel_ormode_spread((unsigned int)color_index);
             }
             cursor = p;
             continue;
@@ -1128,6 +1113,10 @@ sixel_decoder_parallel_direct_rows_disjoint(
         last_row = contexts[i].last_painted_row;
         if (first_row < 0 && last_row < 0) {
             continue;
+        }
+        if (contexts[i].ormode && first_row >= 0 && last_row >= 0) {
+            first_row /= 6;
+            last_row /= 6;
         }
         if (first_row < 0 || last_row < first_row ||
                 first_row <= previous_last_row) {
@@ -1366,7 +1355,6 @@ sixel_decoder_parallel_worker(void *arg)
     int height = 0;
     int starts_after_newline = 0;
     int max_color_index = (-1);
-    int span_max_index = (-1);
     int effective_repeat = 0;
     int global_y = 0;
     int local_rows = 0;
@@ -1672,24 +1660,7 @@ sixel_decoder_parallel_worker(void *arg)
                      */
                     relative = (pos_y + i) * width + pos_x;
 
-                    if (context->ormode) {
-                        span_max_index =
-                            sixel_decoder_parallel_store_ormode_span(
-                                chunk_cursor->data +
-                                (size_t)row_base * (size_t)pixel_size,
-                                depth,
-                                color_index,
-                                effective_repeat);
-                        if (span_max_index > max_color_index) {
-                            max_color_index = span_max_index;
-                        }
-                        if (chunk_cursor->paint_mask != NULL) {
-                            memset(chunk_cursor->paint_mask +
-                                   (size_t)row_base,
-                                   0xff,
-                                   (size_t)effective_repeat);
-                        }
-                    } else if (pixel_size == 1 && effective_repeat > 3) {
+                    if (pixel_size == 1 && effective_repeat > 3) {
                         memset(chunk_cursor->data + (size_t)row_base,
                                color_index,
                                effective_repeat);
@@ -2267,12 +2238,20 @@ sixel_decoder_parallel_request_start(int direct_mode,
     }
 
     pixel_size = sixel_decoder_parallel_pixel_size(image->depth);
-    if (ormode && image->depth == 4U) {
-        if (image->ormode_indexes == NULL) {
+    if (ormode) {
+        /* Fused undither consumes raster indices, not plane words. Complete
+         * serial gather before filtering. Wide registers likewise need the
+         * caller-allocated upper plane buffer; no worker has painted yet. */
+        if ((undither != NULL && undither->enabled) ||
+                initial_color_index >= 256 ||
+                image->ormode_high_planes != NULL) {
+            status = SIXEL_FALSE;
+            goto cleanup;
+        }
+        if (image->ormode_planes == NULL) {
             runtime_error = 1;
             goto cleanup;
         }
-        pixel_size = (int)sizeof(*image->ormode_indexes);
     }
 
     payload_start = (int)(anchor - input);
@@ -2333,8 +2312,8 @@ sixel_decoder_parallel_request_start(int direct_mode,
         runtime_error = 1;
         goto cleanup;
     }
-    if (ormode && image->depth == 4U) {
-        chain.global_buffer = (unsigned char *)image->ormode_indexes;
+    if (ormode) {
+        chain.global_buffer = (unsigned char *)image->ormode_planes;
     } else {
         chain.global_buffer = (unsigned char *)image->pixels.p;
     }
@@ -2342,7 +2321,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
         runtime_error = 1;
         goto cleanup;
     }
-    chain.global_mask = image->paint_mask;
+    chain.global_mask = ormode ? NULL : image->paint_mask;
     chain.pixel_size = pixel_size;
     chain.thread_count = threads;
     chain.global_capacity = global_capacity;
@@ -2464,7 +2443,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
 
             /*
              * The direct paint pass writes into the shared destination image.
-             * The validation scan proved that every span owns disjoint rows.
+             * The scan proved disjoint rows (whole bands for OR planes).
              * Hold every paint worker at a barrier until all threads exist so
              * a partial thread-creation failure cannot dirty the serial
              * fallback image.

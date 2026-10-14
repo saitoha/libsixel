@@ -2,6 +2,8 @@
 
 import csv
 import json
+import os
+import pathlib
 import re
 import statistics
 
@@ -11,7 +13,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from measure import ROOT
 
-OUT = ROOT / "sweeps"
+OUT = pathlib.Path(os.environ.get("OR_MODE_SWEEP_DIR", ROOT / "sweeps"))
+RETAINED_ENCODER = "retained_encoder_metadata" in json.loads(
+    (OUT / "metadata.json").read_text()
+)
 COLORS = [2, 4, 8, 16, 32, 64, 128, 256]
 THREADS = list(range(1, 13))
 
@@ -24,7 +29,8 @@ def ratio_plot(rows, names, axis, title, filename):
     fig, axes = plt.subplots(3, 2, figsize=(13, 11), layout="constrained")
     panels = [
         ("size_ratio", "Stream size: OR / normal (lower is smaller)"),
-        ("encode_cli_speedup", "Encoder CLI: normal / OR time (higher is faster)"),
+        ("encode_cli_speedup", "Encoder CLI" +
+         (" (retained)" if RETAINED_ENCODER else "") + ": normal / OR time"),
         ("decode_rgba_speedup", "RGBA decoder API: normal / OR time"),
         ("decode_indexed_speedup", "Indexed decoder API: normal / OR time"),
         ("decode_cli_speedup", "Decoder CLI with RGBA PNG: normal / OR time"),
@@ -90,7 +96,7 @@ def main():
     assert len(enc) == pairs and len(dec) == pairs + 100
     for record in dec:
         folder = (
-            ROOT / "results" if record["name"].startswith("picsum-") else OUT / "encode"
+            ROOT / "results" if record["name"].startswith("picsum-") else ROOT / "sweeps/encode"
         )
         baseline = json.loads((folder / f"{record['name']}.json").read_text())
         assert record["rgba_sha256"] == [baseline["modes"][0]["rgba_sha256"]] * 2
@@ -110,7 +116,7 @@ def main():
         d = lookup[(f"{image}-p{e['colors']}-t1", e["threads"])]
         assert e["changed_pixels"] == 0 and all(e["repeat_stream_equal"])
         baseline = json.loads(
-            (OUT / "encode" / f"{image}-p{e['colors']}-t1.json").read_text()
+            (ROOT / "sweeps/encode" / f"{image}-p{e['colors']}-t1.json").read_text()
         )
         assert d["rgba_sha256"] == [baseline["modes"][0]["rgba_sha256"]] * 2
         rows.append(
@@ -122,7 +128,7 @@ def main():
                     set(
                         re.findall(
                             rb"#([0-9]+);[12];",
-                            (OUT / "encode" / f"{e['name']}.0.six").read_bytes(),
+                            (ROOT / "sweeps/encode" / f"{e['name']}.0.six").read_bytes(),
                         )
                     )
                 ),
@@ -176,7 +182,8 @@ def main():
         key=lambda r: r["threads"],
     )
     panels = [
-        (full_enc, "cli_seconds", "Encode CLI, including quantization"),
+        (full_enc, "cli_seconds", "Encode CLI, including quantization" +
+         (" (retained)" if RETAINED_ENCODER else "")),
         (full_dec, "rgba_seconds", "Decode API to RGBA"),
         (full_dec, "indexed_seconds", "Decode API to palette indices"),
         (full_dec, "cli_seconds", "Decode CLI, including RGBA PNG output"),
@@ -258,7 +265,7 @@ def main():
     ax[1].set(
         xlabel="OR / normal stream bytes",
         ylabel="Normal / OR decode time",
-        title="Byte reduction does not ensure faster decoding",
+        title="Decoder speed and stream size",
     )
     ax[1].legend(frameon=False)
     fig.savefig(OUT / "decode-photos.png", dpi=150)

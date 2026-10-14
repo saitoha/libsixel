@@ -1,5 +1,62 @@
 {
-  "revision": "cf4cb3439aedec252b68bbc3674b10aa2bf0145f",
+  "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "cpu": "Apple M3 Max",
+  "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin27.0.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+  "decoder_base_revision": "551e9bb653de8b7ad781e16d4149d15f9256e995",
+  "decoder_source_sha256": {
+    "src/fromsixel.c": "f14a4b381019868fb687518409894441b56baa4acb0a40a89131b85cc2b6ad34",
+    "src/decoder-parallel.c": "5308ba44344ef88030e27b7c8cb69324bd2e7e2d29c72b0abf62ad108832d3d9",
+    "src/decoder-image.h": "96a3822d15bf42dc91e57b09f53eb896d468a8d93341996f703703f05541e6af",
+    "src/decoder-ormode.h": "012723de3c0be4f4e259a17c498efc97c88157e909ac1a35980fba4d9d5d58d9",
+    "tools/ormode/decode-bench.c": "a5a4df96096c93a44755867656bf934a2378d8efc340e975d79c903af7e15dbf"
+  },
+  "configure": "CFLAGS=-O3 --disable-curl --without-libcurl --without-jpeg --without-png --without-gd --disable-gdk-pixbuf2 --disable-imlib2 --disable-quicklook BASH=/bin/sh",
+  "binary_sha256": {
+    "/Users/saitoha/.codex/worktrees/or-planar-decoder/study/decode-bench": "4445fda565a17c538af51761b0a77c71b42e0869a1d8201b028b410d4dbbfbf4",
+    "/Users/saitoha/.codex/worktrees/or-planar-decoder/libsixel/converters/.libs/sixel2png": "f2c544929f48e1c440fd82cf73a63dec2764584a4a8bf11a92cb0d45f80835b3",
+    "/Users/saitoha/.codex/worktrees/or-planar-decoder/libsixel/src/.libs/libsixel.1.dylib": "e1e39777e58a0b7a6c14a5c412ca181f0715b7f86c7b72dc79fc32e0add15adf"
+  },
+  "retained_encoder_metadata": {
+    "revision": "cf4cb3439aedec252b68bbc3674b10aa2bf0145f",
+    "colors": [
+      2,
+      4,
+      8,
+      16,
+      32,
+      64,
+      128,
+      256
+    ],
+    "threads": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "cli_runs": 11,
+    "api_runs": 21,
+    "warmups": 2,
+    "binary_sha256": {
+      "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel": "d27a23d3a090651e89ac94a039151bf8e4f5bb37104d50da2dc498532cb2f9e0",
+      "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/sixel2png": "901bd28122ccc86af7a07ff56a1af2d351f0bc1a5c7f1a89a225ac476026e216",
+      "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/decode-bench": "1a90b3ea74476c2551f504b05de8179df1b3f0c26ca879bd87aa72f108cabc72",
+      "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/src/.libs/libsixel.1.dylib": "fe525ded019a9cf7a485b6d49310cf4f2cdcaa0c8914e1af07fdbc067996e49e"
+    },
+    "decoder_input": "Encode once at threads=1, then reuse identical stream bytes across all decoder budgets."
+  },
+  "reference_metadata_sha256": "55594377da311c5702de4880d41476f01600030d3777a6feb37d7e95641b856a",
+  "encoder_records": "Retained unchanged from reference_sweeps",
+  "reference_sweeps": "/Users/saitoha/.codex/worktrees/or-planar-decoder/libsixel/docs/encoder/output/or-mode/sweeps",
+  "decoder_input": "Retained fixed streams; no re-encoding",
   "colors": [
     2,
     4,
@@ -26,12 +83,5 @@
   ],
   "cli_runs": 11,
   "api_runs": 21,
-  "warmups": 2,
-  "binary_sha256": {
-    "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel": "d27a23d3a090651e89ac94a039151bf8e4f5bb37104d50da2dc498532cb2f9e0",
-    "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/sixel2png": "901bd28122ccc86af7a07ff56a1af2d351f0bc1a5c7f1a89a225ac476026e216",
-    "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/decode-bench": "1a90b3ea74476c2551f504b05de8179df1b3f0c26ca879bd87aa72f108cabc72",
-    "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/src/.libs/libsixel.1.dylib": "fe525ded019a9cf7a485b6d49310cf4f2cdcaa0c8914e1af07fdbc067996e49e"
-  },
-  "decoder_input": "Encode once at threads=1, then reuse identical stream bytes across all decoder budgets."
+  "warmups": 2
 }

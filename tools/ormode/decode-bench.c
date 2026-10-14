@@ -107,22 +107,7 @@ main(int argc, char **argv)
             }
             if (expected == NULL) {
                 expected = malloc(bytes);
-                rgba = pixels;
-            if (indexed) {
-                rgba = malloc(bytes);
-                if (rgba == NULL) {
-                    return 7;
-                }
-                for (index = 0; index < bytes / 4U; index++) {
-                    if (pixels[index] >= ncolors) {
-                        return 9;
-                    }
-                    memcpy(rgba + index * 4U,
-                           palette + pixels[index] * 3U, 3U);
-                    rgba[index * 4U + 3U] = 255;
-                }
-            }
-            if (expected == NULL) {
+                if (expected == NULL) {
                     return 7;
                 }
                 memcpy(expected, rgba, bytes);

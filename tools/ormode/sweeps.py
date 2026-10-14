@@ -1,6 +1,9 @@
 """Measure color and thread axes, keeping decoder input bytes fixed."""
 
+import argparse
 import collections
+import pathlib
+import platform
 import json
 import os
 import subprocess
@@ -113,6 +116,114 @@ def observe_workers():
     )
 
 
+def compare_decoder_builds(before, after, rows):
+    """Compare OR RGBA time on the same photos with both decoder builds."""
+    builds = [before.resolve(), after.resolve()]
+    benches = [ROOT / "decode-bench-before", ROOT / "decode-bench"]
+    photos = [r for r in rows if r["name"].startswith("picsum-")]
+    result = {
+        "baseline_revision": base.run(["git", "-C", before,
+            "rev-parse", "HEAD"]).stdout.decode().strip(),
+        "runs": 21, "warmups": 2, "format": "rgba", "threads": 1,
+        "library_sha256": [base.digest((b / "src/.libs/libsixel.1.dylib")
+            .read_bytes()) for b in builds],
+        "cases": [],
+    }
+    for i, row in enumerate(photos):
+        samples = [None, None]
+        for version in ([0, 1] if i % 2 == 0 else [1, 0]):
+            env = {**base.ENV, "DYLD_LIBRARY_PATH":
+                str(builds[version] / "src/.libs")}
+            proc = subprocess.run([str(benches[version]), *row["input_paths"],
+                "21", "1", "rgba"], env=env, check=True,
+                capture_output=True, text=True)
+            times = [[], []]
+            for line in proc.stdout.splitlines():
+                _rep, mode, elapsed, _width, _height = line.split(",")
+                times[int(mode)].append(float(elapsed))
+            assert all(len(t) == 21 for t in times)
+            samples[version] = [base.stats(t) for t in times]
+        result["cases"].append({
+            "name": row["name"], "stream_sha256": row["stream_sha256"],
+            "before": samples[0], "after": samples[1],
+            "or_speedup": samples[0][1]["median"] / samples[1][1]["median"],
+        })
+        print(f"before/after {i + 1}/{len(photos)} {row['name']}", flush=True)
+    result["median_or_speedup"] = float(np.median(
+        [r["or_speedup"] for r in result["cases"]]))
+    (OUT / "before-after.json").write_text(json.dumps(result, indent=2) + "\n")
+
+
+def decoder_only(source, reference, output, baseline=None):
+    """Remeasure a decoder on retained streams without re-encoding inputs."""
+    global OUT, DECODE, ENC
+
+    source = source.resolve()
+    reference = reference.resolve()
+    OUT = output.resolve()
+    assert OUT != reference, "Use a fresh output directory for a new decoder."
+    OUT.mkdir(parents=True, exist_ok=True)
+    DECODE = OUT / "decode"
+    DECODE.mkdir(exist_ok=True)
+    # Worker observations use the retained one-thread Full HD streams.
+    ENC = ROOT / "sweeps/encode"
+    base.SRC = source
+    base.IMG = source / "converters/.libs/img2sixel"
+    base.DEC = source / "converters/.libs/sixel2png"
+    base.ENV["DYLD_LIBRARY_PATH"] = str(source / "src/.libs")
+    sources = [source / name for name in [
+        "src/fromsixel.c", "src/decoder-parallel.c", "src/decoder-image.h",
+        "src/decoder-ormode.h", "tools/ormode/decode-bench.c",
+    ]]
+    metadata = {
+        "platform": platform.platform(),
+        "cpu": base.run(["sysctl", "-n", "machdep.cpu.brand_string"])
+            .stdout.decode().strip(),
+        "compiler": base.run(["cc", "--version"]).stdout.decode().strip(),
+        "decoder_base_revision": base.run(["git", "-C", source, "rev-parse", "HEAD"])
+            .stdout.decode().strip(),
+        "decoder_source_sha256": {str(p.relative_to(source)):
+            base.digest(p.read_bytes()) for p in sources if p.exists()},
+        "configure": base.run([source / "config.status", "--config"])
+            .stdout.decode().strip(),
+        "binary_sha256": {str(p): base.digest(p.read_bytes()) for p in [
+            ROOT / "decode-bench", base.DEC, source / "src/.libs/libsixel.1.dylib",
+        ]},
+        "retained_encoder_metadata": json.loads(
+            (reference / "metadata.json").read_text()),
+        "reference_metadata_sha256": base.digest(
+            (reference / "metadata.json").read_bytes()),
+        "encoder_records": "Retained unchanged from reference_sweeps",
+        "reference_sweeps": str(reference),
+        "decoder_input": "Retained fixed streams; no re-encoding",
+        "colors": COLORS, "threads": THREADS,
+        "cli_runs": RUNS, "api_runs": 21, "warmups": 2,
+    }
+    meta = OUT / "metadata.json"
+    if meta.exists():
+        assert json.loads(meta.read_text()) == metadata, (
+            "Use a fresh output directory for a changed decoder build."
+        )
+    meta.write_text(json.dumps(metadata, indent=2) + "\n")
+    for name in ["encode.json", "inputs.json"]:
+        (OUT / name).write_bytes((reference / name).read_bytes())
+    prior = json.loads((reference / "decode.json").read_text())
+    rows = []
+    for i, old in enumerate(prior):
+        paths = [pathlib.Path(p) for p in old["input_paths"]]
+        assert [base.digest(p.read_bytes()) for p in paths] == old["stream_sha256"]
+        row = decode_pair(paths, old["name"], old["threads"])
+        assert row["rgba_sha256"] == old["rgba_sha256"]
+        rows.append(row)
+        (OUT / "decode.json").write_text(json.dumps(rows, indent=2) + "\n")
+        print(f"decode {i + 1}/{len(prior)} {old['name']} "
+              f"dt={old['threads']} rgba={row['rgba_speedup']:.2f} "
+              f"indexed={row['indexed_speedup']:.2f}", flush=True)
+    observe_workers()
+    if baseline is not None:
+        compare_decoder_builds(baseline, source, rows)
+
+
 def main():
     metadata = {
         "revision": base.run(["git", "-C", base.SRC, "rev-parse", "HEAD"])
@@ -216,4 +327,19 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--decoder-source", type=pathlib.Path)
+    parser.add_argument("--reference-sweeps", type=pathlib.Path,
+                        default=ROOT / "sweeps")
+    parser.add_argument("--output", type=pathlib.Path)
+    parser.add_argument("--baseline-source", type=pathlib.Path)
+    args = parser.parse_args()
+    if args.decoder_source:
+        if args.output is None:
+            parser.error("--decoder-source requires a fresh --output directory")
+        decoder_only(args.decoder_source, args.reference_sweeps, args.output,
+                     args.baseline_source)
+    else:
+        if args.output is not None or args.baseline_source is not None:
+            parser.error("--output/--baseline-source require --decoder-source")
+        main()

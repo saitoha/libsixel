@@ -62,6 +62,11 @@ test_or_dec_0038(int argc, char **argv)
         goto end;
     }
 
+    status = image_buffer_enable_ormode(image, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
     status = sixel_decoder_parallel_request_start(
         0,
         1,
@@ -80,6 +85,7 @@ test_or_dec_0038(int argc, char **argv)
         goto end;
     }
 
+    image_buffer_finalize_ormode(image);
     for (y = 0; y < image->height; ++y) {
         if (y == 0 || y == 6) {
             expected = 3;
@@ -108,8 +114,8 @@ test_or_dec_0038(int argc, char **argv)
 end:
     (void)sixel_decoder_parallel_override_threads("1");
     if (image != NULL) {
-        if (allocator != NULL && image->ormode_indexes != NULL) {
-            sixel_allocator_free(allocator, image->ormode_indexes);
+        if (allocator != NULL && image->ormode_planes != NULL) {
+            sixel_allocator_free(allocator, image->ormode_planes);
         }
         if (allocator != NULL && image->pixels.p != NULL) {
             sixel_allocator_free(allocator, image->pixels.p);

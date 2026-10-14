@@ -26,6 +26,7 @@
 #define SIXEL_DECODER_IMAGE_H
 
 #include <sixel.h>
+#include <stdint.h>
 
 #ifndef SIXEL_PALETTE_MAX_DECODER
 #define SIXEL_PALETTE_MAX_DECODER 65536
@@ -46,7 +47,9 @@ typedef struct image_buffer {
     int depth;
     int ncolors;
     unsigned char *paint_mask;
-    unsigned short *ormode_indexes;
+    /* One word per band column; high planes are allocated only above 255. */
+    uint64_t *ormode_planes;
+    uint64_t *ormode_high_planes;
     int palette[SIXEL_PALETTE_MAX_DECODER];
 } image_buffer_t;
 
@@ -62,6 +65,13 @@ image_buffer_init(image_buffer_t *image,
                   int depth,
                   int keep_paint_mask,
                   sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+image_buffer_enable_ormode(image_buffer_t *image,
+                           sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API void
+image_buffer_finalize_ormode(image_buffer_t *image);
 
 SIXELSTATUS image_buffer_resize(image_buffer_t *image,
                                 int width,

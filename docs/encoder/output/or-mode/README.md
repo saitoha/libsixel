@@ -52,7 +52,7 @@ The color chart has not changed, and reconstructing the same number selects exac
 
 A palette of 16 entries needs four bit planes; 256 entries need eight. In a busy, dithered image, one plane can describe positions belonging to many different colors together. In a flat-color area, ordinary SIXEL may already describe the pixels with very few operations. The arrangement of repeated patterns and the encoder's optimizations determine the actual byte count, so counting planes alone does not predict the saving.
 
-The display-memory arrangement described in arakiken's article also suggests a receiver that consumes these planes directly. A receiver that needs complete pixel colors must instead reconstruct the indices and look them up. Our [measurements](scaling.md#photo-set-decoder-results) show why that distinction matters: smaller OR streams usually decoded more slowly in the measured libsixel CPU decoder. Use OR mode with a compatible receiver and evaluate size, encoding time, and decoding time separately. The [X68030 console study](x68k.md) explains the conditions under which the dialect was faster: a fixed eight-color planar text console whose kernel parsed every byte on the same 25 MHz CPU that serialized the image.
+The display-memory arrangement described in arakiken's article also suggests a receiver that consumes these planes directly. A receiver that needs complete pixel colors must instead reconstruct the indices and look them up. The [CPU decoder measurements](scaling.md#photo-set-decoder-results) include band-plane accumulation followed by index gathering and palette lookup; they measure that implementation rather than a planar display device. Use OR mode with a compatible receiver and evaluate size, encoding time, and decoding time separately. The [X68030 console study](x68k.md) explains the conditions under which the dialect was faster: a fixed eight-color planar text console whose kernel parsed every byte on the same 25 MHz CPU that serialized the image.
 
 ## From a grid image to actual output
 
@@ -260,33 +260,35 @@ Here `-Eauto` matches `-Efast`, and the three OR policy outputs have the same si
 
 ### Decoder speed
 
-OR decoding was slower for most of the same 100 photos, despite the reduction in total stream bytes. The following results reuse the saved measurements for the pinned build and host described above: 800×600 photos, a 256-color palette budget, and one decoder thread. They are measurements of that revision, not a benchmark of the latest checkout.
+The band-plane decoder is measured on the same 100 retained 800×600 photographs at 256 colors and one decoder thread. Normal and OR use the same decoder build on Apple M3 Max/macOS 27.0.1. The encoder streams retain the pinned revision described above; [decoder metadata](sweeps/metadata.json) separately identifies the develop base, exact source hashes, compiler, flags, and decoder binaries.
 
-| Output boundary | Median normal/OR speed ratio | Median OR/normal time ratio | Normal faster / OR faster (photos) |
+| Output boundary | Median normal/OR speed ratio | Median OR/normal time ratio | Normal faster / OR faster |
 | --- | ---: | ---: | ---: |
-| RGBA pixels (`sixel_decode_direct`) | 0.655× | 1.527× | 94 / 6 |
-| Palette indices (`sixel_decode_raw`) | 0.619× | 1.615× | 99 / 1 |
-| RGBA PNG (`sixel2png --direct`) | 0.954× | 1.048× | 95 / 5 |
+| RGBA API | 5.254× | 0.190× | 0 / 100 |
+| Indexed API | 5.383× | 0.186× | 0 / 100 |
+| RGBA PNG CLI | 1.070× | 0.934× | 1 / 99 |
 
-Each ratio compares the repeated-run medians for one photo; the table reports the median of those per-photo ratios. A speed ratio below 1 means OR is slower. Expressed as elapsed time, the median increases are about 53% for RGBA pixels, 62% for palette indices, and 5% for PNG-inclusive conversion. The few observed OR wins do not establish that the differences exceed desktop timing noise.
+Each ratio compares the repeated-run medians for one photo; the table reports the median of those per-photo ratios. A speed ratio above 1 means OR is faster. PNG-inclusive times contain substantial output-generation work and must not be interpreted as pure decoding.
 
 ![Decoder speed ratios and their relationship to stream size for the same 100 photos](sweeps/decode-photos.png)
 
 Box centers are medians across photos, boxes span the interquartile range, and whiskers extend to 1.5 times that range; outlying points are shown individually. These distributions describe variation between images, not confidence intervals for one image.
 
-The API measurements use 21 timed calls after two warmup pairs, with streams already in memory. They include parsing, validation, result allocation, and applicable worker setup, but exclude file I/O, correctness comparisons, result freeing, and PNG encoding. The CLI measurements use 11 timed processes after two warmup pairs, running `sixel2png --direct --threads=1 -i stream.six -o /dev/null`; they include process startup, cached file reads, decoding, PNG generation, and output writes. Normal/OR order alternates within each pair. Neither boundary measures terminal rendering or network transport.
+The API measurements use 21 timed calls after two warmup pairs, with streams already in memory. They include parsing, validation, result allocation, gathering, and applicable worker setup, but exclude file I/O, correctness comparisons, result freeing, and PNG encoding. CLI measurements use 11 timed processes after two warmup pairs, including process startup, cached input reads, decoding, and PNG writes to `/dev/null`. Normal/OR order alternates within each pair. Neither boundary measures terminal rendering or network transport.
 
-For an absolute-time example, the 1920×1080 snake image at 256 colors gives the following medians. Each cell is normal / OR in milliseconds. Both encoded streams remain byte-for-byte fixed while only the decoder thread budget changes.
+The matched [before/after records](sweeps/before-after.json) compare this implementation with the unchanged develop base `551e9bb65`, using identical `-O3` build options, streams, output boundary, and host. OR RGBA decoding improves by a median **7.56×** across the 100 photos; the medians of the per-photo OR times are 9.51 ms before and 1.20 ms after. This comparison uses 21 timed calls after two warmup pairs for each build, alternates build order between photos, and excludes freeing and comparisons from timing. It measures an implementation change, not a universal advantage of the dialect.
 
-| Decoder threads | RGBA decoder API | Indexed decoder API | RGBA PNG CLI |
+For the fixed 1920×1080 snake streams, each cell below is normal / OR in milliseconds. The one-thread RGBA speed ratio is **3.21×**. Increasing the decoder budget does not guarantee a reduction in elapsed time.
+
+| Threads | RGBA decoder API | Indexed decoder API | RGBA PNG decoder CLI |
 | --- | ---: | ---: | ---: |
-| 1 | 15.60 / 31.67 | 15.05 / 33.60 | 194.24 / 210.53 |
-| 4 | 10.96 / 25.11 | 10.68 / 23.57 | 189.16 / 203.81 |
-| 12 | 6.83 / 13.88 | 6.97 / 12.19 | 186.68 / 195.98 |
+| 1 | 17.62 / 5.49 | 16.22 / 4.85 | 210.21 / 198.68 |
+| 4 | 17.02 / 32.66 | 15.72 / 30.82 | 284.57 / 300.96 |
+| 12 | 6.85 / 12.33 | 6.38 / 11.70 | 200.20 / 205.71 |
 
-OR painting accumulates palette-index bits with read-modify-write operations; RGBA output also needs an intermediate index buffer and a final palette expansion. These implementation differences help explain why fewer input bytes do not guarantee less decoding work, but the timings do not isolate the cost of each operation. See the [decoder study](scaling.md#decoder-timing-boundaries) for the implementation discussion, the [color-count curves](scaling.md#color-count-axis), and the complete [1–12-thread curves](scaling.md#thread-count-axis), including configurations where adding workers is slower.
+The parser accumulates band-plane words and performs a final index gather or palette expansion. The [decoder study](scaling.md#why-smaller-streams-can-decode-more-slowly) explains the representation, sixteen-bit registers, raster growth, partial bands, validation, and serial fallback. Its [color-count curves](scaling.md#color-count-axis) and complete [1–12-thread curves](scaling.md#thread-count-axis) retain cases where OR or additional workers are slower.
 
-The [raw decoder records](sweeps/decode.json) retain samples, medians, quartiles, stream hashes, commands, and exact pixel checks. All 226 retained decoder pairs across the photo and scaling studies passed those checks. The [reproduction instructions](scaling.md#reproduction) describe how to rerun the measurements with the retained inputs and pinned build.
+The [raw decoder records](sweeps/decode.json) retain samples, medians, quartiles, stream hashes, commands, and exact pixel checks for all 226 retained decoder pairs. A separate [compatibility manifest](sweeps/verification.json) covers all 957 stored streams (731 distinct byte sequences), comparing RGBA, byte indices, and sixteen-bit indices with the baseline at every budget from 1 through 12. The [reproduction instructions](scaling.md#reproduction) describe how to measure a decoder on retained streams without re-encoding them.
 
 ### Is the quality impact exactly zero?
 
@@ -334,8 +336,9 @@ The downloader checks recorded hashes rather than silently substituting changed 
 ## Implementation references
 
 - [Encoder core](../../../../src/encoder-core-encode.c): `sixel_encode_header`, `sixel_encode_body_ormode_nplanes`, `sixel_encode_body_ormode_band`, offset handling, and pipelined serialization.
-- [Decoder parser](../../../../src/fromsixel.c): `parser_context_is_ormode_request`, index OR accumulation, index-zero initialization, direct-color finalization, and paint-mask completion.
-- [Parallel decoder](../../../../src/decoder-parallel.c): OR accumulation in worker spans and direct-color index storage.
+- [Decoder parser](../../../../src/fromsixel.c): `parser_context_is_ormode_request`, band-plane accumulation, zero-plane initialization, final index/RGBA gathering, and paint-mask completion.
+- [Plane arithmetic](../../../../src/decoder-ormode.h): register-bit spreading, six-row word accumulation, and row gathering.
+- [Parallel decoder](../../../../src/decoder-parallel.c): validated disjoint-band OR accumulation and clean serial fallback for wide registers.
 - [Output API](../../../../src/output.c) and [high-level encoder](../../../../src/encoder.c): mode configuration and default state.
 
 ## Test coverage
@@ -415,6 +418,14 @@ The native centroid and sub-byte cases compare working coordinates with an absol
 | OR-65 | P3 OR rejects the palette-free monochrome convention before output. | [tests/processing/encoder-core/0039_or_float_mono_reject.t](../../../../tests/processing/encoder-core/0039_or_float_mono_reject.t) |
 | OR-66 | The private serial OR writer honors the final float view for all 101 channel codes instead of a conflicting byte view. | [tests/processing/encoder-core/0040_or_float_wire_levels.t](../../../../tests/processing/encoder-core/0040_or_float_wire_levels.t) |
 | OR-67 | The private threaded OR writer honors a conflicting final float view while preserving the expected lookup indices. | [tests/processing/encoder-core/0041_or_float_wire_pipeline.t](../../../../tests/processing/encoder-core/0041_or_float_wire_pipeline.t) |
+| OR-68 | Composite registers combine all selected bits, including bit 7. | [tests/processing/decoder/0054_ormode_composite_register.t](../../../../tests/processing/decoder/0054_ormode_composite_register.t) |
+| OR-69 | Wide registers compose through all sixteen planes and final palette lookup. | [tests/processing/decoder/0055_ormode_wide_register.t](../../../../tests/processing/decoder/0055_ormode_wide_register.t) |
+| OR-70 | Plane words survive width and band growth beyond attributed dimensions. | [tests/processing/decoder/0056_ormode_raster_growth.t](../../../../tests/processing/decoder/0056_ormode_raster_growth.t) |
+| OR-71 | A partial final band gathers only its valid rows and keeps zero opaque. | [tests/processing/decoder/0057_ormode_tail_band.t](../../../../tests/processing/decoder/0057_ormode_tail_band.t) |
+| OR-72 | OR resolves HLS definitions after painting, including palette zero. | [tests/processing/decoder/0058_ormode_hls_redefinition.t](../../../../tests/processing/decoder/0058_ormode_hls_redefinition.t) |
+| OR-73 | Without raster attributes, wide planes grow and crop to painted bounds. | [tests/processing/decoder/0059_ormode_implicit_raster.t](../../../../tests/processing/decoder/0059_ormode_implicit_raster.t) |
+| OR-74 | A worker inherits the selected OR register across band boundaries without a new color command. | [tests/processing/decoder/0060_ormode_inherited_register.t](../../../../tests/processing/decoder/0060_ormode_inherited_register.t) |
+| OR-75 | The returned palette count includes the maximum composed index even if no command selected or defined it. | [tests/processing/decoder/0061_ormode_composed_color_count.t](../../../../tests/processing/decoder/0061_ormode_composed_color_count.t) |
 
 ### Defensive and malformed-input tests
 

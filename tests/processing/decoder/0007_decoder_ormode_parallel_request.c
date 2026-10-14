@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *
  * Verify that the parallel decoder worker can compose OR-mode bit planes into
- * the direct-color side-car index buffer.
+ * the band planes used by direct-color output.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -16,6 +16,7 @@
 #include <sixel.h>
 
 #include "src/decoder-image.h"
+#include "src/decoder-ormode.h"
 #include "src/decoder-parallel.h"
 
 static unsigned char g_ormode_parallel_payload[] =
@@ -27,7 +28,6 @@ test_decoder_0007_decoder_ormode_parallel_request(int argc, char **argv)
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     image_buffer_t *image;
-    size_t index_bytes;
     int ok;
     int x;
     int y;
@@ -63,14 +63,10 @@ test_decoder_0007_decoder_ormode_parallel_request(int argc, char **argv)
         goto end;
     }
 
-    index_bytes = (size_t)image->width * (size_t)image->height *
-        sizeof(*image->ormode_indexes);
-    image->ormode_indexes =
-        (unsigned short *)sixel_allocator_malloc(allocator, index_bytes);
-    if (image->ormode_indexes == NULL) {
+    status = image_buffer_enable_ormode(image, allocator);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
-    memset(image->ormode_indexes, 0, index_bytes);
 
     status = sixel_decoder_parallel_request_start(
         1,
@@ -99,7 +95,8 @@ test_decoder_0007_decoder_ormode_parallel_request(int argc, char **argv)
             expected = 2;
         }
         for (x = 0; x < image->width; ++x) {
-            actual = image->ormode_indexes[y * image->width + x];
+            actual = (int)sixel_ormode_gather(image->ormode_planes[
+                (y / 6) * image->width + x], y % 6);
             if (actual != expected) {
                 fprintf(stderr,
                         "OR-mode index at %d,%d is %d, expected %d\n",
@@ -117,8 +114,8 @@ test_decoder_0007_decoder_ormode_parallel_request(int argc, char **argv)
 end:
     (void)sixel_decoder_parallel_override_threads("1");
     if (image != NULL) {
-        if (allocator != NULL && image->ormode_indexes != NULL) {
-            sixel_allocator_free(allocator, image->ormode_indexes);
+        if (allocator != NULL && image->ormode_planes != NULL) {
+            sixel_allocator_free(allocator, image->ormode_planes);
         }
         if (allocator != NULL && image->pixels.p != NULL) {
             sixel_allocator_free(allocator, image->pixels.p);

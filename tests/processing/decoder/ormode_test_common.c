@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sixel.h>
 #include "src/decoder-parallel.h"
+#include "src/sixel_decode_pixels.h"
 #include "ormode_test_common.h"
 
 int
@@ -194,5 +195,92 @@ test_or_dequant(char const *method)
     }
     ok = ormode_dequantize_check(method, allocator);
     sixel_allocator_unref(allocator);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+/* The wide entry point is internal but exported for regression tests. */
+SIXELSTATUS sixel_decode_wide(unsigned char *p, int len,
+                             unsigned short **pixels, int *width,
+                             int *height, unsigned char **palette,
+                             int *ncolors, sixel_allocator_t *allocator);
+
+int
+test_or_planar(char const *stream, unsigned short const *expected,
+               unsigned char const *rgba, int width, int height, int ncolors)
+{
+    unsigned char *pixels;
+    unsigned short *wide;
+    unsigned char *palette;
+    unsigned char *mask;
+    SIXELSTATUS status;
+    char const *budgets[] = { "1", "2", "12" };
+    int w;
+    int h;
+    int colors;
+    int mode;
+    int t;
+    int i;
+    int ok;
+
+    pixels = NULL;
+    wide = NULL;
+    palette = NULL;
+    mask = NULL;
+    ok = 0;
+    for (t = 0; t < 3; ++t) {
+        if (SIXEL_FAILED(sixel_decoder_parallel_override_threads(budgets[t]))) {
+            goto end;
+        }
+        for (mode = 0; mode < 3; ++mode) {
+            if (mode == 0) {
+                status = sixel_decode_direct((unsigned char *)stream,
+                    (int)strlen(stream), &pixels, &w, &h, NULL);
+            } else if (mode == 1) {
+                status = sixel_decode_raw_with_options_mask(
+                    (unsigned char *)stream, (int)strlen(stream), 0u,
+                    &pixels, &mask, &w, &h, &palette, &colors, NULL, NULL);
+            } else {
+                status = sixel_decode_wide((unsigned char *)stream,
+                    (int)strlen(stream), &wide, &w, &h, &palette,
+                    &colors, NULL);
+            }
+            if (SIXEL_FAILED(status) || w != width || h != height) {
+                fprintf(stderr, "OR shape/status differs: %d,%d,%04x\n",
+                        w, h, status);
+                goto end;
+            }
+            if (mode != 0 && colors != ncolors) {
+                fprintf(stderr, "OR palette size %d, expected %d\n",
+                        colors, ncolors);
+                goto end;
+            }
+            for (i = 0; i < width * height; ++i) {
+                if ((mode == 0 && memcmp(pixels + i * 4, rgba + i * 4,
+                                        4u) != 0) ||
+                        (mode == 1 && (pixels[i] !=
+                            (unsigned char)expected[i] || mask[i] != 255)) ||
+                        (mode == 2 && wide[i] != expected[i])) {
+                    fprintf(stderr, "OR pixel %d differs, mode %d threads %s\n",
+                            i, mode, budgets[t]);
+                    goto end;
+                }
+            }
+            free(pixels);
+            free(wide);
+            free(palette);
+            free(mask);
+            pixels = NULL;
+            wide = NULL;
+            palette = NULL;
+            mask = NULL;
+        }
+    }
+    ok = 1;
+end:
+    (void)sixel_decoder_parallel_override_threads("1");
+    free(pixels);
+    free(wide);
+    free(palette);
+    free(mask);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

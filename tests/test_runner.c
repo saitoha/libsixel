@@ -1165,6 +1165,15 @@ int test_or_dec_0035(int argc, char **argv);
 int test_or_dec_0036(int argc, char **argv);
 int test_or_dec_0037(int argc, char **argv);
 int test_or_dec_0038(int argc, char **argv);
+int test_or_dec_0054(int argc, char **argv);
+int test_or_dec_0055(int argc, char **argv);
+int test_or_dec_0056(int argc, char **argv);
+int test_or_dec_0057(int argc, char **argv);
+int test_or_dec_0058(int argc, char **argv);
+int test_or_dec_0059(int argc, char **argv);
+int test_or_dec_0060(int argc, char **argv);
+int test_or_dec_0061(int argc, char **argv);
+
 int test_or_dec_0039(int argc, char **argv);
 int test_or_dec_0040(int argc, char **argv);
 int test_or_offset_cli(int argc, char **argv);
@@ -4894,6 +4903,14 @@ static test_entry_t const test_entries[] = {
       test_or_dec_0036 },
     { "decoder/0037_ormode_fallback_indexed",
       test_or_dec_0037 },
+    { "decoder/0054_ormode_composite_register", test_or_dec_0054 },
+    { "decoder/0055_ormode_wide_register", test_or_dec_0055 },
+    { "decoder/0056_ormode_raster_growth", test_or_dec_0056 },
+    { "decoder/0057_ormode_tail_band", test_or_dec_0057 },
+    { "decoder/0058_ormode_hls_redefinition", test_or_dec_0058 },
+    { "decoder/0059_ormode_implicit_raster", test_or_dec_0059 },
+    { "decoder/0060_ormode_inherited_register", test_or_dec_0060 },
+    { "decoder/0061_ormode_composed_color_count", test_or_dec_0061 },
     { "decoder/0038_ormode_parallel_indexed_request",
       test_or_dec_0038 },
     { "decoder/0039_ormode_decoder_reuse_resets_mode",

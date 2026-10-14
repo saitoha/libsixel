@@ -1638,6 +1638,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/decoder/0050_palette_map_identity.c \
 	processing/decoder/0051_palette_map_gpu.c \
 	processing/decoder/0052_palette_map_parallel_fallback.c \
+	processing/decoder/0054_ormode_composite_register.c \
+	processing/decoder/0055_ormode_wide_register.c \
+	processing/decoder/0056_ormode_raster_growth.c \
+	processing/decoder/0057_ormode_tail_band.c \
+	processing/decoder/0058_ormode_hls_redefinition.c \
+	processing/decoder/0059_ormode_implicit_raster.c \
+	processing/decoder/0060_ormode_inherited_register.c \
+	processing/decoder/0061_ormode_composed_color_count.c \
 	processing/decoder/palette_map_test_common.c \
 	processing/decoder/palette_map_test_common.h \
 	processing/decoder/ormode_test_common.c \
@@ -5267,6 +5275,14 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0050_palette_map_identity.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0051_palette_map_gpu.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0052_palette_map_parallel_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0054_ormode_composite_register.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0055_ormode_wide_register.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0056_ormode_raster_growth.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0057_ormode_tail_band.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0058_ormode_hls_redefinition.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0059_ormode_implicit_raster.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0060_ormode_inherited_register.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0061_ormode_composed_color_count.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-palette_map_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-ormode_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0001_lookup_policy.$(OBJEXT) \
@@ -9288,13 +9304,21 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0053_percentage_rgb8.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0054_multi_pass_raw_overlay.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0054_ormode_composite_register.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0055_multi_pass_anchored_overlay.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0055_ormode_wide_register.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0056_multi_pass_palette_carry.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0056_ormode_raster_growth.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0057_multi_pass_paint_time_colors.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0057_ormode_tail_band.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0058_multi_pass_transparent_and_black.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0058_ormode_hls_redefinition.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0059_multi_pass_mixed_framing.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0059_ormode_implicit_raster.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0060_multi_pass_transparent_baseline.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0060_ormode_inherited_register.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0061_multi_pass_single_default.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0061_ormode_composed_color_count.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0062_multi_pass_missing_raster.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0063_multi_pass_mismatched_raster.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0064_multi_pass_nonunit_aspect.Po \
@@ -12538,6 +12562,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_EXTENDED_DIN99D_FORWARD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_EXTENDED_DIN99D_INVERSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_PERCENTAGE_RGB8 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_ORMODE_COMPOSITE_REGISTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_ORMODE_WIDE_REGISTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0056_ORMODE_RASTER_GROWTH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_ORMODE_TAIL_BAND \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_ORMODE_HLS_REDEFINITION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_ORMODE_IMPLICIT_RASTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0060_ORMODE_INHERITED_REGISTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_ORMODE_COMPOSED_COLOR_COUNT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DIN99D_FORWARD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_SNAP_OUTPUT_GRID \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_SNAP_PARTIAL_ONCE \
@@ -16873,6 +16905,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0050_palette_map_identity.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0051_palette_map_gpu.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0052_palette_map_parallel_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0054_ormode_composite_register.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0055_ormode_wide_register.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0056_ormode_raster_growth.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0057_ormode_tail_band.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0058_ormode_hls_redefinition.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0059_ormode_implicit_raster.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0060_ormode_inherited_register.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0061_ormode_composed_color_count.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/palette_map_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/palette_map_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/ormode_test_common.c \
@@ -23928,6 +23968,30 @@ processing/decoder/test_runner-0051_palette_map_gpu.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/test_runner-0052_palette_map_parallel_fallback.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0054_ormode_composite_register.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0055_ormode_wide_register.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0056_ormode_raster_growth.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0057_ormode_tail_band.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0058_ormode_hls_redefinition.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0059_ormode_implicit_raster.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0060_ormode_inherited_register.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0061_ormode_composed_color_count.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/test_runner-palette_map_test_common.$(OBJEXT):  \
@@ -32690,13 +32754,21 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0053_percentage_rgb8.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0054_multi_pass_raw_overlay.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0054_ormode_composite_register.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0055_multi_pass_anchored_overlay.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0055_ormode_wide_register.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0056_multi_pass_palette_carry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0056_ormode_raster_growth.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0057_multi_pass_paint_time_colors.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0057_ormode_tail_band.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0058_multi_pass_transparent_and_black.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0058_ormode_hls_redefinition.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0059_multi_pass_mixed_framing.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0059_ormode_implicit_raster.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0060_multi_pass_transparent_baseline.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0060_ormode_inherited_register.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0061_multi_pass_single_default.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0061_ormode_composed_color_count.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0062_multi_pass_missing_raster.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0063_multi_pass_mismatched_raster.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0064_multi_pass_nonunit_aspect.Po@am__quote@ # am--include-marker
@@ -55469,6 +55541,118 @@ processing/decoder/test_runner-0052_palette_map_parallel_fallback.obj: processin
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0052_palette_map_parallel_fallback.c' object='processing/decoder/test_runner-0052_palette_map_parallel_fallback.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0052_palette_map_parallel_fallback.obj `if test -f 'processing/decoder/0052_palette_map_parallel_fallback.c'; then $(CYGPATH_W) 'processing/decoder/0052_palette_map_parallel_fallback.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0052_palette_map_parallel_fallback.c'; fi`
+
+processing/decoder/test_runner-0054_ormode_composite_register.o: processing/decoder/0054_ormode_composite_register.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0054_ormode_composite_register.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0054_ormode_composite_register.Tpo -c -o processing/decoder/test_runner-0054_ormode_composite_register.o `test -f 'processing/decoder/0054_ormode_composite_register.c' || echo '$(srcdir)/'`processing/decoder/0054_ormode_composite_register.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0054_ormode_composite_register.Tpo processing/decoder/$(DEPDIR)/test_runner-0054_ormode_composite_register.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0054_ormode_composite_register.c' object='processing/decoder/test_runner-0054_ormode_composite_register.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0054_ormode_composite_register.o `test -f 'processing/decoder/0054_ormode_composite_register.c' || echo '$(srcdir)/'`processing/decoder/0054_ormode_composite_register.c
+
+processing/decoder/test_runner-0054_ormode_composite_register.obj: processing/decoder/0054_ormode_composite_register.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0054_ormode_composite_register.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0054_ormode_composite_register.Tpo -c -o processing/decoder/test_runner-0054_ormode_composite_register.obj `if test -f 'processing/decoder/0054_ormode_composite_register.c'; then $(CYGPATH_W) 'processing/decoder/0054_ormode_composite_register.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0054_ormode_composite_register.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0054_ormode_composite_register.Tpo processing/decoder/$(DEPDIR)/test_runner-0054_ormode_composite_register.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0054_ormode_composite_register.c' object='processing/decoder/test_runner-0054_ormode_composite_register.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0054_ormode_composite_register.obj `if test -f 'processing/decoder/0054_ormode_composite_register.c'; then $(CYGPATH_W) 'processing/decoder/0054_ormode_composite_register.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0054_ormode_composite_register.c'; fi`
+
+processing/decoder/test_runner-0055_ormode_wide_register.o: processing/decoder/0055_ormode_wide_register.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0055_ormode_wide_register.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0055_ormode_wide_register.Tpo -c -o processing/decoder/test_runner-0055_ormode_wide_register.o `test -f 'processing/decoder/0055_ormode_wide_register.c' || echo '$(srcdir)/'`processing/decoder/0055_ormode_wide_register.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0055_ormode_wide_register.Tpo processing/decoder/$(DEPDIR)/test_runner-0055_ormode_wide_register.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0055_ormode_wide_register.c' object='processing/decoder/test_runner-0055_ormode_wide_register.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0055_ormode_wide_register.o `test -f 'processing/decoder/0055_ormode_wide_register.c' || echo '$(srcdir)/'`processing/decoder/0055_ormode_wide_register.c
+
+processing/decoder/test_runner-0055_ormode_wide_register.obj: processing/decoder/0055_ormode_wide_register.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0055_ormode_wide_register.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0055_ormode_wide_register.Tpo -c -o processing/decoder/test_runner-0055_ormode_wide_register.obj `if test -f 'processing/decoder/0055_ormode_wide_register.c'; then $(CYGPATH_W) 'processing/decoder/0055_ormode_wide_register.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0055_ormode_wide_register.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0055_ormode_wide_register.Tpo processing/decoder/$(DEPDIR)/test_runner-0055_ormode_wide_register.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0055_ormode_wide_register.c' object='processing/decoder/test_runner-0055_ormode_wide_register.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0055_ormode_wide_register.obj `if test -f 'processing/decoder/0055_ormode_wide_register.c'; then $(CYGPATH_W) 'processing/decoder/0055_ormode_wide_register.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0055_ormode_wide_register.c'; fi`
+
+processing/decoder/test_runner-0056_ormode_raster_growth.o: processing/decoder/0056_ormode_raster_growth.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0056_ormode_raster_growth.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0056_ormode_raster_growth.Tpo -c -o processing/decoder/test_runner-0056_ormode_raster_growth.o `test -f 'processing/decoder/0056_ormode_raster_growth.c' || echo '$(srcdir)/'`processing/decoder/0056_ormode_raster_growth.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0056_ormode_raster_growth.Tpo processing/decoder/$(DEPDIR)/test_runner-0056_ormode_raster_growth.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0056_ormode_raster_growth.c' object='processing/decoder/test_runner-0056_ormode_raster_growth.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0056_ormode_raster_growth.o `test -f 'processing/decoder/0056_ormode_raster_growth.c' || echo '$(srcdir)/'`processing/decoder/0056_ormode_raster_growth.c
+
+processing/decoder/test_runner-0056_ormode_raster_growth.obj: processing/decoder/0056_ormode_raster_growth.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0056_ormode_raster_growth.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0056_ormode_raster_growth.Tpo -c -o processing/decoder/test_runner-0056_ormode_raster_growth.obj `if test -f 'processing/decoder/0056_ormode_raster_growth.c'; then $(CYGPATH_W) 'processing/decoder/0056_ormode_raster_growth.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0056_ormode_raster_growth.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0056_ormode_raster_growth.Tpo processing/decoder/$(DEPDIR)/test_runner-0056_ormode_raster_growth.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0056_ormode_raster_growth.c' object='processing/decoder/test_runner-0056_ormode_raster_growth.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0056_ormode_raster_growth.obj `if test -f 'processing/decoder/0056_ormode_raster_growth.c'; then $(CYGPATH_W) 'processing/decoder/0056_ormode_raster_growth.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0056_ormode_raster_growth.c'; fi`
+
+processing/decoder/test_runner-0057_ormode_tail_band.o: processing/decoder/0057_ormode_tail_band.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0057_ormode_tail_band.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0057_ormode_tail_band.Tpo -c -o processing/decoder/test_runner-0057_ormode_tail_band.o `test -f 'processing/decoder/0057_ormode_tail_band.c' || echo '$(srcdir)/'`processing/decoder/0057_ormode_tail_band.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0057_ormode_tail_band.Tpo processing/decoder/$(DEPDIR)/test_runner-0057_ormode_tail_band.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0057_ormode_tail_band.c' object='processing/decoder/test_runner-0057_ormode_tail_band.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0057_ormode_tail_band.o `test -f 'processing/decoder/0057_ormode_tail_band.c' || echo '$(srcdir)/'`processing/decoder/0057_ormode_tail_band.c
+
+processing/decoder/test_runner-0057_ormode_tail_band.obj: processing/decoder/0057_ormode_tail_band.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0057_ormode_tail_band.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0057_ormode_tail_band.Tpo -c -o processing/decoder/test_runner-0057_ormode_tail_band.obj `if test -f 'processing/decoder/0057_ormode_tail_band.c'; then $(CYGPATH_W) 'processing/decoder/0057_ormode_tail_band.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0057_ormode_tail_band.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0057_ormode_tail_band.Tpo processing/decoder/$(DEPDIR)/test_runner-0057_ormode_tail_band.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0057_ormode_tail_band.c' object='processing/decoder/test_runner-0057_ormode_tail_band.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0057_ormode_tail_band.obj `if test -f 'processing/decoder/0057_ormode_tail_band.c'; then $(CYGPATH_W) 'processing/decoder/0057_ormode_tail_band.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0057_ormode_tail_band.c'; fi`
+
+processing/decoder/test_runner-0058_ormode_hls_redefinition.o: processing/decoder/0058_ormode_hls_redefinition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0058_ormode_hls_redefinition.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0058_ormode_hls_redefinition.Tpo -c -o processing/decoder/test_runner-0058_ormode_hls_redefinition.o `test -f 'processing/decoder/0058_ormode_hls_redefinition.c' || echo '$(srcdir)/'`processing/decoder/0058_ormode_hls_redefinition.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0058_ormode_hls_redefinition.Tpo processing/decoder/$(DEPDIR)/test_runner-0058_ormode_hls_redefinition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0058_ormode_hls_redefinition.c' object='processing/decoder/test_runner-0058_ormode_hls_redefinition.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0058_ormode_hls_redefinition.o `test -f 'processing/decoder/0058_ormode_hls_redefinition.c' || echo '$(srcdir)/'`processing/decoder/0058_ormode_hls_redefinition.c
+
+processing/decoder/test_runner-0058_ormode_hls_redefinition.obj: processing/decoder/0058_ormode_hls_redefinition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0058_ormode_hls_redefinition.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0058_ormode_hls_redefinition.Tpo -c -o processing/decoder/test_runner-0058_ormode_hls_redefinition.obj `if test -f 'processing/decoder/0058_ormode_hls_redefinition.c'; then $(CYGPATH_W) 'processing/decoder/0058_ormode_hls_redefinition.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0058_ormode_hls_redefinition.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0058_ormode_hls_redefinition.Tpo processing/decoder/$(DEPDIR)/test_runner-0058_ormode_hls_redefinition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0058_ormode_hls_redefinition.c' object='processing/decoder/test_runner-0058_ormode_hls_redefinition.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0058_ormode_hls_redefinition.obj `if test -f 'processing/decoder/0058_ormode_hls_redefinition.c'; then $(CYGPATH_W) 'processing/decoder/0058_ormode_hls_redefinition.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0058_ormode_hls_redefinition.c'; fi`
+
+processing/decoder/test_runner-0059_ormode_implicit_raster.o: processing/decoder/0059_ormode_implicit_raster.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0059_ormode_implicit_raster.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0059_ormode_implicit_raster.Tpo -c -o processing/decoder/test_runner-0059_ormode_implicit_raster.o `test -f 'processing/decoder/0059_ormode_implicit_raster.c' || echo '$(srcdir)/'`processing/decoder/0059_ormode_implicit_raster.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0059_ormode_implicit_raster.Tpo processing/decoder/$(DEPDIR)/test_runner-0059_ormode_implicit_raster.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0059_ormode_implicit_raster.c' object='processing/decoder/test_runner-0059_ormode_implicit_raster.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0059_ormode_implicit_raster.o `test -f 'processing/decoder/0059_ormode_implicit_raster.c' || echo '$(srcdir)/'`processing/decoder/0059_ormode_implicit_raster.c
+
+processing/decoder/test_runner-0059_ormode_implicit_raster.obj: processing/decoder/0059_ormode_implicit_raster.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0059_ormode_implicit_raster.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0059_ormode_implicit_raster.Tpo -c -o processing/decoder/test_runner-0059_ormode_implicit_raster.obj `if test -f 'processing/decoder/0059_ormode_implicit_raster.c'; then $(CYGPATH_W) 'processing/decoder/0059_ormode_implicit_raster.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0059_ormode_implicit_raster.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0059_ormode_implicit_raster.Tpo processing/decoder/$(DEPDIR)/test_runner-0059_ormode_implicit_raster.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0059_ormode_implicit_raster.c' object='processing/decoder/test_runner-0059_ormode_implicit_raster.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0059_ormode_implicit_raster.obj `if test -f 'processing/decoder/0059_ormode_implicit_raster.c'; then $(CYGPATH_W) 'processing/decoder/0059_ormode_implicit_raster.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0059_ormode_implicit_raster.c'; fi`
+
+processing/decoder/test_runner-0060_ormode_inherited_register.o: processing/decoder/0060_ormode_inherited_register.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0060_ormode_inherited_register.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0060_ormode_inherited_register.Tpo -c -o processing/decoder/test_runner-0060_ormode_inherited_register.o `test -f 'processing/decoder/0060_ormode_inherited_register.c' || echo '$(srcdir)/'`processing/decoder/0060_ormode_inherited_register.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0060_ormode_inherited_register.Tpo processing/decoder/$(DEPDIR)/test_runner-0060_ormode_inherited_register.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0060_ormode_inherited_register.c' object='processing/decoder/test_runner-0060_ormode_inherited_register.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0060_ormode_inherited_register.o `test -f 'processing/decoder/0060_ormode_inherited_register.c' || echo '$(srcdir)/'`processing/decoder/0060_ormode_inherited_register.c
+
+processing/decoder/test_runner-0060_ormode_inherited_register.obj: processing/decoder/0060_ormode_inherited_register.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0060_ormode_inherited_register.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0060_ormode_inherited_register.Tpo -c -o processing/decoder/test_runner-0060_ormode_inherited_register.obj `if test -f 'processing/decoder/0060_ormode_inherited_register.c'; then $(CYGPATH_W) 'processing/decoder/0060_ormode_inherited_register.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0060_ormode_inherited_register.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0060_ormode_inherited_register.Tpo processing/decoder/$(DEPDIR)/test_runner-0060_ormode_inherited_register.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0060_ormode_inherited_register.c' object='processing/decoder/test_runner-0060_ormode_inherited_register.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0060_ormode_inherited_register.obj `if test -f 'processing/decoder/0060_ormode_inherited_register.c'; then $(CYGPATH_W) 'processing/decoder/0060_ormode_inherited_register.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0060_ormode_inherited_register.c'; fi`
+
+processing/decoder/test_runner-0061_ormode_composed_color_count.o: processing/decoder/0061_ormode_composed_color_count.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0061_ormode_composed_color_count.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0061_ormode_composed_color_count.Tpo -c -o processing/decoder/test_runner-0061_ormode_composed_color_count.o `test -f 'processing/decoder/0061_ormode_composed_color_count.c' || echo '$(srcdir)/'`processing/decoder/0061_ormode_composed_color_count.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0061_ormode_composed_color_count.Tpo processing/decoder/$(DEPDIR)/test_runner-0061_ormode_composed_color_count.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0061_ormode_composed_color_count.c' object='processing/decoder/test_runner-0061_ormode_composed_color_count.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0061_ormode_composed_color_count.o `test -f 'processing/decoder/0061_ormode_composed_color_count.c' || echo '$(srcdir)/'`processing/decoder/0061_ormode_composed_color_count.c
+
+processing/decoder/test_runner-0061_ormode_composed_color_count.obj: processing/decoder/0061_ormode_composed_color_count.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0061_ormode_composed_color_count.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0061_ormode_composed_color_count.Tpo -c -o processing/decoder/test_runner-0061_ormode_composed_color_count.obj `if test -f 'processing/decoder/0061_ormode_composed_color_count.c'; then $(CYGPATH_W) 'processing/decoder/0061_ormode_composed_color_count.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0061_ormode_composed_color_count.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0061_ormode_composed_color_count.Tpo processing/decoder/$(DEPDIR)/test_runner-0061_ormode_composed_color_count.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0061_ormode_composed_color_count.c' object='processing/decoder/test_runner-0061_ormode_composed_color_count.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0061_ormode_composed_color_count.obj `if test -f 'processing/decoder/0061_ormode_composed_color_count.c'; then $(CYGPATH_W) 'processing/decoder/0061_ormode_composed_color_count.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0061_ormode_composed_color_count.c'; fi`
 
 processing/decoder/test_runner-palette_map_test_common.o: processing/decoder/palette_map_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-palette_map_test_common.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Tpo -c -o processing/decoder/test_runner-palette_map_test_common.o `test -f 'processing/decoder/palette_map_test_common.c' || echo '$(srcdir)/'`processing/decoder/palette_map_test_common.c

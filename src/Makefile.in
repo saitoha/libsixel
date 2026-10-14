@@ -345,10 +345,10 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/planner.c $(srcdir)/planner.h $(srcdir)/decoder.c \
 	$(srcdir)/decoder.h $(srcdir)/decoder-parallel.c \
 	$(srcdir)/decoder-parallel.h $(srcdir)/decoder-image.h \
-	$(srcdir)/options.c $(srcdir)/options.h \
-	$(srcdir)/options-registry.c $(srcdir)/options-registry.h \
-	$(srcdir)/path.c $(srcdir)/path.h $(srcdir)/stb_image.h \
-	$(srcdir)/writer.c $(srcdir)/writer.h \
+	$(srcdir)/decoder-ormode.h $(srcdir)/options.c \
+	$(srcdir)/options.h $(srcdir)/options-registry.c \
+	$(srcdir)/options-registry.h $(srcdir)/path.c $(srcdir)/path.h \
+	$(srcdir)/stb_image.h $(srcdir)/writer.c $(srcdir)/writer.h \
 	$(srcdir)/stb_image_write.c $(srcdir)/stb_image_write.h \
 	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/stdio_stub.h \
 	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
@@ -1387,6 +1387,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-parallel.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-parallel.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-image.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-ormode.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/options.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/options.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/options-registry.c \

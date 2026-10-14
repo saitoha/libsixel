@@ -66,6 +66,7 @@
 #include "output.h"
 #include "colorspace.h"
 #include "decoder-image.h"
+#include "decoder-ormode.h"
 #include "decoder.h"
 #include "decoder-parallel.h"
 #include "sixel_decode_pixels.h"
@@ -209,222 +210,132 @@ image_buffer_release_paint_mask(image_buffer_t *image,
 }
 
 static void
-image_buffer_release_ormode_indexes(image_buffer_t *image,
-                                    sixel_allocator_t *allocator)
+image_buffer_release_ormode_planes(image_buffer_t *image,
+                                   sixel_allocator_t *allocator)
 {
-    if (image == NULL || image->ormode_indexes == NULL) {
+    if (image == NULL) {
         return;
     }
-
     if (allocator != NULL) {
-        sixel_allocator_free(allocator, image->ormode_indexes);
+        sixel_allocator_free(allocator, image->ormode_planes);
+        sixel_allocator_free(allocator, image->ormode_high_planes);
     } else {
-        free(image->ormode_indexes);
+        free(image->ormode_planes);
+        free(image->ormode_high_planes);
     }
-    image->ormode_indexes = NULL;
+    image->ormode_planes = NULL;
+    image->ormode_high_planes = NULL;
 }
 
 static SIXELSTATUS
 image_buffer_enable_paint_mask(image_buffer_t *image,
                                sixel_allocator_t *allocator);
 
-static SIXELSTATUS
+/* The existing dimension limits also bound the rounded band count. Check
+ * the byte product independently for 32-bit hosts before allocating. */
+static uint64_t *
+image_buffer_allocate_planes(int width, int height,
+                             sixel_allocator_t *allocator)
+{
+    size_t bands;
+    size_t count;
+    uint64_t *planes;
+
+    bands = ((size_t)height + 5u) / 6u;
+    if ((size_t)width > (size_t)-1 / sizeof(*planes) / bands) {
+        return NULL;
+    }
+    count = (size_t)width * bands;
+    planes = (uint64_t *)sixel_allocator_calloc(allocator, count,
+                                               sizeof(*planes));
+    return planes;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
 image_buffer_enable_ormode(image_buffer_t *image,
                            sixel_allocator_t *allocator)
 {
-    SIXELSTATUS status;
-    size_t pixels;
-    size_t bytes;
-    int n;
-
-    status = SIXEL_BAD_ARGUMENT;
     if (image == NULL || image->pixels.p == NULL) {
-        goto end;
+        return SIXEL_BAD_ARGUMENT;
     }
-
-    pixels = (size_t)image->width * (size_t)image->height;
-    if (image->depth == 1U) {
-        memset(image->pixels.in_bytes, 0, pixels);
-        if (image->paint_mask != NULL) {
-            memset(image->paint_mask, 0, pixels);
-        }
-    } else if (image->depth == 2U) {
-        for (n = 0; n < image->width * image->height; ++n) {
-            image->pixels.in_shorts[n] = 0;
-        }
-        if (image->paint_mask != NULL) {
-            memset(image->paint_mask, 0, pixels);
-        }
-    } else if (image->depth == 4U) {
-        bytes = pixels * sizeof(*image->ormode_indexes);
-        if (image->ormode_indexes == NULL) {
-            image->ormode_indexes = (unsigned short *)
-                sixel_allocator_malloc(allocator, bytes);
-            if (image->ormode_indexes == NULL) {
-                sixel_helper_set_additional_message(
-                    "image_buffer_enable_ormode: "
-                    "sixel_allocator_malloc() failed.");
-                status = SIXEL_BAD_ALLOCATION;
-                goto end;
-            }
-        }
-        memset(image->ormode_indexes, 0, bytes);
-        memset(image->pixels.in_bytes, 0, pixels * 4U);
+    image_buffer_release_ormode_planes(image, allocator);
+    image->ormode_planes = image_buffer_allocate_planes(
+        image->width, image->height, allocator);
+    if (image->ormode_planes == NULL) {
+        sixel_helper_set_additional_message(
+            "image_buffer_enable_ormode: allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
     }
-
-    status = SIXEL_OK;
-
-end:
-    return status;
+    return SIXEL_OK;
 }
 
-static int
-image_buffer_ormode_depth_is_supported(image_buffer_t const *image)
+/* Resolve only after the final palette definition and final raster resize.
+ * Index zero is opaque, including untouched cells. No paint-mask writes or
+ * per-pixel maxima are needed while accumulating the received planes. */
+SIXEL_INTERNAL_API void
+image_buffer_finalize_ormode(image_buffer_t *image)
 {
-    return image->depth == 1U || image->depth == 2U ||
-        (image->depth == 4U && image->ormode_indexes != NULL);
-}
-
-/*
- * Direct-color OR mode keeps a side-car index buffer while parsing bit
- * planes.  Finalizing after the parser has seen every palette definition
- * lets palette index 0 become an opaque color instead of transparent black.
- */
-static void
-image_buffer_finalize_ormode_direct(image_buffer_t *image)
-{
-    size_t pixels;
-    size_t n;
-    unsigned char *bytes;
-    unsigned short palette_index;
-    int color;
-
-    if (image == NULL || image->depth != 4U ||
-            image->pixels.p == NULL || image->ormode_indexes == NULL) {
-        return;
-    }
-
-    pixels = (size_t)image->width * (size_t)image->height;
-    for (n = 0; n < pixels; ++n) {
-        palette_index = image->ormode_indexes[n];
-        color = image->palette[palette_index];
-        bytes = image->pixels.in_bytes + n * 4U;
-        bytes[0] = (unsigned char)((color >> 16) & 0xff);
-        bytes[1] = (unsigned char)((color >> 8) & 0xff);
-        bytes[2] = (unsigned char)(color & 0xff);
-        bytes[3] = 255u;
-    }
-}
-
-/*
- * OR mode has no unpainted cells: every pixel inside the raster carries a
- * composed index, and index 0 is an ordinary palette color instead of the
- * transparent sentinel.  The bit-plane store only marks cells whose sixel bit
- * was set, so callers that derive alpha from the paint mask -- the dequantize
- * path in sixel_decoder_decode_pixels() -- would drop every index-0 pixel to
- * transparent.  Mark the whole raster painted once the parser is done, which
- * matches what image_buffer_finalize_ormode_direct() does for direct color.
- */
-static void
-image_buffer_fill_ormode_paint_mask(image_buffer_t *image)
-{
-    size_t pixels;
-
-    if (image == NULL || image->paint_mask == NULL ||
-            image->width <= 0 || image->height <= 0) {
-        return;
-    }
-
-    pixels = (size_t)image->width * (size_t)image->height;
-    memset(image->paint_mask, 0xff, pixels);
-}
-
-/*
- * OR mode is a bit-plane dialect.  Keep this path separate from normal
- * repaint semantics so the common decoder path keeps its old overwrite
- * behavior.  The direct-color path only composes indexes here; a final linear
- * pass expands them to RGBA after palette definitions are complete.
- */
-static void
-image_buffer_ormode_store_sixel(image_buffer_t *image,
-                                int pos_y,
-                                int pos_x,
-                                int repeat,
-                                int bits,
-                                int color_index)
-{
-    int i;
-    int n;
+    uint64_t const *low;
+    uint64_t const *high;
+    uint64_t word;
+    uint64_t high_word;
+    unsigned char *dst;
+    unsigned int index;
     int max_index;
-    int composed_index;
+    int color;
+    int y;
+    int r;
+    int x;
+    int rows;
     size_t pos;
-    unsigned char *bytes;
-    unsigned short *shorts;
-    unsigned short *indexes;
 
-    if (!image_buffer_ormode_depth_is_supported(image)) {
+    if (image == NULL || image->ormode_planes == NULL) {
         return;
     }
-
-    max_index = -1;
-    if (image->depth == 1U) {
-        for (i = 0; i < 6; ++i) {
-            if ((bits & (1 << i)) == 0) {
-                continue;
-            }
-            pos = (size_t)image->width * (size_t)(pos_y + i) +
-                (size_t)pos_x;
-            bytes = image->pixels.in_bytes + pos;
-            for (n = 0; n < repeat; ++n) {
-                composed_index = bytes[n] | color_index;
-                bytes[n] = (unsigned char)composed_index;
-                if (image->paint_mask != NULL) {
-                    image->paint_mask[pos + (size_t)n] = 0xffu;
-                }
-                if (max_index < composed_index) {
-                    max_index = composed_index;
-                }
-            }
+    max_index = 0;
+    for (y = 0; y < image->height; y += 6) {
+        low = image->ormode_planes + (size_t)(y / 6) * image->width;
+        high = image->ormode_high_planes == NULL ? NULL :
+            image->ormode_high_planes + (size_t)(y / 6) * image->width;
+        rows = image->height - y;
+        if (rows > 6) {
+            rows = 6;
         }
-    } else if (image->depth == 2U) {
-        for (i = 0; i < 6; ++i) {
-            if ((bits & (1 << i)) == 0) {
-                continue;
-            }
-            pos = (size_t)image->width * (size_t)(pos_y + i) +
-                (size_t)pos_x;
-            shorts = image->pixels.in_shorts + pos;
-            for (n = 0; n < repeat; ++n) {
-                composed_index = shorts[n] | color_index;
-                shorts[n] = (unsigned short)composed_index;
-                if (image->paint_mask != NULL) {
-                    image->paint_mask[pos + (size_t)n] = 0xffu;
+        for (x = 0; x < image->width; ++x) {
+            word = low[x];
+            high_word = high == NULL ? 0 : high[x];
+            for (r = 0; r < rows; ++r) {
+                index = sixel_ormode_gather(word, r);
+                if (high != NULL) {
+                    index |= sixel_ormode_gather(high_word, r) << 8;
                 }
-                if (max_index < composed_index) {
-                    max_index = composed_index;
+                if ((int)index > max_index) {
+                    max_index = (int)index;
                 }
-            }
-        }
-    } else {
-        for (i = 0; i < 6; ++i) {
-            if ((bits & (1 << i)) == 0) {
-                continue;
-            }
-            pos = (size_t)image->width * (size_t)(pos_y + i) +
-                (size_t)pos_x;
-            indexes = image->ormode_indexes + pos;
-            for (n = 0; n < repeat; ++n) {
-                composed_index = indexes[n] | color_index;
-                indexes[n] = (unsigned short)composed_index;
-                if (image->paint_mask != NULL) {
-                    image->paint_mask[pos + (size_t)n] = 0xffu;
+                pos = (size_t)(y + r) * image->width + (size_t)x;
+                if (image->depth == 1) {
+                    image->pixels.in_bytes[pos] = (unsigned char)index;
+                } else if (image->depth == 2) {
+                    image->pixels.in_shorts[pos] = (unsigned short)index;
+                } else {
+                    color = image->palette[index];
+                    dst = image->pixels.in_bytes + pos * 4u;
+                    dst[0] = (unsigned char)(color >> 16);
+                    dst[1] = (unsigned char)(color >> 8);
+                    dst[2] = (unsigned char)color;
+                    dst[3] = 255u;
                 }
             }
         }
     }
-
-    if (max_index >= 0 && max_index + 1 > image->ncolors) {
+    /* Retain the existing palette-definition/default floor as well as every
+     * composed index. A register need not be selected itself to be produced. */
+    if (max_index + 1 > image->ncolors) {
         image->ncolors = max_index + 1;
+    }
+    if (image->paint_mask != NULL) {
+        memset(image->paint_mask, 0xff,
+               (size_t)image->width * image->height);
     }
 }
 
@@ -453,6 +364,8 @@ typedef struct parser_context {
     int color_index;
     int bgindex;
     int ormode;
+    uint64_t ormode_spread;
+    uint64_t ormode_high_spread;
     int painted_outside_raster;
     int painted;
     int palette_redefined_after_paint;
@@ -462,6 +375,62 @@ typedef struct parser_context {
     int nparams;
     int params[DECSIXEL_PARAMS_MAX];
 } parser_context_t;
+
+
+/* Consume adjacent unrepeated data bytes with one plane-word store each.
+ * The caller has proved a complete band fits the allocated raster. Stop at
+ * the right edge so the ordinary parser still owns growth and clipping. */
+static unsigned char *
+parser_context_store_ormode_run(parser_context_t *context,
+                                image_buffer_t *image,
+                                unsigned char *p, unsigned char *end)
+{
+    uint64_t *low;
+    uint64_t *high;
+    uint64_t spread;
+    uint64_t high_spread;
+    size_t band;
+    int x;
+    int last;
+    int bits;
+    int rows;
+    int r;
+
+    band = (size_t)(context->pos_y / 6) * (size_t)image->width;
+    low = image->ormode_planes + band;
+    high = image->ormode_high_planes == NULL ? NULL :
+        image->ormode_high_planes + band;
+    spread = context->ormode_spread;
+    high_spread = context->ormode_high_spread;
+    x = context->pos_x;
+    last = -1;
+    rows = 0;
+    while (p < end && *p >= '?' && *p <= '~' && x < image->width) {
+        bits = *p++ - '?';
+        low[x] |= (uint64_t)bits * spread;
+        if (high_spread != 0) {
+            high[x] |= (uint64_t)bits * high_spread;
+        }
+        if (bits != 0) {
+            last = x;
+            rows |= bits;
+        }
+        ++x;
+    }
+    context->pos_x = x;
+    if (last > context->max_x) {
+        context->max_x = last;
+    }
+    for (r = 5; r >= 0; --r) {
+        if ((rows & (1 << r)) != 0) {
+            if (context->pos_y + r > context->max_y) {
+                context->max_y = context->pos_y + r;
+            }
+            break;
+        }
+    }
+    return p;
+}
 
 
 /*
@@ -535,7 +504,8 @@ image_buffer_init(
     image->width = width;
     image->height = height;
     image->paint_mask = NULL;
-    image->ormode_indexes = NULL;
+    image->ormode_planes = NULL;
+    image->ormode_high_planes = NULL;
     image->pixels.p = (unsigned char *)sixel_allocator_malloc(allocator, size);
     if (depth == 4U) {
         image->ncolors = (-1);
@@ -643,7 +613,9 @@ image_buffer_resize(
     size_t size;
     unsigned char *alt_buffer;
     unsigned char *alt_paint_mask;
-    unsigned short *alt_ormode_indexes;
+    uint64_t *alt_planes;
+    uint64_t *alt_high_planes;
+    size_t bands;
     size_t index_size;
     int n;
     int min_height;
@@ -689,7 +661,8 @@ image_buffer_resize(
 
     stride = (size_t)width * depth;
     size = stride * (size_t)height;
-    alt_ormode_indexes = NULL;
+    alt_planes = NULL;
+    alt_high_planes = NULL;
     alt_buffer = (sixel_decoder_index_t *)
         sixel_allocator_malloc(allocator, size);
     if (alt_buffer == NULL || size == 0) {
@@ -701,19 +674,20 @@ image_buffer_resize(
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    if (image->ormode_indexes != NULL) {
-        index_size = (size_t)width * (size_t)height *
-            sizeof(*alt_ormode_indexes);
-        alt_ormode_indexes = (unsigned short *)
-            sixel_allocator_malloc(allocator, index_size);
-        if (alt_ormode_indexes == NULL) {
+    if (image->ormode_planes != NULL) {
+        alt_planes = image_buffer_allocate_planes(width, height, allocator);
+        if (image->ormode_high_planes != NULL) {
+            alt_high_planes = image_buffer_allocate_planes(
+                width, height, allocator);
+        }
+        if (alt_planes == NULL || (image->ormode_high_planes != NULL &&
+                alt_high_planes == NULL)) {
             sixel_allocator_free(allocator, alt_buffer);
-            sixel_helper_set_additional_message(
-                "image_buffer_resize: sixel_allocator_malloc() failed.");
+            sixel_allocator_free(allocator, alt_planes);
+            sixel_allocator_free(allocator, alt_high_planes);
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        memset(alt_ormode_indexes, 0, index_size);
     }
     if (image->paint_mask != NULL) {
         index_size = (size_t)width * (size_t)height;
@@ -721,9 +695,8 @@ image_buffer_resize(
             sixel_allocator_malloc(allocator, index_size);
         if (alt_paint_mask == NULL) {
             sixel_allocator_free(allocator, alt_buffer);
-            if (alt_ormode_indexes != NULL) {
-                sixel_allocator_free(allocator, alt_ormode_indexes);
-            }
+            sixel_allocator_free(allocator, alt_planes);
+            sixel_allocator_free(allocator, alt_high_planes);
             sixel_helper_set_additional_message(
                 "image_buffer_resize: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
@@ -735,38 +708,47 @@ image_buffer_resize(
     min_height = height > image->height ? image->height: height;
     old_stride = (size_t)image->width * depth;
     copy_width = width > image->width ? image->width: width;
-    if (width > image->width) {
-        copy_stride = old_stride;
-        for (n = 0; n < min_height; ++n) {
-            memcpy(alt_buffer + stride * (size_t)n,
-                   image->pixels.in_bytes + old_stride * (size_t)n,
-                   copy_stride);
-            if (stride > copy_stride) {
-                if (depth == 4U) {  /* rgba */
-                    memset(alt_buffer + stride * (size_t)n + copy_stride,
-                           0,
-                           stride - copy_stride);
-                } else {
-                    memset(alt_buffer + stride * (size_t)n + copy_stride,
-                           bgindex,
-                           stride - copy_stride);
-                }
+    if (alt_planes != NULL) {
+        /* Pixels are materialized only after parsing. Copy complete band
+         * words on growth or cropping, including a partial final band. */
+        bands = ((size_t)min_height + 5u) / 6u;
+        for (n = 0; (size_t)n < bands; ++n) {
+            memcpy(alt_planes + (size_t)width * (size_t)n,
+                   image->ormode_planes + (size_t)image->width * (size_t)n,
+                   (size_t)copy_width * sizeof(*alt_planes));
+            if (alt_high_planes != NULL) {
+                memcpy(alt_high_planes + (size_t)width * (size_t)n,
+                       image->ormode_high_planes +
+                       (size_t)image->width * (size_t)n,
+                       (size_t)copy_width * sizeof(*alt_high_planes));
             }
         }
     } else {
-        copy_stride = stride;
-        for (n = 0; n < min_height; ++n) {
-            memcpy(alt_buffer + stride * (size_t)n,
-                   image->pixels.in_bytes + old_stride * (size_t)n,
-                   copy_stride);
-        }
-    }
-    if (alt_ormode_indexes != NULL) {
-        for (n = 0; n < min_height; ++n) {
-            memcpy(alt_ormode_indexes + (size_t)width * (size_t)n,
-                   image->ormode_indexes +
-                   (size_t)image->width * (size_t)n,
-                   (size_t)copy_width * sizeof(*alt_ormode_indexes));
+        if (width > image->width) {
+            copy_stride = old_stride;
+            for (n = 0; n < min_height; ++n) {
+                memcpy(alt_buffer + stride * (size_t)n,
+                       image->pixels.in_bytes + old_stride * (size_t)n,
+                       copy_stride);
+                if (stride > copy_stride) {
+                    if (depth == 4U) {  /* rgba */
+                        memset(alt_buffer + stride * (size_t)n + copy_stride,
+                               0,
+                               stride - copy_stride);
+                    } else {
+                        memset(alt_buffer + stride * (size_t)n + copy_stride,
+                               bgindex,
+                               stride - copy_stride);
+                    }
+                }
+            }
+        } else {
+            copy_stride = stride;
+            for (n = 0; n < min_height; ++n) {
+                memcpy(alt_buffer + stride * (size_t)n,
+                       image->pixels.in_bytes + old_stride * (size_t)n,
+                       copy_stride);
+            }
         }
     }
     if (alt_paint_mask != NULL) {
@@ -778,7 +760,7 @@ image_buffer_resize(
         }
     }
 
-    if (height > image->height) {
+    if (alt_planes == NULL && height > image->height) {
         if (depth == 4u) {  /* rgba */
             memset(alt_buffer + stride * (size_t)image->height,
                    0,
@@ -793,11 +775,12 @@ image_buffer_resize(
     /* free source image */
     sixel_allocator_free(allocator, image->pixels.p);
     image_buffer_release_paint_mask(image, allocator);
-    image_buffer_release_ormode_indexes(image, allocator);
+    image_buffer_release_ormode_planes(image, allocator);
 
     image->pixels.in_bytes = alt_buffer;
     image->paint_mask = alt_paint_mask;
-    image->ormode_indexes = alt_ormode_indexes;
+    image->ormode_planes = alt_planes;
+    image->ormode_high_planes = alt_high_planes;
     image->width = width;
     image->height = height;
 
@@ -827,6 +810,8 @@ parser_context_init(parser_context_t *context)
     context->color_index = 15;
     context->bgindex = (-1);
     context->ormode = 0;
+    context->ormode_spread = sixel_ormode_spread(15u);
+    context->ormode_high_spread = 0;
     context->painted_outside_raster = 0;
     context->painted = 0;
     context->palette_redefined_after_paint = 0;
@@ -945,6 +930,18 @@ parser_context_enter_decsixel(parser_context_t *context,
         status = image_buffer_enable_ormode(image, allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
+        }
+        context->ormode_spread = sixel_ormode_spread(
+            (unsigned int)context->color_index);
+        context->ormode_high_spread = sixel_ormode_spread(
+            (unsigned int)context->color_index >> 8);
+        if (context->ormode_high_spread != 0) {
+            image->ormode_high_planes = image_buffer_allocate_planes(
+                image->width, image->height, allocator);
+            if (image->ormode_high_planes == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
         }
     }
 
@@ -1184,6 +1181,10 @@ sixel_decode_raw_impl(
             case '-':
                 /* DECGNL Graphics Next Line */
                 context->pos_x = 0;
+                if (context->pos_y > INT_MAX - 6) {
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
                 context->pos_y += 6;
 #if SIXEL_ENABLE_THREADS
                 if (!palette_ready) {
@@ -1244,7 +1245,21 @@ sixel_decode_raw_impl(
                     }
 #endif  /* SIXEL_ENABLE_THREADS */
 
-                    if (context->pos_x < 0 || context->pos_y < 0) {
+                    if (context->ormode && !trust_raster_size &&
+                            context->repeat_count == 1 &&
+                            context->pos_x >= 0 &&
+                            context->pos_x < image->width &&
+                            context->pos_y >= 0 &&
+                            context->pos_y <= image->height - 6) {
+                        p = parser_context_store_ormode_run(
+                            context, image, p, p0 + len);
+                        continue;
+                    }
+
+                    if (context->pos_x < 0 || context->pos_y < 0 ||
+                            context->pos_x > INT_MAX -
+                                context->repeat_count ||
+                            context->pos_y > INT_MAX - 6) {
                         status = SIXEL_BAD_INPUT;
                         goto end;
                     }
@@ -1279,8 +1294,17 @@ sixel_decode_raw_impl(
                         target_bottom = context->attributed_pv;
                     }
 
+                    /* Reject before doubling dimensions, including streams
+                     * that advance far outside a declared raster. */
+                    if ((draw_repeat > 0 && context->pos_x >
+                            SIXEL_WIDTH_LIMIT - draw_repeat) ||
+                            target_bottom > SIXEL_HEIGHT_LIMIT) {
+                        status = SIXEL_BAD_INPUT;
+                        goto end;
+                    }
                     sx = image->width;
-                    while (sx < context->pos_x + draw_repeat) {
+                    while (draw_repeat > 0 &&
+                            sx < context->pos_x + draw_repeat) {
                         sx *= 2;
                     }
 
@@ -1320,13 +1344,17 @@ sixel_decode_raw_impl(
                             }
                         }
                         if (store_bits != 0 && draw_repeat > 0) {
-                            image_buffer_ormode_store_sixel(
-                                image,
-                                context->pos_y,
-                                context->pos_x,
-                                draw_repeat,
-                                store_bits,
-                                context->color_index);
+                            pos = (size_t)(context->pos_y / 6) *
+                                image->width + (size_t)context->pos_x;
+                            sixel_ormode_store(image->ormode_planes + pos,
+                                context->ormode_spread, store_bits,
+                                draw_repeat);
+                            if (context->ormode_high_spread != 0) {
+                                sixel_ormode_store(
+                                    image->ormode_high_planes + pos,
+                                    context->ormode_high_spread, store_bits,
+                                    draw_repeat);
+                            }
                             if (context->max_x < context->pos_x +
                                     draw_repeat - 1) {
                                 context->max_x = context->pos_x +
@@ -1629,6 +1657,25 @@ sequence_color_parameters:
                     }
                 }
 
+                if (context->ormode) {
+                    context->ormode_spread = sixel_ormode_spread(
+                        (unsigned int)context->color_index);
+                    context->ormode_high_spread = sixel_ormode_spread(
+                        (unsigned int)context->color_index >> 8);
+                    /* Wide registers use the same six-row representation.
+                     * Allocate the second eight planes only when needed. */
+                    if (context->ormode_high_spread != 0 &&
+                            image->ormode_high_planes == NULL) {
+                        image->ormode_high_planes =
+                            image_buffer_allocate_planes(image->width,
+                                image->height, allocator);
+                        if (image->ormode_high_planes == NULL) {
+                            status = SIXEL_BAD_ALLOCATION;
+                            goto end;
+                        }
+                    }
+                }
+
                 if (context->color_index + 1 > image->ncolors) {
                     image->ncolors = context->color_index + 1;
                     if (image->ncolors > SIXEL_PALETTE_MAX_DECODER) {
@@ -1744,7 +1791,8 @@ sixel_decode_image(unsigned char *p, int len, int initial_width,
 
     image->pixels.p = NULL;
     image->paint_mask = NULL;
-    image->ormode_indexes = NULL;
+    image->ormode_planes = NULL;
+    image->ormode_high_planes = NULL;
 
     logger = NULL;
     logger_prepared = 0;
@@ -1865,12 +1913,12 @@ sixel_decode_image(unsigned char *p, int len, int initial_width,
         sixel_allocator_free(allocator, image->pixels.p);
         image->pixels.p = NULL;
         image_buffer_release_paint_mask(image, allocator);
-        image_buffer_release_ormode_indexes(image, allocator);
+        image_buffer_release_ormode_planes(image, allocator);
         goto end;
     }
 
     if (context->ormode) {
-        image_buffer_fill_ormode_paint_mask(image);
+        image_buffer_finalize_ormode(image);
     }
 
     status = SIXEL_OK;
@@ -2035,7 +2083,7 @@ error:
 
 end:
     image_buffer_release_paint_mask(image, allocator);
-    image_buffer_release_ormode_indexes(image, allocator);
+    image_buffer_release_ormode_planes(image, allocator);
     free(image);
     sixel_allocator_unref(allocator);
     return status;
@@ -2225,7 +2273,8 @@ sixel_decode_kundither_fast4_with_options(unsigned char *p,
         goto end;
     }
     image->pixels.p = NULL;
-    image->ormode_indexes = NULL;
+    image->ormode_planes = NULL;
+    image->ormode_high_planes = NULL;
 
     undither.enabled = 1;
     undither.direct_output = direct_output != 0;
@@ -2314,7 +2363,7 @@ sixel_decode_kundither_fast4_with_options(unsigned char *p,
 
 end:
     if (image != NULL) {
-        image_buffer_release_ormode_indexes(image, allocator);
+        image_buffer_release_ormode_planes(image, allocator);
         sixel_allocator_free(allocator, image->pixels.p);
         free(image);
     }
@@ -2418,7 +2467,7 @@ error:
     }
 
 end:
-    image_buffer_release_ormode_indexes(image, allocator);
+    image_buffer_release_ormode_planes(image, allocator);
     free(image);
     sixel_allocator_unref(allocator);
     return status;
@@ -2933,10 +2982,6 @@ sixel_decode_direct_mapped(
         goto error;
     }
 
-    if (context.ormode) {
-        image_buffer_finalize_ormode_direct(image);
-    }
-
     *pwidth = image->width;
     *pheight = image->height;
     if (result_flags != NULL && context.painted_outside_raster) {
@@ -2987,7 +3032,7 @@ error:
 
 end:
     image_buffer_release_paint_mask(image, allocator);
-    image_buffer_release_ormode_indexes(image, allocator);
+    image_buffer_release_ormode_planes(image, allocator);
     free(image);
     sixel_allocator_unref(allocator);
     return status;
