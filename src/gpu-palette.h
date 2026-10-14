@@ -80,6 +80,10 @@ typedef struct sixel_gpu_palette_request {
     size_t accumulation_valid_mask_size;
     int accumulation_keycolor;
     unsigned int sixdelta_threshold;
+    /* Optional emitted RGB888 candidates for post-lookup keep only.
+     * NULL preserves standalone application of the supplied palette. */
+    unsigned char const *sixdelta_comparison_palette;
+    size_t sixdelta_comparison_palette_size;
     unsigned char *accumulation_result_mask;
     size_t accumulation_result_mask_size;
     int bluenoise_strength_override;

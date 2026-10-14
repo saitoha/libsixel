@@ -332,6 +332,11 @@ sixel_gpu_palette_request_is_supported(
     if (request->palette_size < required_palette_size) {
         return 0;
     }
+    if (request->sixdelta_comparison_palette != NULL &&
+            request->sixdelta_comparison_palette_size <
+                required_palette_size) {
+        return 0;
+    }
     if (request->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
             request->method_for_diffuse !=
             SIXEL_DIFFUSE_BLUENOISE_DITHER) {

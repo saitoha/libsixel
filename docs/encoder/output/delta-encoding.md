@@ -246,6 +246,8 @@ For an ordinary gamma RGB output call with gamma source coordinates and no float
 
 For example, source 32, retained 33 and selected entry 32 must keep: the entry emits 13%, represented as 33 in history. Retained 34 instead must repaint. Source 34 with retained 35 and selected entry 32 is another tie (distance 1 to both 35 and emitted 33); rounding the source to 33 would incorrectly reject it. These integer witnesses need no floating-point tolerance. Repeated generated frames with literal grays 32/96/160 retain 33/97/161 and omit the second frame in both serial and producer/writer encoding; changing the source to black paints again.
 
+Metal receives the same emitted-candidate comparison view for byte RGB and HLS. The RGB projection runs once per palette; HLS reuses the output owner's prepared bytes. At most 768 comparison bytes accompany the existing GPU parameters. Direct and Eytzinger lookup still select from the original palette, and blue noise still perturbs only that selection. The post-lookup comparison uses the unperturbed source and the selected entry's emitted RGB. Without an output-owned view, standalone GPU application compares the supplied candidate as before. An undersized explicit view is rejected before dispatch.
+
 The output owner binds this comparison hint to its dither object for the encode call, before serial application or worker use, and clears it on success and failure. There is no global switch or retained-frame reset. Standalone PaletteApply has no wire-format contract and keeps its supplied-candidate comparison. OR, body-only, transformed source/output and legacy float-backed palettes do not acquire this byte comparison hint. HLS uses a separate palette-sized projection with the same call lifetime. Fixed byte tables still require their existing omission mechanism; this change does not add the native fixed-table mask path to them. Native float comparison remains as described below.
 
 ### Native float comparison and retained precision
@@ -620,6 +622,20 @@ The IDs below map to existing assertions. A representative fixture establishes i
 | D6-277 | An exactly matching frame does not request refinement. | [tests/quant/palette/delta_native/0237_delta_refine_exact.t](../../../tests/quant/palette/delta_native/0237_delta_refine_exact.t) |
 | D6-278 | Approximate early keeps request refinement even when another opaque pixel is painted; the painted count is one. | [tests/quant/palette/delta_native/0238_delta_refine_partial.t](../../../tests/quant/palette/delta_native/0238_delta_refine_partial.t) |
 | D6-279 | Nonzero source transparency masks do not impersonate approximate delta keeps. | [tests/quant/palette/delta_native/0239_delta_refine_source_mask.t](../../../tests/quant/palette/delta_native/0239_delta_refine_source_mask.t) |
+
+### GPU emitted-candidate comparison tests
+
+| ID | GPU comparison contract | Test |
+| --- | --- | --- |
+| GW-01 | RGB direct lookup compares emitted colors, with ties, repaint and invalid history. | [tests/processing/gpu-palette/0005_wire_rgb_none.t](../../../tests/processing/gpu-palette/0005_wire_rgb_none.t) |
+| GW-02 | RGB blue noise preserves the emitted-color keep comparison. | [tests/processing/gpu-palette/0006_wire_rgb_bluenoise.t](../../../tests/processing/gpu-palette/0006_wire_rgb_bluenoise.t) |
+| GW-03 | Eytzinger selects from working entries and compares their emitted colors. | [tests/processing/gpu-palette/0007_wire_rgb_eytzinger.t](../../../tests/processing/gpu-palette/0007_wire_rgb_eytzinger.t) |
+| GW-04 | HLS direct lookup uses the output owner's reconstructed RGB view. | [tests/processing/gpu-palette/0008_wire_hls_none.t](../../../tests/processing/gpu-palette/0008_wire_hls_none.t) |
+| GW-05 | HLS blue noise uses the same reconstructed view. | [tests/processing/gpu-palette/0009_wire_hls_bluenoise.t](../../../tests/processing/gpu-palette/0009_wire_hls_bluenoise.t) |
+| GW-06 | Standalone GPU application retains supplied-candidate semantics. | [tests/processing/gpu-palette/0010_comparison_default.t](../../../tests/processing/gpu-palette/0010_comparison_default.t) |
+| GW-07 | A short comparison view is rejected before any GPU access. | [tests/processing/gpu-palette/0011_comparison_short.t](../../../tests/processing/gpu-palette/0011_comparison_short.t) |
+
+The encode witnesses assert literal keep masks and decoded paints independently on CPU and forced GPU, preserve the working palette, and verify that comparison hints are cleared after the call. They establish byte RGB/HLS comparison behavior, not perceptual improvement for every video or support for legacy float-backed comparison.
 
 ### Quality regression tests
 

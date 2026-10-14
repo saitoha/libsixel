@@ -1143,6 +1143,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/gpu-palette/0002_reserved_key.c \
 	processing/gpu-palette/0003_fade_history.c \
 	processing/gpu-palette/0004_auto_strength.c \
+	processing/gpu-palette/0005_wire_rgb_none.c \
+	processing/gpu-palette/0006_wire_rgb_bluenoise.c \
+	processing/gpu-palette/0007_wire_rgb_eytzinger.c \
+	processing/gpu-palette/0008_wire_hls_none.c \
+	processing/gpu-palette/0009_wire_hls_bluenoise.c \
+	processing/gpu-palette/0010_comparison_default.c \
+	processing/gpu-palette/0011_comparison_short.c \
+	processing/gpu-palette/wire_common.c \
 	processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
 	processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -4406,6 +4414,14 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0002_reserved_key.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0003_fade_history.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0004_auto_strength.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0005_wire_rgb_none.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0006_wire_rgb_bluenoise.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0007_wire_rgb_eytzinger.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0008_wire_hls_none.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0009_wire_hls_bluenoise.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0010_comparison_default.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0011_comparison_short.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-wire_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.$(OBJEXT) \
@@ -8829,6 +8845,14 @@ am__depfiles_remade =  \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0002_reserved_key.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0003_fade_history.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0004_auto_strength.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0005_wire_rgb_none.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0006_wire_rgb_bluenoise.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0007_wire_rgb_eytzinger.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0008_wire_hls_none.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0009_wire_hls_bluenoise.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0010_comparison_default.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0011_comparison_short.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po \
@@ -11876,6 +11900,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_RESERVED_KEY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_FADE_HISTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_AUTO_STRENGTH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_WIRE_RGB_NONE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_WIRE_RGB_BLUENOISE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_WIRE_RGB_EYTZINGER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_WIRE_HLS_NONE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_WIRE_HLS_BLUENOISE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_COMPARISON_DEFAULT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_COMPARISON_SHORT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_WIRE_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
@@ -14903,6 +14935,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0002_reserved_key.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0003_fade_history.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0004_auto_strength.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0005_wire_rgb_none.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0006_wire_rgb_bluenoise.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0007_wire_rgb_eytzinger.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0008_wire_hls_none.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0009_wire_hls_bluenoise.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0010_comparison_default.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0011_comparison_short.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/wire_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -20514,6 +20554,30 @@ processing/gpu-palette/test_runner-0003_fade_history.$(OBJEXT):  \
 	processing/gpu-palette/$(am__dirstamp) \
 	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-palette/test_runner-0004_auto_strength.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0005_wire_rgb_none.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0006_wire_rgb_bluenoise.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0007_wire_rgb_eytzinger.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0008_wire_hls_none.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0009_wire_hls_bluenoise.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0010_comparison_default.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0011_comparison_short.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-wire_common.$(OBJEXT):  \
 	processing/gpu-palette/$(am__dirstamp) \
 	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-dequant/$(am__dirstamp):
@@ -29997,6 +30061,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0002_reserved_key.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0003_fade_history.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0004_auto_strength.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0005_wire_rgb_none.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0006_wire_rgb_bluenoise.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0007_wire_rgb_eytzinger.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0008_wire_hls_none.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0009_wire_hls_bluenoise.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0010_comparison_default.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0011_comparison_short.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po@am__quote@ # am--include-marker
@@ -45253,6 +45325,118 @@ processing/gpu-palette/test_runner-0004_auto_strength.obj: processing/gpu-palett
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0004_auto_strength.c' object='processing/gpu-palette/test_runner-0004_auto_strength.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0004_auto_strength.obj `if test -f 'processing/gpu-palette/0004_auto_strength.c'; then $(CYGPATH_W) 'processing/gpu-palette/0004_auto_strength.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0004_auto_strength.c'; fi`
+
+processing/gpu-palette/test_runner-0005_wire_rgb_none.o: processing/gpu-palette/0005_wire_rgb_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0005_wire_rgb_none.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0005_wire_rgb_none.Tpo -c -o processing/gpu-palette/test_runner-0005_wire_rgb_none.o `test -f 'processing/gpu-palette/0005_wire_rgb_none.c' || echo '$(srcdir)/'`processing/gpu-palette/0005_wire_rgb_none.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0005_wire_rgb_none.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0005_wire_rgb_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0005_wire_rgb_none.c' object='processing/gpu-palette/test_runner-0005_wire_rgb_none.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0005_wire_rgb_none.o `test -f 'processing/gpu-palette/0005_wire_rgb_none.c' || echo '$(srcdir)/'`processing/gpu-palette/0005_wire_rgb_none.c
+
+processing/gpu-palette/test_runner-0005_wire_rgb_none.obj: processing/gpu-palette/0005_wire_rgb_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0005_wire_rgb_none.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0005_wire_rgb_none.Tpo -c -o processing/gpu-palette/test_runner-0005_wire_rgb_none.obj `if test -f 'processing/gpu-palette/0005_wire_rgb_none.c'; then $(CYGPATH_W) 'processing/gpu-palette/0005_wire_rgb_none.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0005_wire_rgb_none.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0005_wire_rgb_none.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0005_wire_rgb_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0005_wire_rgb_none.c' object='processing/gpu-palette/test_runner-0005_wire_rgb_none.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0005_wire_rgb_none.obj `if test -f 'processing/gpu-palette/0005_wire_rgb_none.c'; then $(CYGPATH_W) 'processing/gpu-palette/0005_wire_rgb_none.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0005_wire_rgb_none.c'; fi`
+
+processing/gpu-palette/test_runner-0006_wire_rgb_bluenoise.o: processing/gpu-palette/0006_wire_rgb_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0006_wire_rgb_bluenoise.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0006_wire_rgb_bluenoise.Tpo -c -o processing/gpu-palette/test_runner-0006_wire_rgb_bluenoise.o `test -f 'processing/gpu-palette/0006_wire_rgb_bluenoise.c' || echo '$(srcdir)/'`processing/gpu-palette/0006_wire_rgb_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0006_wire_rgb_bluenoise.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0006_wire_rgb_bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0006_wire_rgb_bluenoise.c' object='processing/gpu-palette/test_runner-0006_wire_rgb_bluenoise.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0006_wire_rgb_bluenoise.o `test -f 'processing/gpu-palette/0006_wire_rgb_bluenoise.c' || echo '$(srcdir)/'`processing/gpu-palette/0006_wire_rgb_bluenoise.c
+
+processing/gpu-palette/test_runner-0006_wire_rgb_bluenoise.obj: processing/gpu-palette/0006_wire_rgb_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0006_wire_rgb_bluenoise.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0006_wire_rgb_bluenoise.Tpo -c -o processing/gpu-palette/test_runner-0006_wire_rgb_bluenoise.obj `if test -f 'processing/gpu-palette/0006_wire_rgb_bluenoise.c'; then $(CYGPATH_W) 'processing/gpu-palette/0006_wire_rgb_bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0006_wire_rgb_bluenoise.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0006_wire_rgb_bluenoise.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0006_wire_rgb_bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0006_wire_rgb_bluenoise.c' object='processing/gpu-palette/test_runner-0006_wire_rgb_bluenoise.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0006_wire_rgb_bluenoise.obj `if test -f 'processing/gpu-palette/0006_wire_rgb_bluenoise.c'; then $(CYGPATH_W) 'processing/gpu-palette/0006_wire_rgb_bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0006_wire_rgb_bluenoise.c'; fi`
+
+processing/gpu-palette/test_runner-0007_wire_rgb_eytzinger.o: processing/gpu-palette/0007_wire_rgb_eytzinger.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0007_wire_rgb_eytzinger.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0007_wire_rgb_eytzinger.Tpo -c -o processing/gpu-palette/test_runner-0007_wire_rgb_eytzinger.o `test -f 'processing/gpu-palette/0007_wire_rgb_eytzinger.c' || echo '$(srcdir)/'`processing/gpu-palette/0007_wire_rgb_eytzinger.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0007_wire_rgb_eytzinger.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0007_wire_rgb_eytzinger.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0007_wire_rgb_eytzinger.c' object='processing/gpu-palette/test_runner-0007_wire_rgb_eytzinger.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0007_wire_rgb_eytzinger.o `test -f 'processing/gpu-palette/0007_wire_rgb_eytzinger.c' || echo '$(srcdir)/'`processing/gpu-palette/0007_wire_rgb_eytzinger.c
+
+processing/gpu-palette/test_runner-0007_wire_rgb_eytzinger.obj: processing/gpu-palette/0007_wire_rgb_eytzinger.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0007_wire_rgb_eytzinger.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0007_wire_rgb_eytzinger.Tpo -c -o processing/gpu-palette/test_runner-0007_wire_rgb_eytzinger.obj `if test -f 'processing/gpu-palette/0007_wire_rgb_eytzinger.c'; then $(CYGPATH_W) 'processing/gpu-palette/0007_wire_rgb_eytzinger.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0007_wire_rgb_eytzinger.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0007_wire_rgb_eytzinger.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0007_wire_rgb_eytzinger.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0007_wire_rgb_eytzinger.c' object='processing/gpu-palette/test_runner-0007_wire_rgb_eytzinger.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0007_wire_rgb_eytzinger.obj `if test -f 'processing/gpu-palette/0007_wire_rgb_eytzinger.c'; then $(CYGPATH_W) 'processing/gpu-palette/0007_wire_rgb_eytzinger.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0007_wire_rgb_eytzinger.c'; fi`
+
+processing/gpu-palette/test_runner-0008_wire_hls_none.o: processing/gpu-palette/0008_wire_hls_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0008_wire_hls_none.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0008_wire_hls_none.Tpo -c -o processing/gpu-palette/test_runner-0008_wire_hls_none.o `test -f 'processing/gpu-palette/0008_wire_hls_none.c' || echo '$(srcdir)/'`processing/gpu-palette/0008_wire_hls_none.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0008_wire_hls_none.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0008_wire_hls_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0008_wire_hls_none.c' object='processing/gpu-palette/test_runner-0008_wire_hls_none.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0008_wire_hls_none.o `test -f 'processing/gpu-palette/0008_wire_hls_none.c' || echo '$(srcdir)/'`processing/gpu-palette/0008_wire_hls_none.c
+
+processing/gpu-palette/test_runner-0008_wire_hls_none.obj: processing/gpu-palette/0008_wire_hls_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0008_wire_hls_none.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0008_wire_hls_none.Tpo -c -o processing/gpu-palette/test_runner-0008_wire_hls_none.obj `if test -f 'processing/gpu-palette/0008_wire_hls_none.c'; then $(CYGPATH_W) 'processing/gpu-palette/0008_wire_hls_none.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0008_wire_hls_none.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0008_wire_hls_none.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0008_wire_hls_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0008_wire_hls_none.c' object='processing/gpu-palette/test_runner-0008_wire_hls_none.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0008_wire_hls_none.obj `if test -f 'processing/gpu-palette/0008_wire_hls_none.c'; then $(CYGPATH_W) 'processing/gpu-palette/0008_wire_hls_none.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0008_wire_hls_none.c'; fi`
+
+processing/gpu-palette/test_runner-0009_wire_hls_bluenoise.o: processing/gpu-palette/0009_wire_hls_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0009_wire_hls_bluenoise.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0009_wire_hls_bluenoise.Tpo -c -o processing/gpu-palette/test_runner-0009_wire_hls_bluenoise.o `test -f 'processing/gpu-palette/0009_wire_hls_bluenoise.c' || echo '$(srcdir)/'`processing/gpu-palette/0009_wire_hls_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0009_wire_hls_bluenoise.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0009_wire_hls_bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0009_wire_hls_bluenoise.c' object='processing/gpu-palette/test_runner-0009_wire_hls_bluenoise.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0009_wire_hls_bluenoise.o `test -f 'processing/gpu-palette/0009_wire_hls_bluenoise.c' || echo '$(srcdir)/'`processing/gpu-palette/0009_wire_hls_bluenoise.c
+
+processing/gpu-palette/test_runner-0009_wire_hls_bluenoise.obj: processing/gpu-palette/0009_wire_hls_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0009_wire_hls_bluenoise.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0009_wire_hls_bluenoise.Tpo -c -o processing/gpu-palette/test_runner-0009_wire_hls_bluenoise.obj `if test -f 'processing/gpu-palette/0009_wire_hls_bluenoise.c'; then $(CYGPATH_W) 'processing/gpu-palette/0009_wire_hls_bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0009_wire_hls_bluenoise.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0009_wire_hls_bluenoise.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0009_wire_hls_bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0009_wire_hls_bluenoise.c' object='processing/gpu-palette/test_runner-0009_wire_hls_bluenoise.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0009_wire_hls_bluenoise.obj `if test -f 'processing/gpu-palette/0009_wire_hls_bluenoise.c'; then $(CYGPATH_W) 'processing/gpu-palette/0009_wire_hls_bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0009_wire_hls_bluenoise.c'; fi`
+
+processing/gpu-palette/test_runner-0010_comparison_default.o: processing/gpu-palette/0010_comparison_default.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0010_comparison_default.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0010_comparison_default.Tpo -c -o processing/gpu-palette/test_runner-0010_comparison_default.o `test -f 'processing/gpu-palette/0010_comparison_default.c' || echo '$(srcdir)/'`processing/gpu-palette/0010_comparison_default.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0010_comparison_default.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0010_comparison_default.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0010_comparison_default.c' object='processing/gpu-palette/test_runner-0010_comparison_default.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0010_comparison_default.o `test -f 'processing/gpu-palette/0010_comparison_default.c' || echo '$(srcdir)/'`processing/gpu-palette/0010_comparison_default.c
+
+processing/gpu-palette/test_runner-0010_comparison_default.obj: processing/gpu-palette/0010_comparison_default.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0010_comparison_default.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0010_comparison_default.Tpo -c -o processing/gpu-palette/test_runner-0010_comparison_default.obj `if test -f 'processing/gpu-palette/0010_comparison_default.c'; then $(CYGPATH_W) 'processing/gpu-palette/0010_comparison_default.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0010_comparison_default.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0010_comparison_default.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0010_comparison_default.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0010_comparison_default.c' object='processing/gpu-palette/test_runner-0010_comparison_default.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0010_comparison_default.obj `if test -f 'processing/gpu-palette/0010_comparison_default.c'; then $(CYGPATH_W) 'processing/gpu-palette/0010_comparison_default.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0010_comparison_default.c'; fi`
+
+processing/gpu-palette/test_runner-0011_comparison_short.o: processing/gpu-palette/0011_comparison_short.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0011_comparison_short.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0011_comparison_short.Tpo -c -o processing/gpu-palette/test_runner-0011_comparison_short.o `test -f 'processing/gpu-palette/0011_comparison_short.c' || echo '$(srcdir)/'`processing/gpu-palette/0011_comparison_short.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0011_comparison_short.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0011_comparison_short.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0011_comparison_short.c' object='processing/gpu-palette/test_runner-0011_comparison_short.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0011_comparison_short.o `test -f 'processing/gpu-palette/0011_comparison_short.c' || echo '$(srcdir)/'`processing/gpu-palette/0011_comparison_short.c
+
+processing/gpu-palette/test_runner-0011_comparison_short.obj: processing/gpu-palette/0011_comparison_short.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0011_comparison_short.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0011_comparison_short.Tpo -c -o processing/gpu-palette/test_runner-0011_comparison_short.obj `if test -f 'processing/gpu-palette/0011_comparison_short.c'; then $(CYGPATH_W) 'processing/gpu-palette/0011_comparison_short.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0011_comparison_short.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0011_comparison_short.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0011_comparison_short.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0011_comparison_short.c' object='processing/gpu-palette/test_runner-0011_comparison_short.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0011_comparison_short.obj `if test -f 'processing/gpu-palette/0011_comparison_short.c'; then $(CYGPATH_W) 'processing/gpu-palette/0011_comparison_short.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0011_comparison_short.c'; fi`
+
+processing/gpu-palette/test_runner-wire_common.o: processing/gpu-palette/wire_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-wire_common.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Tpo -c -o processing/gpu-palette/test_runner-wire_common.o `test -f 'processing/gpu-palette/wire_common.c' || echo '$(srcdir)/'`processing/gpu-palette/wire_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/wire_common.c' object='processing/gpu-palette/test_runner-wire_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-wire_common.o `test -f 'processing/gpu-palette/wire_common.c' || echo '$(srcdir)/'`processing/gpu-palette/wire_common.c
+
+processing/gpu-palette/test_runner-wire_common.obj: processing/gpu-palette/wire_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-wire_common.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Tpo -c -o processing/gpu-palette/test_runner-wire_common.obj `if test -f 'processing/gpu-palette/wire_common.c'; then $(CYGPATH_W) 'processing/gpu-palette/wire_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/wire_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/wire_common.c' object='processing/gpu-palette/test_runner-wire_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-wire_common.obj `if test -f 'processing/gpu-palette/wire_common.c'; then $(CYGPATH_W) 'processing/gpu-palette/wire_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/wire_common.c'; fi`
 
 processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o: processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o -MD -MP -MF processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Tpo -c -o processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o `test -f 'processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c' || echo '$(srcdir)/'`processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c

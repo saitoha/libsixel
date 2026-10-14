@@ -4296,6 +4296,8 @@ sixel_dither_apply_palette_with_mode(
     sixel_palette_entries_view_t entries_view;
     sixel_palette_float32_entries_view_t float32_view;
     sixel_gpu_palette_request_t gpu_request;
+    unsigned char gpu_comparison_palette[SIXEL_PALETTE_MAX * 3];
+    size_t gpu_palette_byte;
     SIXELSTATUS gpu_status;
     int gpu_applied;
     int row_index;
@@ -4740,6 +4742,31 @@ sixel_dither_apply_palette_with_mode(
          * retained RGB would advance to a color never painted. Use the same
          * candidate count as CPU lookup, including for GPU Eytzinger. */
         gpu_request.ncolors = sixel_dither_lookup_ncolors(dither);
+        /* Forward the output owner's comparison view to Metal as well as
+         * CPU lookup. Project once per palette, never the source samples
+         * or the palette used to choose indices and apply blue noise. */
+        if (dither->pipeline_6delta_hls_bytes != NULL) {
+            gpu_request.sixdelta_comparison_palette =
+                dither->pipeline_6delta_hls_bytes;
+            gpu_request.sixdelta_comparison_palette_size =
+                (size_t)dither->pipeline_6delta_hls_count * 3U;
+        } else if (dither->pipeline_6delta_rgb101 &&
+                entries_view.entries != NULL && entries_view.depth == 3 &&
+                gpu_request.ncolors > 0 &&
+                gpu_request.ncolors <= SIXEL_PALETTE_MAX &&
+                entries_view.entries_size >=
+                    (size_t)gpu_request.ncolors * 3U) {
+            for (gpu_palette_byte = 0;
+                    gpu_palette_byte < (size_t)gpu_request.ncolors * 3U;
+                    ++gpu_palette_byte) {
+                gpu_comparison_palette[gpu_palette_byte] = (unsigned char)(
+                    (((entries_view.entries[gpu_palette_byte] * 100U + 127U)
+                        / 255U) * 255U + 50U) / 100U);
+            }
+            gpu_request.sixdelta_comparison_palette = gpu_comparison_palette;
+            gpu_request.sixdelta_comparison_palette_size =
+                (size_t)gpu_request.ncolors * 3U;
+        }
         gpu_request.lut_policy = dither->lut_policy;
         gpu_request.method_for_diffuse = dither->method_for_diffuse;
         gpu_request.method_for_scan = method_for_scan;

@@ -75,6 +75,7 @@ typedef struct sixel_gpu_metal_params {
     uint32_t gradient_size;
     uint32_t gradient_width;
     uint32_t gradient_height;
+    unsigned char sixdelta_palette[SIXEL_PALETTE_MAX * 3];
 } sixel_gpu_metal_params_t;
 
 typedef struct sixel_gpu_metal_dequant_params {
@@ -182,6 +183,7 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    uint gradient_size;\n"
 "    uint gradient_width;\n"
 "    uint gradient_height;\n"
+"    uchar sixdelta_palette[768];\n"
 "};\n"
 "struct EytzingerEntry {\n"
 "    float key;\n"
@@ -450,7 +452,7 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "                          accumulation[gid * 3u + 1u],\n"
 "                          accumulation[gid * 3u + 2u]);\n"
 "        if (color_distance(source, retained) <=\n"
-"            palette_distance(palette, source, best)) {\n"
+"            palette_distance(params.sixdelta_palette, source, best)) {\n"
 "            result[gid] = uchar(params.accumulation_keycolor);\n"
 "            if (gid < params.accumulation_result_mask_size) {\n"
 "                accumulation_result_mask[gid] = uchar(1);\n"
@@ -989,6 +991,12 @@ sixel_gpu_palette_metal_fill_params(
             (uint32_t)request->sixdelta_threshold;
         params->accumulation_result_mask_size =
             (uint32_t)request->accumulation_result_mask_size;
+        /* Lookup keeps its working palette; only keep uses emitted colors.
+         * Embed this palette-sized view in the existing parameter upload. */
+        memcpy(params->sixdelta_palette,
+               request->sixdelta_comparison_palette != NULL
+                   ? request->sixdelta_comparison_palette : request->palette,
+               (size_t)request->ncolors * 3U);
     }
     params->bluenoise_strength = request->bluenoise_strength;
     params->bluenoise_gradient_factor = request->bluenoise_gradient_factor;

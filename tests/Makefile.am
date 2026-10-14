@@ -1465,6 +1465,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0002_RESERVED_KEY \
     -DBUILD_TEST_0003_FADE_HISTORY \
     -DBUILD_TEST_0004_AUTO_STRENGTH \
+    -DBUILD_TEST_0005_WIRE_RGB_NONE \
+    -DBUILD_TEST_0006_WIRE_RGB_BLUENOISE \
+    -DBUILD_TEST_0007_WIRE_RGB_EYTZINGER \
+    -DBUILD_TEST_0008_WIRE_HLS_NONE \
+    -DBUILD_TEST_0009_WIRE_HLS_BLUENOISE \
+    -DBUILD_TEST_0010_COMPARISON_DEFAULT \
+    -DBUILD_TEST_0011_COMPARISON_SHORT \
+    -DBUILD_WIRE_COMMON \
     -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
     -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
@@ -4461,6 +4469,14 @@ test_runner_SOURCES = test_runner.c \
     processing/gpu-palette/0002_reserved_key.c \
     processing/gpu-palette/0003_fade_history.c \
     processing/gpu-palette/0004_auto_strength.c \
+    processing/gpu-palette/0005_wire_rgb_none.c \
+    processing/gpu-palette/0006_wire_rgb_bluenoise.c \
+    processing/gpu-palette/0007_wire_rgb_eytzinger.c \
+    processing/gpu-palette/0008_wire_hls_none.c \
+    processing/gpu-palette/0009_wire_hls_bluenoise.c \
+    processing/gpu-palette/0010_comparison_default.c \
+    processing/gpu-palette/0011_comparison_short.c \
+    processing/gpu-palette/wire_common.c \
     processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
     processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
