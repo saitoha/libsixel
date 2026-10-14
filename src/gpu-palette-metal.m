@@ -46,6 +46,8 @@
 enum {
     SIXEL_GPU_METAL_MODE_NONE = 0,
     SIXEL_GPU_METAL_MODE_BLUENOISE = 1,
+    SIXEL_GPU_METAL_MODE_A_DITHER = 2,
+    SIXEL_GPU_METAL_MODE_X_DITHER = 3,
     SIXEL_GPU_METAL_LOOKUP_DIRECT = 0,
     SIXEL_GPU_METAL_LOOKUP_EYTZINGER = 1,
     SIXEL_GPU_METAL_EYTZINGER_KEY_MAX = 255 * 3
@@ -67,6 +69,7 @@ typedef struct sixel_gpu_metal_params {
     uint32_t accumulation_keycolor;
     uint32_t sixdelta_threshold;
     uint32_t accumulation_result_mask_size;
+    float positional_strength;
     float bluenoise_strength;
     float bluenoise_gradient_factor;
     int32_t bluenoise_phase_x;
@@ -175,6 +178,7 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    uint accumulation_keycolor;\n"
 "    uint sixdelta_threshold;\n"
 "    uint accumulation_result_mask_size;\n"
+"    float positional_strength;\n"
 "    float bluenoise_strength;\n"
 "    float bluenoise_gradient_factor;\n"
 "    int bluenoise_phase_x;\n"
@@ -412,7 +416,7 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "            }\n"
 "            return;\n"
 "        }\n"
-"    }\n"
+"    }\n",
 "    if (params.mode == 1u) {\n"
 "        float weight = gradient_weight(gradient, params, x, y, gid);\n"
 "        for (uint d = 0u; d < 3u; ++d) {\n"
@@ -425,6 +429,24 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "            q[d] = uchar(val);\n"
 "        }\n"
 "    }\n"
+"    // Match CPU unsigned phases and truncate the bias before addition.\n"
+"    // Keep source untouched for the emitted-color comparison below.\n"
+"    if (params.mode == 2u || params.mode == 3u) {\n"
+"        for (uint d = 0u; d < 3u; ++d) {\n"
+"            uint phase;\n"
+"            float noise;\n"
+"            if (params.mode == 2u) {\n"
+"                phase = (x + d * 67u + y * 236u) * 119u;\n"
+"                noise = float(phase & 255u) / 128.0f - 1.0f;\n"
+"            } else {\n"
+"                phase = ((x + d * 29u) ^ (y * 149u)) * 1234u;\n"
+"                noise = float(phase & 511u) / 256.0f - 1.0f;\n"
+"            }\n"
+"            int val = int(q[d]) +\n"
+"                int((noise * params.positional_strength) * 32.0f);\n"
+"            q[d] = uchar(clamp(val, 0, 255));\n"
+"        }\n"
+"    }\n",
 "    if (params.lookup_mode == 1u) {\n"
 "        best = eytzinger_palette_lookup(palette,\n"
 "                                        eytzinger_sorted,\n"
@@ -968,6 +990,12 @@ sixel_gpu_palette_metal_fill_params(
         request->method_for_diffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER ?
         SIXEL_GPU_METAL_MODE_BLUENOISE :
         SIXEL_GPU_METAL_MODE_NONE;
+    if (request->method_for_diffuse == SIXEL_DIFFUSE_A_DITHER) {
+        params->mode = SIXEL_GPU_METAL_MODE_A_DITHER;
+    } else if (request->method_for_diffuse == SIXEL_DIFFUSE_X_DITHER) {
+        params->mode = SIXEL_GPU_METAL_MODE_X_DITHER;
+    }
+    params->positional_strength = request->positional_strength;
     if (request->transparent_mask != NULL &&
             request->transparent_keycolor >= 0 &&
             request->transparent_keycolor < SIXEL_PALETTE_MAX) {

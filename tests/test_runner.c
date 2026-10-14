@@ -832,6 +832,14 @@ int test_gpupal_0008_wire_hls_none(int argc, char **argv);
 int test_gpupal_0009_wire_hls_bluenoise(int argc, char **argv);
 int test_gpupal_0010_comparison_default(int argc, char **argv);
 int test_gpupal_0011_comparison_short(int argc, char **argv);
+int test_gpupal_0012_a_candidates(int argc, char **argv);
+int test_gpupal_0013_x_candidates(int argc, char **argv);
+int test_gpupal_0014_a_auto_strength(int argc, char **argv);
+int test_gpupal_0015_x_auto_strength(int argc, char **argv);
+int test_gpupal_0016_a_strength_precedence(int argc, char **argv);
+int test_gpupal_0017_x_strength_precedence(int argc, char **argv);
+int test_gpupal_0018_wire_a(int argc, char **argv);
+int test_gpupal_0019_wire_x(int argc, char **argv);
 int test_positional_0048_gpu_6delta(int argc, char **argv);
 int test_bluenoise_0052_keep_offset(int argc, char **argv);
 int test_gpudeq_0001_strtoul(int argc, char **argv);
@@ -4489,6 +4497,22 @@ static test_entry_t const test_entries[] = {
       test_gpupal_0010_comparison_default },
     { "gpu-palette/0011_comparison_short",
       test_gpupal_0011_comparison_short },
+    { "gpu-palette/0012_a_candidates",
+      test_gpupal_0012_a_candidates },
+    { "gpu-palette/0013_x_candidates",
+      test_gpupal_0013_x_candidates },
+    { "gpu-palette/0014_a_auto_strength",
+      test_gpupal_0014_a_auto_strength },
+    { "gpu-palette/0015_x_auto_strength",
+      test_gpupal_0015_x_auto_strength },
+    { "gpu-palette/0016_a_strength_precedence",
+      test_gpupal_0016_a_strength_precedence },
+    { "gpu-palette/0017_x_strength_precedence",
+      test_gpupal_0017_x_strength_precedence },
+    { "gpu-palette/0018_wire_a",
+      test_gpupal_0018_wire_a },
+    { "gpu-palette/0019_wire_x",
+      test_gpupal_0019_wire_x },
     { "dither/positional/0048_gpu_6delta", test_positional_0048_gpu_6delta },
     { "dither/bluenoise/0052_keep_offset", test_bluenoise_0052_keep_offset },
     { "gpu-dequant/0001_gpu_dequant_threshold_strtoul",

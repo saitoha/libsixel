@@ -40,7 +40,7 @@ extern "C" {
  *
  * The GPU path is intentionally below lookup-policy and dither-policy.  It sees
  * the same normalized RGB888 source, byte palette, transparent mask, and
- * blue-noise controls that the CPU lookup would read, then materializes the
+ * positional controls that the CPU lookup would read, then materializes the
  * indexed SIXEL buffer in one dispatch.  NONE uses the exact direct scan;
  * EYTZINGER uses the one-dimensional projected lookup.  Unsupported shapes
  * return SIXEL_FALSE for policy=auto so the caller can continue through the
@@ -86,6 +86,9 @@ typedef struct sixel_gpu_palette_request {
     size_t sixdelta_comparison_palette_size;
     unsigned char *accumulation_result_mask;
     size_t accumulation_result_mask_size;
+    /* Resolved with the selected arithmetic method's registry defaults. */
+    int positional_strength_override;
+    float positional_strength;
     int bluenoise_strength_override;
     float bluenoise_strength;
     int bluenoise_phase_override;

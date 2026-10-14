@@ -1207,6 +1207,15 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/gpu-palette/0010_comparison_default.c \
 	processing/gpu-palette/0011_comparison_short.c \
 	processing/gpu-palette/wire_common.c \
+	processing/gpu-palette/0012_a_candidates.c \
+	processing/gpu-palette/0013_x_candidates.c \
+	processing/gpu-palette/0014_a_auto_strength.c \
+	processing/gpu-palette/0015_x_auto_strength.c \
+	processing/gpu-palette/0016_a_strength_precedence.c \
+	processing/gpu-palette/0017_x_strength_precedence.c \
+	processing/gpu-palette/0018_wire_a.c \
+	processing/gpu-palette/0019_wire_x.c \
+	processing/gpu-palette/arithmetic_test_common.c \
 	processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
 	processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -4533,6 +4542,15 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0010_comparison_default.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0011_comparison_short.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-wire_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0012_a_candidates.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0013_x_candidates.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0014_a_auto_strength.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0015_x_auto_strength.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0016_a_strength_precedence.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0017_x_strength_precedence.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0018_wire_a.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0019_wire_x.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-arithmetic_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.$(OBJEXT) \
@@ -9018,6 +9036,15 @@ am__depfiles_remade =  \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0009_wire_hls_bluenoise.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0010_comparison_default.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0011_comparison_short.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0012_a_candidates.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0013_x_candidates.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0014_a_auto_strength.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0015_x_auto_strength.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0016_a_strength_precedence.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0017_x_strength_precedence.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0018_wire_a.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0019_wire_x.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po \
@@ -12127,6 +12154,15 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_COMPARISON_DEFAULT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_COMPARISON_SHORT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_WIRE_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_A_CANDIDATES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_X_CANDIDATES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_A_AUTO_STRENGTH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_X_AUTO_STRENGTH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_A_STRENGTH_PRECEDENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_X_STRENGTH_PRECEDENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_WIRE_A \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_WIRE_X \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ARITHMETIC_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
@@ -15218,6 +15254,15 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0010_comparison_default.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0011_comparison_short.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/wire_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0012_a_candidates.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0013_x_candidates.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0014_a_auto_strength.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0015_x_auto_strength.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0016_a_strength_precedence.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0017_x_strength_precedence.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0018_wire_a.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0019_wire_x.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/arithmetic_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -21018,6 +21063,33 @@ processing/gpu-palette/test_runner-0011_comparison_short.$(OBJEXT):  \
 	processing/gpu-palette/$(am__dirstamp) \
 	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-palette/test_runner-wire_common.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0012_a_candidates.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0013_x_candidates.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0014_a_auto_strength.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0015_x_auto_strength.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0016_a_strength_precedence.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0017_x_strength_precedence.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0018_wire_a.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0019_wire_x.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-arithmetic_test_common.$(OBJEXT):  \
 	processing/gpu-palette/$(am__dirstamp) \
 	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-dequant/$(am__dirstamp):
@@ -30563,6 +30635,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0009_wire_hls_bluenoise.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0010_comparison_default.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0011_comparison_short.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0012_a_candidates.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0013_x_candidates.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0014_a_auto_strength.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0015_x_auto_strength.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0016_a_strength_precedence.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0017_x_strength_precedence.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0018_wire_a.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0019_wire_x.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po@am__quote@ # am--include-marker
@@ -46702,6 +46783,132 @@ processing/gpu-palette/test_runner-wire_common.obj: processing/gpu-palette/wire_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/wire_common.c' object='processing/gpu-palette/test_runner-wire_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-wire_common.obj `if test -f 'processing/gpu-palette/wire_common.c'; then $(CYGPATH_W) 'processing/gpu-palette/wire_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/wire_common.c'; fi`
+
+processing/gpu-palette/test_runner-0012_a_candidates.o: processing/gpu-palette/0012_a_candidates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0012_a_candidates.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0012_a_candidates.Tpo -c -o processing/gpu-palette/test_runner-0012_a_candidates.o `test -f 'processing/gpu-palette/0012_a_candidates.c' || echo '$(srcdir)/'`processing/gpu-palette/0012_a_candidates.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0012_a_candidates.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0012_a_candidates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0012_a_candidates.c' object='processing/gpu-palette/test_runner-0012_a_candidates.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0012_a_candidates.o `test -f 'processing/gpu-palette/0012_a_candidates.c' || echo '$(srcdir)/'`processing/gpu-palette/0012_a_candidates.c
+
+processing/gpu-palette/test_runner-0012_a_candidates.obj: processing/gpu-palette/0012_a_candidates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0012_a_candidates.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0012_a_candidates.Tpo -c -o processing/gpu-palette/test_runner-0012_a_candidates.obj `if test -f 'processing/gpu-palette/0012_a_candidates.c'; then $(CYGPATH_W) 'processing/gpu-palette/0012_a_candidates.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0012_a_candidates.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0012_a_candidates.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0012_a_candidates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0012_a_candidates.c' object='processing/gpu-palette/test_runner-0012_a_candidates.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0012_a_candidates.obj `if test -f 'processing/gpu-palette/0012_a_candidates.c'; then $(CYGPATH_W) 'processing/gpu-palette/0012_a_candidates.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0012_a_candidates.c'; fi`
+
+processing/gpu-palette/test_runner-0013_x_candidates.o: processing/gpu-palette/0013_x_candidates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0013_x_candidates.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0013_x_candidates.Tpo -c -o processing/gpu-palette/test_runner-0013_x_candidates.o `test -f 'processing/gpu-palette/0013_x_candidates.c' || echo '$(srcdir)/'`processing/gpu-palette/0013_x_candidates.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0013_x_candidates.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0013_x_candidates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0013_x_candidates.c' object='processing/gpu-palette/test_runner-0013_x_candidates.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0013_x_candidates.o `test -f 'processing/gpu-palette/0013_x_candidates.c' || echo '$(srcdir)/'`processing/gpu-palette/0013_x_candidates.c
+
+processing/gpu-palette/test_runner-0013_x_candidates.obj: processing/gpu-palette/0013_x_candidates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0013_x_candidates.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0013_x_candidates.Tpo -c -o processing/gpu-palette/test_runner-0013_x_candidates.obj `if test -f 'processing/gpu-palette/0013_x_candidates.c'; then $(CYGPATH_W) 'processing/gpu-palette/0013_x_candidates.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0013_x_candidates.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0013_x_candidates.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0013_x_candidates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0013_x_candidates.c' object='processing/gpu-palette/test_runner-0013_x_candidates.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0013_x_candidates.obj `if test -f 'processing/gpu-palette/0013_x_candidates.c'; then $(CYGPATH_W) 'processing/gpu-palette/0013_x_candidates.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0013_x_candidates.c'; fi`
+
+processing/gpu-palette/test_runner-0014_a_auto_strength.o: processing/gpu-palette/0014_a_auto_strength.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0014_a_auto_strength.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0014_a_auto_strength.Tpo -c -o processing/gpu-palette/test_runner-0014_a_auto_strength.o `test -f 'processing/gpu-palette/0014_a_auto_strength.c' || echo '$(srcdir)/'`processing/gpu-palette/0014_a_auto_strength.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0014_a_auto_strength.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0014_a_auto_strength.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0014_a_auto_strength.c' object='processing/gpu-palette/test_runner-0014_a_auto_strength.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0014_a_auto_strength.o `test -f 'processing/gpu-palette/0014_a_auto_strength.c' || echo '$(srcdir)/'`processing/gpu-palette/0014_a_auto_strength.c
+
+processing/gpu-palette/test_runner-0014_a_auto_strength.obj: processing/gpu-palette/0014_a_auto_strength.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0014_a_auto_strength.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0014_a_auto_strength.Tpo -c -o processing/gpu-palette/test_runner-0014_a_auto_strength.obj `if test -f 'processing/gpu-palette/0014_a_auto_strength.c'; then $(CYGPATH_W) 'processing/gpu-palette/0014_a_auto_strength.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0014_a_auto_strength.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0014_a_auto_strength.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0014_a_auto_strength.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0014_a_auto_strength.c' object='processing/gpu-palette/test_runner-0014_a_auto_strength.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0014_a_auto_strength.obj `if test -f 'processing/gpu-palette/0014_a_auto_strength.c'; then $(CYGPATH_W) 'processing/gpu-palette/0014_a_auto_strength.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0014_a_auto_strength.c'; fi`
+
+processing/gpu-palette/test_runner-0015_x_auto_strength.o: processing/gpu-palette/0015_x_auto_strength.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0015_x_auto_strength.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0015_x_auto_strength.Tpo -c -o processing/gpu-palette/test_runner-0015_x_auto_strength.o `test -f 'processing/gpu-palette/0015_x_auto_strength.c' || echo '$(srcdir)/'`processing/gpu-palette/0015_x_auto_strength.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0015_x_auto_strength.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0015_x_auto_strength.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0015_x_auto_strength.c' object='processing/gpu-palette/test_runner-0015_x_auto_strength.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0015_x_auto_strength.o `test -f 'processing/gpu-palette/0015_x_auto_strength.c' || echo '$(srcdir)/'`processing/gpu-palette/0015_x_auto_strength.c
+
+processing/gpu-palette/test_runner-0015_x_auto_strength.obj: processing/gpu-palette/0015_x_auto_strength.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0015_x_auto_strength.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0015_x_auto_strength.Tpo -c -o processing/gpu-palette/test_runner-0015_x_auto_strength.obj `if test -f 'processing/gpu-palette/0015_x_auto_strength.c'; then $(CYGPATH_W) 'processing/gpu-palette/0015_x_auto_strength.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0015_x_auto_strength.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0015_x_auto_strength.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0015_x_auto_strength.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0015_x_auto_strength.c' object='processing/gpu-palette/test_runner-0015_x_auto_strength.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0015_x_auto_strength.obj `if test -f 'processing/gpu-palette/0015_x_auto_strength.c'; then $(CYGPATH_W) 'processing/gpu-palette/0015_x_auto_strength.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0015_x_auto_strength.c'; fi`
+
+processing/gpu-palette/test_runner-0016_a_strength_precedence.o: processing/gpu-palette/0016_a_strength_precedence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0016_a_strength_precedence.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0016_a_strength_precedence.Tpo -c -o processing/gpu-palette/test_runner-0016_a_strength_precedence.o `test -f 'processing/gpu-palette/0016_a_strength_precedence.c' || echo '$(srcdir)/'`processing/gpu-palette/0016_a_strength_precedence.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0016_a_strength_precedence.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0016_a_strength_precedence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0016_a_strength_precedence.c' object='processing/gpu-palette/test_runner-0016_a_strength_precedence.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0016_a_strength_precedence.o `test -f 'processing/gpu-palette/0016_a_strength_precedence.c' || echo '$(srcdir)/'`processing/gpu-palette/0016_a_strength_precedence.c
+
+processing/gpu-palette/test_runner-0016_a_strength_precedence.obj: processing/gpu-palette/0016_a_strength_precedence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0016_a_strength_precedence.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0016_a_strength_precedence.Tpo -c -o processing/gpu-palette/test_runner-0016_a_strength_precedence.obj `if test -f 'processing/gpu-palette/0016_a_strength_precedence.c'; then $(CYGPATH_W) 'processing/gpu-palette/0016_a_strength_precedence.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0016_a_strength_precedence.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0016_a_strength_precedence.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0016_a_strength_precedence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0016_a_strength_precedence.c' object='processing/gpu-palette/test_runner-0016_a_strength_precedence.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0016_a_strength_precedence.obj `if test -f 'processing/gpu-palette/0016_a_strength_precedence.c'; then $(CYGPATH_W) 'processing/gpu-palette/0016_a_strength_precedence.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0016_a_strength_precedence.c'; fi`
+
+processing/gpu-palette/test_runner-0017_x_strength_precedence.o: processing/gpu-palette/0017_x_strength_precedence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0017_x_strength_precedence.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0017_x_strength_precedence.Tpo -c -o processing/gpu-palette/test_runner-0017_x_strength_precedence.o `test -f 'processing/gpu-palette/0017_x_strength_precedence.c' || echo '$(srcdir)/'`processing/gpu-palette/0017_x_strength_precedence.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0017_x_strength_precedence.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0017_x_strength_precedence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0017_x_strength_precedence.c' object='processing/gpu-palette/test_runner-0017_x_strength_precedence.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0017_x_strength_precedence.o `test -f 'processing/gpu-palette/0017_x_strength_precedence.c' || echo '$(srcdir)/'`processing/gpu-palette/0017_x_strength_precedence.c
+
+processing/gpu-palette/test_runner-0017_x_strength_precedence.obj: processing/gpu-palette/0017_x_strength_precedence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0017_x_strength_precedence.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0017_x_strength_precedence.Tpo -c -o processing/gpu-palette/test_runner-0017_x_strength_precedence.obj `if test -f 'processing/gpu-palette/0017_x_strength_precedence.c'; then $(CYGPATH_W) 'processing/gpu-palette/0017_x_strength_precedence.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0017_x_strength_precedence.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0017_x_strength_precedence.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0017_x_strength_precedence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0017_x_strength_precedence.c' object='processing/gpu-palette/test_runner-0017_x_strength_precedence.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0017_x_strength_precedence.obj `if test -f 'processing/gpu-palette/0017_x_strength_precedence.c'; then $(CYGPATH_W) 'processing/gpu-palette/0017_x_strength_precedence.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0017_x_strength_precedence.c'; fi`
+
+processing/gpu-palette/test_runner-0018_wire_a.o: processing/gpu-palette/0018_wire_a.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0018_wire_a.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0018_wire_a.Tpo -c -o processing/gpu-palette/test_runner-0018_wire_a.o `test -f 'processing/gpu-palette/0018_wire_a.c' || echo '$(srcdir)/'`processing/gpu-palette/0018_wire_a.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0018_wire_a.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0018_wire_a.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0018_wire_a.c' object='processing/gpu-palette/test_runner-0018_wire_a.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0018_wire_a.o `test -f 'processing/gpu-palette/0018_wire_a.c' || echo '$(srcdir)/'`processing/gpu-palette/0018_wire_a.c
+
+processing/gpu-palette/test_runner-0018_wire_a.obj: processing/gpu-palette/0018_wire_a.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0018_wire_a.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0018_wire_a.Tpo -c -o processing/gpu-palette/test_runner-0018_wire_a.obj `if test -f 'processing/gpu-palette/0018_wire_a.c'; then $(CYGPATH_W) 'processing/gpu-palette/0018_wire_a.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0018_wire_a.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0018_wire_a.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0018_wire_a.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0018_wire_a.c' object='processing/gpu-palette/test_runner-0018_wire_a.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0018_wire_a.obj `if test -f 'processing/gpu-palette/0018_wire_a.c'; then $(CYGPATH_W) 'processing/gpu-palette/0018_wire_a.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0018_wire_a.c'; fi`
+
+processing/gpu-palette/test_runner-0019_wire_x.o: processing/gpu-palette/0019_wire_x.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0019_wire_x.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0019_wire_x.Tpo -c -o processing/gpu-palette/test_runner-0019_wire_x.o `test -f 'processing/gpu-palette/0019_wire_x.c' || echo '$(srcdir)/'`processing/gpu-palette/0019_wire_x.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0019_wire_x.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0019_wire_x.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0019_wire_x.c' object='processing/gpu-palette/test_runner-0019_wire_x.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0019_wire_x.o `test -f 'processing/gpu-palette/0019_wire_x.c' || echo '$(srcdir)/'`processing/gpu-palette/0019_wire_x.c
+
+processing/gpu-palette/test_runner-0019_wire_x.obj: processing/gpu-palette/0019_wire_x.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0019_wire_x.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0019_wire_x.Tpo -c -o processing/gpu-palette/test_runner-0019_wire_x.obj `if test -f 'processing/gpu-palette/0019_wire_x.c'; then $(CYGPATH_W) 'processing/gpu-palette/0019_wire_x.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0019_wire_x.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0019_wire_x.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0019_wire_x.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0019_wire_x.c' object='processing/gpu-palette/test_runner-0019_wire_x.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0019_wire_x.obj `if test -f 'processing/gpu-palette/0019_wire_x.c'; then $(CYGPATH_W) 'processing/gpu-palette/0019_wire_x.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0019_wire_x.c'; fi`
+
+processing/gpu-palette/test_runner-arithmetic_test_common.o: processing/gpu-palette/arithmetic_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-arithmetic_test_common.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Tpo -c -o processing/gpu-palette/test_runner-arithmetic_test_common.o `test -f 'processing/gpu-palette/arithmetic_test_common.c' || echo '$(srcdir)/'`processing/gpu-palette/arithmetic_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/arithmetic_test_common.c' object='processing/gpu-palette/test_runner-arithmetic_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-arithmetic_test_common.o `test -f 'processing/gpu-palette/arithmetic_test_common.c' || echo '$(srcdir)/'`processing/gpu-palette/arithmetic_test_common.c
+
+processing/gpu-palette/test_runner-arithmetic_test_common.obj: processing/gpu-palette/arithmetic_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-arithmetic_test_common.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Tpo -c -o processing/gpu-palette/test_runner-arithmetic_test_common.obj `if test -f 'processing/gpu-palette/arithmetic_test_common.c'; then $(CYGPATH_W) 'processing/gpu-palette/arithmetic_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/arithmetic_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/arithmetic_test_common.c' object='processing/gpu-palette/test_runner-arithmetic_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-arithmetic_test_common.obj `if test -f 'processing/gpu-palette/arithmetic_test_common.c'; then $(CYGPATH_W) 'processing/gpu-palette/arithmetic_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/arithmetic_test_common.c'; fi`
 
 processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o: processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o -MD -MP -MF processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Tpo -c -o processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o `test -f 'processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c' || echo '$(srcdir)/'`processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c

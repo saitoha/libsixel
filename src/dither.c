@@ -4791,6 +4791,8 @@ sixel_dither_apply_palette_with_mode(
         gpu_request.has_6delta_accumulation =
             dither->pipeline_6delta_enabled != 0 &&
             (dither->method_for_diffuse == SIXEL_DIFFUSE_NONE ||
+             dither->method_for_diffuse == SIXEL_DIFFUSE_A_DITHER ||
+             dither->method_for_diffuse == SIXEL_DIFFUSE_X_DITHER ||
              dither->method_for_diffuse ==
                 SIXEL_DIFFUSE_BLUENOISE_DITHER) &&
             sixel_dither_has_compatible_accumulation_hint(dither,
@@ -4814,6 +4816,15 @@ sixel_dither_apply_palette_with_mode(
                 dither->pipeline_accumulation_result_mask;
             gpu_request.accumulation_result_mask_size =
                 dither->pipeline_accumulation_result_mask_size;
+        }
+        if (dither->method_for_diffuse == SIXEL_DIFFUSE_A_DITHER) {
+            gpu_request.positional_strength_override =
+                dither->a_dither_strength_override;
+            gpu_request.positional_strength = dither->a_dither_strength;
+        } else if (dither->method_for_diffuse == SIXEL_DIFFUSE_X_DITHER) {
+            gpu_request.positional_strength_override =
+                dither->x_dither_strength_override;
+            gpu_request.positional_strength = dither->x_dither_strength;
         }
         gpu_request.bluenoise_strength_override =
             dither->bluenoise_strength_override;

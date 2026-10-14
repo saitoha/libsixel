@@ -80,6 +80,16 @@ sixel_gpu_palette_lut_policy_is_supported(
     return sixel_gpu_palette_policy_is_force(request->policy);
 }
 
+/* All admitted methods select independently at each pixel. */
+static int
+sixel_gpu_palette_method_is_supported(int method)
+{
+    return method == SIXEL_DIFFUSE_NONE ||
+        method == SIXEL_DIFFUSE_A_DITHER ||
+        method == SIXEL_DIFFUSE_X_DITHER ||
+        method == SIXEL_DIFFUSE_BLUENOISE_DITHER;
+}
+
 static int
 sixel_gpu_palette_accumulation_is_supported(
     sixel_gpu_palette_request_t const *request)
@@ -104,14 +114,13 @@ sixel_gpu_palette_accumulation_is_supported(
          * happens when the retained plane is larger than the frame: the kernel
          * below addresses the plane by frame pixel index and would compare
          * against unrelated pixels.  Decline so the CPU dither policy, which
-         * does understand a plane origin, handles the frame instead.  Both
-         * GPU palette policies implement the keep gate and must not silently
-         * paint a frame whose retained plane they cannot address.
+         * does understand a plane origin, handles the frame instead.  All
+         * admitted GPU palette policies implement the keep gate and must
+         * not silently paint a frame whose retained plane they cannot address.
          */
         if (request->sixdelta_enabled != 0 &&
-                (request->method_for_diffuse == SIXEL_DIFFUSE_NONE ||
-                 request->method_for_diffuse ==
-                    SIXEL_DIFFUSE_BLUENOISE_DITHER)) {
+                sixel_gpu_palette_method_is_supported(
+                    request->method_for_diffuse)) {
             return 0;
         }
         return 1;
@@ -124,9 +133,7 @@ sixel_gpu_palette_accumulation_is_supported(
     if (request->sixdelta_enabled == 0) {
         return 0;
     }
-    if (request->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
-            request->method_for_diffuse !=
-                SIXEL_DIFFUSE_BLUENOISE_DITHER) {
+    if (!sixel_gpu_palette_method_is_supported(request->method_for_diffuse)) {
         return 0;
     }
     if (request->accumulation_pixels == NULL ||
@@ -337,9 +344,7 @@ sixel_gpu_palette_request_is_supported(
                 required_palette_size) {
         return 0;
     }
-    if (request->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
-            request->method_for_diffuse !=
-            SIXEL_DIFFUSE_BLUENOISE_DITHER) {
+    if (!sixel_gpu_palette_method_is_supported(request->method_for_diffuse)) {
         return 0;
     }
     if (request->method_for_scan != SIXEL_SCAN_RASTER &&
@@ -369,6 +374,31 @@ sixel_gpu_palette_prepare_effective_request(
     }
 
     *effective = *request;
+    /* Match CPU precedence: paintable-count amplitude, registry environment,
+     * then the encoder-bound numeric override. Never reuse blue-noise knobs
+     * for the arithmetic patterns. */
+    if (request->method_for_diffuse == SIXEL_DIFFUSE_A_DITHER ||
+            request->method_for_diffuse == SIXEL_DIFFUSE_X_DITHER) {
+        effective->positional_strength = sixel_dither_positional_auto_strength(
+            request->method_for_diffuse, request->ncolors);
+        if (request->method_for_diffuse == SIXEL_DIFFUSE_A_DITHER) {
+            (void)sixel_option_resolve_registered_float_binding(
+                SIXEL_OPTION_SCHEMA_DIFFUSION, "a_dither",
+                SIXEL_SUBOPTION_BINDING_ID_2(
+                    a_dither_strength, a_dither_strength_override),
+                &effective->positional_strength);
+        } else {
+            (void)sixel_option_resolve_registered_float_binding(
+                SIXEL_OPTION_SCHEMA_DIFFUSION, "x_dither",
+                SIXEL_SUBOPTION_BINDING_ID_2(
+                    x_dither_strength, x_dither_strength_override),
+                &effective->positional_strength);
+        }
+        if (request->positional_strength_override) {
+            effective->positional_strength = request->positional_strength;
+        }
+        return;
+    }
     memset(&bluenoise_conf, 0, sizeof(bluenoise_conf));
     sixel_gpu_palette_bluenoise_conf_init(&bluenoise_conf, request->ncolors);
     sixel_gpu_palette_apply_bluenoise_overrides(&bluenoise_conf, request);
@@ -434,8 +464,7 @@ sixel_gpu_palette_policy_claims_apply_stage(int gpu_policy,
             lut_policy != SIXEL_LUT_POLICY_EYTZINGER) {
         return 0;
     }
-    if (method_for_diffuse != SIXEL_DIFFUSE_NONE &&
-            method_for_diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER) {
+    if (!sixel_gpu_palette_method_is_supported(method_for_diffuse)) {
         return 0;
     }
 
@@ -489,6 +518,9 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
             }
             return SIXEL_FALSE;
         }
+    } else if (request->method_for_diffuse == SIXEL_DIFFUSE_A_DITHER ||
+            request->method_for_diffuse == SIXEL_DIFFUSE_X_DITHER) {
+        sixel_gpu_palette_prepare_effective_request(&effective, request);
     } else {
         effective = *request;
     }

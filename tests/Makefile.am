@@ -1526,6 +1526,15 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0010_COMPARISON_DEFAULT \
     -DBUILD_TEST_0011_COMPARISON_SHORT \
     -DBUILD_WIRE_COMMON \
+    -DBUILD_TEST_0012_A_CANDIDATES \
+    -DBUILD_TEST_0013_X_CANDIDATES \
+    -DBUILD_TEST_0014_A_AUTO_STRENGTH \
+    -DBUILD_TEST_0015_X_AUTO_STRENGTH \
+    -DBUILD_TEST_0016_A_STRENGTH_PRECEDENCE \
+    -DBUILD_TEST_0017_X_STRENGTH_PRECEDENCE \
+    -DBUILD_TEST_0018_WIRE_A \
+    -DBUILD_TEST_0019_WIRE_X \
+    -DBUILD_ARITHMETIC_TEST_COMMON \
     -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
     -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
@@ -4586,6 +4595,15 @@ test_runner_SOURCES = test_runner.c \
     processing/gpu-palette/0010_comparison_default.c \
     processing/gpu-palette/0011_comparison_short.c \
     processing/gpu-palette/wire_common.c \
+    processing/gpu-palette/0012_a_candidates.c \
+    processing/gpu-palette/0013_x_candidates.c \
+    processing/gpu-palette/0014_a_auto_strength.c \
+    processing/gpu-palette/0015_x_auto_strength.c \
+    processing/gpu-palette/0016_a_strength_precedence.c \
+    processing/gpu-palette/0017_x_strength_precedence.c \
+    processing/gpu-palette/0018_wire_a.c \
+    processing/gpu-palette/0019_wire_x.c \
+    processing/gpu-palette/arithmetic_test_common.c \
     processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
     processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
