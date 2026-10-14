@@ -112,7 +112,7 @@ test_classify_0053(int argc, char **argv)
     }
     baseline = classify_alloc_live;
     classify_alloc_fail = 1;
-    status = sixel_encode_body(pixels, 130, 1, NULL, NULL, 3, 2, 1,
+    status = sixel_encode_body(pixels, 130, 1, NULL, NULL, 2, -1, 1,
         output, NULL, allocator, 0, NULL);
     if (status != SIXEL_BAD_ALLOCATION || classify_alloc_failed != 1 ||
             classify_alloc_live != baseline || output->pos != 0 ||
@@ -121,7 +121,7 @@ test_classify_0053(int argc, char **argv)
         goto end;
     }
     classify_alloc_fail = 0;
-    status = sixel_encode_body(pixels, 130, 1, NULL, NULL, 3, 2, 1,
+    status = sixel_encode_body(pixels, 130, 1, NULL, NULL, 2, -1, 1,
         output, NULL, allocator, 0, NULL);
     ok = SIXEL_SUCCEEDED(status) && classify_alloc_live == baseline &&
         output->pos == 3 && memcmp(output->buffer, "#0@", 3) == 0;

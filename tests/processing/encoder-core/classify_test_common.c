@@ -51,11 +51,12 @@ test_classify_stream(int scenario, char const *expected)
     memset(palstate, 1, sizeof(palstate));
     width = 2;
     height = 3;
-    ncolors = 3;
-    keycolor = 2;
+    ncolors = 2;
+    keycolor = -1;
     if (scenario == 0) {
         /* A precedes B by rows, but B precedes A by columns. Both nodes
-         * span [0, 2), so the later-inserted color must be emitted first. */
+         * span [0, 2), so the later-inserted color must be emitted first.
+         * Two colors exercise column words; out-of-range 2 leaves holes. */
         pixels[0] = 2;
         pixels[1] = 0;
         pixels[2] = 1;

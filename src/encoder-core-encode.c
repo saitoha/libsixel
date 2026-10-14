@@ -3060,7 +3060,7 @@ sixel_encode_work_allocate(sixel_encode_work_t *work,
     /* All map offsets in classify and compose fit in int. Check the whole
      * color plane before allocating, rather than each pixel's offset. */
     if (width > INT_MAX / ncolors ||
-            (ncolors <= 4 &&
+            (ncolors <= 2 &&
              (size_t)width > SIZE_MAX / sizeof(uint64_t))) {
         sixel_helper_set_additional_message(
             "sixel_encode_body: color plane size overflow.");
@@ -3100,9 +3100,9 @@ sixel_encode_work_allocate(sixel_encode_work_t *work,
     }
     work->occupancy_words = occupancy_words;
 
-    /* Small palettes use a reusable transpose buffer: bytes 0..5 hold source
-     * colors and byte 6 holds the paint-row mask. Other palettes use rows. */
-    if (ncolors <= 4) {
+    /* Up to two colors use a transpose buffer: bytes 0..5 hold source colors
+     * and byte 6 holds the paint-row mask. Other palettes use row writes. */
+    if (ncolors <= 2) {
         work->band_columns = (uint64_t *)sixel_allocator_malloc(allocator,
             (size_t)width * sizeof(uint64_t));
         if (work->band_columns == NULL) {
@@ -3412,20 +3412,21 @@ sixel_band_classify(sixel_encode_work_t *work,
     state->fillable = encode_policy == SIXEL_ENCODEPOLICY_SIZE;
     if (state->fillable && palstate != NULL) {
         state->fillable = source_band_start < height &&
-            pixels[source_band_start * width] < ncolors;
+            pixels[(size_t)source_band_start * (size_t)width] < ncolors;
     }
     state->fill_mask = 0;
     state->row_in_band = band_height;
-    /* Small palettes repeat colors within a column, so transposing lets us
+    /* One- and two-color palettes repeat colors, so transposing lets us
      * combine several pixels into one map store and occupancy update. For
      * larger palettes the decomposition costs more than the stores it saves;
      * retain row writes, with the same checks hoisted out of the pixel loop. */
-    if (ncolors <= 4) {
+    if (ncolors <= 2) {
         memset(columns, 0, (size_t)width * sizeof(uint64_t));
     }
 
-    /* Image extents are checked before dispatch; work allocation bounds map
-     * offsets. Read rows in order so active_color_index retains the exact
+    /* The pipeline permits source rasters larger than INT_MAX, so source
+     * offsets use size_t. Work allocation bounds map offsets to int.
+     * Read rows in order so active_color_index retains the exact
      * first-seen order: equal-span nodes use it to break ties in compose. */
     for (row_bit = 0; row_bit < band_height; row_bit++) {
         source_row = band_start + row_bit - offset_top;
@@ -3433,9 +3434,10 @@ sixel_band_classify(sixel_encode_work_t *work,
             continue;
         }
         state->fill_mask |= 1 << row_bit;
-        source = pixels + source_row * width;
+        source = pixels + (size_t)source_row * (size_t)width;
         /* Masks follow source coordinates, including with virtual margins. */
-        source_mask = mask == NULL ? NULL : mask + source_row * width;
+        source_mask = mask == NULL ? NULL :
+            mask + (size_t)source_row * (size_t)width;
         paint_bit = UINT64_C(1) << (48 + row_bit);
         for (x = 0; x < width; x++) {
             if (source_mask != NULL && source_mask[x] != 0) {
@@ -3449,7 +3451,7 @@ sixel_band_classify(sixel_encode_work_t *work,
                 }
                 continue;
             }
-            if (ncolors <= 4) {
+            if (ncolors <= 2) {
                 columns[x] |= ((uint64_t)pix << (8 * row_bit)) | paint_bit;
             } else {
                 target_x = offset_left + x;
@@ -3465,7 +3467,7 @@ sixel_band_classify(sixel_encode_work_t *work,
         }
     }
     state->active_color_count = active_count;
-    if (ncolors > 4) {
+    if (ncolors > 2) {
         return;
     }
 
