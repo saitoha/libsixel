@@ -1040,20 +1040,28 @@ _img2sixel()
         ;;
     -U|--output-colorspace)
         if [[ $cur == *:* ]]; then
-            local color_prefix
+            local color_prefix color_keys
+            color_prefix=${cur%:*}:
+            color_keys="${color_prefix}gamut=auto ${color_prefix}gamut=clip
+                        ${color_prefix}gamut=local-minde
+                        ${color_prefix}Glocal-minde"
             case ${cur%%:*} in
             [iI]|[iI][cC]|[iI][cC][cC])
                 color_prefix=${cur%:*}:
-                COMPREPLY=( $( compgen -W "${color_prefix}path=
+                COMPREPLY=( $( compgen -W "${color_keys} ${color_prefix}path=
                                            ${color_prefix}P" -- "$cur" ) )
                 compopt -o nospace 2>/dev/null
                 return 0
                 ;;
             [aA]|[aA][uU]|[aA][uU][tT]|[aA][uU][tT][oO]) ;;
-            *) return 0 ;;
+            *)
+                COMPREPLY=( $( compgen -W "$color_keys" -- "$cur" ) )
+                compopt -o nospace 2>/dev/null
+                return 0
+                ;;
             esac
             color_prefix=${cur%:*}:
-            COMPREPLY=( $( compgen -W "${color_prefix}timeout_ms=200
+            COMPREPLY=( $( compgen -W "${color_keys} ${color_prefix}timeout_ms=200
                                        ${color_prefix}T200" -- "$cur" ) )
             compopt -o nospace 2>/dev/null
             return 0

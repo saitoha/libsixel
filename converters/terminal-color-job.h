@@ -8,6 +8,7 @@
 
 typedef struct img2sixel_color_job {
     int automatic;
+    char output_suboptions[256];
     int timeout_ms;
     int timeout_override;
     int stdout_only;

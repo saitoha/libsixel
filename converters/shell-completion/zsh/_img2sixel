@@ -255,6 +255,9 @@ _outputcolorspace() {
   local current prefix
   current=${words[CURRENT]}
   if [[ ${current} == *:* ]]; then
+    prefix=${current%:*}:
+    compadd -- "${prefix}gamut=auto" "${prefix}gamut=clip" \
+      "${prefix}gamut=local-minde" "${prefix}Glocal-minde"
     case ${current%%:*} in
     [iI]|[iI][cC]|[iI][cC][cC])
       prefix=${current%:*}:

@@ -265,6 +265,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/chunk.h \
                 $(srcdir)/chunk-factory.h \
                 $(srcdir)/chunk-view.h \
+                $(srcdir)/gamut.c \
+                $(srcdir)/gamut.h \
                 $(srcdir)/color-option.c \
                 $(srcdir)/color-option.h \
                 $(srcdir)/cms.c \

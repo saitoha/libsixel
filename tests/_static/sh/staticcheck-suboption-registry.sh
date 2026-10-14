@@ -557,6 +557,7 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_STRING" ||
         macro == "SIXEL_REGISTRY_CLIPBOARD_STRING" ||
         macro == "SIXEL_REGISTRY_COLOR_STRING" ||
+        macro == "SIXEL_REGISTRY_OUTPUT_COLOR_CHOICE" ||
         macro == "SIXEL_REGISTRY_COMPLETION_STRING"
 }
 function inspect(row, fields, count, option_id, base, name, alias, env,
@@ -586,7 +587,7 @@ function inspect(row, fields, count, option_id, base, name, alias, env,
     if (env !~ /^"[A-Z][A-Z0-9_]+"$/) {
         fail(option_id ":" name " needs a non-empty environment variable")
     }
-    if (macro !~ /DEQUANTIZE|DECODER|ENCODER|LOADER|RUNTIME|DIAGNOSTICS|CLIPBOARD|COMPLETION|COLOR_STRING/) {
+    if (macro !~ /DEQUANTIZE|DECODER|ENCODER|LOADER|RUNTIME|DIAGNOSTICS|CLIPBOARD|COMPLETION|COLOR_STRING|OUTPUT_COLOR_CHOICE/) {
         fail(option_id ":" name " needs a typed target binding")
     }
     if (!macro_is_approved(macro)) {
@@ -915,7 +916,7 @@ function binding_from_registry(row, fields, count, macro, binding) {
     } else if (macro ~ /ENCODER_MIRROR_CHOICE|ENCODER_INT_PAIR/) {
         binding = fields[count - 2] "," fields[count - 1] "," \
             fields[count]
-    } else if (macro ~ /ENCODER_DIRECT_CHOICE|DEQUANTIZE_|LOADER_/) {
+    } else if (macro ~ /ENCODER_DIRECT_CHOICE|OUTPUT_COLOR_CHOICE|DEQUANTIZE_|LOADER_/) {
         binding = fields[count]
     } else if (macro ~ /ENCODER_/) {
         binding = fields[count - 1] "," fields[count]

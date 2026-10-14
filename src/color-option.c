@@ -13,7 +13,7 @@
 
 SIXELSTATUS
 sixel_color_option_parse(char const *text, int decoder, int *base,
-                         sixel_color_def_t **definition)
+                         sixel_color_def_t **definition, int *gamut)
 {
     sixel_option_argument_schema_t const *schema;
     sixel_option_argument_resolution_t resolution;
@@ -45,16 +45,16 @@ sixel_color_option_parse(char const *text, int decoder, int *base,
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    if (resolution.resolved_base_value != (decoder
-            ? SIXEL_NAMED_COLOR_COUNT : -SIXEL_NAMED_COLOR_COUNT)) {
-        goto publish;
-    }
     sixel_option_apply_suboption_environment(schema, resolution.base_def,
         scope, &options, target);
     if (!sixel_option_apply_suboption_assignments(&resolution, &options,
             target)) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
+    }
+    if (resolution.resolved_base_value != (decoder
+            ? SIXEL_NAMED_COLOR_COUNT : -SIXEL_NAMED_COLOR_COUNT)) {
+        goto publish;
     }
     status = SIXEL_BAD_ARGUMENT;
     if (options.path == NULL || options.path[0] == '\0' ||
@@ -103,6 +103,9 @@ sixel_color_option_parse(char const *text, int decoder, int *base,
         goto end;
     }
 publish:
+    if (gamut != NULL) {
+        *gamut = options.gamut;
+    }
     *base = resolution.resolved_base_value;
     *definition = candidate;
     candidate = NULL;

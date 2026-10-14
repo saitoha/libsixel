@@ -986,6 +986,27 @@ int test_palette_cover_native(int argc, char **argv);
 int test_cover_mask(int argc, char **argv);
 int test_native_snap(int argc, char **argv);
 int test_icc_output(int argc, char **argv);
+int test_gamut_0013_matrix_icc(int argc, char **argv);
+int test_gamut_0014_lut_rejected(int argc, char **argv);
+int test_gamut_0015_encoder_isolation(int argc, char **argv);
+int test_gamut_0016_environment_precedence(int argc, char **argv);
+int test_gamut_0017_palette_continuous(int argc, char **argv);
+int test_gamut_0018_policy_cache_reset(int argc, char **argv);
+
+int test_gamut_0009_full_frame_samples(int argc, char **argv);
+int test_gamut_0010_adaptive_samples(int argc, char **argv);
+int test_gamut_0011_oklab_workspace(int argc, char **argv);
+int test_gamut_0012_highcolor(int argc, char **argv);
+
+int test_gamut_0001_srgb_identity(int argc, char **argv);
+int test_gamut_0002_p3_extended_identity(int argc, char **argv);
+int test_gamut_0003_srgb_reference(int argc, char **argv);
+int test_gamut_0004_p3_reference(int argc, char **argv);
+int test_gamut_0005_adobe_reference(int argc, char **argv);
+int test_gamut_0006_dci_reference(int argc, char **argv);
+int test_gamut_0007_nonfinite_atomic(int argc, char **argv);
+int test_gamut_0008_policy_atomicity(int argc, char **argv);
+
 int test_destination_snap(int argc, char **argv);
 int test_p3_snap_grid(int argc, char **argv);
 int test_p3_snap_pipeline(int argc, char **argv);
@@ -6102,6 +6123,33 @@ static test_entry_t const test_entries[] = {
       test_ward_scan_populations },
     { "palette/snap_float/0001_snap_contract", test_native_snap },
     { "palette/icc_output/0001_icc_output", test_icc_output },
+    { "gamut/0013_matrix_icc",
+      test_gamut_0013_matrix_icc },
+    { "gamut/0014_lut_rejected",
+      test_gamut_0014_lut_rejected },
+    { "gamut/0015_encoder_isolation",
+      test_gamut_0015_encoder_isolation },
+    { "gamut/0016_environment_precedence",
+      test_gamut_0016_environment_precedence },
+    { "gamut/0017_palette_continuous",
+      test_gamut_0017_palette_continuous },
+    { "gamut/0018_policy_cache_reset",
+      test_gamut_0018_policy_cache_reset },
+
+    { "gamut/0009_full_frame_samples", test_gamut_0009_full_frame_samples },
+    { "gamut/0010_adaptive_samples", test_gamut_0010_adaptive_samples },
+    { "gamut/0011_oklab_workspace", test_gamut_0011_oklab_workspace },
+    { "gamut/0012_highcolor", test_gamut_0012_highcolor },
+
+    { "gamut/0001_srgb_identity", test_gamut_0001_srgb_identity },
+    { "gamut/0002_p3_extended_identity", test_gamut_0002_p3_extended_identity },
+    { "gamut/0003_srgb_reference", test_gamut_0003_srgb_reference },
+    { "gamut/0004_p3_reference", test_gamut_0004_p3_reference },
+    { "gamut/0005_adobe_reference", test_gamut_0005_adobe_reference },
+    { "gamut/0006_dci_reference", test_gamut_0006_dci_reference },
+    { "gamut/0007_nonfinite_atomic", test_gamut_0007_nonfinite_atomic },
+    { "gamut/0008_policy_atomicity", test_gamut_0008_policy_atomicity },
+
     { "palette/destination_snap/0001_destination", test_destination_snap },
     { "palette/p3_snap/0001_grid", test_p3_snap_grid },
     { "palette/p3_snap/0002_pipeline", test_p3_snap_pipeline },

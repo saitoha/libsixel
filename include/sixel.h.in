@@ -804,6 +804,8 @@ typedef int SIXELSTATUS;
     /* -U COLORSPACE */
     /* --output-colorspace=COLORSPACE */
     /* select output buffer color space */
+    /* gamut=auto|clip|local-minde (G) controls destination gamut mapping. */
+    /* auto currently retains clip; this is independent of dither clamp. */
     /*   gamma   -> sRGB gamma encoded */
     /*   linear  -> linear RGB */
     /*   smpte-c -> SMPTE-C gamma encoded RGB */

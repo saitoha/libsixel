@@ -34,6 +34,12 @@
 extern "C" {
 #endif
 
+struct sixel_gamut;
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_map_gamut(sixel_palette_t *palette,
+                        struct sixel_gamut const *mapper, int colorspace,
+                        int pixelformat);
+
 struct sixel_final_merge_cluster;
 typedef struct sixel_final_merge_cluster sixel_final_merge_cluster_t;
 

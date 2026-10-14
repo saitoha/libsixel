@@ -1406,6 +1406,17 @@ din99d -> operate in DIN99d float32 for palette decisions
 .TP 5
 .B \-U \fICOLORSPACE\fP, \-\-output\-colorspace=\fICOLORSPACE\fP
 select output color space
+.PP
+All output spaces accept gamut=auto|clip|local-minde (compact G).
+SIXEL_OUTPUT_COLORSPACE_GAMUT supplies the default; explicit tuning wins.
+Auto currently selects clip and retains compatibility output.
+Local-minde maps source colors and the application palette in Oklab,
+using the destination gamut, before lookup and diffusion. It requires
+CPU float processing and an analytic or supported matrix/TRC RGB gamut;
+ICC LUT destinations reject this policy. It does not enable palette snap
+or limit diffusion compensation. Explicit mapping also applies after
+CLI auto resolves the destination.
+.PP
 .br
 \fICOLORSPACE\fP is one of them:
 .br
@@ -1693,6 +1704,10 @@ Set the img2sixel output color-space name, including auto.
 The value is a base name without suboptions; explicit \fB-U\fP wins.
 Empty or unset leaves the gamma default. This is a CLI setting, not a
 library terminal-discovery policy.
+.TP
+.B SIXEL_OUTPUT_COLORSPACE_GAMUT
+Default for the -U gamut=G suboption: auto (clip), clip or local-minde.
+Explicit -U tuning overrides it.
 .TP 5
 .B SIXEL_OUTPUT_COLORSPACE_ICC_PATH
 ICC file path for \fB-U icc\fP. Explicit \fBicc:path=FILE\fP or

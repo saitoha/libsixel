@@ -33,6 +33,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <math.h>
+#include <float.h>
 
 # if HAVE_STRING_H
 #include <string.h>
@@ -93,6 +95,7 @@
 #include "encoder.h"
 #include "decoder.h"
 #include "color-option.h"
+#include "gamut.h"
 #include "frame.h"
 #include "frame-normalize.h"
 #include "frame-factory.h"
@@ -3344,6 +3347,67 @@ sixel_encoder_convert_frame_colorspace(sixel_frame_t *frame,
     return SIXEL_OK;
 }
 
+/* Map only source/sample planes owned by this encode. Error-adjusted
+ * diffusion candidates never enter this operation. Hidden pixels retain
+ * their original storage and cannot fail a visible-color conversion. */
+static SIXELSTATUS
+sixel_encoder_map_gamut(sixel_encoder_t const *encoder, sixel_frame_t *frame)
+{
+    sixel_frame_pixels_view_t view;
+    sixel_frame_transparency_t transparency;
+    SIXELSTATUS status;
+    double input[3];
+    double output[3];
+    size_t count;
+    size_t i;
+    int c;
+
+    if (encoder->gamut_mapper == NULL) {
+        return SIXEL_OK;
+    }
+    status = sixel_encoder_frame_get_pixels_view(frame, &view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(view.pixelformat) ||
+            view.pixels_float32 == NULL || view.width <= 0 ||
+            view.height <= 0 || (size_t)view.width >
+                SIZE_MAX / (size_t)view.height) {
+        return SIXEL_BAD_INPUT;
+    }
+    status = sixel_encoder_frame_get_transparency(frame, &transparency);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    count = (size_t)view.width * (size_t)view.height;
+    if (count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    for (i = 0; i < count; ++i) {
+        if (transparency.transparent_mask != NULL &&
+                i < transparency.transparent_mask_size &&
+                transparency.transparent_mask[i] != 0) {
+            continue;
+        }
+        for (c = 0; c < 3; ++c) {
+            input[c] = view.pixels_float32[i * 3u + (size_t)c];
+        }
+        if (!sixel_gamut_apply(encoder->gamut_mapper, input, output,
+                view.colorspace)) {
+            sixel_helper_set_additional_message(
+                "local-minde cannot map this source color.");
+            return SIXEL_BAD_INPUT;
+        }
+        for (c = 0; c < 3; ++c) {
+            if (!isfinite(output[c]) || fabs(output[c]) > FLT_MAX) {
+                return SIXEL_BAD_INPUT;
+            }
+            view.pixels_float32[i * 3u + (size_t)c] = (float)output[c];
+        }
+    }
+    return SIXEL_OK;
+}
+
 /*
  * Recolor the generated palette into the working colorspace so dithering and
  * LUT builders share the same color interpretation. Legacy serialization
@@ -3449,12 +3513,16 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
     return status;
 }
 
+static SIXELSTATUS
+sixel_encoder_set_output_color(sixel_encoder_t *encoder, char const *value);
+
 static void
 sixel_encoder_update_precision(sixel_encoder_t *encoder)
 {
     /* Output requirements affect the effective format, never the request. */
     encoder->prefer_float32 = encoder->precision_prefer_float32 ||
         encoder->force_float32_colorspace ||
+        encoder->output_gamut == SIXEL_GAMUT_LOCAL_MINDE ||
         encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY;
 }
 
@@ -4856,7 +4924,7 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
         sixel_frame_get_pixelformat(context->frame);
     context->current_colorspace = sixel_frame_get_colorspace(context->frame);
 
-    return SIXEL_OK;
+    return sixel_encoder_map_gamut(context->encoder, context->frame);
 }
 
 static SIXELSTATUS
@@ -7219,7 +7287,8 @@ sixel_encoder_validate_output_definition(sixel_encoder_t const *encoder)
         }
         sixel_cdef_free(linear);
     }
-    if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY) {
+    if (encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY &&
+            encoder->gamut_mapper == NULL) {
         return SIXEL_OK;
     }
     if (encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
@@ -7239,7 +7308,8 @@ sixel_encoder_validate_output_definition(sixel_encoder_t const *encoder)
         if (strncmp(restriction, "display-p3 ", 11) == 0) {
             snprintf(message, sizeof(message), "%s %s",
                 encoder->output_icc != NULL ? "icc" :
-                    sixel_cdef_named_name(encoder->output_color_definition),
+                    (encoder->gamut_mapper != NULL ? "local-minde" :
+                     sixel_cdef_named_name(encoder->output_color_definition)),
                 restriction + 11);
             sixel_helper_set_additional_message(message);
         } else {
@@ -7823,9 +7893,9 @@ sixel_encoder_prepare_palette(
     }
 
     if ((!reserve_alpha_key || (*dither)->use_rgb101_palette) &&
-        (sixel_frame_get_pixelformat(frame) != palette_target_pixelformat
-            || sixel_frame_get_colorspace(frame)
-                != clustering_colorspace)) {
+        (encoder->gamut_mapper != NULL ||
+         sixel_frame_get_pixelformat(frame) != palette_target_pixelformat ||
+         sixel_frame_get_colorspace(frame) != clustering_colorspace)) {
         status = sixel_encoder_frame_clone(frame,
                                            encoder->allocator,
                                            &cluster_frame);
@@ -7849,6 +7919,15 @@ sixel_encoder_prepare_palette(
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
+        }
+    }
+
+    /* A map image defines the immutable fixed-palette source. Map only
+     * its application copy after the caller selects the destination. */
+    if (!from_map_image) {
+        status = sixel_encoder_map_gamut(encoder, palette_frame);
+        if (SIXEL_FAILED(status)) {
+            goto end;
         }
     }
 
@@ -8320,7 +8399,11 @@ end:
          * order, duplicates and unused slots: the independent wire cache
          * and unrounded working palette must use identical indices. */
         (*dither)->use_rgb101_palette = 1;
-        if (encoder->palette_output != NULL) {
+        status = sixel_palette_map_gamut((*dither)->palette,
+            encoder->gamut_mapper, encoder->working_colorspace,
+            sixel_encoder_pixelformat_for_colorspace(
+                encoder->working_colorspace, 1));
+        if (SIXEL_SUCCEEDED(status) && encoder->palette_output != NULL) {
             status = sixel_encoder_capture_palette(encoder,
                 *dither, encoder->working_colorspace);
         }
@@ -9283,6 +9366,14 @@ sixel_encoder_encode_frame_internal(
         goto end;
     }
 
+    if (encoder->gamut_mapper != NULL) {
+        status = sixel_encoder_frame_clone(frame, encoder->allocator,
+            &context.frame);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+
     /* Resolve packed storage before sampling, geometry or P3 application.
      * Keep unsupported modes on their existing path. Alpha metadata, rather
      * than the output clear/keep request, owns source interpretation. The
@@ -9311,6 +9402,15 @@ sixel_encoder_encode_frame_internal(
         context.frame);
     if (SIXEL_FAILED(status)) {
         goto end;
+    }
+
+    if (encoder->gamut_mapper != NULL) {
+        status = sixel_frame_set_pixelformat(context.frame,
+            sixel_encoder_pixelformat_for_colorspace(
+                sixel_frame_get_colorspace(context.frame), 1));
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     /*
@@ -9508,6 +9608,9 @@ end:
     }
     if (context.dither) {
         sixel_dither_unref(context.dither);
+    }
+    if (encoder->gamut_mapper != NULL && context.frame != frame) {
+        sixel_frame_unref(context.frame);
     }
     if (encoder) {
         sixel_encoder_unref(encoder);
@@ -9852,6 +9955,8 @@ sixel_encoder_new(
     (*ppencoder)->output_colorspace     = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->output_color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
     (*ppencoder)->output_icc = NULL;
+    (*ppencoder)->output_gamut = SIXEL_GAMUT_AUTO;
+    (*ppencoder)->gamut_mapper = NULL;
     (*ppencoder)->precision_prefer_float32 = 0;
     (*ppencoder)->precision_requested = SIXEL_OPTION_PRECISION_AUTO;
     (*ppencoder)->prefer_float32        = 0;
@@ -10121,8 +10226,12 @@ sixel_encoder_new(
         (*ppencoder)->reqcolors = (int)env_value.uint_value;
     }
 
-    /* success */
-    status = SIXEL_OK;
+    /* Common output tuning applies even when -U is omitted. The default
+     * endpoint is still sRGB; an ICC path never selects ICC on its own. */
+    status = sixel_encoder_set_output_color(*ppencoder, "gamma");
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
 
     goto end;
 
@@ -10161,6 +10270,7 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
     if (encoder) {
         allocator = encoder->allocator;
         sixel_cdef_free(encoder->output_icc);
+        sixel_gamut_free(encoder->gamut_mapper);
         sixel_allocator_free(allocator, encoder->mapfile);
         sixel_allocator_free(allocator, encoder->palette_output);
         sixel_allocator_free(allocator, encoder->loader_order);
@@ -10856,24 +10966,46 @@ static SIXELSTATUS
 sixel_encoder_set_output_color(sixel_encoder_t *encoder, char const *value)
 {
     sixel_color_def_t *candidate;
+    sixel_color_def_t *named;
+    sixel_gamut_t *mapper;
     int base;
+    int gamut;
     SIXELSTATUS status;
 
     candidate = NULL;
-    status = sixel_color_option_parse(value, 0, &base, &candidate);
+    mapper = NULL;
+    status = sixel_color_option_parse(value, 0, &base, &candidate, &gamut);
     if (SIXEL_FAILED(status)) {
         return status;
     }
+    if (gamut == SIXEL_GAMUT_LOCAL_MINDE) {
+        named = base < 0 && candidate == NULL
+            ? sixel_cdef_name(sixel_cdef_named_name(-base)) : NULL;
+        if (base < 0 && candidate == NULL && named == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        status = sixel_gamut_new(&mapper,
+            candidate != NULL ? candidate : named, base, encoder->allocator);
+        sixel_cdef_free(named);
+        if (SIXEL_FAILED(status)) {
+            sixel_cdef_free(candidate);
+            return status;
+        }
+    }
     /* Named/legacy caches already compare their definition/transfer keys,
      * and repeated options must preserve seeded history and lookup owners.
-     * Custom ICCs share one key: only those replacements need an explicit
-     * reset, after validation and before releasing the previous profile. */
-    if (candidate != NULL || encoder->output_icc != NULL) {
+     * Custom ICCs share one key; gamut policy changes also alter samples.
+     * Both require a reset after validating the replacement. */
+    if (candidate != NULL || encoder->output_icc != NULL ||
+            gamut != encoder->output_gamut) {
         sixel_encoder_clear_dither_cache(encoder);
         (void)sixel_encoder_invalidate_6delta_plane(encoder);
     }
     sixel_cdef_free(encoder->output_icc);
     encoder->output_icc = candidate;
+    sixel_gamut_free(encoder->gamut_mapper);
+    encoder->gamut_mapper = mapper;
+    encoder->output_gamut = gamut;
     encoder->output_color_definition = base < 0
         ? -base : SIXEL_PALETTE_OUTPUT_LEGACY;
     encoder->output_colorspace = base < 0 ? SIXEL_COLORSPACE_GAMMA : base;

@@ -129,6 +129,9 @@ img2sixel_color_job_option(img2sixel_color_job_t *job,
     int automatic;
     int timeout;
     int override;
+    size_t used;
+    size_t part_size;
+    char resolved[288];
     SIXELSTATUS status;
 
     key = &g_img2sixel_color_policy_keys[0];
@@ -151,6 +154,8 @@ img2sixel_color_job_option(img2sixel_color_job_t *job,
     }
     timeout = key->initial;
     override = 0;
+    used = 0u;
+    memcpy(resolved, "gamma", 6u);
     while (automatic && suffix != NULL) {
         ++suffix;
         end = strchr(suffix, ':');
@@ -165,8 +170,22 @@ img2sixel_color_job_option(img2sixel_color_job_t *job,
         } else if (suffix < end && suffix[0] == key->short_name) {
             value = suffix + 1;
         }
-        if (value == NULL ||
-            !img2sixel_color_job_integer(value, (size_t)(end - value),
+        if (value == NULL) {
+            /* Library-owned common suboptions retain the same parser,
+             * aliases and environment precedence after auto negotiation. */
+            part_size = (size_t)(end - suffix);
+            if (used + part_size + 1u >= sizeof(job->output_suboptions)) {
+                return img2sixel_color_job_argument(
+                    "output-colorspace auto suboptions are too long.");
+            }
+            resolved[5u + used++] = ':';
+            memcpy(resolved + 5u + used, suffix, part_size);
+            used += part_size;
+            resolved[5u + used] = '\0';
+            suffix = *end == ':' ? end : NULL;
+            continue;
+        }
+        if (!img2sixel_color_job_integer(value, (size_t)(end - value),
                                          key, &timeout)) {
             return img2sixel_color_job_argument(
                 "output-colorspace auto accepts timeout_ms=N or TN "
@@ -176,10 +195,11 @@ img2sixel_color_job_option(img2sixel_color_job_t *job,
         suffix = *end == ':' ? end : NULL;
     }
     status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_OUTPUT_COLORSPACE,
-                                   automatic ? "gamma" : argument);
+                                   automatic ? resolved : argument);
     if (SIXEL_FAILED(status)) {
         return status;
     }
+    memcpy(job->output_suboptions, resolved + 5, used + 1u);
     job->automatic = automatic;
     *img2sixel_color_job_field(job, key->value_offset) = timeout;
     *img2sixel_color_job_field(job, key->override_offset) = override;
@@ -210,6 +230,9 @@ img2sixel_color_job_prepare(img2sixel_color_job_t *job,
     job->cancel_context = context;
     if (!job->requested) {
         value = img2sixel_compat_getenv("SIXEL_OUTPUT_COLORSPACE");
+        if (value == NULL || value[0] == '\0') {
+            value = "gamma";
+        }
         if (value != NULL && value[0] != '\0') {
             /* The base environment is a choice, not a structured CLI token.
              * Its separate timeout environment owns that subordinate value. */
@@ -300,6 +323,7 @@ img2sixel_color_job_encode(img2sixel_color_job_t *job,
     char const *detail;
     char encode_detail[2048];
     char combined[2304];
+    char resolved[288];
     size_t written;
     int active;
     int saved;
@@ -400,9 +424,11 @@ img2sixel_color_job_encode(img2sixel_color_job_t *job,
         correlated = 0;
         goto cleanup;
     }
+    snprintf(resolved, sizeof(resolved), "%s%s",
+        job->selected_policy == 2 ? "display-p3" : "gamma",
+        job->output_suboptions);
     status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_OUTPUT_COLORSPACE,
-                                   job->selected_policy == 2
-                                       ? "display-p3" : "gamma");
+        resolved);
     if (SIXEL_FAILED(status)) {
         failure = "output-colorspace auto could not apply resolved intent.";
         goto cleanup;

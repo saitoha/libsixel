@@ -141,3 +141,4 @@ docs/threading/measurement.md	how-to	contributor	measurement reproduction + arti
 docs/threading/overview.md	explanation	both	threading mental model + budget terminology and implementation ownership
 docs/writers/png/README.md	reference	both	writer/API contracts + contributor benchmark and test ledger
 docs/encoder/palette-application/clamp-policy.md	reference	both	feedback bounds and precision contracts
+docs/encoder/output/gamut-mapping.md	reference	both	output policy and numeric contract

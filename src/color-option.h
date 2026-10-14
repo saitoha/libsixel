@@ -11,6 +11,6 @@
  * Common CMS receives bytes only; file I/O and option grammar stay here. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_color_option_parse(char const *text, int decoder, int *base,
-                         sixel_color_def_t **definition);
+                         sixel_color_def_t **definition, int *gamut);
 
 #endif

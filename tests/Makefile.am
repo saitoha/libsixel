@@ -181,6 +181,24 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0001_SRGB_IDENTITY \
+    -DBUILD_TEST_0002_P3_EXTENDED_IDENTITY \
+    -DBUILD_TEST_0003_SRGB_REFERENCE \
+    -DBUILD_TEST_0004_P3_REFERENCE \
+    -DBUILD_TEST_0005_ADOBE_REFERENCE \
+    -DBUILD_TEST_0006_DCI_REFERENCE \
+    -DBUILD_TEST_0007_NONFINITE_ATOMIC \
+    -DBUILD_TEST_0008_POLICY_ATOMICITY \
+    -DBUILD_TEST_0009_FULL_FRAME_SAMPLES \
+    -DBUILD_TEST_0010_ADAPTIVE_SAMPLES \
+    -DBUILD_TEST_0011_OKLAB_WORKSPACE \
+    -DBUILD_TEST_0012_HIGHCOLOR \
+    -DBUILD_TEST_0013_MATRIX_ICC \
+    -DBUILD_TEST_0014_LUT_REJECTED \
+    -DBUILD_TEST_0015_ENCODER_ISOLATION \
+    -DBUILD_TEST_0016_ENVIRONMENT_PRECEDENCE \
+    -DBUILD_TEST_0017_PALETTE_CONTINUOUS \
+    -DBUILD_TEST_0018_POLICY_CACHE_RESET \
     -DBUILD_PUBLIC_FLOAT_COMMON \
     -DBUILD_PUBLIC_FLOAT_FAULT \
     -DBUILD_TEST_0015_DELTA_SIGNED_THRESHOLD \
@@ -5659,6 +5677,26 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/cover_mask/0001_cover_mask.c \
     quant/palette/snap_float/0001_snap_contract.c \
     quant/palette/icc_output/0001_icc_output.c \
+    processing/gamut/0001_srgb_identity.c \
+    processing/gamut/0002_p3_extended_identity.c \
+    processing/gamut/0003_srgb_reference.c \
+    processing/gamut/0004_p3_reference.c \
+    processing/gamut/0005_adobe_reference.c \
+    processing/gamut/0006_dci_reference.c \
+    processing/gamut/0007_nonfinite_atomic.c \
+    processing/gamut/0008_policy_atomicity.c \
+    processing/gamut/gamut_test_common.h \
+    processing/gamut/0013_matrix_icc.c \
+    processing/gamut/0014_lut_rejected.c \
+    processing/gamut/0015_encoder_isolation.c \
+    processing/gamut/0016_environment_precedence.c \
+    processing/gamut/0017_palette_continuous.c \
+    processing/gamut/0018_policy_cache_reset.c \
+    processing/gamut/0009_full_frame_samples.c \
+    processing/gamut/0010_adaptive_samples.c \
+    processing/gamut/0011_oklab_workspace.c \
+    processing/gamut/0012_highcolor.c \
+    processing/gamut/gamut_encode_common.h \
     quant/palette/destination_snap/0001_destination.c \
     quant/palette/p3_snap/0001_grid.c \
     quant/palette/p3_snap/0002_pipeline.c \
@@ -8671,3 +8709,6 @@ EXTRA_DIST += data/color-numeric/destination-snap.h \
 
 EXTRA_DIST += data/color-numeric/named-output-p3.png \
     data/color-numeric/named-output-p3.tif
+
+EXTRA_DIST += data/color-numeric/gamut-reference.py \
+    data/color-numeric/gamut-reference.h

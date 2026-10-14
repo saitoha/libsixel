@@ -71,6 +71,7 @@
 #include "palette-kmeans.h"
 #include "palette-kmedoids.h"
 #include "palette-private.h"
+#include "gamut.h"
 #include "allocator.h"
 #include "options.h"
 #include "status.h"
@@ -2076,6 +2077,59 @@ sixel_palette_from_output(sixel_palette_t const *palette, double out[3],
 }
 
 /* emacs Local Variables:      */
+/* Map the continuous application palette before lookup borrows it. Wire
+ * quantization remains separate, and entry order/duplicates remain intact. */
+SIXELSTATUS
+sixel_palette_map_gamut(sixel_palette_t *palette,
+                        sixel_gamut_t const *mapper, int colorspace,
+                        int pixelformat)
+{
+    sixel_palette_storage_t *storage;
+    float mapped[SIXEL_PALETTE_MAX * 3];
+    double input[3];
+    double output[3];
+    unsigned int i;
+    int c;
+
+    if (mapper == NULL) {
+        return SIXEL_OK;
+    }
+    storage = SIXEL_PALETTE_STORAGE(palette);
+    if (storage == NULL || storage->entries_float32 == NULL ||
+            storage->entries == NULL || storage->depth != 3 ||
+            storage->float_depth != 3 * (int)sizeof(float) ||
+            storage->entry_count > SIXEL_PALETTE_MAX) {
+        return SIXEL_BAD_INPUT;
+    }
+    for (i = 0; i < storage->entry_count; ++i) {
+        for (c = 0; c < 3; ++c) {
+            input[c] = storage->entries_float32[i * 3u + (unsigned int)c];
+        }
+        if (!sixel_gamut_apply(mapper, input, output, colorspace)) {
+            return SIXEL_BAD_INPUT;
+        }
+        for (c = 0; c < 3; ++c) {
+            if (!isfinite(output[c]) || fabs(output[c]) > FLT_MAX) {
+                return SIXEL_BAD_INPUT;
+            }
+            mapped[i * 3u + (unsigned int)c] = (float)output[c];
+        }
+    }
+    sixel_palette_clear_output(storage);
+    memcpy(storage->entries_float32, mapped,
+        storage->entry_count * 3u * sizeof(float));
+    /* Mutable byte access has a reconciliation contract: stale bytes would
+     * be interpreted as a caller edit and destroy the mapped float view. */
+    for (i = 0; i < storage->entry_count; ++i) {
+        for (c = 0; c < 3; ++c) {
+            storage->entries[i * 3u + (unsigned int)c] =
+                sixel_pixelformat_float_channel_to_byte(pixelformat, c,
+                    mapped[i * 3u + (unsigned int)c]);
+        }
+    }
+    return SIXEL_OK;
+}
+
 /* emacs mode: c               */
 /* emacs tab-width: 4          */
 /* emacs indent-tabs-mode: nil */

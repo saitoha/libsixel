@@ -161,7 +161,7 @@ function inspect_registry(row, fields, count, option_id, name, alias,
         binding = fields[count - 2] "|" fields[count - 1] "|" fields[count]
         binding_value = fields[count - 2]
         binding_override = fields[count]
-    } else if (macro ~ /ENCODER_DIRECT_CHOICE/) {
+    } else if (macro ~ /ENCODER_DIRECT_CHOICE|OUTPUT_COLOR_CHOICE/) {
         binding = fields[count]
         binding_value = fields[count]
     } else if (macro ~ /ENCODER_/) {

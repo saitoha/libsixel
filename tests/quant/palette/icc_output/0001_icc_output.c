@@ -202,7 +202,8 @@ icco_parse(char const *argument, int decoder, int reject)
     definition = sixel_cdef_name("srgb");
     saved = definition;
     base = 9876;
-    status = sixel_color_option_parse(argument, decoder, &base, &definition);
+    status = sixel_color_option_parse(argument, decoder, &base,
+        &definition, NULL);
     if (reject) {
         ok = status == SIXEL_BAD_ARGUMENT && base == 9876 &&
             definition == saved;
@@ -272,7 +273,7 @@ icco_grid(char const *argument, int strategy)
     allocator = NULL;
     ok = 0;
     if (SIXEL_FAILED(sixel_color_option_parse(argument, 0, &base,
-            &definition)) || SIXEL_FAILED(sixel_allocator_new(&allocator,
+            &definition, NULL)) || SIXEL_FAILED(sixel_allocator_new(&allocator,
                 NULL, NULL, NULL, NULL)) ||
             SIXEL_FAILED(sixel_snap_grid_new(&grid, strategy,
                 SIXEL_COLORSPACE_LINEAR, definition, allocator))) {

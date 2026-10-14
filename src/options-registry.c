@@ -53,6 +53,7 @@
 #include "dither-interframe-method.h"
 #include "decoder.h"
 #include "encoder.h"
+#include "gamut.h"
 #include "fromhdr.h"
 #include "loader-common.h"
 #include "lookup-policy.h"
@@ -1769,7 +1770,24 @@ static sixel_suboption_choice_t const g_loader_hdr_tonemap_choices[] = {
         }, NULL, 0ULL \
     }
 
+#define SIXEL_REGISTRY_OUTPUT_COLOR_CHOICE( \
+    id_, base_, name_, short_, env_, fallback_, legacy_, choices_, field_) \
+    SIXEL_REGISTRY_TYPED_CHOICE( \
+        id_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
+        SIXEL_SUBOPTION_TARGET_OUTPUT_COLOR_FILE, \
+        sixel_color_file_options_t, field_)
+
+static sixel_suboption_choice_t const g_gamut_choices[] = {
+    { "auto", SIXEL_GAMUT_AUTO },
+    { "clip", SIXEL_GAMUT_CLIP },
+    { "local-minde", SIXEL_GAMUT_LOCAL_MINDE }
+};
+
 static sixel_suboption_key_t const g_suboptions[] = {
+    SIXEL_REGISTRY_OUTPUT_COLOR_CHOICE(
+        SIXEL_OPTION_SCHEMA_OUTPUT_COLORSPACE, NULL,
+        "gamut", 'G', "SIXEL_OUTPUT_COLORSPACE_GAMUT", NULL, NULL,
+        g_gamut_choices, gamut),
     SIXEL_REGISTRY_COLOR_STRING(
         SIXEL_OPTION_SCHEMA_OUTPUT_COLORSPACE, g_output_color_values + 7,
         "path", 'P', "SIXEL_OUTPUT_COLORSPACE_ICC_PATH",

@@ -50,6 +50,10 @@ The encoder retains an owned profile, independent of later filesystem/environmen
 
 `sixel2png -T icc:path=FILE` / `-T icc:PFILE` uses `SIXEL_DECODER_INPUT_COLORSPACE_ICC_PATH` for the omitted path. It preserves decoded RGB and alpha and embeds the original ICC bytes into PNG, including after supported resizing or dequantization in the decoded RGB basis. Encoder PNG snapshots retain the already loaded output profile rather than reopening its file. Neither raw SIXEL decoding nor legacy `-M` export acquires an ICC interpretation from this option. Terminal `-Uauto` does not yet select a supplied ICC response.
 
+## Gamut mapping
+
+Every output choice accepts `gamut=auto|clip|local-minde` (compact `G`), with environment default `SIXEL_OUTPUT_COLORSPACE_GAMUT`. See [output gamut mapping](gamut-mapping.md) for the algorithm, float source/palette preparation, ICC restrictions and interaction with sampling, snap and diffusion. The conversion-only pipeline below describes the default `auto`/`clip` behavior.
+
 ## Where the conversion happens
 
 For the legacy `gamma`, `linear` and `smpte-c` palette paths, the relevant data flow is:
