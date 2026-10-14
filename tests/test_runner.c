@@ -607,6 +607,12 @@ int test_compose_0046(int argc, char **argv);
 int test_compose_0047(int argc, char **argv);
 int test_compose_0048(int argc, char **argv);
 int test_compose_0049(int argc, char **argv);
+int test_classify_0050(int argc, char **argv);
+int test_classify_0051(int argc, char **argv);
+int test_classify_0052(int argc, char **argv);
+int test_classify_0053(int argc, char **argv);
+int test_classify_0054(int argc, char **argv);
+int test_classify_0055(int argc, char **argv);
 int test_macro_0009(int argc, char **argv);
 int test_macro_0010(int argc, char **argv);
 int test_macro_0011(int argc, char **argv);
@@ -3998,6 +4004,18 @@ static test_entry_t const test_entries[] = {
       test_compose_0048 },
     { "encoder-core/0049_compose_allocation_recovery",
       test_compose_0049 },
+    { "encoder-core/0050_classify_row_major_order",
+      test_classify_0050 },
+    { "encoder-core/0051_classify_paint_rows",
+      test_classify_0051 },
+    { "encoder-core/0052_classify_mask_fillable",
+      test_classify_0052 },
+    { "encoder-core/0053_classify_allocation_recovery",
+      test_classify_0053 },
+    { "encoder-core/0054_classify_source_overflow",
+      test_classify_0054 },
+    { "encoder-core/0055_classify_plane_overflow",
+      test_classify_0055 },
     { "codec/macro/0009_srgb_float_define", test_macro_0009 },
     { "codec/macro/0010_p3_float_define", test_macro_0010 },
     { "codec/macro/0011_p3_float_invoke", test_macro_0011 },

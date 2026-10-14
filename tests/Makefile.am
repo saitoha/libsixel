@@ -1727,6 +1727,13 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0047_COMPOSE_WORD_BOUNDARIES \
     -DBUILD_TEST_0048_COMPOSE_BAND_RESET \
     -DBUILD_TEST_0049_COMPOSE_ALLOCATION_RECOVERY \
+    -DBUILD_CLASSIFY_TEST_COMMON \
+    -DBUILD_TEST_0050_CLASSIFY_ROW_MAJOR_ORDER \
+    -DBUILD_TEST_0051_CLASSIFY_PAINT_ROWS \
+    -DBUILD_TEST_0052_CLASSIFY_MASK_FILLABLE \
+    -DBUILD_TEST_0053_CLASSIFY_ALLOCATION_RECOVERY \
+    -DBUILD_TEST_0054_CLASSIFY_SOURCE_OVERFLOW \
+    -DBUILD_TEST_0055_CLASSIFY_PLANE_OVERFLOW \
     -DBUILD_NATIVE_MACRO_TEST_COMMON \
     -DBUILD_TEST_0009_SRGB_FLOAT_DEFINE \
     -DBUILD_TEST_0010_P3_FLOAT_DEFINE \
@@ -7428,6 +7435,13 @@ test_runner_SOURCES = test_runner.c \
     processing/encoder-core/0047_compose_word_boundaries.c \
     processing/encoder-core/0048_compose_band_reset.c \
     processing/encoder-core/0049_compose_allocation_recovery.c \
+    processing/encoder-core/classify_test_common.c \
+    processing/encoder-core/0050_classify_row_major_order.c \
+    processing/encoder-core/0051_classify_paint_rows.c \
+    processing/encoder-core/0052_classify_mask_fillable.c \
+    processing/encoder-core/0053_classify_allocation_recovery.c \
+    processing/encoder-core/0054_classify_source_overflow.c \
+    processing/encoder-core/0055_classify_plane_overflow.c \
     codec/macro/native_macro_test_common.c \
     codec/macro/0009_srgb_float_define.c \
     codec/macro/0010_p3_float_define.c \

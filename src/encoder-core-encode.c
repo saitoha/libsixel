@@ -107,6 +107,7 @@ typedef struct sixel_encode_work {
     size_t map_size;
     uint64_t *occupancy;
     size_t occupancy_words;
+    uint64_t *band_columns;
     sixel_node_t **columns;
     size_t columns_size;
     unsigned char *active_colors;
@@ -257,20 +258,21 @@ static void sixel_band_finish(sixel_encode_work_t *work,
 static void sixel_band_clear_map(sixel_encode_work_t *work);
 static int sixel_output_has_transparent_offset(sixel_output_t const *output);
 static int sixel_count_sixel_bands(int height);
-static SIXELSTATUS sixel_band_classify_row(sixel_encode_work_t *work,
-                                           sixel_band_state_t *state,
-                                           sixel_index_t *pixels,
-                                           int width,
-                                           int height,
-                                           int map_width,
-                                           int absolute_row,
-                                           int offset_left,
-                                           int offset_top,
-                                           int ncolors,
-                                           int keycolor,
-                                           unsigned char *palstate,
-                                           int encode_policy,
-                                           unsigned char const *mask);
+static void sixel_band_classify(sixel_encode_work_t *work,
+                                 sixel_band_state_t *state,
+                                 sixel_index_t const *pixels,
+                                 int width,
+                                 int height,
+                                 int map_width,
+                                 int band_start,
+                                 int band_height,
+                                 int offset_left,
+                                 int offset_top,
+                                 int ncolors,
+                                 int keycolor,
+                                 unsigned char const *palstate,
+                                 int encode_policy,
+                                 unsigned char const *mask);
 static SIXELSTATUS sixel_band_compose(sixel_encode_work_t *work,
                                       sixel_band_state_t *state,
                                       sixel_output_t *output,
@@ -1478,8 +1480,6 @@ sixel_parallel_worker_main(sixel_thread_pool_job_t job,
     int band_index;
     int band_start;
     int band_height;
-    int row_index;
-    int absolute_row;
     int last_row_index;
     int nplanes;
 
@@ -1577,26 +1577,21 @@ sixel_parallel_worker_main(sixel_thread_pool_job_t job,
         goto done;
     }
 
-    for (row_index = 0; row_index < band_height; row_index++) {
-        absolute_row = band_start + row_index;
-        status = sixel_band_classify_row(&state->work,
-                                         &state->band,
-                                         ctx->pixels,
-                                         ctx->width,
-                                         ctx->height,
-                                         ctx->encoded_width,
-                                         absolute_row,
-                                         ctx->offset_left,
-                                         ctx->offset_top,
-                                         ctx->ncolors,
-                                         ctx->keycolor,
-                                         ctx->palstate,
-                                         ctx->encode_policy,
-                                         state->output->transparent_mask);
-        if (SIXEL_FAILED(status)) {
-            goto cleanup;
-        }
-    }
+    sixel_band_classify(&state->work,
+                         &state->band,
+                         ctx->pixels,
+                         ctx->width,
+                         ctx->height,
+                         ctx->encoded_width,
+                         band_start,
+                         band_height,
+                         ctx->offset_left,
+                         ctx->offset_top,
+                         ctx->ncolors,
+                         ctx->keycolor,
+                         ctx->palstate,
+                         ctx->encode_policy,
+                         state->output->transparent_mask);
 
     status = sixel_band_compose(&state->work,
                                 &state->band,
@@ -2368,10 +2363,10 @@ sixel_output_emit_literal(sixel_output_t *output,
     }
 }
 
-/* Only nonzero words reach this helper. The portable branch keeps the
- * occupancy iterator available on compilers without a trailing-zero builtin. */
+/* Only nonzero words reach this helper. The portable branch keeps the bit-mask
+ * iterators available on compilers without a trailing-zero builtin. */
 static int
-sixel_compose_trailing_zeros(uint64_t bits)
+sixel_encode_trailing_zeros(uint64_t bits)
 {
 #if defined(__GNUC__) || defined(__clang__)
     return __builtin_ctzll((unsigned long long)bits);
@@ -2420,7 +2415,7 @@ sixel_compose_next_column(uint64_t const *occupancy, size_t words,
         *bits = occupancy[*word_index];
     }
     column = (int)(*word_index * 64U) +
-        sixel_compose_trailing_zeros(*bits);
+        sixel_encode_trailing_zeros(*bits);
     *bits &= *bits - UINT64_C(1);
     return column;
 }
@@ -3039,6 +3034,7 @@ sixel_encode_work_init(sixel_encode_work_t *work)
     work->map_size = 0;
     work->occupancy = NULL;
     work->occupancy_words = 0;
+    work->band_columns = NULL;
     work->columns = NULL;
     work->columns_size = 0;
     work->active_colors = NULL;
@@ -3061,6 +3057,16 @@ sixel_encode_work_allocate(sixel_encode_work_t *work,
     size_t active_colors_size;
     size_t active_color_index_size;
 
+    /* All map offsets in classify and compose fit in int. Check the whole
+     * color plane before allocating, rather than each pixel's offset. */
+    if (width > INT_MAX / ncolors ||
+            (ncolors <= 4 &&
+             (size_t)width > SIZE_MAX / sizeof(uint64_t))) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_body: color plane size overflow.");
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
     len = ncolors * width;
     work->map = (char *)sixel_allocator_calloc(allocator,
                                                (size_t)len,
@@ -3093,6 +3099,19 @@ sixel_encode_work_allocate(sixel_encode_work_t *work,
         }
     }
     work->occupancy_words = occupancy_words;
+
+    /* Small palettes use a reusable transpose buffer: bytes 0..5 hold source
+     * colors and byte 6 holds the paint-row mask. Other palettes use rows. */
+    if (ncolors <= 4) {
+        work->band_columns = (uint64_t *)sixel_allocator_malloc(allocator,
+            (size_t)width * sizeof(uint64_t));
+        if (work->band_columns == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encode_body: band column allocation failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+    }
 
     columns_size = sizeof(sixel_node_t *) * (size_t)width;
     if (width > 0) {
@@ -3167,6 +3186,10 @@ end:
             work->columns = NULL;
         }
         work->columns_size = 0;
+        if (work->band_columns != NULL) {
+            sixel_allocator_free(allocator, work->band_columns);
+            work->band_columns = NULL;
+        }
         if (work->occupancy != NULL) {
             sixel_allocator_free(allocator, work->occupancy);
             work->occupancy = NULL;
@@ -3201,6 +3224,10 @@ sixel_encode_work_cleanup(sixel_encode_work_t *work,
         work->columns = NULL;
     }
     work->columns_size = 0;
+    if (work->band_columns != NULL) {
+        sixel_allocator_free(allocator, work->band_columns);
+        work->band_columns = NULL;
+    }
     if (work->occupancy != NULL) {
         sixel_allocator_free(allocator, work->occupancy);
         work->occupancy = NULL;
@@ -3318,147 +3345,149 @@ end:
     return status;
 }
 
-static SIXELSTATUS
-sixel_band_classify_row(sixel_encode_work_t *work,
-                        sixel_band_state_t *state,
-                        sixel_index_t *pixels,
-                        int width,
-                        int height,
-                        int map_width,
-                        int absolute_row,
-                        int offset_left,
-                        int offset_top,
-                        int ncolors,
-                        int keycolor,
-                        unsigned char *palstate,
-                        int encode_policy,
-                        unsigned char const *mask)
+/* Compare all eight bytes without borrowing into a neighboring byte, then
+ * gather their equality bits. Packed colors use shifts, not host byte order. */
+static unsigned int
+sixel_band_color_mask(uint64_t word, unsigned int color)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
+    uint64_t different;
+    uint64_t equal;
+
+    different = word ^ ((uint64_t)color * UINT64_C(0x0101010101010101));
+    equal = ~(((different & UINT64_C(0x7f7f7f7f7f7f7f7f)) +
+              UINT64_C(0x7f7f7f7f7f7f7f7f)) |
+              different | UINT64_C(0x7f7f7f7f7f7f7f7f));
+    return (unsigned int)((((equal >> 7) & UINT64_C(0x0101010101010101)) *
+                           UINT64_C(0x0102040810204080)) >> 56);
+}
+
+static void
+sixel_band_classify(sixel_encode_work_t *work,
+                    sixel_band_state_t *state,
+                    sixel_index_t const *pixels,
+                    int width,
+                    int height,
+                    int map_width,
+                    int band_start,
+                    int band_height,
+                    int offset_left,
+                    int offset_top,
+                    int ncolors,
+                    int keycolor,
+                    unsigned char const *palstate,
+                    int encode_policy,
+                    unsigned char const *mask)
+{
     int row_bit;
-    int band_start;
     int source_row;
     int source_band_start;
     int target_x;
     int pix;
     int x;
-    int check_integer_overflow;
-    int source_index_base;
-    char *map;
+    unsigned int rows;
+    unsigned int color_rows;
+    uint64_t word;
+    uint64_t paint_bit;
+    uint64_t *columns;
+    sixel_index_t const *source;
+    unsigned char const *source_mask;
     unsigned char *active_colors;
     int *active_color_index;
+    int active_count;
+    char *map;
+    uint64_t *occupancy;
+    size_t occupancy_words;
 
     map = work->map;
+    occupancy = work->occupancy;
+    occupancy_words = work->occupancy_words;
+    columns = work->band_columns;
     active_colors = work->active_colors;
     active_color_index = work->active_color_index;
-    row_bit = state->row_in_band;
-    band_start = absolute_row - row_bit;
-
-    if (row_bit == 0) {
-        if (encode_policy != SIXEL_ENCODEPOLICY_SIZE) {
-            state->fillable = 0;
-        } else if (palstate) {
-            source_band_start = band_start - offset_top;
-            if (source_band_start < 0) {
-                source_band_start = 0;
-            }
-            if (width > 0) {
-                if (source_band_start >= height) {
-                    state->fillable = 0;
-                } else {
-                    pix = pixels[source_band_start * width];
-                    if (pix >= ncolors) {
-                        state->fillable = 0;
-                    } else {
-                        state->fillable = 1;
-                    }
-                }
-            } else {
-                state->fillable = 0;
-            }
-        } else {
-            state->fillable = 1;
-        }
-        state->active_color_count = 0;
+    active_count = 0;
+    source_band_start = band_start - offset_top;
+    if (source_band_start < 0) {
+        source_band_start = 0;
+    }
+    state->fillable = encode_policy == SIXEL_ENCODEPOLICY_SIZE;
+    if (state->fillable && palstate != NULL) {
+        state->fillable = source_band_start < height &&
+            pixels[source_band_start * width] < ncolors;
+    }
+    state->fill_mask = 0;
+    state->row_in_band = band_height;
+    /* Small palettes repeat colors within a column, so transposing lets us
+     * combine several pixels into one map store and occupancy update. For
+     * larger palettes the decomposition costs more than the stores it saves;
+     * retain row writes, with the same checks hoisted out of the pixel loop. */
+    if (ncolors <= 4) {
+        memset(columns, 0, (size_t)width * sizeof(uint64_t));
     }
 
-    source_row = absolute_row - offset_top;
-    if (source_row < 0 || source_row >= height) {
-        state->row_in_band += 1;
-        return SIXEL_OK;
-    }
-    state->fill_mask |= (1 << row_bit);
-    if (source_row > INT_MAX / width) {
-        sixel_helper_set_additional_message(
-            "sixel_encode_body: integer overflow detected."
-            " (source_y > INT_MAX)");
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto end;
-    }
-    source_index_base = source_row * width;
-
-    for (x = 0; x < width; x++) {
-        target_x = offset_left + x;
-        if (target_x < 0 || target_x >= map_width) {
-            sixel_helper_set_additional_message(
-                "sixel_encode_body: transparent offset is out of range.");
-            status = SIXEL_BAD_INTEGER_OVERFLOW;
-            goto end;
-        }
-        check_integer_overflow = source_index_base;
-        if (check_integer_overflow > INT_MAX - x) {
-            sixel_helper_set_additional_message(
-                "sixel_encode_body: integer overflow detected."
-                " (source_y * width > INT_MAX - x)");
-            status = SIXEL_BAD_INTEGER_OVERFLOW;
-            goto end;
-        }
-        /* Mask coordinates follow the source, including when the wire image
-         * has transparent margins or workers consume later six-line bands.
-         * Disabling fill prevents the size optimization painting the holes. */
-        if (mask != NULL && mask[check_integer_overflow + x] != 0) {
-            state->fillable = 0;
+    /* Image extents are checked before dispatch; work allocation bounds map
+     * offsets. Read rows in order so active_color_index retains the exact
+     * first-seen order: equal-span nodes use it to break ties in compose. */
+    for (row_bit = 0; row_bit < band_height; row_bit++) {
+        source_row = band_start + row_bit - offset_top;
+        if (source_row < 0 || source_row >= height) {
             continue;
         }
-        pix = pixels[check_integer_overflow + x];
-        if (pix >= 0 && pix < ncolors && pix != keycolor) {
-            if (pix > INT_MAX / map_width) {
-                sixel_helper_set_additional_message(
-                    "sixel_encode_body: integer overflow detected."
-                    " (pix > INT_MAX / width)");
-                status = SIXEL_BAD_INTEGER_OVERFLOW;
-                goto end;
+        state->fill_mask |= 1 << row_bit;
+        source = pixels + source_row * width;
+        /* Masks follow source coordinates, including with virtual margins. */
+        source_mask = mask == NULL ? NULL : mask + source_row * width;
+        paint_bit = UINT64_C(1) << (48 + row_bit);
+        for (x = 0; x < width; x++) {
+            if (source_mask != NULL && source_mask[x] != 0) {
+                state->fillable = 0;
+                continue;
             }
-            check_integer_overflow = pix * map_width;
-            if (check_integer_overflow > INT_MAX - target_x) {
-                sixel_helper_set_additional_message(
-                    "sixel_encode_body: integer overflow detected."
-                    " (pix * width > INT_MAX - x)");
-                status = SIXEL_BAD_INTEGER_OVERFLOW;
-                goto end;
-            }
-            map[check_integer_overflow + target_x] |= (1 << row_bit);
-            work->occupancy[(size_t)pix * work->occupancy_words +
-                (size_t)target_x / 64U] |=
-                UINT64_C(1) << ((unsigned int)target_x % 64U);
-            if (active_colors != NULL && active_colors[pix] == 0) {
-                active_colors[pix] = 1;
-                if (state->active_color_count < ncolors
-                    && active_color_index != NULL) {
-                    active_color_index[state->active_color_count] = pix;
-                    state->active_color_count += 1;
+            pix = source[x];
+            if (pix >= ncolors || pix == keycolor) {
+                if (palstate == NULL) {
+                    state->fillable = 0;
                 }
+                continue;
             }
-        } else if (!palstate) {
-            state->fillable = 0;
+            if (ncolors <= 4) {
+                columns[x] |= ((uint64_t)pix << (8 * row_bit)) | paint_bit;
+            } else {
+                target_x = offset_left + x;
+                map[pix * map_width + target_x] |= (1 << row_bit);
+                occupancy[(size_t)pix * occupancy_words +
+                    (size_t)target_x / 64U] |=
+                    UINT64_C(1) << ((unsigned int)target_x % 64U);
+            }
+            if (active_colors[pix] == 0) {
+                active_colors[pix] = 1;
+                active_color_index[active_count++] = pix;
+            }
         }
     }
+    state->active_color_count = active_count;
+    if (ncolors > 4) {
+        return;
+    }
 
-    state->row_in_band += 1;
-    status = SIXEL_OK;
-
-end:
-    return status;
+    /* Only painted rows participate. In particular, a cleared byte in top
+     * padding or a masked row must not become an occurrence of color zero.
+     * Combine repeated colors before touching the scattered color planes:
+     * each (color, column) gets one map store and one occupancy update. */
+    for (x = 0; x < width; x++) {
+        word = columns[x];
+        rows = (unsigned int)(word >> 48);
+        target_x = offset_left + x;
+        while (rows != 0) {
+            row_bit = sixel_encode_trailing_zeros(rows);
+            pix = (int)((word >> (8 * row_bit)) & UINT64_C(0xff));
+            color_rows = sixel_band_color_mask(word, (unsigned int)pix) & rows;
+            map[pix * map_width + target_x] = (char)color_rows;
+            occupancy[(size_t)pix * occupancy_words +
+                (size_t)target_x / 64U] |=
+                UINT64_C(1) << ((unsigned int)target_x % 64U);
+            rows &= ~color_rows;
+        }
+    }
 }
 
 static SIXELSTATUS
@@ -3714,8 +3743,6 @@ sixel_encode_body(
     SIXELSTATUS status = SIXEL_FALSE;
     int band_start;
     int band_height;
-    int row_index;
-    int absolute_row;
     int last_row_index;
     int encoded_width;
     int encoded_height;
@@ -3749,6 +3776,14 @@ sixel_encode_body(
                                                      &encoded_width,
                                                      &encoded_height);
     if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    /* Transparent extent validates offset_left + width. Bound the entire
+     * source raster here so row-major reads need no per-pixel checks. */
+    if (height > INT_MAX / width) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_body: source image size overflow.");
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
         goto cleanup;
     }
     offset_left = output->transparent_offset_left;
@@ -3829,26 +3864,21 @@ sixel_encode_body(
                               job_index);
         }
 
-        for (row_index = 0; row_index < band_height; row_index++) {
-            absolute_row = band_start + row_index;
-            status = sixel_band_classify_row(&work,
-                                             &band,
-                                             pixels,
-                                             width,
-                                             height,
-                                             encoded_width,
-                                             absolute_row,
-                                             offset_left,
-                                             offset_top,
-                                             ncolors,
-                                             keycolor,
-                                             palstate,
-                                             output->encode_policy,
-                                             output->transparent_mask);
-            if (SIXEL_FAILED(status)) {
-                goto cleanup;
-            }
-        }
+        sixel_band_classify(&work,
+                             &band,
+                             pixels,
+                             width,
+                             height,
+                             encoded_width,
+                             band_start,
+                             band_height,
+                             offset_left,
+                             offset_top,
+                             ncolors,
+                             keycolor,
+                             palstate,
+                             output->encode_policy,
+                             output->transparent_mask);
 
         status = sixel_band_compose(&work,
                                     &band,

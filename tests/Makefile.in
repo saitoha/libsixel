@@ -3704,6 +3704,13 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/encoder-core/0047_compose_word_boundaries.c \
 	processing/encoder-core/0048_compose_band_reset.c \
 	processing/encoder-core/0049_compose_allocation_recovery.c \
+	processing/encoder-core/classify_test_common.c \
+	processing/encoder-core/0050_classify_row_major_order.c \
+	processing/encoder-core/0051_classify_paint_rows.c \
+	processing/encoder-core/0052_classify_mask_fillable.c \
+	processing/encoder-core/0053_classify_allocation_recovery.c \
+	processing/encoder-core/0054_classify_source_overflow.c \
+	processing/encoder-core/0055_classify_plane_overflow.c \
 	codec/macro/native_macro_test_common.c \
 	codec/macro/0009_srgb_float_define.c \
 	codec/macro/0010_p3_float_define.c \
@@ -7328,6 +7335,13 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0047_compose_word_boundaries.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0048_compose_band_reset.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0049_compose_allocation_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-classify_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0050_classify_row_major_order.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0051_classify_paint_rows.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0052_classify_mask_fillable.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0053_classify_allocation_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0054_classify_source_overflow.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0055_classify_plane_overflow.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-native_macro_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0009_srgb_float_define.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0010_p3_float_define.$(OBJEXT) \
@@ -9581,6 +9595,13 @@ am__depfiles_remade =  \
 	processing/encoder-core/$(DEPDIR)/test_runner-0047_compose_word_boundaries.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0048_compose_band_reset.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0049_compose_allocation_recovery.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0050_classify_row_major_order.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0051_classify_paint_rows.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0052_classify_mask_fillable.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0053_classify_allocation_recovery.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0054_classify_source_overflow.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0055_classify_plane_overflow.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-classify_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po \
@@ -13300,6 +13321,13 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0047_COMPOSE_WORD_BOUNDARIES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_COMPOSE_BAND_RESET \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0049_COMPOSE_ALLOCATION_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLASSIFY_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_CLASSIFY_ROW_MAJOR_ORDER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_CLASSIFY_PAINT_ROWS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_CLASSIFY_MASK_FILLABLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_CLASSIFY_ALLOCATION_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_CLASSIFY_SOURCE_OVERFLOW \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_CLASSIFY_PLANE_OVERFLOW \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_NATIVE_MACRO_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_SRGB_FLOAT_DEFINE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_P3_FLOAT_DEFINE \
@@ -19032,6 +19060,13 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0047_compose_word_boundaries.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0048_compose_band_reset.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0049_compose_allocation_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/classify_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0050_classify_row_major_order.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0051_classify_paint_rows.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0052_classify_mask_fillable.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0053_classify_allocation_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0054_classify_source_overflow.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0055_classify_plane_overflow.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/native_macro_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0009_srgb_float_define.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0010_p3_float_define.c \
@@ -30554,6 +30589,27 @@ processing/encoder-core/test_runner-0048_compose_band_reset.$(OBJEXT):  \
 processing/encoder-core/test_runner-0049_compose_allocation_recovery.$(OBJEXT):  \
 	processing/encoder-core/$(am__dirstamp) \
 	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-classify_test_common.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0050_classify_row_major_order.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0051_classify_paint_rows.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0052_classify_mask_fillable.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0053_classify_allocation_recovery.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0054_classify_source_overflow.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0055_classify_plane_overflow.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
 codec/macro/$(am__dirstamp):
 	@$(MKDIR_P) codec/macro
 	@: >>codec/macro/$(am__dirstamp)
@@ -33091,6 +33147,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0047_compose_word_boundaries.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0048_compose_band_reset.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0049_compose_allocation_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0050_classify_row_major_order.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0051_classify_paint_rows.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0052_classify_mask_fillable.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0053_classify_allocation_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0054_classify_source_overflow.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0055_classify_plane_overflow.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-classify_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po@am__quote@ # am--include-marker
@@ -84233,6 +84296,104 @@ processing/encoder-core/test_runner-0049_compose_allocation_recovery.obj: proces
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0049_compose_allocation_recovery.c' object='processing/encoder-core/test_runner-0049_compose_allocation_recovery.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0049_compose_allocation_recovery.obj `if test -f 'processing/encoder-core/0049_compose_allocation_recovery.c'; then $(CYGPATH_W) 'processing/encoder-core/0049_compose_allocation_recovery.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0049_compose_allocation_recovery.c'; fi`
+
+processing/encoder-core/test_runner-classify_test_common.o: processing/encoder-core/classify_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-classify_test_common.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-classify_test_common.Tpo -c -o processing/encoder-core/test_runner-classify_test_common.o `test -f 'processing/encoder-core/classify_test_common.c' || echo '$(srcdir)/'`processing/encoder-core/classify_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-classify_test_common.Tpo processing/encoder-core/$(DEPDIR)/test_runner-classify_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/classify_test_common.c' object='processing/encoder-core/test_runner-classify_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-classify_test_common.o `test -f 'processing/encoder-core/classify_test_common.c' || echo '$(srcdir)/'`processing/encoder-core/classify_test_common.c
+
+processing/encoder-core/test_runner-classify_test_common.obj: processing/encoder-core/classify_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-classify_test_common.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-classify_test_common.Tpo -c -o processing/encoder-core/test_runner-classify_test_common.obj `if test -f 'processing/encoder-core/classify_test_common.c'; then $(CYGPATH_W) 'processing/encoder-core/classify_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/classify_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-classify_test_common.Tpo processing/encoder-core/$(DEPDIR)/test_runner-classify_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/classify_test_common.c' object='processing/encoder-core/test_runner-classify_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-classify_test_common.obj `if test -f 'processing/encoder-core/classify_test_common.c'; then $(CYGPATH_W) 'processing/encoder-core/classify_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/classify_test_common.c'; fi`
+
+processing/encoder-core/test_runner-0050_classify_row_major_order.o: processing/encoder-core/0050_classify_row_major_order.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0050_classify_row_major_order.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0050_classify_row_major_order.Tpo -c -o processing/encoder-core/test_runner-0050_classify_row_major_order.o `test -f 'processing/encoder-core/0050_classify_row_major_order.c' || echo '$(srcdir)/'`processing/encoder-core/0050_classify_row_major_order.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0050_classify_row_major_order.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0050_classify_row_major_order.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0050_classify_row_major_order.c' object='processing/encoder-core/test_runner-0050_classify_row_major_order.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0050_classify_row_major_order.o `test -f 'processing/encoder-core/0050_classify_row_major_order.c' || echo '$(srcdir)/'`processing/encoder-core/0050_classify_row_major_order.c
+
+processing/encoder-core/test_runner-0050_classify_row_major_order.obj: processing/encoder-core/0050_classify_row_major_order.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0050_classify_row_major_order.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0050_classify_row_major_order.Tpo -c -o processing/encoder-core/test_runner-0050_classify_row_major_order.obj `if test -f 'processing/encoder-core/0050_classify_row_major_order.c'; then $(CYGPATH_W) 'processing/encoder-core/0050_classify_row_major_order.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0050_classify_row_major_order.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0050_classify_row_major_order.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0050_classify_row_major_order.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0050_classify_row_major_order.c' object='processing/encoder-core/test_runner-0050_classify_row_major_order.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0050_classify_row_major_order.obj `if test -f 'processing/encoder-core/0050_classify_row_major_order.c'; then $(CYGPATH_W) 'processing/encoder-core/0050_classify_row_major_order.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0050_classify_row_major_order.c'; fi`
+
+processing/encoder-core/test_runner-0051_classify_paint_rows.o: processing/encoder-core/0051_classify_paint_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0051_classify_paint_rows.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0051_classify_paint_rows.Tpo -c -o processing/encoder-core/test_runner-0051_classify_paint_rows.o `test -f 'processing/encoder-core/0051_classify_paint_rows.c' || echo '$(srcdir)/'`processing/encoder-core/0051_classify_paint_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0051_classify_paint_rows.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0051_classify_paint_rows.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0051_classify_paint_rows.c' object='processing/encoder-core/test_runner-0051_classify_paint_rows.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0051_classify_paint_rows.o `test -f 'processing/encoder-core/0051_classify_paint_rows.c' || echo '$(srcdir)/'`processing/encoder-core/0051_classify_paint_rows.c
+
+processing/encoder-core/test_runner-0051_classify_paint_rows.obj: processing/encoder-core/0051_classify_paint_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0051_classify_paint_rows.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0051_classify_paint_rows.Tpo -c -o processing/encoder-core/test_runner-0051_classify_paint_rows.obj `if test -f 'processing/encoder-core/0051_classify_paint_rows.c'; then $(CYGPATH_W) 'processing/encoder-core/0051_classify_paint_rows.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0051_classify_paint_rows.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0051_classify_paint_rows.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0051_classify_paint_rows.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0051_classify_paint_rows.c' object='processing/encoder-core/test_runner-0051_classify_paint_rows.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0051_classify_paint_rows.obj `if test -f 'processing/encoder-core/0051_classify_paint_rows.c'; then $(CYGPATH_W) 'processing/encoder-core/0051_classify_paint_rows.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0051_classify_paint_rows.c'; fi`
+
+processing/encoder-core/test_runner-0052_classify_mask_fillable.o: processing/encoder-core/0052_classify_mask_fillable.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0052_classify_mask_fillable.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0052_classify_mask_fillable.Tpo -c -o processing/encoder-core/test_runner-0052_classify_mask_fillable.o `test -f 'processing/encoder-core/0052_classify_mask_fillable.c' || echo '$(srcdir)/'`processing/encoder-core/0052_classify_mask_fillable.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0052_classify_mask_fillable.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0052_classify_mask_fillable.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0052_classify_mask_fillable.c' object='processing/encoder-core/test_runner-0052_classify_mask_fillable.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0052_classify_mask_fillable.o `test -f 'processing/encoder-core/0052_classify_mask_fillable.c' || echo '$(srcdir)/'`processing/encoder-core/0052_classify_mask_fillable.c
+
+processing/encoder-core/test_runner-0052_classify_mask_fillable.obj: processing/encoder-core/0052_classify_mask_fillable.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0052_classify_mask_fillable.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0052_classify_mask_fillable.Tpo -c -o processing/encoder-core/test_runner-0052_classify_mask_fillable.obj `if test -f 'processing/encoder-core/0052_classify_mask_fillable.c'; then $(CYGPATH_W) 'processing/encoder-core/0052_classify_mask_fillable.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0052_classify_mask_fillable.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0052_classify_mask_fillable.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0052_classify_mask_fillable.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0052_classify_mask_fillable.c' object='processing/encoder-core/test_runner-0052_classify_mask_fillable.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0052_classify_mask_fillable.obj `if test -f 'processing/encoder-core/0052_classify_mask_fillable.c'; then $(CYGPATH_W) 'processing/encoder-core/0052_classify_mask_fillable.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0052_classify_mask_fillable.c'; fi`
+
+processing/encoder-core/test_runner-0053_classify_allocation_recovery.o: processing/encoder-core/0053_classify_allocation_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0053_classify_allocation_recovery.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0053_classify_allocation_recovery.Tpo -c -o processing/encoder-core/test_runner-0053_classify_allocation_recovery.o `test -f 'processing/encoder-core/0053_classify_allocation_recovery.c' || echo '$(srcdir)/'`processing/encoder-core/0053_classify_allocation_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0053_classify_allocation_recovery.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0053_classify_allocation_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0053_classify_allocation_recovery.c' object='processing/encoder-core/test_runner-0053_classify_allocation_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0053_classify_allocation_recovery.o `test -f 'processing/encoder-core/0053_classify_allocation_recovery.c' || echo '$(srcdir)/'`processing/encoder-core/0053_classify_allocation_recovery.c
+
+processing/encoder-core/test_runner-0053_classify_allocation_recovery.obj: processing/encoder-core/0053_classify_allocation_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0053_classify_allocation_recovery.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0053_classify_allocation_recovery.Tpo -c -o processing/encoder-core/test_runner-0053_classify_allocation_recovery.obj `if test -f 'processing/encoder-core/0053_classify_allocation_recovery.c'; then $(CYGPATH_W) 'processing/encoder-core/0053_classify_allocation_recovery.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0053_classify_allocation_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0053_classify_allocation_recovery.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0053_classify_allocation_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0053_classify_allocation_recovery.c' object='processing/encoder-core/test_runner-0053_classify_allocation_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0053_classify_allocation_recovery.obj `if test -f 'processing/encoder-core/0053_classify_allocation_recovery.c'; then $(CYGPATH_W) 'processing/encoder-core/0053_classify_allocation_recovery.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0053_classify_allocation_recovery.c'; fi`
+
+processing/encoder-core/test_runner-0054_classify_source_overflow.o: processing/encoder-core/0054_classify_source_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0054_classify_source_overflow.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0054_classify_source_overflow.Tpo -c -o processing/encoder-core/test_runner-0054_classify_source_overflow.o `test -f 'processing/encoder-core/0054_classify_source_overflow.c' || echo '$(srcdir)/'`processing/encoder-core/0054_classify_source_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0054_classify_source_overflow.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0054_classify_source_overflow.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0054_classify_source_overflow.c' object='processing/encoder-core/test_runner-0054_classify_source_overflow.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0054_classify_source_overflow.o `test -f 'processing/encoder-core/0054_classify_source_overflow.c' || echo '$(srcdir)/'`processing/encoder-core/0054_classify_source_overflow.c
+
+processing/encoder-core/test_runner-0054_classify_source_overflow.obj: processing/encoder-core/0054_classify_source_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0054_classify_source_overflow.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0054_classify_source_overflow.Tpo -c -o processing/encoder-core/test_runner-0054_classify_source_overflow.obj `if test -f 'processing/encoder-core/0054_classify_source_overflow.c'; then $(CYGPATH_W) 'processing/encoder-core/0054_classify_source_overflow.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0054_classify_source_overflow.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0054_classify_source_overflow.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0054_classify_source_overflow.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0054_classify_source_overflow.c' object='processing/encoder-core/test_runner-0054_classify_source_overflow.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0054_classify_source_overflow.obj `if test -f 'processing/encoder-core/0054_classify_source_overflow.c'; then $(CYGPATH_W) 'processing/encoder-core/0054_classify_source_overflow.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0054_classify_source_overflow.c'; fi`
+
+processing/encoder-core/test_runner-0055_classify_plane_overflow.o: processing/encoder-core/0055_classify_plane_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0055_classify_plane_overflow.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0055_classify_plane_overflow.Tpo -c -o processing/encoder-core/test_runner-0055_classify_plane_overflow.o `test -f 'processing/encoder-core/0055_classify_plane_overflow.c' || echo '$(srcdir)/'`processing/encoder-core/0055_classify_plane_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0055_classify_plane_overflow.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0055_classify_plane_overflow.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0055_classify_plane_overflow.c' object='processing/encoder-core/test_runner-0055_classify_plane_overflow.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0055_classify_plane_overflow.o `test -f 'processing/encoder-core/0055_classify_plane_overflow.c' || echo '$(srcdir)/'`processing/encoder-core/0055_classify_plane_overflow.c
+
+processing/encoder-core/test_runner-0055_classify_plane_overflow.obj: processing/encoder-core/0055_classify_plane_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0055_classify_plane_overflow.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0055_classify_plane_overflow.Tpo -c -o processing/encoder-core/test_runner-0055_classify_plane_overflow.obj `if test -f 'processing/encoder-core/0055_classify_plane_overflow.c'; then $(CYGPATH_W) 'processing/encoder-core/0055_classify_plane_overflow.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0055_classify_plane_overflow.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0055_classify_plane_overflow.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0055_classify_plane_overflow.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0055_classify_plane_overflow.c' object='processing/encoder-core/test_runner-0055_classify_plane_overflow.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0055_classify_plane_overflow.obj `if test -f 'processing/encoder-core/0055_classify_plane_overflow.c'; then $(CYGPATH_W) 'processing/encoder-core/0055_classify_plane_overflow.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0055_classify_plane_overflow.c'; fi`
 
 codec/macro/test_runner-native_macro_test_common.o: codec/macro/native_macro_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-native_macro_test_common.o -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Tpo -c -o codec/macro/test_runner-native_macro_test_common.o `test -f 'codec/macro/native_macro_test_common.c' || echo '$(srcdir)/'`codec/macro/native_macro_test_common.c
