@@ -165,6 +165,10 @@ pmfi_apply(unsigned char *pixels, int width, int height, int format,
     result = sixel_cms_convert_profile_to_linearrgb(pixels, width, height,
         format, profile);
     ++pmfi_apply_calls;
+    if (result && pmfi_mode >= 8) {
+        pixels[0] ^= 0x5au;
+        return 0;
+    }
     if ((pmfi_mode == 3 && pmfi_apply_calls == 1) ||
         (pmfi_mode == 4 && pmfi_apply_calls == 2) || pmfi_mode == 5) {
         /* Leave exactly a prefix modified when reporting failure. Hidden
@@ -200,7 +204,7 @@ pmfi_apply_icc(unsigned char *pixels, int width, int height, int format,
 {
     int result;
 
-    result = sixel_cms_convert_to_srgb_with_profile_bytes(pixels,
+    result = sixel_cms_convert_to_linearrgb_with_profile_bytes(pixels,
         width, height, format, profile, profile_size);
     ++pmfi_apply_calls;
     if (result && pmfi_mode >= 10) {
@@ -250,7 +254,7 @@ pmfi_apply_icc(unsigned char *pixels, int width, int height, int format,
 #define sixel_cms_convert_profile_to_linearrgb pmfi_apply
 #define sixel_cms_convert_profile_to_srgb pmfi_apply_srgb
 #define sixel_cms_close_profile pmfi_close
-#define sixel_cms_convert_to_srgb_with_profile_bytes pmfi_apply_icc
+#define sixel_cms_convert_to_linearrgb_with_profile_bytes pmfi_apply_icc
 
 #include "src/frompng.c"
 
@@ -293,7 +297,7 @@ pmfi_apply_icc(unsigned char *pixels, int width, int height, int format,
 #undef sixel_cms_convert_profile_to_linearrgb
 #undef sixel_cms_convert_profile_to_srgb
 #undef sixel_cms_close_profile
-#undef sixel_cms_convert_to_srgb_with_profile_bytes
+#undef sixel_cms_convert_to_linearrgb_with_profile_bytes
 
 
 static int

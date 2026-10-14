@@ -13902,6 +13902,12 @@ sixel_encoder_setopt_owned(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        /* A dash preserves the current descriptor, including a previous
+         * file destination. Transfer it only after all fallible work: the
+         * detached candidate must not close a live descriptor on failure. */
+        if (strcmp(value, "-") == 0) {
+            encoder->outfd = destination->outfd;
+        }
         break;
     case SIXEL_OPTFLAG_THREADS:  /* = */
         status = sixel_encoder_apply_threads_option(value);

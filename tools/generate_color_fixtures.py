@@ -1691,10 +1691,10 @@ def png_metadata_oracles():
                     c = max(N(0), min(N(1), c))
                     e = N('12.92') * c if c <= N('.0031308') else N('1.055') * c ** (N(1) / N('2.4')) - N('.055')
                     byte_rgb.append(int(e * 255 + N('.5')))
-                    # Native RGB8 packing does not promise our nearest-byte
-                    # rounding. Bound its quantization by adjacent integers
-                    # derived from the continuous Decimal color, not a fitted
-                    # +/-1 tolerance around a measured native byte.
+                    # Preserve the finite native-CMM fixture contract at the
+                    # byte boundary. Its adjacent candidates come from the
+                    # continuous Decimal color, not a fitted +/-1 tolerance
+                    # around a measured native byte.
                     lower = int(e * 255)
                     native_low.append(lower)
                     native_high.append(lower + (e * 255 != lower))

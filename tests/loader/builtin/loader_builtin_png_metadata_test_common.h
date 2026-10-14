@@ -134,12 +134,15 @@ png_metadata_check(int fixture, int engine, int background)
     if (fixture == 38) {
         byte_rgb = probe.palette[0];
         for (c = 0; c < 24; ++c) {
-            /* Native RGB8 packing has its own integer quantization boundary.
-             * The two candidates come from continuous source-derived color,
-             * not a tolerance fitted to these observed native output bytes. */
+            /* Palette bytes round a gamma float result from the canonical
+             * linear CMM path. Keep the fixture's source-derived adjacent
+             * candidates, not a tolerance fitted to native output bytes. */
             if (engine == SIXEL_CMS_ENGINE_COLORSYNC) {
                 if (byte_rgb[c] < source->native_byte_low[c] ||
                     byte_rgb[c] > source->native_byte_high[c]) {
+                    fprintf(stderr, "PNG palette c=%d: %u outside %u..%u\n",
+                        c, byte_rgb[c], source->native_byte_low[c],
+                        source->native_byte_high[c]);
                     return 1;
                 }
             } else if (byte_rgb[c] != source->byte_rgb[c]) {

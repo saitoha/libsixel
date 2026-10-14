@@ -22,8 +22,9 @@ test "$probe_status" -eq 0 || {
     exit 0
 }
 
+# FORCE application requires byte RGB; CMS must not promote this fixture.
 trace=$(set +xv; SIXEL_TRACE_TOPIC=kmeans_backend \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Gforce -Qkmeans:backend=gpu:seed=1 --lookup-policy=none -dnone \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision=8bit -Lbuiltin:cms_engine=none! -Gforce -Qkmeans:backend=gpu:seed=1 --lookup-policy=none -dnone \
     -Fnone -p 16 -o /dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || {
     echo "not ok 1 - force dispatch conversion"
     exit 0

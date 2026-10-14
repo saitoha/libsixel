@@ -26,7 +26,8 @@ static struct {
     int real_pixels, changed, poisoned, phases;
     int base_alpha;
     size_t n, profile_size, base_mask_size;
-    unsigned char raw[64], expected[64], profile[4096], base_mask[16];
+    unsigned char raw[64], expected[64], prefix[8];
+    unsigned char profile[4096], base_mask[16];
     void *heap[2];
     sixel_cms_profile_t *handles[2];
     sixel_cms_transform_t *transform;
@@ -125,7 +126,9 @@ lc_close(sixel_cms_profile_t *profile)
 }
 
 /* Qualify the real changed prefix against the separately computed ordinary
- * CMM result. This proves useful work happened before the false return. */
+ * CMM result for the same batch length. Native CMM packing can round
+ * differently in its short-batch kernel. This still proves useful work
+ * happened before the false return, without relaxing byte equality. */
 static void
 lc_prefix(unsigned char const *out, size_t channels)
 {
@@ -134,8 +137,15 @@ lc_prefix(unsigned char const *out, size_t channels)
 
     for (i = 0u; i < 2u; ++i) {
         for (channel = 0u; channel < 3u; ++channel) {
+            if (out[i * channels + channel] !=
+                    lc.prefix[i * 4u + channel]) {
+                fprintf(stderr, "TIFF prefix %lu/%lu: %u expected %u\n",
+                    (unsigned long)i, (unsigned long)channel,
+                    out[i * channels + channel],
+                    lc.prefix[i * 4u + channel]);
+            }
             lc.ok &= out[i * channels + channel] ==
-                     lc.expected[i * 4u + channel];
+                     lc.prefix[i * 4u + channel];
             lc.changed |= out[i * channels + channel] !=
                           lc.raw[i * 4u + channel];
         }
@@ -492,7 +502,7 @@ lc_strip(sixel_frame_t *frame, unsigned char *background)
 
 
 static int
-lc_reference(void)
+lc_reference(int partial)
 {
     sixel_cms_profile_t *source;
     sixel_cms_profile_t *destination;
@@ -509,7 +519,7 @@ lc_reference(void)
     transform = NULL;
     gray = tl_cases[lc.fixture].photo == 1;
     ok = 0;
-    lc_begin(1);
+    lc_begin(partial ? 2 : 1);
     memcpy(lc.expected, lc.raw, lc.n * 4u);
 #if HAVE_LCMS2
     source = sixel_cms_open_profile_from_mem(lc.profile, lc.profile_size);
@@ -536,6 +546,16 @@ lc_reference(void)
                 output[i * (gray ? 3u : 4u) + channel];
         }
     }
+    if (partial) {
+        ok = sixel_cms_do_transform(transform, input, output, 2u);
+        if (!ok) { goto cleanup; }
+        for (i = 0u; i < 2u; ++i) {
+            for (channel = 0u; channel < 3u; ++channel) {
+                lc.prefix[i * 4u + channel] =
+                    output[i * (gray ? 3u : 4u) + channel];
+            }
+        }
+    }
 cleanup:
     if (transform != NULL) { sixel_cms_delete_transform(transform); }
     if (destination != NULL) { sixel_cms_close_profile(destination); }
@@ -554,6 +574,20 @@ cleanup:
     for (i = 0u; i < lc.n; ++i) {
         for (channel = 0u; channel < 3u; ++channel) {
             lc.expected[i * 4u + channel] = input[i * 3u + channel];
+        }
+    }
+    if (ok && partial) {
+        for (i = 0u; i < 2u; ++i) {
+            for (channel = 0u; channel < 3u; ++channel) {
+                input[i * 3u + channel] = lc.raw[i * 4u + channel];
+            }
+        }
+        ok = sixel_cms_convert_to_srgb_with_profile_bytes(input, 2, 1,
+            SIXEL_PIXELFORMAT_RGB888, lc.profile, lc.profile_size);
+        for (i = 0u; i < 2u; ++i) {
+            for (channel = 0u; channel < 3u; ++channel) {
+                lc.prefix[i * 4u + channel] = input[i * 3u + channel];
+            }
         }
     }
 #endif
@@ -714,7 +748,7 @@ lc_run(char const *directory, int fixture, int mode)
         memcpy(original, sixel_chunk_get_buffer(chunk), bytes);
         if (!lc_load(component, chunk, 0, 0, 1)) { goto cleanup; }
     }
-    if (!lc_reference() || !lc_load(component, chunk, 1, 0, 0)) {
+    if (!lc_reference(mode == 1) || !lc_load(component, chunk, 1, 0, 0)) {
         goto cleanup;
     }
     if (mode != 0 && mode != 2) {

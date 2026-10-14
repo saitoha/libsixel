@@ -3,6 +3,8 @@
 # Registry row: SIXEL_OPTION_SCHEMA_UPDATE_POLICY|g_update_policy_values + 1|residual_threshold
 # Registry binding: residual_threshold|residual_threshold_override
 
+# Residual RGB241 observes an unmanaged RGB8 target. Applied CMS retains
+# float samples even with --precision=8bit.
 # Image assertion: option-values-and-output-equivalence
 set -eux
 
@@ -22,7 +24,7 @@ short_output="${artifact_dir}/0181_update_delta_residual_threshold_image_regress
 env_output="${artifact_dir}/0181_update_delta_residual_threshold_image_regression-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision=8bit -Lbuiltin:cms_engine=none! \
     -dnone "-Zdelta:R1:T8:H1.5" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok 1 - delta:residual_threshold short conversion failed"
     exit 0
@@ -32,7 +34,7 @@ case "${short_trace}" in *LSXSUB1\|*key=residual_threshold\|stored=1\|binding=re
     exit 0
 }
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision=8bit -Lbuiltin:cms_engine=none! \
     --env "SIXEL_UPDATE_DELTA_RESIDUAL_THRESHOLD=1.5" -dnone -Z delta:R1:T8 \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok 1 - delta:residual_threshold environment conversion failed"

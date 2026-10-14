@@ -345,14 +345,12 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
     /* Semantic cases use the normal 200 ms exchange budget. A short budget
      * also times the peer's scheduling under parallel check, not just the
      * protocol. Immediate replies do not wait for the budget to expire.
-     * Only cases that deliberately exhaust a deadline need shorter waits. */
+     * Partial/save/set/restore timeouts must first reach their intended
+     * phase, so their preceding peer replies also keep the normal budget.
+     * Silent probes and explicit duration checks can use shorter waits. */
     color_option = "-Uauto";
     if (color_auto_is(name, "silent") ||
-        color_auto_is(name, "multiple-silent") ||
-        color_auto_is(name, "partial") ||
-        color_auto_is(name, "save-timeout") ||
-        color_auto_is(name, "set-timeout") ||
-        color_auto_is(name, "restore-timeout")) {
+        color_auto_is(name, "multiple-silent")) {
         color_option = "-Uauto:timeout_ms=20";
     } else if (color_auto_is(name, "timeout-long")) {
         color_option = "-Uauto:timeout_ms=40";

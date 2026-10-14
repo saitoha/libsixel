@@ -21,18 +21,19 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
 output_default="${ARTIFACT_LOCAL_DIR}/webp-lossy-icc-default.sixel"
 output_cms1="${ARTIFACT_LOCAL_DIR}/webp-lossy-icc-cms1-default-check.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! "${input_webp}" >"${output_default}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 --lookup-policy=none -Llibwebp! "${input_webp}" >"${output_default}" || {
     echo "not ok" 1 - "libwebp lossy ICC decode failed with default cms"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_cms1}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 --lookup-policy=none -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_cms1}" || {
     echo "not ok" 1 - "libwebp lossy ICC decode failed with cms=1"
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" "${output_default}" "${output_cms1}" 2>&1) || {
-    echo "not ok" 1 - "${lsqa_msg}"
+# Equivalent input/settings require identical output bytes.
+{ test -s "${output_default}" && cmp -s "${output_default}" "${output_cms1}"; } || {
+    echo "not ok 1 - equivalent WebP output differs or is empty"
     exit 0
 }
 

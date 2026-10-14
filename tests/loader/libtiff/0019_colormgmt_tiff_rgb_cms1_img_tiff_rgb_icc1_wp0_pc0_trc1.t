@@ -20,10 +20,13 @@ set -v
 # Compare original decoded values before palette construction. Independent
 # source/ICC equations use PPM16; half a reference level plus float rounding
 # is below 0.004 in byte units. No dithered SIXEL golden supplies these values.
+# This analytic sample contract requires builtin CMS. Auto selects a native
+# CMM on some builds, whose approximation is covered by the engine-specific
+# numeric tests with their own profiles and budgets, not this 0.004-byte gate.
 # Regenerate: python3 tools/generate_cms_quality_references.py
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_display_values \
     "${TOP_SRCDIR}/tests/data/colormgmt/reference/tiff/rgb/samples-managed.ppm" \
-    "${TOP_SRCDIR}/tests/data/colormgmt/input/tiff/rgb/img_tiff_rgb_icc1_wp0_pc0_trc1.tiff" 'libtiff:cms_engine=auto!' 0.004 || {
+    "${TOP_SRCDIR}/tests/data/colormgmt/input/tiff/rgb/img_tiff_rgb_icc1_wp0_pc0_trc1.tiff" 'libtiff:cms_engine=builtin!' 0.004 || {
     echo "not ok 1 - TIFF color metadata samples differ from independent values"
     exit 0
 }

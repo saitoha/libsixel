@@ -2876,7 +2876,11 @@ webp_assign_loaded_frame_pixels(sixel_frame_t *frame,
             frame->width,
             frame->height,
             frame->pixelformat,
-            frame->colorspace,
+            /* YUVA with a background already contains linear samples.
+             * The fresh frame's default gamma tag would decode them twice
+             * when finalization requests the CMS target representation. */
+            frame->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
+            ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA,
             frame->ncolors,
             SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)
             ? SIXEL_FRAME_PIXELS_FLOAT32

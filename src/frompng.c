@@ -45,6 +45,7 @@
 #include "allocator.h"
 #include "chunk-view.h"
 #include "cms.h"
+#include "colorspace.h"
 #include "compat_stub.h"
 #include "frompng.h"
 #include "frame-private.h"
@@ -830,7 +831,7 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
                                       size,
                                       &icc_profile,
                                       &icc_profile_length)) {
-            converted = sixel_cms_convert_to_srgb_with_profile_bytes(
+            converted = sixel_cms_convert_to_linearrgb_with_profile_bytes(
                 staged,
                 width,
                 height,
@@ -844,7 +845,7 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
                && sixel_frompng_build_profile_from_chunks(buffer,
                                                           size,
                 &chunk_profile, NULL)) {
-        converted = sixel_cms_convert_profile_to_srgb(
+        converted = sixel_cms_convert_profile_to_linearrgb(
             staged,
             width,
             height,
@@ -853,6 +854,13 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
         sixel_cms_close_profile(chunk_profile);
     }
     if (converted) {
+        /* Match the canonical raster's linear CMS destination. A native
+         * gamma destination can introduce a second gamut/transfer mapping,
+         * including nonzero red for an out-of-gamut dark cyan sample. */
+        for (sample = 0u; sample < pixel_count * 3u; ++sample) {
+            ((float *)staged)[sample] = (float)sixel_color_encode_srgb(
+                ((float *)staged)[sample]);
+        }
         if (sample_bytes == sizeof(float)) {
             memcpy(pixels, staged, pixel_bytes);
         } else {
