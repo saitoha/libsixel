@@ -168,22 +168,54 @@
           {
             "policy": "clip",
             "last_step_ratio": 0.0,
-            "flat_intervals": 32
+            "flat_intervals": 32,
+            "peak_chroma_saturation": 0.8324607329842932,
+            "peak_chroma": 0.2576833077361567,
+            "endpoint_chroma": 0.2576833077361567,
+            "endpoint_linear_srgb": [
+              1.0,
+              0.0,
+              0.0
+            ]
           },
           {
             "policy": "local-minde",
             "last_step_ratio": 1.2737486024846252,
-            "flat_intervals": 27
+            "flat_intervals": 27,
+            "peak_chroma_saturation": 0.8429319371727749,
+            "peak_chroma": 0.2576833077361568,
+            "endpoint_chroma": 0.25536201368745176,
+            "endpoint_linear_srgb": [
+              1.0000000000000002,
+              0.00346494988806248,
+              0.003579775673884141
+            ]
           },
           {
             "policy": "edge-seeker",
             "last_step_ratio": 1.1669845499517792,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 0.9057591623036649,
+            "peak_chroma": 0.2570332098531587,
+            "endpoint_chroma": 0.2373750264267301,
+            "endpoint_linear_srgb": [
+              0.9994486803986629,
+              0.0343855238928262,
+              0.021796962676442006
+            ]
           },
           {
             "policy": "ray-trace",
             "last_step_ratio": 1.1642180400790263,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 0.9057591623036649,
+            "peak_chroma": 0.257033205732914,
+            "endpoint_chroma": 0.23753217405330976,
+            "endpoint_linear_srgb": [
+              1.0000000000000002,
+              0.03419947585811311,
+              0.02168080987781949
+            ]
           }
         ]
       },
@@ -195,22 +227,54 @@
           {
             "policy": "clip",
             "last_step_ratio": 0.11748955019206128,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 1.0,
+            "peak_chroma": 0.19244918068652625,
+            "endpoint_chroma": 0.19244918068652625,
+            "endpoint_linear_srgb": [
+              1.0,
+              0.18098610432381584,
+              0.0
+            ]
           },
           {
             "policy": "local-minde",
             "last_step_ratio": 0.8158197892990201,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 0.9005235602094241,
+            "peak_chroma": 0.19148542399353324,
+            "endpoint_chroma": 0.18765340575843756,
+            "endpoint_linear_srgb": [
+              1.0000000000000002,
+              0.2053338672920791,
+              4.221965381621825e-18
+            ]
           },
           {
             "policy": "edge-seeker",
             "last_step_ratio": 1.083710881924416,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 0.9319371727748692,
+            "peak_chroma": 0.18611099074917992,
+            "endpoint_chroma": 0.17389031315366082,
+            "endpoint_linear_srgb": [
+              0.999988044379635,
+              0.23784634448901615,
+              0.029012508536366027
+            ]
           },
           {
             "policy": "ray-trace",
             "last_step_ratio": 1.0836215192955527,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 0.9319371727748692,
+            "peak_chroma": 0.18611092815122238,
+            "endpoint_chroma": 0.1738936040296497,
+            "endpoint_linear_srgb": [
+              1.0000000000000002,
+              0.2378426104867498,
+              0.029007077747165953
+            ]
           }
         ]
       },
@@ -222,22 +286,54 @@
           {
             "policy": "clip",
             "last_step_ratio": 0.17610205117211483,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 1.0,
+            "peak_chroma": 0.28893011841147465,
+            "endpoint_chroma": 0.28893011841147465,
+            "endpoint_linear_srgb": [
+              0.03724741607303798,
+              1.0,
+              0.0
+            ]
           },
           {
             "policy": "local-minde",
             "last_step_ratio": 0.08627450676306112,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 0.9895287958115184,
+            "peak_chroma": 0.2832373021790737,
+            "endpoint_chroma": 0.28308498719343594,
+            "endpoint_linear_srgb": [
+              0.07604604044506363,
+              1.0000000000000002,
+              -6.5469815928542045e-18
+            ]
           },
           {
             "policy": "edge-seeker",
             "last_step_ratio": 0.9311369986003294,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 1.0,
+            "peak_chroma": 0.2746298090349662,
+            "endpoint_chroma": 0.2746298090349662,
+            "endpoint_linear_srgb": [
+              0.1250466875208292,
+              0.9864447031224383,
+              -6.175328458719142e-18
+            ]
           },
           {
             "policy": "ray-trace",
             "last_step_ratio": 0.9311455796370701,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 1.0,
+            "peak_chroma": 0.27463079301529697,
+            "endpoint_chroma": 0.27463079301529697,
+            "endpoint_linear_srgb": [
+              0.1250413058103367,
+              0.9864468639578863,
+              2.3333348976634058e-17
+            ]
           }
         ]
       },
@@ -249,22 +345,54 @@
           {
             "policy": "clip",
             "last_step_ratio": 0.1951555926124694,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 1.0,
+            "peak_chroma": 0.2877075763508802,
+            "endpoint_chroma": 0.2877075763508802,
+            "endpoint_linear_srgb": [
+              0.0,
+              1.0,
+              0.0211330076337353
+            ]
           },
           {
             "policy": "local-minde",
             "last_step_ratio": 0.9091216036140748,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 1.0,
+            "peak_chroma": 0.2565989305537202,
+            "endpoint_chroma": 0.2565989305537202,
+            "endpoint_linear_srgb": [
+              -3.439979177689812e-17,
+              0.9695089692750869,
+              0.11241660987412519
+            ]
           },
           {
             "policy": "edge-seeker",
             "last_step_ratio": 0.8998783094154674,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 1.0,
+            "peak_chroma": 0.23840041355726949,
+            "endpoint_chroma": 0.23840041355726949,
+            "endpoint_linear_srgb": [
+              -3.196989483604777e-17,
+              0.9313269254855522,
+              0.16261333991692284
+            ]
           },
           {
             "policy": "ray-trace",
             "last_step_ratio": 0.8998160602091495,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 1.0,
+            "peak_chroma": 0.23840022368742475,
+            "endpoint_chroma": 0.23840022368742475,
+            "endpoint_linear_srgb": [
+              -3.196986902782781e-17,
+              0.9313265220743125,
+              0.16261387713887906
+            ]
           }
         ]
       },
@@ -276,22 +404,54 @@
           {
             "policy": "clip",
             "last_step_ratio": 0.9314135952080335,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 0.9633507853403142,
+            "peak_chroma": 0.14574505000112148,
+            "endpoint_chroma": 0.145367646168809,
+            "endpoint_linear_srgb": [
+              0.0,
+              0.6897121141797731,
+              1.0
+            ]
           },
           {
             "policy": "local-minde",
             "last_step_ratio": 0.9708474978282524,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 1.0,
+            "peak_chroma": 0.14322477224207644,
+            "endpoint_chroma": 0.14322477224207644,
+            "endpoint_linear_srgb": [
+              -6.371643680050898e-18,
+              0.6680823502122124,
+              0.9580993466393991
+            ]
           },
           {
             "policy": "edge-seeker",
             "last_step_ratio": 0.9659750299104573,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 1.0,
+            "peak_chroma": 0.13981395529022664,
+            "endpoint_chroma": 0.13981395529022664,
+            "endpoint_linear_srgb": [
+              -6.979316111179277e-18,
+              0.6506747210533803,
+              0.8938262409185727
+            ]
           },
           {
             "policy": "ray-trace",
             "last_step_ratio": 0.9658314495150959,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 1.0,
+            "peak_chroma": 0.13981393169969714,
+            "endpoint_chroma": 0.13981393169969714,
+            "endpoint_linear_srgb": [
+              -3.693337309285944e-18,
+              0.6506742200746195,
+              0.8938257906599639
+            ]
           }
         ]
       },
@@ -303,22 +463,54 @@
           {
             "policy": "clip",
             "last_step_ratio": 0.0,
-            "flat_intervals": 12
+            "flat_intervals": 12,
+            "peak_chroma_saturation": 0.93717277486911,
+            "peak_chroma": 0.3224909647751645,
+            "endpoint_chroma": 0.3224909647751645,
+            "endpoint_linear_srgb": [
+              1.0,
+              0.0,
+              1.0
+            ]
           },
           {
             "policy": "local-minde",
             "last_step_ratio": 1.5204703967483952,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 0.9476439790575917,
+            "peak_chroma": 0.32007683968130124,
+            "endpoint_chroma": 0.305399494734657,
+            "endpoint_linear_srgb": [
+              1.0000000000000002,
+              0.02383004657729601,
+              0.9609666326192386
+            ]
           },
           {
             "policy": "edge-seeker",
             "last_step_ratio": 1.3969180706180842,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 0.8795811518324608,
+            "peak_chroma": 0.3136142430949828,
+            "endpoint_chroma": 0.2713961990621925,
+            "endpoint_linear_srgb": [
+              0.999783290842717,
+              0.07198536578151485,
+              0.8768530223154163
+            ]
           },
           {
             "policy": "ray-trace",
             "last_step_ratio": 1.3969065866439934,
-            "flat_intervals": 0
+            "flat_intervals": 0,
+            "peak_chroma_saturation": 0.8795811518324608,
+            "peak_chroma": 0.3136155528675437,
+            "endpoint_chroma": 0.27148393196388976,
+            "endpoint_linear_srgb": [
+              1.0000000000000002,
+              0.0718759847205275,
+              0.8770423469022053
+            ]
           }
         ]
       }

@@ -270,9 +270,60 @@ def ramp_profiles(data, directory, measurements):
                 "policy": policy,
                 "last_step_ratio": float(steps[h, -1, m + 1] / steps[h, -1, 0]),
                 "flat_intervals": int(np.count_nonzero(steps[h, :, m + 1] < 1e-12)),
+                "peak_chroma_saturation": float(saturation[np.argmax(chroma[h, :, m + 1])]),
+                "peak_chroma": float(np.max(chroma[h, :, m + 1])),
+                "endpoint_chroma": float(chroma[h, -1, m + 1]),
+                "endpoint_linear_srgb": data[h, -1, m + 1, :3].tolist(),
             } for m, policy in enumerate(POLICIES)],
         } for h, name in enumerate(NAMES)],
     }
+
+
+def cusp_geometry(directory):
+    """Explain the two sides of a cusp without inventing a measured gamut.
+
+    The coordinates below choose a readable schematic shape only. The
+    measured six-ramp results remain in ramp_profiles and its CSV/JSON.
+    """
+    cusp_l, cusp_c = .62, .85
+    lower_l = np.linspace(0, cusp_l, 80)
+    upper_l = np.linspace(cusp_l, 1, 80)
+    lower_c = cusp_c * lower_l / cusp_l
+    upper_c = cusp_c * np.sqrt((1 - upper_l) / (1 - cusp_l))
+    fig, ax = plt.subplots(figsize=(10.2, 4.8))
+    fig.subplots_adjust(left=.13, right=.57, bottom=.20, top=.79)
+    fig.suptitle("At one hue, more lightness can mean less available chroma", fontsize=15)
+    fig.text(.5, .89, "A fixed-hue L–C slice: the cusp is the most chromatic point, not the brightest point",
+             ha="center", fontsize=10, color="#475569")
+    ax.fill_betweenx(np.r_[lower_l, upper_l], 0, np.r_[lower_c, upper_c],
+                     color="#f1f5f9")
+    ax.plot(lower_c, lower_l, color="#2563eb", lw=2)
+    ax.plot(upper_c, upper_l, color="#b45309", lw=2)
+    ax.plot([0, cusp_c], [cusp_l, cusp_l], ":", color="#94a3b8")
+    ax.scatter([0, cusp_c, 0], [0, cusp_l, 1], color="#172033", s=28, zorder=3)
+    ax.annotate("cusp", (cusp_c, cusp_l), xytext=(7, 0),
+                textcoords="offset points", va="center", fontsize=11)
+    for c, l, color in ((lower_c, lower_l, "#2563eb"), (upper_c, upper_l, "#b45309")):
+        ax.annotate("", (c[55], l[55]), (c[28], l[28]),
+                    arrowprops={"arrowstyle": "-|>", "color": color, "lw": 2})
+    ax.text(.23, .53, "reproducible\ncolors", ha="center", fontsize=10,
+            color="#475569")
+    ax.set(xlim=(-.025, 1.05), ylim=(-.015, 1.03),
+           xticks=(0, cusp_c), xticklabels=("0", "C at cusp"),
+           yticks=(0, cusp_l, 1), yticklabels=("0: black", "L at cusp", "1: white"),
+           xlabel="Chroma C", ylabel="Oklab lightness L")
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.text(.62, .67, "Below the cusp", color="#2563eb", weight="bold", fontsize=12)
+    fig.text(.62, .58, "Moving toward the cusp allows\nlightness and chroma to rise together.",
+             fontsize=10, linespacing=1.6)
+    fig.text(.62, .44, "Above the cusp", color="#b45309", weight="bold", fontsize=12)
+    fig.text(.62, .35, "Moving toward white increases lightness\nbut reduces the available chroma.",
+             fontsize=10, linespacing=1.6)
+    fig.text(.62, .22, "Each hue has a different cusp.\nThe same L can be below one and above another.",
+             fontsize=10, linespacing=1.6)
+    fig.text(.5, .06, "Schematic geometry only: curve shape and cusp position are illustrative, not measured sRGB coordinates.",
+             ha="center", fontsize=9, color="#475569")
+    save_plot(fig, directory / "cusp-geometry.svg")
 
 
 def png16(rgb, profile):
@@ -582,6 +633,7 @@ def main():
         data = sample(probe, inputs).reshape(6, 192, 5, 6)
         ramps(data, figures)
         profiles = ramp_profiles(data, figures, measurements)
+        cusp_geometry(figures)
         fixture = ROOT / "tests/data/color-numeric/png-p3-16-rgb.png"
         with Image.open(fixture) as image:
             profile = image.info["icc_profile"]

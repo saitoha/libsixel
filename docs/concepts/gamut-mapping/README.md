@@ -118,6 +118,35 @@ Chroma alone does not determine whether two colors are identical. In particular,
 
 The clipped red and magenta tails become constant in lightness and hue as well as chroma. The other methods can retain changes in lightness while changing chroma differently. Hue panels use different origins with the same degree span, and omit near-neutral samples where hue is unstable. A steeper curve is not automatically better: exaggerated changes or discontinuities are also possible. The graphs explain where the differences occur rather than assigning a universal quality ranking.
 
+### Why only red, orange and magenta turn downward here
+
+In these six ramps, EdgeSeeker and Ray Trace turn downward near the right end for **red, orange and magenta**, while yellow-green, green and cyan continue upward. The falling quantity is chroma `C`, not hue `h`. This is not a rule that these methods always desaturate red more than green: it depends on the input's path through the destination gamut.
+
+To understand the difference, hold Oklab hue fixed and consider a slice with lightness on the vertical axis and chroma on the horizontal axis. Black and white have zero chroma. Between them, the boundary reaches a most-chromatic point, the **cusp**. On its darker side, increasing lightness can make more chroma available. On its lighter side, approaching white leaves less room for chroma. The RGB primaries contribute differently to lightness, so the cusp's lightness and chroma depend on hue; there is no single lightness above which every color must lose chroma. This is the geometry used by [EdgeSeeker's boundary model](https://www.w3.org/TR/2026/CRD-css-color-4-20261009/#GMA-EdgeSeeker).
+
+![A schematic fixed-hue gamut slice shows a boundary rising from black to its maximum-chroma cusp, then bending toward white. Arrows distinguish increasing lightness with increasing chroma below the cusp from increasing lightness with decreasing chroma above it.](figures/cusp-geometry.svg)
+
+Call the available chroma at a given lightness and hue `Cmax(L, h)`. A strict lightness/hue-preserving reduction aims for `Cout = min(Cin, Cmax(L, h))`. EdgeSeeker approximates that boundary with a lookup table and a fitted curve; Ray Trace approaches it through RGB intersections and Oklab corrections. Their numerical answers need not coincide, but both encounter the same geometric restriction. Local MINDE allows a small clipping error, and plain channel clipping can change lightness and hue, so their curves need not follow this rule as closely.
+
+The input pattern keeps **encoded P3 HSL lightness at 0.5**. That does not keep Oklab lightness constant: toward the saturated end, all six inputs become lighter in Oklab, and their Oklab hues also change somewhat. Thus each input follows a changing `L, h` pair, rather than moving horizontally across one fixed-hue diagram. In the red, orange and magenta cases, that path enters the whiteward side of the boundary. `Cin` keeps increasing, but `Cmax(L, h)` starts decreasing. In the other three cases, the path stays on the darker side through the endpoint, where more chroma is still available as lightness rises.
+
+The actual EdgeSeeker samples make that distinction concrete. `S` is the horizontal position in the ramp, from zero to one; peak positions are sampled values, not analytically exact turning points. Ray Trace has the same sampled peak positions in these six examples.
+
+| Ramp | S at maximum output C | Maximum output C | Output C at S = 1 | Boundary at the endpoint, in linear sRGB |
+| --- | ---: | ---: | ---: | --- |
+| Red | 0.9058 | 0.2570 | 0.2374 | Upper red face: R ≈ 1 |
+| Orange | 0.9319 | 0.1861 | 0.1739 | Upper red face: R ≈ 1 |
+| Yellow-green | 1.0000 | 0.2746 | 0.2746 | Lower blue face: B ≈ 0 |
+| Green | 1.0000 | 0.2384 | 0.2384 | Lower red face: R ≈ 0 |
+| Cyan | 1.0000 | 0.1398 | 0.1398 | Lower red face: R ≈ 0 |
+| Magenta | 0.8796 | 0.3136 | 0.2714 | Upper red face: R ≈ 1 |
+
+For the declining cases, red is already at its output limit. To reproduce a lighter color while keeping its hue, the mapper must adjust the other channels, bringing the result closer to neutral and lowering chroma. At the lower faces reached by the other ramps, a channel is still zero and the remaining channels can increase toward the cusp. A higher numerical lightness in the green ramp is not a contradiction: its cusp is at a different lightness. The [measurement record](measurements/examples.json) includes peak positions and endpoint RGB values, alongside the [full Oklab sample coordinates](measurements/ramp-coordinates.csv).
+
+Changing the input lightness, hue path or output profile can change which ramps turn downward. At a fixed Oklab lightness **and** hue, increasing only input chroma would instead reach a fixed boundary and then plateau under the ideal reduction above. Preserving each color's lightness and hue therefore does not, by itself, preserve the ordering or slope of chroma along an arbitrary image gradient. These mappers choose a replacement for each color; they do not jointly optimize neighboring colors to preserve spatial contrast. A smooth chroma decrease can retain lightness gradation, while a constant chroma can accompany a loss of all color variation, so the other coordinate plots remain necessary.
+
+The smooth downturn shared by EdgeSeeker and Ray Trace in these ramps is a boundary effect. The abrupt Ray Trace streaks in the two-dimensional pattern below have a separate numerical cause.
+
 ### Add palette quantization and SIXEL
 
 Now use a two-dimensional P3 pattern: hue varies horizontally, and encoded HSL lightness decreases from top to bottom. The top row maps the continuous colors using the source's actual embedded profile. The next two rows encode the same 192 × 96, 16-bit, ICC-tagged PNG into 32 colors, then decode the actual SIXEL bytes as sRGB: first without dithering, then with Floyd–Steinberg and the soft feedback limiter.
