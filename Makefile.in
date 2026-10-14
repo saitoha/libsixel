@@ -958,6 +958,9 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/encoder/palette-application/working-colorspace/README.md \
 	docs/encoder/output/gamut-mapping.md \
 	docs/concepts/gamut-mapping/README.md \
+	docs/concepts/gamut-mapping/figures/clipping-detail.svg \
+	docs/concepts/gamut-mapping/figures/p3-red-shading.png \
+	docs/concepts/gamut-mapping/measurements/clipping-detail.csv \
 	docs/concepts/gamut-mapping/figures/continuous-clip.png \
 	docs/concepts/gamut-mapping/figures/continuous-edge-seeker.png \
 	docs/concepts/gamut-mapping/figures/continuous-local-minde.png \

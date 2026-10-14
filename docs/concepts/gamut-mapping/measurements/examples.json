@@ -149,7 +149,7 @@
     "-t",
     "rgb",
     "-p",
-    "32",
+    "256",
     "-=",
     "2"
   ],
@@ -552,50 +552,107 @@
     {
       "policy": "clip",
       "dither": "none",
-      "sixel_bytes": 3470,
-      "decoded_rgb_sha256": "541fd03a04485703d6783ac7ca27f962a997a80398e65c0be87bf7e6a443aa85"
+      "sixel_bytes": 12199,
+      "decoded_rgb_sha256": "d1dc0ae3eb9ec8b14426bc939bb55f93e97f78149525b66a3cc73f1fbb792b3e"
     },
     {
       "policy": "local-minde",
       "dither": "none",
-      "sixel_bytes": 3454,
-      "decoded_rgb_sha256": "a4d6556fd4620d596d3d391b104e2eb656d4bdf7a896528ebe64f3345dac034a"
+      "sixel_bytes": 12248,
+      "decoded_rgb_sha256": "6c5dee1dbb15874164a98be1463f9619f7e1a588ad066f46d1da5097e749d2fb"
     },
     {
       "policy": "edge-seeker",
       "dither": "none",
-      "sixel_bytes": 3601,
-      "decoded_rgb_sha256": "2643ecaf86d56407d5472e1ec3bbe9caadc89b1c93005d7e4c1091a9565f9b50"
+      "sixel_bytes": 12327,
+      "decoded_rgb_sha256": "50381b4d592a0aacc59f3c1a4b2e7bfad12ba528fa2a33e1f8781d72ff79fd7d"
     },
     {
       "policy": "ray-trace",
       "dither": "none",
-      "sixel_bytes": 3728,
-      "decoded_rgb_sha256": "583510a4f6d32cdabd93c2c32fa9fedcdb7a0fd4e8a0adf35287b68c38809247"
+      "sixel_bytes": 12333,
+      "decoded_rgb_sha256": "39ce5231c7f13cbd28f691a3367c469275ed1381640534c95d7de727d664fc01"
     },
     {
       "policy": "clip",
       "dither": "fs",
-      "sixel_bytes": 8781,
-      "decoded_rgb_sha256": "abfa6fe4b13f9163949b8d416f0ebf373a4d258e4b975238d5fbb92948dcf045"
+      "sixel_bytes": 16844,
+      "decoded_rgb_sha256": "3c5dec6d26723654f955957816fe9eb7b787e07aaee473a516637084fa341975"
     },
     {
       "policy": "local-minde",
       "dither": "fs",
-      "sixel_bytes": 8495,
-      "decoded_rgb_sha256": "c6a439710c8dcaf8722320ee2cff798f35d502d63f42b521255e55d9c1f721d6"
+      "sixel_bytes": 16556,
+      "decoded_rgb_sha256": "99cc7d34b8e29beb4772e9a401e2ac73b4f661cf2a33cb29b4addda037fa893d"
     },
     {
       "policy": "edge-seeker",
       "dither": "fs",
-      "sixel_bytes": 8860,
-      "decoded_rgb_sha256": "267d3c948423361b37d23f059dad1ce2167f09f9e99f235c300bfda4afbc754e"
+      "sixel_bytes": 16836,
+      "decoded_rgb_sha256": "d5a907a51a4081c6293eb895cd9dc18522240326a1b3102de11b58d01a2e6b9b"
     },
     {
       "policy": "ray-trace",
       "dither": "fs",
-      "sixel_bytes": 8891,
-      "decoded_rgb_sha256": "1bfe9f86d2e55a185008fc4a612851c0c490b6640dc8f87dbd1115797cb6f9e8"
+      "sixel_bytes": 17088,
+      "decoded_rgb_sha256": "41b85d3cdb98806d097eedc7e02524b4067b9b2d320ffc1a4229dc948f36e018"
     }
-  ]
+  ],
+  "clipping_detail": {
+    "source": {
+      "width": 192,
+      "height": 96,
+      "bits_per_channel": 16,
+      "definition": "P3 (0.92 + 0.08*f, 0, 0), rounded to PNG16",
+      "field": "f = 0.5 + 0.5*sin(2*pi*x)*cos(pi*y/2); x in [0,1], y in [-1,1]",
+      "png_sha256": "9828fdb22a51344c0ce659ed3484fb7d865163d922f839b3ecf775942f2be286",
+      "icc_sha256": "9d6d78352546bdb31e31d15fc92a74c76edc5594491c6813af60caa1e394ad96",
+      "linear_srgb_min": [
+        1.0137565121739278,
+        -0.04204725979332884,
+        -0.019642226052377153
+      ],
+      "linear_srgb_max": [
+        1.2249394736603012,
+        -0.0347981956260942,
+        -0.016255851821550333
+      ]
+    },
+    "measurement": "Mean per-pixel Oklab L in 16x32 blocks, y=32..63; no contrast scaling in color previews",
+    "source_block_L_range": 0.03618717080848677,
+    "policies": [
+      {
+        "policy": "clip",
+        "continuous_block_L_range": 0.0,
+        "decoded_block_L_range": 0.0,
+        "decoded_unique_rgb": 1,
+        "sixel_bytes": 42722,
+        "decoded_rgb_sha256": "5668f417616b758a46f2203a945d5d9e35c4d1b6bcc7049fbe5844ce6a650da5"
+      },
+      {
+        "policy": "local-minde",
+        "continuous_block_L_range": 0.004011433656185059,
+        "decoded_block_L_range": 0.005175752666720546,
+        "decoded_unique_rgb": 10,
+        "sixel_bytes": 12638,
+        "decoded_rgb_sha256": "8075730a6d94103510a890b26cce5598cec69f196095f0156cae547f93fcd1b2"
+      },
+      {
+        "policy": "edge-seeker",
+        "continuous_block_L_range": 0.03618716376772202,
+        "decoded_block_L_range": 0.03643377386666369,
+        "decoded_unique_rgb": 37,
+        "sixel_bytes": 42163,
+        "decoded_rgb_sha256": "cb71452bfdd78b74646687ebee71a3806fc9e9d387f7ef39b7b2b12a27e99d19"
+      },
+      {
+        "policy": "ray-trace",
+        "continuous_block_L_range": 0.03618717506630231,
+        "decoded_block_L_range": 0.036408997180642055,
+        "decoded_unique_rgb": 37,
+        "sixel_bytes": 42378,
+        "decoded_rgb_sha256": "468e6fd3f4e9df1459d7a7c4ef9f8b20690199bd6b5a2360cec8bca64c6697ff"
+      }
+    ]
+  }
 }

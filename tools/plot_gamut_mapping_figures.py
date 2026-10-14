@@ -42,7 +42,7 @@ FLAGS = ["--threads=1", "-.float32",
          "-Q", "kmeans:seed=1", "-X", "oklab", "-W", "oklab",
          "--sampling-policy=full-frame", "--binning-policy=none",
          "-F", "none", "-a", "off", "-_", "none", "-~", "none",
-         "-0", "soft", "-t", "rgb", "-p", "32", "-=", "2"]
+         "-0", "soft", "-t", "rgb", "-p", "256", "-=", "2"]
 
 
 def run(argv, **kwargs):
@@ -407,7 +407,7 @@ def encode_comparison(build, source, continuous, directory, manifest):
     fig, axes = plt.subplots(3, 4, figsize=(12, 6.5))
     fig.subplots_adjust(left=.07, right=.995, top=.83, bottom=.09,
                         wspace=.045, hspace=.04)
-    fig.suptitle("From continuous mapping to 32-color SIXEL", fontsize=16)
+    fig.suptitle("From continuous mapping to 256-color SIXEL", fontsize=16)
     fig.text(.52, .92, "Same 16-bit P3 source; the lower rows include palette construction and wire rounding",
              ha="center", fontsize=10, color="#475569")
     for m, policy in enumerate(POLICIES):
@@ -444,6 +444,136 @@ def encode_comparison(build, source, continuous, directory, manifest):
     fig.text(.52, .03, "All previews: sRGB, nearest-neighbor enlargement. Continuous row: no palette. Lower rows: decoded SIXEL.",
              ha="center", fontsize=9, color="#475569")
     save_plot(fig, directory / "encoded-comparison.svg")
+
+
+def linear_oklab_lightness(rgb):
+    """Measure decoded pixels; this is a coordinate transform, not a mapper."""
+    lms = rgb @ np.array([[.4122214708, .5363325363, .0514459929],
+                          [.2119034982, .6806995451, .1073969566],
+                          [.0883024619, .2817188376, .6299787005]]).T
+    return np.cbrt(lms) @ np.array([.2104542553, .7936177850, -.0040720468])
+
+
+def clipping_detail(build, probe, profile, profile_path, figures, measurements,
+                    manifest):
+    """Show a complete RGB collapse over a broad, deliberately chosen pattern.
+
+    Valid P3 reds can all lie beyond the same sRGB cube corner. Use a
+    smooth spatial field there, then check the continuous mapper AND the
+    real encoder. Do not infer decoded uniformity from continuous clip.
+    """
+    x = np.linspace(0, 1, 192)[None, :]
+    y = np.linspace(-1, 1, 96)[:, None]
+    shape = .5 + .5 * np.sin(2 * np.pi * x) * np.cos(np.pi * y / 2)
+    rgb = np.zeros((96, 192, 3))
+    rgb[:, :, 0] = .92 + .08 * shape
+    source = figures / "p3-red-shading.png"
+    source.write_bytes(png16(rgb, profile))
+    rgb = np.floor(rgb * 65535 + .5) / 65535
+    data = sample(probe, rgb, profile_path).reshape(96, 192, 5, 6)
+    assert np.all(data[:, :, 0, 0] > 1)
+    assert np.all(data[:, :, 0, 1:3] < 0)
+    assert np.all(data[:, :, 1, :3] == np.array([1., 0., 0.]))
+    # Cross-check the diagnostic conversion against the C probe before
+    # applying it to decoded sRGB pixels. This is not an independent oracle.
+    assert np.allclose(linear_oklab_lightness(data[:, :, :, :3]),
+                       data[:, :, :, 3], rtol=0, atol=2e-8)
+
+    fig = plt.figure(figsize=(12, 8.6))
+    fig.suptitle("When RGB clipping erases an entire shading pattern", fontsize=16)
+    ax = fig.add_axes([.08, .78, .20, .14])
+    ax.imshow((rgb[:, :, 0] - .92) / .08, cmap="gray", vmin=0, vmax=1,
+              interpolation="nearest")
+    ax.set(xticks=[], yticks=[])
+    ax.set_title("Input R, shown as scaled gray", fontsize=10)
+    ax.add_patch(Rectangle((-.5, 31.5), 192, 32, fill=False,
+                          edgecolor="white", linestyle=":", lw=1))
+    fig.text(.32, .88, "Valid Display P3: (R, 0, 0), R = 0.92 … 1.00", fontsize=12)
+    fig.text(.32, .84, "The broad light/dark shape is carried only by P3 red intensity.\n"
+             "In linear sRGB every pixel has R > 1, G < 0, B < 0.\n"
+             "Clipping all three channels therefore makes every pixel (1, 0, 0).",
+             va="top", fontsize=10, linespacing=1.6)
+    fig.text(.08, .756, "Continuous mapping (no palette)", fontsize=10)
+    fig.text(.08, .532, "Decoded SIXEL: 256-color budget, FS + soft", fontsize=10)
+
+    # Each point describes a 16×32 area. Pixel-scale dither is not the
+    # structure being compared. Keep the values, rather than derivatives.
+    def strip(values):
+        return values[32:64].reshape(32, 12, 16).mean(axis=(0, 2))
+
+    source_line = strip(data[:, :, 0, 3])
+    positions = np.arange(12) * 16 + 7.5
+    curves = [("source", "continuous", source_line)]
+    record = {
+        "source": {"width": 192, "height": 96, "bits_per_channel": 16,
+                   "definition": "P3 (0.92 + 0.08*f, 0, 0), rounded to PNG16",
+                   "field": "f = 0.5 + 0.5*sin(2*pi*x)*cos(pi*y/2); x in [0,1], y in [-1,1]",
+                   "png_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                   "icc_sha256": hashlib.sha256(profile).hexdigest(),
+                   "linear_srgb_min": data[:, :, 0, :3].min(axis=(0, 1)).tolist(),
+                   "linear_srgb_max": data[:, :, 0, :3].max(axis=(0, 1)).tolist()},
+        "measurement": "Mean per-pixel Oklab L in 16x32 blocks, y=32..63; no contrast scaling in color previews",
+        "source_block_L_range": float(np.ptp(source_line)),
+        "policies": [],
+    }
+    for m, policy in enumerate(POLICIES):
+        preview = encode_srgb(data[:, :, m + 1, :3])
+        continuous_line = strip(data[:, :, m + 1, 3])
+        sixel = run([build / "converters/img2sixel", source, *FLAGS,
+                     "-d", "fs", "-U", "gamma:gamut=" + policy])
+        png = run([build / "converters/sixel2png", "-T", "srgb"], input=sixel)
+        decoded = Image.open(io.BytesIO(png)).convert("RGB")
+        assert decoded.size == (192, 96)
+        pixels = np.asarray(decoded)
+        if policy == "clip":
+            assert np.all(pixels == np.array([255, 0, 0]))
+        encoded = pixels / 255.
+        linear = np.where(encoded <= .04045, encoded / 12.92,
+                          ((encoded + .055) / 1.055) ** 2.4)
+        decoded_line = strip(linear_oklab_lightness(linear))
+        curves.extend([(policy, "continuous", continuous_line),
+                       (policy, "decoded-fs", decoded_line)])
+        record["policies"].append({
+            "policy": policy, "continuous_block_L_range": float(np.ptp(continuous_line)),
+            "decoded_block_L_range": float(np.ptp(decoded_line)),
+            "decoded_unique_rgb": len(np.unique(pixels.reshape(-1, 3), axis=0)),
+            "sixel_bytes": len(sixel),
+            "decoded_rgb_sha256": hashlib.sha256(decoded.tobytes()).hexdigest(),
+        })
+        for row, image in enumerate((preview, decoded)):
+            ax = fig.add_axes([.08 + m * .23, .565 - row * .21, .218, .155])
+            ax.imshow(image, interpolation="nearest")
+            ax.set(xticks=[], yticks=[])
+            if row == 0:
+                ax.set_title(LABELS[m], fontsize=11)
+
+    ax = fig.add_axes([.08, .095, .63, .19])
+    ax.plot(positions, source_line, ":", color="#172033", lw=2,
+            label="Original P3 (coordinates)")
+    for m, policy in enumerate(POLICIES):
+        line = next(values for name, stage, values in curves
+                    if name == policy and stage == "decoded-fs")
+        ax.plot(positions, line, color=COLORS[m], label=LABELS[m],
+                linestyle=("-", "-.", "-", "--")[m],
+                marker=("o", "s", "o", "+")[m], markersize=3,
+                markerfacecolor="none", lw=1.5)
+    ax.set(xlabel="Horizontal position / pixel", ylabel="Mean Oklab L",
+           xlim=(0, 191), ylim=(.602, .654), yticks=[.61, .62, .63, .64, .65])
+    ax.grid(alpha=.2)
+    ax.set_title("Large-scale lightness after SIXEL: each point averages 16×32 pixels",
+                 fontsize=10, loc="left", pad=10)
+    ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1.05), frameon=False,
+              fontsize=9)
+    fig.text(.08, .022, "Color previews: sRGB, no contrast enhancement. Gray input panel: normalized R diagnostic, not the original color.",
+             fontsize=9, color="#475569")
+    save_plot(fig, figures / "clipping-detail.svg")
+    with (measurements / "clipping-detail.csv").open("w", newline="") as file:
+        writer = csv.writer(file, lineterminator="\n")
+        writer.writerow(["policy", "stage", "center_x", "mean_oklab_L"])
+        for policy, stage, values in curves:
+            for x, value in zip(positions, values):
+                writer.writerow([policy, stage, x, format(value, ".17g")])
+    manifest["clipping_detail"] = record
 
 
 ROSE_SOURCE = {
@@ -683,6 +813,8 @@ def main():
                 grid[y, x + 1, 0, 3:] - grid[y, x, 0, 3:])),
         }
         encode_comparison(build, source, continuous, figures, manifest)
+        clipping_detail(build, probe, profile, profile_path, figures,
+                        measurements, manifest)
         (measurements / "examples.json").write_text(
             json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(f"Generated gamut mapping figures in {out}")

@@ -14,11 +14,33 @@ The photograph has an embedded Adobe RGB profile. Both color previews above are 
 
 The outlined 48 × 32-pixel region has source linear-sRGB red values from about `1.028` to `1.357`. All become exactly `1` under clipping. Its mean Oklab lightness changes from about `0.7864` to `0.7526`. EdgeSeeker also brings red close to its upper limit, but adjusts green and blue to retain lightness more closely (`0.7864` here). Thus a red-channel plateau alone cannot rank the methods: the other coordinates matter too. The curves plot values, not derivatives; each point averages an 8 × 32-pixel area.
 
+## A whole shading pattern can disappear
+
+To isolate complete loss of detail, use a controlled synthetic image. Its pixels are valid encoded Display P3 `(R, 0, 0)` colors, with `R` varying smoothly from about `0.92` to `1.00`. Two broad lobes carry a light-to-dark variation over tens of pixels. The gray panel below shows the shape of this variation by scaling the input red coordinate to black–white; it is a diagnostic, **not a preview of the original color**.
+
+![A synthetic P3 red shading pattern becomes completely uniform under RGB clipping, both before quantization and after 256-color-budget SIXEL encoding. EdgeSeeker and Ray Trace retain the broad shading; Local MINDE retains only a small part. A graph measures the large-scale lightness variation.](figures/clipping-detail.svg)
+
+The loss follows directly from the coordinates. Converting this input to linear sRGB gives red values from about `1.014` to `1.225`, while green and blue are negative throughout. Channel clipping therefore replaces **every pixel** with `(1, 0, 0)`. Different input colors have become exactly the same output color, so no palette size or subsequent dithering can recover their distinction from those clipped values.
+
+The lower color row tests the actual encoder, whose `clip` policy defers bounding rather than pre-clipping every source pixel. It uses a **256-color palette budget**, Floyd–Steinberg dithering and the soft feedback limiter. Decoding the resulting SIXEL confirms that `clip` still produces just one RGB color, `(255, 0, 0)`, throughout this image. Its flatness is therefore not caused by an artificially small palette. EdgeSeeker and Ray Trace preserve the broad shading by changing the RGB mixture, accepting less chroma to retain lightness. Local MINDE permits some clipping within its local error criterion and strongly compresses the shading in this example.
+
+The graph measures large-scale structure rather than repeated palette indices or isolated dither dots. Each point is the arithmetic mean of per-pixel Oklab lightness in a 16 × 32-pixel block across the marked central strip. The span between the largest and smallest of these block means is:
+
+| Method | Continuous lightness span | Decoded SIXEL lightness span |
+| --- | ---: | ---: |
+| Original P3 coordinates | 0.036187 | — |
+| RGB clip | 0 | 0 |
+| Local MINDE | 0.004011 | 0.005176 |
+| EdgeSeeker | 0.036187 | 0.036434 |
+| Ray Trace | 0.036187 | 0.036409 |
+
+Palette selection, RGB101 rounding and diffusion account for the differences between continuous and decoded measurements. The color panels have no contrast enhancement. The [16-bit P3 input](figures/p3-red-shading.png), [block measurements](measurements/clipping-detail.csv) and [generation record](measurements/examples.json) make the construction and comparison reproducible. This deliberately chosen counterexample demonstrates that channel clipping cannot preserve every image's structure; it does not establish how often such loss occurs in photographs or that a particular mapper is universally best.
+
 ## Conversion is not replacement
 
 A color-space conversion asks, “What coordinates describe this color in another space?” Gamut mapping asks a different question: “If the output cannot reproduce this color, which reproducible color should replace it?” Conversion can preserve the color while producing negative RGB values or values above one. Mapping deliberately changes the color. Keeping these two operations separate is essential to wide-gamut encoding.
 
-This chapter starts with a photograph, then builds from individual colors to a complete SIXEL pipeline. It explains the implemented methods and illustrates their results. The [output gamut-mapping reference](../../encoder/output/gamut-mapping.md) owns option syntax, defaults, numeric tolerances, supported profiles and regression contracts. For the underlying coordinates, see [primaries and white points](../colorspace/primaries-and-white-points.md) and [transfer functions](../colorspace/transfer-functions.md).
+This chapter starts with spatial examples, then builds from individual colors to a complete SIXEL pipeline. It explains the implemented methods and illustrates their results. The [output gamut-mapping reference](../../encoder/output/gamut-mapping.md) owns option syntax, defaults, numeric tolerances, supported profiles and regression contracts. For the underlying coordinates, see [primaries and white points](../colorspace/primaries-and-white-points.md) and [transfer functions](../colorspace/transfer-functions.md).
 
 For example, these commands choose the same sRGB output interpretation but different handling of colors that do not fit it:
 
@@ -149,15 +171,15 @@ The smooth downturn shared by EdgeSeeker and Ray Trace in these ramps is a bound
 
 ### Add palette quantization and SIXEL
 
-Now use a two-dimensional P3 pattern: hue varies horizontally, and encoded HSL lightness decreases from top to bottom. The top row maps the continuous colors using the source's actual embedded profile. The next two rows encode the same 192 × 96, 16-bit, ICC-tagged PNG into 32 colors, then decode the actual SIXEL bytes as sRGB: first without dithering, then with Floyd–Steinberg and the soft feedback limiter.
+This example isolates the stages of encoding; it is not a diagnostic of clipping-induced detail loss. Unlike the red shading example above, many colors in this pattern retain visible variation after clipping. Use a two-dimensional P3 pattern: hue varies horizontally, and encoded HSL lightness decreases from top to bottom. The top row maps the continuous colors using the source's actual embedded profile. The next two rows encode the same 192 × 96, 16-bit, ICC-tagged PNG with a 256-color palette budget, then decode the actual SIXEL bytes as sRGB: first without dithering, then with Floyd–Steinberg and the soft feedback limiter.
 
-![Four gamut policies applied to the same P3 hue/lightness pattern: continuous mapped colors, 32-color SIXEL without dithering, and 32-color SIXEL with Floyd–Steinberg dithering.](figures/encoded-comparison.svg)
+![Four gamut policies applied to the same P3 hue/lightness pattern: continuous mapped colors, 256-color SIXEL without dithering, and 256-color SIXEL with Floyd–Steinberg dithering.](figures/encoded-comparison.svg)
 
 The bands in the middle row come from a finite palette. Dither redistributes that approximation error into a spatial pattern; it cannot restore colors that the destination cannot produce. Each column builds its own palette from the input seen by its policy. Thus differences include palette allocation and feedback behavior, not just the final mapping of one RGB triplet. In particular, the `clip` column clusters unmapped source colors, whereas the explicit methods cluster mapped samples.
 
 Ray Trace must stop when its correction has numerically converged. Near a boundary, extending a tiny reversed direction can reach the opposite RGB face and introduce a colored streak even before quantization. The [convergence safeguard](../../encoder/output/gamut-mapping.md#ray-trace) retains the last boundary point in that situation. The continuous row makes this stage independently inspectable; palette banding and dither texture belong to the rows below it. The [measurement file](measurements/examples.json) records the largest adjacent horizontal Oklab step, with both source and mapped triples, as a local diagnostic rather than an aggregate quality score.
 
-The example deliberately uses only 32 colors to make these stages visible. It is an explanatory pattern, not a photograph benchmark or evidence that a method should become the default. Parameters are fixed to one thread, seeded k-means, full-frame sampling, no binning, Oklab clustering and workspace, no merge, no cover, no snap, exact lookup, and RGB output. The [reproduction data](measurements/examples.json) records the complete flags, decoded-pixel hashes and source profile hash.
+The 256-color budget avoids making severe low-color quantization the main subject of the comparison. The pattern illustrates palette construction and diffusion, not a ranking of the gamut mappers or evidence that a method should become the default. Parameters are fixed to one thread, seeded k-means, full-frame sampling, no binning, Oklab clustering and workspace, no merge, no cover, no snap, exact lookup, and RGB output. The [reproduction data](measurements/examples.json) records the complete flags, decoded-pixel hashes and source profile hash.
 
 ## Where the mapper sits in the implemented pipeline
 
@@ -213,7 +235,7 @@ Photo: [*Rose Nostalgie from Tantau*, Berthold Werner](https://commons.wikimedia
 
 ### Reproduction
 
-All comparison outputs are encoded sRGB illustrations. A color-managed viewer is needed for meaningful display. The [Adobe RGB rose input](figures/rose-adobe-rgb.png) and [P3 source PNG](figures/p3-hue-lightness.png) are provided as input data, not as sRGB previews; their embedded ICC profiles must be honored. None of the sRGB figures claims to show the original out-of-gamut colors. The continuous-color previews use 8-bit sRGB image storage; the JSON retains floating-point coordinates. Browser scaling, screen characteristics and ambient light can make subtle differences harder to see, which is why the first example includes numerical coordinates.
+All comparison outputs are encoded sRGB illustrations. A color-managed viewer is needed for meaningful display. The [Adobe RGB rose input](figures/rose-adobe-rgb.png), [P3 hue/lightness PNG](figures/p3-hue-lightness.png) and [P3 red shading PNG](figures/p3-red-shading.png) are provided as input data, not as sRGB previews; their embedded ICC profiles must be honored. None of the sRGB figures claims to show the original out-of-gamut colors. The continuous-color previews use 8-bit sRGB image storage; the JSON retains floating-point coordinates. Browser scaling, screen characteristics and ambient light can make subtle differences harder to see, which is why the first example includes numerical coordinates.
 
 The figures are generated by [plot_gamut_mapping_figures.py](../../../tools/plot_gamut_mapping_figures.py). It compiles [gamut_mapping_samples.c](../../../tools/gamut_mapping_samples.c) against a built static libsixel to call the actual mapper, then runs the built converters for the encoded comparison. It does not carry a second implementation of the mapping algorithms. The continuous `RGB clip` row applies destination-channel bounding directly; it is explicitly not an emulation of the encoder's entire `clip` pipeline.
 
@@ -227,6 +249,6 @@ python3 tools/plot_gamut_mapping_figures.py --build-dir . --output-dir /tmp/gamu
 
 The photo input is checked in, so ordinary regeneration needs no download. To recreate it from the original JPEG linked in the [photo record](measurements/rose.json), add `--rose-original /path/to/Adobe_RGB_2017-07-02_17-15-33.jpg`; the tool verifies its SHA-1 before cropping and reducing it. Photo detection runs on the 560 × 560 input, not the original 6016 × 4000 image; spatial scales refer to that prepared input. The source reduction uses a box average in encoded Adobe RGB before measurement, and the exact prepared input is retained so this preprocessing is not confused with gamut mapping.
 
-The generator clears `SIXEL_*` tuning variables, fixes the encoding options, checks finite bounded results and an in-gamut identity control, and stores the measured values in JSON. It also saves each decoded image as a separate tagged sRGB PNG for inspection at native size. SVG layout can depend on plotting-library versions, which are recorded; small floating-point differences across compilers are not a reason to require byte-identical measurement data on every platform.
+The generator clears `SIXEL_*` tuning variables, fixes the encoding options, checks finite bounded results and an in-gamut identity control, and stores the measured values in JSON. For the hue/lightness comparison it also saves each decoded image as a separate tagged sRGB PNG for inspection at native size. The red shading comparison checks both continuous and decoded clip uniformity; its block-level measurements and decoded-pixel hashes are retained alongside the figure. SVG layout can depend on plotting-library versions, which are recorded; small floating-point differences across compilers are not a reason to require byte-identical measurement data on every platform.
 
 These are implementation illustrations, not independent expected-value tests. The [reference's coverage inventory](../../encoder/output/gamut-mapping.md#test-coverage) separately links the numerical reference tests, integration tests and quality checks. Use those to assess correctness; use these figures to understand which color changes each stage is responsible for.
