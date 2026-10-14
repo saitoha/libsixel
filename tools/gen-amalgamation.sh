@@ -613,7 +613,9 @@ emit_all_units() {
                 emit_unit "${unit}" "defined(BUILD_IMG2SIXEL)"
                 ;;
             src/threadpool.c)
-                emit_unit "${unit}" "SIXEL_ENABLE_THREADS"
+                # The service registry also needs the serial implementation.
+                # Only the worker pool is conditional inside this source.
+                emit_unit "${unit}" ""
                 ;;
             converters/cli.c|converters/completion_utils.c|converters/path.c|converters/malloc_stub.c|converters/aborttrace.c|converters/compat.c)
                 emit_unit "${unit}" \
