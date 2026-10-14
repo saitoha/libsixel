@@ -81,6 +81,7 @@
 
 #include "assessment.h"
 #include "color.h"
+#include "scielab.h"
 #include "encoder.h"
 #include "timer.h"
 #include "sixel_atomic.h"
@@ -3049,6 +3050,8 @@ typedef struct MetricDescriptor {
 } MetricDescriptor;
 
 static const MetricDescriptor g_metric_table[] = {
+    {SIXEL_ASSESSMENT_METRIC_SCIELAB, "S-CIELAB"},
+    {SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX, "S-CIELAB_max"},
     {SIXEL_ASSESSMENT_METRIC_MS_SSIM, "MS-SSIM"},
     {SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT, "HighFreqRatio_out"},
     {SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_REF, "HighFreqRatio_ref"},
@@ -3405,6 +3408,9 @@ sixel_assessment_new(sixel_assessment_t **ppassessment,
     assessment->signal_space = -1;
     assessment->signal_bytes = 0;
     assessment->grayscale = 0;
+    assessment->scielab_ppd = SIXEL_QA_SCIELAB_PPD_DEFAULT;
+    assessment->scielab_map = NULL;
+    assessment->scielab_map_capacity = 0U;
     assessment->region_window = 16;
     assessment->region_count = 0;
     memset(assessment->current_space, 0, sizeof(assessment->current_space));
@@ -3486,6 +3492,9 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
     int signal;
     int need_xyz;
     int need_regions;
+    int need_scielab;
+    double scielab_mean;
+    double scielab_max;
 
     if (assessment == NULL || reference == NULL || output == NULL
             || (assessment->region_window != 8
@@ -3579,7 +3588,18 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
         SIXEL_ASSESSMENT_METRIC_REGION_MEAN)
         || assessment_metric_selected(assessment,
         SIXEL_ASSESSMENT_METRIC_REGION_MAX);
-    need_xyz = need_regions || assessment_metric_selected(assessment,
+    need_scielab = assessment_metric_selected(assessment,
+        SIXEL_ASSESSMENT_METRIC_SCIELAB)
+        || assessment_metric_selected(assessment,
+        SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX)
+        || assessment->scielab_map != NULL;
+    if (assessment->scielab_map != NULL
+            && assessment->scielab_map_capacity < pixels) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+    need_xyz = need_regions || need_scielab
+        || assessment_metric_selected(assessment,
         SIXEL_ASSESSMENT_METRIC_DELTA_E00)
         || assessment_metric_selected(assessment,
         SIXEL_ASSESSMENT_METRIC_DELTA_E00_MAX)
@@ -3636,6 +3656,29 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
                                   SIXEL_ASSESSMENT_METRIC_REGION_MAX)) {
         assessment->results[26] = region_max;
         assessment->results_valid_mask |= 1u << 26;
+    }
+    if (need_scielab) {
+        status = sixel_qa_scielab(buffers->ref_xyz, buffers->out_xyz,
+            ref_width, ref_height, assessment->scielab_ppd,
+            &scielab_mean, &scielab_max, assessment->scielab_map);
+        if (SIXEL_FAILED(status)) {
+            assessment->results_valid_mask = 0u;
+            goto cleanup;
+        }
+        if (assessment_metric_selected(assessment,
+                SIXEL_ASSESSMENT_METRIC_SCIELAB)) {
+            assessment->results[SIXEL_ASSESSMENT_INDEX(
+                SIXEL_ASSESSMENT_METRIC_SCIELAB)] = scielab_mean;
+            assessment->results_valid_mask |= SIXEL_ASSESSMENT_METRIC_MASK(
+                SIXEL_ASSESSMENT_METRIC_SCIELAB);
+        }
+        if (assessment_metric_selected(assessment,
+                SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX)) {
+            assessment->results[SIXEL_ASSESSMENT_INDEX(
+                SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX)] = scielab_max;
+            assessment->results_valid_mask |= SIXEL_ASSESSMENT_METRIC_MASK(
+                SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX);
+        }
     }
     assessment->results_ready = 1;
     status = SIXEL_OK;
@@ -3746,6 +3789,10 @@ assessment_emit_color_context(sixel_assessment_t *assessment,
         "    \"signal_range\": \"%s\",\n"
         "    \"pcs_precision\": \"float64 from current samples\",\n"
         "    \"grayscale_signal\": %s,\n"
+        "    \"scielab_ppd\": %.17g,\n"
+        "    \"scielab_model\": \"zhang-wandell-1998-unit-dc\",\n"
+        "    \"scielab_difference\": \"CIE76\",\n"
+        "    \"scielab_boundary\": \"edge-repeating reflection\",\n"
         "    \"region_window\": %d,\n"
         "    \"region_count\": %zu,\n"
         "    \"region_layout\": \"top-left fixed tiles, partial edges\",\n"
@@ -3760,6 +3807,7 @@ assessment_emit_color_context(sixel_assessment_t *assessment,
         assessment->signal_bytes ? "8bit" : "float32",
         assessment->signal_bytes ? "0..1" : "extended, nominal 0..1",
         assessment->grayscale ? "true" : "false",
+        assessment->scielab_ppd,
         assessment->region_window, assessment->region_count);
     if (n < 0 || (size_t)n >= sizeof(line)) {
         return SIXEL_RUNTIME_ERROR;

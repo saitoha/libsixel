@@ -112,6 +112,14 @@ int test_qa_0011(int argc, char **argv);
 int test_qa_0012(int argc, char **argv);
 int test_qa_0013(int argc, char **argv);
 int test_qa_0017(int argc, char **argv);
+int test_qa_0026(int argc, char **argv);
+int test_qa_0027(int argc, char **argv);
+int test_qa_0028(int argc, char **argv);
+int test_qa_0029(int argc, char **argv);
+int test_qa_0030(int argc, char **argv);
+int test_qa_0031(int argc, char **argv);
+int test_qa_0032(int argc, char **argv);
+int test_qa_0033(int argc, char **argv);
 int test_image_values(int argc, char **argv);
 int test_image_sample_range(int argc, char **argv);
 int test_image_dimensions(int argc, char **argv);
@@ -4689,6 +4697,14 @@ static test_entry_t const test_entries[] = {
     { "assessment/0012_spec_parse_invalid", test_qa_0012 },
     { "assessment/0013_pixel_delta_peak", test_qa_0013 },
     { "assessment/0017_ms_ssim", test_qa_0017 },
+    { "assessment/0026_scielab_identity", test_qa_0026 },
+    { "assessment/0027_scielab_uniform", test_qa_0027 },
+    { "assessment/0028_scielab_dense_reference", test_qa_0028 },
+    { "assessment/0029_scielab_spatial_cancellation", test_qa_0029 },
+    { "assessment/0030_scielab_thin_symmetry", test_qa_0030 },
+    { "assessment/0031_scielab_invalid", test_qa_0031 },
+    { "assessment/0032_scielab_physical_signal", test_qa_0032 },
+    { "assessment/0033_scielab_selection_reuse", test_qa_0033 },
     { "loader/image_values", test_image_values },
     { "loader/image_display_values", test_image_values },
     { "loader/image_black_values", test_image_values },

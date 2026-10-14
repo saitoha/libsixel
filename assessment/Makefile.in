@@ -114,12 +114,14 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__lsqa_SOURCES_DIST = $(srcdir)/lsqa.c $(srcdir)/assessment.c \
-	$(srcdir)/color.c $(srcdir)/color.h $(srcdir)/assessment.h \
+	$(srcdir)/color.c $(srcdir)/scielab.c $(srcdir)/scielab.h \
+	$(srcdir)/color.h $(srcdir)/assessment.h \
 	$(top_srcdir)/converters/cli.c
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@am_lsqa_OBJECTS = lsqa-lsqa.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lsqa-assessment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lsqa-color.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lsqa-scielab.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/lsqa-cli.$(OBJEXT)
 am__objects_1 = $(top_builddir)/amalgamation/lsqa-sixel.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_lsqa_OBJECTS = $(am__objects_1)
@@ -170,7 +172,7 @@ am__depfiles_remade =  \
 	$(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po \
 	$(top_builddir)/converters/$(DEPDIR)/lsqa-cli.Po \
 	./$(DEPDIR)/lsqa-assessment.Po ./$(DEPDIR)/lsqa-color.Po \
-	./$(DEPDIR)/lsqa-lsqa.Po
+	./$(DEPDIR)/lsqa-lsqa.Po ./$(DEPDIR)/lsqa-scielab.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -499,6 +501,8 @@ AMALGAMATION_LSQA_LIBS = -lm \
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_SOURCES = $(srcdir)/lsqa.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/assessment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/color.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/scielab.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/scielab.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/color.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/assessment.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(top_srcdir)/converters/cli.c
@@ -662,6 +666,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-assessment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-color.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-lsqa.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-scielab.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -732,6 +737,20 @@ lsqa-color.obj: color.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color.c' object='lsqa-color.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-color.obj `if test -f 'color.c'; then $(CYGPATH_W) 'color.c'; else $(CYGPATH_W) '$(srcdir)/color.c'; fi`
+
+lsqa-scielab.o: scielab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT lsqa-scielab.o -MD -MP -MF $(DEPDIR)/lsqa-scielab.Tpo -c -o lsqa-scielab.o `test -f 'scielab.c' || echo '$(srcdir)/'`scielab.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lsqa-scielab.Tpo $(DEPDIR)/lsqa-scielab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='scielab.c' object='lsqa-scielab.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-scielab.o `test -f 'scielab.c' || echo '$(srcdir)/'`scielab.c
+
+lsqa-scielab.obj: scielab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT lsqa-scielab.obj -MD -MP -MF $(DEPDIR)/lsqa-scielab.Tpo -c -o lsqa-scielab.obj `if test -f 'scielab.c'; then $(CYGPATH_W) 'scielab.c'; else $(CYGPATH_W) '$(srcdir)/scielab.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lsqa-scielab.Tpo $(DEPDIR)/lsqa-scielab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='scielab.c' object='lsqa-scielab.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-scielab.obj `if test -f 'scielab.c'; then $(CYGPATH_W) 'scielab.c'; else $(CYGPATH_W) '$(srcdir)/scielab.c'; fi`
 
 $(top_builddir)/converters/lsqa-cli.o: $(top_builddir)/converters/cli.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/lsqa-cli.o -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/lsqa-cli.Tpo -c -o $(top_builddir)/converters/lsqa-cli.o `test -f '$(top_builddir)/converters/cli.c' || echo '$(srcdir)/'`$(top_builddir)/converters/cli.c
@@ -909,6 +928,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/lsqa-assessment.Po
 	-rm -f ./$(DEPDIR)/lsqa-color.Po
 	-rm -f ./$(DEPDIR)/lsqa-lsqa.Po
+	-rm -f ./$(DEPDIR)/lsqa-scielab.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -959,6 +979,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/lsqa-assessment.Po
 	-rm -f ./$(DEPDIR)/lsqa-color.Po
 	-rm -f ./$(DEPDIR)/lsqa-lsqa.Po
+	-rm -f ./$(DEPDIR)/lsqa-scielab.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

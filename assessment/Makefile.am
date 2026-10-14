@@ -76,6 +76,8 @@ else
 lsqa_SOURCES = $(srcdir)/lsqa.c \
                $(srcdir)/assessment.c \
                $(srcdir)/color.c \
+               $(srcdir)/scielab.c \
+               $(srcdir)/scielab.h \
                $(srcdir)/color.h \
                $(srcdir)/assessment.h \
                $(top_srcdir)/converters/cli.c

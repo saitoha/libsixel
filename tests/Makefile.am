@@ -825,6 +825,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0012_SPEC_PARSE_INVALID \
     -DBUILD_TEST_0013_PIXEL_DELTA_PEAK \
     -DBUILD_TEST_0017_MS_SSIM \
+    -DBUILD_TEST_0026_SCIELAB_IDENTITY \
+    -DBUILD_TEST_0027_SCIELAB_UNIFORM \
+    -DBUILD_TEST_0028_SCIELAB_DENSE_REFERENCE \
+    -DBUILD_TEST_0029_SCIELAB_SPATIAL_CANCELLATION \
+    -DBUILD_TEST_0030_SCIELAB_THIN_SYMMETRY \
+    -DBUILD_TEST_0031_SCIELAB_INVALID \
+    -DBUILD_TEST_0032_SCIELAB_PHYSICAL_SIGNAL \
+    -DBUILD_TEST_0033_SCIELAB_SELECTION_REUSE \
     -DBUILD_IMAGE_VALUES_TEST_COMMON \
     -DBUILD_TEST_0012_EXTENDED_FAILURE_ATOMIC \
     -DBUILD_TEST_0008_INVALID_RGB_DEFINITION \
@@ -3713,6 +3721,7 @@ test_runner_SOURCES = test_runner.c \
     writer/png/color_test_common.h \
     $(top_srcdir)/assessment/assessment.c \
     $(top_srcdir)/assessment/color.c \
+    $(top_srcdir)/assessment/scielab.c \
     processing/assessment/0001_ciede2000_reference.c \
     processing/assessment/0002_same_physical_coordinates.c \
     processing/assessment/0003_same_rgb_different_definition.c \
@@ -3727,6 +3736,14 @@ test_runner_SOURCES = test_runner.c \
     processing/assessment/0012_spec_parse_invalid.c \
     processing/assessment/0013_pixel_delta_peak.c \
     processing/assessment/0017_ms_ssim.c \
+    processing/assessment/0026_scielab_identity.c \
+    processing/assessment/0027_scielab_uniform.c \
+    processing/assessment/0028_scielab_dense_reference.c \
+    processing/assessment/0029_scielab_spatial_cancellation.c \
+    processing/assessment/0030_scielab_thin_symmetry.c \
+    processing/assessment/0031_scielab_invalid.c \
+    processing/assessment/0032_scielab_physical_signal.c \
+    processing/assessment/0033_scielab_selection_reuse.c \
     loader/image_values_test_common.c \
     processing/cms/0011_separate_intents.c \
     processing/cms/0012_engine_independence.c \

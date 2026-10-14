@@ -11,7 +11,7 @@ This document explains the image-quality metrics that `lsqa` reports: where each
 `lsqa` compares a reference image `x` with a test image `y` over their common top-left rectangle of `W × H` pixels. Two kinds of signal are used:
 
 - **Spatial and luma metrics** (MS-SSIM, GMSD, PSNR-Y, HighFreqRatio, StripeScore, BandingIndex, and the luma ClipRate) read a single-channel comparison signal. By default it is encoded sRGB luma `Y' = 0.2126 R' + 0.7152 G' + 0.0722 B'` with the ITU-R BT.709 coefficients on gamma-encoded samples in the nominal range 0 to 1. `--compare-colorspace` can select linear `Y` instead; see [physical color and comparison signal](color-evaluation.md#physical-color-and-comparison-signal).
-- **Color metrics** (`Δ E00_mean`, `DE00_max`, `Δ Chroma_mean`, and the regional ΔE00 values) read CIELAB computed from physical XYZ with the ICC D50 white. They do not depend on the comparison-signal options.
+- **Color metrics** (`Δ E00_mean`, `DE00_max`, `Δ Chroma_mean`, the regional ΔE00 values, and S-CIELAB) read CIELAB computed from physical XYZ with the ICC D50 white. They do not depend on the comparison-signal options.
 
 `Y'` is *luma*, a weighted sum of gamma-encoded components. It is not CIE luminance `Y`, and with saturated colors it departs from the lightness that a viewer perceives (the non-constant-luminance error of video luma). It is nevertheless roughly perceptually uniform in the way that encoded sRGB is, which is why it remains the default.
 
@@ -26,6 +26,7 @@ Formulas use plain-text notation: `Σ` is a sum, `Π` a product, `E[·]` an aver
 | `PSNR_Y` | luma | higher, 99 = identical | error power |
 | `Δ E00_mean`, `DE00_max` | CIELAB | lower | per-pixel color difference |
 | `DE00_region_mean`, `DE00_region_max` | CIELAB of tile means | lower | low-pass color difference |
+| `S-CIELAB`, `S-CIELAB_max` | spatially filtered opponent color, then CIELAB | lower, 0 = identical | spatial CIE76 difference |
 | `Δ Chroma_mean` | CIELAB | lower | chroma magnitude |
 | `HighFreqRatio_*` | luma | descriptive | spectral distribution |
 | `StripeScore_*` | luma | descriptive | spectral orientation |
@@ -248,6 +249,54 @@ A multiscale metric hedges against this uncertainty. Each dyadic scale correspon
 
 For dithered images the scale decomposition has a direct interpretation. A ditherer trades fine-scale fidelity, where it places quantization noise, for coarse-scale fidelity, where the locally averaged tone should match the reference. Single-scale SSIM at full resolution sees mostly the noise and can rank a dither below a posterized image whose flat areas happen to correlate locally. MS-SSIM's coarser scales see through the noise to the reproduced tone and structure, and its finest scale still registers the noise, so the score reflects the trade the ditherer actually makes.
 
+## Spatial color difference: S-CIELAB
+
+`lsqa -m S-CIELAB reference.png output.six` reports the pixel-weighted mean spatial CIE76 difference; `-m S-CIELAB_max` reports its maximum. Both are lower-is-better, zero for identical inputs, and included in the full JSON report. Names are case-insensitive and use the shared exact/unique-prefix selection rules. For these two metrics, `-b S-CIELAB:VALUE` or `-b S-CIELAB_max:VALUE` is an **upper** bound: equality passes and a larger value exits with status 5. Previously available metrics retain their existing baseline behavior.
+
+### Viewing geometry
+
+`-v PPD` / `--scielab-ppd=PPD` sets pixels per degree of visual angle, accepting finite real values from 1 through 1024. The default is 60, an explicit viewing assumption, not a measurement of the terminal. Repeated options use the last value. Hold PPD fixed across comparisons. For physical pixel pitch `p` and viewing distance `D` in the same units, the small-angle approximation is `PPD = (pi / 180) * D / p`. Scaling an image on the display changes its effective pixel pitch. Higher PPD means each image pixel subtends a smaller angle, so fine alternating errors generally become less visible; it does not guarantee a monotonic score for arbitrary images.
+
+The full JSON records `scielab_ppd`, `scielab_model`, `scielab_difference`, and `scielab_boundary` in `color_evaluation`. The metric is evaluated over the existing common top-left image rectangle, including every boundary pixel. It works on one-pixel axes and on images smaller than the filter support.
+
+### Computation and reproducibility
+
+The method follows Zhang and Wandell's S-CIELAB: transform each image's physical XYZ to linear opponent channels, filter the channels separately, transform back to XYZ, then evaluate ordinary CIELAB Euclidean distance. It filters the two images before the nonlinear Lab conversion; it does not blur a map of already-computed color differences. The [physical color contract](color-evaluation.md#physical-color-and-comparison-signal) supplies XYZ D50, white `(0.9642, 1, 0.8249)`, and preserves signed and above-white samples. `-W`, `-P`, and `-g` do not change these inputs. The difference formula is **CIE76**, not CIEDE2000; thresholds for ΔE00 are not interchangeable with S-CIELAB values.
+
+The coefficients and sampled Gaussian convention come from the [author's released implementation](https://github.com/wandell/SCIELAB-1996/tree/cacbc977c07a29c3e92a1aec849ee63bba72e6bf), specifically `cmatrix.m`, `separableFilters.m`, and `gauss.m`. The XYZ transform, acting on column vectors, is:
+
+```text
+[ 0.2787336   0.7218031  -0.1065520 ]
+[-0.4487736   0.2898056   0.0771569 ]
+[ 0.0859513  -0.5899859   0.5011089 ]
+```
+
+Each channel's spatial kernel is a weighted sum of normalized 2-D Gaussians:
+
+| Channel | Spread in degrees and weight |
+| --- | --- |
+| Achromatic | `(0.05, 1.00327)`, `(0.225, 0.114416)`, `(7.0, -0.117686)` |
+| Red-green | `(0.0685, 0.616725)`, `(0.826, 0.383275)` |
+| Blue-yellow | `(0.0920, 0.567885)`, `(0.6451, 0.432115)` |
+
+To reproduce the discrete kernels, set `u = max(1, ceil(224 / PPD))`, `q = u * PPD`, and `r = ceil(q / 2) - 1`. On integer offsets `i = -r..r`, the released Gaussian convention is `g(i) = exp(-4 ln(2) * i² / (spread * q - 1)²)`. Convolve with the tent sequence `t(j) = 1 - abs(j)/u`, `j = 1-u..u-1`, and retain offsets `u*k`, `k = -floor(r/u)..floor(r/u)`, centered on zero. Normalize each resulting 1-D Gaussian to sum to one. Form its outer product, multiply by its channel weight, and sum the components. Production uses separable convolutions per component, with the negative achromatic weight applied once; taking the outer product of a mixture of 1-D kernels would introduce incorrect cross terms.
+
+The declared variant is `zhang-wandell-1998-unit-dc`. It adds unit-DC normalization **after** resampling to preserve flat colors at every accepted PPD; the historical resampling can lose DC at the truncated support. It also repeats edge-repeating reflection as far as needed (`... b a | a b c | c b ...`), whereas the historical padding is limited by image size. These choices are intentional and mean that this is not a bit-for-bit MATLAB compatibility mode. Coefficient sets from later ISET variants or the earlier published table must not be substituted silently. CIELAB uses the exact standard rational breakpoint through the shared evaluator. Signed filter lobes and extended XYZ are not clipped.
+
+### Interpretation and limits
+
+S-CIELAB discounts fine spatial variations according to separate achromatic and chromatic filters. Compensating dither can therefore have much less spatial color error than a broad shift with the same per-pixel colors. It remains a general full-reference spatial color difference, not a banding detector or a counter of low-frequency artifacts. Blur, edge displacement and lost detail can also contribute. The maximum exposes a local peak while the mean reflects its area; neither alone classifies the cause.
+
+[Video assessment](video-evaluation.md) evaluates this spatial metric per source frame or reference/display clock interval, exports its error maps and distributions, and supplies a separate screen-coordinate persistence diagnostic.
+
+S-CIELAB itself is a CPU image metric. It has no temporal persistence weighting, motion tracking, gaze model, masking model, or universal perceptual pass threshold. A single-frame score cannot distinguish a transient defect from one that remains for seconds. Such evaluation needs a separately specified temporal layer.
+
+### Numeric evidence
+
+[The independent reference generator](../../tests/data/assessment/scielab_reference.py) uses NumPy dense 2-D mixtures and matrix inversion, without calling production C, and emits frozen maps for signed binary-fraction XYZ on a 5×4 image at PPD 12, 28.5, 60 and 224. Tests check every map pixel, mean and maximum. The dense-reference tolerance is `1e-6` CIE76 units. The reference sums at most `223²` terms per output pixel; double-precision accumulation error, a kernel absolute-weight sum at most 1.236, and the opponent/inverse matrix norms bound XYZ perturbation conservatively by `5e-11` per image on this fixture. Propagating both images through the largest Lab derivatives (about 7932, 3446 and 904 for a*, b* and L* under a uniform XYZ error bound) and the Euclidean norm stays below `1e-6`. This budget includes the different reduction order of dense versus separable convolution. No float32 storage lies between these fixture inputs and the metric. The frame integration check starts from exact binary-fraction float32 samples and separately verifies that luma-only options leave the physical input path intact.
+
+Uniform neutral fields supply an analytic check independent of that generator: `Y=1/8` and `Y=1` have `L*=42` and `L*=100`, hence mean and maximum 58 at every PPD. Identity, chromatic spatial cancellation, thin-image symmetry, invalid inputs, result reuse and CLI behavior have separate tests. These checks establish the implementation contract, not subjective validation of a video quality threshold.
+
 ## Measuring dither noise
 
 [Dithering](../concepts/dithering/README.md) explains why dither error should be pushed toward fine scales, how the main methods distribute it, and how structure-preserving dithering trades noise placement for edges. The metrics below observe those properties.
@@ -284,7 +333,7 @@ The spatial metrics in `lsqa` operate on a single luma signal, while color is me
 
 **Separation of concerns.** Keeping spatial structure on luma and color fidelity on CIELAB lets a report say *which* property changed. A palette or lookup change that shifts hue without moving edges appears in ΔE00 and `Δ Chroma_mean` but not in MS-SSIM; a dither change that moves noise between scales appears in MS-SSIM and the spectral descriptors.
 
-**Limits.** This split under-represents chromatic spatial artifacts at low frequencies, which are visible: color banding in gradients, chroma noise in large flat areas, and slow hue or neutral drift caused by palette geometry, such as gray areas drifting toward a tint. The luma metrics are blind to these. Regional ΔE00 and `Δ Chroma_mean` are the current safeguards, which is why the [measurement policy](measurement-policy.md#primary-and-secondary-metrics) prefers per-pixel color summaries for palette studies. Luma itself is gamma-encoded and non-constant-luminance, so saturated colors are weighted imperfectly; linear `Y` is available as a comparison signal when that matters. A spatial color metric in the S-CIELAB family, filtering opponent channels by their own contrast sensitivity before computing color difference, would close this gap more directly; it is not implemented.
+**Limits.** This split under-represents chromatic spatial artifacts at low frequencies, which are visible: color banding in gradients, chroma noise in large flat areas, and slow hue or neutral drift caused by palette geometry, such as gray areas drifting toward a tint. The luma metrics are blind to these. Regional ΔE00 and `Δ Chroma_mean` are the current safeguards, which is why the [measurement policy](measurement-policy.md#primary-and-secondary-metrics) prefers per-pixel color summaries for palette studies. Luma itself is gamma-encoded and non-constant-luminance, so saturated colors are weighted imperfectly; linear `Y` is available as a comparison signal when that matters. [S-CIELAB](#spatial-color-difference-s-cielab) adds opponent-channel spatial filtering to assess this gap directly at an explicit viewing geometry.
 
 ## Test coverage
 
@@ -292,7 +341,7 @@ The spatial metrics in `lsqa` operate on a single luma signal, while color is me
 
 ### Behavioral contract tests
 
-This inventory covers reference MS-SSIM and its coexistence with the other metrics. It does not claim to independently validate every other metric described in this document; color-coordinate coverage is owned by [color-aware evaluation](color-evaluation.md#test-coverage).
+This inventory covers reference MS-SSIM, S-CIELAB, and their coexistence with the other metrics. It does not claim to independently validate every other metric described in this document; color-coordinate coverage is owned by [color-aware evaluation](color-evaluation.md#test-coverage).
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
@@ -311,6 +360,24 @@ This inventory covers reference MS-SSIM and its coexistence with the other metri
 | MO-13 | The full JSON report includes an unavailable MS-SSIM as null. | [tests/quality_gate/ms_ssim/0094_json_unavailable.t](../../tests/quality_gate/ms_ssim/0094_json_unavailable.t) |
 | MO-14 | A finite MS-SSIM score below its baseline exits with quality failure. | [tests/quality_gate/ms_ssim/0095_finite_baseline.t](../../tests/quality_gate/ms_ssim/0095_finite_baseline.t) |
 | MO-15 | Help describes the reference formula and minimum dimensions. | [tests/quality_gate/ms_ssim/0096_reference_help.t](../../tests/quality_gate/ms_ssim/0096_reference_help.t) |
+
+| SC-01 | Identical signed color images have a zero error map. | [tests/processing/assessment/0026_scielab_identity.t](../../tests/processing/assessment/0026_scielab_identity.t) |
+| SC-02 | Flat fields retain the analytic CIE76 difference across PPD settings. | [tests/processing/assessment/0027_scielab_uniform.t](../../tests/processing/assessment/0027_scielab_uniform.t) |
+| SC-03 | Independent dense convolution matches every map pixel and both summaries. | [tests/processing/assessment/0028_scielab_dense_reference.t](../../tests/processing/assessment/0028_scielab_dense_reference.t) |
+| SC-04 | Fine chromatic alternation is discounted relative to broad color regions. | [tests/processing/assessment/0029_scielab_spatial_cancellation.t](../../tests/processing/assessment/0029_scielab_spatial_cancellation.t) |
+| SC-05 | One-pixel axes retain symmetry under transpose and input exchange. | [tests/processing/assessment/0030_scielab_thin_symmetry.t](../../tests/processing/assessment/0030_scielab_thin_symmetry.t) |
+| SC-06 | Invalid settings, dimensions and samples leave result outputs unchanged. | [tests/processing/assessment/0031_scielab_invalid.t](../../tests/processing/assessment/0031_scielab_invalid.t) |
+| SC-07 | Physical color metrics ignore luma-only gray and precision settings. | [tests/processing/assessment/0032_scielab_physical_signal.t](../../tests/processing/assessment/0032_scielab_physical_signal.t) |
+| SC-08 | Selected results and availability are reset across failure and reuse. | [tests/processing/assessment/0033_scielab_selection_reuse.t](../../tests/processing/assessment/0033_scielab_selection_reuse.t) |
+| SC-09 | Case-insensitive selection uses an upper-bound baseline. | [tests/quality_gate/scielab/0001_cli_selection.t](../../tests/quality_gate/scielab/0001_cli_selection.t) |
+| SC-10 | A unique maximum prefix and fractional short PPD are accepted. | [tests/quality_gate/scielab/0002_max_prefix.t](../../tests/quality_gate/scielab/0002_max_prefix.t) |
+| SC-11 | Viewing metadata records the last PPD and exact model. | [tests/quality_gate/scielab/0003_ppd_metadata.t](../../tests/quality_gate/scielab/0003_ppd_metadata.t) |
+| SC-12 | An error above the ceiling exits with quality failure. | [tests/quality_gate/scielab/0004_baseline_failure.t](../../tests/quality_gate/scielab/0004_baseline_failure.t) |
+| SC-13 | PPD rejects trailing numeric garbage. | [tests/quality_gate/scielab/0005_ppd_invalid.t](../../tests/quality_gate/scielab/0005_ppd_invalid.t) |
+| SC-14 | Help declares the viewing geometry and difference units. | [tests/quality_gate/scielab/0006_help.t](../../tests/quality_gate/scielab/0006_help.t) |
+| SC-15 | A target read from standard input has the same score. | [tests/quality_gate/scielab/0007_stdin.t](../../tests/quality_gate/scielab/0007_stdin.t) |
+| SC-16 | Nonfinite PPD is rejected by the CLI. | [tests/quality_gate/scielab/0008_ppd_nonfinite.t](../../tests/quality_gate/scielab/0008_ppd_nonfinite.t) |
+| SC-17 | Default JSON includes both metrics at 60 PPD. | [tests/quality_gate/scielab/0009_json_default.t](../../tests/quality_gate/scielab/0009_json_default.t) |
 
 These are value, state and CLI-contract assertions. They do not establish an encoder quality floor or transfer an old threshold to the new metric.
 

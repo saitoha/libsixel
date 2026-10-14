@@ -10,6 +10,8 @@ src_build_dir = join_paths(meson.project_build_root(), 'src')
 lsqa_sources = ['lsqa.c',
                 'assessment.c',
                 'color.c',
+                'scielab.c',
+                'scielab.h',
                 'color.h',
                 'assessment.h',
                 '../converters/cli.c']

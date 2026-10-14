@@ -61,6 +61,7 @@
 #include <sixel.h>
 
 #include "assessment.h"
+#include "scielab.h"
 #include "color.h"
 #include "sixel_decode_pixels.h"
 #include "chunk-factory.h"
@@ -881,6 +882,8 @@ load_input_frame(char const *path, char const *spec, int direct,
 }
 
 typedef struct Metrics {
+    float scielab;
+    float scielab_max;
     float ms_ssim;
     float high_freq_out;
     float high_freq_ref;
@@ -919,6 +922,10 @@ typedef struct MetricBinding {
 } MetricBinding;
 
 static const MetricBinding g_metric_bindings[] = {
+    {"S-CIELAB", offsetof(Metrics, scielab),
+     SIXEL_ASSESSMENT_METRIC_SCIELAB},
+    {"S-CIELAB_max", offsetof(Metrics, scielab_max),
+     SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX},
     {"DE00_region_mean", offsetof(Metrics, region_mean),
      SIXEL_ASSESSMENT_METRIC_REGION_MEAN},
     {"DE00_region_max", offsetof(Metrics, region_max),
@@ -984,6 +991,8 @@ typedef struct MetricSpec {
 } MetricSpec;
 
 static const MetricSpec sixel_metric_specs[] = {
+    {"S-CIELAB", "S-CIELAB", SIXEL_ASSESSMENT_METRIC_SCIELAB},
+    {"S-CIELAB_max", "S-CIELAB_max", SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX},
     {"DE00_region_mean", "DE00_region_mean",
      SIXEL_ASSESSMENT_METRIC_REGION_MEAN},
     {"DE00_region_max", "DE00_region_max",
@@ -1407,6 +1416,8 @@ static void
 verbose_print(const Metrics *m)
 {
     MetricItem items[] = {
+        {"S-CIELAB", m->scielab},
+        {"S-CIELAB_max", m->scielab_max},
         {"MS-SSIM", m->ms_ssim},
         {"HighFreqRatio_out", m->high_freq_out},
         {"HighFreqRatio_ref", m->high_freq_ref},
@@ -1886,6 +1897,7 @@ typedef struct Options {
     const char *ref_spec;
     const char *out_spec;
     int region_window;
+    double scielab_ppd;
     int direct;
     const char *ref_path;
     const char *out_path;
@@ -2097,7 +2109,8 @@ static cli_option_help_t const g_option_help_table[] = {
         'b',
         "baseline",
         "-b METRIC:VALUE, --baseline=METRIC:VALUE\n"
-        "                           fail when METRIC is below VALUE.\n"
+        "                           fail when METRIC is below VALUE;\n"
+        "                           S-CIELAB/S-CIELAB_max: above VALUE.\n"
     },
     {
         '%',
@@ -2127,6 +2140,12 @@ static cli_option_help_t const g_option_help_table[] = {
         'T', "target-colorspace",
         "-T SPEC, --target-colorspace=SPEC (default auto).\n"
         "                           Independent target input definition.\n"
+    },
+    {
+        'v', "scielab-ppd",
+        "-v PPD, --scielab-ppd=PPD: pixels/degree, 1..1024 (default 60).\n"
+        "                           S-CIELAB and S-CIELAB_max use CIE76.\n"
+        "                           Lower is better; zero is identical.\n"
     },
     {
         'w', "region-window",
@@ -2239,7 +2258,7 @@ lsqa_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_lsqa_optstring[] = "DR:T:w:m:b:%:gW:P:L:#:B:d:S:e:Hh";
+static char const g_lsqa_optstring[] = "DR:T:w:v:m:b:%:gW:P:L:#:B:d:S:e:Hh";
 
 static void
 lsqa_print_option_help(FILE *stream)
@@ -2434,7 +2453,9 @@ print_usage(const char *prog)
     fprintf(stderr,
             "  -b, --baseline METRIC:VALUE\n");
     fprintf(stderr,
-            "                        exit nonzero if METRIC is below VALUE\n");
+            "                        fail below VALUE (S-CIELAB: above VALUE)\n");
+    fprintf(stderr,
+            "  -v, --scielab-ppd       pixels/degree (default 60)\n");
     fprintf(stderr,
             "  -g, --grayscale     compare in grayscale\n");
     fprintf(stderr,
@@ -2512,7 +2533,7 @@ show_help(void)
             "  2  invalid arguments\n"
             "  3  failed to load input images\n"
             "  4  assessment or output failure\n"
-            "  5  baseline metric below threshold\n");
+            "  5  baseline threshold failed\n");
 }
 
 static void
@@ -2602,6 +2623,17 @@ lsqa_parse_baseline(const char *arg, Options *opts)
     return 0;
 }
 
+/* Spatial color error is an upper bound; existing baseline meanings stay
+ * unchanged for the previously available metrics. */
+static int
+lsqa_baseline_is_maximum(const Options *opts)
+{
+    return opts->baseline_spec != NULL
+        && (opts->baseline_spec->metric_id == SIXEL_ASSESSMENT_METRIC_SCIELAB
+            || opts->baseline_spec->metric_id
+                == SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX);
+}
+
 static int
 lsqa_check_baseline(const Options *opts,
                     const Metrics *metrics,
@@ -2628,7 +2660,9 @@ lsqa_check_baseline(const Options *opts,
         return 2;
     }
     *out_value = metric_value;
-    if (metric_value < opts->baseline_value) {
+    if (lsqa_baseline_is_maximum(opts)
+            ? metric_value > opts->baseline_value
+            : metric_value < opts->baseline_value) {
         return 1;
     }
     return 0;
@@ -2812,6 +2846,7 @@ parse_args(int argc, char **argv, Options *opts)
     int verbose_value;
     int cms_choice;
     char detail_buffer[256];
+    char *ppd_end;
 #if HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
@@ -2820,6 +2855,7 @@ parse_args(int argc, char **argv, Options *opts)
     opts->ref_spec = "auto";
     opts->out_spec = "auto";
     opts->region_window = 16;
+    opts->scielab_ppd = SIXEL_QA_SCIELAB_PPD_DEFAULT;
     opts->ref_path = NULL;
     opts->out_path = "-";
     opts->metric_spec = NULL;
@@ -2883,6 +2919,7 @@ parse_args(int argc, char **argv, Options *opts)
             {"direct", no_argument, &long_opt, 'D'},
             {"reference-colorspace", required_argument, &long_opt, 'R'},
             {"target-colorspace", required_argument, &long_opt, 'T'},
+            {"scielab-ppd", required_argument, &long_opt, 'v'},
             {"region-window", required_argument, &long_opt, 'w'},
             {"metrics", required_argument, &long_opt, 'm'},
             {"baseline", required_argument, &long_opt, 'b'},
@@ -2930,6 +2967,19 @@ parse_args(int argc, char **argv, Options *opts)
             break;
         case 'T':
             opts->out_spec = optarg;
+            break;
+        case 'v':
+            errno = 0;
+            opts->scielab_ppd = strtod(optarg, &ppd_end);
+            if (errno != 0 || ppd_end == optarg || *ppd_end != '\0'
+                    || !isfinite(opts->scielab_ppd)
+                    || opts->scielab_ppd < SIXEL_QA_SCIELAB_PPD_MIN
+                    || opts->scielab_ppd > SIXEL_QA_SCIELAB_PPD_MAX) {
+                lsqa_report_invalid_argument('v', optarg,
+                    "expected finite pixels/degree in 1..1024");
+                parse_status = -1;
+                goto cleanup;
+            }
             break;
         case 'w':
             if (strcmp(optarg, "8") != 0 && strcmp(optarg, "16") != 0
@@ -3367,6 +3417,7 @@ main(int argc, char **argv)
     assessment->signal_bytes = target_precision == LSQA_COMPARE_PRECISION_8BIT;
     assessment->grayscale = opts.grayscale_compare;
     assessment->region_window = opts.region_window;
+    assessment->scielab_ppd = opts.scielab_ppd;
     assessment->direct = opts.direct;
     assessment->drawing[0] = drawing[0];
     assessment->drawing[1] = drawing[1];
@@ -3460,9 +3511,9 @@ main(int argc, char **argv)
                 exit_code = LSQA_EXIT_BASELINE_FAILED;
             } else {
                 fprintf(stderr,
-                        "%s %.6f is below baseline %.6f\n",
-                        opts.baseline_key,
-                        baseline_value,
+                        "%s %.6f is %s baseline %.6f\n",
+                        opts.baseline_key, baseline_value,
+                        lsqa_baseline_is_maximum(&opts) ? "above" : "below",
                         opts.baseline_value);
                 exit_code = LSQA_EXIT_BASELINE_FAILED;
             }
@@ -3510,9 +3561,9 @@ main(int argc, char **argv)
             exit_code = LSQA_EXIT_BASELINE_FAILED;
         } else {
             fprintf(stderr,
-                    "%s %.6f is below baseline %.6f\n",
-                    opts.baseline_key,
-                    baseline_value,
+                    "%s %.6f is %s baseline %.6f\n",
+                    opts.baseline_key, baseline_value,
+                    lsqa_baseline_is_maximum(&opts) ? "above" : "below",
                     opts.baseline_value);
             exit_code = LSQA_EXIT_BASELINE_FAILED;
         }

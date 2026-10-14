@@ -212,6 +212,7 @@ test_runner_sources = test_runner_tests_sources + files(
   '../converters/terminal-color-tty.c',
   '../assessment/assessment.c',
   '../assessment/color.c',
+  '../assessment/scielab.c',
   '../converters/path.c',
 )
 

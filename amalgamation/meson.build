@@ -42,6 +42,8 @@ amalgamation_units = files(
   '../src/encoder-core-highcolor.c',
   '../src/timer.c',
   '../assessment/assessment.c',
+  '../assessment/scielab.c',
+  '../assessment/scielab.h',
   '../src/sleep.c',
   '../src/lookup-fhedt-8bit.c',
   '../src/lookup-fhedt-float32.c',

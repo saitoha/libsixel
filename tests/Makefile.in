@@ -391,6 +391,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	writer/png/color_test_common.c writer/png/color_test_common.h \
 	$(top_srcdir)/assessment/assessment.c \
 	$(top_srcdir)/assessment/color.c \
+	$(top_srcdir)/assessment/scielab.c \
 	processing/assessment/0001_ciede2000_reference.c \
 	processing/assessment/0002_same_physical_coordinates.c \
 	processing/assessment/0003_same_rgb_different_definition.c \
@@ -405,6 +406,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/assessment/0012_spec_parse_invalid.c \
 	processing/assessment/0013_pixel_delta_peak.c \
 	processing/assessment/0017_ms_ssim.c \
+	processing/assessment/0026_scielab_identity.c \
+	processing/assessment/0027_scielab_uniform.c \
+	processing/assessment/0028_scielab_dense_reference.c \
+	processing/assessment/0029_scielab_spatial_cancellation.c \
+	processing/assessment/0030_scielab_thin_symmetry.c \
+	processing/assessment/0031_scielab_invalid.c \
+	processing/assessment/0032_scielab_physical_signal.c \
+	processing/assessment/0033_scielab_selection_reuse.c \
 	loader/image_values_test_common.c \
 	processing/cms/0011_separate_intents.c \
 	processing/cms/0012_engine_independence.c \
@@ -3688,6 +3697,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-color_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-assessment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-color.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-scielab.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0001_ciede2000_reference.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0002_same_physical_coordinates.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0003_same_rgb_different_definition.$(OBJEXT) \
@@ -3702,6 +3712,14 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0012_spec_parse_invalid.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0013_pixel_delta_peak.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0017_ms_ssim.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0026_scielab_identity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0027_scielab_uniform.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0028_scielab_dense_reference.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0029_scielab_spatial_cancellation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0030_scielab_thin_symmetry.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0031_scielab_invalid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0032_scielab_physical_signal.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0033_scielab_selection_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-image_values_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0011_separate_intents.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0012_engine_independence.$(OBJEXT) \
@@ -6715,6 +6733,7 @@ am__depfiles_remade =  \
 	$(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po \
 	$(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Po \
 	$(top_builddir)/assessment/$(DEPDIR)/test_runner-color.Po \
+	$(top_builddir)/assessment/$(DEPDIR)/test_runner-scielab.Po \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po \
@@ -8308,6 +8327,14 @@ am__depfiles_remade =  \
 	processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po \
 	processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Po \
 	processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0026_scielab_identity.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0027_scielab_uniform.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0028_scielab_dense_reference.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0029_scielab_spatial_cancellation.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0030_scielab_thin_symmetry.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0031_scielab_invalid.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0032_scielab_physical_signal.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0033_scielab_selection_reuse.Po \
 	processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po \
 	processing/chunk/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Po \
 	processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po \
@@ -11260,6 +11287,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_SPEC_PARSE_INVALID \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_PIXEL_DELTA_PEAK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_MS_SSIM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_SCIELAB_IDENTITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_SCIELAB_UNIFORM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_SCIELAB_DENSE_REFERENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_SCIELAB_SPATIAL_CANCELLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_SCIELAB_THIN_SYMMETRY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_SCIELAB_INVALID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_SCIELAB_PHYSICAL_SIGNAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_SCIELAB_SELECTION_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_IMAGE_VALUES_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_EXTENDED_FAILURE_ATOMIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_INVALID_RGB_DEFINITION \
@@ -14179,6 +14214,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/color_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/assessment/assessment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/assessment/color.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/assessment/scielab.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0001_ciede2000_reference.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0002_same_physical_coordinates.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0003_same_rgb_different_definition.c \
@@ -14193,6 +14229,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0012_spec_parse_invalid.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0013_pixel_delta_peak.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0017_ms_ssim.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0026_scielab_identity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0027_scielab_uniform.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0028_scielab_dense_reference.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0029_scielab_spatial_cancellation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0030_scielab_thin_symmetry.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0031_scielab_invalid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0032_scielab_physical_signal.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0033_scielab_selection_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/image_values_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0011_separate_intents.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0012_engine_independence.c \
@@ -18300,6 +18344,9 @@ $(top_builddir)/assessment/test_runner-assessment.$(OBJEXT):  \
 $(top_builddir)/assessment/test_runner-color.$(OBJEXT):  \
 	$(top_builddir)/assessment/$(am__dirstamp) \
 	$(top_builddir)/assessment/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/assessment/test_runner-scielab.$(OBJEXT):  \
+	$(top_builddir)/assessment/$(am__dirstamp) \
+	$(top_builddir)/assessment/$(DEPDIR)/$(am__dirstamp)
 processing/assessment/$(am__dirstamp):
 	@$(MKDIR_P) processing/assessment
 	@: >>processing/assessment/$(am__dirstamp)
@@ -18346,6 +18393,30 @@ processing/assessment/test_runner-0013_pixel_delta_peak.$(OBJEXT):  \
 	processing/assessment/$(am__dirstamp) \
 	processing/assessment/$(DEPDIR)/$(am__dirstamp)
 processing/assessment/test_runner-0017_ms_ssim.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0026_scielab_identity.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0027_scielab_uniform.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0028_scielab_dense_reference.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0029_scielab_spatial_cancellation.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0030_scielab_thin_symmetry.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0031_scielab_invalid.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0032_scielab_physical_signal.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0033_scielab_selection_reuse.$(OBJEXT):  \
 	processing/assessment/$(am__dirstamp) \
 	processing/assessment/$(DEPDIR)/$(am__dirstamp)
 loader/$(am__dirstamp):
@@ -27931,6 +28002,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/assessment/$(DEPDIR)/test_runner-color.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/assessment/$(DEPDIR)/test_runner-scielab.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po@am__quote@ # am--include-marker
@@ -29524,6 +29596,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0013_pixel_delta_peak.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0017_ms_ssim.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0026_scielab_identity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0027_scielab_uniform.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0028_scielab_dense_reference.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0029_scielab_spatial_cancellation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0030_scielab_thin_symmetry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0031_scielab_invalid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0032_scielab_physical_signal.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0033_scielab_selection_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/chunk/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po@am__quote@ # am--include-marker
@@ -35162,6 +35242,20 @@ $(top_builddir)/assessment/test_runner-color.obj: $(top_builddir)/assessment/col
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/assessment/test_runner-color.obj `if test -f '$(top_builddir)/assessment/color.c'; then $(CYGPATH_W) '$(top_builddir)/assessment/color.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/assessment/color.c'; fi`
 
+$(top_builddir)/assessment/test_runner-scielab.o: $(top_builddir)/assessment/scielab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/assessment/test_runner-scielab.o -MD -MP -MF $(top_builddir)/assessment/$(DEPDIR)/test_runner-scielab.Tpo -c -o $(top_builddir)/assessment/test_runner-scielab.o `test -f '$(top_builddir)/assessment/scielab.c' || echo '$(srcdir)/'`$(top_builddir)/assessment/scielab.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/assessment/$(DEPDIR)/test_runner-scielab.Tpo $(top_builddir)/assessment/$(DEPDIR)/test_runner-scielab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/assessment/scielab.c' object='$(top_builddir)/assessment/test_runner-scielab.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/assessment/test_runner-scielab.o `test -f '$(top_builddir)/assessment/scielab.c' || echo '$(srcdir)/'`$(top_builddir)/assessment/scielab.c
+
+$(top_builddir)/assessment/test_runner-scielab.obj: $(top_builddir)/assessment/scielab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/assessment/test_runner-scielab.obj -MD -MP -MF $(top_builddir)/assessment/$(DEPDIR)/test_runner-scielab.Tpo -c -o $(top_builddir)/assessment/test_runner-scielab.obj `if test -f '$(top_builddir)/assessment/scielab.c'; then $(CYGPATH_W) '$(top_builddir)/assessment/scielab.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/assessment/scielab.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/assessment/$(DEPDIR)/test_runner-scielab.Tpo $(top_builddir)/assessment/$(DEPDIR)/test_runner-scielab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/assessment/scielab.c' object='$(top_builddir)/assessment/test_runner-scielab.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/assessment/test_runner-scielab.obj `if test -f '$(top_builddir)/assessment/scielab.c'; then $(CYGPATH_W) '$(top_builddir)/assessment/scielab.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/assessment/scielab.c'; fi`
+
 processing/assessment/test_runner-0001_ciede2000_reference.o: processing/assessment/0001_ciede2000_reference.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0001_ciede2000_reference.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Tpo -c -o processing/assessment/test_runner-0001_ciede2000_reference.o `test -f 'processing/assessment/0001_ciede2000_reference.c' || echo '$(srcdir)/'`processing/assessment/0001_ciede2000_reference.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Tpo processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Po
@@ -35357,6 +35451,118 @@ processing/assessment/test_runner-0017_ms_ssim.obj: processing/assessment/0017_m
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0017_ms_ssim.c' object='processing/assessment/test_runner-0017_ms_ssim.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0017_ms_ssim.obj `if test -f 'processing/assessment/0017_ms_ssim.c'; then $(CYGPATH_W) 'processing/assessment/0017_ms_ssim.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0017_ms_ssim.c'; fi`
+
+processing/assessment/test_runner-0026_scielab_identity.o: processing/assessment/0026_scielab_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0026_scielab_identity.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0026_scielab_identity.Tpo -c -o processing/assessment/test_runner-0026_scielab_identity.o `test -f 'processing/assessment/0026_scielab_identity.c' || echo '$(srcdir)/'`processing/assessment/0026_scielab_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0026_scielab_identity.Tpo processing/assessment/$(DEPDIR)/test_runner-0026_scielab_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0026_scielab_identity.c' object='processing/assessment/test_runner-0026_scielab_identity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0026_scielab_identity.o `test -f 'processing/assessment/0026_scielab_identity.c' || echo '$(srcdir)/'`processing/assessment/0026_scielab_identity.c
+
+processing/assessment/test_runner-0026_scielab_identity.obj: processing/assessment/0026_scielab_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0026_scielab_identity.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0026_scielab_identity.Tpo -c -o processing/assessment/test_runner-0026_scielab_identity.obj `if test -f 'processing/assessment/0026_scielab_identity.c'; then $(CYGPATH_W) 'processing/assessment/0026_scielab_identity.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0026_scielab_identity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0026_scielab_identity.Tpo processing/assessment/$(DEPDIR)/test_runner-0026_scielab_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0026_scielab_identity.c' object='processing/assessment/test_runner-0026_scielab_identity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0026_scielab_identity.obj `if test -f 'processing/assessment/0026_scielab_identity.c'; then $(CYGPATH_W) 'processing/assessment/0026_scielab_identity.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0026_scielab_identity.c'; fi`
+
+processing/assessment/test_runner-0027_scielab_uniform.o: processing/assessment/0027_scielab_uniform.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0027_scielab_uniform.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0027_scielab_uniform.Tpo -c -o processing/assessment/test_runner-0027_scielab_uniform.o `test -f 'processing/assessment/0027_scielab_uniform.c' || echo '$(srcdir)/'`processing/assessment/0027_scielab_uniform.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0027_scielab_uniform.Tpo processing/assessment/$(DEPDIR)/test_runner-0027_scielab_uniform.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0027_scielab_uniform.c' object='processing/assessment/test_runner-0027_scielab_uniform.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0027_scielab_uniform.o `test -f 'processing/assessment/0027_scielab_uniform.c' || echo '$(srcdir)/'`processing/assessment/0027_scielab_uniform.c
+
+processing/assessment/test_runner-0027_scielab_uniform.obj: processing/assessment/0027_scielab_uniform.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0027_scielab_uniform.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0027_scielab_uniform.Tpo -c -o processing/assessment/test_runner-0027_scielab_uniform.obj `if test -f 'processing/assessment/0027_scielab_uniform.c'; then $(CYGPATH_W) 'processing/assessment/0027_scielab_uniform.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0027_scielab_uniform.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0027_scielab_uniform.Tpo processing/assessment/$(DEPDIR)/test_runner-0027_scielab_uniform.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0027_scielab_uniform.c' object='processing/assessment/test_runner-0027_scielab_uniform.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0027_scielab_uniform.obj `if test -f 'processing/assessment/0027_scielab_uniform.c'; then $(CYGPATH_W) 'processing/assessment/0027_scielab_uniform.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0027_scielab_uniform.c'; fi`
+
+processing/assessment/test_runner-0028_scielab_dense_reference.o: processing/assessment/0028_scielab_dense_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0028_scielab_dense_reference.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0028_scielab_dense_reference.Tpo -c -o processing/assessment/test_runner-0028_scielab_dense_reference.o `test -f 'processing/assessment/0028_scielab_dense_reference.c' || echo '$(srcdir)/'`processing/assessment/0028_scielab_dense_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0028_scielab_dense_reference.Tpo processing/assessment/$(DEPDIR)/test_runner-0028_scielab_dense_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0028_scielab_dense_reference.c' object='processing/assessment/test_runner-0028_scielab_dense_reference.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0028_scielab_dense_reference.o `test -f 'processing/assessment/0028_scielab_dense_reference.c' || echo '$(srcdir)/'`processing/assessment/0028_scielab_dense_reference.c
+
+processing/assessment/test_runner-0028_scielab_dense_reference.obj: processing/assessment/0028_scielab_dense_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0028_scielab_dense_reference.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0028_scielab_dense_reference.Tpo -c -o processing/assessment/test_runner-0028_scielab_dense_reference.obj `if test -f 'processing/assessment/0028_scielab_dense_reference.c'; then $(CYGPATH_W) 'processing/assessment/0028_scielab_dense_reference.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0028_scielab_dense_reference.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0028_scielab_dense_reference.Tpo processing/assessment/$(DEPDIR)/test_runner-0028_scielab_dense_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0028_scielab_dense_reference.c' object='processing/assessment/test_runner-0028_scielab_dense_reference.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0028_scielab_dense_reference.obj `if test -f 'processing/assessment/0028_scielab_dense_reference.c'; then $(CYGPATH_W) 'processing/assessment/0028_scielab_dense_reference.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0028_scielab_dense_reference.c'; fi`
+
+processing/assessment/test_runner-0029_scielab_spatial_cancellation.o: processing/assessment/0029_scielab_spatial_cancellation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0029_scielab_spatial_cancellation.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0029_scielab_spatial_cancellation.Tpo -c -o processing/assessment/test_runner-0029_scielab_spatial_cancellation.o `test -f 'processing/assessment/0029_scielab_spatial_cancellation.c' || echo '$(srcdir)/'`processing/assessment/0029_scielab_spatial_cancellation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0029_scielab_spatial_cancellation.Tpo processing/assessment/$(DEPDIR)/test_runner-0029_scielab_spatial_cancellation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0029_scielab_spatial_cancellation.c' object='processing/assessment/test_runner-0029_scielab_spatial_cancellation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0029_scielab_spatial_cancellation.o `test -f 'processing/assessment/0029_scielab_spatial_cancellation.c' || echo '$(srcdir)/'`processing/assessment/0029_scielab_spatial_cancellation.c
+
+processing/assessment/test_runner-0029_scielab_spatial_cancellation.obj: processing/assessment/0029_scielab_spatial_cancellation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0029_scielab_spatial_cancellation.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0029_scielab_spatial_cancellation.Tpo -c -o processing/assessment/test_runner-0029_scielab_spatial_cancellation.obj `if test -f 'processing/assessment/0029_scielab_spatial_cancellation.c'; then $(CYGPATH_W) 'processing/assessment/0029_scielab_spatial_cancellation.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0029_scielab_spatial_cancellation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0029_scielab_spatial_cancellation.Tpo processing/assessment/$(DEPDIR)/test_runner-0029_scielab_spatial_cancellation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0029_scielab_spatial_cancellation.c' object='processing/assessment/test_runner-0029_scielab_spatial_cancellation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0029_scielab_spatial_cancellation.obj `if test -f 'processing/assessment/0029_scielab_spatial_cancellation.c'; then $(CYGPATH_W) 'processing/assessment/0029_scielab_spatial_cancellation.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0029_scielab_spatial_cancellation.c'; fi`
+
+processing/assessment/test_runner-0030_scielab_thin_symmetry.o: processing/assessment/0030_scielab_thin_symmetry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0030_scielab_thin_symmetry.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0030_scielab_thin_symmetry.Tpo -c -o processing/assessment/test_runner-0030_scielab_thin_symmetry.o `test -f 'processing/assessment/0030_scielab_thin_symmetry.c' || echo '$(srcdir)/'`processing/assessment/0030_scielab_thin_symmetry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0030_scielab_thin_symmetry.Tpo processing/assessment/$(DEPDIR)/test_runner-0030_scielab_thin_symmetry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0030_scielab_thin_symmetry.c' object='processing/assessment/test_runner-0030_scielab_thin_symmetry.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0030_scielab_thin_symmetry.o `test -f 'processing/assessment/0030_scielab_thin_symmetry.c' || echo '$(srcdir)/'`processing/assessment/0030_scielab_thin_symmetry.c
+
+processing/assessment/test_runner-0030_scielab_thin_symmetry.obj: processing/assessment/0030_scielab_thin_symmetry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0030_scielab_thin_symmetry.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0030_scielab_thin_symmetry.Tpo -c -o processing/assessment/test_runner-0030_scielab_thin_symmetry.obj `if test -f 'processing/assessment/0030_scielab_thin_symmetry.c'; then $(CYGPATH_W) 'processing/assessment/0030_scielab_thin_symmetry.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0030_scielab_thin_symmetry.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0030_scielab_thin_symmetry.Tpo processing/assessment/$(DEPDIR)/test_runner-0030_scielab_thin_symmetry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0030_scielab_thin_symmetry.c' object='processing/assessment/test_runner-0030_scielab_thin_symmetry.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0030_scielab_thin_symmetry.obj `if test -f 'processing/assessment/0030_scielab_thin_symmetry.c'; then $(CYGPATH_W) 'processing/assessment/0030_scielab_thin_symmetry.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0030_scielab_thin_symmetry.c'; fi`
+
+processing/assessment/test_runner-0031_scielab_invalid.o: processing/assessment/0031_scielab_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0031_scielab_invalid.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0031_scielab_invalid.Tpo -c -o processing/assessment/test_runner-0031_scielab_invalid.o `test -f 'processing/assessment/0031_scielab_invalid.c' || echo '$(srcdir)/'`processing/assessment/0031_scielab_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0031_scielab_invalid.Tpo processing/assessment/$(DEPDIR)/test_runner-0031_scielab_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0031_scielab_invalid.c' object='processing/assessment/test_runner-0031_scielab_invalid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0031_scielab_invalid.o `test -f 'processing/assessment/0031_scielab_invalid.c' || echo '$(srcdir)/'`processing/assessment/0031_scielab_invalid.c
+
+processing/assessment/test_runner-0031_scielab_invalid.obj: processing/assessment/0031_scielab_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0031_scielab_invalid.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0031_scielab_invalid.Tpo -c -o processing/assessment/test_runner-0031_scielab_invalid.obj `if test -f 'processing/assessment/0031_scielab_invalid.c'; then $(CYGPATH_W) 'processing/assessment/0031_scielab_invalid.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0031_scielab_invalid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0031_scielab_invalid.Tpo processing/assessment/$(DEPDIR)/test_runner-0031_scielab_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0031_scielab_invalid.c' object='processing/assessment/test_runner-0031_scielab_invalid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0031_scielab_invalid.obj `if test -f 'processing/assessment/0031_scielab_invalid.c'; then $(CYGPATH_W) 'processing/assessment/0031_scielab_invalid.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0031_scielab_invalid.c'; fi`
+
+processing/assessment/test_runner-0032_scielab_physical_signal.o: processing/assessment/0032_scielab_physical_signal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0032_scielab_physical_signal.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0032_scielab_physical_signal.Tpo -c -o processing/assessment/test_runner-0032_scielab_physical_signal.o `test -f 'processing/assessment/0032_scielab_physical_signal.c' || echo '$(srcdir)/'`processing/assessment/0032_scielab_physical_signal.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0032_scielab_physical_signal.Tpo processing/assessment/$(DEPDIR)/test_runner-0032_scielab_physical_signal.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0032_scielab_physical_signal.c' object='processing/assessment/test_runner-0032_scielab_physical_signal.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0032_scielab_physical_signal.o `test -f 'processing/assessment/0032_scielab_physical_signal.c' || echo '$(srcdir)/'`processing/assessment/0032_scielab_physical_signal.c
+
+processing/assessment/test_runner-0032_scielab_physical_signal.obj: processing/assessment/0032_scielab_physical_signal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0032_scielab_physical_signal.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0032_scielab_physical_signal.Tpo -c -o processing/assessment/test_runner-0032_scielab_physical_signal.obj `if test -f 'processing/assessment/0032_scielab_physical_signal.c'; then $(CYGPATH_W) 'processing/assessment/0032_scielab_physical_signal.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0032_scielab_physical_signal.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0032_scielab_physical_signal.Tpo processing/assessment/$(DEPDIR)/test_runner-0032_scielab_physical_signal.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0032_scielab_physical_signal.c' object='processing/assessment/test_runner-0032_scielab_physical_signal.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0032_scielab_physical_signal.obj `if test -f 'processing/assessment/0032_scielab_physical_signal.c'; then $(CYGPATH_W) 'processing/assessment/0032_scielab_physical_signal.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0032_scielab_physical_signal.c'; fi`
+
+processing/assessment/test_runner-0033_scielab_selection_reuse.o: processing/assessment/0033_scielab_selection_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0033_scielab_selection_reuse.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0033_scielab_selection_reuse.Tpo -c -o processing/assessment/test_runner-0033_scielab_selection_reuse.o `test -f 'processing/assessment/0033_scielab_selection_reuse.c' || echo '$(srcdir)/'`processing/assessment/0033_scielab_selection_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0033_scielab_selection_reuse.Tpo processing/assessment/$(DEPDIR)/test_runner-0033_scielab_selection_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0033_scielab_selection_reuse.c' object='processing/assessment/test_runner-0033_scielab_selection_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0033_scielab_selection_reuse.o `test -f 'processing/assessment/0033_scielab_selection_reuse.c' || echo '$(srcdir)/'`processing/assessment/0033_scielab_selection_reuse.c
+
+processing/assessment/test_runner-0033_scielab_selection_reuse.obj: processing/assessment/0033_scielab_selection_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0033_scielab_selection_reuse.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0033_scielab_selection_reuse.Tpo -c -o processing/assessment/test_runner-0033_scielab_selection_reuse.obj `if test -f 'processing/assessment/0033_scielab_selection_reuse.c'; then $(CYGPATH_W) 'processing/assessment/0033_scielab_selection_reuse.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0033_scielab_selection_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0033_scielab_selection_reuse.Tpo processing/assessment/$(DEPDIR)/test_runner-0033_scielab_selection_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0033_scielab_selection_reuse.c' object='processing/assessment/test_runner-0033_scielab_selection_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0033_scielab_selection_reuse.obj `if test -f 'processing/assessment/0033_scielab_selection_reuse.c'; then $(CYGPATH_W) 'processing/assessment/0033_scielab_selection_reuse.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0033_scielab_selection_reuse.c'; fi`
 
 loader/test_runner-image_values_test_common.o: loader/image_values_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-image_values_test_common.o -MD -MP -MF loader/$(DEPDIR)/test_runner-image_values_test_common.Tpo -c -o loader/test_runner-image_values_test_common.o `test -f 'loader/image_values_test_common.c' || echo '$(srcdir)/'`loader/image_values_test_common.c
