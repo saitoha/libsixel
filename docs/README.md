@@ -78,6 +78,8 @@ How output quality is measured and accepted, building on the concepts above.
 ### Metrics
 
 - [Image-quality metrics](quality/metrics.md) defines each `lsqa` metric with its origin, mathematical definition, and implementation differences, and explains multiscale evaluation, dither noise spectra, structure-preserving dithering, how to combine metrics for dithered output, and the current emphasis on luminance.
+- [Video evaluation workflow](quality/video-workflow.md) walks through capturing an animation, supplying source and display timelines, and interpreting quality, persistence, bytes and playback cost.
+- [Video evaluation](quality/video-evaluation.md) describes frame and clock alignment, packet availability timelines, quality and byte reports, S-CIELAB error maps, and screen-coordinate residual persistence.
 - [Color-aware quality evaluation](quality/color-evaluation.md) defines independent input color interpretation, current-coordinate measurement, XYZ D50 color differences, fixed regional means, comparison signals, and the pending PNG integration boundary.
 
 ### Measurement practice

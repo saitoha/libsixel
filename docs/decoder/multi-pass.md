@@ -22,6 +22,8 @@ default = single
 
 The accepted capture profile uses explicit input-mode selection and contains no in-stream interpretation annotations.
 
+`lsqa` also provides a separate [`-M animation` operation](../quality/video-evaluation.md) for per-frame assessment. The shared decoder modes described here retain their still-image meaning; the animation operation is not a new public decoder option or a `sixel2png` mode.
+
 Both tools resolve this argument through the decoder's shared option schema and the [choice prefix-matching policy](../cli/prefix-matching.md). Unique case-sensitive prefixes are accepted: `-M6` selects `6delta-progressive`, and `-Ms` selects `single`. The long option accepts the same values, such as `--input-mode=6`.
 
 For this initial mode, activation requires the argument; there is no environment-based enablement. This is a scoped exception to the general [CLI environment-default policy](../cli/design-policy.md), because ambient activation could silently collapse an animation into one still image. Explicit library callers select the mode through decoder configuration. Other CLI precedence and diagnostic rules remain unchanged. Repeating the mode argument uses the last valid selection; an unknown, missing or empty value is a usage error before decoding or output.

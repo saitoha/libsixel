@@ -833,6 +833,17 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0031_SCIELAB_INVALID \
     -DBUILD_TEST_0032_SCIELAB_PHYSICAL_SIGNAL \
     -DBUILD_TEST_0033_SCIELAB_SELECTION_REUSE \
+    -DBUILD_TEST_0034_SCIELAB_MAP_OUTPUT \
+    -DBUILD_TEST_0035_SCIELAB_MAP_CAPACITY \
+    -DBUILD_TEST_0036_PERSISTENCE_DURATION_WEIGHTING \
+    -DBUILD_TEST_0037_PERSISTENCE_PIXEL_RESET \
+    -DBUILD_TEST_0038_PERSISTENCE_PARTITION_INVARIANCE \
+    -DBUILD_TEST_0087_ANIMATION_PALETTE_CARRY \
+    -DBUILD_TEST_0088_ANIMATION_CLEAR_CANVAS \
+    -DBUILD_TEST_0089_ANIMATION_MALFORMED_TAIL \
+    -DBUILD_TEST_0090_ANIMATION_DEFAULT_PALETTE \
+    -DBUILD_VIDEO_REPORT_TEST_COMMON \
+    -DBUILD_CLOCK_REPORT_TEST_COMMON \
     -DBUILD_IMAGE_VALUES_TEST_COMMON \
     -DBUILD_TEST_0012_EXTENDED_FAILURE_ATOMIC \
     -DBUILD_TEST_0008_INVALID_RGB_DEFINITION \
@@ -3756,6 +3767,7 @@ test_runner_SOURCES = test_runner.c \
     $(top_srcdir)/assessment/assessment.c \
     $(top_srcdir)/assessment/color.c \
     $(top_srcdir)/assessment/scielab.c \
+    $(top_srcdir)/assessment/persistence.c \
     processing/assessment/0001_ciede2000_reference.c \
     processing/assessment/0002_same_physical_coordinates.c \
     processing/assessment/0003_same_rgb_different_definition.c \
@@ -3778,6 +3790,17 @@ test_runner_SOURCES = test_runner.c \
     processing/assessment/0031_scielab_invalid.c \
     processing/assessment/0032_scielab_physical_signal.c \
     processing/assessment/0033_scielab_selection_reuse.c \
+    processing/assessment/0034_scielab_map_output.c \
+    processing/assessment/0035_scielab_map_capacity.c \
+    processing/assessment/0036_persistence_duration_weighting.c \
+    processing/assessment/0037_persistence_pixel_reset.c \
+    processing/assessment/0038_persistence_partition_invariance.c \
+    processing/decoder/0087_animation_palette_carry.c \
+    processing/decoder/0088_animation_clear_canvas.c \
+    processing/decoder/0089_animation_malformed_tail.c \
+    processing/decoder/0090_animation_default_palette.c \
+    processing/assessment/video_report_test_common.c \
+    processing/assessment/clock_report_test_common.c \
     loader/image_values_test_common.c \
     processing/cms/0011_separate_intents.c \
     processing/cms/0012_engine_independence.c \

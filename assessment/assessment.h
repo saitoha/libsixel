@@ -317,6 +317,13 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
                          sixel_frame_t *reference,
                          sixel_frame_t *output);
 
+/* Canonical JSON name for a zero-based results[] index. */
+SIXEL_INTERNAL_API char const *
+sixel_assessment_metric_name(int index);
+
+SIXEL_INTERNAL_API char const *
+sixel_assessment_colorspace_name(int colorspace);
+
 /*
  *  +---------------------------+
  *  | Local call graph          |

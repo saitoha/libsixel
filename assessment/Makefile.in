@@ -114,14 +114,17 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__lsqa_SOURCES_DIST = $(srcdir)/lsqa.c $(srcdir)/assessment.c \
-	$(srcdir)/color.c $(srcdir)/scielab.c $(srcdir)/scielab.h \
-	$(srcdir)/color.h $(srcdir)/assessment.h \
+	$(srcdir)/color.c $(srcdir)/scielab.c $(srcdir)/persistence.c \
+	$(srcdir)/scielab.h $(srcdir)/persistence.h $(srcdir)/video.c \
+	$(srcdir)/video.h $(srcdir)/color.h $(srcdir)/assessment.h \
 	$(top_srcdir)/converters/cli.c
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@am_lsqa_OBJECTS = lsqa-lsqa.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lsqa-assessment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lsqa-color.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lsqa-scielab.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lsqa-persistence.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lsqa-video.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/lsqa-cli.$(OBJEXT)
 am__objects_1 = $(top_builddir)/amalgamation/lsqa-sixel.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_lsqa_OBJECTS = $(am__objects_1)
@@ -172,7 +175,8 @@ am__depfiles_remade =  \
 	$(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po \
 	$(top_builddir)/converters/$(DEPDIR)/lsqa-cli.Po \
 	./$(DEPDIR)/lsqa-assessment.Po ./$(DEPDIR)/lsqa-color.Po \
-	./$(DEPDIR)/lsqa-lsqa.Po ./$(DEPDIR)/lsqa-scielab.Po
+	./$(DEPDIR)/lsqa-lsqa.Po ./$(DEPDIR)/lsqa-persistence.Po \
+	./$(DEPDIR)/lsqa-scielab.Po ./$(DEPDIR)/lsqa-video.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -502,7 +506,11 @@ AMALGAMATION_LSQA_LIBS = -lm \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/assessment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/color.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/scielab.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/persistence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/scielab.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/persistence.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/video.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/video.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/color.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/assessment.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(top_srcdir)/converters/cli.c
@@ -666,7 +674,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-assessment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-color.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-lsqa.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-persistence.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-scielab.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-video.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -751,6 +761,34 @@ lsqa-scielab.obj: scielab.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='scielab.c' object='lsqa-scielab.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-scielab.obj `if test -f 'scielab.c'; then $(CYGPATH_W) 'scielab.c'; else $(CYGPATH_W) '$(srcdir)/scielab.c'; fi`
+
+lsqa-persistence.o: persistence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT lsqa-persistence.o -MD -MP -MF $(DEPDIR)/lsqa-persistence.Tpo -c -o lsqa-persistence.o `test -f 'persistence.c' || echo '$(srcdir)/'`persistence.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lsqa-persistence.Tpo $(DEPDIR)/lsqa-persistence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='persistence.c' object='lsqa-persistence.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-persistence.o `test -f 'persistence.c' || echo '$(srcdir)/'`persistence.c
+
+lsqa-persistence.obj: persistence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT lsqa-persistence.obj -MD -MP -MF $(DEPDIR)/lsqa-persistence.Tpo -c -o lsqa-persistence.obj `if test -f 'persistence.c'; then $(CYGPATH_W) 'persistence.c'; else $(CYGPATH_W) '$(srcdir)/persistence.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lsqa-persistence.Tpo $(DEPDIR)/lsqa-persistence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='persistence.c' object='lsqa-persistence.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-persistence.obj `if test -f 'persistence.c'; then $(CYGPATH_W) 'persistence.c'; else $(CYGPATH_W) '$(srcdir)/persistence.c'; fi`
+
+lsqa-video.o: video.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT lsqa-video.o -MD -MP -MF $(DEPDIR)/lsqa-video.Tpo -c -o lsqa-video.o `test -f 'video.c' || echo '$(srcdir)/'`video.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lsqa-video.Tpo $(DEPDIR)/lsqa-video.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='video.c' object='lsqa-video.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-video.o `test -f 'video.c' || echo '$(srcdir)/'`video.c
+
+lsqa-video.obj: video.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT lsqa-video.obj -MD -MP -MF $(DEPDIR)/lsqa-video.Tpo -c -o lsqa-video.obj `if test -f 'video.c'; then $(CYGPATH_W) 'video.c'; else $(CYGPATH_W) '$(srcdir)/video.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lsqa-video.Tpo $(DEPDIR)/lsqa-video.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='video.c' object='lsqa-video.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-video.obj `if test -f 'video.c'; then $(CYGPATH_W) 'video.c'; else $(CYGPATH_W) '$(srcdir)/video.c'; fi`
 
 $(top_builddir)/converters/lsqa-cli.o: $(top_builddir)/converters/cli.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/lsqa-cli.o -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/lsqa-cli.Tpo -c -o $(top_builddir)/converters/lsqa-cli.o `test -f '$(top_builddir)/converters/cli.c' || echo '$(srcdir)/'`$(top_builddir)/converters/cli.c
@@ -928,7 +966,9 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/lsqa-assessment.Po
 	-rm -f ./$(DEPDIR)/lsqa-color.Po
 	-rm -f ./$(DEPDIR)/lsqa-lsqa.Po
+	-rm -f ./$(DEPDIR)/lsqa-persistence.Po
 	-rm -f ./$(DEPDIR)/lsqa-scielab.Po
+	-rm -f ./$(DEPDIR)/lsqa-video.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -979,7 +1019,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/lsqa-assessment.Po
 	-rm -f ./$(DEPDIR)/lsqa-color.Po
 	-rm -f ./$(DEPDIR)/lsqa-lsqa.Po
+	-rm -f ./$(DEPDIR)/lsqa-persistence.Po
 	-rm -f ./$(DEPDIR)/lsqa-scielab.Po
+	-rm -f ./$(DEPDIR)/lsqa-video.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

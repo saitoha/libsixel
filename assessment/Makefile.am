@@ -77,7 +77,11 @@ lsqa_SOURCES = $(srcdir)/lsqa.c \
                $(srcdir)/assessment.c \
                $(srcdir)/color.c \
                $(srcdir)/scielab.c \
+               $(srcdir)/persistence.c \
                $(srcdir)/scielab.h \
+               $(srcdir)/persistence.h \
+               $(srcdir)/video.c \
+               $(srcdir)/video.h \
                $(srcdir)/color.h \
                $(srcdir)/assessment.h \
                $(top_srcdir)/converters/cli.c

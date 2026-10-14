@@ -561,6 +561,9 @@ emit_all_headers() {
                 emit_header_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA)"
                 ;;
+            assessment/video.h)
+                emit_header_unit "${unit}" "defined(BUILD_LSQA)"
+                ;;
             assessment/assessment.h)
                 emit_unit "${unit}" \
                     "defined(BUILD_LSQA) || defined(BUILD_ASSESSMENT)"
@@ -621,7 +624,10 @@ emit_all_units() {
                 emit_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA) || defined(BUILD_${guard})"
                 ;;
-            assessment/scielab.c)
+            assessment/video.c)
+                emit_unit "${unit}" "defined(BUILD_LSQA)"
+                ;;
+            assessment/scielab.c|assessment/persistence.c)
                 emit_unit "${unit}" \
                     "defined(BUILD_LSQA) || defined(BUILD_ASSESSMENT)"
                 ;;

@@ -213,6 +213,7 @@ test_runner_sources = test_runner_tests_sources + files(
   '../assessment/assessment.c',
   '../assessment/color.c',
   '../assessment/scielab.c',
+  '../assessment/persistence.c',
   '../converters/path.c',
 )
 

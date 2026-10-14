@@ -119,6 +119,8 @@ docs/quality/color-difference.md	explanation	both	color-difference formulas + re
 docs/quality/color-evaluation.md	reference	both	quality-tool contracts + color-model explanation and contributor test ledger
 docs/quality/measurement-policy.md	reference	contributor	measurement policy + comparison procedure
 docs/quality/metrics.md	explanation	both	metric reference definitions + usage explanation
+docs/quality/video-evaluation.md	reference	both	video CLI, timing and persistence report contracts
+docs/quality/video-workflow.md	tutorial	both	capture, timing sidecars and quality-cost interpretation
 docs/quality/character-cell-perception/README.md	explanation	both	perception explanation + implementation survey and reproducible measurements
 docs/quality/visual-perception/README.md	explanation	both	
 docs/quality/palette-gradient-analysis.md	how-to	both	diagnostic workflow + geometry explanation and contributor validation

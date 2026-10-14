@@ -62,6 +62,7 @@
 
 #include "assessment.h"
 #include "scielab.h"
+#include "video.h"
 #include "color.h"
 #include "sixel_decode_pixels.h"
 #include "chunk-factory.h"
@@ -1908,10 +1909,20 @@ lsqa_copy_option_text(char *buffer,
 typedef struct Options {
     const char *ref_spec;
     const char *out_spec;
-    int region_window;
     double scielab_ppd;
-    int progressive_input;
+    int region_window;
     int direct;
+    int progressive_input;
+    int animation_input;
+    char frame_report[PATH_MAX];
+    char target_timeline[PATH_MAX];
+    char error_map[PATH_MAX];
+    char display_timeline[PATH_MAX];
+    int clock_alignment;
+    double persistence_time;
+    double scielab_threshold;
+    double reference_fps;
+    unsigned int video_specified;
     const char *ref_path;
     const char *out_path;
     char loader_order_buffer[PATH_MAX];
@@ -1940,6 +1951,96 @@ typedef struct Options {
     unsigned char bgcolor[3];
     int has_bgcolor;
 } Options;
+
+/* Explicit CLI values win over environment defaults, including zero. */
+static int
+lsqa_video_option(Options *opts, int option, char const *value)
+{
+    static sixel_option_choice_t const alignments[] = {
+        {"frame", 0}, {"clock", 1}
+    };
+    char *path;
+    char *end;
+    double number;
+    double denominator;
+    unsigned int bit;
+
+    path = NULL;
+    bit = 0;
+    switch (option) {
+    case 'o': path = opts->frame_report; bit = 1u; break;
+    case 'J': path = opts->target_timeline; bit = 2u; break;
+    case 'E': path = opts->error_map; bit = 4u; break;
+    case 'u': bit = 8u; break;
+    case 'f': bit = 16u; break;
+    case 'C': path = opts->display_timeline; bit = 32u; break;
+    case 'A': bit = 64u; break;
+    case 't': bit = 128u; break;
+    default: return -1;
+    }
+    if (value == NULL || value[0] == '\0') { return -1; }
+    if (option == 'A') {
+        if (sixel_option_match_choice(value, alignments, 2,
+                &opts->clock_alignment, NULL, 0)
+                != SIXEL_OPTION_CHOICE_MATCH) { return -1; }
+    } else if (path != NULL) {
+        if (strcmp(value, "-") == 0
+                || lsqa_copy_option_text(path, PATH_MAX, value) != 0) {
+            return -1;
+        }
+    } else {
+        errno = 0;
+        number = strtod(value, &end);
+        if (end == value || errno != 0 || !isfinite(number)
+                || number < 0) { return -1; }
+        if (option == 'f' && *end == '/') {
+            value = end + 1;
+            errno = 0;
+            denominator = strtod(value, &end);
+            if (end == value || errno != 0 || !isfinite(denominator)
+                    || denominator <= 0) { return -1; }
+            number /= denominator;
+        }
+        if (*end != '\0' || !isfinite(number)) { return -1; }
+        if (option == 'f') {
+            if (number <= 0 || number > 1000) { return -1; }
+            opts->reference_fps = number;
+        } else if (option == 't') {
+            opts->persistence_time = number;
+        } else {
+            opts->scielab_threshold = number;
+        }
+    }
+    opts->video_specified |= bit;
+    return 0;
+}
+
+static int
+lsqa_video_environment(Options *opts)
+{
+    static char const *const names[] = {
+        "LSQA_FRAME_REPORT", "LSQA_TARGET_TIMELINE", "LSQA_ERROR_MAP",
+        "LSQA_SCIELAB_THRESHOLD", "LSQA_REFERENCE_FPS",
+        "LSQA_DISPLAY_TIMELINE", "LSQA_ALIGNMENT", "LSQA_PERSISTENCE_TIME"
+    };
+    static char const options[] = "oJEufCAt";
+    char *value;
+    int i;
+    int failed;
+
+    for (i = 0; i < 8; ++i) {
+        if ((opts->video_specified & (1u << i)) != 0) { continue; }
+        value = lsqa_getenv_dup(names[i]);
+        failed = value != NULL && value[0] != '\0'
+            && lsqa_video_option(opts, options[i], value) != 0;
+        free(value);
+        if (failed) {
+            sixel_helper_set_additional_message(names[i]);
+            return -1;
+        }
+    }
+    return 0;
+}
 
 static void
 lsqa_report_invalid_argument(int short_opt,
@@ -2107,10 +2208,42 @@ cleanup:
 static cli_option_help_t const g_option_help_table[] = {
     {
         'M', "input-mode",
-        "-M MODE, --input-mode=MODE  single (default) or 6delta-progressive\n"
-        "                           Compose the target's passes before assessment.\n"
-        "                           Unique prefixes work: -Ms or -M6.\n"
+        "-M MODE, --input-mode=MODE  target: single (default) or\n"
+        "                           6delta-progressive (one still), or\n"
+        "                           animation (video assessment).\n"
+        "                           Unique prefixes: -Ms, -M6, -Ma.\n"
     },
+    {'A', "alignment",
+        "-A MODE, --alignment=MODE  frame (default) or clock; prefixes OK.\n"
+        "                           Clock requires -C and excludes -J.\n"
+        "                           Env: LSQA_ALIGNMENT.\n"},
+    {'C', "display-timeline",
+        "-C FILE, --display-timeline=FILE  update/byte_end/pts JSONL.\n"
+        "                           Complete-packet availability on clock.\n"
+        "                           Env: LSQA_DISPLAY_TIMELINE.\n"},
+    {'t', "persistence-time",
+        "-t SECONDS, --persistence-time=SECONDS  error-weight ramp (-o).\n"
+        "                           Default 0.1; 0 gives immediate weight.\n"
+        "                           Env: LSQA_PERSISTENCE_TIME.\n"},
+    {'o', "frame-report",
+        "-o FILE, --frame-report=FILE  frame/clock-segment JSONL (-Ma).\n"
+        "                           Env: LSQA_FRAME_REPORT.\n"},
+    {'J', "target-timeline",
+        "-J FILE, --target-timeline=FILE  frame/byte_end/pts/duration JSONL.\n"
+        "                           Default: one DCS per reference frame.\n"
+        "                           Env: LSQA_TARGET_TIMELINE.\n"},
+    {'E', "error-map",
+        "-E FILE, --error-map=FILE  raw float32-le S-CIELAB maps; needs -o.\n"
+        "                           Env: LSQA_ERROR_MAP.\n"},
+    {'u', "scielab-threshold",
+        "-u VALUE, --scielab-threshold=VALUE  report errors strictly above\n"
+        "                           VALUE (default 2, diagnostic CIE76).\n"
+        "                           Env: LSQA_SCIELAB_THRESHOLD.\n"},
+    {'f', "reference-fps",
+        "-f RATE, --reference-fps=RATE  override loader frame durations.\n"
+        "                           Positive FPS or ratio, at most 1000.\n"
+        "                           Default: loader centiseconds or -J.\n"
+        "                           Env: LSQA_REFERENCE_FPS.\n"},
     {
         'D', "direct",
         "-D, --direct              render both SIXEL inputs at paint time.\n"
@@ -2277,7 +2410,8 @@ lsqa_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_lsqa_optstring[] = "DM:R:T:w:v:m:b:%:gW:P:L:#:B:d:S:e:Hh";
+static char const g_lsqa_optstring[] =
+    "DM:R:T:w:v:m:b:%:gW:P:L:#:B:d:S:e:o:J:E:u:f:A:C:t:Hh";
 
 static void
 lsqa_print_option_help(FILE *stream)
@@ -2474,7 +2608,7 @@ print_usage(const char *prog)
     fprintf(stderr,
             "                        fail below VALUE (S-CIELAB: above VALUE)\n");
     fprintf(stderr,
-            "  -v, --scielab-ppd       pixels/degree (default 60)\n");
+            "  -v, --scielab-ppd PPD  pixels/degree, 1..1024 (default 60)\n");
     fprintf(stderr,
             "  -g, --grayscale     compare in grayscale\n");
     fprintf(stderr,
@@ -2851,6 +2985,7 @@ lsqa_valid_color_spec(char const *spec)
 static int
 parse_args(int argc, char **argv, Options *opts)
 {
+    static sixel_option_choice_t const video_mode[] = {{"animation", 1}};
     const char *ref_arg;
     const char *out_arg;
     char *verbose_env;
@@ -2864,9 +2999,9 @@ parse_args(int argc, char **argv, Options *opts)
     int opt;
     int verbose_value;
     int cms_choice;
-    char detail_buffer[256];
     char *ppd_end;
     sixel_suboption_value_t input_mode;
+    char detail_buffer[256];
 #if HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
@@ -2874,8 +3009,8 @@ parse_args(int argc, char **argv, Options *opts)
 
     opts->ref_spec = "auto";
     opts->out_spec = "auto";
-    opts->region_window = 16;
     opts->scielab_ppd = SIXEL_QA_SCIELAB_PPD_DEFAULT;
+    opts->region_window = 16;
     opts->ref_path = NULL;
     opts->out_path = "-";
     opts->metric_spec = NULL;
@@ -2892,6 +3027,16 @@ parse_args(int argc, char **argv, Options *opts)
     opts->compare_precision = LSQA_COMPARE_PRECISION_REFERENCE;
     opts->direct = 0;
     opts->progressive_input = 0;
+    opts->animation_input = 0;
+    opts->frame_report[0] = '\0';
+    opts->target_timeline[0] = '\0';
+    opts->error_map[0] = '\0';
+    opts->display_timeline[0] = '\0';
+    opts->clock_alignment = 0;
+    opts->persistence_time = 0.1;
+    opts->scielab_threshold = 2.0;
+    opts->reference_fps = 0;
+    opts->video_specified = 0;
     opts->dequantize_method = SIXEL_DEQUANTIZE_NONE;
     opts->dequantize_similarity_bias = 100;
     opts->dequantize_edge_strength = 0;
@@ -2938,11 +3083,19 @@ parse_args(int argc, char **argv, Options *opts)
 #if HAVE_GETOPT_LONG
         struct option long_options[] = {
             {"direct", no_argument, &long_opt, 'D'},
+            {"input-mode", required_argument, &long_opt, 'M'},
+            {"alignment", required_argument, &long_opt, 'A'},
+            {"display-timeline", required_argument, &long_opt, 'C'},
+            {"persistence-time", required_argument, &long_opt, 't'},
+            {"frame-report", required_argument, &long_opt, 'o'},
+            {"target-timeline", required_argument, &long_opt, 'J'},
+            {"error-map", required_argument, &long_opt, 'E'},
+            {"scielab-threshold", required_argument, &long_opt, 'u'},
+            {"reference-fps", required_argument, &long_opt, 'f'},
             {"reference-colorspace", required_argument, &long_opt, 'R'},
             {"target-colorspace", required_argument, &long_opt, 'T'},
-            {"input-mode", required_argument, &long_opt, 'M'},
-            {"scielab-ppd", required_argument, &long_opt, 'v'},
             {"region-window", required_argument, &long_opt, 'w'},
+            {"scielab-ppd", required_argument, &long_opt, 'v'},
             {"metrics", required_argument, &long_opt, 'm'},
             {"baseline", required_argument, &long_opt, 'b'},
             {"env", required_argument, &long_opt, '%'},
@@ -2981,7 +3134,30 @@ parse_args(int argc, char **argv, Options *opts)
         }
 
         switch (opt) {
+        case 'A':
+        case 'C':
+        case 't':
+        case 'o':
+        case 'J':
+        case 'E':
+        case 'u':
+        case 'f':
+            if (lsqa_video_option(opts, opt, optarg) != 0) {
+                lsqa_report_invalid_argument(opt, optarg,
+                    "Expected a named file or a finite value in range.");
+                parse_status = -1;
+                goto cleanup;
+            }
+            break;
         case 'M':
+            /* Keep still modes on the shared decoder registry. Animation
+             * uses the same prefix matcher but is an lsqa operation. */
+            if (sixel_option_match_choice(optarg, video_mode, 1,
+                    &opts->animation_input, NULL, 0)
+                    == SIXEL_OPTION_CHOICE_MATCH) {
+                opts->progressive_input = 0;
+                break;
+            }
             /* Share the decoder's vocabulary and prefix matching rules. */
             if (SIXEL_FAILED(sixel_option_parse_scalar_argument(
                     SIXEL_OPTION_SCHEMA_DECODE_INPUT_MODE,
@@ -2992,6 +3168,7 @@ parse_args(int argc, char **argv, Options *opts)
                 goto cleanup;
             }
             opts->progressive_input = input_mode.int_value;
+            opts->animation_input = 0;
             break;
         case 'D':
             opts->direct = 1;
@@ -3278,6 +3455,26 @@ parse_args(int argc, char **argv, Options *opts)
         parse_status = -1;
         goto cleanup;
     }
+    if (lsqa_video_environment(opts) != 0) {
+        parse_status = -1;
+        goto cleanup;
+    }
+    if ((!opts->animation_input && opts->video_specified != 0)
+            || (opts->error_map[0] != '\0' && opts->frame_report[0] == '\0')
+            || (opts->target_timeline[0] != '\0' && opts->reference_fps > 0)
+            || (opts->clock_alignment != (opts->display_timeline[0] != '\0'))
+            || (opts->clock_alignment && opts->target_timeline[0] != '\0')
+            || ((opts->video_specified & 128u) != 0
+                && opts->frame_report[0] == '\0')
+            || (opts->animation_input
+                && (opts->dequantize_method != SIXEL_DEQUANTIZE_NONE
+                    || strcmp(opts->ref_spec, "auto") != 0))) {
+        lsqa_set_parse_error("video options require -Ma; -E needs -o; "
+            "-J and -f conflict; -Aclock needs -C and excludes -J; "
+            "-t needs -o; video requires -dnone and -Rauto");
+        parse_status = -1;
+        goto cleanup;
+    }
 
     /* Match img2sixel while preserving explicit environment and options. */
     if (cli_apply_env_default("SIXEL_LOADER_CMS_ENGINE", "auto") != 0) {
@@ -3321,12 +3518,77 @@ cleanup:
     return parse_status;
 }
 
+static int
+lsqa_run_video(Options const *opts, sixel_allocator_t *allocator)
+{
+    lsqa_video_options_t video;
+    double means[SIXEL_ASSESSMENT_METRIC_COUNT];
+    unsigned int valid_mask;
+    SIXELSTATUS status;
+    Metrics metrics;
+    float baseline;
+    int i;
+    int result;
+
+    memset(&video, 0, sizeof(video));
+    video.reference = opts->ref_path;
+    video.target = opts->out_path;
+    video.timeline = opts->target_timeline[0] ? opts->target_timeline : NULL;
+    video.report = opts->frame_report[0] ? opts->frame_report : NULL;
+    video.display_timeline = opts->display_timeline[0]
+        ? opts->display_timeline : NULL;
+    video.clock_alignment = opts->clock_alignment;
+    video.persistence_time = opts->persistence_time;
+    video.error_map = opts->error_map[0] ? opts->error_map : NULL;
+    video.loaders = opts->loader_order;
+    video.target_colorspace = opts->out_spec;
+    video.background = opts->has_bgcolor ? opts->bgcolor : NULL;
+    video.metrics = opts->metric_mask;
+    video.ppd = opts->scielab_ppd;
+    video.threshold = opts->scielab_threshold;
+    video.reference_fps = opts->reference_fps;
+    video.signal_space = opts->compare_colorspace;
+    video.signal_bytes = opts->compare_precision
+        == LSQA_COMPARE_PRECISION_REFERENCE ? -1
+        : opts->compare_precision == LSQA_COMPARE_PRECISION_8BIT;
+    video.grayscale = opts->grayscale_compare;
+    video.region_window = opts->region_window;
+    video.print_summary = !opts->metrics_filtered && !opts->baseline_enabled;
+    status = lsqa_video_run(&video, allocator, means, &valid_mask);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "Video assessment failed: %s (%s)\n",
+            sixel_helper_format_error(status),
+            sixel_helper_get_additional_message());
+        return LSQA_EXIT_RUNTIME_FAILED;
+    }
+    metrics_init(&metrics);
+    for (i = 0; i < SIXEL_ASSESSMENT_METRIC_COUNT; ++i) {
+        if ((valid_mask & (1u << i)) != 0) {
+            metrics_set_value(&metrics, sixel_assessment_metric_name(i),
+                means[i], 1);
+        }
+    }
+    if (opts->metrics_filtered) {
+        i = SIXEL_ASSESSMENT_INDEX(opts->metric_spec->metric_id);
+        if ((valid_mask & (1u << i)) == 0) {
+            return LSQA_EXIT_RUNTIME_FAILED;
+        }
+        printf("%.6f\n", means[i]);
+        if (fflush(stdout) != 0) { return LSQA_EXIT_RUNTIME_FAILED; }
+    }
+    result = lsqa_check_baseline(opts, &metrics, &baseline);
+    if (result != 0) {
+        fprintf(stderr, "Video baseline failed: %s\n", opts->baseline_key);
+        return result < 0 ? LSQA_EXIT_RUNTIME_FAILED : LSQA_EXIT_BASELINE_FAILED;
+    }
+    return LSQA_EXIT_SUCCESS;
+}
+
 int
 main(int argc, char **argv)
 {
     Options opts;
     char const *drawing[2];
-    size_t input_passes;
     sixel_allocator_t *allocator;
     sixel_assessment_t *assessment;
     SIXELSTATUS status;
@@ -3345,6 +3607,7 @@ main(int argc, char **argv)
     int reference_precision;
     int target_colorspace;
     int target_precision;
+    size_t input_passes;
 
     allocator = NULL;
     assessment = NULL;
@@ -3387,6 +3650,12 @@ main(int argc, char **argv)
                 "Failed to allocate loader: %s\n",
                 sixel_helper_format_error(status));
         return LSQA_EXIT_RUNTIME_FAILED;
+    }
+
+    if (opts.animation_input) {
+        exit_code = lsqa_run_video(&opts, allocator);
+        sixel_allocator_unref(allocator);
+        return exit_code;
     }
 
     if (load_input_frame(opts.ref_path, opts.ref_spec, opts.direct,
@@ -3464,8 +3733,8 @@ main(int argc, char **argv)
     assessment->signal_space = target_colorspace;
     assessment->signal_bytes = target_precision == LSQA_COMPARE_PRECISION_8BIT;
     assessment->grayscale = opts.grayscale_compare;
-    assessment->region_window = opts.region_window;
     assessment->scielab_ppd = opts.scielab_ppd;
+    assessment->region_window = opts.region_window;
     assessment->direct = opts.direct;
     assessment->drawing[0] = drawing[0];
     assessment->drawing[1] = drawing[1];
@@ -3560,7 +3829,8 @@ main(int argc, char **argv)
             } else {
                 fprintf(stderr,
                         "%s %.6f is %s baseline %.6f\n",
-                        opts.baseline_key, baseline_value,
+                        opts.baseline_key,
+                        baseline_value,
                         lsqa_baseline_is_maximum(&opts) ? "above" : "below",
                         opts.baseline_value);
                 exit_code = LSQA_EXIT_BASELINE_FAILED;
@@ -3610,7 +3880,8 @@ main(int argc, char **argv)
         } else {
             fprintf(stderr,
                     "%s %.6f is %s baseline %.6f\n",
-                    opts.baseline_key, baseline_value,
+                    opts.baseline_key,
+                    baseline_value,
                     lsqa_baseline_is_maximum(&opts) ? "above" : "below",
                     opts.baseline_value);
             exit_code = LSQA_EXIT_BASELINE_FAILED;

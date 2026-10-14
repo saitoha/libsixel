@@ -484,8 +484,8 @@ assessment_pixelformat_name(int pixelformat)
     return "unknown";
 }
 
-static char const *
-assessment_colorspace_name(int colorspace)
+SIXEL_INTERNAL_API char const *
+sixel_assessment_colorspace_name(int colorspace)
 {
     switch (colorspace) {
     case SIXEL_COLORSPACE_GAMMA:
@@ -3697,6 +3697,19 @@ cleanup:
     return status;
 }
 
+SIXEL_INTERNAL_API char const *
+sixel_assessment_metric_name(int index)
+{
+    size_t i;
+
+    for (i = 0; i < sizeof(g_metric_table) / sizeof(g_metric_table[0]); ++i) {
+        if (SIXEL_ASSESSMENT_INDEX(g_metric_table[i].id) == index) {
+            return g_metric_table[i].json_key;
+        }
+    }
+    return NULL;
+}
+
 static SIXELSTATUS
 assessment_emit_quality_lines(sixel_assessment_t *assessment,
                               sixel_assessment_json_callback_t callback,
@@ -3849,7 +3862,7 @@ assessment_emit_color_context(sixel_assessment_t *assessment,
             "    }%s\n",
             i == 0 ? "reference" : "target", escaped,
             assessment->color_origin[i], assessment->drawing[i],
-            assessment_colorspace_name(assessment->current_space[i]),
+            sixel_assessment_colorspace_name(assessment->current_space[i]),
             assessment_pixelformat_name(assessment->current_format[i]),
             i == 0 ? "," : "");
         if (n < 0 || (size_t)n >= sizeof(line)) {
@@ -4004,7 +4017,7 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
         written = snprintf(line,
                            sizeof(line),
                            "    \"input_colorspace\": \"%s\",\n",
-                           assessment_colorspace_name(
+                           sixel_assessment_colorspace_name(
                                assessment->input_colorspace));
         if (written < 0 || (size_t)written >= sizeof(line)) {
             return SIXEL_RUNTIME_ERROR;

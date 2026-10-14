@@ -725,6 +725,8 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/encoder/palette-construction/quantization/README.md \
 	docs/quality/measurement-policy.md \
 	docs/quality/metrics.md \
+	docs/quality/video-evaluation.md \
+	docs/quality/video-workflow.md \
 	docs/concepts/clustering/README.md \
 	docs/concepts/clustering/figures/color-cloud.svg \
 	docs/concepts/clustering/figures/figures.json \
