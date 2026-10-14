@@ -3694,6 +3694,10 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/encoder-core/0039_or_float_mono_reject.c \
 	processing/encoder-core/0040_or_float_wire_levels.c \
 	processing/encoder-core/0041_or_float_wire_pipeline.c \
+	processing/encoder-core/node_unlink_test_common.c \
+	processing/encoder-core/0042_node_unlink_fast_stream.c \
+	processing/encoder-core/0043_node_unlink_auto_stream.c \
+	processing/encoder-core/0044_node_unlink_size_stream.c \
 	codec/macro/native_macro_test_common.c \
 	codec/macro/0009_srgb_float_define.c \
 	codec/macro/0010_p3_float_define.c \
@@ -7308,6 +7312,10 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0039_or_float_mono_reject.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0040_or_float_wire_levels.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0041_or_float_wire_pipeline.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-node_unlink_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0042_node_unlink_fast_stream.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0043_node_unlink_auto_stream.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0044_node_unlink_size_stream.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-native_macro_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0009_srgb_float_define.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0010_p3_float_define.$(OBJEXT) \
@@ -9553,6 +9561,10 @@ am__depfiles_remade =  \
 	processing/encoder-core/$(DEPDIR)/test_runner-0039_or_float_mono_reject.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0040_or_float_wire_levels.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0041_or_float_wire_pipeline.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0042_node_unlink_fast_stream.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0043_node_unlink_auto_stream.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0044_node_unlink_size_stream.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-ormode_test_common.Po \
 	processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po \
@@ -13260,6 +13272,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_OR_FLOAT_MONO_REJECT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_OR_FLOAT_WIRE_LEVELS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_OR_FLOAT_WIRE_PIPELINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_NODE_UNLINK_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_NODE_UNLINK_FAST_STREAM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_NODE_UNLINK_AUTO_STREAM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_NODE_UNLINK_SIZE_STREAM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_NATIVE_MACRO_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_SRGB_FLOAT_DEFINE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_P3_FLOAT_DEFINE \
@@ -18982,6 +18998,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0039_or_float_mono_reject.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0040_or_float_wire_levels.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0041_or_float_wire_pipeline.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/node_unlink_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0042_node_unlink_fast_stream.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0043_node_unlink_auto_stream.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0044_node_unlink_size_stream.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/native_macro_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0009_srgb_float_define.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0010_p3_float_define.c \
@@ -30474,6 +30494,18 @@ processing/encoder-core/test_runner-0040_or_float_wire_levels.$(OBJEXT):  \
 processing/encoder-core/test_runner-0041_or_float_wire_pipeline.$(OBJEXT):  \
 	processing/encoder-core/$(am__dirstamp) \
 	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-node_unlink_test_common.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0042_node_unlink_fast_stream.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0043_node_unlink_auto_stream.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0044_node_unlink_size_stream.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
 codec/macro/$(am__dirstamp):
 	@$(MKDIR_P) codec/macro
 	@: >>codec/macro/$(am__dirstamp)
@@ -33003,6 +33035,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0039_or_float_mono_reject.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0040_or_float_wire_levels.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0041_or_float_wire_pipeline.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0042_node_unlink_fast_stream.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0043_node_unlink_auto_stream.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0044_node_unlink_size_stream.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po@am__quote@ # am--include-marker
@@ -84003,6 +84039,62 @@ processing/encoder-core/test_runner-0041_or_float_wire_pipeline.obj: processing/
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0041_or_float_wire_pipeline.c' object='processing/encoder-core/test_runner-0041_or_float_wire_pipeline.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0041_or_float_wire_pipeline.obj `if test -f 'processing/encoder-core/0041_or_float_wire_pipeline.c'; then $(CYGPATH_W) 'processing/encoder-core/0041_or_float_wire_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0041_or_float_wire_pipeline.c'; fi`
+
+processing/encoder-core/test_runner-node_unlink_test_common.o: processing/encoder-core/node_unlink_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-node_unlink_test_common.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Tpo -c -o processing/encoder-core/test_runner-node_unlink_test_common.o `test -f 'processing/encoder-core/node_unlink_test_common.c' || echo '$(srcdir)/'`processing/encoder-core/node_unlink_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Tpo processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/node_unlink_test_common.c' object='processing/encoder-core/test_runner-node_unlink_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-node_unlink_test_common.o `test -f 'processing/encoder-core/node_unlink_test_common.c' || echo '$(srcdir)/'`processing/encoder-core/node_unlink_test_common.c
+
+processing/encoder-core/test_runner-node_unlink_test_common.obj: processing/encoder-core/node_unlink_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-node_unlink_test_common.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Tpo -c -o processing/encoder-core/test_runner-node_unlink_test_common.obj `if test -f 'processing/encoder-core/node_unlink_test_common.c'; then $(CYGPATH_W) 'processing/encoder-core/node_unlink_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/node_unlink_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Tpo processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/node_unlink_test_common.c' object='processing/encoder-core/test_runner-node_unlink_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-node_unlink_test_common.obj `if test -f 'processing/encoder-core/node_unlink_test_common.c'; then $(CYGPATH_W) 'processing/encoder-core/node_unlink_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/node_unlink_test_common.c'; fi`
+
+processing/encoder-core/test_runner-0042_node_unlink_fast_stream.o: processing/encoder-core/0042_node_unlink_fast_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0042_node_unlink_fast_stream.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0042_node_unlink_fast_stream.Tpo -c -o processing/encoder-core/test_runner-0042_node_unlink_fast_stream.o `test -f 'processing/encoder-core/0042_node_unlink_fast_stream.c' || echo '$(srcdir)/'`processing/encoder-core/0042_node_unlink_fast_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0042_node_unlink_fast_stream.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0042_node_unlink_fast_stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0042_node_unlink_fast_stream.c' object='processing/encoder-core/test_runner-0042_node_unlink_fast_stream.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0042_node_unlink_fast_stream.o `test -f 'processing/encoder-core/0042_node_unlink_fast_stream.c' || echo '$(srcdir)/'`processing/encoder-core/0042_node_unlink_fast_stream.c
+
+processing/encoder-core/test_runner-0042_node_unlink_fast_stream.obj: processing/encoder-core/0042_node_unlink_fast_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0042_node_unlink_fast_stream.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0042_node_unlink_fast_stream.Tpo -c -o processing/encoder-core/test_runner-0042_node_unlink_fast_stream.obj `if test -f 'processing/encoder-core/0042_node_unlink_fast_stream.c'; then $(CYGPATH_W) 'processing/encoder-core/0042_node_unlink_fast_stream.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0042_node_unlink_fast_stream.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0042_node_unlink_fast_stream.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0042_node_unlink_fast_stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0042_node_unlink_fast_stream.c' object='processing/encoder-core/test_runner-0042_node_unlink_fast_stream.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0042_node_unlink_fast_stream.obj `if test -f 'processing/encoder-core/0042_node_unlink_fast_stream.c'; then $(CYGPATH_W) 'processing/encoder-core/0042_node_unlink_fast_stream.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0042_node_unlink_fast_stream.c'; fi`
+
+processing/encoder-core/test_runner-0043_node_unlink_auto_stream.o: processing/encoder-core/0043_node_unlink_auto_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0043_node_unlink_auto_stream.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0043_node_unlink_auto_stream.Tpo -c -o processing/encoder-core/test_runner-0043_node_unlink_auto_stream.o `test -f 'processing/encoder-core/0043_node_unlink_auto_stream.c' || echo '$(srcdir)/'`processing/encoder-core/0043_node_unlink_auto_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0043_node_unlink_auto_stream.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0043_node_unlink_auto_stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0043_node_unlink_auto_stream.c' object='processing/encoder-core/test_runner-0043_node_unlink_auto_stream.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0043_node_unlink_auto_stream.o `test -f 'processing/encoder-core/0043_node_unlink_auto_stream.c' || echo '$(srcdir)/'`processing/encoder-core/0043_node_unlink_auto_stream.c
+
+processing/encoder-core/test_runner-0043_node_unlink_auto_stream.obj: processing/encoder-core/0043_node_unlink_auto_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0043_node_unlink_auto_stream.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0043_node_unlink_auto_stream.Tpo -c -o processing/encoder-core/test_runner-0043_node_unlink_auto_stream.obj `if test -f 'processing/encoder-core/0043_node_unlink_auto_stream.c'; then $(CYGPATH_W) 'processing/encoder-core/0043_node_unlink_auto_stream.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0043_node_unlink_auto_stream.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0043_node_unlink_auto_stream.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0043_node_unlink_auto_stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0043_node_unlink_auto_stream.c' object='processing/encoder-core/test_runner-0043_node_unlink_auto_stream.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0043_node_unlink_auto_stream.obj `if test -f 'processing/encoder-core/0043_node_unlink_auto_stream.c'; then $(CYGPATH_W) 'processing/encoder-core/0043_node_unlink_auto_stream.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0043_node_unlink_auto_stream.c'; fi`
+
+processing/encoder-core/test_runner-0044_node_unlink_size_stream.o: processing/encoder-core/0044_node_unlink_size_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0044_node_unlink_size_stream.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0044_node_unlink_size_stream.Tpo -c -o processing/encoder-core/test_runner-0044_node_unlink_size_stream.o `test -f 'processing/encoder-core/0044_node_unlink_size_stream.c' || echo '$(srcdir)/'`processing/encoder-core/0044_node_unlink_size_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0044_node_unlink_size_stream.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0044_node_unlink_size_stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0044_node_unlink_size_stream.c' object='processing/encoder-core/test_runner-0044_node_unlink_size_stream.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0044_node_unlink_size_stream.o `test -f 'processing/encoder-core/0044_node_unlink_size_stream.c' || echo '$(srcdir)/'`processing/encoder-core/0044_node_unlink_size_stream.c
+
+processing/encoder-core/test_runner-0044_node_unlink_size_stream.obj: processing/encoder-core/0044_node_unlink_size_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0044_node_unlink_size_stream.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0044_node_unlink_size_stream.Tpo -c -o processing/encoder-core/test_runner-0044_node_unlink_size_stream.obj `if test -f 'processing/encoder-core/0044_node_unlink_size_stream.c'; then $(CYGPATH_W) 'processing/encoder-core/0044_node_unlink_size_stream.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0044_node_unlink_size_stream.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0044_node_unlink_size_stream.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0044_node_unlink_size_stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0044_node_unlink_size_stream.c' object='processing/encoder-core/test_runner-0044_node_unlink_size_stream.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0044_node_unlink_size_stream.obj `if test -f 'processing/encoder-core/0044_node_unlink_size_stream.c'; then $(CYGPATH_W) 'processing/encoder-core/0044_node_unlink_size_stream.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0044_node_unlink_size_stream.c'; fi`
 
 codec/macro/test_runner-native_macro_test_common.o: codec/macro/native_macro_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-native_macro_test_common.o -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Tpo -c -o codec/macro/test_runner-native_macro_test_common.o `test -f 'codec/macro/native_macro_test_common.c' || echo '$(srcdir)/'`codec/macro/native_macro_test_common.c

@@ -1717,6 +1717,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0039_OR_FLOAT_MONO_REJECT \
     -DBUILD_TEST_0040_OR_FLOAT_WIRE_LEVELS \
     -DBUILD_TEST_0041_OR_FLOAT_WIRE_PIPELINE \
+    -DBUILD_NODE_UNLINK_TEST_COMMON \
+    -DBUILD_TEST_0042_NODE_UNLINK_FAST_STREAM \
+    -DBUILD_TEST_0043_NODE_UNLINK_AUTO_STREAM \
+    -DBUILD_TEST_0044_NODE_UNLINK_SIZE_STREAM \
     -DBUILD_NATIVE_MACRO_TEST_COMMON \
     -DBUILD_TEST_0009_SRGB_FLOAT_DEFINE \
     -DBUILD_TEST_0010_P3_FLOAT_DEFINE \
@@ -7408,6 +7412,10 @@ test_runner_SOURCES = test_runner.c \
     processing/encoder-core/0039_or_float_mono_reject.c \
     processing/encoder-core/0040_or_float_wire_levels.c \
     processing/encoder-core/0041_or_float_wire_pipeline.c \
+    processing/encoder-core/node_unlink_test_common.c \
+    processing/encoder-core/0042_node_unlink_fast_stream.c \
+    processing/encoder-core/0043_node_unlink_auto_stream.c \
+    processing/encoder-core/0044_node_unlink_size_stream.c \
     codec/macro/native_macro_test_common.c \
     codec/macro/0009_srgb_float_define.c \
     codec/macro/0010_p3_float_define.c \

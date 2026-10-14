@@ -599,6 +599,9 @@ int test_or_native_0038(int argc, char **argv);
 int test_or_native_0039(int argc, char **argv);
 int test_or_native_0040(int argc, char **argv);
 int test_or_native_0041(int argc, char **argv);
+int test_node_unlink_0042(int argc, char **argv);
+int test_node_unlink_0043(int argc, char **argv);
+int test_node_unlink_0044(int argc, char **argv);
 int test_macro_0009(int argc, char **argv);
 int test_macro_0010(int argc, char **argv);
 int test_macro_0011(int argc, char **argv);
@@ -3974,6 +3977,12 @@ static test_entry_t const test_entries[] = {
       test_or_native_0040 },
     { "encoder-core/0041_or_float_wire_pipeline",
       test_or_native_0041 },
+    { "encoder-core/0042_node_unlink_fast_stream",
+      test_node_unlink_0042 },
+    { "encoder-core/0043_node_unlink_auto_stream",
+      test_node_unlink_0043 },
+    { "encoder-core/0044_node_unlink_size_stream",
+      test_node_unlink_0044 },
     { "codec/macro/0009_srgb_float_define", test_macro_0009 },
     { "codec/macro/0010_p3_float_define", test_macro_0010 },
     { "codec/macro/0011_p3_float_invoke", test_macro_0011 },

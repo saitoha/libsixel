@@ -2680,28 +2680,6 @@ end:
     return status;
 }
 
-static void
-sixel_node_del(sixel_output_t *output, sixel_node_t *np)
-{
-    sixel_node_t *tp;
-
-    if ((tp = output->node_top) == np) {
-        output->node_top = np->next;
-    } else {
-        while (tp->next != NULL) {
-            if (tp->next == np) {
-                tp->next = np->next;
-                break;
-            }
-            tp = tp->next;
-        }
-    }
-
-    np->next = output->node_free;
-    output->node_free = np;
-}
-
-
 static SIXELSTATUS
 sixel_put_node(
     sixel_output_t /* in */     *output,  /* output context */
@@ -3624,6 +3602,7 @@ sixel_band_emit(sixel_encode_work_t *work,
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_node_t *np;
     sixel_node_t *next;
+    sixel_node_t *prev;
     int x;
     int emit_next_line;
 
@@ -3657,12 +3636,17 @@ sixel_band_emit(sixel_encode_work_t *work,
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        /* The outer loop always emits the head, so no search is needed. */
         next = np->next;
-        sixel_node_del(output, np);
+        output->node_top = next;
+        np->next = output->node_free;
+        output->node_free = np;
         np = next;
+        prev = NULL;
 
         while (np != NULL) {
             if (np->sx < x) {
+                prev = np;
                 np = np->next;
                 continue;
             }
@@ -3680,8 +3664,17 @@ sixel_band_emit(sixel_encode_work_t *work,
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
+            /* Only skipped nodes remain in the list. Keep their last node
+             * as the predecessor across consecutive removals, avoiding a
+             * head-to-node search while preserving emission/fill order. */
             next = np->next;
-            sixel_node_del(output, np);
+            if (prev == NULL) {
+                output->node_top = next;
+            } else {
+                prev->next = next;
+            }
+            np->next = output->node_free;
+            output->node_free = np;
             np = next;
         }
 
