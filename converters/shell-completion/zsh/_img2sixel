@@ -197,6 +197,16 @@ _updatepolicy() {
     'UPDATEPOLICY' \
     'full[disable temporal keeps]' \
     'delta[enable retained-plane updates]' \
+    'progressive[refine a composed still image]' \
+    'progressive:stop_threshold=auto[working-space quality target]' \
+    'progressive:max_passes=10[cap total passes including initial image]' \
+    'progressive:max_seconds=2[cap elapsed time after initial image]' \
+    'progressive:Sauto:N10:M2[compact progressive limits]' \
+    'delta:progressive=1:stop_threshold=auto[per-source quality target]' \
+    'delta:progressive=1:max_passes=10[per-source pass cap]' \
+    'delta:progressive=1:max_seconds=2[per-source time cap]' \
+    'delta:progressive=1[repair during animation slack]' \
+    'delta:progressive=0[disable animation repair]' \
     'delta:threshold=0:error=diffuse[diffuse retained-color error]' \
     'delta:threshold=0:error=skip[skip retained-color error diffusion]'
 }
@@ -1166,7 +1176,7 @@ _arguments -S -s -A "-*" -S \
 '[select background source priority]':backgroundpolicy:_backgroundpolicy \
   {-A,--alpha-policy=}'[select alpha policy]':alphapolicy:_alphapolicy \
   {-+,--transparent-offset=}'[add transparent left/top pixel offset]' \
-  {-Z,--update-policy=}'[choose full or delta updates]':updatepolicy:_updatepolicy \
+  {-Z,--update-policy=}'[choose full, delta or progressive updates]':updatepolicy:_updatepolicy \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \

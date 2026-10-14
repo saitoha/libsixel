@@ -171,6 +171,26 @@ SIXEL_INTERNAL_API int
 sixel_palette_from_output(sixel_palette_t const *palette, double out[3],
                           double const in[3], int workspace);
 
+/* A wire candidate retains its serialized fields as well as the RGB888
+ * that the retained-plane model will commit. HLS fields cannot be recovered
+ * by re-encoding that rounded RGB without changing the candidate. */
+typedef struct sixel_palette_emitted_color {
+    int type;
+    int fields[3];
+    unsigned char rgb[3];
+    float working[3];
+} sixel_palette_emitted_color_t;
+
+SIXEL_INTERNAL_API int
+sixel_palette_decode_output(sixel_palette_t const *palette,
+                             unsigned char const rgb[3], int workspace,
+                             float working[3]);
+SIXEL_INTERNAL_API int
+sixel_palette_project_output(sixel_palette_t const *palette,
+                              float const source[3], int workspace,
+                              int palette_type,
+                              sixel_palette_emitted_color_t *emitted);
+
 #ifdef __cplusplus
 }
 #endif

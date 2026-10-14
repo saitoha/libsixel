@@ -93,6 +93,7 @@ struct sixel_output {
     unsigned char const *transparent_mask;
     int transparent_offset_left;
     int transparent_offset_top;
+    int require_keep_header;
     long long last_frame_time_usec;
 
     int pos;

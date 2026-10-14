@@ -66,12 +66,16 @@ typedef enum sixel_suboption_value_kind {
     SIXEL_SUBOPTION_VALUE_SIZE,
     SIXEL_SUBOPTION_VALUE_FLOAT,
     SIXEL_SUBOPTION_VALUE_DOUBLE,
+    SIXEL_SUBOPTION_VALUE_AUTO_DOUBLE,
     SIXEL_SUBOPTION_VALUE_INT_PAIR,
     SIXEL_SUBOPTION_VALUE_RATIO3,
     SIXEL_SUBOPTION_VALUE_SCALED_U8,
     SIXEL_SUBOPTION_VALUE_STRING,
     SIXEL_SUBOPTION_VALUE_STRUCTURED
 } sixel_suboption_value_kind_t;
+
+/* Internal auto tag; numeric input still obeys the declared range. */
+#define SIXEL_OPTION_DOUBLE_AUTO (-1.0)
 
 /*
  * Ordered choice lists use one unsigned value so parsed request state owns no

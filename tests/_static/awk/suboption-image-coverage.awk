@@ -105,6 +105,12 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     }
     if (macro ~ /MULTI/) {
         expected_multi_base_contract[key] = 1
+        if (option_id == "SIXEL_OPTION_SCHEMA_UPDATE_POLICY") {
+            expected_presentation_stop[key] = name == "stop_threshold" \
+                ? "converged" : name
+        } else if (option_id != "SIXEL_OPTION_SCHEMA_LUT_POLICY") {
+            fail(option_id ":" name " lacks a multi-base consumer check")
+        }
     }
     if (option_id == "SIXEL_OPTION_SCHEMA_GPU_POLICY" &&
             name == "palette_threshold") {
@@ -707,8 +713,28 @@ END {
             fail(file " does not verify its effective lookup setting")
         }
         if (expected_multi_base_contract[key] &&
+                expected_lookup_contract[key] &&
                 lookup_contract_count[file] < 2) {
             fail(file " does not verify every multi-base lookup consumer")
+        }
+        # A numeric repair option is shared by still and delta presentation.
+        # Require checked stop outcomes from both CLI and environment routes
+        # for each base, rather than accepting assignment traces alone.
+        if (expected_presentation_stop[key] != "") {
+            for (route = 1; route <= 4; ++route) {
+                trace = route == 1 ? "short" : route == 2 ? "env" \
+                    : route == 3 ? "delta_short" : "delta_env"
+                needle = "case \"${" trace "_trace}\" in *\"progressive: stop=" \
+                    expected_presentation_stop[key] " passes=1\"*) true ;; " \
+                    "*) false ;; esac || {"
+                if (index(source, needle) == 0) {
+                    fail(file " lacks the " trace " presentation outcome")
+                }
+            }
+            if (index(source, "-Z progressive") == 0 ||
+                    index(source, "-Z delta:P1") == 0) {
+                fail(file " does not exercise both presentation bases")
+            }
         }
         if (!expected_lookup_contract[key] &&
                 test_lookup_contract[file] != "") {

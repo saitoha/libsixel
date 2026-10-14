@@ -181,6 +181,31 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_ARITHMETIC_TEST_COMMON \
+    -DBUILD_TEST_0012_A_CANDIDATES \
+    -DBUILD_TEST_0013_X_CANDIDATES \
+    -DBUILD_TEST_0014_A_AUTO_STRENGTH \
+    -DBUILD_TEST_0015_X_AUTO_STRENGTH \
+    -DBUILD_TEST_0016_A_STRENGTH_PRECEDENCE \
+    -DBUILD_TEST_0017_X_STRENGTH_PRECEDENCE \
+    -DBUILD_TEST_0018_WIRE_A \
+    -DBUILD_TEST_0019_WIRE_X \
+    -DBUILD_TEST_0026_SCIELAB_IDENTITY \
+    -DBUILD_TEST_0027_SCIELAB_UNIFORM \
+    -DBUILD_TEST_0028_SCIELAB_DENSE_REFERENCE \
+    -DBUILD_TEST_0029_SCIELAB_SPATIAL_CANCELLATION \
+    -DBUILD_TEST_0030_SCIELAB_THIN_SYMMETRY \
+    -DBUILD_TEST_0031_SCIELAB_INVALID \
+    -DBUILD_TEST_0032_SCIELAB_PHYSICAL_SIGNAL \
+    -DBUILD_TEST_0033_SCIELAB_SELECTION_REUSE \
+    -DBUILD_TEST_0034_SCIELAB_MAP_OUTPUT \
+    -DBUILD_TEST_0035_SCIELAB_MAP_CAPACITY \
+    -DBUILD_VIDEO_REPORT_TEST_COMMON \
+    -DBUILD_IMAGE_VALUES_TEST_COMMON \
+    -DBUILD_CLOCK_REPORT_TEST_COMMON \
+    -DBUILD_TEST_0036_PERSISTENCE_DURATION_WEIGHTING \
+    -DBUILD_TEST_0037_PERSISTENCE_PIXEL_RESET \
+    -DBUILD_TEST_0038_PERSISTENCE_PARTITION_INVARIANCE \
     -DBUILD_TEST_0001_WEIGHTED_LLOYD \
     -DBUILD_TEST_0002_BYTE_ROUNDING \
     -DBUILD_TEST_0003_EMPTY_CLUSTER \
@@ -833,26 +858,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0012_SPEC_PARSE_INVALID \
     -DBUILD_TEST_0013_PIXEL_DELTA_PEAK \
     -DBUILD_TEST_0017_MS_SSIM \
-    -DBUILD_TEST_0026_SCIELAB_IDENTITY \
-    -DBUILD_TEST_0027_SCIELAB_UNIFORM \
-    -DBUILD_TEST_0028_SCIELAB_DENSE_REFERENCE \
-    -DBUILD_TEST_0029_SCIELAB_SPATIAL_CANCELLATION \
-    -DBUILD_TEST_0030_SCIELAB_THIN_SYMMETRY \
-    -DBUILD_TEST_0031_SCIELAB_INVALID \
-    -DBUILD_TEST_0032_SCIELAB_PHYSICAL_SIGNAL \
-    -DBUILD_TEST_0033_SCIELAB_SELECTION_REUSE \
-    -DBUILD_TEST_0034_SCIELAB_MAP_OUTPUT \
-    -DBUILD_TEST_0035_SCIELAB_MAP_CAPACITY \
-    -DBUILD_TEST_0036_PERSISTENCE_DURATION_WEIGHTING \
-    -DBUILD_TEST_0037_PERSISTENCE_PIXEL_RESET \
-    -DBUILD_TEST_0038_PERSISTENCE_PARTITION_INVARIANCE \
-    -DBUILD_TEST_0087_ANIMATION_PALETTE_CARRY \
-    -DBUILD_TEST_0088_ANIMATION_CLEAR_CANVAS \
-    -DBUILD_TEST_0089_ANIMATION_MALFORMED_TAIL \
-    -DBUILD_TEST_0090_ANIMATION_DEFAULT_PALETTE \
-    -DBUILD_VIDEO_REPORT_TEST_COMMON \
-    -DBUILD_CLOCK_REPORT_TEST_COMMON \
-    -DBUILD_IMAGE_VALUES_TEST_COMMON \
     -DBUILD_TEST_0012_EXTENDED_FAILURE_ATOMIC \
     -DBUILD_TEST_0008_INVALID_RGB_DEFINITION \
     -DBUILD_TEST_0009_ICC_LENGTH_OWNERSHIP \
@@ -972,6 +977,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0010_EXTENDED_DIN99D_FORWARD \
     -DBUILD_TEST_0011_EXTENDED_DIN99D_INVERSE \
     -DBUILD_TEST_0053_PERCENTAGE_RGB8 \
+    -DBUILD_TEST_0001_DIN99D_FORWARD \
+    -DBUILD_TEST_0045_SNAP_OUTPUT_GRID \
+    -DBUILD_TEST_0048_SNAP_PARTIAL_ONCE \
+    -DBUILD_TEST_0002_DIN99D_INVERSE \
+    -DBUILD_TEST_0003_DIN99D_BYTE \
+    -DBUILD_ORMODE_TEST_COMMON \
+    -DBUILD_PALETTE_MAP_TEST_COMMON \
+    -DBUILD_TEST_0042_DEFAULT_PALETTE_DIRECT \
     -DBUILD_TEST_0054_MULTI_PASS_RAW_OVERLAY \
     -DBUILD_TEST_0055_MULTI_PASS_ANCHORED_OVERLAY \
     -DBUILD_TEST_0056_MULTI_PASS_PALETTE_CARRY \
@@ -1005,15 +1018,258 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0084_MULTI_PASS_COLOR_UNION \
     -DBUILD_TEST_0085_MULTI_PASS_OPTION_ATOMICITY \
     -DBUILD_TEST_0086_MULTI_PASS_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0087_ANIMATION_PALETTE_CARRY \
+    -DBUILD_TEST_0088_ANIMATION_CLEAR_CANVAS \
+    -DBUILD_TEST_0089_ANIMATION_MALFORMED_TAIL \
+    -DBUILD_TEST_0090_ANIMATION_DEFAULT_PALETTE \
+    -DBUILD_TEST_0001_SOURCE_SNAPSHOT \
+    -DBUILD_TEST_0002_HISTORY_REVISIONS \
+    -DBUILD_TEST_0003_PALETTE_KEEP_COST \
+    -DBUILD_TEST_0004_PALETTE_COLOR_GROWTH \
+    -DBUILD_TEST_0005_PALETTE_SWAP \
+    -DBUILD_TEST_0006_PALETTE_PROTECTED_SWAP \
+    -DBUILD_TEST_0007_PALETTE_BUDGET_RESUME \
+    -DBUILD_TEST_0008_OPERATION_PRIORITY \
+    -DBUILD_TEST_0009_OUTPUT_CALLBACK_REENTRY \
+    -DBUILD_TEST_0010_CONCURRENT_OPTION_CONFLICT \
+    -DBUILD_TEST_0011_FAILED_OPTION_PRESERVES_HISTORY \
+    -DBUILD_TEST_0012_FAILED_BACKGROUND_ALLOCATION \
+    -DBUILD_TEST_0013_FAILED_OUTPUT_PRESERVES_DESTINATION \
+    -DBUILD_TEST_0014_FAILED_DRCS_PRESERVES_MODE \
+    -DBUILD_TEST_0015_LOADER_CALLBACK_REENTRY \
+    -DBUILD_TEST_0016_WORKER_CALLBACK_REENTRY \
+    -DBUILD_TEST_0017_CONFIG_SIZE \
+    -DBUILD_TEST_0018_CONFIG_VALIDATION \
+    -DBUILD_TEST_0019_SINGLE_ATTACHMENT \
+    -DBUILD_TEST_0020_BINDING_SNAPSHOT \
+    -DBUILD_TEST_0021_BINDING_GENERATION \
+    -DBUILD_TEST_0022_BINDING_BOUNDS \
+    -DBUILD_TEST_0023_CONTEXT_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0024_BINDING_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0025_AUDIT_THRESHOLD \
+    -DBUILD_TEST_0026_AUDIT_UNKNOWN_DOMAIN \
+    -DBUILD_TEST_0027_AUDIT_EMPTY_DOMAIN \
+    -DBUILD_TEST_0028_AUDIT_PLANE_ORIGIN \
+    -DBUILD_TEST_0029_AUDIT_BUDGET_RESUME \
+    -DBUILD_TEST_0030_AUDIT_SOURCE_REFRESH \
+    -DBUILD_TEST_0031_AUDIT_CONFIGURATION_REFRESH \
+    -DBUILD_TEST_0032_AUDIT_HISTORY_INVALIDATION \
+    -DBUILD_TEST_0033_AUDIT_CANCELLATION_RESUME \
+    -DBUILD_TEST_0034_AUDIT_REVISION_EXHAUSTION \
+    -DBUILD_TEST_0035_AUDIT_GAMMA \
+    -DBUILD_TEST_0036_AUDIT_LINEAR \
+    -DBUILD_TEST_0037_AUDIT_OKLAB \
+    -DBUILD_TEST_0038_AUDIT_CIELAB \
+    -DBUILD_TEST_0039_AUDIT_DIN99D \
+    -DBUILD_TEST_0040_PROJECTION_RGB101 \
+    -DBUILD_TEST_0041_PROJECTION_HLS \
+    -DBUILD_TEST_0042_PROJECTION_LINEAR \
+    -DBUILD_TEST_0043_PROJECTION_SMPTEC \
+    -DBUILD_TEST_0044_PROJECTION_DISPLAY_P3 \
+    -DBUILD_TEST_0045_PROJECTION_NONFINITE \
+    -DBUILD_TEST_0046_SELECTION_UPPER_TIES \
+    -DBUILD_TEST_0047_SELECTION_FULL_DOMAIN \
+    -DBUILD_TEST_0048_SELECTION_POPULATION \
+    -DBUILD_TEST_0049_SELECTION_PROTECTED_FEATURE \
+    -DBUILD_TEST_0050_SELECTION_DEDUP_KEEP_COST \
+    -DBUILD_TEST_0051_SELECTION_FARTHEST_POOL \
+    -DBUILD_TEST_0052_SELECTION_BUDGET_RESUME \
+    -DBUILD_TEST_0053_SELECTION_NO_DIRECT_GAIN \
+    -DBUILD_TEST_0054_APPLICATION_STRICT_KEEP \
+    -DBUILD_TEST_0055_APPLICATION_NOISY_REJECTION \
+    -DBUILD_TEST_0056_APPLICATION_PROTECTED_PIXEL \
+    -DBUILD_TEST_0057_APPLICATION_ABSOLUTE_NOISE \
+    -DBUILD_TEST_0058_APPLICATION_BUDGET_RESUME \
+    -DBUILD_TEST_0059_APPLICATION_EMPTY_PALETTE \
+    -DBUILD_TEST_0060_PREPARE_PRIVATE_ARTIFACT \
+    -DBUILD_TEST_0061_PREPARE_BUDGET_RESUME \
+    -DBUILD_TEST_0062_PREPARE_ROUNDING_STALL \
+    -DBUILD_TEST_0063_PREPARE_FULL_RECOVERY \
+    -DBUILD_TEST_0064_PREPARE_SOURCE_INVALIDATION \
+    -DBUILD_TEST_0065_PREPARE_HISTORY_INVALIDATION \
+    -DBUILD_TEST_0066_PREPARE_CANCEL_RESUME \
+    -DBUILD_TEST_0067_PREPARE_FORCE_POLICY \
+    -DBUILD_TEST_0068_PREPARE_ALLOCATION_RESUME \
+    -DBUILD_TEST_0069_PACKET_SPARSE_OVERLAY \
+    -DBUILD_TEST_0070_PACKET_HLS_FIELDS \
+    -DBUILD_TEST_0071_PACKET_UNUSED_PALETTE \
+    -DBUILD_TEST_0072_PACKET_BOUNDED_STORAGE \
+    -DBUILD_TEST_0073_PACKET_BUDGET_RESUME \
+    -DBUILD_TEST_0074_PACKET_LIMITED_REPEAT \
+    -DBUILD_TEST_0075_PACKET_EMPTY_MASK \
+    -DBUILD_TEST_0076_PACKET_BUFFER_FLUSH \
+    -DBUILD_TEST_0077_PACKET_8BIT_CONTROL \
+    -DBUILD_TEST_0078_STEP_COMMIT_COMPOSITION \
+    -DBUILD_TEST_0079_STEP_PACKET_REDUCTION \
+    -DBUILD_TEST_0080_STEP_BYTE_BUDGET_RETRY \
+    -DBUILD_TEST_0081_STEP_WORK_BUDGET_RESUME \
+    -DBUILD_TEST_0082_STEP_FAILED_OUTPUT \
+    -DBUILD_TEST_0083_STEP_ZERO_WRITER_RESULT \
+    -DBUILD_TEST_0084_STEP_CANCEL_BEFORE_OUTPUT \
+    -DBUILD_TEST_0085_STEP_CANCEL_AFTER_ADMISSION \
+    -DBUILD_TEST_0086_STEP_CALLBACK_REENTRY \
+    -DBUILD_TEST_0087_STEP_SOURCE_REFRESH \
+    -DBUILD_TEST_0088_STEP_HISTORY_INVALIDATION \
+    -DBUILD_TEST_0089_STEP_COMMIT_NO_ALLOCATION \
+    -DBUILD_TEST_0090_STEP_REDUCTION_ODD_SORT \
+    -DBUILD_TEST_0091_STEP_ALLOCATION_RESUME \
+    -DBUILD_TEST_0092_STEP_OFFSET_ALPHA_DOMAIN \
+    -DBUILD_TEST_0093_STEP_PRE_ADMISSION_PRIORITY \
+    -DBUILD_TEST_0094_STEP_ADMITTED_PACKET_ORDER \
+    -DBUILD_PROGRESSIVE_SCHEDULE_TEST_COMMON \
+    -DBUILD_TEST_0109_TRANSPORT_CAPACITY_ADMISSION \
+    -DBUILD_TEST_0110_DEADLINE_ADMISSION \
+    -DBUILD_TEST_0111_SOURCE_CLOCK_PRESERVED \
+    -DBUILD_TEST_0112_ZERO_AND_IGNORED_DELAY \
+    -DBUILD_TEST_0113_DELAY_CANCELLATION \
+    -DBUILD_TEST_0114_ORDERED_TRANSPORT \
+    -DBUILD_TEST_0115_TRANSPORT_WRITE_FAILURE \
+    -DBUILD_TEST_0117_MEASUREMENT_DECODED_GAIN \
+    -DBUILD_TEST_0118_MEASUREMENT_OUTPUT_IDENTITY \
+    -DBUILD_TEST_0119_MEASUREMENT_FITTED_GAIN \
+    -DBUILD_TEST_0120_MEASUREMENT_RESUMABLE_HISTOGRAM \
+    -DBUILD_TEST_0121_MEASUREMENT_WRITER_FAILURE \
+    -DBUILD_TEST_0122_MEASUREMENT_REBIND \
+    -DBUILD_TEST_0123_MEASUREMENT_COMMITTED_HISTOGRAM \
+    -DBUILD_TEST_0116_IGNORED_DELAY_FINAL_REPAIR \
+    -DBUILD_TEST_0124_PREDICTION_EXACT_JOINT \
+    -DBUILD_TEST_0125_PREDICTION_MASK_BOUNDARIES \
+    -DBUILD_TEST_0126_PREDICTION_POPULATION_WEIGHTS \
+    -DBUILD_TEST_0127_PREDICTION_ORDER_INDEPENDENCE \
+    -DBUILD_TEST_0128_PREDICTION_MAXIMUM_BOUNDS \
+    -DBUILD_TEST_0129_PREDICTION_APPLICATION_REFERENCE \
+    -DBUILD_PROGRESSIVE_LIMITS_TEST_COMMON \
+    -DBUILD_TEST_0140_LIMIT_OPTION_VALUES \
+    -DBUILD_TEST_0141_LIMIT_OPTION_ATOMICITY \
+    -DBUILD_TEST_0142_PRESENTATION_PASS_LIMIT \
+    -DBUILD_TEST_0143_PRESENTATION_TIME_LIMIT \
+    -DBUILD_TEST_0144_PRESENTATION_ADMITTED_DEADLINE \
+    -DBUILD_TEST_0145_PRESENTATION_ZERO_LIMITS \
+    -DBUILD_TEST_0146_PRESENTATION_REBIND_LIMITS \
+    -DBUILD_TEST_0147_ANIMATION_PASS_LIMIT_CLOCK \
+    -DBUILD_TEST_0148_ANIMATION_TAIL_TIME_LIMIT \
+    -DBUILD_TEST_0149_PRESENTATION_FINAL_NO_NOISE \
+    -DBUILD_TEST_0157_PROGRESSIVE_BOOLEAN_SYNTAX \
+    -DBUILD_TEST_0158_GPU_REQUEST_VALIDATION \
+    -DBUILD_TEST_0159_GPU_POLICY_ADMISSION \
+    -DBUILD_TEST_0160_GPU_RESIDUAL_SAMPLES \
+    -DBUILD_TEST_0161_GPU_SPARSE_PLANE \
+    -DBUILD_TEST_0162_GPU_REVISION_UPLOAD \
+    -DBUILD_TEST_0163_GPU_CACHE_ISOLATION \
+    -DBUILD_TEST_0164_GPU_EVICTION_TRANSITION \
+    -DBUILD_TEST_0165_GPU_NONFINITE_FALLBACK \
+    -DBUILD_TEST_0166_GPU_BOUNDED_BATCHES \
+    -DBUILD_TEST_0167_GPU_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0168_GPU_LOOKUP_VALIDATION \
+    -DBUILD_TEST_0169_GPU_LOOKUP_FLOAT_PALETTE \
+    -DBUILD_TEST_0170_GPU_LOOKUP_CACHE_ISOLATION \
+    -DBUILD_TEST_0171_GPU_LOOKUP_FAILURE_FALLBACK \
+    -DBUILD_TEST_0172_GPU_APPLICATION_NONE \
+    -DBUILD_TEST_0173_GPU_APPLICATION_BLUENOISE \
+    -DBUILD_TEST_0174_GPU_APPLICATION_BUDGET_RESUME \
+    -DBUILD_TEST_0175_GPU_APPLICATION_CANONICAL_GUARD \
+    -DBUILD_TEST_0176_GPU_PUBLIC_COMMIT \
+    -DBUILD_TEST_0177_GPU_PUBLIC_REBIND_TRANSITION \
+    -DBUILD_TEST_0178_GPU_PUBLIC_AUTO_ADMISSION \
+    -DBUILD_TEST_0179_GPU_PUBLIC_WRITE_FAILURE \
+    -DBUILD_TEST_0180_GPU_PUBLIC_CANCEL_RESUME \
+    -DBUILD_TEST_0181_GPU_APPLICATION_AUTO_FALLBACK \
+    -DBUILD_TEST_0182_GPU_GLOBAL_STRATA \
+    -DBUILD_TEST_0183_GPU_GLOBAL_VALIDATION \
+    -DBUILD_TEST_0184_GPU_SELECTION_GLOBAL_SAMPLES \
+    -DBUILD_TEST_0185_GPU_SELECTION_BUDGET_RESUME \
+    -DBUILD_TEST_0186_GPU_SELECTION_THRESHOLD_GUARD \
+    -DBUILD_TEST_0188_GPU_SELECTION_AUTO_FALLBACK \
+    -DBUILD_TEST_0189_GPU_SELECTION_LADDER \
+    -DBUILD_TEST_0190_GPU_SCAN_UPDATE_REBIND \
+    -DBUILD_TEST_0192_GPU_SCAN_PENDING_UPDATE \
+    -DBUILD_TEST_0193_GPU_LOOKUP_PENDING_UPDATE \
+    -DBUILD_TEST_0194_GPU_PENDING_BEFORE_ADMISSION \
+    -DBUILD_TEST_0195_GPU_PENDING_AFTER_ADMISSION \
+    -DBUILD_TEST_0196_GPU_PENDING_REBIND \
+    -DBUILD_TEST_0197_GPU_PENDING_DESTROY \
+    -DBUILD_TEST_0198_GPU_GAMMA_GAMMA_RGB \
+    -DBUILD_TEST_0199_GPU_GAMMA_GAMMA_HLS \
+    -DBUILD_TEST_0200_GPU_GAMMA_LINEAR_RGB \
+    -DBUILD_TEST_0201_GPU_GAMMA_LINEAR_HLS \
+    -DBUILD_TEST_0202_GPU_GAMMA_SMPTEC_RGB \
+    -DBUILD_TEST_0203_GPU_GAMMA_SMPTEC_HLS \
+    -DBUILD_TEST_0204_GPU_GAMMA_DISPLAY_P3_RGB \
+    -DBUILD_TEST_0205_GPU_GAMMA_DISPLAY_P3_HLS \
+    -DBUILD_TEST_0206_GPU_LINEAR_GAMMA_RGB \
+    -DBUILD_TEST_0207_GPU_LINEAR_GAMMA_HLS \
+    -DBUILD_TEST_0208_GPU_LINEAR_LINEAR_RGB \
+    -DBUILD_TEST_0209_GPU_LINEAR_LINEAR_HLS \
+    -DBUILD_TEST_0210_GPU_LINEAR_SMPTEC_RGB \
+    -DBUILD_TEST_0211_GPU_LINEAR_SMPTEC_HLS \
+    -DBUILD_TEST_0212_GPU_LINEAR_DISPLAY_P3_RGB \
+    -DBUILD_TEST_0213_GPU_LINEAR_DISPLAY_P3_HLS \
+    -DBUILD_TEST_0214_GPU_OKLAB_GAMMA_RGB \
+    -DBUILD_TEST_0215_GPU_OKLAB_GAMMA_HLS \
+    -DBUILD_TEST_0216_GPU_OKLAB_LINEAR_RGB \
+    -DBUILD_TEST_0217_GPU_OKLAB_LINEAR_HLS \
+    -DBUILD_TEST_0218_GPU_OKLAB_SMPTEC_RGB \
+    -DBUILD_TEST_0219_GPU_OKLAB_SMPTEC_HLS \
+    -DBUILD_TEST_0220_GPU_OKLAB_DISPLAY_P3_RGB \
+    -DBUILD_TEST_0221_GPU_OKLAB_DISPLAY_P3_HLS \
+    -DBUILD_TEST_0222_GPU_CIELAB_GAMMA_RGB \
+    -DBUILD_TEST_0223_GPU_CIELAB_GAMMA_HLS \
+    -DBUILD_TEST_0224_GPU_CIELAB_LINEAR_RGB \
+    -DBUILD_TEST_0225_GPU_CIELAB_LINEAR_HLS \
+    -DBUILD_TEST_0226_GPU_CIELAB_SMPTEC_RGB \
+    -DBUILD_TEST_0227_GPU_CIELAB_SMPTEC_HLS \
+    -DBUILD_TEST_0228_GPU_CIELAB_DISPLAY_P3_RGB \
+    -DBUILD_TEST_0229_GPU_CIELAB_DISPLAY_P3_HLS \
+    -DBUILD_TEST_0230_GPU_DIN99D_GAMMA_RGB \
+    -DBUILD_TEST_0231_GPU_DIN99D_GAMMA_HLS \
+    -DBUILD_TEST_0232_GPU_DIN99D_LINEAR_RGB \
+    -DBUILD_TEST_0233_GPU_DIN99D_LINEAR_HLS \
+    -DBUILD_TEST_0234_GPU_DIN99D_SMPTEC_RGB \
+    -DBUILD_TEST_0235_GPU_DIN99D_SMPTEC_HLS \
+    -DBUILD_TEST_0236_GPU_DIN99D_DISPLAY_P3_RGB \
+    -DBUILD_TEST_0237_GPU_DIN99D_DISPLAY_P3_HLS \
+    -DBUILD_TEST_0238_GPU_P3_ORDINARY_BOUNDARY \
+    -DBUILD_PROGRESSIVE_GPU_COLORS_TEST_COMMON \
+    -DBUILD_PROGRESSIVE_GPU_ORDER_TEST_COMMON \
+    -DBUILD_PROGRESSIVE_GPU_SELECT_TEST_COMMON \
+    -DBUILD_PROGRESSIVE_GPU_APPLY_TEST_COMMON \
+    -DBUILD_PROGRESSIVE_GPU_TEST_COMMON \
+    -DBUILD_PROGRESSIVE_LADDER_TEST_COMMON \
+    -DBUILD_TEST_0130_LADDER_INITIAL_QUANTILES \
+    -DBUILD_TEST_0131_LADDER_TIED_THRESHOLDS \
+    -DBUILD_TEST_0132_LADDER_PACKET_ALLOWANCE \
+    -DBUILD_TEST_0133_LADDER_RESUMABLE_IDENTITY \
+    -DBUILD_TEST_0134_LADDER_CAPACITY_RETRY \
+    -DBUILD_TEST_0135_LADDER_WRITER_FAILURE \
+    -DBUILD_TEST_0136_LADDER_OUTLIER_DESCENT \
+    -DBUILD_TEST_0137_LADDER_REBIND_RESET \
+    -DBUILD_TEST_0138_LADDER_TRUTHFUL_STALL \
+    -DBUILD_TEST_0139_LADDER_FINITE_NOISE_TRANSITION \
+    -DBUILD_PROGRESSIVE_PREDICT_TEST_COMMON \
+    -DBUILD_PROGRESSIVE_MEASURE_TEST_COMMON \
+    -DBUILD_PROGRESSIVE_PRESENTATION_TEST_COMMON \
+    -DBUILD_TEST_0101_STILL_CAPTURE_HISTORY \
+    -DBUILD_TEST_0102_GIF_DEFAULT_FRAME \
+    -DBUILD_TEST_0103_GIF_COMPOSED_SELECTION \
+    -DBUILD_TEST_0104_GIF_NEGATIVE_SELECTION \
+    -DBUILD_TEST_0105_APNG_POSTER_EXCLUSION \
+    -DBUILD_TEST_0106_APNG_INVALID_SELECTION \
+    -DBUILD_TEST_0107_STILL_8BIT_CAPTURE \
+    -DBUILD_TEST_0108_PRESENTATION_OPTION_ATOMICITY \
+    -DBUILD_PROGRESSIVE_PACKET_TEST_COMMON \
+    -DBUILD_PROGRESSIVE_CALLBACK_TEST_COMMON \
+    -DBUILD_PROGRESSIVE_CONTEXT_TEST_COMMON \
+    -DBUILD_TEST_0100_PUBLIC_ADMISSION_SNAPSHOT \
+    -DBUILD_TEST_0095_PUBLIC_STATISTICS_RESUME \
+    -DBUILD_TEST_0096_PUBLIC_DEFAULT_DESTINATION \
+    -DBUILD_TEST_0097_PUBLIC_LAYOUT_VALIDATION \
+    -DBUILD_TEST_0098_PUBLIC_COUNTER_EXHAUSTION \
+    -DBUILD_TEST_0099_PUBLIC_UNSUPPORTED_CONTROLS \
+    -DBUILD_PROGRESSIVE_PROJECTION_TEST_COMMON \
+    -DBUILD_PROGRESSIVE_SELECTION_TEST_COMMON \
+    -DBUILD_PROGRESSIVE_APPLICATION_TEST_COMMON \
+    -DBUILD_PROGRESSIVE_PALETTE_TEST_COMMON \
     -DBUILD_MULTI_PASS_TEST_COMMON \
-    -DBUILD_TEST_0001_DIN99D_FORWARD \
-    -DBUILD_TEST_0045_SNAP_OUTPUT_GRID \
-    -DBUILD_TEST_0048_SNAP_PARTIAL_ONCE \
-    -DBUILD_TEST_0002_DIN99D_INVERSE \
-    -DBUILD_TEST_0003_DIN99D_BYTE \
-    -DBUILD_ORMODE_TEST_COMMON \
-    -DBUILD_PALETTE_MAP_TEST_COMMON \
-    -DBUILD_TEST_0042_DEFAULT_PALETTE_DIRECT \
     -DBUILD_TEST_0043_PALETTE_MAP_DEFINITIONS \
     -DBUILD_TEST_0044_PALETTE_MAP_REDEFINITION \
     -DBUILD_TEST_0045_PALETTE_MAP_ORMODE \
@@ -1534,15 +1790,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0010_COMPARISON_DEFAULT \
     -DBUILD_TEST_0011_COMPARISON_SHORT \
     -DBUILD_WIRE_COMMON \
-    -DBUILD_TEST_0012_A_CANDIDATES \
-    -DBUILD_TEST_0013_X_CANDIDATES \
-    -DBUILD_TEST_0014_A_AUTO_STRENGTH \
-    -DBUILD_TEST_0015_X_AUTO_STRENGTH \
-    -DBUILD_TEST_0016_A_STRENGTH_PRECEDENCE \
-    -DBUILD_TEST_0017_X_STRENGTH_PRECEDENCE \
-    -DBUILD_TEST_0018_WIRE_A \
-    -DBUILD_TEST_0019_WIRE_X \
-    -DBUILD_ARITHMETIC_TEST_COMMON \
     -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
     -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
@@ -3500,14 +3747,6 @@ TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 endif
 
 test_runner_SOURCES = test_runner.c \
-    quant/palette/gpu_kmeans/0001_weighted_lloyd.c \
-    quant/palette/gpu_kmeans/0002_byte_rounding.c \
-    quant/palette/gpu_kmeans/0003_empty_cluster.c \
-    quant/palette/gpu_kmeans/0004_iteration_floor.c \
-    quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c \
-    quant/palette/gpu_kmeans/0006_option_atomicity.c \
-    quant/palette/gpu_kmeans/0014_request_isolation.c \
-    quant/palette/gpu_kmeans/gpu_kmeans_test_common.c \
     quant/palette/delta_native/0015_delta_signed_threshold.c \
     quant/palette/delta_native/0016_delta_p3_or_recovery.c \
     quant/palette/delta_native/0017_delta_spatial_dispatch.c \
@@ -3817,6 +4056,9 @@ test_runner_SOURCES = test_runner.c \
     processing/assessment/0033_scielab_selection_reuse.c \
     processing/assessment/0034_scielab_map_output.c \
     processing/assessment/0035_scielab_map_capacity.c \
+    processing/assessment/video_report_test_common.c \
+    loader/image_values_test_common.c \
+    processing/assessment/clock_report_test_common.c \
     processing/assessment/0036_persistence_duration_weighting.c \
     processing/assessment/0037_persistence_pixel_reset.c \
     processing/assessment/0038_persistence_partition_invariance.c \
@@ -3824,9 +4066,6 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0088_animation_clear_canvas.c \
     processing/decoder/0089_animation_malformed_tail.c \
     processing/decoder/0090_animation_default_palette.c \
-    processing/assessment/video_report_test_common.c \
-    processing/assessment/clock_report_test_common.c \
-    loader/image_values_test_common.c \
     processing/cms/0011_separate_intents.c \
     processing/cms/0012_engine_independence.c \
     processing/cms/0013_queued_transform_lifetime.c \
@@ -4483,6 +4722,253 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0084_multi_pass_color_union.c \
     processing/decoder/0085_multi_pass_option_atomicity.c \
     processing/decoder/0086_multi_pass_allocation_failure.c \
+    processing/progressive/progressive_schedule_test_common.c \
+    processing/progressive/0109_transport_capacity_admission.c \
+    processing/progressive/0110_deadline_admission.c \
+    processing/progressive/0111_source_clock_preserved.c \
+    processing/progressive/0112_zero_and_ignored_delay.c \
+    processing/progressive/0113_delay_cancellation.c \
+    processing/progressive/0114_ordered_transport.c \
+    processing/progressive/0115_transport_write_failure.c \
+    processing/progressive/0116_ignored_delay_final_repair.c \
+    processing/progressive/0117_measurement_decoded_gain.c \
+    processing/progressive/0118_measurement_output_identity.c \
+    processing/progressive/0119_measurement_fitted_gain.c \
+    processing/progressive/0120_measurement_resumable_histogram.c \
+    processing/progressive/0121_measurement_writer_failure.c \
+    processing/progressive/0122_measurement_rebind.c \
+    processing/progressive/0123_measurement_committed_histogram.c \
+    processing/progressive/0124_prediction_exact_joint.c \
+    processing/progressive/0125_prediction_mask_boundaries.c \
+    processing/progressive/0126_prediction_population_weights.c \
+    processing/progressive/0127_prediction_order_independence.c \
+    processing/progressive/0128_prediction_maximum_bounds.c \
+    processing/progressive/0129_prediction_application_reference.c \
+    processing/progressive/0130_ladder_initial_quantiles.c \
+    processing/progressive/0131_ladder_tied_thresholds.c \
+    processing/progressive/0132_ladder_packet_allowance.c \
+    processing/progressive/0133_ladder_resumable_identity.c \
+    processing/progressive/0134_ladder_capacity_retry.c \
+    processing/progressive/0135_ladder_writer_failure.c \
+    processing/progressive/0136_ladder_outlier_descent.c \
+    processing/progressive/0137_ladder_rebind_reset.c \
+    processing/progressive/0138_ladder_truthful_stall.c \
+    processing/progressive/0139_ladder_finite_noise_transition.c \
+    processing/progressive/0140_limit_option_values.c \
+    processing/progressive/0141_limit_option_atomicity.c \
+    processing/progressive/0142_presentation_pass_limit.c \
+    processing/progressive/0143_presentation_time_limit.c \
+    processing/progressive/0144_presentation_admitted_deadline.c \
+    processing/progressive/0145_presentation_zero_limits.c \
+    processing/progressive/0146_presentation_rebind_limits.c \
+    processing/progressive/0147_animation_pass_limit_clock.c \
+    processing/progressive/0148_animation_tail_time_limit.c \
+    processing/progressive/0149_presentation_final_no_noise.c \
+    processing/progressive/0157_progressive_boolean_syntax.c \
+    processing/progressive/0158_gpu_request_validation.c \
+    processing/progressive/0159_gpu_policy_admission.c \
+    processing/progressive/0160_gpu_residual_samples.c \
+    processing/progressive/0161_gpu_sparse_plane.c \
+    processing/progressive/0162_gpu_revision_upload.c \
+    processing/progressive/0163_gpu_cache_isolation.c \
+    processing/progressive/0164_gpu_eviction_transition.c \
+    processing/progressive/0165_gpu_nonfinite_fallback.c \
+    processing/progressive/0166_gpu_bounded_batches.c \
+    processing/progressive/0167_gpu_allocation_failure.c \
+    processing/progressive/0168_gpu_lookup_validation.c \
+    processing/progressive/0169_gpu_lookup_float_palette.c \
+    processing/progressive/0170_gpu_lookup_cache_isolation.c \
+    processing/progressive/0171_gpu_lookup_failure_fallback.c \
+    processing/progressive/0172_gpu_application_none.c \
+    processing/progressive/0173_gpu_application_bluenoise.c \
+    processing/progressive/0174_gpu_application_budget_resume.c \
+    processing/progressive/0175_gpu_application_canonical_guard.c \
+    processing/progressive/0176_gpu_public_commit.c \
+    processing/progressive/0177_gpu_public_rebind_transition.c \
+    processing/progressive/0178_gpu_public_auto_admission.c \
+    processing/progressive/0179_gpu_public_write_failure.c \
+    processing/progressive/0180_gpu_public_cancel_resume.c \
+    processing/progressive/0181_gpu_application_auto_fallback.c \
+    processing/progressive/0182_gpu_global_strata.c \
+    processing/progressive/0183_gpu_global_validation.c \
+    processing/progressive/0184_gpu_selection_global_samples.c \
+    processing/progressive/0185_gpu_selection_budget_resume.c \
+    processing/progressive/0186_gpu_selection_threshold_guard.c \
+    processing/progressive/0188_gpu_selection_auto_fallback.c \
+    processing/progressive/0189_gpu_selection_ladder.c \
+    processing/progressive/0190_gpu_scan_update_rebind.c \
+    processing/progressive/0192_gpu_scan_pending_update.c \
+    processing/progressive/0193_gpu_lookup_pending_update.c \
+    processing/progressive/0194_gpu_pending_before_admission.c \
+    processing/progressive/0195_gpu_pending_after_admission.c \
+    processing/progressive/0196_gpu_pending_rebind.c \
+    processing/progressive/0197_gpu_pending_destroy.c \
+    processing/progressive/0198_gpu_gamma_gamma_rgb.c \
+    processing/progressive/0199_gpu_gamma_gamma_hls.c \
+    processing/progressive/0200_gpu_gamma_linear_rgb.c \
+    processing/progressive/0201_gpu_gamma_linear_hls.c \
+    processing/progressive/0202_gpu_gamma_smptec_rgb.c \
+    processing/progressive/0203_gpu_gamma_smptec_hls.c \
+    processing/progressive/0204_gpu_gamma_display_p3_rgb.c \
+    processing/progressive/0205_gpu_gamma_display_p3_hls.c \
+    processing/progressive/0206_gpu_linear_gamma_rgb.c \
+    processing/progressive/0207_gpu_linear_gamma_hls.c \
+    processing/progressive/0208_gpu_linear_linear_rgb.c \
+    processing/progressive/0209_gpu_linear_linear_hls.c \
+    processing/progressive/0210_gpu_linear_smptec_rgb.c \
+    processing/progressive/0211_gpu_linear_smptec_hls.c \
+    processing/progressive/0212_gpu_linear_display_p3_rgb.c \
+    processing/progressive/0213_gpu_linear_display_p3_hls.c \
+    processing/progressive/0214_gpu_oklab_gamma_rgb.c \
+    processing/progressive/0215_gpu_oklab_gamma_hls.c \
+    processing/progressive/0216_gpu_oklab_linear_rgb.c \
+    processing/progressive/0217_gpu_oklab_linear_hls.c \
+    processing/progressive/0218_gpu_oklab_smptec_rgb.c \
+    processing/progressive/0219_gpu_oklab_smptec_hls.c \
+    processing/progressive/0220_gpu_oklab_display_p3_rgb.c \
+    processing/progressive/0221_gpu_oklab_display_p3_hls.c \
+    processing/progressive/0222_gpu_cielab_gamma_rgb.c \
+    processing/progressive/0223_gpu_cielab_gamma_hls.c \
+    processing/progressive/0224_gpu_cielab_linear_rgb.c \
+    processing/progressive/0225_gpu_cielab_linear_hls.c \
+    processing/progressive/0226_gpu_cielab_smptec_rgb.c \
+    processing/progressive/0227_gpu_cielab_smptec_hls.c \
+    processing/progressive/0228_gpu_cielab_display_p3_rgb.c \
+    processing/progressive/0229_gpu_cielab_display_p3_hls.c \
+    processing/progressive/0230_gpu_din99d_gamma_rgb.c \
+    processing/progressive/0231_gpu_din99d_gamma_hls.c \
+    processing/progressive/0232_gpu_din99d_linear_rgb.c \
+    processing/progressive/0233_gpu_din99d_linear_hls.c \
+    processing/progressive/0234_gpu_din99d_smptec_rgb.c \
+    processing/progressive/0235_gpu_din99d_smptec_hls.c \
+    processing/progressive/0236_gpu_din99d_display_p3_rgb.c \
+    processing/progressive/0237_gpu_din99d_display_p3_hls.c \
+    processing/progressive/0238_gpu_p3_ordinary_boundary.c \
+    processing/progressive/progressive_gpu_colors_test_common.c \
+    processing/progressive/progressive_gpu_order_test_common.c \
+    processing/progressive/progressive_gpu_select_test_common.c \
+    processing/progressive/progressive_gpu_apply_test_common.c \
+    processing/progressive/progressive_gpu_test_common.c \
+    processing/progressive/progressive_limits_test_common.c \
+    processing/progressive/progressive_ladder_test_common.c \
+    processing/progressive/progressive_predict_test_common.c \
+    processing/progressive/progressive_measure_test_common.c \
+    processing/progressive/progressive_presentation_test_common.c \
+    processing/progressive/0101_still_capture_history.c \
+    processing/progressive/0102_gif_default_frame.c \
+    processing/progressive/0103_gif_composed_selection.c \
+    processing/progressive/0104_gif_negative_selection.c \
+    processing/progressive/0105_apng_poster_exclusion.c \
+    processing/progressive/0106_apng_invalid_selection.c \
+    processing/progressive/0107_still_8bit_capture.c \
+    processing/progressive/0108_presentation_option_atomicity.c \
+    processing/progressive/0001_source_snapshot.c \
+    processing/progressive/0002_history_revisions.c \
+    processing/progressive/0003_palette_keep_cost.c \
+    processing/progressive/0004_palette_color_growth.c \
+    processing/progressive/0005_palette_swap.c \
+    processing/progressive/0006_palette_protected_swap.c \
+    processing/progressive/0007_palette_budget_resume.c \
+    processing/progressive/0008_operation_priority.c \
+    processing/progressive/0009_output_callback_reentry.c \
+    processing/progressive/0010_concurrent_option_conflict.c \
+    processing/progressive/0011_failed_option_preserves_history.c \
+    processing/progressive/0012_failed_background_allocation.c \
+    processing/progressive/0013_failed_output_preserves_destination.c \
+    processing/progressive/0014_failed_drcs_preserves_mode.c \
+    processing/progressive/0015_loader_callback_reentry.c \
+    processing/progressive/0016_worker_callback_reentry.c \
+    processing/progressive/0017_config_size.c \
+    processing/progressive/0018_config_validation.c \
+    processing/progressive/0019_single_attachment.c \
+    processing/progressive/0020_binding_snapshot.c \
+    processing/progressive/0021_binding_generation.c \
+    processing/progressive/0022_binding_bounds.c \
+    processing/progressive/0023_context_allocation_failure.c \
+    processing/progressive/0024_binding_allocation_failure.c \
+    processing/progressive/0025_audit_threshold.c \
+    processing/progressive/0026_audit_unknown_domain.c \
+    processing/progressive/0027_audit_empty_domain.c \
+    processing/progressive/0028_audit_plane_origin.c \
+    processing/progressive/0029_audit_budget_resume.c \
+    processing/progressive/0030_audit_source_refresh.c \
+    processing/progressive/0031_audit_configuration_refresh.c \
+    processing/progressive/0032_audit_history_invalidation.c \
+    processing/progressive/0033_audit_cancellation_resume.c \
+    processing/progressive/0034_audit_revision_exhaustion.c \
+    processing/progressive/0035_audit_gamma.c \
+    processing/progressive/0036_audit_linear.c \
+    processing/progressive/0037_audit_oklab.c \
+    processing/progressive/0038_audit_cielab.c \
+    processing/progressive/0039_audit_din99d.c \
+    processing/progressive/progressive_context_test_common.c \
+    processing/progressive/0100_public_admission_snapshot.c \
+    processing/progressive/0095_public_statistics_resume.c \
+    processing/progressive/0096_public_default_destination.c \
+    processing/progressive/0097_public_layout_validation.c \
+    processing/progressive/0098_public_counter_exhaustion.c \
+    processing/progressive/0099_public_unsupported_controls.c \
+    processing/progressive/0092_step_offset_alpha_domain.c \
+    processing/progressive/0093_step_pre_admission_priority.c \
+    processing/progressive/0094_step_admitted_packet_order.c \
+    processing/progressive/0090_step_reduction_odd_sort.c \
+    processing/progressive/0091_step_allocation_resume.c \
+    processing/progressive/0078_step_commit_composition.c \
+    processing/progressive/0079_step_packet_reduction.c \
+    processing/progressive/0080_step_byte_budget_retry.c \
+    processing/progressive/0081_step_work_budget_resume.c \
+    processing/progressive/0082_step_failed_output.c \
+    processing/progressive/0083_step_zero_writer_result.c \
+    processing/progressive/0084_step_cancel_before_output.c \
+    processing/progressive/0085_step_cancel_after_admission.c \
+    processing/progressive/0086_step_callback_reentry.c \
+    processing/progressive/0087_step_source_refresh.c \
+    processing/progressive/0088_step_history_invalidation.c \
+    processing/progressive/0089_step_commit_no_allocation.c \
+    processing/progressive/progressive_packet_test_common.c \
+    processing/progressive/0069_packet_sparse_overlay.c \
+    processing/progressive/0070_packet_hls_fields.c \
+    processing/progressive/0071_packet_unused_palette.c \
+    processing/progressive/0072_packet_bounded_storage.c \
+    processing/progressive/0073_packet_budget_resume.c \
+    processing/progressive/0074_packet_limited_repeat.c \
+    processing/progressive/0075_packet_empty_mask.c \
+    processing/progressive/0076_packet_buffer_flush.c \
+    processing/progressive/0077_packet_8bit_control.c \
+    processing/progressive/0060_prepare_private_artifact.c \
+    processing/progressive/0061_prepare_budget_resume.c \
+    processing/progressive/0062_prepare_rounding_stall.c \
+    processing/progressive/0063_prepare_full_recovery.c \
+    processing/progressive/0064_prepare_source_invalidation.c \
+    processing/progressive/0065_prepare_history_invalidation.c \
+    processing/progressive/0066_prepare_cancel_resume.c \
+    processing/progressive/0067_prepare_force_policy.c \
+    processing/progressive/0068_prepare_allocation_resume.c \
+    processing/progressive/progressive_application_test_common.c \
+    processing/progressive/0054_application_strict_keep.c \
+    processing/progressive/0055_application_noisy_rejection.c \
+    processing/progressive/0056_application_protected_pixel.c \
+    processing/progressive/0057_application_absolute_noise.c \
+    processing/progressive/0058_application_budget_resume.c \
+    processing/progressive/0059_application_empty_palette.c \
+    processing/progressive/progressive_selection_test_common.c \
+    processing/progressive/0046_selection_upper_ties.c \
+    processing/progressive/0047_selection_full_domain.c \
+    processing/progressive/0048_selection_population.c \
+    processing/progressive/0049_selection_protected_feature.c \
+    processing/progressive/0050_selection_dedup_keep_cost.c \
+    processing/progressive/0051_selection_farthest_pool.c \
+    processing/progressive/0052_selection_budget_resume.c \
+    processing/progressive/0053_selection_no_direct_gain.c \
+    processing/progressive/progressive_projection_test_common.c \
+    processing/progressive/0040_projection_rgb101.c \
+    processing/progressive/0041_projection_hls.c \
+    processing/progressive/0042_projection_linear.c \
+    processing/progressive/0043_projection_smptec.c \
+    processing/progressive/0044_projection_display_p3.c \
+    processing/progressive/0045_projection_nonfinite.c \
+    processing/progressive/progressive_callback_test_common.c \
+    processing/progressive/progressive_palette_test_common.c \
     processing/decoder/multi_pass_test_common.c \
     processing/decoder/multi_pass_test_common.h \
     processing/colorspace/0001_din99d_forward.c \
@@ -4603,6 +5089,16 @@ test_runner_SOURCES = test_runner.c \
     processing/gpu-palette/0002_reserved_key.c \
     processing/gpu-palette/0003_fade_history.c \
     processing/gpu-palette/0004_auto_strength.c \
+    processing/gpu-palette/0018_wire_a.c \
+    processing/gpu-palette/0019_wire_x.c \
+    processing/gpu-palette/arithmetic_test_common.c \
+    processing/gpu-palette/0012_a_candidates.c \
+    processing/gpu-palette/0013_x_candidates.c \
+    processing/gpu-palette/0014_a_auto_strength.c \
+    processing/gpu-palette/0015_x_auto_strength.c \
+    processing/gpu-palette/0016_a_strength_precedence.c \
+    processing/gpu-palette/0017_x_strength_precedence.c \
+    processing/gpu-palette/wire_common.c \
     processing/gpu-palette/0005_wire_rgb_none.c \
     processing/gpu-palette/0006_wire_rgb_bluenoise.c \
     processing/gpu-palette/0007_wire_rgb_eytzinger.c \
@@ -4610,16 +5106,6 @@ test_runner_SOURCES = test_runner.c \
     processing/gpu-palette/0009_wire_hls_bluenoise.c \
     processing/gpu-palette/0010_comparison_default.c \
     processing/gpu-palette/0011_comparison_short.c \
-    processing/gpu-palette/wire_common.c \
-    processing/gpu-palette/0012_a_candidates.c \
-    processing/gpu-palette/0013_x_candidates.c \
-    processing/gpu-palette/0014_a_auto_strength.c \
-    processing/gpu-palette/0015_x_auto_strength.c \
-    processing/gpu-palette/0016_a_strength_precedence.c \
-    processing/gpu-palette/0017_x_strength_precedence.c \
-    processing/gpu-palette/0018_wire_a.c \
-    processing/gpu-palette/0019_wire_x.c \
-    processing/gpu-palette/arithmetic_test_common.c \
     processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
     processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -5743,6 +6229,14 @@ test_runner_SOURCES = test_runner.c \
     loader/gif_bgcolor_canvas_fill_test_common.c \
     loader/gif_bgcolor_canvas_fill_test_common.h \
     loader/pixelformat_test_common.h \
+    quant/palette/gpu_kmeans/0001_weighted_lloyd.c \
+    quant/palette/gpu_kmeans/0002_byte_rounding.c \
+    quant/palette/gpu_kmeans/0003_empty_cluster.c \
+    quant/palette/gpu_kmeans/0004_iteration_floor.c \
+    quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c \
+    quant/palette/gpu_kmeans/0006_option_atomicity.c \
+    quant/palette/gpu_kmeans/0014_request_isolation.c \
+    quant/palette/gpu_kmeans/gpu_kmeans_test_common.c \
     quant/palette/0001_kmeans_init.c \
     quant/palette/0002_kmedoids_constraints.c \
     quant/palette/0003_kcenter_constraints.c \

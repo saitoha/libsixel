@@ -64,7 +64,7 @@ Choice-valued bases and suboption values may use the separately defined [prefix-
 - the value kind, choices, range, and environment-specific compatibility rules;
 - the typed destination binding and diagnostic text.
 
-[`src/options.h`](../../src/options.h) defines the supported value kinds: choice, ordered choice list, boolean, signed and unsigned integers, size, float, double, integer pair, positive three-channel ratio (or `auto`), scaled byte, string, and nested structured value. It also separates the consumer scope from the storage target. That distinction allows an option spelling shared by encoder and decoder frontends to expose only the rows valid for the active consumer and to store a validated result in the encoder, decoder, loader, dequantizer, runtime, diagnostics, clipboard, or transient color-file state that owns it.
+[`src/options.h`](../../src/options.h) defines the supported value kinds: choice, ordered choice list, boolean, signed and unsigned integers, size, float, double, nonnegative double (or `auto`), integer pair, positive three-channel ratio (or `auto`), scaled byte, string, and nested structured value. It also separates the consumer scope from the storage target. That distinction allows an option spelling shared by encoder and decoder frontends to expose only the rows valid for the active consumer and to store a validated result in the encoder, decoder, loader, dequantizer, runtime, diagnostics, clipboard, or transient color-file state that owns it.
 
 A row with no base restriction is common to every base in its schema. A base-specific row is visible only when that base is active. Compact letters may therefore be reused by unrelated schemas or disjoint base domains without becoming globally ambiguous.
 

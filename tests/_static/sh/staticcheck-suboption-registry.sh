@@ -531,6 +531,7 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_ENCODER_RATIO3" ||
         macro == "SIXEL_REGISTRY_ENCODER_MIRROR_CHOICE" ||
         macro == "SIXEL_REGISTRY_ENCODER_MULTI_CHOICE" ||
+        macro == "SIXEL_REGISTRY_ENCODER_MULTI_NUMBER" ||
         macro == "SIXEL_REGISTRY_ENCODER_SCALED_U8_ENV_CLAMP" ||
         macro == "SIXEL_REGISTRY_ENCODER_SIZE" ||
         macro == "SIXEL_REGISTRY_ENCODER_POSITIVE_SIZE" ||

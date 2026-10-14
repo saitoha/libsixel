@@ -98,14 +98,6 @@ int test_color_0008(int argc, char **argv);
 int test_color_0009(int argc, char **argv);
 int test_color_0010(int argc, char **argv);
 int test_color_0011(int argc, char **argv);
-int test_kmgpu_0001_weighted_lloyd(int argc, char **argv);
-int test_kmgpu_0002_byte_rounding(int argc, char **argv);
-int test_kmgpu_0003_empty_cluster(int argc, char **argv);
-int test_kmgpu_0004_iteration_floor(int argc, char **argv);
-int test_kmgpu_0005_range_fallback_atomicity(int argc, char **argv);
-int test_kmgpu_0006_option_atomicity(int argc, char **argv);
-int test_kmgpu_0014_request_isolation(int argc, char **argv);
-int test_kmgpu_available(int argc, char **argv);
 int test_qa_0001(int argc, char **argv);
 int test_qa_0002(int argc, char **argv);
 int test_qa_0003(int argc, char **argv);
@@ -130,18 +122,19 @@ int test_qa_0032(int argc, char **argv);
 int test_qa_0033(int argc, char **argv);
 int test_qa_0034(int argc, char **argv);
 int test_qa_0035(int argc, char **argv);
+int test_video_report_check(int argc, char **argv);
+int test_image_values(int argc, char **argv);
+int test_image_sample_range(int argc, char **argv);
+int test_image_dimensions(int argc, char **argv);
+int test_clock_report_check(int argc, char **argv);
 int test_qa_0036(int argc, char **argv);
 int test_qa_0037(int argc, char **argv);
 int test_qa_0038(int argc, char **argv);
+
 int test_video_decode_0087(int argc, char **argv);
 int test_video_decode_0088(int argc, char **argv);
 int test_video_decode_0089(int argc, char **argv);
 int test_video_decode_0090(int argc, char **argv);
-int test_video_report_check(int argc, char **argv);
-int test_clock_report_check(int argc, char **argv);
-int test_image_values(int argc, char **argv);
-int test_image_sample_range(int argc, char **argv);
-int test_image_dimensions(int argc, char **argv);
 int test_named_output_0037(int argc, char **argv);
 int test_named_output_0038(int argc, char **argv);
 int test_named_output_0039(int argc, char **argv);
@@ -268,6 +261,237 @@ int test_sequence_0082(int argc, char **argv);
 int test_sequence_0083(int argc, char **argv);
 int test_sequence_0084(int argc, char **argv);
 int test_sequence_0085(int argc, char **argv);
+int test_progressive_0001(int argc, char **argv);
+int test_progressive_0002(int argc, char **argv);
+int test_progressive_0003(int argc, char **argv);
+int test_progressive_0004(int argc, char **argv);
+int test_progressive_0005(int argc, char **argv);
+int test_progressive_0006(int argc, char **argv);
+int test_progressive_0007(int argc, char **argv);
+int test_progressive_0008(int argc, char **argv);
+int test_progressive_0009(int argc, char **argv);
+int test_progressive_0010(int argc, char **argv);
+int test_progressive_0011(int argc, char **argv);
+int test_progressive_0012(int argc, char **argv);
+int test_progressive_0013(int argc, char **argv);
+int test_progressive_0014(int argc, char **argv);
+int test_progressive_0015(int argc, char **argv);
+int test_progressive_0016(int argc, char **argv);
+int test_progressive_0017(int argc, char **argv);
+int test_progressive_0018(int argc, char **argv);
+int test_progressive_0019(int argc, char **argv);
+int test_progressive_0020(int argc, char **argv);
+int test_progressive_0021(int argc, char **argv);
+int test_progressive_0022(int argc, char **argv);
+int test_progressive_0023(int argc, char **argv);
+int test_progressive_0024(int argc, char **argv);
+int test_progressive_0025(int argc, char **argv);
+int test_progressive_0026(int argc, char **argv);
+int test_progressive_0027(int argc, char **argv);
+int test_progressive_0028(int argc, char **argv);
+int test_progressive_0029(int argc, char **argv);
+int test_progressive_0030(int argc, char **argv);
+int test_progressive_0031(int argc, char **argv);
+int test_progressive_0032(int argc, char **argv);
+int test_progressive_0033(int argc, char **argv);
+int test_progressive_0034(int argc, char **argv);
+int test_progressive_0035(int argc, char **argv);
+int test_progressive_0036(int argc, char **argv);
+int test_progressive_0037(int argc, char **argv);
+int test_progressive_0038(int argc, char **argv);
+int test_progressive_0039(int argc, char **argv);
+int test_progressive_0040(int argc, char **argv);
+int test_progressive_0041(int argc, char **argv);
+int test_progressive_0042(int argc, char **argv);
+int test_progressive_0043(int argc, char **argv);
+int test_progressive_0044(int argc, char **argv);
+int test_progressive_0045(int argc, char **argv);
+int test_progressive_0046(int argc, char **argv);
+int test_progressive_0047(int argc, char **argv);
+int test_progressive_0048(int argc, char **argv);
+int test_progressive_0049(int argc, char **argv);
+int test_progressive_0050(int argc, char **argv);
+int test_progressive_0051(int argc, char **argv);
+int test_progressive_0052(int argc, char **argv);
+int test_progressive_0053(int argc, char **argv);
+int test_progressive_0054(int argc, char **argv);
+int test_progressive_0055(int argc, char **argv);
+int test_progressive_0056(int argc, char **argv);
+int test_progressive_0057(int argc, char **argv);
+int test_progressive_0058(int argc, char **argv);
+int test_progressive_0059(int argc, char **argv);
+int test_progressive_0060(int argc, char **argv);
+int test_progressive_0061(int argc, char **argv);
+int test_progressive_0062(int argc, char **argv);
+int test_progressive_0063(int argc, char **argv);
+int test_progressive_0064(int argc, char **argv);
+int test_progressive_0065(int argc, char **argv);
+int test_progressive_0066(int argc, char **argv);
+int test_progressive_0067(int argc, char **argv);
+int test_progressive_0068(int argc, char **argv);
+int test_progressive_0069(int argc, char **argv);
+int test_progressive_0070(int argc, char **argv);
+int test_progressive_0071(int argc, char **argv);
+int test_progressive_0072(int argc, char **argv);
+int test_progressive_0073(int argc, char **argv);
+int test_progressive_0074(int argc, char **argv);
+int test_progressive_0075(int argc, char **argv);
+int test_progressive_0076(int argc, char **argv);
+int test_progressive_0077(int argc, char **argv);
+int test_progressive_0078(int argc, char **argv);
+int test_progressive_0079(int argc, char **argv);
+int test_progressive_0080(int argc, char **argv);
+int test_progressive_0081(int argc, char **argv);
+int test_progressive_0082(int argc, char **argv);
+int test_progressive_0083(int argc, char **argv);
+int test_progressive_0084(int argc, char **argv);
+int test_progressive_0085(int argc, char **argv);
+int test_progressive_0086(int argc, char **argv);
+int test_progressive_0087(int argc, char **argv);
+int test_progressive_0088(int argc, char **argv);
+int test_progressive_0089(int argc, char **argv);
+int test_progressive_0090(int argc, char **argv);
+int test_progressive_0091(int argc, char **argv);
+int test_progressive_0092(int argc, char **argv);
+int test_progressive_0093(int argc, char **argv);
+int test_progressive_0094(int argc, char **argv);
+int test_progressive_0095(int argc, char **argv);
+int test_progressive_0096(int argc, char **argv);
+int test_progressive_0101(int argc, char **argv);
+int test_progressive_0102(int argc, char **argv);
+int test_progressive_0103(int argc, char **argv);
+int test_progressive_0104(int argc, char **argv);
+int test_progressive_0105(int argc, char **argv);
+int test_progressive_0106(int argc, char **argv);
+int test_progressive_0107(int argc, char **argv);
+int test_progressive_0117(int argc, char **argv);
+int test_progressive_0118(int argc, char **argv);
+int test_progressive_0119(int argc, char **argv);
+int test_progressive_0120(int argc, char **argv);
+int test_progressive_0121(int argc, char **argv);
+int test_progressive_0122(int argc, char **argv);
+int test_progressive_0123(int argc, char **argv);
+int test_progressive_0124(int argc, char **argv);
+int test_progressive_0125(int argc, char **argv);
+int test_progressive_0126(int argc, char **argv);
+int test_progressive_0127(int argc, char **argv);
+int test_progressive_0128(int argc, char **argv);
+int test_progressive_0129(int argc, char **argv);
+int test_progressive_0130(int argc, char **argv);
+int test_progressive_0131(int argc, char **argv);
+int test_progressive_0132(int argc, char **argv);
+int test_progressive_0133(int argc, char **argv);
+int test_progressive_0134(int argc, char **argv);
+int test_progressive_0135(int argc, char **argv);
+int test_progressive_0136(int argc, char **argv);
+int test_progressive_0137(int argc, char **argv);
+int test_progressive_0138(int argc, char **argv);
+int test_progressive_0139(int argc, char **argv);
+int test_progressive_0140(int argc, char **argv);
+int test_progressive_0141(int argc, char **argv);
+int test_progressive_0142(int argc, char **argv);
+int test_progressive_0143(int argc, char **argv);
+int test_progressive_0144(int argc, char **argv);
+int test_progressive_0145(int argc, char **argv);
+int test_progressive_0146(int argc, char **argv);
+int test_progressive_0147(int argc, char **argv);
+int test_progressive_0148(int argc, char **argv);
+int test_progressive_0149(int argc, char **argv);
+int test_progressive_0157(int argc, char **argv);
+int test_progressive_0158(int argc, char **argv);
+int test_progressive_0159(int argc, char **argv);
+int test_progressive_0160(int argc, char **argv);
+int test_progressive_0161(int argc, char **argv);
+int test_progressive_0162(int argc, char **argv);
+int test_progressive_0163(int argc, char **argv);
+int test_progressive_0164(int argc, char **argv);
+int test_progressive_0165(int argc, char **argv);
+int test_progressive_0166(int argc, char **argv);
+int test_progressive_0167(int argc, char **argv);
+int test_progressive_0168(int argc, char **argv);
+int test_progressive_0169(int argc, char **argv);
+int test_progressive_0170(int argc, char **argv);
+int test_progressive_0171(int argc, char **argv);
+int test_progressive_0172(int argc, char **argv);
+int test_progressive_0173(int argc, char **argv);
+int test_progressive_0174(int argc, char **argv);
+int test_progressive_0175(int argc, char **argv);
+int test_progressive_0176(int argc, char **argv);
+int test_progressive_0177(int argc, char **argv);
+int test_progressive_0178(int argc, char **argv);
+int test_progressive_0179(int argc, char **argv);
+int test_progressive_0180(int argc, char **argv);
+int test_progressive_0181(int argc, char **argv);
+int test_progressive_0182(int argc, char **argv);
+int test_progressive_0183(int argc, char **argv);
+int test_progressive_0184(int argc, char **argv);
+int test_progressive_0185(int argc, char **argv);
+int test_progressive_0186(int argc, char **argv);
+int test_progressive_0188(int argc, char **argv);
+int test_progressive_0189(int argc, char **argv);
+int test_progressive_0190(int argc, char **argv);
+int test_progressive_0192(int argc, char **argv);
+int test_progressive_0193(int argc, char **argv);
+int test_progressive_0194(int argc, char **argv);
+int test_progressive_0195(int argc, char **argv);
+int test_progressive_0196(int argc, char **argv);
+int test_progressive_0197(int argc, char **argv);
+int test_progressive_0198(int argc, char **argv);
+int test_progressive_0199(int argc, char **argv);
+int test_progressive_0200(int argc, char **argv);
+int test_progressive_0201(int argc, char **argv);
+int test_progressive_0202(int argc, char **argv);
+int test_progressive_0203(int argc, char **argv);
+int test_progressive_0204(int argc, char **argv);
+int test_progressive_0205(int argc, char **argv);
+int test_progressive_0206(int argc, char **argv);
+int test_progressive_0207(int argc, char **argv);
+int test_progressive_0208(int argc, char **argv);
+int test_progressive_0209(int argc, char **argv);
+int test_progressive_0210(int argc, char **argv);
+int test_progressive_0211(int argc, char **argv);
+int test_progressive_0212(int argc, char **argv);
+int test_progressive_0213(int argc, char **argv);
+int test_progressive_0214(int argc, char **argv);
+int test_progressive_0215(int argc, char **argv);
+int test_progressive_0216(int argc, char **argv);
+int test_progressive_0217(int argc, char **argv);
+int test_progressive_0218(int argc, char **argv);
+int test_progressive_0219(int argc, char **argv);
+int test_progressive_0220(int argc, char **argv);
+int test_progressive_0221(int argc, char **argv);
+int test_progressive_0222(int argc, char **argv);
+int test_progressive_0223(int argc, char **argv);
+int test_progressive_0224(int argc, char **argv);
+int test_progressive_0225(int argc, char **argv);
+int test_progressive_0226(int argc, char **argv);
+int test_progressive_0227(int argc, char **argv);
+int test_progressive_0228(int argc, char **argv);
+int test_progressive_0229(int argc, char **argv);
+int test_progressive_0230(int argc, char **argv);
+int test_progressive_0231(int argc, char **argv);
+int test_progressive_0232(int argc, char **argv);
+int test_progressive_0233(int argc, char **argv);
+int test_progressive_0234(int argc, char **argv);
+int test_progressive_0235(int argc, char **argv);
+int test_progressive_0236(int argc, char **argv);
+int test_progressive_0237(int argc, char **argv);
+int test_progressive_0238(int argc, char **argv);
+int test_progressive_0116(int argc, char **argv);
+int test_progressive_0108(int argc, char **argv);
+int test_progressive_0109(int argc, char **argv);
+int test_progressive_0110(int argc, char **argv);
+int test_progressive_0111(int argc, char **argv);
+int test_progressive_0112(int argc, char **argv);
+int test_progressive_0113(int argc, char **argv);
+int test_progressive_0114(int argc, char **argv);
+int test_progressive_0115(int argc, char **argv);
+
+
+int test_progressive_0097(int argc, char **argv);
+int test_progressive_0098(int argc, char **argv);
+int test_progressive_0099(int argc, char **argv);
+int test_progressive_0100(int argc, char **argv);
 int test_sequence_0086(int argc, char **argv);
 int test_filter_0002_filter_sample(int argc, char **argv);
 int test_filter_0003_filter_resize(int argc, char **argv);
@@ -840,14 +1064,16 @@ int test_gpupal_0008_wire_hls_none(int argc, char **argv);
 int test_gpupal_0009_wire_hls_bluenoise(int argc, char **argv);
 int test_gpupal_0010_comparison_default(int argc, char **argv);
 int test_gpupal_0011_comparison_short(int argc, char **argv);
+int test_gpupal_0018_wire_a(int argc, char **argv);
+int test_gpupal_0019_wire_x(int argc, char **argv);
 int test_gpupal_0012_a_candidates(int argc, char **argv);
 int test_gpupal_0013_x_candidates(int argc, char **argv);
 int test_gpupal_0014_a_auto_strength(int argc, char **argv);
 int test_gpupal_0015_x_auto_strength(int argc, char **argv);
 int test_gpupal_0016_a_strength_precedence(int argc, char **argv);
 int test_gpupal_0017_x_strength_precedence(int argc, char **argv);
-int test_gpupal_0018_wire_a(int argc, char **argv);
-int test_gpupal_0019_wire_x(int argc, char **argv);
+
+
 int test_positional_0048_gpu_6delta(int argc, char **argv);
 int test_bluenoise_0052_keep_offset(int argc, char **argv);
 int test_gpudeq_0001_strtoul(int argc, char **argv);
@@ -1016,6 +1242,14 @@ int test_icc_0006_icc_builtin_pixel_format_matrix(int argc, char **argv);
 int test_icc_0007_icc_builtin_float_special_values(int argc, char **argv);
 int test_icc_0008_icc_builtin_d2b_b2d_legacy_lut(int argc, char **argv);
 
+int test_kmgpu_0001_weighted_lloyd(int argc, char **argv);
+int test_kmgpu_0002_byte_rounding(int argc, char **argv);
+int test_kmgpu_0003_empty_cluster(int argc, char **argv);
+int test_kmgpu_0004_iteration_floor(int argc, char **argv);
+int test_kmgpu_0005_range_fallback_atomicity(int argc, char **argv);
+int test_kmgpu_0006_option_atomicity(int argc, char **argv);
+int test_kmgpu_0014_request_isolation(int argc, char **argv);
+int test_kmgpu_available(int argc, char **argv);
 int test_palette_0001_kmeans_init(int argc, char **argv);
 int test_palette_0002_kmedoids_constraints(int argc, char **argv);
 int test_palette_0003_kcenter_constraints(int argc, char **argv);
@@ -4503,8 +4737,8 @@ static test_entry_t const test_entries[] = {
       test_gpupal_0009_wire_hls_bluenoise },
     { "gpu-palette/0010_comparison_default",
       test_gpupal_0010_comparison_default },
-    { "gpu-palette/0011_comparison_short",
-      test_gpupal_0011_comparison_short },
+    { "gpu-palette/0018_wire_a", test_gpupal_0018_wire_a },
+    { "gpu-palette/0019_wire_x", test_gpupal_0019_wire_x },
     { "gpu-palette/0012_a_candidates",
       test_gpupal_0012_a_candidates },
     { "gpu-palette/0013_x_candidates",
@@ -4517,10 +4751,8 @@ static test_entry_t const test_entries[] = {
       test_gpupal_0016_a_strength_precedence },
     { "gpu-palette/0017_x_strength_precedence",
       test_gpupal_0017_x_strength_precedence },
-    { "gpu-palette/0018_wire_a",
-      test_gpupal_0018_wire_a },
-    { "gpu-palette/0019_wire_x",
-      test_gpupal_0019_wire_x },
+    { "gpu-palette/0011_comparison_short",
+      test_gpupal_0011_comparison_short },
     { "dither/positional/0048_gpu_6delta", test_positional_0048_gpu_6delta },
     { "dither/bluenoise/0052_keep_offset", test_bluenoise_0052_keep_offset },
     { "gpu-dequant/0001_gpu_dequant_threshold_strtoul",
@@ -4768,6 +5000,464 @@ static test_entry_t const test_entries[] = {
       test_sequence_0084 },
     { "decoder/0085_multi_pass_option_atomicity",
       test_sequence_0085 },
+    { "progressive/0001_source_snapshot",
+      test_progressive_0001 },
+    { "progressive/0002_history_revisions",
+      test_progressive_0002 },
+    { "progressive/0003_palette_keep_cost",
+      test_progressive_0003 },
+    { "progressive/0004_palette_color_growth",
+      test_progressive_0004 },
+    { "progressive/0005_palette_swap",
+      test_progressive_0005 },
+    { "progressive/0006_palette_protected_swap",
+      test_progressive_0006 },
+    { "progressive/0007_palette_budget_resume",
+      test_progressive_0007 },
+    { "progressive/0008_operation_priority",
+      test_progressive_0008 },
+    { "progressive/0009_output_callback_reentry",
+      test_progressive_0009 },
+    { "progressive/0010_concurrent_option_conflict",
+      test_progressive_0010 },
+    { "progressive/0011_failed_option_preserves_history",
+      test_progressive_0011 },
+    { "progressive/0012_failed_background_allocation",
+      test_progressive_0012 },
+    { "progressive/0013_failed_output_preserves_destination",
+      test_progressive_0013 },
+    { "progressive/0014_failed_drcs_preserves_mode",
+      test_progressive_0014 },
+    { "progressive/0015_loader_callback_reentry",
+      test_progressive_0015 },
+    { "progressive/0016_worker_callback_reentry",
+      test_progressive_0016 },
+    { "progressive/0017_config_size",
+      test_progressive_0017 },
+    { "progressive/0018_config_validation",
+      test_progressive_0018 },
+    { "progressive/0019_single_attachment",
+      test_progressive_0019 },
+    { "progressive/0020_binding_snapshot",
+      test_progressive_0020 },
+    { "progressive/0021_binding_generation",
+      test_progressive_0021 },
+    { "progressive/0022_binding_bounds",
+      test_progressive_0022 },
+    { "progressive/0023_context_allocation_failure",
+      test_progressive_0023 },
+    { "progressive/0024_binding_allocation_failure",
+      test_progressive_0024 },
+    { "progressive/0025_audit_threshold",
+      test_progressive_0025 },
+    { "progressive/0026_audit_unknown_domain",
+      test_progressive_0026 },
+    { "progressive/0027_audit_empty_domain",
+      test_progressive_0027 },
+    { "progressive/0028_audit_plane_origin",
+      test_progressive_0028 },
+    { "progressive/0029_audit_budget_resume",
+      test_progressive_0029 },
+    { "progressive/0030_audit_source_refresh",
+      test_progressive_0030 },
+    { "progressive/0031_audit_configuration_refresh",
+      test_progressive_0031 },
+    { "progressive/0032_audit_history_invalidation",
+      test_progressive_0032 },
+    { "progressive/0033_audit_cancellation_resume",
+      test_progressive_0033 },
+    { "progressive/0034_audit_revision_exhaustion",
+      test_progressive_0034 },
+    { "progressive/0035_audit_gamma",
+      test_progressive_0035 },
+    { "progressive/0036_audit_linear",
+      test_progressive_0036 },
+    { "progressive/0037_audit_oklab",
+      test_progressive_0037 },
+    { "progressive/0038_audit_cielab",
+      test_progressive_0038 },
+    { "progressive/0039_audit_din99d",
+      test_progressive_0039 },
+    { "progressive/0040_projection_rgb101",
+      test_progressive_0040 },
+    { "progressive/0041_projection_hls",
+      test_progressive_0041 },
+    { "progressive/0042_projection_linear",
+      test_progressive_0042 },
+    { "progressive/0043_projection_smptec",
+      test_progressive_0043 },
+    { "progressive/0044_projection_display_p3",
+      test_progressive_0044 },
+    { "progressive/0045_projection_nonfinite",
+      test_progressive_0045 },
+    { "progressive/0046_selection_upper_ties",
+      test_progressive_0046 },
+    { "progressive/0047_selection_full_domain",
+      test_progressive_0047 },
+    { "progressive/0048_selection_population",
+      test_progressive_0048 },
+    { "progressive/0049_selection_protected_feature",
+      test_progressive_0049 },
+    { "progressive/0050_selection_dedup_keep_cost",
+      test_progressive_0050 },
+    { "progressive/0051_selection_farthest_pool",
+      test_progressive_0051 },
+    { "progressive/0052_selection_budget_resume",
+      test_progressive_0052 },
+    { "progressive/0053_selection_no_direct_gain",
+      test_progressive_0053 },
+    { "progressive/0054_application_strict_keep",
+      test_progressive_0054 },
+    { "progressive/0055_application_noisy_rejection",
+      test_progressive_0055 },
+    { "progressive/0056_application_protected_pixel",
+      test_progressive_0056 },
+    { "progressive/0057_application_absolute_noise",
+      test_progressive_0057 },
+    { "progressive/0058_application_budget_resume",
+      test_progressive_0058 },
+    { "progressive/0059_application_empty_palette",
+      test_progressive_0059 },
+    { "progressive/0060_prepare_private_artifact",
+      test_progressive_0060 },
+    { "progressive/0061_prepare_budget_resume",
+      test_progressive_0061 },
+    { "progressive/0062_prepare_rounding_stall",
+      test_progressive_0062 },
+    { "progressive/0063_prepare_full_recovery",
+      test_progressive_0063 },
+    { "progressive/0064_prepare_source_invalidation",
+      test_progressive_0064 },
+    { "progressive/0065_prepare_history_invalidation",
+      test_progressive_0065 },
+    { "progressive/0066_prepare_cancel_resume",
+      test_progressive_0066 },
+    { "progressive/0067_prepare_force_policy",
+      test_progressive_0067 },
+    { "progressive/0068_prepare_allocation_resume",
+      test_progressive_0068 },
+    { "progressive/0069_packet_sparse_overlay",
+      test_progressive_0069 },
+    { "progressive/0070_packet_hls_fields",
+      test_progressive_0070 },
+    { "progressive/0071_packet_unused_palette",
+      test_progressive_0071 },
+    { "progressive/0072_packet_bounded_storage",
+      test_progressive_0072 },
+    { "progressive/0073_packet_budget_resume",
+      test_progressive_0073 },
+    { "progressive/0074_packet_limited_repeat",
+      test_progressive_0074 },
+    { "progressive/0075_packet_empty_mask",
+      test_progressive_0075 },
+    { "progressive/0076_packet_buffer_flush",
+      test_progressive_0076 },
+    { "progressive/0077_packet_8bit_control",
+      test_progressive_0077 },
+    { "progressive/0078_step_commit_composition",
+      test_progressive_0078 },
+    { "progressive/0079_step_packet_reduction",
+      test_progressive_0079 },
+    { "progressive/0080_step_byte_budget_retry",
+      test_progressive_0080 },
+    { "progressive/0081_step_work_budget_resume",
+      test_progressive_0081 },
+    { "progressive/0082_step_failed_output",
+      test_progressive_0082 },
+    { "progressive/0083_step_zero_writer_result",
+      test_progressive_0083 },
+    { "progressive/0084_step_cancel_before_output",
+      test_progressive_0084 },
+    { "progressive/0085_step_cancel_after_admission",
+      test_progressive_0085 },
+    { "progressive/0086_step_callback_reentry",
+      test_progressive_0086 },
+    { "progressive/0087_step_source_refresh",
+      test_progressive_0087 },
+    { "progressive/0088_step_history_invalidation",
+      test_progressive_0088 },
+    { "progressive/0089_step_commit_no_allocation",
+      test_progressive_0089 },
+    { "progressive/0090_step_reduction_odd_sort",
+      test_progressive_0090 },
+    { "progressive/0091_step_allocation_resume",
+      test_progressive_0091 },
+    { "progressive/0092_step_offset_alpha_domain",
+      test_progressive_0092 },
+    { "progressive/0093_step_pre_admission_priority",
+      test_progressive_0093 },
+    { "progressive/0094_step_admitted_packet_order",
+      test_progressive_0094 },
+    { "progressive/0095_public_statistics_resume",
+      test_progressive_0095 },
+    { "progressive/0096_public_default_destination",
+      test_progressive_0096 },
+    { "progressive/0097_public_layout_validation",
+      test_progressive_0097 },
+    { "progressive/0098_public_counter_exhaustion",
+      test_progressive_0098 },
+    { "progressive/0099_public_unsupported_controls",
+      test_progressive_0099 },
+    { "progressive/0101_still_capture_history",
+      test_progressive_0101 },
+    { "progressive/0102_gif_default_frame",
+      test_progressive_0102 },
+    { "progressive/0103_gif_composed_selection",
+      test_progressive_0103 },
+    { "progressive/0104_gif_negative_selection",
+      test_progressive_0104 },
+    { "progressive/0105_apng_poster_exclusion",
+      test_progressive_0105 },
+    { "progressive/0106_apng_invalid_selection",
+      test_progressive_0106 },
+    { "progressive/0107_still_8bit_capture",
+      test_progressive_0107 },
+    { "progressive/0108_presentation_option_atomicity",
+      test_progressive_0108 },
+    { "progressive/0109_transport_capacity_admission",
+      test_progressive_0109 },
+    { "progressive/0110_deadline_admission",
+      test_progressive_0110 },
+    { "progressive/0111_source_clock_preserved",
+      test_progressive_0111 },
+    { "progressive/0112_zero_and_ignored_delay",
+      test_progressive_0112 },
+    { "progressive/0113_delay_cancellation",
+      test_progressive_0113 },
+    { "progressive/0114_ordered_transport",
+      test_progressive_0114 },
+    { "progressive/0115_transport_write_failure",
+      test_progressive_0115 },
+    { "progressive/0117_measurement_decoded_gain",
+      test_progressive_0117 },
+    { "progressive/0118_measurement_output_identity",
+      test_progressive_0118 },
+    { "progressive/0119_measurement_fitted_gain",
+      test_progressive_0119 },
+    { "progressive/0120_measurement_resumable_histogram",
+      test_progressive_0120 },
+    { "progressive/0121_measurement_writer_failure",
+      test_progressive_0121 },
+    { "progressive/0122_measurement_rebind",
+      test_progressive_0122 },
+    { "progressive/0123_measurement_committed_histogram",
+      test_progressive_0123 },
+    { "progressive/0124_prediction_exact_joint",
+      test_progressive_0124 },
+    { "progressive/0125_prediction_mask_boundaries",
+      test_progressive_0125 },
+    { "progressive/0126_prediction_population_weights",
+      test_progressive_0126 },
+    { "progressive/0127_prediction_order_independence",
+      test_progressive_0127 },
+    { "progressive/0128_prediction_maximum_bounds",
+      test_progressive_0128 },
+    { "progressive/0129_prediction_application_reference",
+      test_progressive_0129 },
+    { "progressive/0130_ladder_initial_quantiles",
+      test_progressive_0130 },
+    { "progressive/0131_ladder_tied_thresholds",
+      test_progressive_0131 },
+    { "progressive/0132_ladder_packet_allowance",
+      test_progressive_0132 },
+    { "progressive/0133_ladder_resumable_identity",
+      test_progressive_0133 },
+    { "progressive/0134_ladder_capacity_retry",
+      test_progressive_0134 },
+    { "progressive/0135_ladder_writer_failure",
+      test_progressive_0135 },
+    { "progressive/0136_ladder_outlier_descent",
+      test_progressive_0136 },
+    { "progressive/0137_ladder_rebind_reset",
+      test_progressive_0137 },
+    { "progressive/0138_ladder_truthful_stall",
+      test_progressive_0138 },
+    { "progressive/0139_ladder_finite_noise_transition",
+      test_progressive_0139 },
+    { "progressive/0140_limit_option_values",
+      test_progressive_0140 },
+    { "progressive/0141_limit_option_atomicity",
+      test_progressive_0141 },
+    { "progressive/0142_presentation_pass_limit",
+      test_progressive_0142 },
+    { "progressive/0143_presentation_time_limit",
+      test_progressive_0143 },
+    { "progressive/0144_presentation_admitted_deadline",
+      test_progressive_0144 },
+    { "progressive/0145_presentation_zero_limits",
+      test_progressive_0145 },
+    { "progressive/0146_presentation_rebind_limits",
+      test_progressive_0146 },
+    { "progressive/0147_animation_pass_limit_clock",
+      test_progressive_0147 },
+    { "progressive/0148_animation_tail_time_limit",
+      test_progressive_0148 },
+    { "progressive/0149_presentation_final_no_noise",
+      test_progressive_0149 },
+    { "progressive/0157_progressive_boolean_syntax",
+      test_progressive_0157 },
+    { "progressive/0158_gpu_request_validation",
+      test_progressive_0158 },
+    { "progressive/0159_gpu_policy_admission",
+      test_progressive_0159 },
+    { "progressive/0160_gpu_residual_samples",
+      test_progressive_0160 },
+    { "progressive/0161_gpu_sparse_plane",
+      test_progressive_0161 },
+    { "progressive/0162_gpu_revision_upload",
+      test_progressive_0162 },
+    { "progressive/0163_gpu_cache_isolation",
+      test_progressive_0163 },
+    { "progressive/0164_gpu_eviction_transition",
+      test_progressive_0164 },
+    { "progressive/0165_gpu_nonfinite_fallback",
+      test_progressive_0165 },
+    { "progressive/0166_gpu_bounded_batches",
+      test_progressive_0166 },
+    { "progressive/0167_gpu_allocation_failure",
+      test_progressive_0167 },
+    { "progressive/0168_gpu_lookup_validation",
+      test_progressive_0168 },
+    { "progressive/0169_gpu_lookup_float_palette",
+      test_progressive_0169 },
+    { "progressive/0170_gpu_lookup_cache_isolation",
+      test_progressive_0170 },
+    { "progressive/0171_gpu_lookup_failure_fallback",
+      test_progressive_0171 },
+    { "progressive/0172_gpu_application_none",
+      test_progressive_0172 },
+    { "progressive/0173_gpu_application_bluenoise",
+      test_progressive_0173 },
+    { "progressive/0174_gpu_application_budget_resume",
+      test_progressive_0174 },
+    { "progressive/0175_gpu_application_canonical_guard",
+      test_progressive_0175 },
+    { "progressive/0176_gpu_public_commit",
+      test_progressive_0176 },
+    { "progressive/0177_gpu_public_rebind_transition",
+      test_progressive_0177 },
+    { "progressive/0178_gpu_public_auto_admission",
+      test_progressive_0178 },
+    { "progressive/0179_gpu_public_write_failure",
+      test_progressive_0179 },
+    { "progressive/0180_gpu_public_cancel_resume",
+      test_progressive_0180 },
+    { "progressive/0181_gpu_application_auto_fallback",
+      test_progressive_0181 },
+    { "progressive/0182_gpu_global_strata",
+      test_progressive_0182 },
+    { "progressive/0183_gpu_global_validation",
+      test_progressive_0183 },
+    { "progressive/0184_gpu_selection_global_samples",
+      test_progressive_0184 },
+    { "progressive/0185_gpu_selection_budget_resume",
+      test_progressive_0185 },
+    { "progressive/0186_gpu_selection_threshold_guard",
+      test_progressive_0186 },
+    { "progressive/0188_gpu_selection_auto_fallback",
+      test_progressive_0188 },
+    { "progressive/0189_gpu_selection_ladder",
+      test_progressive_0189 },
+    { "progressive/0190_gpu_scan_update_rebind",
+      test_progressive_0190 },
+    { "progressive/0192_gpu_scan_pending_update",
+      test_progressive_0192 },
+    { "progressive/0193_gpu_lookup_pending_update",
+      test_progressive_0193 },
+    { "progressive/0194_gpu_pending_before_admission",
+      test_progressive_0194 },
+    { "progressive/0195_gpu_pending_after_admission",
+      test_progressive_0195 },
+    { "progressive/0196_gpu_pending_rebind",
+      test_progressive_0196 },
+    { "progressive/0197_gpu_pending_destroy",
+      test_progressive_0197 },
+    { "progressive/0198_gpu_gamma_gamma_rgb",
+      test_progressive_0198 },
+    { "progressive/0199_gpu_gamma_gamma_hls",
+      test_progressive_0199 },
+    { "progressive/0200_gpu_gamma_linear_rgb",
+      test_progressive_0200 },
+    { "progressive/0201_gpu_gamma_linear_hls",
+      test_progressive_0201 },
+    { "progressive/0202_gpu_gamma_smptec_rgb",
+      test_progressive_0202 },
+    { "progressive/0203_gpu_gamma_smptec_hls",
+      test_progressive_0203 },
+    { "progressive/0204_gpu_gamma_display_p3_rgb",
+      test_progressive_0204 },
+    { "progressive/0205_gpu_gamma_display_p3_hls",
+      test_progressive_0205 },
+    { "progressive/0206_gpu_linear_gamma_rgb",
+      test_progressive_0206 },
+    { "progressive/0207_gpu_linear_gamma_hls",
+      test_progressive_0207 },
+    { "progressive/0208_gpu_linear_linear_rgb",
+      test_progressive_0208 },
+    { "progressive/0209_gpu_linear_linear_hls",
+      test_progressive_0209 },
+    { "progressive/0210_gpu_linear_smptec_rgb",
+      test_progressive_0210 },
+    { "progressive/0211_gpu_linear_smptec_hls",
+      test_progressive_0211 },
+    { "progressive/0212_gpu_linear_display_p3_rgb",
+      test_progressive_0212 },
+    { "progressive/0213_gpu_linear_display_p3_hls",
+      test_progressive_0213 },
+    { "progressive/0214_gpu_oklab_gamma_rgb",
+      test_progressive_0214 },
+    { "progressive/0215_gpu_oklab_gamma_hls",
+      test_progressive_0215 },
+    { "progressive/0216_gpu_oklab_linear_rgb",
+      test_progressive_0216 },
+    { "progressive/0217_gpu_oklab_linear_hls",
+      test_progressive_0217 },
+    { "progressive/0218_gpu_oklab_smptec_rgb",
+      test_progressive_0218 },
+    { "progressive/0219_gpu_oklab_smptec_hls",
+      test_progressive_0219 },
+    { "progressive/0220_gpu_oklab_display_p3_rgb",
+      test_progressive_0220 },
+    { "progressive/0221_gpu_oklab_display_p3_hls",
+      test_progressive_0221 },
+    { "progressive/0222_gpu_cielab_gamma_rgb",
+      test_progressive_0222 },
+    { "progressive/0223_gpu_cielab_gamma_hls",
+      test_progressive_0223 },
+    { "progressive/0224_gpu_cielab_linear_rgb",
+      test_progressive_0224 },
+    { "progressive/0225_gpu_cielab_linear_hls",
+      test_progressive_0225 },
+    { "progressive/0226_gpu_cielab_smptec_rgb",
+      test_progressive_0226 },
+    { "progressive/0227_gpu_cielab_smptec_hls",
+      test_progressive_0227 },
+    { "progressive/0228_gpu_cielab_display_p3_rgb",
+      test_progressive_0228 },
+    { "progressive/0229_gpu_cielab_display_p3_hls",
+      test_progressive_0229 },
+    { "progressive/0230_gpu_din99d_gamma_rgb",
+      test_progressive_0230 },
+    { "progressive/0231_gpu_din99d_gamma_hls",
+      test_progressive_0231 },
+    { "progressive/0232_gpu_din99d_linear_rgb",
+      test_progressive_0232 },
+    { "progressive/0233_gpu_din99d_linear_hls",
+      test_progressive_0233 },
+    { "progressive/0234_gpu_din99d_smptec_rgb",
+      test_progressive_0234 },
+    { "progressive/0235_gpu_din99d_smptec_hls",
+      test_progressive_0235 },
+    { "progressive/0236_gpu_din99d_display_p3_rgb",
+      test_progressive_0236 },
+    { "progressive/0237_gpu_din99d_display_p3_hls",
+      test_progressive_0237 },
+    { "progressive/0238_gpu_p3_ordinary_boundary",
+      test_progressive_0238 },
+    { "progressive/0116_ignored_delay_final_repair",
+      test_progressive_0116 },
+    { "progressive/0100_public_admission_snapshot",
+      test_progressive_0100 },
     { "decoder/0086_multi_pass_allocation_failure",
       test_sequence_0086 },
     { "colorspace/0012_extended_failure_atomic", test_color_0012 },
@@ -4825,22 +5515,6 @@ static test_entry_t const test_entries[] = {
     { "cms/0147_colorsync_curv", test_cms_0147 },
     { "cms/0181_gamma_option", test_cms_0181 },
     { "cms/0195_native_gamma", test_cms_0195 },
-    { "gpu-kmeans/0001_weighted_lloyd",
-      test_kmgpu_0001_weighted_lloyd },
-    { "gpu-kmeans/0002_byte_rounding",
-      test_kmgpu_0002_byte_rounding },
-    { "gpu-kmeans/0003_empty_cluster",
-      test_kmgpu_0003_empty_cluster },
-    { "gpu-kmeans/0004_iteration_floor",
-      test_kmgpu_0004_iteration_floor },
-    { "gpu-kmeans/0005_range_fallback_atomicity",
-      test_kmgpu_0005_range_fallback_atomicity },
-    { "gpu-kmeans/0006_option_atomicity",
-      test_kmgpu_0006_option_atomicity },
-    { "gpu-kmeans/0014_request_isolation",
-      test_kmgpu_0014_request_isolation },
-    { "gpu-kmeans/available",
-      test_kmgpu_available },
     { "assessment/0001_ciede2000_reference", test_qa_0001 },
     { "assessment/0002_same_physical_coordinates", test_qa_0002 },
     { "assessment/0003_same_rgb_different_definition", test_qa_0003 },
@@ -4866,20 +5540,21 @@ static test_entry_t const test_entries[] = {
     { "assessment/0034_scielab_map_output", test_qa_0034 },
     { "assessment/0035_scielab_map_capacity", test_qa_0035 },
     { "assessment/video_report_check", test_video_report_check },
-    { "assessment/clock_report_check", test_clock_report_check },
-    { "assessment/0036_persistence_duration_weighting", test_qa_0036 },
-    { "assessment/0037_persistence_pixel_reset", test_qa_0037 },
-    { "assessment/0038_persistence_partition_invariance", test_qa_0038 },
-    { "decoder/0087_animation_palette_carry", test_video_decode_0087 },
-    { "decoder/0088_animation_clear_canvas", test_video_decode_0088 },
-    { "decoder/0089_animation_malformed_tail", test_video_decode_0089 },
-    { "decoder/0090_animation_default_palette", test_video_decode_0090 },
     { "loader/image_values", test_image_values },
     { "loader/image_display_values", test_image_values },
     { "loader/image_black_values", test_image_values },
     { "loader/image_white_values", test_image_values },
     { "loader/image_sample_range", test_image_sample_range },
     { "loader/image_dimensions", test_image_dimensions },
+    { "assessment/clock_report_check", test_clock_report_check },
+    { "assessment/0036_persistence_duration_weighting", test_qa_0036 },
+    { "assessment/0037_persistence_pixel_reset", test_qa_0037 },
+    { "assessment/0038_persistence_partition_invariance", test_qa_0038 },
+
+    { "decoder/0087_animation_palette_carry", test_video_decode_0087 },
+    { "decoder/0088_animation_clear_canvas", test_video_decode_0088 },
+    { "decoder/0089_animation_malformed_tail", test_video_decode_0089 },
+    { "decoder/0090_animation_default_palette", test_video_decode_0090 },
     { "quant/palette/named_output/0037_adobe_libpng", test_named_output_0037 },
     { "quant/palette/named_output/0038_dci_libpng", test_named_output_0038 },
     { "quant/palette/named_output/0039_adobe_libtiff", test_named_output_0039 },
@@ -5041,6 +5716,22 @@ static test_entry_t const test_entries[] = {
       test_icc_0007_icc_builtin_float_special_values },
     { "icc/0008_icc_builtin_d2b_b2d_legacy_lut",
       test_icc_0008_icc_builtin_d2b_b2d_legacy_lut },
+    { "gpu-kmeans/0001_weighted_lloyd",
+      test_kmgpu_0001_weighted_lloyd },
+    { "gpu-kmeans/0002_byte_rounding",
+      test_kmgpu_0002_byte_rounding },
+    { "gpu-kmeans/0003_empty_cluster",
+      test_kmgpu_0003_empty_cluster },
+    { "gpu-kmeans/0004_iteration_floor",
+      test_kmgpu_0004_iteration_floor },
+    { "gpu-kmeans/0005_range_fallback_atomicity",
+      test_kmgpu_0005_range_fallback_atomicity },
+    { "gpu-kmeans/0006_option_atomicity",
+      test_kmgpu_0006_option_atomicity },
+    { "gpu-kmeans/0014_request_isolation",
+      test_kmgpu_0014_request_isolation },
+    { "gpu-kmeans/available",
+      test_kmgpu_available },
     { "palette/0001_kmeans_init", test_palette_0001_kmeans_init },
     { "palette/0002_kmedoids_constraints",
       test_palette_0002_kmedoids_constraints },

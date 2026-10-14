@@ -152,6 +152,49 @@ An interactive caller can retain this result across subsequent damage rectangles
 
 Output budgets and timing belong to the caller. The query alone does not track outstanding error outside the latest frame rectangle; callers must retain that obligation until full-surface refinement or history invalidation. Continuous threshold decay, regional aging, and guaranteed convergence beyond the selected palette are separate policies.
 
+### Progressive repair API
+
+`SIXEL_HAVE_ENCODER_6DELTA_PROGRESSIVE >= 1` provides a bounded CPU repair API over the same retained plane. A repair context owns an immutable, preprocessed target and resumable work; the encoder continues to own displayed colors and validity. Repair can improve ordinary palette error after a single baseline, including at ordinary threshold zero. It does not require a positive result from the legacy refinement predicate.
+
+| Function | Contract |
+| --- | --- |
+| `sixel_progressive_config_init(config, sizeof(*config))` | Initialize the supported configuration layout. Future structure tails remain untouched. |
+| `sixel_progressive_new(&context, encoder, config, allocator)` | Copy configuration and retain the encoder and allocator. Effective delta must be enabled; one repair context may attach to an encoder. A null allocator selects the default allocator. |
+| `sixel_progressive_bind_frame(context, frame, x, y, generation)` | Copy and preprocess an unprocessed source at the explicit retained-plane origin. Use nonzero, increasing generations. A failed bind preserves the previous binding. |
+| `sixel_progressive_step(context, budget, output, stats)` | Resume bounded work and submit at most one complete sparse `P2=1` DCS. A null output uses the encoder's configured destination. |
+| `sixel_progressive_unref(context)` | Release the context after its active/waiting calls finish. Compatible retained history remains available to ordinary delta. |
+
+Preserve the original source before ordinary encoding can modify a working frame. Establish the baseline, bind that original source, and call `step` at caller-selected opportunities. Set `struct_size` on zero-initialized budget and statistics structures. All three budget limits must be positive: `max_packet_bytes` counts the complete DCS, while `max_pixel_visits` and `max_distance_evaluations` bound resumable computation. The public default-limit macros provide starting values; they do not impose a timer or a frame rate. A successful output callback must consume or copy the entire submitted span into an ordered, reliable path. Any nonnegative callback result, including zero, means acceptance; report an incomplete write as negative. Output failure invalidates retained history.
+
+Check both the returned status and `stats.outcome`; `SIXEL_INTERRUPTED` is not a failure-class status. Successful outcomes are:
+
+| Outcome | Caller action |
+| --- | --- |
+| `FRAME_EMITTED` | The packet and acc update completed. More repair may remain. |
+| `YIELDED` | Resume later. `yield_reason` distinguishes work exhaustion, a pending ordinary update, and a busy encoder. |
+| `CONVERGED` | A complete canonical audit found no source-domain residual above the configured threshold. |
+| `STALLED` | Full-domain recovery found no improvement using the bounded palette and direct-source-projection strategy. This is not a proof of an output-color optimum. |
+| `NEEDS_BASELINE` | Establish valid history for the unknown source-domain positions. |
+| `NEEDS_SOURCE` | Bind a newer source after an ordinary frame or relevant configuration change. |
+| `BUDGET_TOO_SMALL` | Increase the byte budget; `required_packet_bytes` reports the staged one-pixel packet size. |
+| `UNSUPPORTED` | Select a supported configuration or output path. |
+
+Residuals and acceptance use the effective `-W` coordinates. Each accepted pixel strictly reduces its unperturbed squared distance to the target after the actual RGB101/HLS output projection. The defaults use an upper-residual fraction of 0.25, alternating with full selection; a population-weighted retained-aware palette with at most 32 colors, 4096 samples and 128 candidates; and fixed positional blue noise of strength 0.055 with exhaustive lookup. Automatic stopping distances are `2/255` in gamma, `0.005` in linear, and `0.01` in normalized perceptual workspaces. Zero-noise application and direct-source-projection recovery distinguish stalled work from a converged audit. These defaults do not establish monotonic MS-SSIM or Delta E improvement.
+
+Configuration is immutable for one context. `stop_distance_auto=0` selects the explicit nonnegative `stop_distance`, whose square must be finite; equality with that threshold is resolved. `selection_fraction` is in `(0, 1]`, `max_colors` in `1..255`, `sample_limit` in `1..65536`, and `candidate_limit` in `max_colors..4096`. `min_gain_ratio` is in `[0, 1)`, `swap_limit` in `0..16`, and `noise_strength` must be finite and nonnegative with safe squared arithmetic. Noise phases are `0..63`, and `noise_channel_rgb` is a boolean selecting shared versus separate channel noise. `gpu_policy` accepts `SIXEL_PROGRESSIVE_GPU_INHERIT` or an existing GPU policy constant. Invalid values are rejected before attaching a context.
+
+Statistics describe the owned snapshot only when `state_snapshot_valid` is true. Full-domain residual totals additionally require `audit_complete`; a successful paint invalidates the pre-paint audit. Successful paint and packet byte counts describe this call only and are zero on yields and errors. Work totals are per binding, reset on successful rebinding and reject a quantum that could overflow; they never wrap. Color counts distinguish the constructed palette from the pruned, transmitted palette. Source/history/configuration revisions identify the reported state.
+
+The caller owns placement, pacing and output order. Position each emitted packet at the bound rectangle, and account for cursor-prefix bytes separately from the DCS byte limit. A writer can prepend positioning only when it actually receives a packet; a yielded or completed analysis emits no bytes. Direct frame and byte APIs remain one ordinary frame per call. New ordinary work registered before repair's output admission has priority; an already admitted packet finishes its write and acc update before that ordinary operation proceeds. Thread-enabled builds serialize individual operations. The caller still protects compound origin/frame sequences and object lifetimes, and serializes all access in thread-disabled builds. A callback must not reenter its active encoder or repair context.
+
+Residual selection, global sampling and palette application can use Metal in the canonical `-W` float coordinates. CPU audit data corrects float mask boundaries before sampling, preserving small residuals and protected candidates. Sampling uses the complete selected population across bounded dispatches, with the same selection boundaries on CPU and GPU. Positional noise uses the shared absolute-coordinate CPU helper; palette construction, per-pixel acceptance and full-domain convergence audits remain on the CPU.
+
+GPU `off` uses CPU selection and lookup. `auto` admits selection when the canonical unresolved population reaches the encoder's `palette_threshold` (`-G auto:Pvalue`); palette application separately uses the final selected population. Allocation or device failure permits CPU fallback. Admission uses each complete population, independently of the resumable work quantum. `force` bypasses that threshold and reports `UNSUPPORTED` when Metal is unavailable; other backend failures remain errors. Bounded batches and palette slices respect pixel and distance budgets, including a one-distance quantum. Failed GPU attempts are conservatively charged against work limits before CPU retry.
+
+The context owns scratch device buffers and releases them on rebinding or destruction; a failed dispatch evicts reusable device state. A `METAL` backend statistic means that the current preparation has completed GPU selection or lookup, not that its audit or acceptance ran on the GPU. Float near-ties can choose a different candidate than CPU lookup, but cannot bypass canonical acceptance.
+
+Fixed palettes, monochrome, high-color, OR mode, macros, DRCS, PNG output, multiplexer penetration, body/header suppression and transparent output offsets are unsupported by this repair path. Ordinary encoding retains its own supported paths and policies.
+
 ### Surface coordinates
 
 By default, history has the current frame's dimensions and origin `(0, 0)`. It has no knowledge that two same-sized input rectangles might represent different screen positions. A dimension change makes old history incompatible; a same-sized rectangle moved by the application must not reuse frame-local history as though it were still at the old location.
@@ -246,9 +289,11 @@ For an ordinary gamma RGB output call with gamma source coordinates and no float
 
 For example, source 32, retained 33 and selected entry 32 must keep: the entry emits 13%, represented as 33 in history. Retained 34 instead must repaint. Source 34 with retained 35 and selected entry 32 is another tie (distance 1 to both 35 and emitted 33); rounding the source to 33 would incorrectly reject it. These integer witnesses need no floating-point tolerance. Repeated generated frames with literal grays 32/96/160 retain 33/97/161 and omit the second frame in both serial and producer/writer encoding; changing the source to black paints again.
 
+The output owner binds this comparison hint to its dither object for the encode call, before serial application or worker use, and clears it on success and failure. There is no global switch or retained-frame reset. Standalone PaletteApply has no wire-format contract and keeps its supplied-candidate comparison. OR, body-only, transformed source/output and legacy float-backed palettes do not acquire this byte comparison hint. HLS uses a separate palette-sized projection with the same call lifetime. Fixed byte tables still require their existing omission mechanism; this change does not add the native fixed-table mask path to them. Native float comparison remains as described below.
+
 Metal receives the same emitted-candidate comparison view for byte RGB and HLS. The RGB projection runs once per palette; HLS reuses the output owner's prepared bytes. At most 768 comparison bytes accompany the existing GPU parameters. Direct and Eytzinger lookup still select from the original palette, and blue noise still perturbs only that selection. The post-lookup comparison uses the unperturbed source and the selected entry's emitted RGB. Without an output-owned view, standalone GPU application compares the supplied candidate as before. An undersized explicit view is rejected before dispatch.
 
-The output owner binds this comparison hint to its dither object for the encode call, before serial application or worker use, and clears it on success and failure. There is no global switch or retained-frame reset. Standalone PaletteApply has no wire-format contract and keeps its supplied-candidate comparison. OR, body-only, transformed source/output and legacy float-backed palettes do not acquire this byte comparison hint. HLS uses a separate palette-sized projection with the same call lifetime. Fixed byte tables still require their existing omission mechanism; this change does not add the native fixed-table mask path to them. Native float comparison remains as described below.
+For a chromatic RGB witness, target `(13,13,8)` and retained `(10,10,8)` have squared error 18. Candidate `(11,11,6)` appears to cost 12 before serialization, but emits `(10,10,5)` with error 27, so it must keep. Likewise, repainting target 32 over retained 33 with entry 32 cannot reduce the error: that entry also emits 33. These are candidate-effect errors, not evidence of corrupt retained history.
 
 ### Native float comparison and retained precision
 
@@ -655,3 +700,191 @@ The [filter test directory](../../../tests/processing/filter/) also checks contr
 The exact early-match and threshold-255 boundaries, plane-size rejection/reset details, seeded-buffer lifecycle, broader float32/output-space scope, and missing-emitted-RGB fallback are audited against owning code. The table does not provide a separate focused automated assertion for every one of those dimensions. Likewise, the listed LSO2 test asserts `diffuse`, while D6-20's `skip` test covers only its six named policies. GPU tests may skip when the required device or backend is unavailable.
 
 Receiver preservation, palette interpretation, external scroll/overlay recovery, delivery loss, and temporal appearance are application/terminal integration observations. Validate them with the actual receiver and a composed frame sequence; a passing single-frame decoder test cannot establish them.
+
+### Progressive API contract tests
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| DP-01 | Bounded public calls report per-call and cumulative work, commit counts, complete audits and stale-source outcomes. | [tests/processing/progressive/0095_public_statistics_resume.t](../../../tests/processing/progressive/0095_public_statistics_resume.t) |
+| DP-02 | A null output writes the complete repair to the configured destination. | [tests/processing/progressive/0096_public_default_destination.t](../../../tests/processing/progressive/0096_public_default_destination.t) |
+| DP-03 | Invalid layout sizes are rejected and future structure tails remain untouched. | [tests/processing/progressive/0097_public_layout_validation.t](../../../tests/processing/progressive/0097_public_layout_validation.t) |
+| DP-04 | Work counters reject overflow without output, and successful rebinding resets them. | [tests/processing/progressive/0098_public_counter_exhaustion.t](../../../tests/processing/progressive/0098_public_counter_exhaustion.t) |
+| DP-05 | Envelope suppression reports unsupported repair without output or history changes. | [tests/processing/progressive/0099_public_unsupported_controls.t](../../../tests/processing/progressive/0099_public_unsupported_controls.t) |
+| DP-06 | Busy admission and pending-update admission return distinct yield reasons without reading unowned image state. | [tests/processing/progressive/0100_public_admission_snapshot.t](../../../tests/processing/progressive/0100_public_admission_snapshot.t) |
+| DP-07 | A normal update registered before output admission prevents repair emission. | [tests/processing/progressive/0093_step_pre_admission_priority.t](../../../tests/processing/progressive/0093_step_pre_admission_priority.t) |
+| DP-08 | An admitted repair commits before a later normal update uses its history. | [tests/processing/progressive/0094_step_admitted_packet_order.t](../../../tests/processing/progressive/0094_step_admitted_packet_order.t) |
+| DP-09 | A failed output callback invalidates retained history. | [tests/processing/progressive/0082_step_failed_output.t](../../../tests/processing/progressive/0082_step_failed_output.t) |
+
+Additional [progressive tests](../../../tests/processing/progressive/) exercise canonical output projection, selection and recovery, budgeted packet construction, allocator failures, cancellation, callback reentry and ordinary-update ordering. These establish numeric and stream behavior; they do not measure perceptual pass curves, terminal presentation or GPU repair performance.
+
+## Progressive presentation
+
+`img2sixel -Z progressive` displays one composed still and overlays repairs until the working-space residual meets the stop threshold, the bounded repair strategy cannot improve it, or a presentation limit is reached. Animation input defaults to source frame zero, excluding an APNG poster. `-T` takes precedence over `SIXEL_LOADER_ANIMATION_START_FRAME_NO`. The implicit still selection belongs to this policy selection; selecting `-Z delta` or `-Z full` restores ordinary loading unless `-S` was explicitly requested.
+
+`-Z delta:progressive=1` (or `-Z delta:P1`) uses available animation slack for bounded repair and refines the final frame after finite playback. The default is `0`; `SIXEL_UPDATE_DELTA_PROGRESSIVE=1|0` supplies the delta default without enabling delta itself.
+
+The progressive switch follows the shared strict boolean contract: CLI long and short forms and the environment accept only exact `0` and `1`. Use `:progressive=0` or `:P0` to disable it. Textual values such as `on` and `off` are rejected.
+
+The scheduler uses measured transport capacity and absolute source deadlines. A bounded ordered adapter accepts at most one complete repair ahead of the host sink in threaded builds; thread-disabled builds use ordered synchronous writes. An admitted packet drains before a later ordinary frame. Host acceptance is not a terminal-display acknowledgement, and a blocking sink can exceed the estimated deadline. `-g` and zero-duration frames skip intermediate repairs.
+
+Both paths use the repair API and generated palettes, including its optional Metal selection and palette application. The ordinary baseline retains its own GPU input and dither restrictions. Fixed palettes, high color, multiplexer wrapping and transparent offsets are unsupported, as are the ordinary delta conflicts above. Direct frame/byte calls remain caller-paced and do not run this presentation loop.
+
+Both presentation policies accept `stop_threshold=auto|distance` (`:Svalue`), `max_passes=N` (`:Nvalue`) and `max_seconds=S` (`:Mvalue`). Defaults are `auto`, `0`, and `5`, respectively. The stop distance is in `-W`, with explicit values in `0..1e154`; it is not a Delta E00 grade. A zero stop distance requests exact agreement. Pass counts are integers in `0..4294967295`; time is any nonnegative finite number of seconds. Zero disables the respective resource cap. Passes count the initial ordinary image plus accepted repair packets, not resumable work calls. Limits on `delta` do not enable progressive repair by themselves. `full` rejects these suffixes.
+
+Each source's elapsed time starts after its ordinary image is accepted, before source-binding work. Animation resets limits only for a new source; final-frame refinement retains that source's count and start time. The controller checks elapsed time during bounded work and immediately before output admission. An already admitted packet completes and remains in the retained history; a blocked host write can exceed the time allowance. Source-frame deadlines continue to take precedence over optional repair and are never extended by a limit or by repair count.
+
+Reaching a resource cap returns success with the last complete output image. It does not certify that the quality target was met. Verbose output (`-v`) distinguishes `converged`, `stalled`, `max_passes`, and `max_seconds`. For example, `img2sixel input.png -Z progressive:stop_threshold=auto:max_passes=10:max_seconds=2` limits the display to ten total passes and two seconds after the initial image. `-Z progressive:max_seconds=0` removes the default time cap. Environment defaults are `SIXEL_UPDATE_PROGRESSIVE_STOP_THRESHOLD`, `SIXEL_UPDATE_PROGRESSIVE_MAX_PASSES`, and `SIXEL_UPDATE_PROGRESSIVE_MAX_SECONDS`; explicit suffixes take precedence, and a new `-Z` selection starts again from defaults and the selected base's environment.
+
+File presentation uses fixed initial residual quantiles to move toward smaller residuals, allowing at most two accepted packets per nonfinal threshold stage. Empty or non-improving masks advance immediately. The final full-domain stage permanently disables noise for that source and retains the direct-projection rescue before reporting a strategy stall. The final quality target itself never changes. This policy bounds coarse-stage residence; it does not promise a universal optimal bandwidth/quality tradeoff or a pass bound at the final stage. Direct callers of the progressive step API retain their own configuration and scheduling; CLI caps do not change the public step or stats layouts.
+
+A still capture contains one initial `ESC 7` followed by its complete P2=1 baseline, then `ESC 8` before each actual repair. No cursor restoration is emitted for an audit or a no-output yield. Cursor controls and image bytes use the same selected destination; live-terminal space reservation occurs before the initial save. Decode a still capture with `sixel2png -M 6delta-progressive`, or assess its final composition with `lsqa -M 6delta-progressive`. No IDCS attributes are emitted.
+
+Presentation contracts are covered by:
+
+- [tests/processing/progressive/0101_still_capture_history.t](../../../tests/processing/progressive/0101_still_capture_history.t): still capture history.
+- [tests/processing/progressive/0102_gif_default_frame.t](../../../tests/processing/progressive/0102_gif_default_frame.t): gif default frame.
+- [tests/processing/progressive/0103_gif_composed_selection.t](../../../tests/processing/progressive/0103_gif_composed_selection.t): gif composed selection.
+- [tests/processing/progressive/0104_gif_negative_selection.t](../../../tests/processing/progressive/0104_gif_negative_selection.t): gif negative selection.
+- [tests/processing/progressive/0105_apng_poster_exclusion.t](../../../tests/processing/progressive/0105_apng_poster_exclusion.t): apng poster exclusion.
+- [tests/processing/progressive/0106_apng_invalid_selection.t](../../../tests/processing/progressive/0106_apng_invalid_selection.t): apng invalid selection.
+- [tests/processing/progressive/0107_still_8bit_capture.t](../../../tests/processing/progressive/0107_still_8bit_capture.t): still 8bit capture.
+- [tests/processing/progressive/0108_presentation_option_atomicity.t](../../../tests/processing/progressive/0108_presentation_option_atomicity.t): presentation option atomicity.
+
+Scheduler and ordered output contracts are covered by:
+
+- [tests/processing/progressive/0109_transport_capacity_admission.t](../../../tests/processing/progressive/0109_transport_capacity_admission.t): transport capacity admission.
+- [tests/processing/progressive/0110_deadline_admission.t](../../../tests/processing/progressive/0110_deadline_admission.t): deadline admission.
+- [tests/processing/progressive/0111_source_clock_preserved.t](../../../tests/processing/progressive/0111_source_clock_preserved.t): source clock preserved.
+- [tests/processing/progressive/0112_zero_and_ignored_delay.t](../../../tests/processing/progressive/0112_zero_and_ignored_delay.t): zero and ignored delay.
+- [tests/processing/progressive/0113_delay_cancellation.t](../../../tests/processing/progressive/0113_delay_cancellation.t): delay cancellation.
+- [tests/processing/progressive/0114_ordered_transport.t](../../../tests/processing/progressive/0114_ordered_transport.t): ordered transport.
+- [tests/processing/progressive/0115_transport_write_failure.t](../../../tests/processing/progressive/0115_transport_write_failure.t): transport write failure.
+- [tests/processing/progressive/0116_ignored_delay_final_repair.t](../../../tests/processing/progressive/0116_ignored_delay_final_repair.t): ignored delay final repair.
+
+CLI selection and precedence are covered by:
+
+- [tests/cli/progressive/0001_environment_base.t](../../../tests/cli/progressive/0001_environment_base.t): environment base selection.
+- [tests/cli/progressive/0002_source_environment_precedence.t](../../../tests/cli/progressive/0002_source_environment_precedence.t): explicit source index precedence.
+- [tests/cli/progressive/0003_policy_reset_animation.t](../../../tests/cli/progressive/0003_policy_reset_animation.t): policy reset restores animation loading.
+- [tests/cli/progressive/0004_explicit_static_preserved.t](../../../tests/cli/progressive/0004_explicit_static_preserved.t): explicit static survives policy reset.
+- [tests/cli/progressive/0005_progressive_disable_precedence.t](../../../tests/cli/progressive/0005_progressive_disable_precedence.t): explicit progressive off overrides environment.
+- [tests/cli/progressive/0006_source_environment_selection.t](../../../tests/cli/progressive/0006_source_environment_selection.t): source environment selects the composed frame.
+
+
+### Presentation limit coverage
+
+- [tests/processing/progressive/0140_limit_option_values.t](../../../tests/processing/progressive/0140_limit_option_values.t): limit option values.
+- [tests/processing/progressive/0141_limit_option_atomicity.t](../../../tests/processing/progressive/0141_limit_option_atomicity.t): limit option atomicity.
+- [tests/processing/progressive/0142_presentation_pass_limit.t](../../../tests/processing/progressive/0142_presentation_pass_limit.t): presentation pass limit.
+- [tests/processing/progressive/0143_presentation_time_limit.t](../../../tests/processing/progressive/0143_presentation_time_limit.t): presentation time limit.
+- [tests/processing/progressive/0144_presentation_admitted_deadline.t](../../../tests/processing/progressive/0144_presentation_admitted_deadline.t): presentation admitted deadline.
+- [tests/processing/progressive/0145_presentation_zero_limits.t](../../../tests/processing/progressive/0145_presentation_zero_limits.t): presentation zero limits.
+- [tests/processing/progressive/0146_presentation_rebind_limits.t](../../../tests/processing/progressive/0146_presentation_rebind_limits.t): presentation rebind limits.
+- [tests/processing/progressive/0147_animation_pass_limit_clock.t](../../../tests/processing/progressive/0147_animation_pass_limit_clock.t): animation pass limit clock.
+- [tests/processing/progressive/0148_animation_tail_time_limit.t](../../../tests/processing/progressive/0148_animation_tail_time_limit.t): animation tail time limit.
+- [tests/processing/progressive/0149_presentation_final_no_noise.t](../../../tests/processing/progressive/0149_presentation_final_no_noise.t): presentation final no noise.
+- [tests/processing/progressive/0157_progressive_boolean_syntax.t](../../../tests/processing/progressive/0157_progressive_boolean_syntax.t): accept exact boolean long/short syntax and atomically reject textual or malformed values.
+
+CLI precedence and selection reset are verified by [tests/cli/progressive/0007_limit_cli_environment_precedence.t](../../../tests/cli/progressive/0007_limit_cli_environment_precedence.t) and [tests/cli/progressive/0008_limit_selection_reset.t](../../../tests/cli/progressive/0008_limit_selection_reset.t).
+
+### Progressive GPU application coverage
+
+These behavioral tests exercise deliberate-margin fixtures and canonical acceptance; they do not calibrate performance, automatic admission thresholds or perceptual quality. Metal-dependent cases skip when no device is available. Residual scan and global sampling are covered separately below; GPU summaries are never used to certify convergence.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| PG-01 | Forced preparation uses Metal when available and reports unsupported otherwise. | [tests/processing/progressive/0067_prepare_force_policy.t](../../../tests/processing/progressive/0067_prepare_force_policy.t) |
+| PG-02 | Reject malformed lookup requests without publishing matches. | [tests/processing/progressive/0168_gpu_lookup_validation.t](../../../tests/processing/progressive/0168_gpu_lookup_validation.t) |
+| PG-03 | Search ordered signed float palettes with first-slot ties. | [tests/processing/progressive/0169_gpu_lookup_float_palette.t](../../../tests/processing/progressive/0169_gpu_lookup_float_palette.t) |
+| PG-04 | Isolate owners and refresh reused query and palette addresses. | [tests/processing/progressive/0170_gpu_lookup_cache_isolation.t](../../../tests/processing/progressive/0170_gpu_lookup_cache_isolation.t) |
+| PG-05 | Preserve output on failure, allow AUTO fallback and recover. | [tests/processing/progressive/0171_gpu_lookup_failure_fallback.t](../../../tests/processing/progressive/0171_gpu_lookup_failure_fallback.t) |
+| PG-06 | Match CPU zero-noise masks on sparse offset input. | [tests/processing/progressive/0172_gpu_application_none.t](../../../tests/processing/progressive/0172_gpu_application_none.t) |
+| PG-07 | Preserve absolute noise phase, protected pixels and keep masks. | [tests/processing/progressive/0173_gpu_application_bluenoise.t](../../../tests/processing/progressive/0173_gpu_application_bluenoise.t) |
+| PG-08 | Resume a forced GPU palette search with one-distance budgets. | [tests/processing/progressive/0174_gpu_application_budget_resume.t](../../../tests/processing/progressive/0174_gpu_application_budget_resume.t) |
+| PG-09 | Reject equal canonical error even when GPU float distance rounds down. | [tests/processing/progressive/0175_gpu_application_canonical_guard.t](../../../tests/processing/progressive/0175_gpu_application_canonical_guard.t) |
+| PG-10 | Commit decoded GPU repair colors only at the bound plane origin. | [tests/processing/progressive/0176_gpu_public_commit.t](../../../tests/processing/progressive/0176_gpu_public_commit.t) |
+| PG-11 | Rebind to a new source and switch from GPU to CPU without stale data. | [tests/processing/progressive/0177_gpu_public_rebind_transition.t](../../../tests/processing/progressive/0177_gpu_public_rebind_transition.t) |
+| PG-12 | Admit AUTO by selected population independently of dispatch size. | [tests/processing/progressive/0178_gpu_public_auto_admission.t](../../../tests/processing/progressive/0178_gpu_public_auto_admission.t) |
+| PG-13 | Invalidate retained history after a GPU repair writer failure. | [tests/processing/progressive/0179_gpu_public_write_failure.t](../../../tests/processing/progressive/0179_gpu_public_write_failure.t) |
+| PG-14 | Cancel after GPU selection and after GPU lookup, resuming each without early output. | [tests/processing/progressive/0180_gpu_public_cancel_resume.t](../../../tests/processing/progressive/0180_gpu_public_cancel_resume.t) |
+| PG-15 | Retry a failed GPU batch on CPU while accounting for its work budget. | [tests/processing/progressive/0181_gpu_application_auto_fallback.t](../../../tests/processing/progressive/0181_gpu_application_auto_fallback.t) |
+
+### Progressive GPU selection coverage
+
+GPU residual masks are corrected against the canonical audit before global sampling. Sample strata do not depend on dispatch size. These tests verify functional contracts, not performance or perceptual calibration.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| PS-01 | Preserve global sample positions and populations across filtered batches. | [tests/processing/progressive/0182_gpu_global_strata.t](../../../tests/processing/progressive/0182_gpu_global_strata.t) |
+| PS-02 | Reject malformed global sampling requests before GPU submission. | [tests/processing/progressive/0183_gpu_global_validation.t](../../../tests/processing/progressive/0183_gpu_global_validation.t) |
+| PS-03 | Preserve more than 128 global samples across bounded GPU dispatches. | [tests/processing/progressive/0184_gpu_selection_global_samples.t](../../../tests/processing/progressive/0184_gpu_selection_global_samples.t) |
+| PS-04 | Resume GPU selection and sampling with one-unit work budgets. | [tests/processing/progressive/0185_gpu_selection_budget_resume.t](../../../tests/processing/progressive/0185_gpu_selection_budget_resume.t) |
+| PS-05 | Restore canonical residuals omitted by a rounded float threshold. | [tests/processing/progressive/0186_gpu_selection_threshold_guard.t](../../../tests/processing/progressive/0186_gpu_selection_threshold_guard.t) |
+| PS-07 | Account failed GPU selection work before AUTO resumes on CPU. | [tests/processing/progressive/0188_gpu_selection_auto_fallback.t](../../../tests/processing/progressive/0188_gpu_selection_auto_fallback.t) |
+| PS-08 | Keep frozen mask thresholds and protected candidates on the GPU path. | [tests/processing/progressive/0189_gpu_selection_ladder.t](../../../tests/processing/progressive/0189_gpu_selection_ladder.t) |
+| PS-09 | Reject stale GPU scan work after an ordinary update and rebind safely. | [tests/processing/progressive/0190_gpu_scan_update_rebind.t](../../../tests/processing/progressive/0190_gpu_scan_update_rebind.t) |
+
+### Progressive GPU operation ordering coverage
+
+Metal batches complete synchronously while the encoder operation gate owns the context. A waiting ordinary update or rebind receives the gate at the next preparation checkpoint; after output admission, the packet and retained-history commit finish first. Context teardown also waits for that gate, keeping source snapshots, host work and device caches alive through the active operation. These tests register an actual waiting thread at a completed GPU batch or the output-admission boundary. They do not inject a driver failure or suspend an in-flight Metal command.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| PO-01 | Yield to a registered ordinary update after a real GPU scan. | [tests/processing/progressive/0192_gpu_scan_pending_update.t](../../../tests/processing/progressive/0192_gpu_scan_pending_update.t) |
+| PO-02 | Yield to a registered ordinary update after a real GPU lookup. | [tests/processing/progressive/0193_gpu_lookup_pending_update.t](../../../tests/processing/progressive/0193_gpu_lookup_pending_update.t) |
+| PO-03 | Suppress a prepared GPU repair when an update precedes admission. | [tests/processing/progressive/0194_gpu_pending_before_admission.t](../../../tests/processing/progressive/0194_gpu_pending_before_admission.t) |
+| PO-04 | Commit an admitted GPU repair before a waiting ordinary update. | [tests/processing/progressive/0195_gpu_pending_after_admission.t](../../../tests/processing/progressive/0195_gpu_pending_after_admission.t) |
+| PO-05 | Keep GPU binding storage alive until a waiting rebind owns the gate. | [tests/processing/progressive/0196_gpu_pending_rebind.t](../../../tests/processing/progressive/0196_gpu_pending_rebind.t) |
+| PO-06 | Finish an admitted GPU repair before a waiting context destruction. | [tests/processing/progressive/0197_gpu_pending_destroy.t](../../../tests/processing/progressive/0197_gpu_pending_destroy.t) |
+
+### Progressive GPU color interpretation coverage
+
+The matrix below exercises the public repair API with all five working spaces, the four supported output interpretations and both RGB and HLS wire definitions. Each case uses an offset source rectangle with transparent holes and runs with zero noise and positional blue noise. Both GPU selection and lookup must actually execute under FORCE and admitted AUTO; OFF and AUTO below its population threshold must remain on CPU. The AUTO cases inherit encoder policy and distinguish the four eligible pixels from the six-pixel rectangle. The packet is independently decoded in the selected output coordinates and compared exactly with retained history; omitted pixels and the outside halo must remain unchanged. A fresh canonical audit must show strictly reduced error at every painted position in the selected working space.
+
+Repair source preparation normalizes packed alpha before producing typed float samples, independently of the ordinary encoder's palette, lookup and GPU restrictions. Ordinary Display P3 encoding retains its own GPU rejection; support in this repair API does not expand the ordinary encoder or CLI baseline path.
+
+The CPU comparison establishes backend consistency, not an independent reference for color-space conversion or a perceptual quality score. Exact packet/history agreement is checked only for fixtures whose nearest and runner-up lookup distances differ by more than `32 * FLT_EPSILON * max(1, runner_up_distance)`, bounding float subtraction, multiplication and accumulation error for both candidates (including fused evaluation). Query coordinates are the shared float positional queries; the oracle computes their distances in double. This margin is asserted at runtime before accepting exact agreement. General conversion correctness and numerical methods remain owned by [color-space handling](../colorspace-handling/README.md) and the [testing guide](../../testing/guide.md#intermediate-floating-point-error). Output interpretation is checked through API metadata; the SIXEL packet does not announce Display P3 or another wide-gamut interpretation.
+
+| ID | Working space | Output coordinates | Wire definition | Owning test |
+| --- | --- | --- | --- | --- |
+| PC-01 | `gamma` | `gamma` | RGB | [tests/processing/progressive/0198_gpu_gamma_gamma_rgb.t](../../../tests/processing/progressive/0198_gpu_gamma_gamma_rgb.t) |
+| PC-02 | `gamma` | `gamma` | HLS | [tests/processing/progressive/0199_gpu_gamma_gamma_hls.t](../../../tests/processing/progressive/0199_gpu_gamma_gamma_hls.t) |
+| PC-03 | `gamma` | `linear` | RGB | [tests/processing/progressive/0200_gpu_gamma_linear_rgb.t](../../../tests/processing/progressive/0200_gpu_gamma_linear_rgb.t) |
+| PC-04 | `gamma` | `linear` | HLS | [tests/processing/progressive/0201_gpu_gamma_linear_hls.t](../../../tests/processing/progressive/0201_gpu_gamma_linear_hls.t) |
+| PC-05 | `gamma` | `smpte-c` | RGB | [tests/processing/progressive/0202_gpu_gamma_smptec_rgb.t](../../../tests/processing/progressive/0202_gpu_gamma_smptec_rgb.t) |
+| PC-06 | `gamma` | `smpte-c` | HLS | [tests/processing/progressive/0203_gpu_gamma_smptec_hls.t](../../../tests/processing/progressive/0203_gpu_gamma_smptec_hls.t) |
+| PC-07 | `gamma` | `display-p3` | RGB | [tests/processing/progressive/0204_gpu_gamma_display_p3_rgb.t](../../../tests/processing/progressive/0204_gpu_gamma_display_p3_rgb.t) |
+| PC-08 | `gamma` | `display-p3` | HLS | [tests/processing/progressive/0205_gpu_gamma_display_p3_hls.t](../../../tests/processing/progressive/0205_gpu_gamma_display_p3_hls.t) |
+| PC-09 | `linear` | `gamma` | RGB | [tests/processing/progressive/0206_gpu_linear_gamma_rgb.t](../../../tests/processing/progressive/0206_gpu_linear_gamma_rgb.t) |
+| PC-10 | `linear` | `gamma` | HLS | [tests/processing/progressive/0207_gpu_linear_gamma_hls.t](../../../tests/processing/progressive/0207_gpu_linear_gamma_hls.t) |
+| PC-11 | `linear` | `linear` | RGB | [tests/processing/progressive/0208_gpu_linear_linear_rgb.t](../../../tests/processing/progressive/0208_gpu_linear_linear_rgb.t) |
+| PC-12 | `linear` | `linear` | HLS | [tests/processing/progressive/0209_gpu_linear_linear_hls.t](../../../tests/processing/progressive/0209_gpu_linear_linear_hls.t) |
+| PC-13 | `linear` | `smpte-c` | RGB | [tests/processing/progressive/0210_gpu_linear_smptec_rgb.t](../../../tests/processing/progressive/0210_gpu_linear_smptec_rgb.t) |
+| PC-14 | `linear` | `smpte-c` | HLS | [tests/processing/progressive/0211_gpu_linear_smptec_hls.t](../../../tests/processing/progressive/0211_gpu_linear_smptec_hls.t) |
+| PC-15 | `linear` | `display-p3` | RGB | [tests/processing/progressive/0212_gpu_linear_display_p3_rgb.t](../../../tests/processing/progressive/0212_gpu_linear_display_p3_rgb.t) |
+| PC-16 | `linear` | `display-p3` | HLS | [tests/processing/progressive/0213_gpu_linear_display_p3_hls.t](../../../tests/processing/progressive/0213_gpu_linear_display_p3_hls.t) |
+| PC-17 | `oklab` | `gamma` | RGB | [tests/processing/progressive/0214_gpu_oklab_gamma_rgb.t](../../../tests/processing/progressive/0214_gpu_oklab_gamma_rgb.t) |
+| PC-18 | `oklab` | `gamma` | HLS | [tests/processing/progressive/0215_gpu_oklab_gamma_hls.t](../../../tests/processing/progressive/0215_gpu_oklab_gamma_hls.t) |
+| PC-19 | `oklab` | `linear` | RGB | [tests/processing/progressive/0216_gpu_oklab_linear_rgb.t](../../../tests/processing/progressive/0216_gpu_oklab_linear_rgb.t) |
+| PC-20 | `oklab` | `linear` | HLS | [tests/processing/progressive/0217_gpu_oklab_linear_hls.t](../../../tests/processing/progressive/0217_gpu_oklab_linear_hls.t) |
+| PC-21 | `oklab` | `smpte-c` | RGB | [tests/processing/progressive/0218_gpu_oklab_smptec_rgb.t](../../../tests/processing/progressive/0218_gpu_oklab_smptec_rgb.t) |
+| PC-22 | `oklab` | `smpte-c` | HLS | [tests/processing/progressive/0219_gpu_oklab_smptec_hls.t](../../../tests/processing/progressive/0219_gpu_oklab_smptec_hls.t) |
+| PC-23 | `oklab` | `display-p3` | RGB | [tests/processing/progressive/0220_gpu_oklab_display_p3_rgb.t](../../../tests/processing/progressive/0220_gpu_oklab_display_p3_rgb.t) |
+| PC-24 | `oklab` | `display-p3` | HLS | [tests/processing/progressive/0221_gpu_oklab_display_p3_hls.t](../../../tests/processing/progressive/0221_gpu_oklab_display_p3_hls.t) |
+| PC-25 | `cielab` | `gamma` | RGB | [tests/processing/progressive/0222_gpu_cielab_gamma_rgb.t](../../../tests/processing/progressive/0222_gpu_cielab_gamma_rgb.t) |
+| PC-26 | `cielab` | `gamma` | HLS | [tests/processing/progressive/0223_gpu_cielab_gamma_hls.t](../../../tests/processing/progressive/0223_gpu_cielab_gamma_hls.t) |
+| PC-27 | `cielab` | `linear` | RGB | [tests/processing/progressive/0224_gpu_cielab_linear_rgb.t](../../../tests/processing/progressive/0224_gpu_cielab_linear_rgb.t) |
+| PC-28 | `cielab` | `linear` | HLS | [tests/processing/progressive/0225_gpu_cielab_linear_hls.t](../../../tests/processing/progressive/0225_gpu_cielab_linear_hls.t) |
+| PC-29 | `cielab` | `smpte-c` | RGB | [tests/processing/progressive/0226_gpu_cielab_smptec_rgb.t](../../../tests/processing/progressive/0226_gpu_cielab_smptec_rgb.t) |
+| PC-30 | `cielab` | `smpte-c` | HLS | [tests/processing/progressive/0227_gpu_cielab_smptec_hls.t](../../../tests/processing/progressive/0227_gpu_cielab_smptec_hls.t) |
+| PC-31 | `cielab` | `display-p3` | RGB | [tests/processing/progressive/0228_gpu_cielab_display_p3_rgb.t](../../../tests/processing/progressive/0228_gpu_cielab_display_p3_rgb.t) |
+| PC-32 | `cielab` | `display-p3` | HLS | [tests/processing/progressive/0229_gpu_cielab_display_p3_hls.t](../../../tests/processing/progressive/0229_gpu_cielab_display_p3_hls.t) |
+| PC-33 | `din99d` | `gamma` | RGB | [tests/processing/progressive/0230_gpu_din99d_gamma_rgb.t](../../../tests/processing/progressive/0230_gpu_din99d_gamma_rgb.t) |
+| PC-34 | `din99d` | `gamma` | HLS | [tests/processing/progressive/0231_gpu_din99d_gamma_hls.t](../../../tests/processing/progressive/0231_gpu_din99d_gamma_hls.t) |
+| PC-35 | `din99d` | `linear` | RGB | [tests/processing/progressive/0232_gpu_din99d_linear_rgb.t](../../../tests/processing/progressive/0232_gpu_din99d_linear_rgb.t) |
+| PC-36 | `din99d` | `linear` | HLS | [tests/processing/progressive/0233_gpu_din99d_linear_hls.t](../../../tests/processing/progressive/0233_gpu_din99d_linear_hls.t) |
+| PC-37 | `din99d` | `smpte-c` | RGB | [tests/processing/progressive/0234_gpu_din99d_smptec_rgb.t](../../../tests/processing/progressive/0234_gpu_din99d_smptec_rgb.t) |
+| PC-38 | `din99d` | `smpte-c` | HLS | [tests/processing/progressive/0235_gpu_din99d_smptec_hls.t](../../../tests/processing/progressive/0235_gpu_din99d_smptec_hls.t) |
+| PC-39 | `din99d` | `display-p3` | RGB | [tests/processing/progressive/0236_gpu_din99d_display_p3_rgb.t](../../../tests/processing/progressive/0236_gpu_din99d_display_p3_rgb.t) |
+| PC-40 | `din99d` | `display-p3` | HLS | [tests/processing/progressive/0237_gpu_din99d_display_p3_hls.t](../../../tests/processing/progressive/0237_gpu_din99d_display_p3_hls.t) |
+| PC-41 | Ordinary encoding | `display-p3` | GPU admission still rejects before output | [tests/processing/progressive/0238_gpu_p3_ordinary_boundary.t](../../../tests/processing/progressive/0238_gpu_p3_ordinary_boundary.t) |

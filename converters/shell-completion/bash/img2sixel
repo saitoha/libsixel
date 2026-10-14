@@ -971,7 +971,7 @@ _img2sixel()
         return 0
         ;;
     -Z|--update-policy)
-        COMPREPLY=( $( compgen -W 'full delta delta:threshold=0:error=diffuse delta:threshold=0:error=skip' -- "$cur" ) )
+        COMPREPLY=( $( compgen -W 'full delta progressive progressive:stop_threshold=auto progressive:max_passes=10 progressive:max_seconds=2 progressive:Sauto:N10:M2 delta:progressive=1 delta:progressive=0 delta:progressive=1:stop_threshold=auto delta:progressive=1:max_passes=10 delta:progressive=1:max_seconds=2 delta:threshold=0:error=diffuse delta:threshold=0:error=skip' -- "$cur" ) )
         return 0
         ;;
     -L|--loaders)

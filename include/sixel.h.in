@@ -21,6 +21,7 @@
  */
 
 #include <stddef.h>  /* for size_t */
+#include <stdint.h>  /* for generations and work counters */
 
 #ifndef LIBSIXEL_SIXEL_H
 #define LIBSIXEL_SIXEL_H
@@ -155,9 +156,9 @@ typedef int SIXELSTATUS;
 #define SIXEL_LUT_POLICY_RBC     0x9  /* Random Ball Cover lookup */
 #define SIXEL_LUT_POLICY_MAHALANOBIS 0xa /* RBC + Mahalanobis pruning */
 
-/* GPU palette-apply policy */
-#define SIXEL_GPU_POLICY_OFF     0x0  /* keep CPU palette apply */
-#define SIXEL_GPU_POLICY_AUTO    0x1  /* probe GPU above internal threshold */
+/* Upper-level GPU policy for selected accelerator stages */
+#define SIXEL_GPU_POLICY_OFF     0x0  /* keep all stages on CPU */
+#define SIXEL_GPU_POLICY_AUTO    0x1  /* try eligible GPU stages, allow CPU */
 #define SIXEL_GPU_POLICY_FORCE   0x2  /* require a supported GPU path */
 
 /* built-in dither */
@@ -301,6 +302,7 @@ typedef int SIXELSTATUS;
 /* frame update policy */
 #define SIXEL_UPDATE_POLICY_FULL  0
 #define SIXEL_UPDATE_POLICY_DELTA 1
+#define SIXEL_UPDATE_POLICY_PROGRESSIVE 2
 
 /* 6delta encoding error handling */
 #define SIXEL_6DELTA_ERROR_DIFFUSE 0  /* diffuse error from kept RGB */
@@ -1989,7 +1991,15 @@ sixel_helper_write_image_file(
 #endif
 
 
-/* easy encoder API */
+/* easy encoder API
+ *
+ * Thread-enabled builds serialize individual encoder calls. The caller
+ * serializes compound operations such as origin + frame, and all access in
+ * thread-disabled builds. Callbacks must not reenter the active encoder.
+ * Keep referenced objects alive through active and waiting calls; a last
+ * reference release cannot race those calls. Internal frame workers are
+ * distinct from application calls and do not change this lifetime contract.
+ */
 
 /* handle type of dither context object */
 struct sixel_encoder;
@@ -2010,11 +2020,11 @@ sixel_encoder_new(
 SIXELAPI @attr_func_deprecated@ sixel_encoder_t *
 sixel_encoder_create(void);
 
-/* increase reference count of encoder object (thread-unsafe) */
+/* increase encoder reference count through the atomic compatibility layer */
 SIXELAPI void
 sixel_encoder_ref(sixel_encoder_t /* in */ *encoder);
 
-/* decrease reference count of encoder object (thread-unsafe) */
+/* decrease encoder reference count through the atomic compatibility layer */
 SIXELAPI void
 sixel_encoder_unref(sixel_encoder_t /* in */ *encoder);
 
@@ -2102,6 +2112,7 @@ sixel_encoder_invalidate_6delta_plane(
 
 #define SIXEL_HAVE_ENCODER_6DELTA_REFINEMENT 2
 
+
 /* Limit the effective delta threshold without changing its configured maximum
  * or the retained plane. 0 requests exact-threshold refinement; 255 removes
  * the runtime limit (the default). Values above 255 are rejected. The limit
@@ -2149,6 +2160,156 @@ sixel_encoder_encode_frame(
     sixel_encoder_t /* in */ *encoder,
     sixel_frame_t   /* in */ *frame,
     sixel_output_t  /* in */ *output);
+
+/* Progressive repair operates on the encoder's retained 6delta plane. */
+#define SIXEL_HAVE_ENCODER_6DELTA_PROGRESSIVE 1
+struct sixel_progressive;
+typedef struct sixel_progressive sixel_progressive_t;
+
+#define SIXEL_PROGRESSIVE_NONE             0
+#define SIXEL_PROGRESSIVE_FRAME_EMITTED    1
+#define SIXEL_PROGRESSIVE_YIELDED          2
+#define SIXEL_PROGRESSIVE_CONVERGED        3
+#define SIXEL_PROGRESSIVE_STALLED          4
+#define SIXEL_PROGRESSIVE_NEEDS_BASELINE   5
+#define SIXEL_PROGRESSIVE_NEEDS_SOURCE     6
+#define SIXEL_PROGRESSIVE_BUDGET_TOO_SMALL 7
+#define SIXEL_PROGRESSIVE_UNSUPPORTED     8
+
+#define SIXEL_PROGRESSIVE_YIELD_NONE           0
+#define SIXEL_PROGRESSIVE_YIELD_WORK_BUDGET    1
+#define SIXEL_PROGRESSIVE_YIELD_UPDATE_PENDING 2
+#define SIXEL_PROGRESSIVE_YIELD_BUSY           3
+
+#define SIXEL_PROGRESSIVE_BACKEND_NONE  0
+#define SIXEL_PROGRESSIVE_BACKEND_CPU   1
+#define SIXEL_PROGRESSIVE_BACKEND_METAL 2
+
+#define SIXEL_PROGRESSIVE_STAGE_NONE     0
+#define SIXEL_PROGRESSIVE_STAGE_AUDIT    1
+#define SIXEL_PROGRESSIVE_STAGE_SELECT   2
+#define SIXEL_PROGRESSIVE_STAGE_PALETTE  3
+#define SIXEL_PROGRESSIVE_STAGE_APPLY    4
+#define SIXEL_PROGRESSIVE_STAGE_RESCUE   5
+#define SIXEL_PROGRESSIVE_STAGE_PACKET   6
+#define SIXEL_PROGRESSIVE_STAGE_COMMIT   7
+#define SIXEL_PROGRESSIVE_STAGE_COMPLETE 8
+
+#define SIXEL_PROGRESSIVE_OUTPUT_LEGACY     0
+#define SIXEL_PROGRESSIVE_OUTPUT_DISPLAY_P3 1
+#define SIXEL_PROGRESSIVE_GPU_INHERIT      (-1)
+#define SIXEL_PROGRESSIVE_DEFAULT_PACKET_BYTES 16384
+#define SIXEL_PROGRESSIVE_DEFAULT_PIXEL_VISITS 1048576
+#define SIXEL_PROGRESSIVE_DEFAULT_DISTANCE_EVALUATIONS 8388608
+
+typedef struct sixel_progressive_config {
+    size_t struct_size;
+    int stop_distance_auto;
+    double stop_distance;
+    double selection_fraction;
+    unsigned int max_colors;
+    unsigned int sample_limit;
+    unsigned int candidate_limit;
+    double min_gain_ratio;
+    unsigned int swap_limit;
+    double noise_strength;
+    unsigned int noise_phase_x;
+    unsigned int noise_phase_y;
+    int noise_channel_rgb;
+    int gpu_policy;
+} sixel_progressive_config_t;
+
+typedef struct sixel_progressive_budget {
+    size_t struct_size;
+    size_t max_packet_bytes;
+    size_t max_pixel_visits;
+    size_t max_distance_evaluations;
+} sixel_progressive_budget_t;
+
+typedef struct sixel_progressive_stats {
+    size_t struct_size;
+    int outcome;
+    int yield_reason;
+    int state_snapshot_valid;
+    int audit_complete;
+    uint64_t source_generation;
+    uint64_t history_revision;
+    uint64_t configuration_revision;
+    int working_colorspace;
+    int output_colorspace;
+    int output_color_definition;
+    int backend;
+    int stage;
+    uint64_t selection_round;
+    int full_selection;
+    size_t domain_count;
+    size_t eligible_count;
+    size_t invalid_count;
+    size_t selected_count;
+    size_t painted_pixels;
+    size_t unresolved_count;
+    double maximum_distance;
+    double sum_squared_error;
+    double sampled_cost_before;
+    double sampled_cost_after;
+    unsigned int constructed_colors;
+    unsigned int transmitted_colors;
+    size_t packet_bytes;
+    size_t required_packet_bytes;
+    size_t pixel_visits;
+    size_t distance_evaluations;
+    uint64_t total_pixel_visits;
+    uint64_t total_distance_evaluations;
+    int zero_noise_used;
+    int rescue_used;
+} sixel_progressive_stats_t;
+
+/* Initialize supported fields without touching any future structure tail.
+ * Call with sizeof(*config); no initialized size tag is required. */
+SIXELAPI SIXELSTATUS
+sixel_progressive_config_init(sixel_progressive_config_t *config,
+                               size_t struct_size);
+
+/* Retain ENCODER and ALLOCATOR, and copy CONFIG. Delta output must already be
+ * enabled. A second context on the same encoder is rejected. NULL allocator
+ * selects the default. The encoder continues to own the retained plane. */
+SIXELAPI SIXELSTATUS
+sixel_progressive_new(sixel_progressive_t **context, sixel_encoder_t *encoder,
+    sixel_progressive_config_t const *config, sixel_allocator_t *allocator);
+
+/* Copy and preprocess an unprocessed source, without changing the ordinary
+ * frame origin or retained history. Generation is nonzero and increasing.
+ * Failed refresh leaves the previous binding and its validity unchanged. */
+SIXELAPI SIXELSTATUS
+sixel_progressive_bind_frame(sixel_progressive_t *context,
+    sixel_frame_t *frame, int origin_x, int origin_y, uint64_t generation);
+
+/* Advance bounded work and emit at most one complete transparent packet.
+ * Zero-initialize budget/stats and set each struct_size before calling;
+ * all three budget limits must be positive. NULL output selects the encoder
+ * destination. The caller places the cursor at the bound rectangle's origin,
+ * orders all output to that surface, and owns delay/backpressure scheduling.
+ *
+ * Check status AND outcome: SIXEL_INTERRUPTED is not failure-class status.
+ * State fields require state_snapshot_valid; complete-domain residual totals
+ * additionally require audit_complete. A yield never implies convergence.
+ * Cumulative counters are per binding and cannot wrap. Ordinary encoding
+ * invalidates the source binding; bind a newer complete source before repair.
+ *
+ * Individual calls are serialized by the encoder in thread-enabled builds.
+ * Keep every supplied object alive through active/waiting calls. Callbacks
+ * must not reenter the same encoder/context. An accepted output callback must
+ * consume/copy every byte; any nonnegative result, including zero, is success.
+ * Output failure invalidates retained history. */
+SIXELAPI SIXELSTATUS
+sixel_progressive_step(sixel_progressive_t *context,
+    sixel_progressive_budget_t const *budget, sixel_output_t *output,
+    sixel_progressive_stats_t *stats);
+
+/* Join active/waiting calls before releasing the context. Retained history
+ * and ordinary delta configuration remain owned by the encoder. */
+SIXELAPI void
+sixel_progressive_unref(sixel_progressive_t *context);
 
 /* encode specified pixel data to SIXEL format
  * output to encoder->outfd */

@@ -2182,13 +2182,13 @@ sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms)
 }
 
 
-SIXELSTATUS
-sixel_tty_scroll(
+static SIXELSTATUS
+sixel_tty_place_image(
     sixel_write_function f_write,
     void *priv,
     int outfd,
     int height,
-    int is_animation)
+    int placement)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
@@ -2205,6 +2205,9 @@ sixel_tty_scroll(
     if (!sixel_compat_isatty(STDIN_FILENO)
         || !sixel_compat_isatty(outfd)) {
         /* set cursor position to top-left */
+        if (placement == 2) {
+            return SIXEL_OK;
+        }
         nwrite = f_write("\033[H", 3, priv);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
@@ -2227,6 +2230,9 @@ sixel_tty_scroll(
     /* if we can not retrieve terminal pixel size over TIOCGWINSZ ioctl,
        return immediately */
     if (size.ws_ypixel <= 0) {
+        if (placement == 2) {
+            return SIXEL_OK;
+        }
         nwrite = f_write("\033[H", 3, priv);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
@@ -2238,9 +2244,9 @@ sixel_tty_scroll(
         goto end;
     }
 
-    /* if input source is animation and frame No. is more than 1,
-       output DECSC sequence */
-    if (is_animation) {
+    /* Restore an existing animation anchor with DECRC. Mode 2 reserves
+     * space only; the presentation sink will save its own initial anchor. */
+    if (placement == 1) {
         nwrite = f_write("\0338", 2, priv);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
@@ -2266,6 +2272,9 @@ sixel_tty_scroll(
          * If we can't get any response from the terminal, move the cursor to
          * (1, 1) as the historical fallback.
          */
+        if (placement == 2) {
+            return SIXEL_OK;
+        }
         nwrite = f_write("\033[H", 3, priv);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
@@ -2301,6 +2310,10 @@ sixel_tty_scroll(
         }
     }
 
+    if (placement == 2) {
+        return SIXEL_OK;
+    }
+
     /* emit DECSC sequence */
     nwrite = f_write("\0337", 2, priv);
     if (nwrite < 0) {
@@ -2312,7 +2325,9 @@ sixel_tty_scroll(
 #else  /* simple scroll fallback */
     (void) outfd;
     (void) height;
-    (void) is_animation;
+    if (placement == 2) {
+        return SIXEL_OK;
+    }
     nwrite = f_write("\033[H", 3, priv);
     if (nwrite < 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
@@ -2327,6 +2342,23 @@ sixel_tty_scroll(
 end:
     return status;
 }
+
+SIXELSTATUS
+sixel_tty_scroll(sixel_write_function write, void *priv, int fd,
+                 int height, int is_animation)
+{
+    return sixel_tty_place_image(write, priv, fd, height, is_animation != 0);
+}
+
+SIXELSTATUS
+sixel_tty_prepare_image_anchor(sixel_write_function write, void *priv,
+                                int fd, int height)
+{
+    /* Reserve terminal space only. The selected sink saves the position
+     * together with the first actual DCS, after all preparation succeeds. */
+    return sixel_tty_place_image(write, priv, fd, height, 2);
+}
+
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

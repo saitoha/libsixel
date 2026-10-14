@@ -27,6 +27,7 @@ srcs = [
   'encoder-core.c',
   'encoder-core.h',
   'encoder-core-private.h',
+  'encoder-core-packet.h',
   'fromsixel.c',
   'encoder-core-encode.c',
   'encoder-core-highcolor.c',
@@ -62,6 +63,22 @@ srcs = [
   'sample-stream.h',
   'weighted-point-set.c',
   'weighted-point-set.h',
+  'progressive-palette.c',
+  'progressive-select.c',
+  'progressive-apply.c',
+  'progressive-palette.h',
+  'progressive-select.h',
+  'progressive-apply.h',
+  'progressive.c',
+  'progressive-measure.c',
+  'progressive-measure.h',
+  'progressive-predict.c',
+  'progressive-predict.h',
+  'progressive-ladder.c',
+  'progressive-ladder.h',
+  'presentation.c',
+  'presentation.h',
+  'progressive.h',
   'palette-kmedoids.c',
   'palette-kmedoids.h',
   'palette-kcenter.c',
@@ -110,6 +127,8 @@ srcs = [
   'dither-clamp.h',
   'dither-common-pipeline.c',
   'gpu-palette.c',
+  'progressive-gpu.c',
+  'progressive-gpu.h',
   'gpu-palette.h',
   'timeline-logger.c',
   'timeline-logger.h',
@@ -306,7 +325,8 @@ srcs = [
 ]
 
 if have_metal
-  srcs += ['gpu-palette-metal.m', 'palette-kmeans-metal.m']
+  srcs += ['gpu-palette-metal.m', 'palette-kmeans-metal.m',
+           'progressive-gpu-metal.m']
 endif
 
 if have_quicklook_thumbnailing

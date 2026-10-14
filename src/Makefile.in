@@ -99,7 +99,8 @@ host_triplet = @host@
 
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_3 = \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-palette-metal.m \
-@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-kmeans-metal.m
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-kmeans-metal.m \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/progressive-gpu-metal.m
 
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_4 = \
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/clipboard_macos.m
@@ -166,9 +167,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/output-factory.h $(srcdir)/sixel-writer.c \
 	$(srcdir)/sixel-writer.h $(srcdir)/encoder-core.c \
 	$(srcdir)/encoder-core.h $(srcdir)/encoder-core-private.h \
-	$(srcdir)/timer.c $(srcdir)/timer.h $(srcdir)/sleep.c \
-	$(srcdir)/sleep.h $(srcdir)/fromsixel.c \
-	$(srcdir)/encoder-core-encode.c \
+	$(srcdir)/encoder-core-packet.h $(srcdir)/timer.c \
+	$(srcdir)/timer.h $(srcdir)/sleep.c $(srcdir)/sleep.h \
+	$(srcdir)/fromsixel.c $(srcdir)/encoder-core-encode.c \
 	$(srcdir)/encoder-core-highcolor.c \
 	$(srcdir)/encoder-core-highcolor.h $(srcdir)/lookup-policy.c \
 	$(srcdir)/lookup-policy-none.c \
@@ -212,14 +213,24 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette-bin-histogram.h $(srcdir)/palette-plan.c \
 	$(srcdir)/palette-plan.h $(srcdir)/sample-stream.c \
 	$(srcdir)/sample-stream.h $(srcdir)/weighted-point-set.c \
-	$(srcdir)/weighted-point-set.h $(srcdir)/palette-kmedoids.c \
-	$(srcdir)/palette-kmedoids.h $(srcdir)/palette-kcenter.c \
-	$(srcdir)/palette-kcenter.h $(srcdir)/palette.c \
-	$(srcdir)/palette-factory.h $(srcdir)/palette.h \
-	$(srcdir)/palette-private.h $(srcdir)/dither.c \
-	$(srcdir)/dither.h $(srcdir)/oklch-lattice256.h \
-	$(srcdir)/dither-policy.c $(srcdir)/dither-policy.h \
-	$(srcdir)/dither-policy-none.c $(srcdir)/dither-policy-fs.c \
+	$(srcdir)/weighted-point-set.h $(srcdir)/progressive-palette.c \
+	$(srcdir)/progressive-select.c $(srcdir)/progressive-apply.c \
+	$(srcdir)/progressive-palette.h $(srcdir)/progressive-select.h \
+	$(srcdir)/progressive-apply.h $(srcdir)/progressive.c \
+	$(srcdir)/progressive-measure.c \
+	$(srcdir)/progressive-measure.h \
+	$(srcdir)/progressive-predict.c \
+	$(srcdir)/progressive-predict.h $(srcdir)/progressive-ladder.c \
+	$(srcdir)/progressive-ladder.h $(srcdir)/presentation.c \
+	$(srcdir)/presentation.h $(srcdir)/progressive.h \
+	$(srcdir)/palette-kmedoids.c $(srcdir)/palette-kmedoids.h \
+	$(srcdir)/palette-kcenter.c $(srcdir)/palette-kcenter.h \
+	$(srcdir)/palette.c $(srcdir)/palette-factory.h \
+	$(srcdir)/palette.h $(srcdir)/palette-private.h \
+	$(srcdir)/dither.c $(srcdir)/dither.h \
+	$(srcdir)/oklch-lattice256.h $(srcdir)/dither-policy.c \
+	$(srcdir)/dither-policy.h $(srcdir)/dither-policy-none.c \
+	$(srcdir)/dither-policy-fs.c \
 	$(srcdir)/dither-policy-atkinson.c \
 	$(srcdir)/dither-policy-jajuni.c \
 	$(srcdir)/dither-policy-stucki.c \
@@ -248,6 +259,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-clamp.h $(srcdir)/dither-common-pipeline.c \
 	$(srcdir)/dither-common-pipeline.h $(srcdir)/gpu-dequant.c \
 	$(srcdir)/gpu-dequant.h $(srcdir)/gpu-palette.c \
+	$(srcdir)/progressive-gpu.c $(srcdir)/progressive-gpu.h \
 	$(srcdir)/gpu-palette.h $(srcdir)/bluenoise_64x64.h \
 	$(srcdir)/dither-interframe-method.c \
 	$(srcdir)/dither-interframe-method.h \
@@ -351,10 +363,12 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/rgblookup.h $(srcdir)/lso2.h \
 	$(srcdir)/quicklook_thumbnailing.m \
 	$(srcdir)/gpu-palette-metal.m $(srcdir)/palette-kmeans-metal.m \
-	$(srcdir)/clipboard_macos.m $(srcdir)/clipboard_carbon.c
+	$(srcdir)/progressive-gpu-metal.m $(srcdir)/clipboard_macos.m \
+	$(srcdir)/clipboard_carbon.c
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-gpu-palette-metal.lo \
-@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-metal.lo
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-metal.lo \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-gpu-metal.lo
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_3 = libsixel_la-clipboard_macos.lo
 @HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_4 = libsixel_la-clipboard_carbon.lo
 @WANT_AMALGAMATED_LIB_FALSE@am_libsixel_la_OBJECTS =  \
@@ -398,6 +412,14 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-plan.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sample-stream.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-weighted-point-set.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-palette.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-select.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-apply.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-measure.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-predict.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-ladder.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-presentation.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmedoids.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kcenter.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette.lo \
@@ -421,6 +443,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-common-pipeline.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-dequant.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-palette.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-gpu.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-interframe-method.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-interframe-stbn-source.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-interframe-stbn-source-hash.lo \
@@ -687,7 +710,17 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-pixelformat.Plo \
 	./$(DEPDIR)/libsixel_la-planner.Plo \
 	./$(DEPDIR)/libsixel_la-png-chrm-arithmetic.Plo \
+	./$(DEPDIR)/libsixel_la-presentation.Plo \
 	./$(DEPDIR)/libsixel_la-probe.Plo \
+	./$(DEPDIR)/libsixel_la-progressive-apply.Plo \
+	./$(DEPDIR)/libsixel_la-progressive-gpu-metal.Plo \
+	./$(DEPDIR)/libsixel_la-progressive-gpu.Plo \
+	./$(DEPDIR)/libsixel_la-progressive-ladder.Plo \
+	./$(DEPDIR)/libsixel_la-progressive-measure.Plo \
+	./$(DEPDIR)/libsixel_la-progressive-palette.Plo \
+	./$(DEPDIR)/libsixel_la-progressive-predict.Plo \
+	./$(DEPDIR)/libsixel_la-progressive-select.Plo \
+	./$(DEPDIR)/libsixel_la-progressive.Plo \
 	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
 	./$(DEPDIR)/libsixel_la-sample-stream.Plo \
 	./$(DEPDIR)/libsixel_la-scale.Plo \
@@ -1051,6 +1084,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-core.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-core.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-core-private.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-core-packet.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timer.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timer.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sleep.c \
@@ -1121,6 +1155,22 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sample-stream.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/weighted-point-set.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/weighted-point-set.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-palette.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-select.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-apply.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-palette.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-select.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-apply.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-measure.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-measure.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-predict.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-predict.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-ladder.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-ladder.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/presentation.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/presentation.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmedoids.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmedoids.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kcenter.c \
@@ -1169,6 +1219,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-dequant.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-dequant.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-gpu.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/bluenoise_64x64.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-interframe-method.c \
@@ -1729,7 +1781,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-pixelformat.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-planner.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-png-chrm-arithmetic.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-presentation.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-probe.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-apply.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-gpu-metal.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-gpu.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-ladder.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-measure.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-palette.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-predict.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-select.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sample-stream.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-scale.Plo@am__quote@ # am--include-marker
@@ -2056,6 +2118,62 @@ libsixel_la-weighted-point-set.lo: weighted-point-set.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-weighted-point-set.lo `test -f 'weighted-point-set.c' || echo '$(srcdir)/'`weighted-point-set.c
 
+libsixel_la-progressive-palette.lo: progressive-palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-progressive-palette.lo -MD -MP -MF $(DEPDIR)/libsixel_la-progressive-palette.Tpo -c -o libsixel_la-progressive-palette.lo `test -f 'progressive-palette.c' || echo '$(srcdir)/'`progressive-palette.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-progressive-palette.Tpo $(DEPDIR)/libsixel_la-progressive-palette.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='progressive-palette.c' object='libsixel_la-progressive-palette.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-progressive-palette.lo `test -f 'progressive-palette.c' || echo '$(srcdir)/'`progressive-palette.c
+
+libsixel_la-progressive-select.lo: progressive-select.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-progressive-select.lo -MD -MP -MF $(DEPDIR)/libsixel_la-progressive-select.Tpo -c -o libsixel_la-progressive-select.lo `test -f 'progressive-select.c' || echo '$(srcdir)/'`progressive-select.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-progressive-select.Tpo $(DEPDIR)/libsixel_la-progressive-select.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='progressive-select.c' object='libsixel_la-progressive-select.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-progressive-select.lo `test -f 'progressive-select.c' || echo '$(srcdir)/'`progressive-select.c
+
+libsixel_la-progressive-apply.lo: progressive-apply.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-progressive-apply.lo -MD -MP -MF $(DEPDIR)/libsixel_la-progressive-apply.Tpo -c -o libsixel_la-progressive-apply.lo `test -f 'progressive-apply.c' || echo '$(srcdir)/'`progressive-apply.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-progressive-apply.Tpo $(DEPDIR)/libsixel_la-progressive-apply.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='progressive-apply.c' object='libsixel_la-progressive-apply.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-progressive-apply.lo `test -f 'progressive-apply.c' || echo '$(srcdir)/'`progressive-apply.c
+
+libsixel_la-progressive.lo: progressive.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-progressive.lo -MD -MP -MF $(DEPDIR)/libsixel_la-progressive.Tpo -c -o libsixel_la-progressive.lo `test -f 'progressive.c' || echo '$(srcdir)/'`progressive.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-progressive.Tpo $(DEPDIR)/libsixel_la-progressive.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='progressive.c' object='libsixel_la-progressive.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-progressive.lo `test -f 'progressive.c' || echo '$(srcdir)/'`progressive.c
+
+libsixel_la-progressive-measure.lo: progressive-measure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-progressive-measure.lo -MD -MP -MF $(DEPDIR)/libsixel_la-progressive-measure.Tpo -c -o libsixel_la-progressive-measure.lo `test -f 'progressive-measure.c' || echo '$(srcdir)/'`progressive-measure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-progressive-measure.Tpo $(DEPDIR)/libsixel_la-progressive-measure.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='progressive-measure.c' object='libsixel_la-progressive-measure.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-progressive-measure.lo `test -f 'progressive-measure.c' || echo '$(srcdir)/'`progressive-measure.c
+
+libsixel_la-progressive-predict.lo: progressive-predict.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-progressive-predict.lo -MD -MP -MF $(DEPDIR)/libsixel_la-progressive-predict.Tpo -c -o libsixel_la-progressive-predict.lo `test -f 'progressive-predict.c' || echo '$(srcdir)/'`progressive-predict.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-progressive-predict.Tpo $(DEPDIR)/libsixel_la-progressive-predict.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='progressive-predict.c' object='libsixel_la-progressive-predict.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-progressive-predict.lo `test -f 'progressive-predict.c' || echo '$(srcdir)/'`progressive-predict.c
+
+libsixel_la-progressive-ladder.lo: progressive-ladder.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-progressive-ladder.lo -MD -MP -MF $(DEPDIR)/libsixel_la-progressive-ladder.Tpo -c -o libsixel_la-progressive-ladder.lo `test -f 'progressive-ladder.c' || echo '$(srcdir)/'`progressive-ladder.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-progressive-ladder.Tpo $(DEPDIR)/libsixel_la-progressive-ladder.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='progressive-ladder.c' object='libsixel_la-progressive-ladder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-progressive-ladder.lo `test -f 'progressive-ladder.c' || echo '$(srcdir)/'`progressive-ladder.c
+
+libsixel_la-presentation.lo: presentation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-presentation.lo -MD -MP -MF $(DEPDIR)/libsixel_la-presentation.Tpo -c -o libsixel_la-presentation.lo `test -f 'presentation.c' || echo '$(srcdir)/'`presentation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-presentation.Tpo $(DEPDIR)/libsixel_la-presentation.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='presentation.c' object='libsixel_la-presentation.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-presentation.lo `test -f 'presentation.c' || echo '$(srcdir)/'`presentation.c
+
 libsixel_la-palette-kmedoids.lo: palette-kmedoids.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-kmedoids.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-kmedoids.Tpo -c -o libsixel_la-palette-kmedoids.lo `test -f 'palette-kmedoids.c' || echo '$(srcdir)/'`palette-kmedoids.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-kmedoids.Tpo $(DEPDIR)/libsixel_la-palette-kmedoids.Plo
@@ -2216,6 +2334,13 @@ libsixel_la-gpu-palette.lo: gpu-palette.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gpu-palette.c' object='libsixel_la-gpu-palette.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-gpu-palette.lo `test -f 'gpu-palette.c' || echo '$(srcdir)/'`gpu-palette.c
+
+libsixel_la-progressive-gpu.lo: progressive-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-progressive-gpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-progressive-gpu.Tpo -c -o libsixel_la-progressive-gpu.lo `test -f 'progressive-gpu.c' || echo '$(srcdir)/'`progressive-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-progressive-gpu.Tpo $(DEPDIR)/libsixel_la-progressive-gpu.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='progressive-gpu.c' object='libsixel_la-progressive-gpu.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-progressive-gpu.lo `test -f 'progressive-gpu.c' || echo '$(srcdir)/'`progressive-gpu.c
 
 libsixel_la-dither-interframe-method.lo: dither-interframe-method.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-interframe-method.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-interframe-method.Tpo -c -o libsixel_la-dither-interframe-method.lo `test -f 'dither-interframe-method.c' || echo '$(srcdir)/'`dither-interframe-method.c
@@ -2906,6 +3031,13 @@ libsixel_la-palette-kmeans-metal.lo: palette-kmeans-metal.m
 @AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-palette-kmeans-metal.lo `test -f 'palette-kmeans-metal.m' || echo '$(srcdir)/'`palette-kmeans-metal.m
 
+libsixel_la-progressive-gpu-metal.lo: progressive-gpu-metal.m
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-progressive-gpu-metal.lo -MD -MP -MF $(DEPDIR)/libsixel_la-progressive-gpu-metal.Tpo -c -o libsixel_la-progressive-gpu-metal.lo `test -f 'progressive-gpu-metal.m' || echo '$(srcdir)/'`progressive-gpu-metal.m
+@am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-progressive-gpu-metal.Tpo $(DEPDIR)/libsixel_la-progressive-gpu-metal.Plo
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='progressive-gpu-metal.m' object='libsixel_la-progressive-gpu-metal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-progressive-gpu-metal.lo `test -f 'progressive-gpu-metal.m' || echo '$(srcdir)/'`progressive-gpu-metal.m
+
 libsixel_la-clipboard_macos.lo: clipboard_macos.m
 @am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-clipboard_macos.lo -MD -MP -MF $(DEPDIR)/libsixel_la-clipboard_macos.Tpo -c -o libsixel_la-clipboard_macos.lo `test -f 'clipboard_macos.m' || echo '$(srcdir)/'`clipboard_macos.m
 @am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-clipboard_macos.Tpo $(DEPDIR)/libsixel_la-clipboard_macos.Plo
@@ -3242,7 +3374,17 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-planner.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-png-chrm-arithmetic.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-presentation.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-probe.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-apply.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-gpu-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-gpu.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-ladder.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-measure.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-palette.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-predict.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-select.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sample-stream.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
@@ -3446,7 +3588,17 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-planner.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-png-chrm-arithmetic.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-presentation.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-probe.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-apply.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-gpu-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-gpu.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-ladder.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-measure.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-palette.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-predict.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-select.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sample-stream.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo

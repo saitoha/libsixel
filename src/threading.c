@@ -133,6 +133,38 @@
  * API surface.
  */
 
+/* Keep native identity operations in the same portability owner as locks.
+ * A serialized build has one logical caller and needs no pthread symbols. */
+sixel_thread_identity_t
+sixel_thread_identity_current(void)
+{
+#if SIXEL_USE_WIN32_THREADS
+    return GetCurrentThreadId();
+#elif SIXEL_USE_PTHREADS
+    return pthread_self();
+#else
+    sixel_thread_identity_t identity;
+
+    memset(&identity, 0, sizeof(identity));
+    return identity;
+#endif
+}
+
+int
+sixel_thread_identity_equal(sixel_thread_identity_t left,
+                             sixel_thread_identity_t right)
+{
+#if SIXEL_USE_WIN32_THREADS
+    return left == right;
+#elif SIXEL_USE_PTHREADS
+    return pthread_equal(left, right) != 0;
+#else
+    (void)left;
+    (void)right;
+    return 1;
+#endif
+}
+
 #if SIXEL_USE_PTHREADS
 /*
  * Abort the process when a pthread call fails in a context where recovery is

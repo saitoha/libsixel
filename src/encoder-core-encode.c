@@ -63,6 +63,7 @@
 #include <sixel.h>
 #include "compat_stub.h"
 #include "encoder-core-private.h"
+#include "encoder-core-packet.h"
 #include "output-factory.h"
 #include "dither.h"
 #include "colorspace.h"
@@ -2768,10 +2769,11 @@ sixel_encode_header(int width, int height, int keycolor, sixel_output_t *output)
     if (output->ormode) {
         p[0] = 7;
         p[1] = 5;
-    } else if (sixel_output_has_transparent_offset(output)) {
+    } else if (output->require_keep_header ||
+               sixel_output_has_transparent_offset(output)) {
         /*
-         * Transparent offset uses omitted zero cells as positional padding.
-         * It therefore needs P2=1 even when the source image has no keycolor.
+         * Position padding and progressive presentation both preserve the
+         * destination even when an opaque baseline has no omission key.
          */
         p[1] = 1;
     } else if (keycolor >= 0 || output->transparent_mask != NULL) {
@@ -5270,6 +5272,287 @@ end:
     return status;
 }
 
+
+/* A staged indexed packet uses the ordinary non-overpainting bit planes and
+ * RLE encoder, but checkpoints classification and emission so small caller
+ * budgets do not repeatedly restart a band. It never uses size-policy fill. */
+enum {
+    SIXEL_PACKET_USAGE,
+    SIXEL_PACKET_HEADER,
+    SIXEL_PACKET_DEFINITIONS,
+    SIXEL_PACKET_CLEAR,
+    SIXEL_PACKET_CLASSIFY,
+    SIXEL_PACKET_COLOR,
+    SIXEL_PACKET_COLUMNS,
+    SIXEL_PACKET_FOOTER,
+    SIXEL_PACKET_DONE
+};
+
+static int
+sixel_indexed_packet_write(char *data, int size, void *priv)
+{
+    sixel_indexed_packet_t *packet;
+    size_t copy;
+
+    packet = priv;
+    if (size < 0 || (size_t)size > SIZE_MAX - packet->bytes) {
+        packet->byte_overflow = 1;
+        return -1;
+    }
+    if (packet->bytes < packet->request.byte_limit) {
+        copy = packet->request.byte_limit - packet->bytes;
+        if (copy > (size_t)size) {
+            copy = (size_t)size;
+        }
+        memcpy(packet->data + packet->bytes, data, copy);
+    }
+    packet->bytes += (size_t)size;
+    return 0;
+}
+
+void
+sixel_indexed_packet_free(sixel_indexed_packet_t *packet)
+{
+    sixel_allocator_t *allocator;
+
+    if (packet == NULL) {
+        return;
+    }
+    allocator = packet->allocator;
+    sixel_output_unref(packet->output);
+    sixel_allocator_free(allocator, packet->data);
+    sixel_allocator_free(allocator, packet->map);
+    sixel_allocator_free(allocator, packet);
+    sixel_allocator_unref(allocator);
+}
+
+SIXELSTATUS
+sixel_indexed_packet_new(sixel_indexed_packet_t **packet,
+    sixel_indexed_packet_request_t const *request,
+    sixel_allocator_t *allocator)
+{
+    sixel_indexed_packet_t *created;
+    sixel_writer_controls_t controls;
+    SIXELSTATUS status;
+
+    if (packet == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *packet = NULL;
+    if (request == NULL || allocator == NULL || request->width <= 0 ||
+            request->height <= 0 || request->color_count == 0 ||
+            request->color_count > 255 || request->indices == NULL ||
+            request->paint == NULL || request->colors == NULL ||
+            request->palette == NULL || request->byte_limit == 0 ||
+            request->byte_limit > INT_MAX || (size_t)request->width >
+                SIZE_MAX / (size_t)request->height ||
+            (size_t)request->width > SIZE_MAX / request->color_count) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    created = sixel_allocator_calloc(allocator, 1, sizeof(*created));
+    if (created == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    sixel_allocator_ref(allocator);
+    created->allocator = allocator;
+    created->request = *request;
+    created->count = (size_t)request->width * request->height;
+    created->data = sixel_allocator_malloc(allocator, request->byte_limit);
+    created->map = sixel_allocator_malloc(allocator,
+        (size_t)request->width * request->color_count);
+    if (created->data == NULL || created->map == NULL) {
+        sixel_indexed_packet_free(created);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    status = sixel_encoder_core_create_output_from_factory(
+        &created->output, sixel_indexed_packet_write,
+                              created, allocator);
+    if (status == SIXEL_OK) {
+        memset(&controls, 0, sizeof(controls));
+        controls.has_8bit_control = request->has_8bit_control != 0;
+        status = sixel_output_set_writer_controls(created->output, &controls);
+        created->output->has_gri_arg_limit = request->has_gri_arg_limit != 0;
+    }
+    if (status != SIXEL_OK) {
+        sixel_indexed_packet_free(created);
+        return status;
+    }
+    *packet = created;
+    return SIXEL_OK;
+}
+
+static void
+sixel_indexed_packet_literal(sixel_output_t *output, char const *text,
+                              int length)
+{
+    int i;
+
+    /* Keep the core buffer's reserved tail independent of a definition's
+     * length. Each ordinary flush calls only the private counting writer. */
+    for (i = 0; i < length; ++i) {
+        sixel_putc(output->buffer + output->pos, (unsigned char)text[i]);
+        sixel_advance(output, 1);
+    }
+}
+
+SIXELSTATUS
+sixel_indexed_packet_advance(sixel_indexed_packet_t *packet,
+    size_t visit_limit, size_t *visits, int *done)
+{
+    sixel_indexed_packet_request_t const *request;
+    sixel_palette_emitted_color_t const *color;
+    sixel_output_t *output;
+    size_t position;
+    size_t map_size;
+    size_t remaining;
+    unsigned int index;
+    unsigned int chunk;
+    int rows;
+    int x;
+    int length;
+    char definition[96];
+    SIXELSTATUS status;
+
+    if (packet == NULL || visits == NULL || done == NULL || visit_limit == 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *done = 0;
+    request = &packet->request;
+    output = packet->output;
+    status = SIXEL_OK;
+    for (chunk = 0; chunk < 256; ++chunk) {
+        if (packet->stage == SIXEL_PACKET_DONE) {
+            *done = 1;
+            return SIXEL_OK;
+        }
+        if (*visits >= visit_limit) {
+            return SIXEL_OK;
+        }
+        ++*visits;
+        switch (packet->stage) {
+        case SIXEL_PACKET_USAGE:
+            position = packet->cursor++;
+            if (request->paint[position]) {
+                index = request->indices[position];
+                if (index >= request->color_count) {
+                    return SIXEL_BAD_INPUT;
+                }
+                packet->used[index] = 1;
+                ++packet->painted;
+            }
+            if (packet->cursor == packet->count) {
+                packet->cursor = 0;
+                packet->stage = packet->painted ? SIXEL_PACKET_HEADER
+                    : SIXEL_PACKET_DONE;
+            }
+            break;
+        case SIXEL_PACKET_HEADER:
+            status = sixel_output_begin_image(output, request->width,
+                request->height, 0, 1, 0, 2, 1);
+            packet->stage = SIXEL_PACKET_DEFINITIONS;
+            break;
+        case SIXEL_PACKET_DEFINITIONS:
+            index = packet->color++;
+            if (packet->used[index]) {
+                packet->remap[index] = (unsigned char)packet->colors;
+                color = request->colors + request->palette[index];
+                length = snprintf(definition, sizeof(definition),
+                    "#%u;%d;%d;%d;%d", packet->colors, color->type,
+                    color->fields[0], color->fields[1], color->fields[2]);
+                if (length < 0 || (size_t)length >= sizeof(definition)) {
+                    return SIXEL_BAD_INPUT;
+                }
+                sixel_indexed_packet_literal(output, definition, length);
+                ++packet->colors;
+            }
+            if (packet->color == request->color_count) {
+                packet->stage = SIXEL_PACKET_CLEAR;
+            }
+            break;
+        case SIXEL_PACKET_CLEAR:
+            /* Charge clearing to the same visit budget, including empty
+             * columns. The packet byte cap alone does not bound scan work. */
+            map_size = (size_t)request->width * packet->colors;
+            packet->map[packet->cursor++] = 0;
+            if (packet->cursor == map_size) {
+                for (index = 0; index < packet->colors; ++index) {
+                    packet->maximum[index] = -1;
+                }
+                packet->cursor = 0;
+                packet->stage = SIXEL_PACKET_CLASSIFY;
+            }
+            break;
+        case SIXEL_PACKET_CLASSIFY:
+            rows = request->height - packet->band;
+            if (rows > 6) {
+                rows = 6;
+            }
+            position = (size_t)packet->band * request->width + packet->cursor;
+            if (request->paint[position]) {
+                index = packet->remap[request->indices[position]];
+                x = (int)(packet->cursor % request->width);
+                packet->map[(size_t)index * request->width + x] |=
+                    (unsigned char)(1U << (packet->cursor / request->width));
+                if (x > packet->maximum[index]) {
+                    packet->maximum[index] = x;
+                }
+            }
+            if (++packet->cursor == (size_t)rows * request->width) {
+                packet->cursor = 0;
+                packet->color = 0;
+                packet->first_color = 1;
+                packet->stage = SIXEL_PACKET_COLOR;
+            }
+            break;
+        case SIXEL_PACKET_COLOR:
+            if (packet->color == packet->colors) {
+                remaining = (size_t)(request->height - packet->band);
+                if (remaining <= 6) {
+                    packet->stage = SIXEL_PACKET_FOOTER;
+                } else {
+                    packet->band += 6;
+                    sixel_indexed_packet_literal(output, "-", 1);
+                    packet->stage = SIXEL_PACKET_CLEAR;
+                }
+            } else if (packet->maximum[packet->color] < 0) {
+                ++packet->color;
+            } else {
+                if (!packet->first_color) {
+                    sixel_indexed_packet_literal(output, "$", 1);
+                }
+                packet->first_color = 0;
+                length = snprintf(definition, sizeof(definition),
+                                   "#%u", packet->color);
+                sixel_indexed_packet_literal(output, definition, length);
+                packet->column = 0;
+                packet->stage = SIXEL_PACKET_COLUMNS;
+            }
+            break;
+        case SIXEL_PACKET_COLUMNS:
+            status = sixel_put_pixel(output, packet->map[
+                (size_t)packet->color * request->width + packet->column]);
+            if (++packet->column > packet->maximum[packet->color]) {
+                if (status == SIXEL_OK) {
+                    status = sixel_put_flash(output);
+                }
+                ++packet->color;
+                packet->stage = SIXEL_PACKET_COLOR;
+            }
+            break;
+        case SIXEL_PACKET_FOOTER:
+            status = sixel_encode_footer(output);
+            packet->stage = SIXEL_PACKET_DONE;
+            break;
+        default:
+            return SIXEL_LOGIC_ERROR;
+        }
+        if (status != SIXEL_OK || packet->byte_overflow) {
+            return status != SIXEL_OK ? status : SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+    }
+    *done = packet->stage == SIXEL_PACKET_DONE;
+    return SIXEL_OK;
+}
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

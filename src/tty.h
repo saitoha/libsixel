@@ -40,6 +40,11 @@ sixel_tty_get_output_state(void);
 SIXELSTATUS
 sixel_tty_wait_stdin(int usec);
 
+/* Reserve initial image space without saving or restoring a cursor. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_prepare_image_anchor(sixel_write_function write, void *priv,
+                               int fd, int height);
+
 SIXELSTATUS
 sixel_tty_scroll(
     sixel_write_function f_write,

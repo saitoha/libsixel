@@ -28,9 +28,32 @@
 #include <stddef.h>
 
 #include "sixel_atomic.h"
+#include "threading.h"
 #include "timeline-logger.h"
 
 #include "planner.h"
+#include <stdint.h>
+
+/* The caller serializes encoder access. Returns an owned, unquantized
+ * float frame and source-domain mask; failure publishes neither. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encoder_prepare_repair(sixel_encoder_t *encoder,
+                             sixel_frame_t const *source,
+                             sixel_frame_t **prepared,
+                             unsigned char **domain);
+
+typedef struct sixel_repair_commit {
+    size_t position;
+    unsigned char rgb[3];
+} sixel_repair_commit_t;
+
+/* Already-owned transaction hooks. All records and colors are validated
+ * before output admission; the successful commit cannot allocate or fail. */
+SIXEL_INTERNAL_API void
+sixel_encoder_commit_repair(sixel_encoder_t *encoder,
+    sixel_repair_commit_t const *records, size_t count);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encoder_invalidate_6delta_plane_owned(sixel_encoder_t *encoder);
 
 SIXEL_INTERNAL_API int
 sixel_encoder_should_hide_animation_cursor(int is_multiframe,
@@ -50,6 +73,31 @@ struct sixel_encoder {
 
     sixel_atomic_u32_t ref;         /* reference counter */
     sixel_allocator_t *allocator;   /* allocator object */
+    uint64_t history_revision;
+    uint64_t ordinary_revision;
+    uint64_t configuration_revision;
+    int revision_exhausted;
+    struct sixel_progressive *progressive_context;
+    /* Admission metadata uses the short mutex below. The admitted operation
+     * owns the image/configuration state without holding this mutex, so a
+     * waiting normal operation can register priority over repair work. */
+    sixel_mutex_t operation_mutex;
+    sixel_cond_t operation_cond;
+    sixel_thread_identity_t operation_owner;
+    unsigned int operation_waiters;
+    int operation_initialized;
+    int operation_active;
+    int operation_emitting;
+    /* File playback reserves configuration across loader/queue waits while
+     * per-frame ownership can be released for progressive work. */
+    int operation_playback;
+    sixel_thread_identity_t playback_owner;
+    struct sixel_encoder_callback_scope *active_callbacks;
+    /* A setting candidate borrows runtime state. Destructive cache/history
+     * effects are recorded here and run only after successful validation. */
+    int option_staging;
+    int option_clear_cache;
+    int option_invalidate_history;
     int reqcolors;
     int palette_sampling_policy;  /* requested sampling-stage policy */
     int palette_sampling_override; /* non-zero when explicitly configured */
@@ -342,6 +390,18 @@ struct sixel_encoder {
      * Incompatible output settings cannot reuse this plane's valid bits. */
     int accumulation_color_definition;
     int accumulation_colorspace;
+    /* Requested presentation policy is distinct from retained history. */
+    int update_policy;
+    int progressive_enabled;
+    int progressive_override;
+    /* Presentation limits are independent of per-step repair work budgets. */
+    double progressive_stop_threshold;
+    unsigned int progressive_max_passes;
+    double progressive_max_seconds;
+    int progressive_stop_override;
+    int progressive_passes_override;
+    int progressive_seconds_override;
+    struct sixel_presentation *presentation;
     int sixdelta_enabled;
     unsigned int sixdelta_threshold;
     /* Runtime ceiling does not mutate the configured maximum or history. */
@@ -409,6 +469,31 @@ struct sixel_encoder {
     /* Keep an explicit byte request distinct from automatic selection. */
     int precision_requested;
 };
+
+enum sixel_encoder_operation_kind {
+    SIXEL_ENCODER_OPERATION_NORMAL,
+    SIXEL_ENCODER_OPERATION_REPAIR,
+    SIXEL_ENCODER_OPERATION_PLAYBACK
+};
+
+/* NORMAL waits; REPAIR returns SIXEL_FALSE when another operation wins.
+ * PLAYBACK is private to the producer holding the file-playback reservation.
+ * These private boundaries never transfer ownership of caller references. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encoder_operation_enter(sixel_encoder_t *encoder, int kind);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encoder_operation_enter_reason(sixel_encoder_t *encoder, int kind,
+                                     int *yield_reason);
+SIXEL_INTERNAL_API void
+sixel_encoder_operation_leave(sixel_encoder_t *encoder);
+SIXEL_INTERNAL_API int
+sixel_encoder_operation_pending(sixel_encoder_t *encoder);
+SIXEL_INTERNAL_API int
+sixel_encoder_operation_admit_output(sixel_encoder_t *encoder);
+/* Call under operation ownership, or the file owner's configuration lease.
+ * User callbacks are registered for reentrant-mutation rejection. */
+SIXEL_INTERNAL_API int
+sixel_encoder_is_cancel_requested(sixel_encoder_t const *encoder);
 
 
 #endif /* LIBSIXEL_ENCODER_H */

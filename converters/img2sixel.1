@@ -1145,10 +1145,27 @@ add transparent left/top pixel offset with DCS P2=1 image-plane reuse.
 \fB-I\fP.
 .TP 5
 .B \-Z \fIPOLICY\fP, \-\-update\-policy=\fIPOLICY\fP
-Select full output (default) or retained-plane delta updates.
+Select full output (default), retained-plane delta updates or progressive still presentation.
 \fBfull\fP disables temporal keeps and discards retained history, while preserving source-alpha handling.
 \fBdelta\fP enables 6delta with optional \fB:threshold=0..255\fP (short form :Tvalue) and \fB:error=diffuse|skip\fP (short form :Evalue).
-Defaults are threshold=0 and error=diffuse; full accepts no suboptions.
+Defaults are threshold=0, error=diffuse and progressive=0; full accepts no suboptions.
+The delta suboption \fB:progressive=1|0\fP (short form :P1 or :P0) uses available animation slack for bounded repair and refines the final frame after finite playback.
+\fB-g\fP and zero-duration frames skip intermediate repair. Direct calls remain caller-paced.
+Host output acceptance does not acknowledge terminal presentation; blocking host writes cannot guarantee a hard frame deadline.
+\fBprogressive\fP selects one composed still from any input and repeatedly overlays sparse repairs until convergence, a representable-color stall or a resource limit.
+Both progressive and delta accept \fB:stop_threshold=auto|0..1e154\fP (short form :Svalue, default auto), \fB:max_passes=0..4294967295\fP (:Nvalue, default 0), and \fB:max_seconds=SECONDS\fP (:Mvalue, default 5).
+Stop threshold is a distance in the selected \fB-W\fP workspace, not Delta E00. Auto selects a workspace-dependent target.
+Seconds must be finite and nonnegative. Zero disables the respective pass or time cap; a zero stop threshold requests exact agreement.
+Passes include the initial ordinary image and accepted repair packets; work-budget yields do not count.
+Elapsed time starts when the ordinary image is accepted and includes source-binding work. Each animation source gets new limits; the final-frame tail retains its source's elapsed time and pass count.
+Resource limits return success with the last complete image and do not certify quality. \fB-v\fP reports converged, stalled, max_passes or max_seconds. An admitted packet always completes, so a blocked write can exceed the time limit.
+These controls do not enable delta repair without progressive=1. For example, \fB-Z progressive:Sauto:N10:M2\fP permits at most ten total passes and two seconds after the initial image.
+Animation input defaults to frame zero, excluding an APNG poster; \fB-T\fP overrides the source-index environment setting.
+This implicit still selection does not persist after another \fB-Z\fP selection.
+Each capture saves the initial cursor once and restores it only for actual later packets.
+Decode such a still capture with \fBsixel2png -M 6delta-progressive\fP or assess it with \fBlsqa -M 6delta-progressive\fP.
+Progressive repair requires generated palettes. Metal can accelerate residual selection, global sampling and exhaustive palette lookup; palette construction, paint acceptance and convergence auditing remain on the CPU. GPU auto admission uses the unresolved population for selection and the selected population for lookup against palette_threshold; force requires an available Metal backend. The ordinary baseline retains its own GPU input and dither restrictions. Progressive conflicts with fixed palettes, high color, multiplexer penetration and transparent offsets, in addition to delta's restrictions.
+Direct frame and byte APIs remain caller-paced; option selection alone never starts repair.
 A valid retained RGB pixel is kept before lookup when every channel differs by at most the threshold; at 0 this requires an exact match.
 Otherwise, a pixel is kept when the retained color is at least as close to the compared sample as the selected palette color, using squared RGB distance.
 Larger thresholds trade freshness for fewer lookups; 255 keeps every valid retained RGB888 pixel.
@@ -2098,8 +2115,24 @@ The default is "auto".
 .TP 5
 .B SIXEL_UPDATE_POLICY
 .br
-Set the default update policy: full or delta, without suboptions.
+Set the default update policy: full, delta or progressive, without suboptions.
 Invalid values keep full. Overridden by \fB-Z\fP/\fB--update-policy\fP.
+.TP 5
+.B SIXEL_UPDATE_DELTA_PROGRESSIVE
+Set delta:progressive (1|0, default 0). Does not enable delta.
+An explicit progressive suboption takes precedence.
+.TP 5
+.B SIXEL_UPDATE_PROGRESSIVE_STOP_THRESHOLD
+Set progressive/delta:stop_threshold (auto or 0..1e154, default auto).
+An explicit suffix overrides the environment. This setting does not enable repair.
+.TP 5
+.B SIXEL_UPDATE_PROGRESSIVE_MAX_PASSES
+Set progressive/delta:max_passes (0..4294967295, default 0).
+Includes the initial image; 0 disables the pass cap.
+.TP 5
+.B SIXEL_UPDATE_PROGRESSIVE_MAX_SECONDS
+Set progressive/delta:max_seconds (nonnegative finite seconds, default 5).
+Elapsed time starts after the initial image; 0 disables the time cap.
 .TP 5
 .B SIXEL_UPDATE_DELTA_THRESHOLD
 .br

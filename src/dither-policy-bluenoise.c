@@ -209,11 +209,9 @@ sixel_bluenoise_conf_apply_dither_overrides(sixel_bluenoise_conf_t *conf,
     }
 }
 
-static float
-sixel_bluenoise_tri_noise(sixel_bluenoise_conf_t const *conf,
-                          int x,
-                          int y,
-                          int c)
+float
+sixel_bluenoise_sample(int x, int y, unsigned int phase_x,
+                       unsigned int phase_y, int channel_rgb, int c)
 {
     static int const channel_offset_x[3] = { 17, 34, 51 };
     static int const channel_offset_y[3] = { 31, 62, 93 };
@@ -234,20 +232,16 @@ sixel_bluenoise_tri_noise(sixel_bluenoise_conf_t const *conf,
     iy1 = 0;
     sample_u = 0.0f;
     sample_v = 0.0f;
-    if (conf == NULL || conf->size != SIXEL_BN_W) {
-        return 0.0f;
-    }
-
-    if (conf->channel_rgb != 0 && c >= 0 && c < 3) {
+    if (channel_rgb != 0 && c >= 0 && c < 3) {
         channel_x = channel_offset_x[c];
         channel_y = channel_offset_y[c];
     }
 
     /* Reduce before adding the second tap: coordinates and signed phase
      * offsets are periodic, not a reason to overflow a signed sum. */
-    ix0 = (int)(((unsigned int)x + (unsigned int)conf->phase_x +
+    ix0 = (int)(((unsigned int)x + phase_x +
                  (unsigned int)channel_x) & (SIXEL_BN_W - 1u));
-    iy0 = (int)(((unsigned int)y + (unsigned int)conf->phase_y +
+    iy0 = (int)(((unsigned int)y + phase_y +
                  (unsigned int)channel_y) & (SIXEL_BN_H - 1u));
     ix1 = ix0 + 13;
     iy1 = iy0 + 29;
@@ -262,10 +256,11 @@ sixel_dither_bluenoise_noise(sixel_bluenoise_conf_t const *conf,
                              int y,
                              int c)
 {
-    if (conf == NULL) {
+    if (conf == NULL || conf->size != SIXEL_BN_W) {
         return 0.0f;
     }
-    return sixel_bluenoise_tri_noise(conf, x, y, c) * conf->strength;
+    return sixel_bluenoise_sample(x, y, (unsigned int)conf->phase_x,
+        (unsigned int)conf->phase_y, conf->channel_rgb, c) * conf->strength;
 }
 
 static float

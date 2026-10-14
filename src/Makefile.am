@@ -77,6 +77,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/encoder-core.c \
                 $(srcdir)/encoder-core.h \
                 $(srcdir)/encoder-core-private.h \
+                $(srcdir)/encoder-core-packet.h \
                 $(srcdir)/timer.c \
                 $(srcdir)/timer.h \
                 $(srcdir)/sleep.c \
@@ -147,6 +148,22 @@ libsixel_la_SOURCES = \
                 $(srcdir)/sample-stream.h \
                 $(srcdir)/weighted-point-set.c \
                 $(srcdir)/weighted-point-set.h \
+                $(srcdir)/progressive-palette.c \
+                $(srcdir)/progressive-select.c \
+                $(srcdir)/progressive-apply.c \
+                $(srcdir)/progressive-palette.h \
+                $(srcdir)/progressive-select.h \
+                $(srcdir)/progressive-apply.h \
+                $(srcdir)/progressive.c \
+                $(srcdir)/progressive-measure.c \
+                $(srcdir)/progressive-measure.h \
+                $(srcdir)/progressive-predict.c \
+                $(srcdir)/progressive-predict.h \
+                $(srcdir)/progressive-ladder.c \
+                $(srcdir)/progressive-ladder.h \
+                $(srcdir)/presentation.c \
+                $(srcdir)/presentation.h \
+                $(srcdir)/progressive.h \
                 $(srcdir)/palette-kmedoids.c \
                 $(srcdir)/palette-kmedoids.h \
                 $(srcdir)/palette-kcenter.c \
@@ -195,6 +212,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/gpu-dequant.c \
                 $(srcdir)/gpu-dequant.h \
                 $(srcdir)/gpu-palette.c \
+                $(srcdir)/progressive-gpu.c \
+                $(srcdir)/progressive-gpu.h \
                 $(srcdir)/gpu-palette.h \
                 $(srcdir)/bluenoise_64x64.h \
                 $(srcdir)/dither-interframe-method.c \
@@ -399,7 +418,8 @@ endif
 if HAVE_METAL
 libsixel_la_SOURCES += \
 $(srcdir)/gpu-palette-metal.m \
-$(srcdir)/palette-kmeans-metal.m
+$(srcdir)/palette-kmeans-metal.m \
+$(srcdir)/progressive-gpu-metal.m
 endif
 if HAVE_CLIPBOARD_MACOS_APPKIT
 libsixel_la_SOURCES += \

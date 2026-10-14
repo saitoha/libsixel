@@ -42,6 +42,8 @@ struct sixel_clipboard_policy_options;
     && !defined(WITH_WINPTHREAD)
 #include <windows.h>
 
+typedef DWORD sixel_thread_identity_t;
+
 struct sixel_mutex {
     CRITICAL_SECTION native;
 };
@@ -59,6 +61,8 @@ struct sixel_thread {
 };
 #else
 #include <pthread.h>
+
+typedef pthread_t sixel_thread_identity_t;
 
 struct sixel_mutex {
     pthread_mutex_t native;
@@ -80,6 +84,11 @@ struct sixel_thread {
 typedef struct sixel_mutex sixel_mutex_t;
 typedef struct sixel_cond sixel_cond_t;
 typedef struct sixel_thread sixel_thread_t;
+
+/* Identities are compared only while their owning operation is alive. */
+SIXEL_INTERNAL_API sixel_thread_identity_t sixel_thread_identity_current(void);
+SIXEL_INTERNAL_API int sixel_thread_identity_equal(
+    sixel_thread_identity_t left, sixel_thread_identity_t right);
 
 SIXEL_INTERNAL_API int sixel_mutex_init(sixel_mutex_t *mutex);
 SIXEL_INTERNAL_API void sixel_mutex_destroy(sixel_mutex_t *mutex);

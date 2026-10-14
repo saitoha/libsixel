@@ -31,6 +31,12 @@
 extern "C" {
 #endif
 
+/* Fixed 64-pixel positional noise, shared by ordinary and repair lookup.
+ * Coordinates refer to the original surface, including sparse/tiled input. */
+SIXEL_INTERNAL_API float
+sixel_bluenoise_sample(int x, int y, unsigned int phase_x,
+                       unsigned int phase_y, int channel_rgb, int channel);
+
 /* @classid dither/bluenoise.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dither_policy_bluenoise_8bit_new(

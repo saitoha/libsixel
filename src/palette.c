@@ -41,6 +41,7 @@
 #endif
 
 #include <stdlib.h>
+#include <float.h>
 #include <math.h>
 #include <string.h>
 
@@ -1778,6 +1779,28 @@ sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace,
         output_definition, SIXEL_COLORSPACE_GAMMA);
 }
 
+/* Share the wire rounding boundary with progressive candidate formation.
+ * RGB101 uses the transformed double; HLS uses the float output view that
+ * the existing serializer consumes. Neither changes working coordinates. */
+static void
+sixel_palette_output_channels(double const rgb[3], unsigned char codes[3],
+                               float shadow[3])
+{
+    int channel;
+    double value;
+
+    for (channel = 0; channel < 3; ++channel) {
+        value = rgb[channel];
+        if (value < 0) {
+            value = 0;
+        } else if (value > 1) {
+            value = 1;
+        }
+        shadow[channel] = (float)value;
+        codes[channel] = (unsigned char)(value * 100 + 0.5);
+    }
+}
+
 SIXELSTATUS
 sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
                              int output_definition, int output_colorspace)
@@ -1867,15 +1890,9 @@ sixel_palette_prepare_output_definition(sixel_palette_t *palette,
         /* Quantize only the serialized view. Snap policy owns changes to
          * the working palette; caching wire codes must not enable snapping
          * implicitly or replace the palette used for lookup and diffusion. */
+        sixel_palette_output_channels(output, codes + offset,
+                                       output_rgb + offset);
         for (channel = 0U; channel < 3U; ++channel) {
-            if (output[channel] < 0.0) {
-                output[channel] = 0.0;
-            } else if (output[channel] > 1.0) {
-                output[channel] = 1.0;
-            }
-            output_rgb[offset + channel] = (float)output[channel];
-            codes[offset + channel] =
-                (unsigned char)(output[channel] * 100.0 + 0.5);
             output[channel] =
                 ((codes[offset + channel] * 255 + 50) / 100) / 255.0;
         }
@@ -2080,6 +2097,95 @@ sixel_palette_from_output(sixel_palette_t const *palette, double out[3],
         return 0;
     }
     return sixel_color_convert(out, gamma, SIXEL_COLORSPACE_GAMMA, workspace);
+}
+
+int
+sixel_palette_decode_output(sixel_palette_t const *palette,
+                             unsigned char const rgb[3], int workspace,
+                             float working[3])
+{
+    double input[3];
+    double converted[3];
+    float result[3];
+    int channel;
+
+    if (rgb == NULL || working == NULL) {
+        return 0;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        input[channel] = rgb[channel] / 255.0;
+    }
+    if (!sixel_palette_from_output(palette, converted, input, workspace)) {
+        return 0;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        if (!isfinite(converted[channel]) ||
+                fabs(converted[channel]) > FLT_MAX) {
+            return 0;
+        }
+        result[channel] = (float)converted[channel];
+    }
+    memcpy(working, result, sizeof(result));
+    return 1;
+}
+
+int
+sixel_palette_project_output(sixel_palette_t const *palette,
+                              float const source[3], int workspace,
+                              int palette_type,
+                              sixel_palette_emitted_color_t *emitted)
+{
+    sixel_palette_emitted_color_t result;
+    double input[3];
+    double converted[3];
+    float shadow[3];
+    unsigned char codes[3];
+    int channel;
+
+    if (source == NULL || emitted == NULL ||
+            (palette_type != SIXEL_PALETTETYPE_AUTO &&
+             palette_type != SIXEL_PALETTETYPE_RGB &&
+             palette_type != SIXEL_PALETTETYPE_HLS)) {
+        return 0;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        if (!isfinite(source[channel])) {
+            return 0;
+        }
+        input[channel] = source[channel];
+    }
+    if (!sixel_palette_to_output(palette, converted, input, workspace)) {
+        return 0;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        if (!isfinite(converted[channel])) {
+            return 0;
+        }
+    }
+    sixel_palette_output_channels(converted, codes, shadow);
+    memset(&result, 0, sizeof(result));
+    result.type = palette_type == SIXEL_PALETTETYPE_HLS ? 1 : 2;
+    if (result.type == 1) {
+        for (channel = 0; channel < 3; ++channel) {
+            converted[channel] = shadow[channel];
+        }
+        sixel_color_rgb_to_hls(result.fields, converted);
+        sixel_color_hls_to_rgb101(codes, result.fields);
+    } else {
+        for (channel = 0; channel < 3; ++channel) {
+            result.fields[channel] = codes[channel];
+        }
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        result.rgb[channel] = (unsigned char)((codes[channel] * 255U + 50U)
+                                               / 100U);
+    }
+    if (!sixel_palette_decode_output(palette, result.rgb, workspace,
+                                     result.working)) {
+        return 0;
+    }
+    *emitted = result;
+    return 1;
 }
 
 /* emacs Local Variables:      */

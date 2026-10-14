@@ -58,6 +58,11 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_core_ormode_factory_new(sixel_allocator_t *allocator,
                                       void **object);
 
+/* Require P2=1 for a presentation session's opaque baseline as well as its
+ * sparse updates. This does not alter the source alpha policy. */
+SIXEL_INTERNAL_API void
+sixel_encoder_core_require_keep_header(sixel_output_t *output, int required);
+
 SIXEL_INTERNAL_API void
 sixel_encoder_core_destroy(sixel_output_t *output);
 

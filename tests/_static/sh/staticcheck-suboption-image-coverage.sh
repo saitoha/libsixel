@@ -17,7 +17,8 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
         consumer-result comparison image-reference legacy-assignment \
         legacy-binding legacy-consumer perceptual-pair perceptual-status \
         perceptual-capture perceptual-reference \
-        literal-reference value-nonempty; do
+        literal-reference presentation-base presentation-outcome \
+        presentation-environment value-nonempty; do
     fixture="$regression_dir/0085_loader_libpng_cms_engine_image_regression.t"
     expected=fail
     needle=__unchanged_positive_control__
@@ -56,6 +57,14 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
         literal-reference)
             fixture="$regression_dir/0106_loader_builtin_pnm_truncated_ascii_image_regression.t"
             needle='cmp -s "${reference_output}"'; replacement=': -s "${reference_output}"'
+            ;;
+        presentation-*)
+            fixture="$regression_dir/0176_update_progressive_max_passes_image_regression.t"
+            case "$sample" in
+                presentation-base) needle='-Z delta:P1'; replacement='-Z progressive' ;;
+                presentation-outcome) needle='progressive: stop=max_passes'; replacement='progressive: stop=converged' ;;
+                presentation-environment) needle='case "${delta_env_trace}" in *"progressive:'; replacement='case "${delta_short_trace}" in *"progressive:' ;;
+            esac
             ;;
     esac
     PATTERN_NEEDLE="$needle" PATTERN_REPLACEMENT="$replacement" awk '

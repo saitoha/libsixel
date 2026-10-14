@@ -93,6 +93,7 @@
 #include "lookup-policy.h"
 #include "tty.h"
 #include "encoder.h"
+#include "presentation.h"
 #include "decoder.h"
 #include "color-option.h"
 #include "gamut.h"
@@ -153,6 +154,168 @@
     "LSO_TEST_SIGINT_NOTIFY_FD"
 #define SIXEL_ENCODER_SIGINT_SYNC_EVENT_DISPATCH_START \
     "callback_dispatch_start"
+
+typedef struct sixel_encoder_callback_scope {
+    sixel_thread_identity_t thread;
+    struct sixel_encoder_callback_scope *next;
+} sixel_encoder_callback_scope_t;
+
+/* This mutex protects admission only. Keeping it free during computation
+ * lets normal callers announce priority without touching image state. */
+static void
+sixel_encoder_operation_lock(sixel_encoder_t *encoder)
+{
+    if (encoder->operation_initialized) {
+        sixel_mutex_lock(&encoder->operation_mutex);
+    }
+}
+
+static void
+sixel_encoder_operation_unlock(sixel_encoder_t *encoder)
+{
+    if (encoder->operation_initialized) {
+        sixel_mutex_unlock(&encoder->operation_mutex);
+    }
+}
+
+SIXELSTATUS
+sixel_encoder_operation_enter_reason(sixel_encoder_t *encoder, int kind,
+                                     int *yield_reason)
+{
+    sixel_thread_identity_t caller;
+    sixel_encoder_callback_scope_t *callback;
+    int registered;
+    int reserved;
+    int reentrant;
+
+    if (yield_reason != NULL) {
+        *yield_reason = SIXEL_PROGRESSIVE_YIELD_NONE;
+    }
+    if (encoder == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    caller = sixel_thread_identity_current();
+    sixel_encoder_operation_lock(encoder);
+    reentrant = encoder->operation_active &&
+        sixel_thread_identity_equal(encoder->operation_owner, caller);
+    if (kind == SIXEL_ENCODER_OPERATION_NORMAL &&
+            encoder->operation_playback &&
+            sixel_thread_identity_equal(encoder->playback_owner, caller)) {
+        reentrant = 1;
+    }
+    for (callback = encoder->active_callbacks; callback != NULL;
+            callback = callback->next) {
+        if (sixel_thread_identity_equal(callback->thread, caller)) {
+            reentrant = 1;
+        }
+    }
+    if (reentrant) {
+        sixel_encoder_operation_unlock(encoder);
+        sixel_helper_set_additional_message(
+            "encoder callback must not reenter the active encoder.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+    if (kind == SIXEL_ENCODER_OPERATION_REPAIR &&
+            (encoder->operation_active || encoder->operation_waiters != 0)) {
+        if (yield_reason != NULL) {
+            *yield_reason = encoder->operation_waiters != 0
+                ? SIXEL_PROGRESSIVE_YIELD_UPDATE_PENDING
+                : SIXEL_PROGRESSIVE_YIELD_BUSY;
+        }
+        sixel_encoder_operation_unlock(encoder);
+        return SIXEL_FALSE;
+    }
+    registered = 0;
+    for (;;) {
+        reserved = kind == SIXEL_ENCODER_OPERATION_NORMAL &&
+            encoder->operation_playback;
+        if (!encoder->operation_active && !reserved) {
+            break;
+        }
+        /* A setter queued behind a whole playback job is not a due frame.
+         * Count only callers that can run at the next safe frame boundary. */
+        if (reserved && registered) {
+            --encoder->operation_waiters;
+            registered = 0;
+        } else if (!reserved && !registered) {
+            if (encoder->operation_waiters == UINT_MAX) {
+                sixel_encoder_operation_unlock(encoder);
+                return SIXEL_RUNTIME_ERROR;
+            }
+            ++encoder->operation_waiters;
+            registered = 1;
+            sixel_cond_broadcast(&encoder->operation_cond);
+        }
+        sixel_cond_wait(&encoder->operation_cond, &encoder->operation_mutex);
+    }
+    if (registered) {
+        --encoder->operation_waiters;
+    }
+    encoder->operation_owner = caller;
+    encoder->operation_active = 1;
+    encoder->operation_emitting = 0;
+    sixel_encoder_operation_unlock(encoder);
+    return SIXEL_OK;
+}
+
+/* Ordinary callers need only status; repair also reports why admission was
+ * declined, captured under the same short lock as the admission decision. */
+SIXELSTATUS
+sixel_encoder_operation_enter(sixel_encoder_t *encoder, int kind)
+{
+    return sixel_encoder_operation_enter_reason(encoder, kind, NULL);
+}
+
+void
+sixel_encoder_operation_leave(sixel_encoder_t *encoder)
+{
+    sixel_encoder_operation_lock(encoder);
+    encoder->operation_active = 0;
+    encoder->operation_emitting = 0;
+    if (encoder->operation_initialized) {
+        sixel_cond_broadcast(&encoder->operation_cond);
+    }
+    sixel_encoder_operation_unlock(encoder);
+}
+
+int
+sixel_encoder_operation_pending(sixel_encoder_t *encoder)
+{
+    int pending;
+
+    sixel_encoder_operation_lock(encoder);
+    pending = encoder->operation_waiters != 0;
+    sixel_encoder_operation_unlock(encoder);
+    return pending;
+}
+
+int
+sixel_encoder_operation_admit_output(sixel_encoder_t *encoder)
+{
+    int admitted;
+
+    sixel_encoder_operation_lock(encoder);
+    admitted = encoder->operation_active &&
+        encoder->operation_waiters == 0;
+    if (admitted) {
+        /* After this point later normal operations wait for a whole packet
+         * and its retained-history commit, even when cancellation arrives. */
+        encoder->operation_emitting = 1;
+    }
+    sixel_encoder_operation_unlock(encoder);
+    return admitted;
+}
+
+static void
+sixel_encoder_revision_advance(sixel_encoder_t *encoder, uint64_t *revision)
+{
+    /* Never let an old binding become current through integer wraparound. */
+    if (*revision == UINT64_MAX) {
+        encoder->revision_exhausted = 1;
+    } else {
+        ++*revision;
+    }
+}
 
 static SIXELSTATUS
 sixel_encoder_apply_gpu_policy_argument(sixel_encoder_t *encoder,
@@ -706,6 +869,7 @@ typedef struct sixel_encoder_frame_pipeline {
         queue_meta[SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY];
     sixel_encoder_t *encoder;
     sixel_output_t *output;
+    sixel_presentation_t *presentation;
     SIXELSTATUS worker_status;
     int queue_head;
     int queue_tail;
@@ -723,6 +887,7 @@ typedef struct sixel_encoder_load_context {
     sixel_allocator_t *allocator;
     int psd_trace_only;
     sixel_encoder_frame_pipeline_t frame_pipeline;
+    sixel_presentation_t presentation;
 } sixel_encoder_load_context_t;
 
 static int
@@ -1771,27 +1936,44 @@ sixel_encoder_set_encoder_core_format(sixel_output_t *output,
                                            colorspace);
 }
 
-static int
+int
 sixel_encoder_is_cancel_requested(sixel_encoder_t const *encoder)
 {
-    int canceled;
+    sixel_encoder_t *mutable_encoder;
+    sixel_encoder_callback_scope_t scope;
+    sixel_encoder_callback_scope_t **link;
+    int result;
 
-    canceled = 0;
     if (encoder == NULL) {
         return 0;
     }
-    if (encoder->cancel_function != NULL
-            && encoder->cancel_function(encoder->cancel_context) != 0) {
-        canceled = 1;
+    if (encoder->cancel_function == NULL) {
+        return encoder->cancel_flag != NULL && *encoder->cancel_flag != 0;
     }
-    if (canceled == 0
-            && encoder->cancel_flag != NULL
-            && *encoder->cancel_flag != 0) {
-        canceled = 1;
+    mutable_encoder = (sixel_encoder_t *)encoder;
+    scope.thread = sixel_thread_identity_current();
+    sixel_encoder_operation_lock(mutable_encoder);
+    scope.next = mutable_encoder->active_callbacks;
+    mutable_encoder->active_callbacks = &scope;
+    sixel_encoder_operation_unlock(mutable_encoder);
+    result = encoder->cancel_function(encoder->cancel_context) != 0;
+    sixel_encoder_operation_lock(mutable_encoder);
+    for (link = &mutable_encoder->active_callbacks; *link != &scope;
+            link = &(*link)->next) {
+        /* Concurrent callbacks can finish in a different stack order. */
     }
-
-    return canceled;
+    *link = scope.next;
+    sixel_encoder_operation_unlock(mutable_encoder);
+    return result ||
+        (encoder->cancel_flag != NULL && *encoder->cancel_flag != 0);
 }
+
+static int
+sixel_encoder_loader_cancel(void *context)
+{
+    return sixel_encoder_is_cancel_requested(context);
+}
+
 
 static void
 sixel_encoder_test_sigint_sync_wait_for_cancel(sixel_encoder_t *encoder)
@@ -2985,14 +3167,14 @@ sixel_encoder_update_accumulation_from_frame(
                                             &plane_height,
                                             &origin_x,
                                             &origin_y)) {
-        sixel_encoder_invalidate_6delta_plane(encoder);
+        sixel_encoder_invalidate_6delta_plane_owned(encoder);
         status = SIXEL_OK;
         goto end;
     }
     plane_rgb_size = sixel_encoder_6delta_plane_rgb_bytes(plane_width,
                                                           plane_height);
     if (plane_rgb_size == 0u) {
-        sixel_encoder_invalidate_6delta_plane(encoder);
+        sixel_encoder_invalidate_6delta_plane_owned(encoder);
         status = SIXEL_OK;
         goto end;
     }
@@ -3017,7 +3199,7 @@ sixel_encoder_update_accumulation_from_frame(
          * would make the next frame compare source against source and keep
          * everything, freezing the display on a stale image.
          */
-        sixel_encoder_invalidate_6delta_plane(encoder);
+        sixel_encoder_invalidate_6delta_plane_owned(encoder);
         status = SIXEL_OK;
         goto end;
     }
@@ -4169,6 +4351,11 @@ static void
 sixel_encoder_clear_dither_cache(sixel_encoder_t *encoder)
 {
     if (encoder == NULL) {
+        return;
+    }
+
+    if (encoder->option_staging) {
+        encoder->option_clear_cache = 1;
         return;
     }
 
@@ -5415,7 +5602,9 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
     }
 
     if (context->multiframe != 0 && !context->encoder->fstatic) {
-        outfd_is_tty = sixel_compat_isatty(context->encoder->outfd);
+        outfd_is_tty = context->encoder->presentation != NULL
+            ? context->encoder->presentation->terminal
+            : sixel_compat_isatty(context->encoder->outfd);
         hide_cursor_enabled =
             sixel_encoder_animation_hide_cursor_enabled(context->encoder);
         should_hide_cursor = sixel_encoder_should_hide_animation_cursor(
@@ -5437,6 +5626,9 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
             (void)sixel_tty_begin_animation_input_guard();
             (void)sixel_tty_hide_cursor(context->encoder->outfd);
         }
+    }
+    if (context->encoder->presentation == NULL &&
+            context->multiframe != 0 && !context->encoder->fstatic) {
         if (context->loop_no != 0 || context->frame_no != 0) {
             context->is_animation = 1;
         }
@@ -5448,6 +5640,15 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
                                context->encoder->outfd,
                                height,
                                context->is_animation);
+    }
+
+    if (context->encoder->presentation != NULL) {
+        status = sixel_presentation_begin_image(
+            context->encoder->presentation,
+            sixel_frame_get_height(context->frame));
+        if (status != SIXEL_OK) {
+            return status;
+        }
     }
 
     if (context->encoder->fdrcs) {
@@ -5489,6 +5690,11 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
     }
 
     if (sixel_encoder_is_cancel_requested(context->encoder) != 0) {
+        /* A completed progressive packet must remain a valid capture even
+         * when cancellation arrives just after its accepted final byte. */
+        if (context->encoder->presentation != NULL) {
+            return SIXEL_INTERRUPTED;
+        }
         nwrite = context->write_callback("\x18\033\\", 3,
                                          context->write_priv);
         if (nwrite < 0) {
@@ -6280,8 +6486,8 @@ palette_cleanup:
         goto end_loader;
     }
     status = sixel_loader_set_cancel_callback(loader,
-                                              encoder->cancel_function,
-                                              encoder->cancel_context);
+        encoder->cancel_function != NULL ? sixel_encoder_loader_cancel : NULL,
+        encoder->cancel_function != NULL ? encoder : NULL);
     if (SIXEL_FAILED(status)) {
         goto end_loader;
     }
@@ -8890,7 +9096,8 @@ sixel_encoder_output_without_macro(
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    if (delay > 0 && !encoder->fignore_delay && !encoder->fstatic) {
+    if (delay > 0 && !encoder->fignore_delay && !encoder->fstatic &&
+                encoder->presentation == NULL) {
         sixel_trace_topic_message(
             "lifecycle",
             "frame delay check: frame_no=%d loop_no=%d "
@@ -9157,7 +9364,8 @@ sixel_encoder_output_with_macro(
                 "sixel_write_callback() failed.");
             goto end;
         }
-        if (delay > 0 && !encoder->fignore_delay && !encoder->fstatic) {
+        if (delay > 0 && !encoder->fignore_delay && !encoder->fstatic &&
+                encoder->presentation == NULL) {
             sixel_trace_topic_message(
                 "lifecycle",
                 "frame delay check: frame_no=%d loop_no=%d "
@@ -9613,6 +9821,14 @@ end:
     if (context.dither) {
         sixel_dither_unref(context.dither);
     }
+    if (status == SIXEL_OK) {
+        sixel_encoder_revision_advance(encoder, &encoder->history_revision);
+        sixel_encoder_revision_advance(encoder, &encoder->ordinary_revision);
+    } else {
+        /* Ordinary output can fail after accepting a prefix. Until a new
+         * baseline is established, repair must not trust that history. */
+        (void)sixel_encoder_invalidate_6delta_plane_owned(encoder);
+    }
     if (encoder->gamut_mapper != NULL && context.frame != frame) {
         sixel_frame_unref(context.frame);
     }
@@ -9620,6 +9836,141 @@ end:
         sixel_encoder_unref(encoder);
     }
 
+    return status;
+}
+
+
+/* Prepare the same geometry/alpha/colorspace stages as an ordinary frame,
+ * without constructing or applying a palette. The private planner avoids
+ * replacing the animation owner's scheduling state. The caller owns the
+ * exclusive encoder access and publishes this snapshot only after success. */
+SIXELSTATUS
+sixel_encoder_prepare_repair(sixel_encoder_t *encoder,
+                             sixel_frame_t const *source,
+                             sixel_frame_t **prepared,
+                             unsigned char **domain)
+{
+    SIXELSTATUS status;
+    sixel_encode_dag_context_t context;
+    sixel_encoding_planner_t planner;
+    sixel_frame_pixels_view_t view;
+    sixel_frame_transparency_t transparency;
+    sixel_filter_colors_config_t colors;
+    unsigned char *mask;
+    size_t count;
+    size_t i;
+
+    if (encoder == NULL || source == NULL || prepared == NULL ||
+            domain == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *prepared = NULL;
+    *domain = NULL;
+    mask = NULL;
+    memset(&context, 0, sizeof(context));
+    context.encoder = encoder;
+    sixel_encoder_filter_plan_init(&context.pre_plan);
+    sixel_encoding_planner_init(&planner);
+    context.planner = &planner;
+    status = sixel_encoder_frame_clone(source, encoder->allocator,
+                                       &context.frame);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    /* Repair snapshots always enter a typed float workspace and own a
+     * separate domain mask. Packed-alpha normalization must not depend on
+     * ordinary palette capacity, lookup, quantizer or GPU admission. */
+    if (sixel_encoder_pixelformat_has_alpha(
+            sixel_frame_get_pixelformat(context.frame)) &&
+            sixel_frame_get_colorspace(context.frame) ==
+                SIXEL_COLORSPACE_GAMMA) {
+        status = sixel_frame_unpack_alpha(context.frame, encoder->bgcolor,
+            encoder->prefer_float32 ||
+            encoder->output_color_definition ==
+                SIXEL_PALETTE_OUTPUT_DISPLAY_P3 ||
+            encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            encoder->clustering_colorspace != SIXEL_COLORSPACE_GAMMA);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+    /* Output projection belongs to the repair palette, not the ordinary
+     * encoder's P3/GPU combination rules. The shared source filters below
+     * validate storage and geometry; bind prepares the output transform.
+     * Ordinary encoding still uses validate_p3_frame at its own boundary. */
+    status = sixel_encoder_promote_pal8_transparent_for_geometry(
+        encoder, context.frame);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    sixel_encoding_planner_analyze(&planner, encoder, context.frame);
+    sixel_encoding_planner_replan(&planner, encoder, context.frame, 0);
+    context.target_pixelformat = planner.working_pixelformat;
+    context.current_pixelformat = sixel_frame_get_pixelformat(context.frame);
+    context.current_colorspace = sixel_frame_get_colorspace(context.frame);
+    context.clip_active = planner.clip_active;
+    status = sixel_encode_dag_node_preplan(&context);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_frame_get_pixels_view(context.frame, &view);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_frame_get_transparency(context.frame,
+                                                 &transparency);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (view.width <= 0 || view.height <= 0 ||
+            (size_t)view.width > SIZE_MAX / (size_t)view.height / 12U) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    count = (size_t)view.width * (size_t)view.height;
+    mask = sixel_allocator_malloc(encoder->allocator, count);
+    if (mask == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    for (i = 0; i < count; ++i) {
+        mask[i] = (unsigned char)(
+            !sixel_encoder_frame_mask_covers_pixel(&transparency, count, i)
+            && !sixel_encoder_frame_alpha_covers_pixel(&transparency,
+                                                       &view, i)
+            && !(view.pixelformat == SIXEL_PIXELFORMAT_PAL8 &&
+                 transparency.transparent >= 0 &&
+                 view.pixels[i] == transparency.transparent));
+    }
+    colors.target_pixelformat = sixel_encoder_pixelformat_for_colorspace(
+        encoder->working_colorspace, 1);
+    status = sixel_filter_colors_convert(&colors, context.frame, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_frame_get_pixels_view(context.frame, &view);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (view.pixels_float32 == NULL) {
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
+    }
+    for (i = 0; i < count * 3U; ++i) {
+        if (!isfinite(view.pixels_float32[i])) {
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+    }
+    *prepared = context.frame;
+    context.frame = NULL;
+    *domain = mask;
+    mask = NULL;
+    status = SIXEL_OK;
+end:
+    sixel_encoder_filter_plan_teardown(&context.pre_plan);
+    sixel_frame_unref(context.frame);
+    sixel_allocator_free(encoder->allocator, mask);
     return status;
 }
 
@@ -9672,6 +10023,20 @@ sixel_encoder_new(
         goto end;
     }
 
+    (*ppencoder)->option_staging = 0;
+    (*ppencoder)->option_clear_cache = 0;
+    (*ppencoder)->option_invalidate_history = 0;
+    (*ppencoder)->operation_playback = 0;
+    (*ppencoder)->active_callbacks = NULL;
+    (*ppencoder)->operation_initialized = 0;
+    (*ppencoder)->operation_active = 0;
+    (*ppencoder)->operation_emitting = 0;
+    (*ppencoder)->operation_waiters = 0;
+    (*ppencoder)->history_revision = 1;
+    (*ppencoder)->ordinary_revision = 1;
+    (*ppencoder)->configuration_revision = 1;
+    (*ppencoder)->revision_exhausted = 0;
+    (*ppencoder)->progressive_context = NULL;
     (*ppencoder)->ref                   = 1U;
     (*ppencoder)->reqcolors             = (-1);
     (*ppencoder)->palette_sampling_policy = SIXEL_PALETTE_SAMPLING_AUTO;
@@ -9987,6 +10352,17 @@ sixel_encoder_new(
     (*ppencoder)->accumulation_color_definition =
         SIXEL_PALETTE_OUTPUT_LEGACY;
     (*ppencoder)->accumulation_colorspace = SIXEL_COLORSPACE_GAMMA;
+    (*ppencoder)->update_policy = SIXEL_UPDATE_POLICY_FULL;
+    (*ppencoder)->progressive_enabled = 0;
+    (*ppencoder)->progressive_override = 0;
+    (*ppencoder)->progressive_stop_threshold = SIXEL_OPTION_DOUBLE_AUTO;
+    (*ppencoder)->progressive_max_passes = 0;
+    (*ppencoder)->progressive_max_seconds =
+        SIXEL_PRESENTATION_DEFAULT_MAX_SECONDS;
+    (*ppencoder)->progressive_stop_override = 0;
+    (*ppencoder)->progressive_passes_override = 0;
+    (*ppencoder)->progressive_seconds_override = 0;
+    (*ppencoder)->presentation = NULL;
     (*ppencoder)->sixdelta_enabled      = 0;
     (*ppencoder)->sixdelta_threshold    = 0u;
     (*ppencoder)->sixdelta_threshold_limit = 255U;
@@ -10096,9 +10472,12 @@ sixel_encoder_new(
             SIXEL_OPTION_SCOPE_ENCODER, &update_policy_resolution,
             NULL, 0u)) &&
         update_policy_resolution.assignment_count == 0u) {
+        (*ppencoder)->update_policy =
+            update_policy_resolution.resolved_base_value;
         (*ppencoder)->sixdelta_enabled =
-            update_policy_resolution.resolved_base_value ==
-                SIXEL_UPDATE_POLICY_DELTA;
+            (*ppencoder)->update_policy != SIXEL_UPDATE_POLICY_FULL;
+        (*ppencoder)->progressive_enabled =
+            (*ppencoder)->update_policy == SIXEL_UPDATE_POLICY_PROGRESSIVE;
         sixel_option_apply_suboption_environment(
             policy_schema, update_policy_resolution.base_def,
             SIXEL_OPTION_SCOPE_ENCODER, *ppencoder,
@@ -10233,6 +10612,19 @@ sixel_encoder_new(
         (*ppencoder)->reqcolors = (int)env_value.uint_value;
     }
 
+#if SIXEL_ENABLE_THREADS
+    status = sixel_mutex_init(&(*ppencoder)->operation_mutex);
+    if (status != SIXEL_OK) {
+        goto error;
+    }
+    status = sixel_cond_init(&(*ppencoder)->operation_cond);
+    if (status != SIXEL_OK) {
+        sixel_mutex_destroy(&(*ppencoder)->operation_mutex);
+        goto error;
+    }
+    (*ppencoder)->operation_initialized = 1;
+#endif
+
     /* Common output tuning applies even when -U is omitted. The default
      * endpoint is still sRGB; an ICC path never selects ICC on its own. */
     status = sixel_encoder_set_output_color(*ppencoder, "gamma");
@@ -10243,8 +10635,9 @@ sixel_encoder_new(
     goto end;
 
 error:
-    sixel_allocator_free(allocator, *ppencoder);
-    sixel_allocator_unref(allocator);
+    /* Environment settings may already own storage when synchronization
+     * setup fails. All destructor fields are initialized before this path. */
+    sixel_encoder_unref(*ppencoder);
     *ppencoder = NULL;
 
 end:
@@ -10307,6 +10700,10 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
         sixel_allocator_free(allocator, encoder->capture_palette);
         sixel_allocator_free(allocator, encoder->png_output_path);
         sixel_allocator_free(allocator, encoder->sixel_output_path);
+        if (encoder->operation_initialized) {
+            sixel_cond_destroy(&encoder->operation_cond);
+            sixel_mutex_destroy(&encoder->operation_mutex);
+        }
         sixel_allocator_free(allocator, encoder);
         sixel_allocator_unref(allocator);
     }
@@ -10343,8 +10740,8 @@ sixel_encoder_unref(sixel_encoder_t *encoder)
 
 
 /* set cancel state flag to encoder object */
-SIXELAPI SIXELSTATUS
-sixel_encoder_set_cancel_flag(
+static SIXELSTATUS
+sixel_encoder_set_cancel_flag_owned(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ *cancel_flag
 )
@@ -10357,8 +10754,8 @@ sixel_encoder_set_cancel_flag(
 }
 
 /* set cancel callback to encoder object */
-SIXELAPI SIXELSTATUS
-sixel_encoder_set_cancel_callback(
+static SIXELSTATUS
+sixel_encoder_set_cancel_callback_owned(
     sixel_encoder_t       /* in */ *encoder,
     sixel_cancel_function /* in */ cancel_function,
     void                  /* in */ *cancel_context
@@ -10380,8 +10777,8 @@ end:
     return status;
 }
 
-SIXELAPI SIXELSTATUS
-sixel_encoder_set_6delta_plane_size(
+static SIXELSTATUS
+sixel_encoder_set_6delta_plane_size_owned(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ width,
     int             /* in */ height)
@@ -10416,12 +10813,13 @@ sixel_encoder_set_6delta_plane_size(
     encoder->sixdelta_plane_width = width;
     encoder->sixdelta_plane_height = height;
 
-    return sixel_encoder_invalidate_6delta_plane(encoder);
+    sixel_encoder_revision_advance(encoder, &encoder->configuration_revision);
+    return sixel_encoder_invalidate_6delta_plane_owned(encoder);
 }
 
 
-SIXELAPI SIXELSTATUS
-sixel_encoder_set_6delta_plane_origin(
+static SIXELSTATUS
+sixel_encoder_set_6delta_plane_origin_owned(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ x,
     int             /* in */ y)
@@ -10437,6 +10835,8 @@ sixel_encoder_set_6delta_plane_origin(
             "origin must not be negative.");
         return SIXEL_BAD_ARGUMENT;
     }
+    if (encoder->sixdelta_origin_x != x || encoder->sixdelta_origin_y != y) {
+    }
     encoder->sixdelta_origin_x = x;
     encoder->sixdelta_origin_y = y;
 
@@ -10444,8 +10844,8 @@ sixel_encoder_set_6delta_plane_origin(
 }
 
 
-SIXELAPI SIXELSTATUS
-sixel_encoder_invalidate_6delta_plane(
+SIXELSTATUS
+sixel_encoder_invalidate_6delta_plane_owned(
     sixel_encoder_t /* in */ *encoder)
 {
     if (encoder == NULL) {
@@ -10454,6 +10854,12 @@ sixel_encoder_invalidate_6delta_plane(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    if (encoder->option_staging) {
+        encoder->option_invalidate_history = 1;
+        return SIXEL_OK;
+    }
+
+    sixel_encoder_revision_advance(encoder, &encoder->history_revision);
     sixel_allocator_free(encoder->allocator, encoder->accumulation_pixels);
     encoder->accumulation_pixels = NULL;
     encoder->accumulation_pixels_size = 0u;
@@ -10476,8 +10882,26 @@ sixel_encoder_invalidate_6delta_plane(
     return SIXEL_OK;
 }
 
-SIXELAPI SIXELSTATUS
-sixel_encoder_set_6delta_threshold_limit(sixel_encoder_t *encoder,
+void
+sixel_encoder_commit_repair(sixel_encoder_t *encoder,
+    sixel_repair_commit_t const *records, size_t count)
+{
+    size_t i;
+
+    for (i = 0; i < count; ++i) {
+        memcpy(encoder->accumulation_pixels + records[i].position * 3,
+               records[i].rgb, 3);
+        encoder->accumulation_valid_mask[records[i].position] = 1;
+    }
+    sixel_encoder_revision_advance(encoder, &encoder->history_revision);
+    encoder->sixdelta_painted_pixels = count;
+    /* This reports the latest frame's approximate early keeps, not whether
+     * the whole repair domain has reached its completion threshold. */
+    encoder->sixdelta_refinement_needed = 0;
+}
+
+static SIXELSTATUS
+sixel_encoder_set_6delta_threshold_limit_owned(sixel_encoder_t *encoder,
                                         unsigned int threshold)
 {
     if (encoder == NULL || threshold > 255U) {
@@ -10487,23 +10911,23 @@ sixel_encoder_set_6delta_threshold_limit(sixel_encoder_t *encoder,
     return SIXEL_OK;
 }
 
-SIXELAPI int
-sixel_encoder_needs_6delta_refinement(sixel_encoder_t const *encoder)
+static int
+sixel_encoder_needs_6delta_refinement_owned(sixel_encoder_t const *encoder)
 {
     return encoder != NULL && encoder->sixdelta_enabled &&
         encoder->accumulation_valid && encoder->sixdelta_refinement_needed;
 }
 
-SIXELAPI size_t
-sixel_encoder_get_6delta_painted_pixels(sixel_encoder_t const *encoder)
+static size_t
+sixel_encoder_get_6delta_painted_pixels_owned(sixel_encoder_t const *encoder)
 {
     return encoder != NULL && encoder->sixdelta_enabled &&
         encoder->accumulation_valid ? encoder->sixdelta_painted_pixels : 0u;
 }
 
 
-SIXELAPI SIXELSTATUS
-sixel_encoder_set_accumulation_buffer(
+static SIXELSTATUS
+sixel_encoder_set_accumulation_buffer_owned(
     sixel_encoder_t     /* in */ *encoder,
     unsigned char const /* in */ *pixels,
     int                 /* in */ width,
@@ -10543,6 +10967,7 @@ sixel_encoder_set_accumulation_buffer(
             encoder->output_color_definition;
         encoder->accumulation_colorspace = encoder->output_colorspace;
         encoder->accumulation_valid = 0;
+        sixel_encoder_revision_advance(encoder, &encoder->history_revision);
         return SIXEL_OK;
     }
 
@@ -10590,6 +11015,7 @@ sixel_encoder_set_accumulation_buffer(
     encoder->sixdelta_plane_width = width;
     encoder->sixdelta_plane_height = height;
     rgb = NULL;
+    sixel_encoder_revision_advance(encoder, &encoder->history_revision);
     status = SIXEL_OK;
 
 end:
@@ -11731,26 +12157,26 @@ sixel_encoder_apply_update_policy_option(
     }
 
     status = sixel_encoder_validate_delta_palette(
-        resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA,
+        resolution.resolved_base_value != SIXEL_UPDATE_POLICY_FULL,
         encoder->color_option);
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_validate_delta_or(
-            resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA,
+            resolution.resolved_base_value != SIXEL_UPDATE_POLICY_FULL,
             encoder->ormode);
     }
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_validate_delta_drcs(
-            resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA,
+            resolution.resolved_base_value != SIXEL_UPDATE_POLICY_FULL,
             encoder->fdrcs);
     }
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_validate_delta_macro(
-            resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA,
+            resolution.resolved_base_value != SIXEL_UPDATE_POLICY_FULL,
             encoder->fuse_macro, encoder->macro_number);
     }
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_validate_delta_png(
-            resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA,
+            resolution.resolved_base_value != SIXEL_UPDATE_POLICY_FULL,
             encoder->output_is_png);
     }
     if (SIXEL_FAILED(status)) {
@@ -11759,17 +12185,29 @@ sixel_encoder_apply_update_policy_option(
     }
 
     /* Each selection starts from defaults, then environment, then suffixes. */
+    encoder->progressive_enabled = 0;
+    encoder->progressive_override = 0;
+    encoder->progressive_stop_threshold = SIXEL_OPTION_DOUBLE_AUTO;
+    encoder->progressive_max_passes = 0;
+    encoder->progressive_max_seconds = SIXEL_PRESENTATION_DEFAULT_MAX_SECONDS;
+    encoder->progressive_stop_override = 0;
+    encoder->progressive_passes_override = 0;
+    encoder->progressive_seconds_override = 0;
     encoder->sixdelta_threshold = 0u;
     encoder->sixdelta_threshold_override = 0;
     encoder->sixdelta_error_mode = SIXEL_6DELTA_ERROR_DIFFUSE;
     encoder->sixdelta_error_mode_override = 0;
     status = sixel_encoder_apply_bound_suboptions(encoder, schema, &resolution);
     if (SIXEL_SUCCEEDED(status)) {
+        encoder->update_policy = resolution.resolved_base_value;
+        if (encoder->update_policy == SIXEL_UPDATE_POLICY_PROGRESSIVE) {
+            encoder->progressive_enabled = 1;
+        }
         encoder->sixdelta_enabled =
-            resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA;
+            resolution.resolved_base_value != SIXEL_UPDATE_POLICY_FULL;
         if (!encoder->sixdelta_enabled) {
             /* Full output breaks the relationship to the retained plane. */
-            sixel_encoder_invalidate_6delta_plane(encoder);
+            sixel_encoder_invalidate_6delta_plane_owned(encoder);
         }
     }
     sixel_option_free_argument_resolution(&resolution);
@@ -12275,6 +12713,11 @@ sixel_encoder_apply_outfile_option(
         encoder->outfd = sixel_compat_open(outfile_open_path,
                                            output_open_flags,
                                            S_IRUSR | S_IWUSR);
+        if (encoder->outfd < 0) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_setopt: failed to open output path.");
+            return SIXEL_LIBC_ERROR | (errno & 0xff);
+        }
     }
 
     return status;
@@ -12432,6 +12875,11 @@ sixel_encoder_apply_drcs_option(
 
     encoder->drcs_mmv = drcs_mmv_value;
     encoder->drcs_charset_no = (unsigned short)drcs_charset_value;
+    if (encoder->option_staging) {
+        /* The complete candidate must pass cross-option validation before
+         * any tile destination can be opened or truncated. */
+        return SIXEL_OK;
+    }
     if (encoder->tile_outfd >= 0
         && encoder->tile_outfd != encoder->outfd
         && encoder->tile_outfd != STDOUT_FILENO
@@ -12462,9 +12910,72 @@ sixel_encoder_apply_drcs_option(
     return status;
 }
 
+/* Release only the setting's replaced ownership. On failure OLD is the
+ * private candidate; on success OLD is live state about to be replaced.
+ * Clipboard paths may alias the SIXEL path and must be freed only once. */
+static void
+sixel_encoder_option_release_replaced(sixel_encoder_t *old,
+                                      sixel_encoder_t const *next, int arg)
+{
+    switch (arg) {
+    case SIXEL_OPTFLAG_MAPFILE:
+        if (old->mapfile != next->mapfile) {
+            sixel_allocator_free(old->allocator, old->mapfile);
+        }
+        break;
+    case SIXEL_OPTFLAG_MAPFILE_OUTPUT:
+        if (old->palette_output != next->palette_output) {
+            sixel_allocator_free(old->allocator, old->palette_output);
+        }
+        break;
+    case SIXEL_OPTFLAG_LOADERS:
+        if (old->loader_order != next->loader_order) {
+            sixel_allocator_free(old->allocator, old->loader_order);
+        }
+        break;
+    case SIXEL_OPTFLAG_BGCOLOR:
+        if (old->bgcolor != next->bgcolor) {
+            sixel_allocator_free(old->allocator, old->bgcolor);
+        }
+        break;
+    case SIXEL_OPTFLAG_OUTFILE:
+        if (old->outfd >= 0 && old->outfd != next->outfd &&
+                old->outfd != STDOUT_FILENO &&
+                old->outfd != STDERR_FILENO) {
+            (void)sixel_compat_close(old->outfd);
+        }
+        if (old->clipboard_output_path != NULL &&
+                old->clipboard_output_path != next->clipboard_output_path) {
+            (void)sixel_compat_unlink(old->clipboard_output_path);
+            if (old->clipboard_output_path != old->sixel_output_path) {
+                sixel_allocator_free(old->allocator,
+                                     old->clipboard_output_path);
+            }
+        }
+        if (old->sixel_output_path != next->sixel_output_path) {
+            sixel_allocator_free(old->allocator, old->sixel_output_path);
+        }
+        if (old->png_output_path != next->png_output_path) {
+            sixel_allocator_free(old->allocator, old->png_output_path);
+        }
+        break;
+    case SIXEL_OPTFLAG_DRCS:
+        if (old->tile_outfd >= 0 && old->tile_outfd != next->tile_outfd &&
+                old->tile_outfd != old->outfd &&
+                old->tile_outfd != STDOUT_FILENO &&
+                old->tile_outfd != STDERR_FILENO) {
+            (void)sixel_compat_close(old->tile_outfd);
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+
 /* set an option flag to encoder object */
-SIXELAPI SIXELSTATUS
-sixel_encoder_setopt(
+static SIXELSTATUS
+sixel_encoder_setopt_owned(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ arg,
     char const      /* in */ *value)
@@ -12474,13 +12985,56 @@ sixel_encoder_setopt(
     size_t len;
     size_t i;
     sixel_encoder_setopt_context_t setopt_context;
+    sixel_encoder_t candidate;
+    sixel_encoder_t *destination;
+    size_t settings_offset;
+    int external_option;
     int match_value;
     sixel_option_argument_resolution_t d_resolution;
     sixel_option_argument_resolution_t const *q_resolution;
     char match_detail[128];
     sixel_suboption_value_t scalar_value;
 
-    sixel_encoder_ref(encoder);
+    /* Never copy the atomic refcount or synchronization objects. Runtime
+     * pointers in the settings region stay borrowed; destructive effects
+     * are deferred, and the selected owned resource starts detached. */
+    destination = encoder;
+    settings_offset = offsetof(sixel_encoder_t, reqcolors);
+    memset(&candidate, 0, sizeof(candidate));
+    candidate.allocator = encoder->allocator;
+    memcpy((char *)&candidate + settings_offset,
+           (char const *)encoder + settings_offset,
+           sizeof(candidate) - settings_offset);
+    candidate.option_staging = 1;
+    encoder = &candidate;
+    external_option = 0;
+    switch (arg) {
+    case SIXEL_OPTFLAG_MAPFILE:
+        encoder->mapfile = NULL;
+        break;
+    case SIXEL_OPTFLAG_MAPFILE_OUTPUT:
+        encoder->palette_output = NULL;
+        break;
+    case SIXEL_OPTFLAG_LOADERS:
+        encoder->loader_order = NULL;
+        break;
+    case SIXEL_OPTFLAG_BGCOLOR:
+        encoder->bgcolor = NULL;
+        break;
+    case SIXEL_OPTFLAG_OUTFILE:
+        encoder->png_output_path = NULL;
+        encoder->sixel_output_path = NULL;
+        encoder->clipboard_output_path = NULL;
+        encoder->clipboard_output_active = 0;
+        encoder->clipboard_output_format[0] = '\0';
+        encoder->outfd = STDOUT_FILENO;
+        break;
+    case SIXEL_OPTFLAG_DRCS:
+        encoder->tile_outfd = -1;
+        break;
+    default:
+        break;
+    }
     sixel_encoder_setopt_context_init(&setopt_context);
     d_resolution.resolved_base_value = 0;
     d_resolution.base_def = NULL;
@@ -12488,11 +13042,9 @@ sixel_encoder_setopt(
     d_resolution.assignment_count = 0u;
     memset(&scalar_value, 0, sizeof(scalar_value));
     switch(arg) {
-    case SIXEL_OPTFLAG_OUTFILE:  /* o */
-        status = sixel_encoder_apply_outfile_option(encoder, value);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
+    case SIXEL_OPTFLAG_OUTFILE:
+        encoder->output_is_png = is_png_target(value);
+        external_option = arg;
         break;
     case SIXEL_OPTFLAG_7BIT_MODE:  /* 7 */
         encoder->f8bit = 0;
@@ -12521,51 +13073,20 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case SIXEL_OPTFLAG_THREADS:  /* = */
-        status = sixel_encoder_apply_threads_option(value);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
+    case SIXEL_OPTFLAG_THREADS:
+        external_option = arg;
         break;
-    case SIXEL_OPTFLAG_RUNTIME_POLICY:  /* j */
-        status = sixel_option_apply_runtime_policy_argument(
-            value,
-            SIXEL_OPTION_SCOPE_ENCODER,
-            match_detail,
-            sizeof(match_detail));
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
+    case SIXEL_OPTFLAG_RUNTIME_POLICY:
+        external_option = arg;
         break;
-    case SIXEL_OPTFLAG_DIAGNOSTICS:  /* x */
-        status = sixel_option_apply_diagnostics_argument(
-            value,
-            SIXEL_OPTION_SCOPE_ENCODER,
-            match_detail,
-            sizeof(match_detail));
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
+    case SIXEL_OPTFLAG_DIAGNOSTICS:
+        external_option = arg;
         break;
-    case SIXEL_OPTFLAG_LOG_PATH:  /* J */
-        status = sixel_option_apply_log_path_argument(
-            value,
-            SIXEL_OPTION_SCOPE_ENCODER,
-            match_detail,
-            sizeof(match_detail));
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
+    case SIXEL_OPTFLAG_LOG_PATH:
+        external_option = arg;
         break;
-    case SIXEL_OPTFLAG_CLIPBOARD_POLICY:  /* y */
-        status = sixel_option_apply_clipboard_policy_argument(
-            value,
-            SIXEL_OPTION_SCOPE_ENCODER,
-            match_detail,
-            sizeof(match_detail));
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
+    case SIXEL_OPTFLAG_CLIPBOARD_POLICY:
+        external_option = arg;
         break;
     case SIXEL_OPTFLAG_TERMINAL_POLICY:  /* z */
         status = sixel_option_parse_scalar_argument(
@@ -13177,11 +13698,98 @@ sixel_encoder_setopt(
         goto end;
     }
 
+    status = sixel_presentation_validate(encoder);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    /* All candidate state is valid now. Resource preparation can still
+     * fail, but it owns no live descriptor/path. No fallible work follows
+     * a successful external side effect and the subsequent publication. */
+    if (arg == SIXEL_OPTFLAG_DRCS) {
+        encoder->option_staging = 0;
+        status = sixel_encoder_apply_drcs_option(encoder, value);
+        encoder->option_staging = 1;
+        if (status != SIXEL_OK) {
+            goto end;
+        }
+    }
+    switch (external_option) {
+    case SIXEL_OPTFLAG_OUTFILE:  /* o */
+        status = sixel_encoder_apply_outfile_option(encoder, value);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_THREADS:  /* = */
+        status = sixel_encoder_apply_threads_option(value);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_RUNTIME_POLICY:  /* j */
+        status = sixel_option_apply_runtime_policy_argument(
+            value,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            match_detail,
+            sizeof(match_detail));
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_DIAGNOSTICS:  /* x */
+        status = sixel_option_apply_diagnostics_argument(
+            value,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            match_detail,
+            sizeof(match_detail));
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_LOG_PATH:  /* J */
+        status = sixel_option_apply_log_path_argument(
+            value,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            match_detail,
+            sizeof(match_detail));
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_CLIPBOARD_POLICY:  /* y */
+        status = sixel_option_apply_clipboard_policy_argument(
+            value,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            match_detail,
+            sizeof(match_detail));
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+    default:
+        break;
+    }
+
     status = SIXEL_OK;
 
 end:
+    if (status == SIXEL_OK) {
+        sixel_encoder_option_release_replaced(destination, encoder, arg);
+        memcpy((char *)destination + settings_offset,
+               (char const *)encoder + settings_offset,
+               sizeof(candidate) - settings_offset);
+        if (encoder->option_clear_cache) {
+            sixel_encoder_clear_dither_cache(destination);
+        }
+        if (encoder->option_invalidate_history) {
+            (void)sixel_encoder_invalidate_6delta_plane_owned(destination);
+        }
+        sixel_encoder_revision_advance(destination,
+                                       &destination->configuration_revision);
+    } else {
+        sixel_encoder_option_release_replaced(encoder, destination, arg);
+    }
     sixel_encoder_setopt_context_dispose(&setopt_context);
-    sixel_encoder_unref(encoder);
 
     return status;
 }
@@ -13237,6 +13845,52 @@ sixel_encoder_frame_pipeline_request_stop(
                                                      status,
                                                      reason);
     sixel_mutex_unlock(&pipeline->mutex);
+}
+
+
+/* Keep the loader's composed source immutable until bind snapshots it.
+ * The repair loop owns separate bounded operations, never the frame gate. */
+static SIXELSTATUS
+sixel_encoder_present_frame(sixel_encoder_t *encoder, sixel_frame_t *frame,
+    sixel_encoder_frame_handoff_meta_t const *metadata,
+    sixel_presentation_t *presentation)
+{
+    sixel_frame_t *work_frame;
+    SIXELSTATUS status;
+
+    work_frame = NULL;
+    status = sixel_presentation_before_frame(presentation);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    status = sixel_encoder_operation_enter(encoder,
+        SIXEL_ENCODER_OPERATION_PLAYBACK);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    status = sixel_encoder_frame_clone(frame, encoder->allocator, &work_frame);
+    if (status == SIXEL_OK) {
+        encoder->presentation = presentation;
+        sixel_output_ref(presentation->output);
+        status = sixel_encoder_encode_frame_internal(encoder, work_frame,
+            presentation->output, metadata);
+        encoder->presentation = NULL;
+    }
+    if (status == SIXEL_OK) {
+        status = sixel_presentation_bind_owned(presentation, frame);
+    }
+    if (status != SIXEL_OK) {
+        (void)sixel_encoder_invalidate_6delta_plane_owned(encoder);
+    }
+    sixel_frame_unref(work_frame);
+    sixel_encoder_operation_leave(encoder);
+    if (status == SIXEL_OK) {
+        status = sixel_presentation_after_frame(presentation,
+            metadata != NULL ? metadata->delay : sixel_frame_get_delay(frame),
+            metadata != NULL ? metadata->multiframe
+                : sixel_frame_get_multiframe(frame));
+    }
+    return status;
 }
 
 
@@ -13328,6 +13982,22 @@ sixel_encoder_frame_pipeline_worker(void *priv)
             metadata.loop_no,
             SIXEL_OK,
             SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
+        if (pipeline->presentation != NULL) {
+            status = sixel_encoder_present_frame(pipeline->encoder, frame,
+                &metadata, pipeline->presentation);
+            sixel_frame_unref(frame);
+            frame = NULL;
+            goto frame_encoded;
+        }
+        status = sixel_encoder_operation_enter(pipeline->encoder,
+            SIXEL_ENCODER_OPERATION_PLAYBACK);
+        if (status != SIXEL_OK) {
+            sixel_frame_unref(frame);
+            frame = NULL;
+            sixel_encoder_frame_pipeline_request_stop(pipeline, status,
+                SIXEL_ENCODER_HANDOFF_TRACE_REASON_WORKER_ERROR);
+            break;
+        }
         need_clone = 0;
         work_frame = frame;
         if (sixel_encoder_frame_get_handoff_shareable(frame) != 0 &&
@@ -13339,6 +14009,7 @@ sixel_encoder_frame_pipeline_worker(void *priv)
             if (SIXEL_FAILED(status)) {
                 sixel_frame_unref(frame);
                 frame = NULL;
+                sixel_encoder_operation_leave(pipeline->encoder);
                 sixel_encoder_frame_pipeline_request_stop(
                     pipeline,
                     status,
@@ -13364,6 +14035,8 @@ sixel_encoder_frame_pipeline_worker(void *priv)
         }
         sixel_frame_unref(frame);
         frame = NULL;
+        sixel_encoder_operation_leave(pipeline->encoder);
+frame_encoded:
         sixel_encoder_handoff_trace_emit(
             pipeline,
             SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_ENCODED,
@@ -13820,10 +14493,18 @@ sixel_encoder_load_callback_dispatch(
         loop_no,
         SIXEL_OK,
         SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
-    status = sixel_encoder_encode_frame_internal(encoder,
-                                                 frame,
-                                                 context->output,
-                                                 NULL);
+    if (context->presentation.repair != NULL) {
+        status = sixel_encoder_present_frame(encoder, frame, NULL,
+            &context->presentation);
+    } else {
+        status = sixel_encoder_operation_enter(encoder,
+            SIXEL_ENCODER_OPERATION_PLAYBACK);
+        if (status == SIXEL_OK) {
+            status = sixel_encoder_encode_frame_internal(encoder, frame,
+                context->output, NULL);
+            sixel_encoder_operation_leave(encoder);
+        }
+    }
     sixel_encoder_handoff_trace_emit(
         pipeline,
         SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_SERIAL_RESULT,
@@ -13893,10 +14574,18 @@ load_image_callback(sixel_frame_t *frame, void *data)
         return SIXEL_OK;
     }
 
-    status = sixel_encoder_load_callback_resolve_handoff(pipeline,
-                                                          planner,
-                                                          encoder,
-                                                          frame);
+    if (pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_UNDECIDED) {
+        status = sixel_encoder_operation_enter(encoder,
+            SIXEL_ENCODER_OPERATION_PLAYBACK);
+        if (status != SIXEL_OK) {
+            return status;
+        }
+        status = sixel_encoder_load_callback_resolve_handoff(pipeline,
+                                                              planner,
+                                                              encoder,
+                                                              frame);
+        sixel_encoder_operation_leave(encoder);
+    }
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -14677,8 +15366,8 @@ end:
 
 /* load source data from specified file and encode it to SIXEL format
  * output to encoder->outfd */
-SIXELAPI SIXELSTATUS
-sixel_encoder_encode(
+static SIXELSTATUS
+sixel_encoder_encode_owned(
     sixel_encoder_t *encoder,   /* encoder object */
     char const      *filename)  /* input filename */
 {
@@ -14722,6 +15411,12 @@ sixel_encoder_encode(
     int psd_trace_only;
     int prefer_loader_float32;
     int loader_reqcolors;
+    int playback_released;
+    int effective_static;
+    int progressive_start;
+    int source_environment;
+    sixel_suboption_value_t source_value;
+    char source_diagnostic[256];
 
     clipboard_input_format[0] = '\0';
     clipboard_input_path = NULL;
@@ -14747,6 +15442,9 @@ sixel_encoder_encode(
     psd_trace_only = 0;
     prefer_loader_float32 = 0;
     loader_reqcolors = SIXEL_PALETTE_MAX;
+    playback_released = 0;
+    effective_static = 0;
+    progressive_start = 0;
     memset(&load_context, 0, sizeof(load_context));
     logger = NULL;
     if (encoder == NULL) {
@@ -14768,7 +15466,30 @@ sixel_encoder_encode(
     if (SIXEL_FAILED(status)) {
         return status;
     }
+    status = sixel_presentation_validate(encoder);
+    if (status != SIXEL_OK) {
+        return status;
+    }
     sixel_encoder_ref(encoder);
+    effective_static = encoder->fstatic ||
+        encoder->update_policy == SIXEL_UPDATE_POLICY_PROGRESSIVE;
+    if (encoder->update_policy == SIXEL_UPDATE_POLICY_PROGRESSIVE) {
+        progressive_start = encoder->loader_start_frame_no;
+        if (!encoder->loader_start_frame_no_set) {
+            memset(&source_value, 0, sizeof(source_value));
+            source_environment = sixel_option_resolve_scalar_environment(
+                SIXEL_OPTION_SCHEMA_START_FRAME, &source_value,
+                source_diagnostic, sizeof(source_diagnostic));
+            if (source_environment == SIXEL_OPTION_ENVIRONMENT_INVALID) {
+                sixel_helper_set_additional_message(source_diagnostic);
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            progressive_start =
+                source_environment == SIXEL_OPTION_ENVIRONMENT_UNSET
+                    ? 0 : source_value.int_value;
+        }
+    }
     sixel_encoder_clear_dither_cache(encoder);
     status = sixel_encoder_validate_output_definition(encoder);
     if (SIXEL_FAILED(status)) {
@@ -15086,6 +15807,18 @@ sixel_encoder_encode(
         fuse_palette = 0;
     }
 
+    if (encoder->progressive_enabled) {
+        status = sixel_presentation_init_owned(&load_context.presentation,
+            encoder, load_context.output, encoder->outfd);
+        if (status != SIXEL_OK) {
+            goto end;
+        }
+        load_context.frame_pipeline.presentation = &load_context.presentation;
+        /* A generated baseline and its source snapshot must share the same
+         * composed pixels, including originally indexed input. */
+        fuse_palette = 0;
+    }
+
 reload:
     status = sixel_loader_new(&loader, encoder->allocator);
     if (SIXEL_FAILED(status)) {
@@ -15099,7 +15832,7 @@ reload:
 
     status = sixel_loader_setopt(loader,
                                  SIXEL_LOADER_OPTION_REQUIRE_STATIC,
-                                 &encoder->fstatic);
+                                 &effective_static);
     if (SIXEL_FAILED(status)) {
         goto load_end;
     }
@@ -15160,8 +15893,8 @@ reload:
         goto load_end;
     }
     status = sixel_loader_set_cancel_callback(loader,
-                                              encoder->cancel_function,
-                                              encoder->cancel_context);
+        encoder->cancel_function != NULL ? sixel_encoder_loader_cancel : NULL,
+        encoder->cancel_function != NULL ? encoder : NULL);
     if (SIXEL_FAILED(status)) {
         goto load_end;
     }
@@ -15175,9 +15908,12 @@ reload:
 
     status = sixel_loader_setopt(loader,
                                  SIXEL_LOADER_OPTION_START_FRAME_NO,
-                                 encoder->loader_start_frame_no_set
-                                     ? &encoder->loader_start_frame_no
-                                     : NULL);
+                                 encoder->update_policy ==
+                                     SIXEL_UPDATE_POLICY_PROGRESSIVE
+                                     ? &progressive_start
+                                     : encoder->loader_start_frame_no_set
+                                         ? &encoder->loader_start_frame_no
+                                         : NULL);
     if (SIXEL_FAILED(status)) {
         goto load_end;
     }
@@ -15190,6 +15926,8 @@ reload:
     }
 
     sixel_encoder_begin_loader_transparent_policy(encoder);
+    sixel_encoder_operation_leave(encoder);
+    playback_released = 1;
     status = sixel_loader_load_file(loader,
                                     effective_filename,
                                     load_image_callback);
@@ -15237,6 +15975,21 @@ load_end:
     if (status == SIXEL_OK && pipeline_wait_status != SIXEL_OK) {
         status = pipeline_wait_status;
     }
+    if (status == SIXEL_OK && playback_released &&
+            load_context.presentation.repair != NULL) {
+        status = sixel_presentation_before_frame(&load_context.presentation);
+        if (status == SIXEL_OK) {
+            status = sixel_presentation_finish(&load_context.presentation);
+        }
+    }
+    if (playback_released) {
+        pipeline_wait_status = sixel_encoder_operation_enter(encoder,
+            SIXEL_ENCODER_OPERATION_PLAYBACK);
+        if (pipeline_wait_status != SIXEL_OK) {
+            return pipeline_wait_status;
+        }
+        playback_released = 0;
+    }
 
     if (status != SIXEL_OK) {
         goto end;
@@ -15274,6 +16027,8 @@ load_end:
 #if HAVE_CLEARERR
         clearerr(stdin);
 #endif  /* HAVE_FSEEK */
+        sixel_encoder_operation_leave(encoder);
+        playback_released = 1;
         while (sixel_encoder_is_cancel_requested(encoder) == 0) {
             status = sixel_tty_wait_stdin(1000000);
             if (SIXEL_FAILED(status)) {
@@ -15283,6 +16038,12 @@ load_end:
                 break;
             }
         }
+        pipeline_wait_status = sixel_encoder_operation_enter(encoder,
+            SIXEL_ENCODER_OPERATION_PLAYBACK);
+        if (pipeline_wait_status != SIXEL_OK) {
+            return pipeline_wait_status;
+        }
+        playback_released = 0;
         if (sixel_encoder_is_cancel_requested(encoder) == 0) {
             goto reload;
         }
@@ -15369,11 +16130,27 @@ load_end:
 
 end:
     saved_errno = errno;
+    pipeline_wait_status = sixel_presentation_shutdown(
+        &load_context.presentation);
+    if (status == SIXEL_OK && pipeline_wait_status != SIXEL_OK) {
+        status = pipeline_wait_status;
+    }
+    if (playback_released) {
+        pipeline_wait_status = sixel_encoder_operation_enter(encoder,
+            SIXEL_ENCODER_OPERATION_PLAYBACK);
+        if (pipeline_wait_status != SIXEL_OK) {
+            return pipeline_wait_status;
+        }
+    }
     if (encoder != NULL && force_auto_lut_for_psd != 0) {
         encoder->lut_policy = saved_lut_policy;
     }
     (void)sixel_encoder_frame_pipeline_finish(&load_context.frame_pipeline);
     sixel_encoder_frame_pipeline_dispose(&load_context.frame_pipeline);
+    if (status != SIXEL_OK && load_context.presentation.repair != NULL) {
+        (void)sixel_encoder_invalidate_6delta_plane_owned(encoder);
+    }
+    sixel_presentation_dispose_owned(&load_context.presentation);
     (void)sixel_tty_end_animation_input_guard();
     if (encoder != NULL) {
         (void)sixel_tty_restore_cursor(encoder->outfd);
@@ -15449,8 +16226,8 @@ end:
 
 
 /* encode an initialized frame to SIXEL format */
-SIXELAPI SIXELSTATUS
-sixel_encoder_encode_frame(
+static SIXELSTATUS
+sixel_encoder_encode_frame_owned(
     sixel_encoder_t *encoder,
     sixel_frame_t   *frame,
     sixel_output_t  *output)
@@ -15510,8 +16287,8 @@ sixel_encoder_encode_frame(
 
 /* encode specified pixel data to SIXEL format
  * output to encoder->outfd */
-SIXELAPI SIXELSTATUS
-sixel_encoder_encode_bytes(
+static SIXELSTATUS
+sixel_encoder_encode_bytes_owned(
     sixel_encoder_t     /* in */    *encoder,
     unsigned char       /* in */    *bytes,
     int                 /* in */    width,
@@ -15923,6 +16700,227 @@ cleanup:
     return status;
 }
 
+
+/* Public entry points own admission through cleanup, not just the pixel
+ * kernel. Internal helpers and playback workers use that existing ownership.
+ * The caller still owns references and any multi-call application sequence. */
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_cancel_flag(sixel_encoder_t *encoder, int *cancel_flag)
+{
+    SIXELSTATUS status;
+
+    status = sixel_encoder_operation_enter(encoder, 0);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    status = sixel_encoder_set_cancel_flag_owned(encoder, cancel_flag);
+    sixel_encoder_operation_leave(encoder);
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_cancel_callback(sixel_encoder_t *encoder,
+    sixel_cancel_function cancel_function, void *cancel_context)
+{
+    SIXELSTATUS status;
+
+    status = sixel_encoder_operation_enter(encoder, 0);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    status = sixel_encoder_set_cancel_callback_owned(encoder,
+                                                     cancel_function,
+                                                     cancel_context);
+    sixel_encoder_operation_leave(encoder);
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_6delta_plane_size(sixel_encoder_t *encoder,
+                                    int width, int height)
+{
+    SIXELSTATUS status;
+
+    status = sixel_encoder_operation_enter(encoder, 0);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    status = sixel_encoder_set_6delta_plane_size_owned(encoder, width, height);
+    sixel_encoder_operation_leave(encoder);
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_6delta_plane_origin(sixel_encoder_t *encoder, int x, int y)
+{
+    SIXELSTATUS status;
+
+    status = sixel_encoder_operation_enter(encoder, 0);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    status = sixel_encoder_set_6delta_plane_origin_owned(encoder, x, y);
+    sixel_encoder_operation_leave(encoder);
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_invalidate_6delta_plane(sixel_encoder_t *encoder)
+{
+    SIXELSTATUS status;
+
+    status = sixel_encoder_operation_enter(encoder, 0);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    status = sixel_encoder_invalidate_6delta_plane_owned(encoder);
+    sixel_encoder_operation_leave(encoder);
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_6delta_threshold_limit(sixel_encoder_t *encoder,
+                                         unsigned int threshold)
+{
+    SIXELSTATUS status;
+
+    status = sixel_encoder_operation_enter(encoder, 0);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    status = sixel_encoder_set_6delta_threshold_limit_owned(encoder, threshold);
+    sixel_encoder_operation_leave(encoder);
+    return status;
+}
+
+SIXELAPI int
+sixel_encoder_needs_6delta_refinement(sixel_encoder_t const *encoder)
+{
+    SIXELSTATUS status;
+    sixel_encoder_t *mutable_encoder;
+    int result;
+
+    mutable_encoder = (sixel_encoder_t *)encoder;
+    status = sixel_encoder_operation_enter(mutable_encoder, 0);
+    if (status != SIXEL_OK) {
+        return 0;
+    }
+    result = sixel_encoder_needs_6delta_refinement_owned(encoder);
+    sixel_encoder_operation_leave(mutable_encoder);
+    return result;
+}
+
+SIXELAPI size_t
+sixel_encoder_get_6delta_painted_pixels(sixel_encoder_t const *encoder)
+{
+    SIXELSTATUS status;
+    sixel_encoder_t *mutable_encoder;
+    size_t result;
+
+    mutable_encoder = (sixel_encoder_t *)encoder;
+    status = sixel_encoder_operation_enter(mutable_encoder, 0);
+    if (status != SIXEL_OK) {
+        return 0;
+    }
+    result = sixel_encoder_get_6delta_painted_pixels_owned(encoder);
+    sixel_encoder_operation_leave(mutable_encoder);
+    return result;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_accumulation_buffer(sixel_encoder_t *encoder,
+    unsigned char const *pixels,
+    int width, int height, int pixelformat)
+{
+    SIXELSTATUS status;
+
+    status = sixel_encoder_operation_enter(encoder, 0);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    status = sixel_encoder_set_accumulation_buffer_owned(encoder, pixels,
+                                                       width, height,
+                                                       pixelformat);
+    sixel_encoder_operation_leave(encoder);
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_setopt(sixel_encoder_t *encoder, int arg, char const *value)
+{
+    SIXELSTATUS status;
+
+    status = sixel_encoder_operation_enter(encoder, 0);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    status = sixel_encoder_setopt_owned(encoder, arg, value);
+    sixel_encoder_operation_leave(encoder);
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_encode_frame(sixel_encoder_t *encoder, sixel_frame_t *frame,
+    sixel_output_t *output)
+{
+    SIXELSTATUS status;
+
+    status = sixel_encoder_operation_enter(encoder, 0);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    status = sixel_encoder_encode_frame_owned(encoder, frame, output);
+    sixel_encoder_operation_leave(encoder);
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_encode_bytes(sixel_encoder_t *encoder, unsigned char *bytes,
+    int width,
+    int height, int pixelformat, unsigned char *palette, int ncolors)
+{
+    SIXELSTATUS status;
+
+    status = sixel_encoder_operation_enter(encoder, 0);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    status = sixel_encoder_encode_bytes_owned(encoder, bytes, width, height,
+        pixelformat, palette, ncolors);
+    sixel_encoder_operation_leave(encoder);
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_encode(sixel_encoder_t *encoder, char const *filename)
+{
+    SIXELSTATUS status;
+    int created;
+
+    created = encoder == NULL;
+    if (created) {
+        status = sixel_encoder_new(&encoder, NULL);
+        if (status != SIXEL_OK) {
+            return status;
+        }
+    }
+    status = sixel_encoder_operation_enter(encoder, 0);
+    if (status == SIXEL_OK) {
+        sixel_encoder_operation_lock(encoder);
+        encoder->operation_playback = 1;
+        encoder->playback_owner = sixel_thread_identity_current();
+        sixel_encoder_operation_unlock(encoder);
+        status = sixel_encoder_encode_owned(encoder, filename);
+        sixel_encoder_operation_lock(encoder);
+        encoder->operation_playback = 0;
+        sixel_encoder_operation_unlock(encoder);
+        sixel_encoder_operation_leave(encoder);
+    }
+    if (created) {
+        sixel_encoder_unref(encoder);
+    }
+    return status;
+}
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

@@ -157,6 +157,7 @@ sixel_encoder_core_init_defaults(sixel_output_t *output,
     output->transparent_mask = NULL;
     output->transparent_offset_left = 0;
     output->transparent_offset_top = 0;
+    output->require_keep_header = 0;
     output->last_frame_time_usec = 0;
     output->allocator = allocator;
 }
@@ -595,6 +596,14 @@ sixel_encoder_core_destroy(sixel_output_t *output)
     }
 }
 
+
+void
+sixel_encoder_core_require_keep_header(sixel_output_t *output, int required)
+{
+    if (output != NULL) {
+        output->require_keep_header = required != 0;
+    }
+}
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

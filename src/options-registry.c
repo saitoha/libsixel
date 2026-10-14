@@ -805,6 +805,25 @@
         }, NULL, 0ULL \
     }
 
+/* Typed numeric controls shared by an explicit set of base policies. */
+#define SIXEL_REGISTRY_ENCODER_MULTI_NUMBER( \
+    optflag_, bases_, name_, short_, env_, fallback_, legacy_, kind_, \
+    maximum_, message_, storage_, type_, field_, override_) \
+    { \
+        (optflag_), NULL, SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE, \
+        (name_), (short_), (env_), (fallback_), (legacy_), (kind_), \
+        NULL, 0u, NULL, 0u, 0.0, (maximum_), 1, 1, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, (message_), NULL, \
+        { \
+            SIXEL_SUBOPTION_TARGET_ENCODER, (storage_), \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, field_, type_), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL, (bases_) \
+    }
+
 #define SIXEL_REGISTRY_ENCODER_UINT( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
     maximum_, allow_zero_, message_, field_, override_) \
@@ -1488,8 +1507,15 @@ static sixel_option_value_schema_t const g_update_policy_values[] = {
     {
         "delta", SIXEL_UPDATE_POLICY_DELTA, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "progressive", SIXEL_UPDATE_POLICY_PROGRESSIVE, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
     }
 };
+
+#define SIXEL_UPDATE_BASE_SET_REPAIR \
+    (SIXEL_REGISTRY_BASE_BIT(1) | SIXEL_REGISTRY_BASE_BIT(2))
 
 static sixel_suboption_choice_t const g_update_error_choices[] = {
     { "diffuse", SIXEL_6DELTA_ERROR_DIFFUSE },
@@ -1815,11 +1841,37 @@ static sixel_suboption_key_t const g_suboptions[] = {
         0.0, 255.0, 1,
         "delta threshold must be an integer in range 0..255.",
         sixdelta_threshold, sixdelta_threshold_override),
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
+        "progressive", 'P', "SIXEL_UPDATE_DELTA_PROGRESSIVE", NULL, NULL,
+        progressive_enabled, progressive_override),
     SIXEL_REGISTRY_ENCODER_CHOICE(
         SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
         "error", 'E', "SIXEL_UPDATE_DELTA_ERROR", NULL, NULL,
         g_update_error_choices,
         sixdelta_error_mode, sixdelta_error_mode_override),
+    SIXEL_REGISTRY_ENCODER_MULTI_NUMBER(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, SIXEL_UPDATE_BASE_SET_REPAIR,
+        "stop_threshold", 'S', "SIXEL_UPDATE_PROGRESSIVE_STOP_THRESHOLD",
+        NULL, NULL, SIXEL_SUBOPTION_VALUE_AUTO_DOUBLE, 1.0e154,
+        "progressive stop_threshold must be auto or a distance in "
+        "range 0..1e154.",
+        SIXEL_SUBOPTION_STORAGE_DOUBLE, double,
+        progressive_stop_threshold, progressive_stop_override),
+    SIXEL_REGISTRY_ENCODER_MULTI_NUMBER(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, SIXEL_UPDATE_BASE_SET_REPAIR,
+        "max_passes", 'N', "SIXEL_UPDATE_PROGRESSIVE_MAX_PASSES",
+        NULL, NULL, SIXEL_SUBOPTION_VALUE_UINT, UINT_MAX,
+        "progressive max_passes must be an integer in range 0..4294967295.",
+        SIXEL_SUBOPTION_STORAGE_UINT, unsigned int,
+        progressive_max_passes, progressive_passes_override),
+    SIXEL_REGISTRY_ENCODER_MULTI_NUMBER(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, SIXEL_UPDATE_BASE_SET_REPAIR,
+        "max_seconds", 'M', "SIXEL_UPDATE_PROGRESSIVE_MAX_SECONDS",
+        NULL, NULL, SIXEL_SUBOPTION_VALUE_DOUBLE, DBL_MAX,
+        "progressive max_seconds must be a nonnegative finite number.",
+        SIXEL_SUBOPTION_STORAGE_DOUBLE, double,
+        progressive_max_seconds, progressive_seconds_override),
     SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN(
         SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
         "quiet", 'Q', "SIXEL_DIAG_MODE_QUIET",
@@ -4258,6 +4310,7 @@ sixel_option_registry_binding_kind_is_valid(
     case SIXEL_SUBOPTION_VALUE_FLOAT:
         return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_FLOAT;
     case SIXEL_SUBOPTION_VALUE_DOUBLE:
+    case SIXEL_SUBOPTION_VALUE_AUTO_DOUBLE:
         return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_DOUBLE;
     case SIXEL_SUBOPTION_VALUE_RATIO3:
         return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_RATIO3;

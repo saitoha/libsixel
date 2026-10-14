@@ -2161,7 +2161,13 @@ sixel_option_parse_typed_suboption_value(
         break;
     case SIXEL_SUBOPTION_VALUE_FLOAT:
     case SIXEL_SUBOPTION_VALUE_DOUBLE:
+    case SIXEL_SUBOPTION_VALUE_AUTO_DOUBLE:
     case SIXEL_SUBOPTION_VALUE_SCALED_U8:
+        if (key_def->value_kind == SIXEL_SUBOPTION_VALUE_AUTO_DOUBLE &&
+                strcmp(text, "auto") == 0) {
+            value->double_value = SIXEL_OPTION_DOUBLE_AUTO;
+            return SIXEL_OK;
+        }
         errno = 0;
         parsed_double = strtod(text, &endptr);
         valid = endptr != text && endptr != NULL && endptr[0] == '\0' &&
@@ -2189,7 +2195,9 @@ sixel_option_parse_typed_suboption_value(
         if (valid && key_def->value_kind == SIXEL_SUBOPTION_VALUE_FLOAT) {
             value->float_value = (float)parsed_double;
         } else if (valid &&
-                   key_def->value_kind == SIXEL_SUBOPTION_VALUE_DOUBLE) {
+                   (key_def->value_kind == SIXEL_SUBOPTION_VALUE_DOUBLE ||
+                    key_def->value_kind ==
+                        SIXEL_SUBOPTION_VALUE_AUTO_DOUBLE)) {
             value->double_value = parsed_double;
         } else if (valid) {
             scaled = parsed_double * 255.0;
@@ -3220,6 +3228,12 @@ sixel_option_emit_suboption_value(
     case SIXEL_SUBOPTION_VALUE_FLOAT:
         fprintf(stderr, "%.9g", (double)value->float_value);
         break;
+    case SIXEL_SUBOPTION_VALUE_AUTO_DOUBLE:
+        if (value->double_value == SIXEL_OPTION_DOUBLE_AUTO) {
+            fputs("auto", stderr);
+            break;
+        }
+        /* FALLTHROUGH */
     case SIXEL_SUBOPTION_VALUE_DOUBLE:
         fprintf(stderr, "%.17g", value->double_value);
         break;

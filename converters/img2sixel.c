@@ -995,14 +995,35 @@ static cli_option_help_t const g_option_help_table[] = {
         'Z',
         "update-policy",
         "-Z POLICY, --update-policy=POLICY\n"
-        "    choose full output or retained-plane delta updates.\n"
+        "    choose full, delta or progressive presentation.\n"
         "      full  -> disable temporal keeps (default)\n"
         "      delta -> enable 6delta; requires alpha-policy=auto or keep\n"
-        "    delta suboptions: threshold=0..255 (:Tvalue),\n"
+        "      progressive -> refine one composed still; animation frame 0\n"
+        "        by default (-T selects another frame).\n"
+        "    delta suboptions: progressive=1|0 (:P1 or :P0),\n"
+        "                      threshold=0..255 (:Tvalue),\n"
         "                      error=diffuse|skip (:Evalue).\n"
+        "    Progressive controls (also accepted by delta):\n"
+        "      stop_threshold=auto|0..1e154 (:Svalue, default auto)\n"
+        "      max_passes=0..4294967295 (:Nvalue, default 0)\n"
+        "      max_seconds=nonnegative finite seconds (:Mvalue, default 5)\n"
+        "    Stop distance is in -W, not Delta E00; auto is -W-dependent.\n"
+        "    Passes include the initial image; 0 disables each resource cap.\n"
+        "    Time starts after that image is accepted, including bind work.\n"
+        "    Each animation source resets its limits; its final tail does not.\n"
+        "    Reaching a cap succeeds without certifying quality (-v reports\n"
+        "    the stop reason). An admitted output packet always completes.\n"
+        "    Full accepts no suffixes; delta limits do not enable repairs.\n"
         "    Defaults: threshold=0, error=diffuse. At 0 the early keep\n"
         "    requires exact RGB; later keeps compare palette error.\n"
         "    Larger thresholds trade freshness for fewer lookups.\n"
+        "    Progressive defaults off for delta; when on, use measured\n"
+        "    output capacity and frame slack, then refine the final frame.\n"
+        "    -g skips intermediate repairs. Direct frame APIs stay paced\n"
+        "    by their caller. Eligible repair stages can use Metal.\n"
+        "    Progressive requires generated palettes; it conflicts with\n"
+        "    -e, -I, -b, -m, -O, -@, -u, -n, -P, offsets\n"
+        "    and PNG snapshots. -Z full discards retained history.\n"
         "    full preserves the source-alpha policy.\n"
         "    delta conflicts with -e, -O, -@, -u, -n and PNG snapshots.\n"
         "    Opaque -b gray1 is supported.\n"
@@ -1464,8 +1485,27 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_UPDATE_POLICY",
-        "set the default update policy: full or delta (no suboptions).\n"
+        "set the default update policy: full, delta or progressive (no suffixes).\n"
         "Invalid values keep full. Overridden by -Z/--update-policy."
+    },
+    {
+        "SIXEL_UPDATE_DELTA_PROGRESSIVE",
+        "set delta:progressive (1|0, default 0). Does not enable delta.\n"
+    },
+    {
+        "SIXEL_UPDATE_PROGRESSIVE_STOP_THRESHOLD",
+        "set progressive/delta:stop_threshold (auto|0..1e154, default auto).\n"
+        "Explicit suffixes override the environment; does not enable repair.\n"
+    },
+    {
+        "SIXEL_UPDATE_PROGRESSIVE_MAX_PASSES",
+        "set progressive/delta:max_passes (0..4294967295, default 0).\n"
+        "Includes the initial image; 0 disables the pass limit.\n"
+    },
+    {
+        "SIXEL_UPDATE_PROGRESSIVE_MAX_SECONDS",
+        "set progressive/delta:max_seconds (nonnegative finite, default 5).\n"
+        "Time starts after the initial image; 0 disables the time limit.\n"
     },
     {
         "SIXEL_UPDATE_DELTA_THRESHOLD",
