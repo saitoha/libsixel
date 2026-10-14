@@ -39,4 +39,10 @@ if jpeg_dep.found()
     build_by_default: false)
 endif
 
+executable('progressive-study', ['progressive-study.c'],
+  dependencies: [libsixel_dep],
+  include_directories: [project_inc, include_directories('..')],
+  build_rpath: src_build_dir,
+  install: false)
+
 # vim: set et ts=2:

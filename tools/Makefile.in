@@ -92,7 +92,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @WANT_THUMBNAILER_TRUE@am__append_1 = sixel-thumbnailer
-noinst_PROGRAMS = lso-timer$(EXEEXT) $(am__EXEEXT_2)
+noinst_PROGRAMS = lso-timer$(EXEEXT) progressive-study$(EXEEXT) \
+	$(am__EXEEXT_2)
 EXTRA_PROGRAMS = $(am__EXEEXT_1)
 @BUILD_LSO_TIMEOUT_TRUE@am__append_2 = lso-timeout
 @HAVE_JPEG_TRUE@am__append_3 = jpegref
@@ -137,6 +138,17 @@ lso_timeout_OBJECTS = $(am_lso_timeout_OBJECTS)
 am_lso_timer_OBJECTS = lso_timer-timer.$(OBJEXT)
 lso_timer_OBJECTS = $(am_lso_timer_OBJECTS)
 lso_timer_DEPENDENCIES = $(am__DEPENDENCIES_1)
+am_progressive_study_OBJECTS =  \
+	progressive_study-progressive-study.$(OBJEXT)
+progressive_study_OBJECTS = $(am_progressive_study_OBJECTS)
+progressive_study_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -182,7 +194,8 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/jpegref-jpegref.Po \
 	./$(DEPDIR)/lso_timeout-lso-timeout.Po \
-	./$(DEPDIR)/lso_timer-timer.Po
+	./$(DEPDIR)/lso_timer-timer.Po \
+	./$(DEPDIR)/progressive_study-progressive-study.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -203,9 +216,10 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(jpegref_SOURCES) $(lso_timeout_SOURCES) \
-	$(lso_timer_SOURCES)
+	$(lso_timer_SOURCES) $(progressive_study_SOURCES)
 DIST_SOURCES = $(am__jpegref_SOURCES_DIST) \
-	$(am__lso_timeout_SOURCES_DIST) $(lso_timer_SOURCES)
+	$(am__lso_timeout_SOURCES_DIST) $(lso_timer_SOURCES) \
+	$(progressive_study_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -479,6 +493,7 @@ zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 bin_SCRIPTS = libsixel-config $(am__append_1)
 EXTRA_DIST = libsixel-config.in \
+             reproduce_progressive_study.py \
              check_tap_executable.py \
              verify_color_oracles.py \
              generate_color_fixtures.py \
@@ -592,6 +607,23 @@ EXTRA_DIST = libsixel-config.in \
 @HAVE_JPEG_TRUE@jpegref_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @HAVE_JPEG_TRUE@jpegref_LDFLAGS = $(MAYBE_COVERAGE)
 @HAVE_JPEG_TRUE@jpegref_LDADD = $(LIBJPEG_LIBS)
+progressive_study_SOURCES = progressive-study.c
+progressive_study_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_builddir)/include \
+    -I$(top_srcdir)/include -I$(top_srcdir)
+
+progressive_study_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+progressive_study_LDFLAGS = $(MAYBE_COVERAGE)
+progressive_study_LDADD = $(top_builddir)/src/libsixel.la -lm \
+    $(LIBCURL_LIBS) $(WINHTTP_LIBS) $(LIBPNG_LIBS) $(LIBTIFF_LIBS) \
+    $(LIBJPEG_LIBS) $(LCMS2_LIBS) $(LIBWEBP_LIBS) $(GDK_PIXBUF_LIBS) \
+    $(GD_LIBS) $(WIC_LIBS) $(COREGRAPHICS_LIBS) $(QUICKLOOK_LIBS) \
+    $(METAL_LIBS) $(CLIPBOARD_LIBS) @THREAD_LIBS@
+
+@OPENVMS_GNV_FALSE@progressive_study_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+@OPENVMS_GNV_FALSE@    $(LIBTOOLFLAGS) --mode=link $(CCLD) $(progressive_study_CFLAGS) \
+@OPENVMS_GNV_FALSE@    $(CFLAGS) $(progressive_study_LDFLAGS) $(LDFLAGS) -o $@
+
+@OPENVMS_GNV_TRUE@progressive_study_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 lso_timer_SOURCES = timer.c
 lso_timer_LDADD = $(CLOCK_GETTIME_LIBS)
 lso_timer_CFLAGS = $(AM_CFLAGS)
@@ -664,6 +696,10 @@ lso-timeout$(EXEEXT): $(lso_timeout_OBJECTS) $(lso_timeout_DEPENDENCIES) $(EXTRA
 lso-timer$(EXEEXT): $(lso_timer_OBJECTS) $(lso_timer_DEPENDENCIES) $(EXTRA_lso_timer_DEPENDENCIES) 
 	@rm -f lso-timer$(EXEEXT)
 	$(AM_V_GEN)$(lso_timer_LINK) $(lso_timer_OBJECTS) $(lso_timer_LDADD) $(LIBS)
+
+progressive-study$(EXEEXT): $(progressive_study_OBJECTS) $(progressive_study_DEPENDENCIES) $(EXTRA_progressive_study_DEPENDENCIES)
+	@rm -f progressive-study$(EXEEXT)
+	$(AM_V_GEN)$(progressive_study_LINK) $(progressive_study_OBJECTS) $(progressive_study_LDADD) $(LIBS)
 install-binSCRIPTS: $(bin_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	@list='$(bin_SCRIPTS)'; test -n "$(bindir)" || list=; \
@@ -709,6 +745,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jpegref-jpegref.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lso_timeout-lso-timeout.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lso_timer-timer.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/progressive_study-progressive-study.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -779,6 +816,20 @@ lso_timer-timer.obj: timer.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='timer.c' object='lso_timer-timer.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lso_timer_CFLAGS) $(CFLAGS) -c -o lso_timer-timer.obj `if test -f 'timer.c'; then $(CYGPATH_W) 'timer.c'; else $(CYGPATH_W) '$(srcdir)/timer.c'; fi`
+
+progressive_study-progressive-study.o: progressive-study.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(progressive_study_CPPFLAGS) $(CPPFLAGS) $(progressive_study_CFLAGS) $(CFLAGS) -MT progressive_study-progressive-study.o -MD -MP -MF $(DEPDIR)/progressive_study-progressive-study.Tpo -c -o progressive_study-progressive-study.o `test -f 'progressive-study.c' || echo '$(srcdir)/'`progressive-study.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/progressive_study-progressive-study.Tpo $(DEPDIR)/progressive_study-progressive-study.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='progressive-study.c' object='progressive_study-progressive-study.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(progressive_study_CPPFLAGS) $(CPPFLAGS) $(progressive_study_CFLAGS) $(CFLAGS) -c -o progressive_study-progressive-study.o `test -f 'progressive-study.c' || echo '$(srcdir)/'`progressive-study.c
+
+progressive_study-progressive-study.obj: progressive-study.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(progressive_study_CPPFLAGS) $(CPPFLAGS) $(progressive_study_CFLAGS) $(CFLAGS) -MT progressive_study-progressive-study.obj -MD -MP -MF $(DEPDIR)/progressive_study-progressive-study.Tpo -c -o progressive_study-progressive-study.obj `if test -f 'progressive-study.c'; then $(CYGPATH_W) 'progressive-study.c'; else $(CYGPATH_W) '$(srcdir)/progressive-study.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/progressive_study-progressive-study.Tpo $(DEPDIR)/progressive_study-progressive-study.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='progressive-study.c' object='progressive_study-progressive-study.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(progressive_study_CPPFLAGS) $(CPPFLAGS) $(progressive_study_CFLAGS) $(CFLAGS) -c -o progressive_study-progressive-study.obj `if test -f 'progressive-study.c'; then $(CYGPATH_W) 'progressive-study.c'; else $(CYGPATH_W) '$(srcdir)/progressive-study.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -917,6 +968,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/jpegref-jpegref.Po
 	-rm -f ./$(DEPDIR)/lso_timeout-lso-timeout.Po
 	-rm -f ./$(DEPDIR)/lso_timer-timer.Po
+	-rm -f ./$(DEPDIR)/progressive_study-progressive-study.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -966,6 +1018,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/jpegref-jpegref.Po
 	-rm -f ./$(DEPDIR)/lso_timeout-lso-timeout.Po
 	-rm -f ./$(DEPDIR)/lso_timer-timer.Po
+	-rm -f ./$(DEPDIR)/progressive_study-progressive-study.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

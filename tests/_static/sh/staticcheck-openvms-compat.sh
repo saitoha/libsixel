@@ -56,8 +56,12 @@ openvms_link_count=$(grep -hF \
     "$src_root/assessment/Makefile.am" \
     "$src_root/tools/Makefile.am" \
     "$src_root/tests/Makefile.am" | awk 'END { print NR }')
-test "$openvms_link_count" -eq 6 ||
-    fail "expected 6 native OpenVMS program-link overrides, found $openvms_link_count"
+test "$openvms_link_count" -eq 7 ||
+    fail "expected 7 native OpenVMS program-link overrides, found $openvms_link_count"
+# The developer measurement tool must use the same native linker path.
+# shellcheck disable=SC2016
+require_fixed 'progressive_study_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@' \
+    tools/Makefile.am
 
 /bin/sh "$src_root/openvms/gnv-ar.sh" /bin/sh -c \
     'printf "%s\n" "%LIBRAR-W-COMCOD, warning"; exit 3' >/dev/null ||

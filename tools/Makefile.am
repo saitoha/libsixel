@@ -11,13 +11,14 @@ if WANT_THUMBNAILER
 bin_SCRIPTS += sixel-thumbnailer
 endif
 
-noinst_PROGRAMS = lso-timer
+noinst_PROGRAMS = lso-timer progressive-study
 EXTRA_PROGRAMS =
 if BUILD_LSO_TIMEOUT
 noinst_PROGRAMS += lso-timeout
 endif
 
 EXTRA_DIST = libsixel-config.in \
+             reproduce_progressive_study.py \
              check_tap_executable.py \
              verify_color_oracles.py \
              generate_color_fixtures.py \
@@ -133,6 +134,24 @@ jpegref_CPPFLAGS = $(AM_CPPFLAGS) $(LIBJPEG_CFLAGS)
 jpegref_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 jpegref_LDFLAGS = $(MAYBE_COVERAGE)
 jpegref_LDADD = $(LIBJPEG_LIBS)
+endif
+
+progressive_study_SOURCES = progressive-study.c
+progressive_study_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_builddir)/include \
+    -I$(top_srcdir)/include -I$(top_srcdir)
+progressive_study_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+progressive_study_LDFLAGS = $(MAYBE_COVERAGE)
+progressive_study_LDADD = $(top_builddir)/src/libsixel.la -lm \
+    $(LIBCURL_LIBS) $(WINHTTP_LIBS) $(LIBPNG_LIBS) $(LIBTIFF_LIBS) \
+    $(LIBJPEG_LIBS) $(LCMS2_LIBS) $(LIBWEBP_LIBS) $(GDK_PIXBUF_LIBS) \
+    $(GD_LIBS) $(WIC_LIBS) $(COREGRAPHICS_LIBS) $(QUICKLOOK_LIBS) \
+    $(METAL_LIBS) $(CLIPBOARD_LIBS) @THREAD_LIBS@
+if OPENVMS_GNV
+progressive_study_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
+else
+progressive_study_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+    $(LIBTOOLFLAGS) --mode=link $(CCLD) $(progressive_study_CFLAGS) \
+    $(CFLAGS) $(progressive_study_LDFLAGS) $(LDFLAGS) -o $@
 endif
 
 lso_timer_SOURCES = timer.c
