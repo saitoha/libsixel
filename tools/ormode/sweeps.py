@@ -100,7 +100,9 @@ def observe_workers():
                 "/".join(str(record.get(key)) for key in ["worker", "role", "event"])
                 for record in records
             )
-            expected = 0 if threads == 1 else 4 * threads
+            # Two warmup pairs make four calls; only the two normal calls
+            # may start workers, because OR streams always decode serially.
+            expected = 0 if threads == 1 else 2 * threads
             assert counts["decoder/scan/start"] == expected
             assert counts["decoder/paint/start"] == expected
             observations.append(

@@ -52,7 +52,7 @@ The color chart has not changed, and reconstructing the same number selects exac
 
 A palette of 16 entries needs four bit planes; 256 entries need eight. In a busy, dithered image, one plane can describe positions belonging to many different colors together. In a flat-color area, ordinary SIXEL may already describe the pixels with very few operations. The arrangement of repeated patterns and the encoder's optimizations determine the actual byte count, so counting planes alone does not predict the saving.
 
-The display-memory arrangement described in arakiken's article also suggests a receiver that consumes these planes directly. A receiver that needs complete pixel colors must instead reconstruct the indices and look them up. The [CPU decoder measurements](scaling.md#photo-set-decoder-results) include band-plane accumulation followed by index gathering and palette lookup; they measure that implementation rather than a planar display device. Use OR mode with a compatible receiver and evaluate size, encoding time, and decoding time separately. The [X68030 console study](x68k.md) explains the conditions under which the dialect was faster: a fixed eight-color planar text console whose kernel parsed every byte on the same 25 MHz CPU that serialized the image.
+The display-memory arrangement described in arakiken's article also suggests a receiver that consumes these planes directly. A receiver that needs complete pixel colors must instead reconstruct the indices and look them up. The [CPU decoder measurements](scaling.md#photo-set-decoder-results) include band-plane accumulation followed by index gathering and palette lookup; they measure that implementation rather than a planar display device. Use OR mode with a compatible receiver and evaluate size, encoding time, and decoding time separately. The [X68030 console study](x68k.md) describes the receiver the dialect was designed for, including the column-word band buffer whose principle this decoder now shares.
 
 ## From a grid image to actual output
 
@@ -264,9 +264,9 @@ The band-plane decoder is measured on the same 100 retained 800×600 photographs
 
 | Output boundary | Median normal/OR speed ratio | Median OR/normal time ratio | Normal faster / OR faster |
 | --- | ---: | ---: | ---: |
-| RGBA API | 5.254× | 0.190× | 0 / 100 |
-| Indexed API | 5.383× | 0.186× | 0 / 100 |
-| RGBA PNG CLI | 1.070× | 0.934× | 1 / 99 |
+| RGBA API | 7.382× | 0.135× | 0 / 100 |
+| Indexed API | 6.874× | 0.145× | 0 / 100 |
+| RGBA PNG CLI | 1.079× | 0.927× | 0 / 100 |
 
 Each ratio compares the repeated-run medians for one photo; the table reports the median of those per-photo ratios. A speed ratio above 1 means OR is faster. PNG-inclusive times contain substantial output-generation work and must not be interpreted as pure decoding.
 
@@ -276,17 +276,17 @@ Box centers are medians across photos, boxes span the interquartile range, and w
 
 The API measurements use 21 timed calls after two warmup pairs, with streams already in memory. They include parsing, validation, result allocation, gathering, and applicable worker setup, but exclude file I/O, correctness comparisons, result freeing, and PNG encoding. CLI measurements use 11 timed processes after two warmup pairs, including process startup, cached input reads, decoding, and PNG writes to `/dev/null`. Normal/OR order alternates within each pair. Neither boundary measures terminal rendering or network transport.
 
-The matched [before/after records](sweeps/before-after.json) compare this implementation with the unchanged develop base `551e9bb65`, using identical `-O3` build options, streams, output boundary, and host. OR RGBA decoding improves by a median **7.56×** across the 100 photos; the medians of the per-photo OR times are 9.51 ms before and 1.20 ms after. This comparison uses 21 timed calls after two warmup pairs for each build, alternates build order between photos, and excludes freeing and comparisons from timing. It measures an implementation change, not a universal advantage of the dialect.
+The matched [before/after records](sweeps/before-after.json) compare this implementation with the unchanged develop base `551e9bb65`, using identical `-O3` build options, streams, output boundary, and host. OR RGBA decoding improves by a median **10.77×** across the 100 photos; the medians of the per-photo OR times are 9.14 ms before and 0.82 ms after. This comparison uses 21 timed calls after two warmup pairs for each build, alternates build order between photos, and excludes freeing and comparisons from timing. It measures an implementation change, not a universal advantage of the dialect.
 
-For the fixed 1920×1080 snake streams, each cell below is normal / OR in milliseconds. The one-thread RGBA speed ratio is **3.21×**. Increasing the decoder budget does not guarantee a reduction in elapsed time.
+For the fixed 1920×1080 snake streams, each cell below is normal / OR in milliseconds. The one-thread RGBA speed ratio is **4.50×**. OR streams always decode serially, so their time does not depend on the configured budget; ordinary decoding uses workers and reaches its fastest observed RGBA median, 6.36 ms, at 12 workers.
 
 | Threads | RGBA decoder API | Indexed decoder API | RGBA PNG decoder CLI |
 | --- | ---: | ---: | ---: |
-| 1 | 17.62 / 5.49 | 16.22 / 4.85 | 210.21 / 198.68 |
-| 4 | 17.02 / 32.66 | 15.72 / 30.82 | 284.57 / 300.96 |
-| 12 | 6.85 / 12.33 | 6.38 / 11.70 | 200.20 / 205.71 |
+| 1 | 16.61 / 3.69 | 15.71 / 3.72 | 193.68 / 181.09 |
+| 4 | 10.35 / 3.68 | 10.04 / 3.70 | 187.61 / 181.31 |
+| 12 | 6.36 / 3.71 | 6.79 / 3.81 | 185.53 / 182.20 |
 
-The parser accumulates band-plane words and performs a final index gather or palette expansion. The [decoder study](scaling.md#why-smaller-streams-can-decode-more-slowly) explains the representation, sixteen-bit registers, raster growth, partial bands, validation, and serial fallback. Its [color-count curves](scaling.md#color-count-axis) and complete [1–12-thread curves](scaling.md#thread-count-axis) retain cases where OR or additional workers are slower.
+The parser accumulates band-plane words and performs a final index gather or palette expansion. The [decoder study](scaling.md#how-the-band-plane-decoder-works) explains the representation, sixteen-bit registers, raster growth, partial bands, and why OR streams always decode serially. Its [color-count curves](scaling.md#color-count-axis) and complete [1–12-thread curves](scaling.md#thread-count-axis) retain cases where OR is slower.
 
 The [raw decoder records](sweeps/decode.json) retain samples, medians, quartiles, stream hashes, commands, and exact pixel checks for all 226 retained decoder pairs. A separate [compatibility manifest](sweeps/verification.json) covers all 957 stored streams (731 distinct byte sequences), comparing RGBA, byte indices, and sixteen-bit indices with the baseline at every budget from 1 through 12. The [reproduction instructions](scaling.md#reproduction) describe how to measure a decoder on retained streams without re-encoding them.
 

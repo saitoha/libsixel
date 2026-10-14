@@ -27,7 +27,7 @@ Each line follows one image. The horizontal axis is logarithmic in base two; mar
 
 Size does not move monotonically in OR's favor as the palette budget rises. For example, snake changes from an OR/normal size ratio of about 0.96 at two colors to 1.21 at 32 colors and 1.04 at 256 colors. Egret is about 0.97 at two colors, 1.58 at eight, and 1.24 at 256. The gradient reaches about 2.22 at 256 colors. Plane count alone does not predict compression: ordinary size-policy overpainting, repeat runs, and spatial index patterns all contribute.
 
-Decoder speed also crosses the equality line as the palette budget changes. The byte reduction from OR encoding cannot by itself establish a decoder speedup. The two decoder API panels distinguish expanding to RGBA from returning palette indices; neither includes PNG writing.
+Decoder speed does not follow stream size. RGBA decoding favors OR at every measured point, between 1.31× and 6.47× at one thread, including budgets where the OR stream is larger. Indexed decoding of the small palette-map fixture stays between 0.87× and 1.17×: on its 598×42 raster, fixed per-call work outweighs the difference in accumulation. The two decoder API panels distinguish expanding to RGBA from returning palette indices; neither includes PNG writing.
 
 ## Thread-count axis
 
@@ -43,15 +43,15 @@ The Full HD medians below make the different boundaries explicit. Times are norm
 
 | Threads | Encode CLI (retained) | RGBA decoder API | Indexed decoder API | RGBA PNG decoder CLI |
 | --- | ---: | ---: | ---: | ---: |
-| 1 | 220.47 / 199.98 | 17.62 / 5.49 | 16.22 / 4.85 | 210.21 / 198.68 |
-| 2 | 211.04 / 202.27 | 17.97 / 36.29 | 16.73 / 35.31 | 216.13 / 232.64 |
-| 4 | 157.49 / 158.19 | 17.02 / 32.66 | 15.72 / 30.82 | 284.57 / 300.96 |
-| 8 | 109.36 / 109.42 | 12.32 / 21.95 | 7.50 / 13.25 | 201.34 / 207.70 |
-| 12 | 93.75 / 92.26 | 6.85 / 12.33 | 6.38 / 11.70 | 200.20 / 205.71 |
+| 1 | 220.47 / 199.98 | 16.61 / 3.69 | 15.71 / 3.72 | 193.68 / 181.09 |
+| 2 | 211.04 / 202.27 | 16.66 / 3.67 | 16.52 / 3.77 | 194.02 / 181.64 |
+| 4 | 157.49 / 158.19 | 10.35 / 3.68 | 10.04 / 3.70 | 187.61 / 181.31 |
+| 8 | 109.36 / 109.42 | 7.00 / 3.80 | 6.85 / 3.71 | 184.50 / 181.35 |
+| 12 | 93.75 / 92.26 | 6.36 / 3.71 | 6.79 / 3.81 | 185.53 / 182.20 |
 
-At one worker, OR RGBA decoding is 3.21× faster than normal decoding. The fastest observed RGBA medians are 6.81 ms normal at 11 workers and 5.49 ms OR at 1 worker. Validation, thread launch/join, and serial gathering can outweigh the benefit of parallel plane accumulation. These are workload/host observations, not universal recommended budgets. The encoder column retains the original study's measurements and is not a before/after decoder comparison.
+At one worker, OR RGBA decoding is 4.50× faster than normal decoding. OR streams always decode serially, so their medians stay between 3.67 ms and 3.80 ms at every budget. Ordinary decoding uses workers; its fastest observed RGBA median is 6.36 ms at 12 workers, still slower than the one-thread OR decode. These are workload/host observations, not universal recommended budgets. The encoder column retains the original study's measurements and is not a before/after decoder comparison.
 
-Untimed [worker observations](sweeps/thread-observations.json) confirm serial execution at one worker and four/twelve scan workers plus four/twelve paint workers per API call at the corresponding budgets for the Full HD streams, in both indexed and RGBA paths. These counts were collected separately from performance samples.
+Untimed [worker observations](sweeps/thread-observations.json) confirm serial execution at one worker. At four and twelve workers, each ordinary Full HD call starts four or twelve scan workers plus the same number of paint workers, while each OR call starts none, in both indexed and RGBA paths. These counts were collected separately from performance samples.
 
 ## Decoder timing boundaries
 
@@ -69,17 +69,17 @@ The same 100 photographs, 800×600 and 256 colors, give the following one-thread
 
 | Output boundary | Median normal/OR speed ratio | Median OR/normal time ratio | Normal faster / OR faster |
 | --- | ---: | ---: | ---: |
-| RGBA API | 5.254× | 0.190× | 0 / 100 |
-| Indexed API | 5.383× | 0.186× | 0 / 100 |
-| RGBA PNG CLI | 1.070× | 0.934× | 1 / 99 |
+| RGBA API | 7.382× | 0.135× | 0 / 100 |
+| Indexed API | 6.874× | 0.145× | 0 / 100 |
+| RGBA PNG CLI | 1.079× | 0.927× | 0 / 100 |
 
 ![Decoder speed-ratio distribution and its relationship to stream size on 100 photos](sweeps/decode-photos.png)
 
 These are per-image comparisons of the normal and OR members decoded by the same band-plane-capable library. PNG-inclusive CLI ratios are closer to equality because output generation consumes much of the process time. Small differences around equality do not establish a benefit beyond host noise. Box centers are medians across images, boxes are interquartile ranges, whiskers extend to 1.5 times the IQR, and points beyond them are outliers; these are not per-image confidence intervals.
 
-The matched [before/after records](sweeps/before-after.json) compare this implementation with the unchanged develop base `551e9bb65`, using identical `-O3` build options, streams, output boundary, and host. OR RGBA decoding improves by a median **7.56×** across the 100 photos; the medians of the per-photo OR times are 9.51 ms before and 1.20 ms after. This comparison uses 21 timed calls after two warmup pairs for each build, alternates build order between photos, and excludes freeing and comparisons from timing. It measures an implementation change, not a universal advantage of the dialect.
+The matched [before/after records](sweeps/before-after.json) compare this implementation with the unchanged develop base `551e9bb65`, using identical `-O3` build options, streams, output boundary, and host. OR RGBA decoding improves by a median **10.77×** across the 100 photos; the medians of the per-photo OR times are 9.14 ms before and 0.82 ms after. This comparison uses 21 timed calls after two warmup pairs for each build, alternates build order between photos, and excludes freeing and comparisons from timing. It measures an implementation change, not a universal advantage of the dialect.
 
-### Why smaller streams can decode more slowly
+### How the band-plane decoder works
 
 Stream bytes do not determine the amount of CPU raster work. The OR decoder in [`fromsixel.c`](../../../../src/fromsixel.c) stores one 64-bit word for each column of a six-row band. Byte lane `p` holds that column's six vertical bits for palette-index bit `p`. Spreading the selected register's bits to the low bit of each byte lane makes `word |= sixel_bits * spread(register)` accumulate a received pattern in one word operation. Composite registers such as `#3` use the same operation as power-of-two registers. Adjacent unrepeated data characters are consumed together up to a command or allocation boundary; repeat counts, raster growth, and clipping retain the checked parser path.
 
@@ -87,15 +87,15 @@ After parsing and final sizing, a gather pass extracts one index from each row's
 
 Registers above 255 allocate a second array of eight-plane words only when needed, preserving all sixteen index bits. Raster growth copies band words, and the final gather visits only valid rows in a short final band. These are internal buffers: public decoder results retain their existing pixel formats and ownership. No planar-output or GPU API is introduced.
 
-The parallel path in [`decoder-parallel.c`](../../../../src/decoder-parallel.c) retains its validation scan and all-worker release barrier. Shared plane writes require disjoint **bands**, since different rows of one band share a word. Wide-register selections, palette redefinitions, and unsupported raster changes fall back before painting; fused decoder undithering also uses serial gathering before its raster filter. The [decoder threading guide](../../../threading/decoder.md) describes the scan, launch, join, and fallback costs. Final gathering is serial, so extra workers can cost more than they save on a short payload.
+OR streams always decode serially. [`sixel_decoder_parallel_request_start()`](../../../../src/decoder-parallel.c) declines an OR request before it shares any buffer, and the caller continues on the serial path. The parallel decoder would run a validation pass and a paint pass over each worker's span, launch and join its workers twice, and still leave the gather serial; its workers also paint row by row rather than consuming runs of data characters as plane words. With that structure, every budget from 2 to 12 workers was slower than one worker on both the photos and the Full HD stream. A configured decoder budget therefore applies to ordinary streams only. The [decoder threading guide](../../../threading/decoder.md) describes the parallel path that ordinary streams use.
 
-The pixel-accumulation baseline performs read-modify-write work for each affected raster sample and uses an additional index buffer before RGBA expansion. The matched before/after photo measurements isolate the effect of replacing that decoder implementation on fixed streams, rather than attributing every difference to the SIXEL dialect. Stream structure, repeat runs, palette budget, validation, allocation, and output representation still matter. The planar-display motivation discussed in [arakiken's article](https://qiita.com/arakiken/items/26f6c67da5a9f9f907ac) does not establish a terminal-rendering speedup from these CPU measurements. The original receiver had a different cost structure: [OR mode on the X68030 console](x68k.md) describes its planar text VRAM, its band buffer, and a work-count model in which OR mode reduces both kernel parsing and client serialization.
+The baseline decoder performs read-modify-write work for each affected raster sample and uses an additional index buffer before RGBA expansion. The matched before/after photo measurements isolate the effect of replacing that decoder implementation on fixed streams, rather than attributing every difference to the SIXEL dialect. Stream structure, repeat runs, palette budget, validation, allocation, and output representation still matter. The planar-display motivation discussed in [arakiken's article](https://qiita.com/arakiken/items/26f6c67da5a9f9f907ac) does not establish a terminal-rendering speedup from these CPU measurements. The band-plane layout follows the receiver that OR mode was designed for: [OR mode on the X68030 console](x68k.md) describes its planar text VRAM, the column-word band buffer it used from 2016, and the history of how that buffer reached libsixel.
 
 ## Correctness and scope
 
 All 126 retained normal/OR encoder pairs in the sweep have identical decoded RGBA pixels, and repeated encoded streams match within every mode/configuration. Equality is checked at each color/thread point; it does not imply equality between different palette budgets or between different encoder thread counts. Source MS-SSIM therefore measures ordinary quantization/dithering loss shared by both modes, not additional OR loss.
 
-All 226 retained decoder pairs pass the exact pixel checks. The separate [before/after compatibility manifest](sweeps/verification.json) also verifies all 957 saved streams, including the extra identical-index streams, in RGBA, byte-index, and sixteen-bit-index form at every decoder budget from 1 through 12. It compares output and palette SHA-256 values, dimensions, and color counts, and checks thread-count invariance; identical input hashes share a checked result. The decoder harness checks every repeated API output, and CLI RGBA results are checked both against the other mode and against the canonical one-thread encoder decode. This also tests decoder-thread invariance for the fixed inputs. The measurements concern opaque rasters and do not replace the [transparency limitation](README.md#is-the-quality-impact-exactly-zero) of the original study. No terminal or planar-VRAM rendering time is included.
+All 226 retained decoder pairs pass the exact pixel checks. The separate [before/after compatibility manifest](sweeps/verification.json) also verifies all 957 saved streams, including the extra identical-index streams, in RGBA, byte-index, and sixteen-bit-index form at every decoder budget from 1 through 12. It records the baseline decoder's output and palette SHA-256 values, dimensions, and color counts, and [`tools/ormode/verify_decoder.py`](../../../../tools/ormode/verify_decoder.py) requires a build to reproduce every one of them at every budget, which also checks thread-count invariance; identical input hashes share a checked result. The decoder harness checks every repeated API output, and CLI RGBA results are checked both against the other mode and against the canonical one-thread encoder decode. This also tests decoder-thread invariance for the fixed inputs. The measurements concern opaque rasters and do not replace the [transparency limitation](README.md#is-the-quality-impact-exactly-zero) of the original study. No terminal or planar-VRAM rendering time is included.
 
 The complete [encoder records](sweeps/encode.json) and [decoder records](sweeps/decode.json) retain individual timing samples, medians, quartiles, exact stream hashes, commands, and correctness observations. The photo-only decoder sample uses the same 100 fixed-ID photos as the earlier size study, rather than a newly selected set.
 
@@ -121,6 +121,12 @@ cc -O3 -std=c99 -I "$baseline_source/include" \
   --reference-sweeps "$reference_sweeps" --output "$output" \
   --baseline-source "$baseline_source"
 OR_MODE_SWEEP_DIR="$output" "$py" tools/ormode/render_sweeps.py
+cc -O2 -std=c99 -I "$decoder_source/include" \
+  tools/ormode/verify-decoder.c -L "$decoder_source/src/.libs" -lsixel \
+  -o "$OR_MODE_STUDY_DIR/verify-decoder"
+(cd tools/ormode && "$py" verify_decoder.py "$decoder_source" \
+  ../../docs/encoder/output/or-mode/sweeps/verification.json \
+  "$output/verification.json")
 ```
 
-Build both decoder checkouts with the identical options recorded in the [metadata](sweeps/metadata.json), placing their `.local/bin` first on `PATH`. `--baseline-source` is optional and adds the matched 100-photo RGBA comparison; it requires the separately linked `decode-bench-before`. Without `--decoder-source`, the runner retains the original complete encoder/decoder workflow. The decoder-only runner resumes completed decoder configurations only after checking metadata and stream hashes. Plotting validates the expected matrix and pixel comparisons, then reads saved measurements without rerunning benchmarks. Downloaded photos and large SIXEL streams remain outside the repository.
+Build both decoder checkouts with the identical options recorded in the [metadata](sweeps/metadata.json), placing their `.local/bin` first on `PATH`. `--baseline-source` is optional and adds the matched 100-photo RGBA comparison; it requires the separately linked `decode-bench-before`. Without `--decoder-source`, the runner retains the original complete encoder/decoder workflow. The decoder-only runner resumes completed decoder configurations only after checking metadata and stream hashes. Plotting validates the expected matrix and pixel comparisons, then reads saved measurements without rerunning benchmarks. Downloaded photos and large SIXEL streams remain outside the repository. On macOS a built `libsixel.1.dylib` records its configured install directory (`/usr/local/lib` by default) as an absolute install name, so `-rpath` alone can silently load an installed libsixel instead of the build under test; the runners therefore set `DYLD_LIBRARY_PATH` to each build's `src/.libs` explicitly. Run the measurements without other CPU-intensive work on the host.

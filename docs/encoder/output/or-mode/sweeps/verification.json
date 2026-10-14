@@ -1,7 +1,7 @@
 {
   "baseline_revision": "551e9bb65",
   "before_library_sha256": "b85836fc016ba28ec8daf5b78283d459499da46f653af97f54259c63ba7498ed",
-  "after_library_sha256": "e1e39777e58a0b7a6c14a5c412ca181f0715b7f86c7b72dc79fc32e0add15adf",
+  "after_library_sha256": "d9ee49c537df455f1018ae88a44c555b02b9114d9bce26a4712e902b2db4ad4c",
   "stream_count": 957,
   "unique_stream_count": 731,
   "thread_budgets": [
@@ -26,7 +26,6 @@
   "comparisons": 34452,
   "output_comparison": "SHA-256 of every output raster and palette, with exact dimensions and ncolors; identical across builds and worker budgets",
   "before_manifest_sha256": "b0b84f28b46fbb9dbf3dda6b29d1dea5ac885001c9f63c261bbc443e558b9425",
-  "after_manifest_sha256": "082f7447a27ed7ebcf4e73b81173998bd4d76d642c908a35ab980a74c1691813",
   "streams": [
     {
       "path": "results/autumn-resized-p16-t1.0.six",
@@ -28742,8 +28741,8 @@
   "after_decode_calls": 26316,
   "duplicate_policy": "Byte-identical input hashes reuse the same checked outputs in the final-build run.",
   "decoder_source_sha256": {
-    "src/fromsixel.c": "f14a4b381019868fb687518409894441b56baa4acb0a40a89131b85cc2b6ad34",
-    "src/decoder-parallel.c": "5308ba44344ef88030e27b7c8cb69324bd2e7e2d29c72b0abf62ad108832d3d9",
+    "src/fromsixel.c": "ee07d34b18406cfd26fb34e468dbc794f3a0d0d2f3b88ee79230c1ce2cfd7750",
+    "src/decoder-parallel.c": "1aae5e262f52b9d2724c454465fa8591f315c8de3313a33920f67db0f2c27667",
     "src/decoder-image.h": "96a3822d15bf42dc91e57b09f53eb896d468a8d93341996f703703f05541e6af",
     "src/decoder-ormode.h": "012723de3c0be4f4e259a17c498efc97c88157e909ac1a35980fba4d9d5d58d9"
   }

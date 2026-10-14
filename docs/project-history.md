@@ -60,6 +60,7 @@ that materially changed the modern interpretation of SIXEL:
    without Screen retransmitting the original SIXEL data. This did not make
    Screen retain images for a later full redraw; it was specifically a
    terminal-side scrolling technique.
+4. **OR mode for planar consoles.** The NetBSD/x68k console's SIXEL patch, written by Tetsuya Isaki, gained OR mode in November 2016: a `P2=5` dialect, proposed by Y. Sugahara, in which each power-of-two color selector carries one bit plane of the palette index. Araki Ken added `img2sixel -O` to libsixel in [March 2020](https://github.com/saitoha/libsixel/commit/e44d854f8) and documented the dialect. The same 2016 patch also introduced the receiver technique that made the console fast, a band buffer of one word per column updated with a single multiplication; libsixel's decoder adopted that layout only in October 2026. [OR mode on the X68030 console](encoder/output/or-mode/x68k.md) tells that story and explains the hardware.
 
 The preload and horizontal-margin scrolling techniques combine features from different DEC terminal generations. DECDMAC/DECINVM and DECSLRM appear in the [VT420 / VT class 4 command set](https://vt100.net/docs/vt420-uu/chapter9.html), while DECSIXEL graphics were available on the [VT330/VT340](https://vt100.net/docs/vt3xx-gp/chapter14.html). Those physical terminals did not provide the combined feature set. These techniques grew out of emulator interpretations that composed the separate control functions and defined their interaction with graphics.
 

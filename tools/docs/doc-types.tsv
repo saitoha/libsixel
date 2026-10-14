@@ -52,7 +52,7 @@ docs/encoder/palette-application/lookup-policy/README.md	reference	both	lookup c
 docs/encoder/palette-construction/merge-policy/README.md	reference	both	merge contracts + algorithm explanation and contributor measurements/test ledger
 docs/encoder/output/or-mode/README.md	reference	both	OR wire contracts + stepwise explanation, usage how-to and test ledger
 docs/encoder/output/or-mode/scaling.md	reference	both	scaling measurements + interpretation and reproduction how-to
-docs/encoder/output/or-mode/x68k.md	explanation	both	historical hardware rationale + work-count model and reproduction how-to
+docs/encoder/output/or-mode/x68k.md	explanation	both	history and hardware rationale + work-count model and reproduction how-to
 docs/encoder/output/output-colorspace.md	reference	both	output-space contracts + numeric example and contributor test ledger
 docs/overview.md	explanation	both	capability/architecture overview + contributor repository map
 docs/encoder/palette-construction/pipeline/README.md	explanation	contributor	target architecture + normative measurement protocol and migration plan

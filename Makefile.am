@@ -224,6 +224,8 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	tools/ormode/ite-model.c \
 	tools/ormode/x68k_model.py \
 	tools/ormode/render_x68k.py \
+	tools/ormode/verify-decoder.c \
+	tools/ormode/verify_decoder.py \
 	docs/encoder/output/or-mode/measurements/alpha.json \
 	docs/encoder/output/or-mode/measurements/comparison.png \
 	docs/encoder/output/or-mode/measurements/controls.json \

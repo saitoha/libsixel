@@ -181,11 +181,13 @@ including raster resets or palette redefinitions. Such a stream may fall back
 to serial handling. This is an intended correctness boundary, not proof that
 the configured thread option was ignored.
 
+OR-mode streams (`P2=5`) never enter the parallel path. Their serial decoder accumulates band-plane words and is faster than the scan-and-paint workers at every measured budget, so the parallel entry point declines them before any buffer is shared. The [OR-mode decoder study](../encoder/output/or-mode/scaling.md#how-the-band-plane-decoder-works) explains that representation and the measurements.
+
 Parallel work must preserve:
 
 - control-sequence and palette semantics at each span boundary;
 - disjoint row ownership, or clean fallback before shared-buffer writes;
-- raster clipping, paint-mask, and OR-mode behavior;
+- raster clipping and paint-mask behavior;
 - identical malformed-input and allocation-failure handling; and
 - the public decoder's output ownership contract.
 
@@ -202,6 +204,6 @@ The checked-in timeline and two-size comparison are single diagnostic
 observations from one generated image class. The worker-budget figure is a
 repeated decoder scaling curve, but remains one session on one host. A broader
 performance study should vary payload size, SIXEL command mix, destination
-dimensions, palette changes, OR mode, output format, and host. Measure
+dimensions, palette changes, output format, and host. Measure
 parser/paint time separately from PNG serialization when the question is
 decoder parallelism.
