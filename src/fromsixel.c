@@ -2746,7 +2746,7 @@ sixel_sequence_close(sixel_sequence_decoder_t *d)
         allocator = d->allocator;
         sixel_allocator_free(d->allocator, d->image.pixels.p);
         image_buffer_release_paint_mask(&d->image, d->allocator);
-        image_buffer_release_ormode_indexes(&d->image, d->allocator);
+        image_buffer_release_ormode_planes(&d->image, d->allocator);
         sixel_allocator_free(d->allocator, d);
         sixel_allocator_unref(allocator);
     }
@@ -2943,7 +2943,7 @@ end:
     if (image != NULL) {
         sixel_allocator_free(allocator, image->pixels.p);
         image_buffer_release_paint_mask(image, allocator);
-        image_buffer_release_ormode_indexes(image, allocator);
+        image_buffer_release_ormode_planes(image, allocator);
     }
     sixel_allocator_free(allocator, image);
     sixel_allocator_free(allocator, state);
