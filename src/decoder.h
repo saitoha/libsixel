@@ -43,6 +43,8 @@ struct sixel_decoder {
     size_t gpu_dequant_threshold;
     int thumbnail_size;
     int direct_color;
+    int progressive_input;
+    size_t input_passes;
     int input_colorspace;
     /* Owned endpoint; frame coordinates retain their independent tag. */
     struct sixel_color_def *input_icc;

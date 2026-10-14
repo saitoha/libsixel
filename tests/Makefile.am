@@ -953,6 +953,40 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0010_EXTENDED_DIN99D_FORWARD \
     -DBUILD_TEST_0011_EXTENDED_DIN99D_INVERSE \
     -DBUILD_TEST_0053_PERCENTAGE_RGB8 \
+    -DBUILD_TEST_0054_MULTI_PASS_RAW_OVERLAY \
+    -DBUILD_TEST_0055_MULTI_PASS_ANCHORED_OVERLAY \
+    -DBUILD_TEST_0056_MULTI_PASS_PALETTE_CARRY \
+    -DBUILD_TEST_0057_MULTI_PASS_PAINT_TIME_COLORS \
+    -DBUILD_TEST_0058_MULTI_PASS_TRANSPARENT_AND_BLACK \
+    -DBUILD_TEST_0059_MULTI_PASS_MIXED_FRAMING \
+    -DBUILD_TEST_0060_MULTI_PASS_TRANSPARENT_BASELINE \
+    -DBUILD_TEST_0061_MULTI_PASS_SINGLE_DEFAULT \
+    -DBUILD_TEST_0062_MULTI_PASS_MISSING_RASTER \
+    -DBUILD_TEST_0063_MULTI_PASS_MISMATCHED_RASTER \
+    -DBUILD_TEST_0064_MULTI_PASS_NONUNIT_ASPECT \
+    -DBUILD_TEST_0065_MULTI_PASS_PAINT_WIDTH \
+    -DBUILD_TEST_0066_MULTI_PASS_PAINT_HEIGHT \
+    -DBUILD_TEST_0067_MULTI_PASS_CLEAR_P2 \
+    -DBUILD_TEST_0068_MULTI_PASS_UNDEFINED_COLOR \
+    -DBUILD_TEST_0069_MULTI_PASS_LATE_TRUNCATION \
+    -DBUILD_TEST_0070_MULTI_PASS_TRAILING_TEXT \
+    -DBUILD_TEST_0071_MULTI_PASS_REPEATED_SAVE \
+    -DBUILD_TEST_0072_MULTI_PASS_UNMATCHED_RESTORE \
+    -DBUILD_TEST_0073_MULTI_PASS_MISSING_RESTORE \
+    -DBUILD_TEST_0074_MULTI_PASS_PREFIX_WHITESPACE \
+    -DBUILD_TEST_0075_MULTI_PASS_DANGLING_PREFIX \
+    -DBUILD_TEST_0076_MULTI_PASS_TERMINAL_CONTROL \
+    -DBUILD_TEST_0077_MULTI_PASS_CANCELLED_DCS \
+    -DBUILD_TEST_0078_MULTI_PASS_EMPTY_CAPTURE \
+    -DBUILD_TEST_0079_MULTI_PASS_DEQUANT_CONFLICT \
+    -DBUILD_TEST_0080_MULTI_PASS_FORCE_GPU \
+    -DBUILD_TEST_0081_MULTI_PASS_SKIP_OUTSIDE \
+    -DBUILD_TEST_0082_MULTI_PASS_HLS_COLOR \
+    -DBUILD_TEST_0083_MULTI_PASS_CALL_ISOLATION \
+    -DBUILD_TEST_0084_MULTI_PASS_COLOR_UNION \
+    -DBUILD_TEST_0085_MULTI_PASS_OPTION_ATOMICITY \
+    -DBUILD_TEST_0086_MULTI_PASS_ALLOCATION_FAILURE \
+    -DBUILD_MULTI_PASS_TEST_COMMON \
     -DBUILD_TEST_0001_DIN99D_FORWARD \
     -DBUILD_TEST_0045_SNAP_OUTPUT_GRID \
     -DBUILD_TEST_0048_SNAP_PARTIAL_ONCE \
@@ -4368,6 +4402,41 @@ test_runner_SOURCES = test_runner.c \
     processing/colorspace/0010_extended_din99d_forward.c \
     processing/colorspace/0011_extended_din99d_inverse.c \
     processing/decoder/0053_percentage_rgb8.c \
+    processing/decoder/0054_multi_pass_raw_overlay.c \
+    processing/decoder/0055_multi_pass_anchored_overlay.c \
+    processing/decoder/0056_multi_pass_palette_carry.c \
+    processing/decoder/0057_multi_pass_paint_time_colors.c \
+    processing/decoder/0058_multi_pass_transparent_and_black.c \
+    processing/decoder/0059_multi_pass_mixed_framing.c \
+    processing/decoder/0060_multi_pass_transparent_baseline.c \
+    processing/decoder/0061_multi_pass_single_default.c \
+    processing/decoder/0062_multi_pass_missing_raster.c \
+    processing/decoder/0063_multi_pass_mismatched_raster.c \
+    processing/decoder/0064_multi_pass_nonunit_aspect.c \
+    processing/decoder/0065_multi_pass_paint_width.c \
+    processing/decoder/0066_multi_pass_paint_height.c \
+    processing/decoder/0067_multi_pass_clear_p2.c \
+    processing/decoder/0068_multi_pass_undefined_color.c \
+    processing/decoder/0069_multi_pass_late_truncation.c \
+    processing/decoder/0070_multi_pass_trailing_text.c \
+    processing/decoder/0071_multi_pass_repeated_save.c \
+    processing/decoder/0072_multi_pass_unmatched_restore.c \
+    processing/decoder/0073_multi_pass_missing_restore.c \
+    processing/decoder/0074_multi_pass_prefix_whitespace.c \
+    processing/decoder/0075_multi_pass_dangling_prefix.c \
+    processing/decoder/0076_multi_pass_terminal_control.c \
+    processing/decoder/0077_multi_pass_cancelled_dcs.c \
+    processing/decoder/0078_multi_pass_empty_capture.c \
+    processing/decoder/0079_multi_pass_dequant_conflict.c \
+    processing/decoder/0080_multi_pass_force_gpu.c \
+    processing/decoder/0081_multi_pass_skip_outside.c \
+    processing/decoder/0082_multi_pass_hls_color.c \
+    processing/decoder/0083_multi_pass_call_isolation.c \
+    processing/decoder/0084_multi_pass_color_union.c \
+    processing/decoder/0085_multi_pass_option_atomicity.c \
+    processing/decoder/0086_multi_pass_allocation_failure.c \
+    processing/decoder/multi_pass_test_common.c \
+    processing/decoder/multi_pass_test_common.h \
     processing/colorspace/0001_din99d_forward.c \
     processing/colorspace/0002_din99d_inverse.c \
     processing/colorspace/0003_din99d_byte.c \

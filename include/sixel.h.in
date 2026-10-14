@@ -311,6 +311,8 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_OUTPUT            ('o')  /* -o, --output: specify output file name. */
 /* Decoder file-output interpretation; does not convert raw decoded RGB. */
 #define SIXEL_OPTFLAG_INPUT_COLORSPACE ('T')
+/* Decoder-local interpretation; explicit selection, no environment default. */
+#define SIXEL_OPTFLAG_DECODE_INPUT_MODE ('M')
 #define SIXEL_OPTFLAG_DEQUANTIZE        ('d')  /* -d, --dequantize: apply palette dequantization. */
 #define SIXEL_OPTFLAG_DIRECT            ('D')  /* -D, --direct: RGBA output. */
 #define SIXEL_OPTFLAG_SIMILARITY        ('S')  /* -S, --similarity: specify similarity bias (0-1000, default: 100). */
@@ -2213,6 +2215,9 @@ sixel_decoder_decode(
  * allocator.
  */
 #define SIXEL_HAVE_DECODER_DECODE_PIXELS 1
+
+/* Stateful decoding accepts explicit multi-pass still-image captures. */
+#define SIXEL_HAVE_DECODER_6DELTA_PROGRESSIVE 1
 
 /* Object reconstruction in the output RGB basis selected by transform. */
 SIXELAPI SIXELSTATUS

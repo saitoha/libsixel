@@ -32,6 +32,36 @@
 
 #include <sixel.h>
 
+/* The packed-pixel decoder's existing per-axis resource limit. */
+#define SIXEL_DECODE_PIXELS_MAX_SIZE 6000
+
+/* Pull one complete paint into a retained canvas. Input bytes are borrowed
+ * until close; returned RGBA is borrowed until the next call. Offsets include
+ * inter-packet framing, so a caller can account for every transmitted byte.
+ * Animation accepts clear/background packets as well as preserving deltas.
+ * SIXEL_FALSE means validated EOF; any other failure invalidates the stream. */
+typedef struct sixel_sequence_decoder sixel_sequence_decoder_t;
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_sequence_open(sixel_sequence_decoder_t **decoder,
+    unsigned char const *data, size_t size, int animation,
+    sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_sequence_next(sixel_sequence_decoder_t *decoder,
+    unsigned char const **rgba, int *width, int *height,
+    size_t *byte_end);
+
+SIXEL_INTERNAL_API void
+sixel_sequence_close(sixel_sequence_decoder_t *decoder);
+
+/* Compose an explicitly declared capture through EOF, preserving paint RGB. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_sequence_mapped(unsigned char const *data, size_t size,
+    sixel_palette_transform_t const *transform, unsigned char **pixels,
+    int *width, int *height, unsigned int *flags, size_t *passes,
+    sixel_allocator_t *allocator);
+
 SIXEL_INTERNAL_API SIXELSTATUS sixel_decode_direct_mapped(
     unsigned char *p, int len, unsigned int decode_flags,
     sixel_palette_transform_t const *transform, int body_only,

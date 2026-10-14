@@ -53,6 +53,17 @@ Use DCL double quotes, rather than POSIX-shell single quotes.
 .SH "COMMAND-LINE OPTIONS"
 \fIsixel2png\fP has the following command-line options:
 .TP 5
+.B \-M \fIMODE\fP, \-\-input-mode=\fIMODE\fP
+Select single (default) or 6delta-progressive. The latter composes a complete
+baseline plus repair packets into one direct-color PNG. Each packet must use
+P2=1 and the same explicit unit-aspect raster. Raw packets and one ESC 7 save
+followed by ESC 8/packet pairs are accepted; other terminal controls are not.
+The entire capture is validated before output. This declares one still image,
+not an animation, and requires dequantize=none. There is no environment default
+or automatic recognition. Repeated selections use the last valid value.
+Unique case-sensitive prefixes are accepted: -M6 selects 6delta-progressive
+and -Ms selects single.
+.TP 5
 .B \-i \fIFILE\fP, \-\-input=\fIFILE\fP
 Specify input file. If it is omitted or "-",
 this command accepts SIXEL data from STDIN.

@@ -1037,6 +1037,41 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/colorspace/0010_extended_din99d_forward.c \
 	processing/colorspace/0011_extended_din99d_inverse.c \
 	processing/decoder/0053_percentage_rgb8.c \
+	processing/decoder/0054_multi_pass_raw_overlay.c \
+	processing/decoder/0055_multi_pass_anchored_overlay.c \
+	processing/decoder/0056_multi_pass_palette_carry.c \
+	processing/decoder/0057_multi_pass_paint_time_colors.c \
+	processing/decoder/0058_multi_pass_transparent_and_black.c \
+	processing/decoder/0059_multi_pass_mixed_framing.c \
+	processing/decoder/0060_multi_pass_transparent_baseline.c \
+	processing/decoder/0061_multi_pass_single_default.c \
+	processing/decoder/0062_multi_pass_missing_raster.c \
+	processing/decoder/0063_multi_pass_mismatched_raster.c \
+	processing/decoder/0064_multi_pass_nonunit_aspect.c \
+	processing/decoder/0065_multi_pass_paint_width.c \
+	processing/decoder/0066_multi_pass_paint_height.c \
+	processing/decoder/0067_multi_pass_clear_p2.c \
+	processing/decoder/0068_multi_pass_undefined_color.c \
+	processing/decoder/0069_multi_pass_late_truncation.c \
+	processing/decoder/0070_multi_pass_trailing_text.c \
+	processing/decoder/0071_multi_pass_repeated_save.c \
+	processing/decoder/0072_multi_pass_unmatched_restore.c \
+	processing/decoder/0073_multi_pass_missing_restore.c \
+	processing/decoder/0074_multi_pass_prefix_whitespace.c \
+	processing/decoder/0075_multi_pass_dangling_prefix.c \
+	processing/decoder/0076_multi_pass_terminal_control.c \
+	processing/decoder/0077_multi_pass_cancelled_dcs.c \
+	processing/decoder/0078_multi_pass_empty_capture.c \
+	processing/decoder/0079_multi_pass_dequant_conflict.c \
+	processing/decoder/0080_multi_pass_force_gpu.c \
+	processing/decoder/0081_multi_pass_skip_outside.c \
+	processing/decoder/0082_multi_pass_hls_color.c \
+	processing/decoder/0083_multi_pass_call_isolation.c \
+	processing/decoder/0084_multi_pass_color_union.c \
+	processing/decoder/0085_multi_pass_option_atomicity.c \
+	processing/decoder/0086_multi_pass_allocation_failure.c \
+	processing/decoder/multi_pass_test_common.c \
+	processing/decoder/multi_pass_test_common.h \
 	processing/colorspace/0001_din99d_forward.c \
 	processing/colorspace/0002_din99d_inverse.c \
 	processing/colorspace/0003_din99d_byte.c \
@@ -4317,6 +4352,40 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0010_extended_din99d_forward.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0011_extended_din99d_inverse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0053_percentage_rgb8.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0054_multi_pass_raw_overlay.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0055_multi_pass_anchored_overlay.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0056_multi_pass_palette_carry.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0057_multi_pass_paint_time_colors.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0058_multi_pass_transparent_and_black.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0059_multi_pass_mixed_framing.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0060_multi_pass_transparent_baseline.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0061_multi_pass_single_default.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0062_multi_pass_missing_raster.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0063_multi_pass_mismatched_raster.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0064_multi_pass_nonunit_aspect.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0065_multi_pass_paint_width.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0066_multi_pass_paint_height.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0067_multi_pass_clear_p2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0068_multi_pass_undefined_color.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0069_multi_pass_late_truncation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0070_multi_pass_trailing_text.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0071_multi_pass_repeated_save.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0072_multi_pass_unmatched_restore.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0073_multi_pass_missing_restore.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0074_multi_pass_prefix_whitespace.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0075_multi_pass_dangling_prefix.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0076_multi_pass_terminal_control.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0077_multi_pass_cancelled_dcs.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0078_multi_pass_empty_capture.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0079_multi_pass_dequant_conflict.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0080_multi_pass_force_gpu.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0081_multi_pass_skip_outside.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0082_multi_pass_hls_color.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0083_multi_pass_call_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0084_multi_pass_color_union.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0085_multi_pass_option_atomicity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0086_multi_pass_allocation_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-multi_pass_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0001_din99d_forward.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0002_din99d_inverse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0003_din99d_byte.$(OBJEXT) \
@@ -8574,6 +8643,40 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0053_percentage_rgb8.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0054_multi_pass_raw_overlay.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0055_multi_pass_anchored_overlay.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0056_multi_pass_palette_carry.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0057_multi_pass_paint_time_colors.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0058_multi_pass_transparent_and_black.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0059_multi_pass_mixed_framing.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0060_multi_pass_transparent_baseline.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0061_multi_pass_single_default.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0062_multi_pass_missing_raster.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0063_multi_pass_mismatched_raster.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0064_multi_pass_nonunit_aspect.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0065_multi_pass_paint_width.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0066_multi_pass_paint_height.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0067_multi_pass_clear_p2.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0068_multi_pass_undefined_color.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0069_multi_pass_late_truncation.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0070_multi_pass_trailing_text.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0071_multi_pass_repeated_save.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0072_multi_pass_unmatched_restore.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0073_multi_pass_missing_restore.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0074_multi_pass_prefix_whitespace.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0075_multi_pass_dangling_prefix.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0076_multi_pass_terminal_control.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0077_multi_pass_cancelled_dcs.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0078_multi_pass_empty_capture.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0079_multi_pass_dequant_conflict.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0080_multi_pass_force_gpu.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0081_multi_pass_skip_outside.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0082_multi_pass_hls_color.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0083_multi_pass_call_isolation.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0084_multi_pass_color_union.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0085_multi_pass_option_atomicity.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0086_multi_pass_allocation_failure.Po \
+	processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po \
 	processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po \
@@ -11415,6 +11518,40 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_EXTENDED_DIN99D_FORWARD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_EXTENDED_DIN99D_INVERSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_PERCENTAGE_RGB8 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_MULTI_PASS_RAW_OVERLAY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_MULTI_PASS_ANCHORED_OVERLAY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0056_MULTI_PASS_PALETTE_CARRY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_MULTI_PASS_PAINT_TIME_COLORS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_MULTI_PASS_TRANSPARENT_AND_BLACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_MULTI_PASS_MIXED_FRAMING \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0060_MULTI_PASS_TRANSPARENT_BASELINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_MULTI_PASS_SINGLE_DEFAULT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_MULTI_PASS_MISSING_RASTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_MULTI_PASS_MISMATCHED_RASTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_MULTI_PASS_NONUNIT_ASPECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_MULTI_PASS_PAINT_WIDTH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_MULTI_PASS_PAINT_HEIGHT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0067_MULTI_PASS_CLEAR_P2 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0068_MULTI_PASS_UNDEFINED_COLOR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0069_MULTI_PASS_LATE_TRUNCATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0070_MULTI_PASS_TRAILING_TEXT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0071_MULTI_PASS_REPEATED_SAVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0072_MULTI_PASS_UNMATCHED_RESTORE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0073_MULTI_PASS_MISSING_RESTORE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0074_MULTI_PASS_PREFIX_WHITESPACE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0075_MULTI_PASS_DANGLING_PREFIX \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0076_MULTI_PASS_TERMINAL_CONTROL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0077_MULTI_PASS_CANCELLED_DCS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0078_MULTI_PASS_EMPTY_CAPTURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0079_MULTI_PASS_DEQUANT_CONFLICT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0080_MULTI_PASS_FORCE_GPU \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0081_MULTI_PASS_SKIP_OUTSIDE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0082_MULTI_PASS_HLS_COLOR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0083_MULTI_PASS_CALL_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_MULTI_PASS_COLOR_UNION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0085_MULTI_PASS_OPTION_ATOMICITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0086_MULTI_PASS_ALLOCATION_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_MULTI_PASS_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DIN99D_FORWARD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_SNAP_OUTPUT_GRID \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_SNAP_PARTIAL_ONCE \
@@ -14861,6 +14998,41 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0010_extended_din99d_forward.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0011_extended_din99d_inverse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0053_percentage_rgb8.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0054_multi_pass_raw_overlay.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0055_multi_pass_anchored_overlay.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0056_multi_pass_palette_carry.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0057_multi_pass_paint_time_colors.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0058_multi_pass_transparent_and_black.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0059_multi_pass_mixed_framing.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0060_multi_pass_transparent_baseline.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0061_multi_pass_single_default.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0062_multi_pass_missing_raster.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0063_multi_pass_mismatched_raster.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0064_multi_pass_nonunit_aspect.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0065_multi_pass_paint_width.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0066_multi_pass_paint_height.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0067_multi_pass_clear_p2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0068_multi_pass_undefined_color.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0069_multi_pass_late_truncation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0070_multi_pass_trailing_text.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0071_multi_pass_repeated_save.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0072_multi_pass_unmatched_restore.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0073_multi_pass_missing_restore.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0074_multi_pass_prefix_whitespace.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0075_multi_pass_dangling_prefix.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0076_multi_pass_terminal_control.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0077_multi_pass_cancelled_dcs.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0078_multi_pass_empty_capture.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0079_multi_pass_dequant_conflict.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0080_multi_pass_force_gpu.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0081_multi_pass_skip_outside.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0082_multi_pass_hls_color.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0083_multi_pass_call_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0084_multi_pass_color_union.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0085_multi_pass_option_atomicity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0086_multi_pass_allocation_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/multi_pass_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/multi_pass_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0001_din99d_forward.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0002_din99d_inverse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0003_din99d_byte.c \
@@ -20245,6 +20417,108 @@ processing/decoder/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) processing/decoder/$(DEPDIR)
 	@: >>processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/test_runner-0053_percentage_rgb8.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0054_multi_pass_raw_overlay.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0055_multi_pass_anchored_overlay.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0056_multi_pass_palette_carry.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0057_multi_pass_paint_time_colors.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0058_multi_pass_transparent_and_black.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0059_multi_pass_mixed_framing.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0060_multi_pass_transparent_baseline.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0061_multi_pass_single_default.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0062_multi_pass_missing_raster.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0063_multi_pass_mismatched_raster.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0064_multi_pass_nonunit_aspect.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0065_multi_pass_paint_width.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0066_multi_pass_paint_height.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0067_multi_pass_clear_p2.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0068_multi_pass_undefined_color.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0069_multi_pass_late_truncation.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0070_multi_pass_trailing_text.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0071_multi_pass_repeated_save.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0072_multi_pass_unmatched_restore.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0073_multi_pass_missing_restore.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0074_multi_pass_prefix_whitespace.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0075_multi_pass_dangling_prefix.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0076_multi_pass_terminal_control.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0077_multi_pass_cancelled_dcs.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0078_multi_pass_empty_capture.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0079_multi_pass_dequant_conflict.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0080_multi_pass_force_gpu.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0081_multi_pass_skip_outside.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0082_multi_pass_hls_color.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0083_multi_pass_call_isolation.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0084_multi_pass_color_union.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0085_multi_pass_option_atomicity.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0086_multi_pass_allocation_failure.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-multi_pass_test_common.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/colorspace/test_runner-0001_din99d_forward.$(OBJEXT):  \
@@ -29843,6 +30117,40 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0053_percentage_rgb8.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0054_multi_pass_raw_overlay.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0055_multi_pass_anchored_overlay.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0056_multi_pass_palette_carry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0057_multi_pass_paint_time_colors.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0058_multi_pass_transparent_and_black.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0059_multi_pass_mixed_framing.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0060_multi_pass_transparent_baseline.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0061_multi_pass_single_default.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0062_multi_pass_missing_raster.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0063_multi_pass_mismatched_raster.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0064_multi_pass_nonunit_aspect.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0065_multi_pass_paint_width.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0066_multi_pass_paint_height.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0067_multi_pass_clear_p2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0068_multi_pass_undefined_color.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0069_multi_pass_late_truncation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0070_multi_pass_trailing_text.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0071_multi_pass_repeated_save.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0072_multi_pass_unmatched_restore.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0073_multi_pass_missing_restore.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0074_multi_pass_prefix_whitespace.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0075_multi_pass_dangling_prefix.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0076_multi_pass_terminal_control.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0077_multi_pass_cancelled_dcs.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0078_multi_pass_empty_capture.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0079_multi_pass_dequant_conflict.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0080_multi_pass_force_gpu.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0081_multi_pass_skip_outside.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0082_multi_pass_hls_color.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0083_multi_pass_call_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0084_multi_pass_color_union.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0085_multi_pass_option_atomicity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0086_multi_pass_allocation_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po@am__quote@ # am--include-marker
@@ -43921,6 +44229,482 @@ processing/decoder/test_runner-0053_percentage_rgb8.obj: processing/decoder/0053
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0053_percentage_rgb8.c' object='processing/decoder/test_runner-0053_percentage_rgb8.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0053_percentage_rgb8.obj `if test -f 'processing/decoder/0053_percentage_rgb8.c'; then $(CYGPATH_W) 'processing/decoder/0053_percentage_rgb8.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0053_percentage_rgb8.c'; fi`
+
+processing/decoder/test_runner-0054_multi_pass_raw_overlay.o: processing/decoder/0054_multi_pass_raw_overlay.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0054_multi_pass_raw_overlay.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0054_multi_pass_raw_overlay.Tpo -c -o processing/decoder/test_runner-0054_multi_pass_raw_overlay.o `test -f 'processing/decoder/0054_multi_pass_raw_overlay.c' || echo '$(srcdir)/'`processing/decoder/0054_multi_pass_raw_overlay.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0054_multi_pass_raw_overlay.Tpo processing/decoder/$(DEPDIR)/test_runner-0054_multi_pass_raw_overlay.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0054_multi_pass_raw_overlay.c' object='processing/decoder/test_runner-0054_multi_pass_raw_overlay.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0054_multi_pass_raw_overlay.o `test -f 'processing/decoder/0054_multi_pass_raw_overlay.c' || echo '$(srcdir)/'`processing/decoder/0054_multi_pass_raw_overlay.c
+
+processing/decoder/test_runner-0054_multi_pass_raw_overlay.obj: processing/decoder/0054_multi_pass_raw_overlay.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0054_multi_pass_raw_overlay.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0054_multi_pass_raw_overlay.Tpo -c -o processing/decoder/test_runner-0054_multi_pass_raw_overlay.obj `if test -f 'processing/decoder/0054_multi_pass_raw_overlay.c'; then $(CYGPATH_W) 'processing/decoder/0054_multi_pass_raw_overlay.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0054_multi_pass_raw_overlay.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0054_multi_pass_raw_overlay.Tpo processing/decoder/$(DEPDIR)/test_runner-0054_multi_pass_raw_overlay.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0054_multi_pass_raw_overlay.c' object='processing/decoder/test_runner-0054_multi_pass_raw_overlay.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0054_multi_pass_raw_overlay.obj `if test -f 'processing/decoder/0054_multi_pass_raw_overlay.c'; then $(CYGPATH_W) 'processing/decoder/0054_multi_pass_raw_overlay.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0054_multi_pass_raw_overlay.c'; fi`
+
+processing/decoder/test_runner-0055_multi_pass_anchored_overlay.o: processing/decoder/0055_multi_pass_anchored_overlay.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0055_multi_pass_anchored_overlay.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0055_multi_pass_anchored_overlay.Tpo -c -o processing/decoder/test_runner-0055_multi_pass_anchored_overlay.o `test -f 'processing/decoder/0055_multi_pass_anchored_overlay.c' || echo '$(srcdir)/'`processing/decoder/0055_multi_pass_anchored_overlay.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0055_multi_pass_anchored_overlay.Tpo processing/decoder/$(DEPDIR)/test_runner-0055_multi_pass_anchored_overlay.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0055_multi_pass_anchored_overlay.c' object='processing/decoder/test_runner-0055_multi_pass_anchored_overlay.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0055_multi_pass_anchored_overlay.o `test -f 'processing/decoder/0055_multi_pass_anchored_overlay.c' || echo '$(srcdir)/'`processing/decoder/0055_multi_pass_anchored_overlay.c
+
+processing/decoder/test_runner-0055_multi_pass_anchored_overlay.obj: processing/decoder/0055_multi_pass_anchored_overlay.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0055_multi_pass_anchored_overlay.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0055_multi_pass_anchored_overlay.Tpo -c -o processing/decoder/test_runner-0055_multi_pass_anchored_overlay.obj `if test -f 'processing/decoder/0055_multi_pass_anchored_overlay.c'; then $(CYGPATH_W) 'processing/decoder/0055_multi_pass_anchored_overlay.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0055_multi_pass_anchored_overlay.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0055_multi_pass_anchored_overlay.Tpo processing/decoder/$(DEPDIR)/test_runner-0055_multi_pass_anchored_overlay.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0055_multi_pass_anchored_overlay.c' object='processing/decoder/test_runner-0055_multi_pass_anchored_overlay.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0055_multi_pass_anchored_overlay.obj `if test -f 'processing/decoder/0055_multi_pass_anchored_overlay.c'; then $(CYGPATH_W) 'processing/decoder/0055_multi_pass_anchored_overlay.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0055_multi_pass_anchored_overlay.c'; fi`
+
+processing/decoder/test_runner-0056_multi_pass_palette_carry.o: processing/decoder/0056_multi_pass_palette_carry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0056_multi_pass_palette_carry.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0056_multi_pass_palette_carry.Tpo -c -o processing/decoder/test_runner-0056_multi_pass_palette_carry.o `test -f 'processing/decoder/0056_multi_pass_palette_carry.c' || echo '$(srcdir)/'`processing/decoder/0056_multi_pass_palette_carry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0056_multi_pass_palette_carry.Tpo processing/decoder/$(DEPDIR)/test_runner-0056_multi_pass_palette_carry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0056_multi_pass_palette_carry.c' object='processing/decoder/test_runner-0056_multi_pass_palette_carry.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0056_multi_pass_palette_carry.o `test -f 'processing/decoder/0056_multi_pass_palette_carry.c' || echo '$(srcdir)/'`processing/decoder/0056_multi_pass_palette_carry.c
+
+processing/decoder/test_runner-0056_multi_pass_palette_carry.obj: processing/decoder/0056_multi_pass_palette_carry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0056_multi_pass_palette_carry.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0056_multi_pass_palette_carry.Tpo -c -o processing/decoder/test_runner-0056_multi_pass_palette_carry.obj `if test -f 'processing/decoder/0056_multi_pass_palette_carry.c'; then $(CYGPATH_W) 'processing/decoder/0056_multi_pass_palette_carry.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0056_multi_pass_palette_carry.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0056_multi_pass_palette_carry.Tpo processing/decoder/$(DEPDIR)/test_runner-0056_multi_pass_palette_carry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0056_multi_pass_palette_carry.c' object='processing/decoder/test_runner-0056_multi_pass_palette_carry.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0056_multi_pass_palette_carry.obj `if test -f 'processing/decoder/0056_multi_pass_palette_carry.c'; then $(CYGPATH_W) 'processing/decoder/0056_multi_pass_palette_carry.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0056_multi_pass_palette_carry.c'; fi`
+
+processing/decoder/test_runner-0057_multi_pass_paint_time_colors.o: processing/decoder/0057_multi_pass_paint_time_colors.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0057_multi_pass_paint_time_colors.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0057_multi_pass_paint_time_colors.Tpo -c -o processing/decoder/test_runner-0057_multi_pass_paint_time_colors.o `test -f 'processing/decoder/0057_multi_pass_paint_time_colors.c' || echo '$(srcdir)/'`processing/decoder/0057_multi_pass_paint_time_colors.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0057_multi_pass_paint_time_colors.Tpo processing/decoder/$(DEPDIR)/test_runner-0057_multi_pass_paint_time_colors.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0057_multi_pass_paint_time_colors.c' object='processing/decoder/test_runner-0057_multi_pass_paint_time_colors.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0057_multi_pass_paint_time_colors.o `test -f 'processing/decoder/0057_multi_pass_paint_time_colors.c' || echo '$(srcdir)/'`processing/decoder/0057_multi_pass_paint_time_colors.c
+
+processing/decoder/test_runner-0057_multi_pass_paint_time_colors.obj: processing/decoder/0057_multi_pass_paint_time_colors.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0057_multi_pass_paint_time_colors.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0057_multi_pass_paint_time_colors.Tpo -c -o processing/decoder/test_runner-0057_multi_pass_paint_time_colors.obj `if test -f 'processing/decoder/0057_multi_pass_paint_time_colors.c'; then $(CYGPATH_W) 'processing/decoder/0057_multi_pass_paint_time_colors.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0057_multi_pass_paint_time_colors.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0057_multi_pass_paint_time_colors.Tpo processing/decoder/$(DEPDIR)/test_runner-0057_multi_pass_paint_time_colors.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0057_multi_pass_paint_time_colors.c' object='processing/decoder/test_runner-0057_multi_pass_paint_time_colors.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0057_multi_pass_paint_time_colors.obj `if test -f 'processing/decoder/0057_multi_pass_paint_time_colors.c'; then $(CYGPATH_W) 'processing/decoder/0057_multi_pass_paint_time_colors.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0057_multi_pass_paint_time_colors.c'; fi`
+
+processing/decoder/test_runner-0058_multi_pass_transparent_and_black.o: processing/decoder/0058_multi_pass_transparent_and_black.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0058_multi_pass_transparent_and_black.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0058_multi_pass_transparent_and_black.Tpo -c -o processing/decoder/test_runner-0058_multi_pass_transparent_and_black.o `test -f 'processing/decoder/0058_multi_pass_transparent_and_black.c' || echo '$(srcdir)/'`processing/decoder/0058_multi_pass_transparent_and_black.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0058_multi_pass_transparent_and_black.Tpo processing/decoder/$(DEPDIR)/test_runner-0058_multi_pass_transparent_and_black.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0058_multi_pass_transparent_and_black.c' object='processing/decoder/test_runner-0058_multi_pass_transparent_and_black.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0058_multi_pass_transparent_and_black.o `test -f 'processing/decoder/0058_multi_pass_transparent_and_black.c' || echo '$(srcdir)/'`processing/decoder/0058_multi_pass_transparent_and_black.c
+
+processing/decoder/test_runner-0058_multi_pass_transparent_and_black.obj: processing/decoder/0058_multi_pass_transparent_and_black.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0058_multi_pass_transparent_and_black.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0058_multi_pass_transparent_and_black.Tpo -c -o processing/decoder/test_runner-0058_multi_pass_transparent_and_black.obj `if test -f 'processing/decoder/0058_multi_pass_transparent_and_black.c'; then $(CYGPATH_W) 'processing/decoder/0058_multi_pass_transparent_and_black.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0058_multi_pass_transparent_and_black.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0058_multi_pass_transparent_and_black.Tpo processing/decoder/$(DEPDIR)/test_runner-0058_multi_pass_transparent_and_black.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0058_multi_pass_transparent_and_black.c' object='processing/decoder/test_runner-0058_multi_pass_transparent_and_black.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0058_multi_pass_transparent_and_black.obj `if test -f 'processing/decoder/0058_multi_pass_transparent_and_black.c'; then $(CYGPATH_W) 'processing/decoder/0058_multi_pass_transparent_and_black.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0058_multi_pass_transparent_and_black.c'; fi`
+
+processing/decoder/test_runner-0059_multi_pass_mixed_framing.o: processing/decoder/0059_multi_pass_mixed_framing.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0059_multi_pass_mixed_framing.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0059_multi_pass_mixed_framing.Tpo -c -o processing/decoder/test_runner-0059_multi_pass_mixed_framing.o `test -f 'processing/decoder/0059_multi_pass_mixed_framing.c' || echo '$(srcdir)/'`processing/decoder/0059_multi_pass_mixed_framing.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0059_multi_pass_mixed_framing.Tpo processing/decoder/$(DEPDIR)/test_runner-0059_multi_pass_mixed_framing.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0059_multi_pass_mixed_framing.c' object='processing/decoder/test_runner-0059_multi_pass_mixed_framing.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0059_multi_pass_mixed_framing.o `test -f 'processing/decoder/0059_multi_pass_mixed_framing.c' || echo '$(srcdir)/'`processing/decoder/0059_multi_pass_mixed_framing.c
+
+processing/decoder/test_runner-0059_multi_pass_mixed_framing.obj: processing/decoder/0059_multi_pass_mixed_framing.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0059_multi_pass_mixed_framing.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0059_multi_pass_mixed_framing.Tpo -c -o processing/decoder/test_runner-0059_multi_pass_mixed_framing.obj `if test -f 'processing/decoder/0059_multi_pass_mixed_framing.c'; then $(CYGPATH_W) 'processing/decoder/0059_multi_pass_mixed_framing.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0059_multi_pass_mixed_framing.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0059_multi_pass_mixed_framing.Tpo processing/decoder/$(DEPDIR)/test_runner-0059_multi_pass_mixed_framing.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0059_multi_pass_mixed_framing.c' object='processing/decoder/test_runner-0059_multi_pass_mixed_framing.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0059_multi_pass_mixed_framing.obj `if test -f 'processing/decoder/0059_multi_pass_mixed_framing.c'; then $(CYGPATH_W) 'processing/decoder/0059_multi_pass_mixed_framing.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0059_multi_pass_mixed_framing.c'; fi`
+
+processing/decoder/test_runner-0060_multi_pass_transparent_baseline.o: processing/decoder/0060_multi_pass_transparent_baseline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0060_multi_pass_transparent_baseline.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0060_multi_pass_transparent_baseline.Tpo -c -o processing/decoder/test_runner-0060_multi_pass_transparent_baseline.o `test -f 'processing/decoder/0060_multi_pass_transparent_baseline.c' || echo '$(srcdir)/'`processing/decoder/0060_multi_pass_transparent_baseline.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0060_multi_pass_transparent_baseline.Tpo processing/decoder/$(DEPDIR)/test_runner-0060_multi_pass_transparent_baseline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0060_multi_pass_transparent_baseline.c' object='processing/decoder/test_runner-0060_multi_pass_transparent_baseline.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0060_multi_pass_transparent_baseline.o `test -f 'processing/decoder/0060_multi_pass_transparent_baseline.c' || echo '$(srcdir)/'`processing/decoder/0060_multi_pass_transparent_baseline.c
+
+processing/decoder/test_runner-0060_multi_pass_transparent_baseline.obj: processing/decoder/0060_multi_pass_transparent_baseline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0060_multi_pass_transparent_baseline.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0060_multi_pass_transparent_baseline.Tpo -c -o processing/decoder/test_runner-0060_multi_pass_transparent_baseline.obj `if test -f 'processing/decoder/0060_multi_pass_transparent_baseline.c'; then $(CYGPATH_W) 'processing/decoder/0060_multi_pass_transparent_baseline.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0060_multi_pass_transparent_baseline.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0060_multi_pass_transparent_baseline.Tpo processing/decoder/$(DEPDIR)/test_runner-0060_multi_pass_transparent_baseline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0060_multi_pass_transparent_baseline.c' object='processing/decoder/test_runner-0060_multi_pass_transparent_baseline.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0060_multi_pass_transparent_baseline.obj `if test -f 'processing/decoder/0060_multi_pass_transparent_baseline.c'; then $(CYGPATH_W) 'processing/decoder/0060_multi_pass_transparent_baseline.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0060_multi_pass_transparent_baseline.c'; fi`
+
+processing/decoder/test_runner-0061_multi_pass_single_default.o: processing/decoder/0061_multi_pass_single_default.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0061_multi_pass_single_default.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0061_multi_pass_single_default.Tpo -c -o processing/decoder/test_runner-0061_multi_pass_single_default.o `test -f 'processing/decoder/0061_multi_pass_single_default.c' || echo '$(srcdir)/'`processing/decoder/0061_multi_pass_single_default.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0061_multi_pass_single_default.Tpo processing/decoder/$(DEPDIR)/test_runner-0061_multi_pass_single_default.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0061_multi_pass_single_default.c' object='processing/decoder/test_runner-0061_multi_pass_single_default.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0061_multi_pass_single_default.o `test -f 'processing/decoder/0061_multi_pass_single_default.c' || echo '$(srcdir)/'`processing/decoder/0061_multi_pass_single_default.c
+
+processing/decoder/test_runner-0061_multi_pass_single_default.obj: processing/decoder/0061_multi_pass_single_default.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0061_multi_pass_single_default.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0061_multi_pass_single_default.Tpo -c -o processing/decoder/test_runner-0061_multi_pass_single_default.obj `if test -f 'processing/decoder/0061_multi_pass_single_default.c'; then $(CYGPATH_W) 'processing/decoder/0061_multi_pass_single_default.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0061_multi_pass_single_default.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0061_multi_pass_single_default.Tpo processing/decoder/$(DEPDIR)/test_runner-0061_multi_pass_single_default.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0061_multi_pass_single_default.c' object='processing/decoder/test_runner-0061_multi_pass_single_default.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0061_multi_pass_single_default.obj `if test -f 'processing/decoder/0061_multi_pass_single_default.c'; then $(CYGPATH_W) 'processing/decoder/0061_multi_pass_single_default.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0061_multi_pass_single_default.c'; fi`
+
+processing/decoder/test_runner-0062_multi_pass_missing_raster.o: processing/decoder/0062_multi_pass_missing_raster.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0062_multi_pass_missing_raster.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0062_multi_pass_missing_raster.Tpo -c -o processing/decoder/test_runner-0062_multi_pass_missing_raster.o `test -f 'processing/decoder/0062_multi_pass_missing_raster.c' || echo '$(srcdir)/'`processing/decoder/0062_multi_pass_missing_raster.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0062_multi_pass_missing_raster.Tpo processing/decoder/$(DEPDIR)/test_runner-0062_multi_pass_missing_raster.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0062_multi_pass_missing_raster.c' object='processing/decoder/test_runner-0062_multi_pass_missing_raster.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0062_multi_pass_missing_raster.o `test -f 'processing/decoder/0062_multi_pass_missing_raster.c' || echo '$(srcdir)/'`processing/decoder/0062_multi_pass_missing_raster.c
+
+processing/decoder/test_runner-0062_multi_pass_missing_raster.obj: processing/decoder/0062_multi_pass_missing_raster.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0062_multi_pass_missing_raster.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0062_multi_pass_missing_raster.Tpo -c -o processing/decoder/test_runner-0062_multi_pass_missing_raster.obj `if test -f 'processing/decoder/0062_multi_pass_missing_raster.c'; then $(CYGPATH_W) 'processing/decoder/0062_multi_pass_missing_raster.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0062_multi_pass_missing_raster.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0062_multi_pass_missing_raster.Tpo processing/decoder/$(DEPDIR)/test_runner-0062_multi_pass_missing_raster.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0062_multi_pass_missing_raster.c' object='processing/decoder/test_runner-0062_multi_pass_missing_raster.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0062_multi_pass_missing_raster.obj `if test -f 'processing/decoder/0062_multi_pass_missing_raster.c'; then $(CYGPATH_W) 'processing/decoder/0062_multi_pass_missing_raster.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0062_multi_pass_missing_raster.c'; fi`
+
+processing/decoder/test_runner-0063_multi_pass_mismatched_raster.o: processing/decoder/0063_multi_pass_mismatched_raster.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0063_multi_pass_mismatched_raster.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0063_multi_pass_mismatched_raster.Tpo -c -o processing/decoder/test_runner-0063_multi_pass_mismatched_raster.o `test -f 'processing/decoder/0063_multi_pass_mismatched_raster.c' || echo '$(srcdir)/'`processing/decoder/0063_multi_pass_mismatched_raster.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0063_multi_pass_mismatched_raster.Tpo processing/decoder/$(DEPDIR)/test_runner-0063_multi_pass_mismatched_raster.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0063_multi_pass_mismatched_raster.c' object='processing/decoder/test_runner-0063_multi_pass_mismatched_raster.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0063_multi_pass_mismatched_raster.o `test -f 'processing/decoder/0063_multi_pass_mismatched_raster.c' || echo '$(srcdir)/'`processing/decoder/0063_multi_pass_mismatched_raster.c
+
+processing/decoder/test_runner-0063_multi_pass_mismatched_raster.obj: processing/decoder/0063_multi_pass_mismatched_raster.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0063_multi_pass_mismatched_raster.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0063_multi_pass_mismatched_raster.Tpo -c -o processing/decoder/test_runner-0063_multi_pass_mismatched_raster.obj `if test -f 'processing/decoder/0063_multi_pass_mismatched_raster.c'; then $(CYGPATH_W) 'processing/decoder/0063_multi_pass_mismatched_raster.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0063_multi_pass_mismatched_raster.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0063_multi_pass_mismatched_raster.Tpo processing/decoder/$(DEPDIR)/test_runner-0063_multi_pass_mismatched_raster.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0063_multi_pass_mismatched_raster.c' object='processing/decoder/test_runner-0063_multi_pass_mismatched_raster.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0063_multi_pass_mismatched_raster.obj `if test -f 'processing/decoder/0063_multi_pass_mismatched_raster.c'; then $(CYGPATH_W) 'processing/decoder/0063_multi_pass_mismatched_raster.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0063_multi_pass_mismatched_raster.c'; fi`
+
+processing/decoder/test_runner-0064_multi_pass_nonunit_aspect.o: processing/decoder/0064_multi_pass_nonunit_aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0064_multi_pass_nonunit_aspect.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0064_multi_pass_nonunit_aspect.Tpo -c -o processing/decoder/test_runner-0064_multi_pass_nonunit_aspect.o `test -f 'processing/decoder/0064_multi_pass_nonunit_aspect.c' || echo '$(srcdir)/'`processing/decoder/0064_multi_pass_nonunit_aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0064_multi_pass_nonunit_aspect.Tpo processing/decoder/$(DEPDIR)/test_runner-0064_multi_pass_nonunit_aspect.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0064_multi_pass_nonunit_aspect.c' object='processing/decoder/test_runner-0064_multi_pass_nonunit_aspect.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0064_multi_pass_nonunit_aspect.o `test -f 'processing/decoder/0064_multi_pass_nonunit_aspect.c' || echo '$(srcdir)/'`processing/decoder/0064_multi_pass_nonunit_aspect.c
+
+processing/decoder/test_runner-0064_multi_pass_nonunit_aspect.obj: processing/decoder/0064_multi_pass_nonunit_aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0064_multi_pass_nonunit_aspect.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0064_multi_pass_nonunit_aspect.Tpo -c -o processing/decoder/test_runner-0064_multi_pass_nonunit_aspect.obj `if test -f 'processing/decoder/0064_multi_pass_nonunit_aspect.c'; then $(CYGPATH_W) 'processing/decoder/0064_multi_pass_nonunit_aspect.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0064_multi_pass_nonunit_aspect.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0064_multi_pass_nonunit_aspect.Tpo processing/decoder/$(DEPDIR)/test_runner-0064_multi_pass_nonunit_aspect.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0064_multi_pass_nonunit_aspect.c' object='processing/decoder/test_runner-0064_multi_pass_nonunit_aspect.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0064_multi_pass_nonunit_aspect.obj `if test -f 'processing/decoder/0064_multi_pass_nonunit_aspect.c'; then $(CYGPATH_W) 'processing/decoder/0064_multi_pass_nonunit_aspect.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0064_multi_pass_nonunit_aspect.c'; fi`
+
+processing/decoder/test_runner-0065_multi_pass_paint_width.o: processing/decoder/0065_multi_pass_paint_width.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0065_multi_pass_paint_width.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0065_multi_pass_paint_width.Tpo -c -o processing/decoder/test_runner-0065_multi_pass_paint_width.o `test -f 'processing/decoder/0065_multi_pass_paint_width.c' || echo '$(srcdir)/'`processing/decoder/0065_multi_pass_paint_width.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0065_multi_pass_paint_width.Tpo processing/decoder/$(DEPDIR)/test_runner-0065_multi_pass_paint_width.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0065_multi_pass_paint_width.c' object='processing/decoder/test_runner-0065_multi_pass_paint_width.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0065_multi_pass_paint_width.o `test -f 'processing/decoder/0065_multi_pass_paint_width.c' || echo '$(srcdir)/'`processing/decoder/0065_multi_pass_paint_width.c
+
+processing/decoder/test_runner-0065_multi_pass_paint_width.obj: processing/decoder/0065_multi_pass_paint_width.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0065_multi_pass_paint_width.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0065_multi_pass_paint_width.Tpo -c -o processing/decoder/test_runner-0065_multi_pass_paint_width.obj `if test -f 'processing/decoder/0065_multi_pass_paint_width.c'; then $(CYGPATH_W) 'processing/decoder/0065_multi_pass_paint_width.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0065_multi_pass_paint_width.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0065_multi_pass_paint_width.Tpo processing/decoder/$(DEPDIR)/test_runner-0065_multi_pass_paint_width.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0065_multi_pass_paint_width.c' object='processing/decoder/test_runner-0065_multi_pass_paint_width.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0065_multi_pass_paint_width.obj `if test -f 'processing/decoder/0065_multi_pass_paint_width.c'; then $(CYGPATH_W) 'processing/decoder/0065_multi_pass_paint_width.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0065_multi_pass_paint_width.c'; fi`
+
+processing/decoder/test_runner-0066_multi_pass_paint_height.o: processing/decoder/0066_multi_pass_paint_height.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0066_multi_pass_paint_height.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0066_multi_pass_paint_height.Tpo -c -o processing/decoder/test_runner-0066_multi_pass_paint_height.o `test -f 'processing/decoder/0066_multi_pass_paint_height.c' || echo '$(srcdir)/'`processing/decoder/0066_multi_pass_paint_height.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0066_multi_pass_paint_height.Tpo processing/decoder/$(DEPDIR)/test_runner-0066_multi_pass_paint_height.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0066_multi_pass_paint_height.c' object='processing/decoder/test_runner-0066_multi_pass_paint_height.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0066_multi_pass_paint_height.o `test -f 'processing/decoder/0066_multi_pass_paint_height.c' || echo '$(srcdir)/'`processing/decoder/0066_multi_pass_paint_height.c
+
+processing/decoder/test_runner-0066_multi_pass_paint_height.obj: processing/decoder/0066_multi_pass_paint_height.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0066_multi_pass_paint_height.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0066_multi_pass_paint_height.Tpo -c -o processing/decoder/test_runner-0066_multi_pass_paint_height.obj `if test -f 'processing/decoder/0066_multi_pass_paint_height.c'; then $(CYGPATH_W) 'processing/decoder/0066_multi_pass_paint_height.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0066_multi_pass_paint_height.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0066_multi_pass_paint_height.Tpo processing/decoder/$(DEPDIR)/test_runner-0066_multi_pass_paint_height.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0066_multi_pass_paint_height.c' object='processing/decoder/test_runner-0066_multi_pass_paint_height.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0066_multi_pass_paint_height.obj `if test -f 'processing/decoder/0066_multi_pass_paint_height.c'; then $(CYGPATH_W) 'processing/decoder/0066_multi_pass_paint_height.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0066_multi_pass_paint_height.c'; fi`
+
+processing/decoder/test_runner-0067_multi_pass_clear_p2.o: processing/decoder/0067_multi_pass_clear_p2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0067_multi_pass_clear_p2.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0067_multi_pass_clear_p2.Tpo -c -o processing/decoder/test_runner-0067_multi_pass_clear_p2.o `test -f 'processing/decoder/0067_multi_pass_clear_p2.c' || echo '$(srcdir)/'`processing/decoder/0067_multi_pass_clear_p2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0067_multi_pass_clear_p2.Tpo processing/decoder/$(DEPDIR)/test_runner-0067_multi_pass_clear_p2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0067_multi_pass_clear_p2.c' object='processing/decoder/test_runner-0067_multi_pass_clear_p2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0067_multi_pass_clear_p2.o `test -f 'processing/decoder/0067_multi_pass_clear_p2.c' || echo '$(srcdir)/'`processing/decoder/0067_multi_pass_clear_p2.c
+
+processing/decoder/test_runner-0067_multi_pass_clear_p2.obj: processing/decoder/0067_multi_pass_clear_p2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0067_multi_pass_clear_p2.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0067_multi_pass_clear_p2.Tpo -c -o processing/decoder/test_runner-0067_multi_pass_clear_p2.obj `if test -f 'processing/decoder/0067_multi_pass_clear_p2.c'; then $(CYGPATH_W) 'processing/decoder/0067_multi_pass_clear_p2.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0067_multi_pass_clear_p2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0067_multi_pass_clear_p2.Tpo processing/decoder/$(DEPDIR)/test_runner-0067_multi_pass_clear_p2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0067_multi_pass_clear_p2.c' object='processing/decoder/test_runner-0067_multi_pass_clear_p2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0067_multi_pass_clear_p2.obj `if test -f 'processing/decoder/0067_multi_pass_clear_p2.c'; then $(CYGPATH_W) 'processing/decoder/0067_multi_pass_clear_p2.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0067_multi_pass_clear_p2.c'; fi`
+
+processing/decoder/test_runner-0068_multi_pass_undefined_color.o: processing/decoder/0068_multi_pass_undefined_color.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0068_multi_pass_undefined_color.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0068_multi_pass_undefined_color.Tpo -c -o processing/decoder/test_runner-0068_multi_pass_undefined_color.o `test -f 'processing/decoder/0068_multi_pass_undefined_color.c' || echo '$(srcdir)/'`processing/decoder/0068_multi_pass_undefined_color.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0068_multi_pass_undefined_color.Tpo processing/decoder/$(DEPDIR)/test_runner-0068_multi_pass_undefined_color.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0068_multi_pass_undefined_color.c' object='processing/decoder/test_runner-0068_multi_pass_undefined_color.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0068_multi_pass_undefined_color.o `test -f 'processing/decoder/0068_multi_pass_undefined_color.c' || echo '$(srcdir)/'`processing/decoder/0068_multi_pass_undefined_color.c
+
+processing/decoder/test_runner-0068_multi_pass_undefined_color.obj: processing/decoder/0068_multi_pass_undefined_color.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0068_multi_pass_undefined_color.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0068_multi_pass_undefined_color.Tpo -c -o processing/decoder/test_runner-0068_multi_pass_undefined_color.obj `if test -f 'processing/decoder/0068_multi_pass_undefined_color.c'; then $(CYGPATH_W) 'processing/decoder/0068_multi_pass_undefined_color.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0068_multi_pass_undefined_color.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0068_multi_pass_undefined_color.Tpo processing/decoder/$(DEPDIR)/test_runner-0068_multi_pass_undefined_color.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0068_multi_pass_undefined_color.c' object='processing/decoder/test_runner-0068_multi_pass_undefined_color.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0068_multi_pass_undefined_color.obj `if test -f 'processing/decoder/0068_multi_pass_undefined_color.c'; then $(CYGPATH_W) 'processing/decoder/0068_multi_pass_undefined_color.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0068_multi_pass_undefined_color.c'; fi`
+
+processing/decoder/test_runner-0069_multi_pass_late_truncation.o: processing/decoder/0069_multi_pass_late_truncation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0069_multi_pass_late_truncation.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0069_multi_pass_late_truncation.Tpo -c -o processing/decoder/test_runner-0069_multi_pass_late_truncation.o `test -f 'processing/decoder/0069_multi_pass_late_truncation.c' || echo '$(srcdir)/'`processing/decoder/0069_multi_pass_late_truncation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0069_multi_pass_late_truncation.Tpo processing/decoder/$(DEPDIR)/test_runner-0069_multi_pass_late_truncation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0069_multi_pass_late_truncation.c' object='processing/decoder/test_runner-0069_multi_pass_late_truncation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0069_multi_pass_late_truncation.o `test -f 'processing/decoder/0069_multi_pass_late_truncation.c' || echo '$(srcdir)/'`processing/decoder/0069_multi_pass_late_truncation.c
+
+processing/decoder/test_runner-0069_multi_pass_late_truncation.obj: processing/decoder/0069_multi_pass_late_truncation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0069_multi_pass_late_truncation.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0069_multi_pass_late_truncation.Tpo -c -o processing/decoder/test_runner-0069_multi_pass_late_truncation.obj `if test -f 'processing/decoder/0069_multi_pass_late_truncation.c'; then $(CYGPATH_W) 'processing/decoder/0069_multi_pass_late_truncation.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0069_multi_pass_late_truncation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0069_multi_pass_late_truncation.Tpo processing/decoder/$(DEPDIR)/test_runner-0069_multi_pass_late_truncation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0069_multi_pass_late_truncation.c' object='processing/decoder/test_runner-0069_multi_pass_late_truncation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0069_multi_pass_late_truncation.obj `if test -f 'processing/decoder/0069_multi_pass_late_truncation.c'; then $(CYGPATH_W) 'processing/decoder/0069_multi_pass_late_truncation.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0069_multi_pass_late_truncation.c'; fi`
+
+processing/decoder/test_runner-0070_multi_pass_trailing_text.o: processing/decoder/0070_multi_pass_trailing_text.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0070_multi_pass_trailing_text.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0070_multi_pass_trailing_text.Tpo -c -o processing/decoder/test_runner-0070_multi_pass_trailing_text.o `test -f 'processing/decoder/0070_multi_pass_trailing_text.c' || echo '$(srcdir)/'`processing/decoder/0070_multi_pass_trailing_text.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0070_multi_pass_trailing_text.Tpo processing/decoder/$(DEPDIR)/test_runner-0070_multi_pass_trailing_text.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0070_multi_pass_trailing_text.c' object='processing/decoder/test_runner-0070_multi_pass_trailing_text.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0070_multi_pass_trailing_text.o `test -f 'processing/decoder/0070_multi_pass_trailing_text.c' || echo '$(srcdir)/'`processing/decoder/0070_multi_pass_trailing_text.c
+
+processing/decoder/test_runner-0070_multi_pass_trailing_text.obj: processing/decoder/0070_multi_pass_trailing_text.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0070_multi_pass_trailing_text.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0070_multi_pass_trailing_text.Tpo -c -o processing/decoder/test_runner-0070_multi_pass_trailing_text.obj `if test -f 'processing/decoder/0070_multi_pass_trailing_text.c'; then $(CYGPATH_W) 'processing/decoder/0070_multi_pass_trailing_text.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0070_multi_pass_trailing_text.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0070_multi_pass_trailing_text.Tpo processing/decoder/$(DEPDIR)/test_runner-0070_multi_pass_trailing_text.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0070_multi_pass_trailing_text.c' object='processing/decoder/test_runner-0070_multi_pass_trailing_text.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0070_multi_pass_trailing_text.obj `if test -f 'processing/decoder/0070_multi_pass_trailing_text.c'; then $(CYGPATH_W) 'processing/decoder/0070_multi_pass_trailing_text.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0070_multi_pass_trailing_text.c'; fi`
+
+processing/decoder/test_runner-0071_multi_pass_repeated_save.o: processing/decoder/0071_multi_pass_repeated_save.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0071_multi_pass_repeated_save.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0071_multi_pass_repeated_save.Tpo -c -o processing/decoder/test_runner-0071_multi_pass_repeated_save.o `test -f 'processing/decoder/0071_multi_pass_repeated_save.c' || echo '$(srcdir)/'`processing/decoder/0071_multi_pass_repeated_save.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0071_multi_pass_repeated_save.Tpo processing/decoder/$(DEPDIR)/test_runner-0071_multi_pass_repeated_save.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0071_multi_pass_repeated_save.c' object='processing/decoder/test_runner-0071_multi_pass_repeated_save.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0071_multi_pass_repeated_save.o `test -f 'processing/decoder/0071_multi_pass_repeated_save.c' || echo '$(srcdir)/'`processing/decoder/0071_multi_pass_repeated_save.c
+
+processing/decoder/test_runner-0071_multi_pass_repeated_save.obj: processing/decoder/0071_multi_pass_repeated_save.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0071_multi_pass_repeated_save.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0071_multi_pass_repeated_save.Tpo -c -o processing/decoder/test_runner-0071_multi_pass_repeated_save.obj `if test -f 'processing/decoder/0071_multi_pass_repeated_save.c'; then $(CYGPATH_W) 'processing/decoder/0071_multi_pass_repeated_save.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0071_multi_pass_repeated_save.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0071_multi_pass_repeated_save.Tpo processing/decoder/$(DEPDIR)/test_runner-0071_multi_pass_repeated_save.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0071_multi_pass_repeated_save.c' object='processing/decoder/test_runner-0071_multi_pass_repeated_save.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0071_multi_pass_repeated_save.obj `if test -f 'processing/decoder/0071_multi_pass_repeated_save.c'; then $(CYGPATH_W) 'processing/decoder/0071_multi_pass_repeated_save.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0071_multi_pass_repeated_save.c'; fi`
+
+processing/decoder/test_runner-0072_multi_pass_unmatched_restore.o: processing/decoder/0072_multi_pass_unmatched_restore.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0072_multi_pass_unmatched_restore.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0072_multi_pass_unmatched_restore.Tpo -c -o processing/decoder/test_runner-0072_multi_pass_unmatched_restore.o `test -f 'processing/decoder/0072_multi_pass_unmatched_restore.c' || echo '$(srcdir)/'`processing/decoder/0072_multi_pass_unmatched_restore.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0072_multi_pass_unmatched_restore.Tpo processing/decoder/$(DEPDIR)/test_runner-0072_multi_pass_unmatched_restore.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0072_multi_pass_unmatched_restore.c' object='processing/decoder/test_runner-0072_multi_pass_unmatched_restore.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0072_multi_pass_unmatched_restore.o `test -f 'processing/decoder/0072_multi_pass_unmatched_restore.c' || echo '$(srcdir)/'`processing/decoder/0072_multi_pass_unmatched_restore.c
+
+processing/decoder/test_runner-0072_multi_pass_unmatched_restore.obj: processing/decoder/0072_multi_pass_unmatched_restore.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0072_multi_pass_unmatched_restore.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0072_multi_pass_unmatched_restore.Tpo -c -o processing/decoder/test_runner-0072_multi_pass_unmatched_restore.obj `if test -f 'processing/decoder/0072_multi_pass_unmatched_restore.c'; then $(CYGPATH_W) 'processing/decoder/0072_multi_pass_unmatched_restore.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0072_multi_pass_unmatched_restore.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0072_multi_pass_unmatched_restore.Tpo processing/decoder/$(DEPDIR)/test_runner-0072_multi_pass_unmatched_restore.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0072_multi_pass_unmatched_restore.c' object='processing/decoder/test_runner-0072_multi_pass_unmatched_restore.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0072_multi_pass_unmatched_restore.obj `if test -f 'processing/decoder/0072_multi_pass_unmatched_restore.c'; then $(CYGPATH_W) 'processing/decoder/0072_multi_pass_unmatched_restore.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0072_multi_pass_unmatched_restore.c'; fi`
+
+processing/decoder/test_runner-0073_multi_pass_missing_restore.o: processing/decoder/0073_multi_pass_missing_restore.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0073_multi_pass_missing_restore.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0073_multi_pass_missing_restore.Tpo -c -o processing/decoder/test_runner-0073_multi_pass_missing_restore.o `test -f 'processing/decoder/0073_multi_pass_missing_restore.c' || echo '$(srcdir)/'`processing/decoder/0073_multi_pass_missing_restore.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0073_multi_pass_missing_restore.Tpo processing/decoder/$(DEPDIR)/test_runner-0073_multi_pass_missing_restore.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0073_multi_pass_missing_restore.c' object='processing/decoder/test_runner-0073_multi_pass_missing_restore.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0073_multi_pass_missing_restore.o `test -f 'processing/decoder/0073_multi_pass_missing_restore.c' || echo '$(srcdir)/'`processing/decoder/0073_multi_pass_missing_restore.c
+
+processing/decoder/test_runner-0073_multi_pass_missing_restore.obj: processing/decoder/0073_multi_pass_missing_restore.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0073_multi_pass_missing_restore.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0073_multi_pass_missing_restore.Tpo -c -o processing/decoder/test_runner-0073_multi_pass_missing_restore.obj `if test -f 'processing/decoder/0073_multi_pass_missing_restore.c'; then $(CYGPATH_W) 'processing/decoder/0073_multi_pass_missing_restore.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0073_multi_pass_missing_restore.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0073_multi_pass_missing_restore.Tpo processing/decoder/$(DEPDIR)/test_runner-0073_multi_pass_missing_restore.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0073_multi_pass_missing_restore.c' object='processing/decoder/test_runner-0073_multi_pass_missing_restore.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0073_multi_pass_missing_restore.obj `if test -f 'processing/decoder/0073_multi_pass_missing_restore.c'; then $(CYGPATH_W) 'processing/decoder/0073_multi_pass_missing_restore.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0073_multi_pass_missing_restore.c'; fi`
+
+processing/decoder/test_runner-0074_multi_pass_prefix_whitespace.o: processing/decoder/0074_multi_pass_prefix_whitespace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0074_multi_pass_prefix_whitespace.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0074_multi_pass_prefix_whitespace.Tpo -c -o processing/decoder/test_runner-0074_multi_pass_prefix_whitespace.o `test -f 'processing/decoder/0074_multi_pass_prefix_whitespace.c' || echo '$(srcdir)/'`processing/decoder/0074_multi_pass_prefix_whitespace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0074_multi_pass_prefix_whitespace.Tpo processing/decoder/$(DEPDIR)/test_runner-0074_multi_pass_prefix_whitespace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0074_multi_pass_prefix_whitespace.c' object='processing/decoder/test_runner-0074_multi_pass_prefix_whitespace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0074_multi_pass_prefix_whitespace.o `test -f 'processing/decoder/0074_multi_pass_prefix_whitespace.c' || echo '$(srcdir)/'`processing/decoder/0074_multi_pass_prefix_whitespace.c
+
+processing/decoder/test_runner-0074_multi_pass_prefix_whitespace.obj: processing/decoder/0074_multi_pass_prefix_whitespace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0074_multi_pass_prefix_whitespace.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0074_multi_pass_prefix_whitespace.Tpo -c -o processing/decoder/test_runner-0074_multi_pass_prefix_whitespace.obj `if test -f 'processing/decoder/0074_multi_pass_prefix_whitespace.c'; then $(CYGPATH_W) 'processing/decoder/0074_multi_pass_prefix_whitespace.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0074_multi_pass_prefix_whitespace.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0074_multi_pass_prefix_whitespace.Tpo processing/decoder/$(DEPDIR)/test_runner-0074_multi_pass_prefix_whitespace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0074_multi_pass_prefix_whitespace.c' object='processing/decoder/test_runner-0074_multi_pass_prefix_whitespace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0074_multi_pass_prefix_whitespace.obj `if test -f 'processing/decoder/0074_multi_pass_prefix_whitespace.c'; then $(CYGPATH_W) 'processing/decoder/0074_multi_pass_prefix_whitespace.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0074_multi_pass_prefix_whitespace.c'; fi`
+
+processing/decoder/test_runner-0075_multi_pass_dangling_prefix.o: processing/decoder/0075_multi_pass_dangling_prefix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0075_multi_pass_dangling_prefix.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0075_multi_pass_dangling_prefix.Tpo -c -o processing/decoder/test_runner-0075_multi_pass_dangling_prefix.o `test -f 'processing/decoder/0075_multi_pass_dangling_prefix.c' || echo '$(srcdir)/'`processing/decoder/0075_multi_pass_dangling_prefix.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0075_multi_pass_dangling_prefix.Tpo processing/decoder/$(DEPDIR)/test_runner-0075_multi_pass_dangling_prefix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0075_multi_pass_dangling_prefix.c' object='processing/decoder/test_runner-0075_multi_pass_dangling_prefix.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0075_multi_pass_dangling_prefix.o `test -f 'processing/decoder/0075_multi_pass_dangling_prefix.c' || echo '$(srcdir)/'`processing/decoder/0075_multi_pass_dangling_prefix.c
+
+processing/decoder/test_runner-0075_multi_pass_dangling_prefix.obj: processing/decoder/0075_multi_pass_dangling_prefix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0075_multi_pass_dangling_prefix.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0075_multi_pass_dangling_prefix.Tpo -c -o processing/decoder/test_runner-0075_multi_pass_dangling_prefix.obj `if test -f 'processing/decoder/0075_multi_pass_dangling_prefix.c'; then $(CYGPATH_W) 'processing/decoder/0075_multi_pass_dangling_prefix.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0075_multi_pass_dangling_prefix.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0075_multi_pass_dangling_prefix.Tpo processing/decoder/$(DEPDIR)/test_runner-0075_multi_pass_dangling_prefix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0075_multi_pass_dangling_prefix.c' object='processing/decoder/test_runner-0075_multi_pass_dangling_prefix.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0075_multi_pass_dangling_prefix.obj `if test -f 'processing/decoder/0075_multi_pass_dangling_prefix.c'; then $(CYGPATH_W) 'processing/decoder/0075_multi_pass_dangling_prefix.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0075_multi_pass_dangling_prefix.c'; fi`
+
+processing/decoder/test_runner-0076_multi_pass_terminal_control.o: processing/decoder/0076_multi_pass_terminal_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0076_multi_pass_terminal_control.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0076_multi_pass_terminal_control.Tpo -c -o processing/decoder/test_runner-0076_multi_pass_terminal_control.o `test -f 'processing/decoder/0076_multi_pass_terminal_control.c' || echo '$(srcdir)/'`processing/decoder/0076_multi_pass_terminal_control.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0076_multi_pass_terminal_control.Tpo processing/decoder/$(DEPDIR)/test_runner-0076_multi_pass_terminal_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0076_multi_pass_terminal_control.c' object='processing/decoder/test_runner-0076_multi_pass_terminal_control.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0076_multi_pass_terminal_control.o `test -f 'processing/decoder/0076_multi_pass_terminal_control.c' || echo '$(srcdir)/'`processing/decoder/0076_multi_pass_terminal_control.c
+
+processing/decoder/test_runner-0076_multi_pass_terminal_control.obj: processing/decoder/0076_multi_pass_terminal_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0076_multi_pass_terminal_control.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0076_multi_pass_terminal_control.Tpo -c -o processing/decoder/test_runner-0076_multi_pass_terminal_control.obj `if test -f 'processing/decoder/0076_multi_pass_terminal_control.c'; then $(CYGPATH_W) 'processing/decoder/0076_multi_pass_terminal_control.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0076_multi_pass_terminal_control.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0076_multi_pass_terminal_control.Tpo processing/decoder/$(DEPDIR)/test_runner-0076_multi_pass_terminal_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0076_multi_pass_terminal_control.c' object='processing/decoder/test_runner-0076_multi_pass_terminal_control.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0076_multi_pass_terminal_control.obj `if test -f 'processing/decoder/0076_multi_pass_terminal_control.c'; then $(CYGPATH_W) 'processing/decoder/0076_multi_pass_terminal_control.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0076_multi_pass_terminal_control.c'; fi`
+
+processing/decoder/test_runner-0077_multi_pass_cancelled_dcs.o: processing/decoder/0077_multi_pass_cancelled_dcs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0077_multi_pass_cancelled_dcs.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0077_multi_pass_cancelled_dcs.Tpo -c -o processing/decoder/test_runner-0077_multi_pass_cancelled_dcs.o `test -f 'processing/decoder/0077_multi_pass_cancelled_dcs.c' || echo '$(srcdir)/'`processing/decoder/0077_multi_pass_cancelled_dcs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0077_multi_pass_cancelled_dcs.Tpo processing/decoder/$(DEPDIR)/test_runner-0077_multi_pass_cancelled_dcs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0077_multi_pass_cancelled_dcs.c' object='processing/decoder/test_runner-0077_multi_pass_cancelled_dcs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0077_multi_pass_cancelled_dcs.o `test -f 'processing/decoder/0077_multi_pass_cancelled_dcs.c' || echo '$(srcdir)/'`processing/decoder/0077_multi_pass_cancelled_dcs.c
+
+processing/decoder/test_runner-0077_multi_pass_cancelled_dcs.obj: processing/decoder/0077_multi_pass_cancelled_dcs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0077_multi_pass_cancelled_dcs.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0077_multi_pass_cancelled_dcs.Tpo -c -o processing/decoder/test_runner-0077_multi_pass_cancelled_dcs.obj `if test -f 'processing/decoder/0077_multi_pass_cancelled_dcs.c'; then $(CYGPATH_W) 'processing/decoder/0077_multi_pass_cancelled_dcs.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0077_multi_pass_cancelled_dcs.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0077_multi_pass_cancelled_dcs.Tpo processing/decoder/$(DEPDIR)/test_runner-0077_multi_pass_cancelled_dcs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0077_multi_pass_cancelled_dcs.c' object='processing/decoder/test_runner-0077_multi_pass_cancelled_dcs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0077_multi_pass_cancelled_dcs.obj `if test -f 'processing/decoder/0077_multi_pass_cancelled_dcs.c'; then $(CYGPATH_W) 'processing/decoder/0077_multi_pass_cancelled_dcs.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0077_multi_pass_cancelled_dcs.c'; fi`
+
+processing/decoder/test_runner-0078_multi_pass_empty_capture.o: processing/decoder/0078_multi_pass_empty_capture.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0078_multi_pass_empty_capture.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0078_multi_pass_empty_capture.Tpo -c -o processing/decoder/test_runner-0078_multi_pass_empty_capture.o `test -f 'processing/decoder/0078_multi_pass_empty_capture.c' || echo '$(srcdir)/'`processing/decoder/0078_multi_pass_empty_capture.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0078_multi_pass_empty_capture.Tpo processing/decoder/$(DEPDIR)/test_runner-0078_multi_pass_empty_capture.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0078_multi_pass_empty_capture.c' object='processing/decoder/test_runner-0078_multi_pass_empty_capture.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0078_multi_pass_empty_capture.o `test -f 'processing/decoder/0078_multi_pass_empty_capture.c' || echo '$(srcdir)/'`processing/decoder/0078_multi_pass_empty_capture.c
+
+processing/decoder/test_runner-0078_multi_pass_empty_capture.obj: processing/decoder/0078_multi_pass_empty_capture.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0078_multi_pass_empty_capture.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0078_multi_pass_empty_capture.Tpo -c -o processing/decoder/test_runner-0078_multi_pass_empty_capture.obj `if test -f 'processing/decoder/0078_multi_pass_empty_capture.c'; then $(CYGPATH_W) 'processing/decoder/0078_multi_pass_empty_capture.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0078_multi_pass_empty_capture.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0078_multi_pass_empty_capture.Tpo processing/decoder/$(DEPDIR)/test_runner-0078_multi_pass_empty_capture.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0078_multi_pass_empty_capture.c' object='processing/decoder/test_runner-0078_multi_pass_empty_capture.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0078_multi_pass_empty_capture.obj `if test -f 'processing/decoder/0078_multi_pass_empty_capture.c'; then $(CYGPATH_W) 'processing/decoder/0078_multi_pass_empty_capture.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0078_multi_pass_empty_capture.c'; fi`
+
+processing/decoder/test_runner-0079_multi_pass_dequant_conflict.o: processing/decoder/0079_multi_pass_dequant_conflict.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0079_multi_pass_dequant_conflict.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0079_multi_pass_dequant_conflict.Tpo -c -o processing/decoder/test_runner-0079_multi_pass_dequant_conflict.o `test -f 'processing/decoder/0079_multi_pass_dequant_conflict.c' || echo '$(srcdir)/'`processing/decoder/0079_multi_pass_dequant_conflict.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0079_multi_pass_dequant_conflict.Tpo processing/decoder/$(DEPDIR)/test_runner-0079_multi_pass_dequant_conflict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0079_multi_pass_dequant_conflict.c' object='processing/decoder/test_runner-0079_multi_pass_dequant_conflict.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0079_multi_pass_dequant_conflict.o `test -f 'processing/decoder/0079_multi_pass_dequant_conflict.c' || echo '$(srcdir)/'`processing/decoder/0079_multi_pass_dequant_conflict.c
+
+processing/decoder/test_runner-0079_multi_pass_dequant_conflict.obj: processing/decoder/0079_multi_pass_dequant_conflict.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0079_multi_pass_dequant_conflict.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0079_multi_pass_dequant_conflict.Tpo -c -o processing/decoder/test_runner-0079_multi_pass_dequant_conflict.obj `if test -f 'processing/decoder/0079_multi_pass_dequant_conflict.c'; then $(CYGPATH_W) 'processing/decoder/0079_multi_pass_dequant_conflict.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0079_multi_pass_dequant_conflict.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0079_multi_pass_dequant_conflict.Tpo processing/decoder/$(DEPDIR)/test_runner-0079_multi_pass_dequant_conflict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0079_multi_pass_dequant_conflict.c' object='processing/decoder/test_runner-0079_multi_pass_dequant_conflict.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0079_multi_pass_dequant_conflict.obj `if test -f 'processing/decoder/0079_multi_pass_dequant_conflict.c'; then $(CYGPATH_W) 'processing/decoder/0079_multi_pass_dequant_conflict.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0079_multi_pass_dequant_conflict.c'; fi`
+
+processing/decoder/test_runner-0080_multi_pass_force_gpu.o: processing/decoder/0080_multi_pass_force_gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0080_multi_pass_force_gpu.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0080_multi_pass_force_gpu.Tpo -c -o processing/decoder/test_runner-0080_multi_pass_force_gpu.o `test -f 'processing/decoder/0080_multi_pass_force_gpu.c' || echo '$(srcdir)/'`processing/decoder/0080_multi_pass_force_gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0080_multi_pass_force_gpu.Tpo processing/decoder/$(DEPDIR)/test_runner-0080_multi_pass_force_gpu.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0080_multi_pass_force_gpu.c' object='processing/decoder/test_runner-0080_multi_pass_force_gpu.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0080_multi_pass_force_gpu.o `test -f 'processing/decoder/0080_multi_pass_force_gpu.c' || echo '$(srcdir)/'`processing/decoder/0080_multi_pass_force_gpu.c
+
+processing/decoder/test_runner-0080_multi_pass_force_gpu.obj: processing/decoder/0080_multi_pass_force_gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0080_multi_pass_force_gpu.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0080_multi_pass_force_gpu.Tpo -c -o processing/decoder/test_runner-0080_multi_pass_force_gpu.obj `if test -f 'processing/decoder/0080_multi_pass_force_gpu.c'; then $(CYGPATH_W) 'processing/decoder/0080_multi_pass_force_gpu.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0080_multi_pass_force_gpu.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0080_multi_pass_force_gpu.Tpo processing/decoder/$(DEPDIR)/test_runner-0080_multi_pass_force_gpu.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0080_multi_pass_force_gpu.c' object='processing/decoder/test_runner-0080_multi_pass_force_gpu.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0080_multi_pass_force_gpu.obj `if test -f 'processing/decoder/0080_multi_pass_force_gpu.c'; then $(CYGPATH_W) 'processing/decoder/0080_multi_pass_force_gpu.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0080_multi_pass_force_gpu.c'; fi`
+
+processing/decoder/test_runner-0081_multi_pass_skip_outside.o: processing/decoder/0081_multi_pass_skip_outside.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0081_multi_pass_skip_outside.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0081_multi_pass_skip_outside.Tpo -c -o processing/decoder/test_runner-0081_multi_pass_skip_outside.o `test -f 'processing/decoder/0081_multi_pass_skip_outside.c' || echo '$(srcdir)/'`processing/decoder/0081_multi_pass_skip_outside.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0081_multi_pass_skip_outside.Tpo processing/decoder/$(DEPDIR)/test_runner-0081_multi_pass_skip_outside.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0081_multi_pass_skip_outside.c' object='processing/decoder/test_runner-0081_multi_pass_skip_outside.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0081_multi_pass_skip_outside.o `test -f 'processing/decoder/0081_multi_pass_skip_outside.c' || echo '$(srcdir)/'`processing/decoder/0081_multi_pass_skip_outside.c
+
+processing/decoder/test_runner-0081_multi_pass_skip_outside.obj: processing/decoder/0081_multi_pass_skip_outside.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0081_multi_pass_skip_outside.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0081_multi_pass_skip_outside.Tpo -c -o processing/decoder/test_runner-0081_multi_pass_skip_outside.obj `if test -f 'processing/decoder/0081_multi_pass_skip_outside.c'; then $(CYGPATH_W) 'processing/decoder/0081_multi_pass_skip_outside.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0081_multi_pass_skip_outside.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0081_multi_pass_skip_outside.Tpo processing/decoder/$(DEPDIR)/test_runner-0081_multi_pass_skip_outside.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0081_multi_pass_skip_outside.c' object='processing/decoder/test_runner-0081_multi_pass_skip_outside.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0081_multi_pass_skip_outside.obj `if test -f 'processing/decoder/0081_multi_pass_skip_outside.c'; then $(CYGPATH_W) 'processing/decoder/0081_multi_pass_skip_outside.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0081_multi_pass_skip_outside.c'; fi`
+
+processing/decoder/test_runner-0082_multi_pass_hls_color.o: processing/decoder/0082_multi_pass_hls_color.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0082_multi_pass_hls_color.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0082_multi_pass_hls_color.Tpo -c -o processing/decoder/test_runner-0082_multi_pass_hls_color.o `test -f 'processing/decoder/0082_multi_pass_hls_color.c' || echo '$(srcdir)/'`processing/decoder/0082_multi_pass_hls_color.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0082_multi_pass_hls_color.Tpo processing/decoder/$(DEPDIR)/test_runner-0082_multi_pass_hls_color.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0082_multi_pass_hls_color.c' object='processing/decoder/test_runner-0082_multi_pass_hls_color.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0082_multi_pass_hls_color.o `test -f 'processing/decoder/0082_multi_pass_hls_color.c' || echo '$(srcdir)/'`processing/decoder/0082_multi_pass_hls_color.c
+
+processing/decoder/test_runner-0082_multi_pass_hls_color.obj: processing/decoder/0082_multi_pass_hls_color.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0082_multi_pass_hls_color.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0082_multi_pass_hls_color.Tpo -c -o processing/decoder/test_runner-0082_multi_pass_hls_color.obj `if test -f 'processing/decoder/0082_multi_pass_hls_color.c'; then $(CYGPATH_W) 'processing/decoder/0082_multi_pass_hls_color.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0082_multi_pass_hls_color.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0082_multi_pass_hls_color.Tpo processing/decoder/$(DEPDIR)/test_runner-0082_multi_pass_hls_color.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0082_multi_pass_hls_color.c' object='processing/decoder/test_runner-0082_multi_pass_hls_color.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0082_multi_pass_hls_color.obj `if test -f 'processing/decoder/0082_multi_pass_hls_color.c'; then $(CYGPATH_W) 'processing/decoder/0082_multi_pass_hls_color.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0082_multi_pass_hls_color.c'; fi`
+
+processing/decoder/test_runner-0083_multi_pass_call_isolation.o: processing/decoder/0083_multi_pass_call_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0083_multi_pass_call_isolation.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0083_multi_pass_call_isolation.Tpo -c -o processing/decoder/test_runner-0083_multi_pass_call_isolation.o `test -f 'processing/decoder/0083_multi_pass_call_isolation.c' || echo '$(srcdir)/'`processing/decoder/0083_multi_pass_call_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0083_multi_pass_call_isolation.Tpo processing/decoder/$(DEPDIR)/test_runner-0083_multi_pass_call_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0083_multi_pass_call_isolation.c' object='processing/decoder/test_runner-0083_multi_pass_call_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0083_multi_pass_call_isolation.o `test -f 'processing/decoder/0083_multi_pass_call_isolation.c' || echo '$(srcdir)/'`processing/decoder/0083_multi_pass_call_isolation.c
+
+processing/decoder/test_runner-0083_multi_pass_call_isolation.obj: processing/decoder/0083_multi_pass_call_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0083_multi_pass_call_isolation.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0083_multi_pass_call_isolation.Tpo -c -o processing/decoder/test_runner-0083_multi_pass_call_isolation.obj `if test -f 'processing/decoder/0083_multi_pass_call_isolation.c'; then $(CYGPATH_W) 'processing/decoder/0083_multi_pass_call_isolation.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0083_multi_pass_call_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0083_multi_pass_call_isolation.Tpo processing/decoder/$(DEPDIR)/test_runner-0083_multi_pass_call_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0083_multi_pass_call_isolation.c' object='processing/decoder/test_runner-0083_multi_pass_call_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0083_multi_pass_call_isolation.obj `if test -f 'processing/decoder/0083_multi_pass_call_isolation.c'; then $(CYGPATH_W) 'processing/decoder/0083_multi_pass_call_isolation.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0083_multi_pass_call_isolation.c'; fi`
+
+processing/decoder/test_runner-0084_multi_pass_color_union.o: processing/decoder/0084_multi_pass_color_union.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0084_multi_pass_color_union.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0084_multi_pass_color_union.Tpo -c -o processing/decoder/test_runner-0084_multi_pass_color_union.o `test -f 'processing/decoder/0084_multi_pass_color_union.c' || echo '$(srcdir)/'`processing/decoder/0084_multi_pass_color_union.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0084_multi_pass_color_union.Tpo processing/decoder/$(DEPDIR)/test_runner-0084_multi_pass_color_union.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0084_multi_pass_color_union.c' object='processing/decoder/test_runner-0084_multi_pass_color_union.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0084_multi_pass_color_union.o `test -f 'processing/decoder/0084_multi_pass_color_union.c' || echo '$(srcdir)/'`processing/decoder/0084_multi_pass_color_union.c
+
+processing/decoder/test_runner-0084_multi_pass_color_union.obj: processing/decoder/0084_multi_pass_color_union.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0084_multi_pass_color_union.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0084_multi_pass_color_union.Tpo -c -o processing/decoder/test_runner-0084_multi_pass_color_union.obj `if test -f 'processing/decoder/0084_multi_pass_color_union.c'; then $(CYGPATH_W) 'processing/decoder/0084_multi_pass_color_union.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0084_multi_pass_color_union.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0084_multi_pass_color_union.Tpo processing/decoder/$(DEPDIR)/test_runner-0084_multi_pass_color_union.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0084_multi_pass_color_union.c' object='processing/decoder/test_runner-0084_multi_pass_color_union.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0084_multi_pass_color_union.obj `if test -f 'processing/decoder/0084_multi_pass_color_union.c'; then $(CYGPATH_W) 'processing/decoder/0084_multi_pass_color_union.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0084_multi_pass_color_union.c'; fi`
+
+processing/decoder/test_runner-0085_multi_pass_option_atomicity.o: processing/decoder/0085_multi_pass_option_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0085_multi_pass_option_atomicity.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0085_multi_pass_option_atomicity.Tpo -c -o processing/decoder/test_runner-0085_multi_pass_option_atomicity.o `test -f 'processing/decoder/0085_multi_pass_option_atomicity.c' || echo '$(srcdir)/'`processing/decoder/0085_multi_pass_option_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0085_multi_pass_option_atomicity.Tpo processing/decoder/$(DEPDIR)/test_runner-0085_multi_pass_option_atomicity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0085_multi_pass_option_atomicity.c' object='processing/decoder/test_runner-0085_multi_pass_option_atomicity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0085_multi_pass_option_atomicity.o `test -f 'processing/decoder/0085_multi_pass_option_atomicity.c' || echo '$(srcdir)/'`processing/decoder/0085_multi_pass_option_atomicity.c
+
+processing/decoder/test_runner-0085_multi_pass_option_atomicity.obj: processing/decoder/0085_multi_pass_option_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0085_multi_pass_option_atomicity.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0085_multi_pass_option_atomicity.Tpo -c -o processing/decoder/test_runner-0085_multi_pass_option_atomicity.obj `if test -f 'processing/decoder/0085_multi_pass_option_atomicity.c'; then $(CYGPATH_W) 'processing/decoder/0085_multi_pass_option_atomicity.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0085_multi_pass_option_atomicity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0085_multi_pass_option_atomicity.Tpo processing/decoder/$(DEPDIR)/test_runner-0085_multi_pass_option_atomicity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0085_multi_pass_option_atomicity.c' object='processing/decoder/test_runner-0085_multi_pass_option_atomicity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0085_multi_pass_option_atomicity.obj `if test -f 'processing/decoder/0085_multi_pass_option_atomicity.c'; then $(CYGPATH_W) 'processing/decoder/0085_multi_pass_option_atomicity.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0085_multi_pass_option_atomicity.c'; fi`
+
+processing/decoder/test_runner-0086_multi_pass_allocation_failure.o: processing/decoder/0086_multi_pass_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0086_multi_pass_allocation_failure.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0086_multi_pass_allocation_failure.Tpo -c -o processing/decoder/test_runner-0086_multi_pass_allocation_failure.o `test -f 'processing/decoder/0086_multi_pass_allocation_failure.c' || echo '$(srcdir)/'`processing/decoder/0086_multi_pass_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0086_multi_pass_allocation_failure.Tpo processing/decoder/$(DEPDIR)/test_runner-0086_multi_pass_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0086_multi_pass_allocation_failure.c' object='processing/decoder/test_runner-0086_multi_pass_allocation_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0086_multi_pass_allocation_failure.o `test -f 'processing/decoder/0086_multi_pass_allocation_failure.c' || echo '$(srcdir)/'`processing/decoder/0086_multi_pass_allocation_failure.c
+
+processing/decoder/test_runner-0086_multi_pass_allocation_failure.obj: processing/decoder/0086_multi_pass_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0086_multi_pass_allocation_failure.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0086_multi_pass_allocation_failure.Tpo -c -o processing/decoder/test_runner-0086_multi_pass_allocation_failure.obj `if test -f 'processing/decoder/0086_multi_pass_allocation_failure.c'; then $(CYGPATH_W) 'processing/decoder/0086_multi_pass_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0086_multi_pass_allocation_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0086_multi_pass_allocation_failure.Tpo processing/decoder/$(DEPDIR)/test_runner-0086_multi_pass_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0086_multi_pass_allocation_failure.c' object='processing/decoder/test_runner-0086_multi_pass_allocation_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0086_multi_pass_allocation_failure.obj `if test -f 'processing/decoder/0086_multi_pass_allocation_failure.c'; then $(CYGPATH_W) 'processing/decoder/0086_multi_pass_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0086_multi_pass_allocation_failure.c'; fi`
+
+processing/decoder/test_runner-multi_pass_test_common.o: processing/decoder/multi_pass_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-multi_pass_test_common.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Tpo -c -o processing/decoder/test_runner-multi_pass_test_common.o `test -f 'processing/decoder/multi_pass_test_common.c' || echo '$(srcdir)/'`processing/decoder/multi_pass_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Tpo processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/multi_pass_test_common.c' object='processing/decoder/test_runner-multi_pass_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-multi_pass_test_common.o `test -f 'processing/decoder/multi_pass_test_common.c' || echo '$(srcdir)/'`processing/decoder/multi_pass_test_common.c
+
+processing/decoder/test_runner-multi_pass_test_common.obj: processing/decoder/multi_pass_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-multi_pass_test_common.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Tpo -c -o processing/decoder/test_runner-multi_pass_test_common.obj `if test -f 'processing/decoder/multi_pass_test_common.c'; then $(CYGPATH_W) 'processing/decoder/multi_pass_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/multi_pass_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Tpo processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/multi_pass_test_common.c' object='processing/decoder/test_runner-multi_pass_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-multi_pass_test_common.obj `if test -f 'processing/decoder/multi_pass_test_common.c'; then $(CYGPATH_W) 'processing/decoder/multi_pass_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/multi_pass_test_common.c'; fi`
 
 processing/colorspace/test_runner-0001_din99d_forward.o: processing/colorspace/0001_din99d_forward.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0001_din99d_forward.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Tpo -c -o processing/colorspace/test_runner-0001_din99d_forward.o `test -f 'processing/colorspace/0001_din99d_forward.c' || echo '$(srcdir)/'`processing/colorspace/0001_din99d_forward.c

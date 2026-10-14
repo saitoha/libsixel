@@ -456,6 +456,8 @@ typedef struct parser_context {
     int painted_outside_raster;
     int painted;
     int palette_redefined_after_paint;
+    /* Sequence composition keeps one canvas; parallel workers own a packet. */
+    int sequence;
     int param;
     int nparams;
     int params[DECSIXEL_PARAMS_MAX];
@@ -828,6 +830,7 @@ parser_context_init(parser_context_t *context)
     context->painted_outside_raster = 0;
     context->painted = 0;
     context->palette_redefined_after_paint = 0;
+    context->sequence = 0;
     context->nparams = 0;
     context->param = 0;
 
@@ -1246,6 +1249,13 @@ sixel_decode_raw_impl(
                         goto end;
                     }
                     bits = *p - '?';
+                    /* A validated sequence skip never grows the canvas. */
+                    if (context->sequence && bits == 0) {
+                        context->pos_x += context->repeat_count;
+                        context->repeat_count = 1;
+                        p++;
+                        break;
+                    }
                     draw_repeat = context->repeat_count;
                     if (trust_raster_size && context->attributed_ph > 0) {
                         if (context->pos_x >= context->attributed_ph) {
@@ -1438,6 +1448,9 @@ sixel_decode_raw_impl(
             /* DECGRA Set Raster Attributes " Pan; Pad; Ph; Pv */
             switch (*p) {
             case '\x1b':
+                if (context->sequence) {
+                    goto sequence_raster_parameters;
+                }
                 context->state = PS_ESC;
                 p++;
                 break;
@@ -1465,6 +1478,7 @@ sixel_decode_raw_impl(
                 p++;
                 break;
             default:
+sequence_raster_parameters:
                 if (context->nparams < DECSIXEL_PARAMS_MAX) {
                     context->params[context->nparams++] = context->param;
                 }
@@ -1511,7 +1525,8 @@ sixel_decode_raw_impl(
                     }
                 }
 #if SIXEL_ENABLE_THREADS
-                if (!raster_ready && context->attributed_ph > 0 &&
+                if (!context->sequence && !raster_ready &&
+                        context->attributed_ph > 0 &&
                         context->attributed_pv > 0) {
                     raster_ready = 1;
                 }
@@ -1568,6 +1583,9 @@ sixel_decode_raw_impl(
             /* DECGCI Graphics Color Introducer # Pc; Pu; Px; Py; Pz */
             switch (*p) {
             case '\x1b':
+                if (context->sequence) {
+                    goto sequence_color_parameters;
+                }
                 context->state = PS_ESC;
                 p++;
                 break;
@@ -1595,6 +1613,7 @@ sixel_decode_raw_impl(
                 p++;
                 break;
             default:
+sequence_color_parameters:
                 context->state = PS_DECSIXEL;
                 if (context->nparams < DECSIXEL_PARAMS_MAX) {
                     context->params[context->nparams++] = context->param;
@@ -2402,6 +2421,456 @@ end:
     image_buffer_release_ormode_indexes(image, allocator);
     free(image);
     sixel_allocator_unref(allocator);
+    return status;
+}
+
+/*
+ * The strict capture adapter validates framing and paint bounds before handing
+ * each packet to the existing direct painter. Register definitions and the
+ * RGBA canvas belong to the whole capture; cursor/parser state is per packet.
+ * This is deliberately separate from the permissive single-image interface.
+ */
+typedef struct sixel_sequence_state {
+    int width;
+    int height;
+    int painted;
+    unsigned int flags;
+    int animation;
+    int clear;
+    unsigned char defined[SIXEL_PALETTE_MAX_DECODER];
+} sixel_sequence_state_t;
+
+static int
+sixel_sequence_parameters(unsigned char const **cursor,
+                           unsigned char const *end, int *params,
+                           int capacity)
+{
+    unsigned char const *p;
+    int count;
+    int value;
+    int digit;
+
+    p = *cursor;
+    count = 0;
+    if (p == end || ((*p < '0' || *p > '9') && *p != ';')) {
+        return 0;
+    }
+    for (;;) {
+        if (count == capacity) {
+            return -1;
+        }
+        value = 0;
+        while (p < end && *p >= '0' && *p <= '9') {
+            digit = *p++ - '0';
+            if (value > (INT_MAX - digit) / 10) {
+                return -1;
+            }
+            value = value * 10 + digit;
+        }
+        params[count++] = value;
+        if (p == end || *p != ';') {
+            break;
+        }
+        ++p;
+    }
+    *cursor = p;
+    return count;
+}
+
+/* Return the first byte after ST only after validating the entire packet. */
+static SIXELSTATUS
+sixel_sequence_packet(unsigned char const **cursor,
+                       unsigned char const *end,
+                       sixel_sequence_state_t *state)
+{
+    unsigned char const *p;
+    int params[5];
+    int count;
+    int raster;
+    int x;
+    int y;
+    int color;
+    int repeat;
+    int bits;
+    int row;
+    unsigned char command;
+
+    p = *cursor;
+    raster = 0;
+    x = 0;
+    y = 0;
+    color = state->animation ? 15 : 0;
+    if (p < end && *p == 0x90) {
+        ++p;
+    } else if (end - p >= 2 && p[0] == 0x1b && p[1] == 'P') {
+        p += 2;
+    } else {
+        return SIXEL_BAD_INPUT;
+    }
+    count = sixel_sequence_parameters(&p, end, params, 3);
+    if (count < 0 || p == end || *p++ != 'q') {
+        return SIXEL_BAD_INPUT;
+    }
+    state->clear = count < 2 || params[1] == 0;
+    if ((!state->animation && (count < 2 || params[1] != 1))
+            || (count >= 2 && params[1] != 0 && params[1] != 1)) {
+        return SIXEL_BAD_INPUT;
+    }
+    while (p < end) {
+        if (*p == 0x9c ||
+                (end - p >= 2 && p[0] == 0x1b && p[1] == '\\')) {
+            p += *p == 0x9c ? 1 : 2;
+            if (!raster) {
+                return SIXEL_BAD_INPUT;
+            }
+            *cursor = p;
+            return SIXEL_OK;
+        }
+        command = *p++;
+        if (command == '"') {
+            count = sixel_sequence_parameters(&p, end, params, 4);
+            if (count != 4 || params[0] <= 0 ||
+                    params[0] != params[1] || params[2] <= 0 ||
+                    params[3] <= 0 ||
+                    params[2] > SIXEL_DECODE_PIXELS_MAX_SIZE ||
+                    params[3] > SIXEL_DECODE_PIXELS_MAX_SIZE) {
+                return SIXEL_BAD_INPUT;
+            }
+            if (state->width != 0 && (state->width != params[2] ||
+                    state->height != params[3])) {
+                return SIXEL_BAD_INPUT;
+            }
+            state->width = params[2];
+            state->height = params[3];
+            raster = 1;
+            continue;
+        }
+        if (command == '#') {
+            count = sixel_sequence_parameters(&p, end, params, 5);
+            if ((count != 1 && count != 5) ||
+                    params[0] >= SIXEL_PALETTE_MAX_DECODER) {
+                return SIXEL_BAD_INPUT;
+            }
+            color = params[0];
+            if (count == 5) {
+                if (params[1] != 1 && params[1] != 2) {
+                    return SIXEL_BAD_INPUT;
+                }
+                state->defined[color] = 1;
+                if (state->painted) {
+                    state->flags |=
+                        SIXEL_DECODE_PIXELS_RESULT_PALETTE_REDEFINED;
+                }
+            }
+            continue;
+        }
+        if (command == '$') {
+            x = 0;
+            continue;
+        }
+        if (command == '-') {
+            if (y > INT_MAX - 6) {
+                return SIXEL_BAD_INPUT;
+            }
+            x = 0;
+            y += 6;
+            continue;
+        }
+        repeat = 1;
+        if (command == '!') {
+            count = sixel_sequence_parameters(&p, end, params, 1);
+            if (count != 1 || params[0] > 0xffff || p == end) {
+                return SIXEL_BAD_INPUT;
+            }
+            repeat = params[0] == 0 ? 1 : params[0];
+            command = *p++;
+        }
+        if (command < '?' || command > '~' || !raster ||
+                x > INT_MAX - repeat) {
+            return SIXEL_BAD_INPUT;
+        }
+        bits = command - '?';
+        if (bits != 0) {
+            if ((!state->animation && !state->defined[color])
+                    || x + repeat > state->width) {
+                return SIXEL_BAD_INPUT;
+            }
+            for (row = 0; row < 6; ++row) {
+                if ((bits & (1 << row)) != 0 &&
+                        (y >= state->height || row >= state->height - y)) {
+                    return SIXEL_BAD_INPUT;
+                }
+            }
+            state->painted = 1;
+        }
+        x += repeat;
+    }
+    return SIXEL_BAD_INPUT;
+}
+
+struct sixel_sequence_decoder {
+    sixel_allocator_t *allocator;
+    image_buffer_t image;
+    sixel_sequence_state_t state;
+    unsigned char const *data;
+    unsigned char const *cursor;
+    unsigned char const *end;
+    sixel_palette_transform_t const *transform;
+    size_t passes;
+    int anchored;
+    int failed;
+};
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_sequence_open(sixel_sequence_decoder_t **decoder,
+    unsigned char const *data, size_t size, int animation,
+    sixel_allocator_t *allocator)
+{
+    sixel_sequence_decoder_t *d;
+    SIXELSTATUS status;
+
+    if (decoder == NULL) { return SIXEL_BAD_ARGUMENT; }
+    *decoder = NULL;
+    if (data == NULL || size == 0U || size > INT_MAX) {
+        return SIXEL_BAD_INPUT;
+    }
+    if (allocator == NULL) {
+        status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+        if (SIXEL_FAILED(status)) { return status; }
+    } else {
+        sixel_allocator_ref(allocator);
+    }
+    d = sixel_allocator_calloc(allocator, 1U, sizeof(*d));
+    if (d == NULL) {
+        sixel_allocator_unref(allocator);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    d->allocator = allocator;
+    d->data = data;
+    d->cursor = data;
+    d->end = data + size;
+    d->anchored = -1;
+    d->state.animation = animation;
+    *decoder = d;
+    return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API void
+sixel_sequence_close(sixel_sequence_decoder_t *d)
+{
+    sixel_allocator_t *allocator;
+
+    if (d != NULL) {
+        allocator = d->allocator;
+        sixel_allocator_free(d->allocator, d->image.pixels.p);
+        image_buffer_release_paint_mask(&d->image, d->allocator);
+        image_buffer_release_ormode_indexes(&d->image, d->allocator);
+        sixel_allocator_free(d->allocator, d);
+        sixel_allocator_unref(allocator);
+    }
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_sequence_next(sixel_sequence_decoder_t *d,
+    unsigned char const **rgba, int *width, int *height, size_t *byte_end)
+{
+    unsigned char const *p;
+    unsigned char const *packet;
+    parser_context_t context;
+    SIXELSTATUS status;
+
+    if (d == NULL || rgba == NULL || width == NULL
+            || height == NULL || byte_end == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *rgba = NULL;
+    if (d->failed) {
+        return SIXEL_BAD_INPUT;
+    }
+    p = d->cursor;
+    while (p < d->end && (*p == ' ' || *p == '\t'
+            || *p == '\r' || *p == '\n')) {
+        ++p;
+    }
+    if (p == d->end && d->passes != 0U) {
+        d->cursor = p;
+        *byte_end = (size_t)(p - d->data);
+        return SIXEL_FALSE;
+    }
+    status = SIXEL_BAD_INPUT;
+    if (d->anchored < 0) {
+        d->anchored = d->end - p >= 2 && p[0] == 0x1b && p[1] == '7';
+        /* img2sixel's non-terminal animation output homes before each
+         * frame. Accept that exact fixed-origin profile for video only. */
+        if (d->state.animation && d->end - p >= 3
+                && p[0] == 0x1b && p[1] == '[' && p[2] == 'H') {
+            d->anchored = 2;
+        }
+    }
+    if (d->anchored == 2) {
+        if (d->end - p < 3 || p[0] != 0x1b || p[1] != '[' || p[2] != 'H') {
+            goto failure;
+        }
+        p += 3;
+    } else if (d->anchored) {
+        if (d->end - p < 2 || p[0] != 0x1b
+                || p[1] != (d->passes == 0U ? '7' : '8')) {
+            goto failure;
+        }
+        p += 2;
+    }
+    packet = p;
+    status = sixel_sequence_packet(&p, d->end, &d->state);
+    if (SIXEL_FAILED(status)) {
+        goto failure;
+    }
+    if (d->image.pixels.p == NULL) {
+        if ((size_t)d->state.width >
+                SIZE_MAX / (size_t)d->state.height / 4U) {
+            status = SIXEL_BAD_INPUT;
+            goto failure;
+        }
+        status = image_buffer_init(&d->image, d->state.width,
+            d->state.height, -1, 4, 0, d->allocator);
+        if (SIXEL_FAILED(status)) {
+            goto failure;
+        }
+    }
+    /* Clear only display samples, not color registers. Transparent samples
+     * are flattened against the assessment background after composition. */
+    if (d->state.clear) {
+        memset(d->image.pixels.p, 0,
+            (size_t)d->state.width * (size_t)d->state.height * 4U);
+    }
+    parser_context_init(&context);
+    context.sequence = 1;
+    context.color_index = d->state.animation ? 15 : 0;
+    context.palette_transform = d->transform;
+    status = sixel_decode_raw_impl((unsigned char *)(void *)packet,
+        (int)(p - packet), &d->image, &context, d->allocator, NULL, 0,
+        SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto failure;
+    }
+    d->cursor = p;
+    ++d->passes;
+    *rgba = d->image.pixels.in_bytes;
+    *width = d->state.width;
+    *height = d->state.height;
+    *byte_end = (size_t)(p - d->data);
+    return SIXEL_OK;
+failure:
+    d->failed = 1;
+    sixel_helper_set_additional_message(
+        "capture requires complete fixed-raster SIXEL packets, defined "
+        "colors, P2=0/1 and valid fixed-anchor framing");
+    return status;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_sequence_mapped(unsigned char const *data, size_t size,
+    sixel_palette_transform_t const *transform, unsigned char **pixels,
+    int *width, int *height, unsigned int *flags, size_t *passes,
+    sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    image_buffer_t *image;
+    sixel_sequence_state_t *state;
+    parser_context_t context;
+    unsigned char const *p;
+    unsigned char const *end;
+    unsigned char const *packet;
+    int anchored;
+
+    *pixels = NULL;
+    *width = 0;
+    *height = 0;
+    *flags = 0U;
+    *passes = 0U;
+    if (data == NULL || size == 0U || size > INT_MAX) {
+        return SIXEL_BAD_INPUT;
+    }
+    image = sixel_allocator_calloc(allocator, 1U, sizeof(*image));
+    state = sixel_allocator_calloc(allocator, 1U, sizeof(*state));
+    status = SIXEL_BAD_ALLOCATION;
+    if (image == NULL || state == NULL) {
+        goto end;
+    }
+    p = data;
+    end = data + size;
+    anchored = -1;
+    while (p < end) {
+        while (p < end && (*p == ' ' || *p == '\t' ||
+                *p == '\r' || *p == '\n')) {
+            ++p;
+        }
+        if (p == end) {
+            break;
+        }
+        if (anchored < 0) {
+            anchored = end - p >= 2 && p[0] == 0x1b && p[1] == '7';
+        }
+        status = SIXEL_BAD_INPUT;
+        if (anchored) {
+            if (end - p < 2 || p[0] != 0x1b ||
+                    p[1] != (*passes == 0U ? '7' : '8')) {
+                goto end;
+            }
+            p += 2;
+        }
+        packet = p;
+        status = sixel_sequence_packet(&p, end, state);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        if (image->pixels.p == NULL) {
+            if ((size_t)state->width >
+                    SIZE_MAX / (size_t)state->height / 4U) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            status = image_buffer_init(image, state->width, state->height,
+                                        -1, 4, 0, allocator);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+        parser_context_init(&context);
+        context.sequence = 1;
+        context.color_index = 0;
+        context.palette_transform = transform;
+        status = sixel_decode_raw_impl((unsigned char *)(void *)packet,
+            (int)(p - packet), image, &context, allocator, NULL, 0,
+            SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE, NULL);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        ++*passes;
+    }
+    status = SIXEL_BAD_INPUT;
+    if (*passes == 0U) {
+        goto end;
+    }
+    *width = state->width;
+    *height = state->height;
+    *flags = state->flags;
+    *pixels = image->pixels.in_bytes;
+    image->pixels.p = NULL;
+    status = SIXEL_OK;
+end:
+    if (image != NULL) {
+        sixel_allocator_free(allocator, image->pixels.p);
+        image_buffer_release_paint_mask(image, allocator);
+        image_buffer_release_ormode_indexes(image, allocator);
+    }
+    sixel_allocator_free(allocator, image);
+    sixel_allocator_free(allocator, state);
+    if (SIXEL_FAILED(status)) {
+        *passes = 0U;
+        sixel_helper_set_additional_message(
+            "multi-pass input requires complete fixed-raster P2=1 SIXEL "
+            "packets with defined colors and valid anchor framing.");
+    }
     return status;
 }
 

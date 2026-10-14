@@ -15,6 +15,8 @@ The decisive boundary is between **what the stream painted** and **how the consu
 
 For the wire syntax itself, start with the [SIXEL format guide](../../sixel-format/README.md). For the opposite direction, see the [Encoding Pipeline](../../encoder/pipeline/README.md). This document follows the decoder from wire bytes to its library and `sixel2png` outputs.
 
+The separate [multi-pass still-image decoding reference](../multi-pass.md) owns explicit composition of a baseline plus repair images for the stateful decoder, `lsqa` and `sixel2png`. The stateless single-image entry points described here retain their existing behavior.
+
 ## Entry points and ownership
 
 The repository exposes several decoder entry points because no single representation is best for every consumer.

@@ -1013,6 +1013,12 @@ static sixel_option_value_schema_t const g_input_color_values[] = {
     { "icc", SIXEL_NAMED_COLOR_COUNT, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
 };
 
+/* Untagged capture interpretation is explicit, never environment-driven. */
+static sixel_option_value_schema_t const g_decode_input_values[] = {
+    { "single", 0, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "6delta-progressive", 1, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+};
+
 static sixel_option_value_schema_t const g_dequantize_values[] = {
     { "none", SIXEL_DEQUANTIZE_NONE, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
     {
@@ -3370,6 +3376,17 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_COLORSPACE_GAMMA,
         g_output_color_values,
         NULL),
+    SIXEL_REGISTRY_SCALAR_CHOICE(
+        SIXEL_OPTION_SCHEMA_DECODE_INPUT_MODE,
+        SIXEL_OPTION_SCOPE_DECODER,
+        SIXEL_OPTFLAG_DECODE_INPUT_MODE,
+        "input-mode",
+        SIXEL_OPTION_MATCH_PREFIX,
+        SIXEL_OPTION_MATCH_EXACT,
+        NULL,
+        "input-mode accepts single or 6delta-progressive.",
+        0,
+        g_decode_input_values),
 };
 
 typedef char sixel_option_count_check[

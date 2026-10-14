@@ -633,6 +633,7 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/decoder/dequantization/figures/none-wide.svg \
 	docs/decoder/dequantization/figures/selective-mobile.svg \
 	docs/decoder/dequantization/figures/selective-wide.svg \
+	docs/decoder/multi-pass.md \
 	docs/decoder/pipeline/README.md \
 	docs/encoder/output/delta-encoding.md \
 	docs/decoder/pipeline/figures/decoder-output-policy.svg \

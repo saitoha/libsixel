@@ -217,6 +217,39 @@ int test_cms_0147(int argc, char **argv);
 int test_cms_0181(int argc, char **argv);
 int test_cms_0195(int argc, char **argv);
 int test_pmap_0053(int argc, char **argv);
+int test_sequence_0054(int argc, char **argv);
+int test_sequence_0055(int argc, char **argv);
+int test_sequence_0056(int argc, char **argv);
+int test_sequence_0057(int argc, char **argv);
+int test_sequence_0058(int argc, char **argv);
+int test_sequence_0059(int argc, char **argv);
+int test_sequence_0060(int argc, char **argv);
+int test_sequence_0061(int argc, char **argv);
+int test_sequence_0062(int argc, char **argv);
+int test_sequence_0063(int argc, char **argv);
+int test_sequence_0064(int argc, char **argv);
+int test_sequence_0065(int argc, char **argv);
+int test_sequence_0066(int argc, char **argv);
+int test_sequence_0067(int argc, char **argv);
+int test_sequence_0068(int argc, char **argv);
+int test_sequence_0069(int argc, char **argv);
+int test_sequence_0070(int argc, char **argv);
+int test_sequence_0071(int argc, char **argv);
+int test_sequence_0072(int argc, char **argv);
+int test_sequence_0073(int argc, char **argv);
+int test_sequence_0074(int argc, char **argv);
+int test_sequence_0075(int argc, char **argv);
+int test_sequence_0076(int argc, char **argv);
+int test_sequence_0077(int argc, char **argv);
+int test_sequence_0078(int argc, char **argv);
+int test_sequence_0079(int argc, char **argv);
+int test_sequence_0080(int argc, char **argv);
+int test_sequence_0081(int argc, char **argv);
+int test_sequence_0082(int argc, char **argv);
+int test_sequence_0083(int argc, char **argv);
+int test_sequence_0084(int argc, char **argv);
+int test_sequence_0085(int argc, char **argv);
+int test_sequence_0086(int argc, char **argv);
 int test_filter_0002_filter_sample(int argc, char **argv);
 int test_filter_0003_filter_resize(int argc, char **argv);
 int test_filter_0004_filter_colors(int argc, char **argv);
@@ -4628,6 +4661,72 @@ static test_entry_t const test_entries[] = {
     { "colorspace/0002_din99d_inverse", test_color_0002_din99d_inverse },
     { "colorspace/0003_din99d_byte", test_color_0003_din99d_byte },
     { "decoder/0053_percentage_rgb8", test_pmap_0053 },
+    { "decoder/0054_multi_pass_raw_overlay",
+      test_sequence_0054 },
+    { "decoder/0055_multi_pass_anchored_overlay",
+      test_sequence_0055 },
+    { "decoder/0056_multi_pass_palette_carry",
+      test_sequence_0056 },
+    { "decoder/0057_multi_pass_paint_time_colors",
+      test_sequence_0057 },
+    { "decoder/0058_multi_pass_transparent_and_black",
+      test_sequence_0058 },
+    { "decoder/0059_multi_pass_mixed_framing",
+      test_sequence_0059 },
+    { "decoder/0060_multi_pass_transparent_baseline",
+      test_sequence_0060 },
+    { "decoder/0061_multi_pass_single_default",
+      test_sequence_0061 },
+    { "decoder/0062_multi_pass_missing_raster",
+      test_sequence_0062 },
+    { "decoder/0063_multi_pass_mismatched_raster",
+      test_sequence_0063 },
+    { "decoder/0064_multi_pass_nonunit_aspect",
+      test_sequence_0064 },
+    { "decoder/0065_multi_pass_paint_width",
+      test_sequence_0065 },
+    { "decoder/0066_multi_pass_paint_height",
+      test_sequence_0066 },
+    { "decoder/0067_multi_pass_clear_p2",
+      test_sequence_0067 },
+    { "decoder/0068_multi_pass_undefined_color",
+      test_sequence_0068 },
+    { "decoder/0069_multi_pass_late_truncation",
+      test_sequence_0069 },
+    { "decoder/0070_multi_pass_trailing_text",
+      test_sequence_0070 },
+    { "decoder/0071_multi_pass_repeated_save",
+      test_sequence_0071 },
+    { "decoder/0072_multi_pass_unmatched_restore",
+      test_sequence_0072 },
+    { "decoder/0073_multi_pass_missing_restore",
+      test_sequence_0073 },
+    { "decoder/0074_multi_pass_prefix_whitespace",
+      test_sequence_0074 },
+    { "decoder/0075_multi_pass_dangling_prefix",
+      test_sequence_0075 },
+    { "decoder/0076_multi_pass_terminal_control",
+      test_sequence_0076 },
+    { "decoder/0077_multi_pass_cancelled_dcs",
+      test_sequence_0077 },
+    { "decoder/0078_multi_pass_empty_capture",
+      test_sequence_0078 },
+    { "decoder/0079_multi_pass_dequant_conflict",
+      test_sequence_0079 },
+    { "decoder/0080_multi_pass_force_gpu",
+      test_sequence_0080 },
+    { "decoder/0081_multi_pass_skip_outside",
+      test_sequence_0081 },
+    { "decoder/0082_multi_pass_hls_color",
+      test_sequence_0082 },
+    { "decoder/0083_multi_pass_call_isolation",
+      test_sequence_0083 },
+    { "decoder/0084_multi_pass_color_union",
+      test_sequence_0084 },
+    { "decoder/0085_multi_pass_option_atomicity",
+      test_sequence_0085 },
+    { "decoder/0086_multi_pass_allocation_failure",
+      test_sequence_0086 },
     { "colorspace/0012_extended_failure_atomic", test_color_0012 },
     { "colorspace/0013_black_log1p_model", test_color_0013 },
     { "colorspace/public_float", test_color_public_float },

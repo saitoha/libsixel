@@ -45,7 +45,7 @@
 
 #include "sixel_decode_pixels.h"
 
-#define SIXEL_DECODE_MAX_SIZE 6000
+#define SIXEL_DECODE_MAX_SIZE SIXEL_DECODE_PIXELS_MAX_SIZE
 
 static int
 sixel_decode_pixels_depth(int pixelformat)

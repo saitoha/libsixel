@@ -34,6 +34,7 @@ docs/encoder/colorspace-handling/README.md	reference	both	color-space contracts 
 docs/encoder/palette-construction/clustering-colorspace/README.md	reference	both	color-space choices + mathematical explanation and measurement reproduction
 docs/encoder/palette-construction/cover-policy/README.md	reference	both	policy contract + reachability/history explanation and contributor test ledger
 docs/encoder/preprocessing/crop-resize/README.md	reference	both	geometry/precision contracts + measurements and reproduction how-to
+docs/decoder/multi-pass.md	reference	both	shared composition contract + CLI and implemented test coverage
 docs/decoder/pipeline/README.md	explanation	both	decoder mental model + API/implementation reference and contributor test ledger
 docs/encoder/output/delta-encoding.md	reference	both	delta contracts + conceptual explanation, integration how-to and test ledger
 docs/decoder/dequantization/README.md	explanation	both	undither model + option/API reference and contributor test ledger

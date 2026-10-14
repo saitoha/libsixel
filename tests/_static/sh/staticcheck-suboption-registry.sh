@@ -196,7 +196,11 @@ function inspect(row, fields, count, option_id, scope, optflag, name,
                      macro == "SIXEL_REGISTRY_SCALAR_UINT" ||
                      macro == "SIXEL_REGISTRY_SCALAR_STRING") ? 5 : 7
         env = fields[env_index]
-        if (env !~ /^"[A-Z][A-Z0-9_]+"$/) {
+        if (option_id == "SIXEL_OPTION_SCHEMA_DECODE_INPUT_MODE") {
+            if (env != "NULL" || scope != "SIXEL_OPTION_SCOPE_DECODER") {
+                fail(option_id " must remain decoder-local and explicit")
+            }
+        } else if (env !~ /^"[A-Z][A-Z0-9_]+"$/) {
             fail(option_id " has no registered environment variable")
         }
     }

@@ -477,6 +477,8 @@ sixel_decoder_new(
         (size_t)SIXEL_GPU_DEQUANT_AUTO_THRESHOLD_DEFAULT;
     (*ppdecoder)->thumbnail_size = 0;
     (*ppdecoder)->direct_color = 0;
+    (*ppdecoder)->progressive_input = 0;
+    (*ppdecoder)->input_passes = 0U;
     (*ppdecoder)->input_colorspace = SIXEL_OPTION_INPUT_SRGB;
     (*ppdecoder)->input_icc = NULL;
     color_definition = NULL;
@@ -2704,6 +2706,7 @@ sixel_decoder_setopt(
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned int path_flags;
     sixel_color_def_t *color_definition;
+    sixel_suboption_value_t color_value;
     int color_base;
     int path_check;
     char const *payload = NULL;
@@ -2724,6 +2727,16 @@ sixel_decoder_setopt(
     libc_path = NULL;
 
     switch(arg) {
+    case SIXEL_OPTFLAG_DECODE_INPUT_MODE:  /* M */
+        status = sixel_option_parse_scalar_argument(
+            SIXEL_OPTION_SCHEMA_DECODE_INPUT_MODE,
+            SIXEL_OPTION_SCOPE_DECODER, value, &color_value, NULL, 0u);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        decoder->progressive_input = color_value.int_value;
+        status = SIXEL_OK;
+        break;
     case SIXEL_OPTFLAG_INPUT_COLORSPACE:  /* T */
         color_definition = NULL;
         status = sixel_color_option_parse(value, 1, &color_base,
@@ -3349,6 +3362,25 @@ sixel_decoder_decode_mapped(
         bg = options->bgcolor;
     }
 
+    decoder->input_passes = 0U;
+    if (decoder->progressive_input) {
+        if (decoder->dequantize_method != SIXEL_DEQUANTIZE_NONE ||
+                decoder->gpu_policy == SIXEL_GPU_POLICY_FORCE) {
+            sixel_helper_set_additional_message(
+                "multi-pass input requires dequantize=none and CPU decode.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        status = sixel_decode_sequence_mapped(data, size, transform,
+            &rgba_pixels, &width, &height, &result_flags,
+            &decoder->input_passes, decoder->allocator);
+        if (SIXEL_SUCCEEDED(status)) {
+            status = sixel_decode_pixels_finish_rgba(&rgba_pixels,
+                width, height, pixelformat, bg, result_flags, result,
+                decoder->allocator);
+        }
+        goto end;
+    }
     if (decoder->dequantize_method == SIXEL_DEQUANTIZE_NONE) {
         status = sixel_decode_pixels_mapped(data, size, options, transform,
                                             result, decoder->allocator);
@@ -3428,6 +3460,7 @@ sixel_decoder_decode(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *raw_data = NULL;
+    unsigned char *grown_data;
     int sx;
     int sy;
     int raw_len;
@@ -3522,6 +3555,10 @@ sixel_decoder_decode(
             status = clipboard_status;
             goto end;
         }
+        if (clipboard_blob_size > (size_t)INT_MAX) {
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
         max = (int)((clipboard_blob_size > 0u)
                     ? clipboard_blob_size
                     : 1u);
@@ -3578,19 +3615,33 @@ sixel_decoder_decode(
 
         for (;;) {
             if ((max - raw_len) < 4096) {
+                if (max > INT_MAX / 2) {
+                    sixel_helper_set_additional_message(
+                        "sixel_decoder_decode: input exceeds buffer limit.");
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
                 max *= 2;
-                raw_data = (unsigned char *)sixel_allocator_realloc(
+                grown_data = (unsigned char *)sixel_allocator_realloc(
                     decoder->allocator,
                     raw_data,
                     (size_t)max);
-                if (raw_data == NULL) {
+                if (grown_data == NULL) {
                     sixel_helper_set_additional_message(
                         "sixel_decoder_decode: sixel_allocator_realloc() failed.");
                     status = SIXEL_BAD_ALLOCATION;
                     goto end;
                 }
+                raw_data = grown_data;
             }
             if ((n = (int)fread(raw_data + raw_len, 1, 4096, input_fp)) <= 0) {
+                /* A read error is not the EOF that completes a capture. */
+                if (ferror(input_fp)) {
+                    status = SIXEL_LIBC_ERROR | (errno & 0xff);
+                    sixel_helper_set_additional_message(
+                        "sixel_decoder_decode: failed to read complete input.");
+                    goto end;
+                }
                 break;
             }
             raw_len += n;
@@ -3598,6 +3649,7 @@ sixel_decoder_decode(
 
         if (input_fp != NULL && input_fp != stdin) {
             fclose(input_fp);
+            input_fp = NULL;
         }
     }
 
@@ -3613,7 +3665,19 @@ sixel_decoder_decode(
         goto end;
     }
 
-    if (dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
+    decoder->input_passes = 0U;
+    if (decoder->progressive_input) {
+        if (dequantize_method != SIXEL_DEQUANTIZE_NONE ||
+                decoder->gpu_policy == SIXEL_GPU_POLICY_FORCE) {
+            sixel_helper_set_additional_message(
+                "multi-pass input requires dequantize=none and CPU decode.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        status = sixel_decode_sequence_mapped(raw_data, (size_t)raw_len,
+            NULL, &direct_pixels, &sx, &sy, &raw_result_flags,
+            &decoder->input_passes, decoder->allocator);
+    } else if (dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
         /*
          * The decoder GPU dequantizer consumes the direct RGBA image that the
          * SIXEL parser already knows how to produce.  The legacy frame API can
@@ -3759,7 +3823,7 @@ sixel_decoder_decode(
         output_pixelformat = decoder->direct_color != 0 ?
             SIXEL_PIXELFORMAT_RGBA8888 : SIXEL_PIXELFORMAT_RGB888;
         frame_ncolors = 0;
-    } else if (decoder->direct_color != 0 &&
+    } else if ((decoder->direct_color != 0 || decoder->progressive_input) &&
             dequantize_method == SIXEL_DEQUANTIZE_NONE) {
         output_pixels = direct_pixels;
         output_palette = NULL;
@@ -4067,6 +4131,9 @@ sixel_decoder_decode(
 
 end:
     sixel_frame_unref(frame);
+    if (input_fp != NULL && input_fp != stdin) {
+        fclose(input_fp);
+    }
     sixel_allocator_free(decoder->allocator, raw_data);
     sixel_allocator_free(decoder->allocator, indexed_pixels);
     sixel_allocator_free(decoder->allocator, palette);

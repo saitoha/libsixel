@@ -179,6 +179,8 @@ Use suboptions for policy specific to a named subsystem. A public suboption has 
 
 ### Environment-only settings without a short assignment
 
+Decoder `-M`/`--input-mode` is an explicit-only exception to environment defaults. Ambient activation of [multi-pass still-image interpretation](../decoder/multi-pass.md#explicit-mode-selection) could silently collapse an animation into one image. Its decoder-local scalar schema therefore has no environment name; the registry check enforces this specific exception. Other public options retain the general environment-default requirement.
+
 A public compatibility setting can use the common scalar option registry without consuming a short-option character. Such a schema uses `SIXEL_OPTION_NO_OPTFLAG`, has a required environment name, and keeps its type, fixed default and validation in the same registry as ordinary options. The sentinel is not a compact suboption key, getopt character or public `setopt` identity. Environment-only scalar schemas are excluded from dedicated CLI dispatch and reject the scalar argument entry point; ordinary assigned options retain the short/long requirements above. They remain discoverable in environment help and the manual, and the existing `--env NAME=VALUE` mechanism can supply their values.
 
 The ColorSync gamma compatibility setting in [Loader CMS](../loader/color-management/README.md#original-colorsync-gamma-representation) uses this representation. This is an explicit environment-only setting, not an automatically allocated long-only CLI option. Its strict boolean parser is shared by scalar and suboption settings and remains available to small registry consumers that do not link the full option parser.

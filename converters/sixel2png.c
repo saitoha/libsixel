@@ -100,6 +100,12 @@
  */
 static cli_option_help_t const g_option_help_table[] = {
     {
+        'M', "input-mode",
+        "-M MODE, --input-mode=MODE  single (default) or 6delta-progressive\n"
+        "                           compose all passes of one still image.\n"
+        "                           Unique prefixes work: -Ms or -M6.\n"
+    },
+    {
         'i',
         "input",
         "-i FILE, --input=FILE      specify input file\n"
@@ -271,7 +277,7 @@ sixel2png_option_help_count(void)
 }
 
 static char const g_sixel2png_optstring[] =
-    "i:o:T:d:S:e:s:=:G:j:x:J:y:%:DVH";
+    "i:o:T:M:d:S:e:s:=:G:j:x:J:y:%:DVH";
 
 typedef struct sixel2png_parsed_option {
     int code;
@@ -588,6 +594,7 @@ main(int argc, char *argv[])
         {"input",            required_argument,  NULL, 'i'},
         {"output",           required_argument,  NULL, 'o'},
         {"input-colorspace",  required_argument,  NULL, 'T'},
+        {"input-mode",        required_argument,  NULL, 'M'},
         {"dequantize",       required_argument,  NULL, 'd'},
         {"similarity",       required_argument,  NULL, 'S'},
         {"size",             required_argument,  NULL, 's'},

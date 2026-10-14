@@ -626,7 +626,8 @@ error:
 static int
 load_defined_frame(char const *path, char const *spec,
                     sixel_allocator_t *allocator, unsigned char const *bg,
-                    int direct, sixel_frame_t **out_frame)
+                    int direct, int progressive, size_t *passes,
+                    sixel_frame_t **out_frame)
 {
     sixel_color_def_t *definition;
     sixel_color_def_t *srgb;
@@ -653,6 +654,7 @@ load_defined_frame(char const *path, char const *spec,
     int width;
     int height;
     int intent;
+    unsigned int capture_flags;
     SIXELSTATUS status;
     sixel_frame_t *frame;
 
@@ -704,15 +706,18 @@ load_defined_frame(char const *path, char const *spec,
     count = sixel_chunk_get_size(chunk);
     status = SIXEL_BAD_INPUT;
     if (bytes == NULL || count < 2 || count > INT_MAX
-            || !(bytes[0] == 0x90
-                 || (bytes[0] == 0x1b && bytes[1] == 'P'))) {
+            || (!progressive && !(bytes[0] == 0x90
+                 || (bytes[0] == 0x1b && bytes[1] == 'P')))) {
         sixel_helper_set_additional_message(
             "explicit input colorspace currently requires standalone SIXEL; "
             "PNG overrides need pre-normalization support.");
         goto cleanup;
     }
     n = 0;
-    if (direct) {
+    if (progressive) {
+        status = sixel_decode_sequence_mapped(bytes, count, NULL,
+            &rgba, &width, &height, &capture_flags, passes, allocator);
+    } else if (direct) {
         /* Never put transformed colors into an RGB8 palette callback: P3
          * colors can lie outside sRGB. Preserve paint-time RGBA first. */
         status = sixel_decode_direct((unsigned char *)bytes, (int)count,
@@ -835,7 +840,7 @@ static int
 load_input_frame(char const *path, char const *spec, int direct,
                    sixel_allocator_t *allocator, char const *loader_order,
                    unsigned char *bg, char const **drawing,
-                   sixel_frame_t **out_frame)
+                   int progressive, size_t *passes, sixel_frame_t **out_frame)
 {
     sixel_chunk_t *chunk;
     unsigned char const *bytes;
@@ -843,9 +848,16 @@ load_input_frame(char const *path, char const *spec, int direct,
     SIXELSTATUS status;
     int result;
 
+    if (progressive) {
+        /* Route before the DCS probe: captures can begin with DECSC. */
+        *drawing = "direct";
+        return load_defined_frame(path,
+            strcmp(spec, "auto") == 0 ? "srgb" : spec, allocator, bg,
+            1, 1, passes, out_frame);
+    }
     if (strcmp(spec, "auto") != 0) {
         *drawing = direct ? "direct" : "indexed";
-        return load_defined_frame(path, spec, allocator, bg, direct,
+        return load_defined_frame(path, spec, allocator, bg, direct, 0, NULL,
                                    out_frame);
     }
     *drawing = "loader-managed";
@@ -1898,6 +1910,7 @@ typedef struct Options {
     const char *out_spec;
     int region_window;
     double scielab_ppd;
+    int progressive_input;
     int direct;
     const char *ref_path;
     const char *out_path;
@@ -2093,6 +2106,12 @@ cleanup:
  */
 static cli_option_help_t const g_option_help_table[] = {
     {
+        'M', "input-mode",
+        "-M MODE, --input-mode=MODE  single (default) or 6delta-progressive\n"
+        "                           Compose the target's passes before assessment.\n"
+        "                           Unique prefixes work: -Ms or -M6.\n"
+    },
+    {
         'D', "direct",
         "-D, --direct              render both SIXEL inputs at paint time.\n"
         "                           Independent of -R/-T color definitions.\n"
@@ -2258,7 +2277,7 @@ lsqa_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_lsqa_optstring[] = "DR:T:w:v:m:b:%:gW:P:L:#:B:d:S:e:Hh";
+static char const g_lsqa_optstring[] = "DM:R:T:w:v:m:b:%:gW:P:L:#:B:d:S:e:Hh";
 
 static void
 lsqa_print_option_help(FILE *stream)
@@ -2847,6 +2866,7 @@ parse_args(int argc, char **argv, Options *opts)
     int cms_choice;
     char detail_buffer[256];
     char *ppd_end;
+    sixel_suboption_value_t input_mode;
 #if HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
@@ -2871,6 +2891,7 @@ parse_args(int argc, char **argv, Options *opts)
     opts->compare_colorspace = LSQA_COMPARE_COLORSPACE_REFERENCE;
     opts->compare_precision = LSQA_COMPARE_PRECISION_REFERENCE;
     opts->direct = 0;
+    opts->progressive_input = 0;
     opts->dequantize_method = SIXEL_DEQUANTIZE_NONE;
     opts->dequantize_similarity_bias = 100;
     opts->dequantize_edge_strength = 0;
@@ -2919,6 +2940,7 @@ parse_args(int argc, char **argv, Options *opts)
             {"direct", no_argument, &long_opt, 'D'},
             {"reference-colorspace", required_argument, &long_opt, 'R'},
             {"target-colorspace", required_argument, &long_opt, 'T'},
+            {"input-mode", required_argument, &long_opt, 'M'},
             {"scielab-ppd", required_argument, &long_opt, 'v'},
             {"region-window", required_argument, &long_opt, 'w'},
             {"metrics", required_argument, &long_opt, 'm'},
@@ -2959,6 +2981,18 @@ parse_args(int argc, char **argv, Options *opts)
         }
 
         switch (opt) {
+        case 'M':
+            /* Share the decoder's vocabulary and prefix matching rules. */
+            if (SIXEL_FAILED(sixel_option_parse_scalar_argument(
+                    SIXEL_OPTION_SCHEMA_DECODE_INPUT_MODE,
+                    SIXEL_OPTION_SCOPE_DECODER, optarg, &input_mode,
+                    detail_buffer, sizeof(detail_buffer)))) {
+                lsqa_report_invalid_argument('M', optarg, detail_buffer);
+                parse_status = -1;
+                goto cleanup;
+            }
+            opts->progressive_input = input_mode.int_value;
+            break;
         case 'D':
             opts->direct = 1;
             break;
@@ -3262,6 +3296,12 @@ parse_args(int argc, char **argv, Options *opts)
         goto cleanup;
     }
 
+    if (opts->progressive_input &&
+            opts->dequantize_method != SIXEL_DEQUANTIZE_NONE) {
+        lsqa_set_parse_error("multi-pass input requires dequantize=none");
+        parse_status = -1;
+        goto cleanup;
+    }
     verbose_env = lsqa_getenv_dup("LSQA_VERBOSE");
     if (verbose_env != NULL && verbose_env[0] != '\0') {
         if (lsqa_parse_boolean(verbose_env, &verbose_value) != 0) {
@@ -3286,6 +3326,7 @@ main(int argc, char **argv)
 {
     Options opts;
     char const *drawing[2];
+    size_t input_passes;
     sixel_allocator_t *allocator;
     sixel_assessment_t *assessment;
     SIXELSTATUS status;
@@ -3320,6 +3361,7 @@ main(int argc, char **argv)
     reference_precision = LSQA_COMPARE_PRECISION_8BIT;
     target_colorspace = SIXEL_COLORSPACE_GAMMA;
     target_precision = LSQA_COMPARE_PRECISION_8BIT;
+    input_passes = 0U;
 
     parse_status = parse_args(argc, argv, &opts);
     if (parse_status != 0) {
@@ -3349,7 +3391,8 @@ main(int argc, char **argv)
 
     if (load_input_frame(opts.ref_path, opts.ref_spec, opts.direct,
             allocator, opts.loader_order,
-            opts.has_bgcolor ? opts.bgcolor : NULL, &drawing[0], &ref_frame)
+            opts.has_bgcolor ? opts.bgcolor : NULL, &drawing[0],
+            0, NULL, &ref_frame)
             != 0) {
         sixel_allocator_unref(allocator);
         return LSQA_EXIT_LOAD_FAILED;
@@ -3371,13 +3414,18 @@ main(int argc, char **argv)
         drawing[1] = opts.direct ? "direct" : "indexed";
     } else if (load_input_frame(opts.out_path, opts.out_spec, opts.direct,
             allocator, opts.loader_order,
-            opts.has_bgcolor ? opts.bgcolor : NULL, &drawing[1], &out_frame)
+            opts.has_bgcolor ? opts.bgcolor : NULL, &drawing[1],
+            opts.progressive_input, &input_passes, &out_frame)
             != 0) {
         sixel_frame_unref(ref_frame);
         sixel_allocator_unref(allocator);
         return LSQA_EXIT_LOAD_FAILED;
     }
 
+    if (opts.verbose && opts.progressive_input) {
+        fprintf(stderr, "input-mode: 6delta-progressive, passes: %zu\n",
+                input_passes);
+    }
     reference_colorspace = sixel_frame_get_colorspace(ref_frame);
     reference_precision = lsqa_precision_from_pixelformat(
         sixel_frame_get_pixelformat(ref_frame));

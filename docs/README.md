@@ -155,6 +155,7 @@ The encoder and decoder in data-flow order, from loading an image to writing SIX
 ### Decoding
 
 - [Decoding pipeline](decoder/pipeline/README.md) follows SIXEL wire bytes through parser and paint state, raster policy, indexed and direct representations, optional reconstruction and resize, parallel fallback, and PNG output, with a reciprocal coverage audit.
+- [Multi-pass still-image decoding](decoder/multi-pass.md) documents explicit `-M 6delta-progressive` input selection, shared ordered composition, final-image assessment in `lsqa`, and PNG output in `sixel2png`.
 - [Dequantization](decoder/dequantization/README.md) explains Kornelski's palette and gradient inference, libsixel's mixing ratios, reconstruction controls, alpha and palette-history boundaries, CPU/GPU execution, and test coverage.
 
 ### Image writing
