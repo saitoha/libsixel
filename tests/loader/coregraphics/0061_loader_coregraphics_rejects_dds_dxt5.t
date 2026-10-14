@@ -3,6 +3,11 @@
 # Apple Uniform Type Identifiers documentation reports DDS UTI support from
 # macOS 14.0, so older macOS releases are skipped in this test.
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -49,10 +54,10 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=0.95
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-dds-dxt5.dds"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
+reference_path="${TOP_SRCDIR}/tests/data/loader/quality/7400d220-snake-64-reference-rgb.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_dds_dxt5.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! "${image_path}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L coregraphics! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "coregraphics failed to decode DDS DXT5 input"
     exit 0
 }

@@ -3,6 +3,11 @@
 # Policy: docs/loader/builtin/png/README.md
 # Verify builtin PNG ICC conversion matches a fixed no-ICC PNM reference.
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_LCMS2-}" = 1 || {
@@ -20,10 +25,10 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/map8_embedded_icc.png"
-reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0001_map8_embedded_icc_converted_srgb_noicc.ppm"
+reference_ppm="${TOP_SRCDIR}/tests/data/loader/quality/29aabeda-0001_map8_embedded_icc_converted_srgb_noicc.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/map8-builtin-icc.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! "${input_png}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 1209 -h 182 -Lbuiltin:cms_engine=auto! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 - "builtin decode failed"
     exit 0
 }

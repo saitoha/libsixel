@@ -2,6 +2,7 @@
 # Run lsqa checks for float32 FHEDT in the DIN99d colorspace.
 # The lsqa helper can read SIXEL directly, so compare with SIXEL output.
 # Enforce MS-SSIM >= 0.99 for the decoded DIN99d result.
+# The reference five-scale MS-SSIM requires dimensions >=176x176.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -16,7 +17,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.99}
 
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/fhedt-float32-din99d.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=fhedt --precision=float32 \

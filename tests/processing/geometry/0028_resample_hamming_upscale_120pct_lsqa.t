@@ -3,7 +3,7 @@
 # Policy: docs/encoder/preprocessing/resampling/compact-kernels.md
 #
 # Reference image details:
-# - Source: tests/data/inputs/snake_64.png (64x64)
+# - Source: tests/data/inputs/snake_240.png (240x240)
 # - ImageMagick filter: Hamming (support=1)
 # - Resize target: 120% of the original dimensions
 #
@@ -23,8 +23,8 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 data_root="${TOP_SRCDIR}/tests/data/inputs"
-input_image="${data_root}/snake_64.png"
-reference_image="${data_root}/scaling/snake_64_hamming_120pct.png"
+input_image="${data_root}/snake_240.png"
+reference_image="${data_root}/scaling/snake_240_hamming_120pct.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/hamming-upscale_120pct.six"
 
 

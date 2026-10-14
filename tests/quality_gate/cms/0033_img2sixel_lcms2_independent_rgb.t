@@ -15,7 +15,7 @@ test "${HAVE_LCMS2-}" = 1 || {
 }
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 output="${ARTIFACT_LOCAL_DIR}/lcms2-independent-rgb.six"
-trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=none \
     --cms-engine=lcms2 -Lbuiltin! \
     "${TOP_SRCDIR}/tests/data/color-numeric/cli-rgb.jpg" \
     2>&1 >"$output") || {
@@ -28,11 +28,15 @@ test "${record%%[![:print:]]*}" = \
     echo "not ok 1 - independent JPEG profile was not applied by lcms2"
     exit 0
 }
-${SIXEL_RUNTIME-} "${LSQA_PATH}" --cms-engine=none -m MS-SSIM \
-    -b MS-SSIM:0.98 \
+# Eight exact source colors require no palette reduction. Full scanning
+# avoids lookup-table approximation. The sample budget is 1.275 levels for
+# SIXEL percentage rounding, 0.5 for decoding, 0.5 for the PNG oracle, and
+# 0.025 for floating-point color arithmetic (2.3 RGB byte levels total).
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
+    \
     "${TOP_SRCDIR}/tests/data/color-numeric/cli-rgb-reference.png" \
-    "$output" >/dev/null || {
-    echo "not ok 1 - lcms2 CLI independent color quality below 0.98"
+    "$output" 'builtin:Enone!' 2.3 || {
+    echo "not ok 1 - lcms2 CLI independent RGB samples exceed 2.3 levels"
     exit 0
 }
 echo "ok 1 - lcms2 CLI applies and preserves independent RGB colors"

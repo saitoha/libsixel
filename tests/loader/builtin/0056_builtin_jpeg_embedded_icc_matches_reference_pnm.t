@@ -3,6 +3,11 @@
 # Policy: docs/loader/builtin/jpeg.md
 # Verify builtin JPEG ICC conversion matches a fixed no-ICC PNM reference.
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_LCMS2-}" = 1 || {
@@ -20,10 +25,10 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg"
-reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0002_snake_64_embedded_esrgb_converted_srgb_noicc.ppm"
+reference_ppm="${TOP_SRCDIR}/tests/data/loader/quality/36f3e25f-0002_snake_64_embedded_esrgb_converted_srgb_noicc.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake-64-builtin-jpeg-icc.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! "${input_jpeg}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Lbuiltin:cms_engine=auto! "${input_jpeg}" >"${output_sixel}" || {
     echo "not ok" 1 - "builtin decode failed"
     exit 0
 }

@@ -4,6 +4,12 @@
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
+# Quality is measured at the explicitly requested encoder output size.
+# Nearest resampling precedes palette construction; the independent reference
+# follows the same integer pixel replication. Native samples have separate
+# decoder tests. No measured SIXEL output is enlarged for assessment.
+# Regenerate references: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -16,14 +22,14 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psb="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_group.psb"
-expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psdtools_group_psb_expected_psdtools.ppm"
+expected_ppm="${TOP_SRCDIR}/tests/data/loader/quality/1285-psdtools_group_psb_expected_psdtools.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 trace_output=''
 lsqa_msg=''
 command_status=0
 
-trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 200 -h 400 \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     -Lbuiltin:Eauto! -o "${output_sixel}" "${input_psb}" 2>&1) || command_status=$?
 

@@ -3,6 +3,11 @@
 # Verify libjpeg loader decodes 16-bit grayscale lossless JPEG with restart
 # markers and keeps stable quality against a fixed expected PNM reference.
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -27,10 +32,10 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-16bit-lossless-gray-restart.jpg"
-reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0008_jpeg_gray_16bit_lossless_r64_reference.ppm"
+reference_path="${TOP_SRCDIR}/tests/data/loader/quality/86e745b5-0008_jpeg_gray_16bit_lossless_r64_reference.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/libjpeg_jpeg_gray_16bit_lossless_r64.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libjpeg! "${input_jpeg}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L libjpeg! "${input_jpeg}" >"${output_sixel}" || {
     echo "not ok" 1 - "libjpeg 16-bit grayscale lossless restart JPEG decode failed"
     exit 0
 }

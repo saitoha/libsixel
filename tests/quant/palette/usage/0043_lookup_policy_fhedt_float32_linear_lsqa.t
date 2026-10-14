@@ -3,6 +3,7 @@
 # The lsqa helper can read SIXEL directly, so compare with SIXEL output.
 # Quality floors tuned to requested QA thresholds:
 # - MS-SSIM floor: 0.97
+# The reference five-scale MS-SSIM requires dimensions >=176x176.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -17,7 +18,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/fhedt-float32-linear.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=fhedt --working-colorspace=linear -o "${output_sixel}" "${input_image}" || {

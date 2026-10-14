@@ -15,23 +15,23 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_rgb8_missing_composite_multilayer_fill_gdfl_descriptor_lab.psd"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_multilayer_fill_soco_gray_expected.ppm"
-output_sixel="${ARTIFACT_LOCAL_DIR}/psd_missing_composite_rgb8_multilayer_fill_gdfl_descriptor_lab_output.six"
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" >/dev/null || {
     echo "not ok" 1 - "builtin loader failed to decode RGB8 fill(GdFl descriptor Lab) PSD"
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
-    "${reference_ppm}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "RGB8 fill(GdFl descriptor Lab) decode fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+# Observe decoded samples before palette quantization. The independent
+# PPM and decoded bytes can each round by half a level; reserve 0.01 for
+# floating-point arithmetic in addition to that one-level sample budget.
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
+    "${reference_ppm}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
+    echo "not ok 1 - decoded PSD samples differ from the independent PPM"
     exit 0
 }
 
-echo "ok" 1 - "RGB8 fill(GdFl descriptor Lab) decode keeps MS-SSIM ${lsqa_floor}"
+echo "ok" 1 - "RGB8 fill(GdFl descriptor Lab) decode matches reference pixel values"
 exit 0

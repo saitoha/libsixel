@@ -138,7 +138,7 @@ CLASSIFICATION_ORDER = (
 # their primary decoder ownership explicit instead of inferring it from prose.
 CLASSIFICATION_OVERRIDES = {
     "0001_lsqa_format_grayscale.t": "jpeg",
-    "0002_lsqa_format_palette.t": "png",
+    "0002_png_palette_samples.t": "png",
     "0003_lsqa_format_rgb.t": "png",
 }
 
@@ -281,6 +281,8 @@ def assurance_kind(path: Path, lines: list[str]) -> str:
 
     name = path.stem.lower()
     source = "\n".join(lines).lower()
+    if re.search(r"loader/image_(?:display_values|values|sample_range|dimensions)\b", source):
+        return "Direct numeric/digest"
     if ("lsqa_path" in source or "ms-ssim" in source or
             "msssim" in name or "_lsqa" in name):
         return "Perceptual quality threshold"

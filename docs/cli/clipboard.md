@@ -71,7 +71,7 @@ Implementation: [`clipboard.c`](../../src/clipboard.c), [`clipboard_macos.m`](..
 
 | ID | Observation | Owning test |
 | --- | --- | --- |
-| CLP-01 | File transport publishes a PNG signature and SIXEL text and permits the converter round trip. Its additional MS-SSIM check is only a quality floor. | [tests/io/clipboard/0002_clipboard_file_backend.t](../../tests/io/clipboard/0002_clipboard_file_backend.t) |
+| CLP-01 | File transport publishes a PNG signature and SIXEL text and permits the converter round trip. The decoded RGB samples must exactly match the same codec stages through ordinary files. | [tests/io/clipboard/0002_clipboard_file_backend.t](../../tests/io/clipboard/0002_clipboard_file_backend.t) |
 | CLP-02 | The environment accepts `file` and legacy `fake` case-insensitively. | [tests/io/clipboard/0003_clipboard_backend_environment.t](../../tests/io/clipboard/0003_clipboard_backend_environment.t) |
 
 ### Coverage boundary

@@ -2,6 +2,11 @@
 # Verify libjpeg loader decodes 8-bit RGB JPEG (sequential 4:4:4)
 # with stable quality against a fixed expected PNM reference.
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -21,10 +26,10 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-8bit-rgb-seq444.jpg"
-reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0009_jpeg_rgb_8bit_seq444_r0_reference.ppm"
+reference_path="${TOP_SRCDIR}/tests/data/loader/quality/dbee5dff-0009_jpeg_rgb_8bit_seq444_r0_reference.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/libjpeg_jpeg_rgb_8bit_seq444_r0.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libjpeg! "${input_jpeg}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L libjpeg! "${input_jpeg}" >"${output_sixel}" || {
     echo "not ok" 1 - "libjpeg RGB 8-bit sequential 4:4:4 JPEG decode failed"
     exit 0
 }

@@ -6,6 +6,7 @@
 # - Force raster scan to complement existing serpentine coverage.
 # - Validate quality with lsqa to keep output quality bounded.
 
+# The reference five-scale MS-SSIM requires dimensions >=176x176.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -17,19 +18,15 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-# Threshold rationale:
-# - lookup-policy=none forces the float32 full scan path that this case wants
-#   to validate.
-# - lso2 varcoeff diffusion is more stable than fs under the same palette size,
-#   so 0.95 is strict enough to catch regressions without becoming flaky.
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.95}
+# The contract is float32 full palette scanning in the requested scan order.
+# Use the default 256 colors; palette scarcity is not under test here.
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
-
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/varcoeff-float32-lookup-none-raster.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d lso2:scan=raster --precision=float32 \
-        --lookup-policy=none -p 16 -o "${output_sixel}" "${input_image}" || {
+        --lookup-policy=none -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "varcoeff float32 lookup none raster conversion failed"
     exit 0
 }

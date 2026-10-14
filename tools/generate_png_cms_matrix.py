@@ -35,7 +35,7 @@ class Case:
     test: Path
     image: Path
     reference: Path
-    threshold: str
+    tolerance: str
 
 
 def png_chunks(path: Path) -> dict[bytes, bytes]:
@@ -88,17 +88,18 @@ def read_cases() -> dict[tuple[str, str, tuple[int, ...]], Case]:
                 paths.append(Path(found[1]))
             if any(path.stem != name[0] for path in paths):
                 raise ValueError(f"{test}: input/reference case was remapped")
-            if f"-L{backend}:cms_engine=auto!" not in source:
+            if f"'{backend}:cms_engine=auto!' 0.51 || {{" not in source:
                 raise ValueError(f"{test}: review changed loader/CMS selection")
-            threshold = re.search(r'-m MS-SSIM -b "MS-SSIM:([0-9.]+)"', source)
-            if threshold is None:
-                raise ValueError(f"{test}: missing quality threshold")
+            tolerance = re.search(
+                rf"'{backend}:cms_engine=auto!' ([0-9.]+) \|\| \{{", source)
+            if tolerance is None or 'loader/image_display_values' not in source:
+                raise ValueError(f"{test}: missing checked sample comparison")
             model = name[1]
             flags = tuple(int(name[i]) for i in range(2, 6))
             key = backend, model, flags
             if key in cases:
                 raise ValueError(f"{test}: duplicate matrix case")
-            cases[key] = Case(test.relative_to(ROOT), *paths, threshold[1])
+            cases[key] = Case(test.relative_to(ROOT), *paths, tolerance[1])
     expected = set(product(BACKENDS, MODELS, product((0, 1), repeat=4)))
     if set(cases) != expected:
         raise ValueError(f"matrix must contain exactly {len(expected)} cases")
@@ -107,8 +108,11 @@ def read_cases() -> dict[tuple[str, str, tuple[int, ...]], Case]:
         metadata = {}
         for flags in product((0, 1), repeat=4):
             a, b = (cases[backend, model, flags] for backend in BACKENDS)
-            if (a.image, a.reference) != (b.image, b.reference):
-                raise ValueError(f"{a.test}: decoders no longer share fixtures")
+            distinct_chrm = model in ('idx', 'rgb') and flags == (0, 0, 1, 0)
+            if a.image != b.image or ((a.reference != b.reference) != distinct_chrm):
+                raise ValueError(f"{a.test}: unexpected decoder reference mapping")
+            if distinct_chrm and b.reference != Path('tests/data/colormgmt/reference/png/libpng') / model / a.reference.name:
+                raise ValueError(f"{b.test}: missing isolated-cHRM oracle")
             chunks = png_chunks(ROOT / a.image)
             actual = tuple(int(kind in chunks)
                            for kind in (b"iCCP", b"sRGB", b"cHRM", b"gAMA"))
@@ -180,7 +184,7 @@ def render_coverage(cases: dict) -> str:
     for model in MODELS:
         lines += [
             f"#### {MODEL_NAMES[model]}", "",
-            "| ID | Input → reference class | builtin owner / MS-SSIM floor | libpng owner / MS-SSIM floor |",
+            "| ID | Input → reference class | builtin owner / RGB byte tolerance | libpng owner / RGB byte tolerance |",
             "| --- | --- | --- | --- |",
         ]
         for flags in product((0, 1), repeat=4):
@@ -191,8 +195,9 @@ def render_coverage(cases: dict) -> str:
             lines.append(
                 f"| PCMQ-{number:02d} | {link(compact, a.image)} → "
                 f"{link(label, a.reference)} | "
-                f"{link(a.test.as_posix(), a.test)} / {a.threshold} | "
-                f"{link(b.test.as_posix(), b.test)} / {b.threshold} |"
+                f"{link(a.test.as_posix(), a.test)} / {a.tolerance} | "
+                f"{link(b.test.as_posix(), b.test)} / {b.tolerance}"
+                + (f" ({link('cHRM-only reference', b.reference)})" if a.reference != b.reference else "") + " |"
             )
         lines.append("")
     return "\n".join(lines).rstrip()
@@ -227,7 +232,7 @@ def main() -> int:
     except (OSError, ValueError, KeyError, zlib.error) as error:
         print(error, file=sys.stderr)
         return 1
-    print("PNG CMS matrix: 48 inputs, 48 references, 96 quality tests")
+    print("PNG CMS matrix: 48 inputs, 50 references, 96 decoded-sample tests")
     return 0
 
 

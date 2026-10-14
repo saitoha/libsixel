@@ -20,14 +20,12 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_psb_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_gray.psd"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_multilayer_fill_soco_gray_expected.ppm"
-output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 trace_output=''
 command_status=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
-    -Lbuiltin! -o "${output_sixel}" "${input_psd}" 2>&1) || command_status=$?
+    -Lbuiltin! -o /dev/null "${input_psd}" 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
     echo "not ok" 1 - "builtin loader failed to decode PSB mode7 CMYK32 TySh descriptor Grsc non-pixel/no-pixel PSD: ${trace_output}"
@@ -52,11 +50,14 @@ case "${trace_output}" in
         ;;
 esac
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear -b "MS-SSIM:${lsqa_floor}" \
-    "${reference_ppm}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "PSB mode7 CMYK32 TySh descriptor Grsc non-pixel/no-pixel decode fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+# This contract concerns decoded samples, before palette quantization.
+# The independent 8-bit PPM and decoded 8-bit samples can each round by
+# half a level; allow one RGB byte level plus float conversion roundoff.
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
+    "${reference_ppm}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
+    echo "not ok 1 - decoded PSD samples differ from the independent PPM"
     exit 0
 }
 
-echo "ok" 1 - "PSB mode7 CMYK32 TySh descriptor Grsc non-pixel/no-pixel layer renders synthetic fill with deterministic trace and keeps MS-SSIM ${lsqa_floor}"
+echo "ok" 1 - "PSB mode7 CMYK32 TySh descriptor Grsc non-pixel/no-pixel layer renders synthetic fill with deterministic trace and matches reference pixel values"
 exit 0

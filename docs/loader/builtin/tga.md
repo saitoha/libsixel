@@ -173,13 +173,15 @@ The rows below are pipeline landmarks rather than the complete suite. The [TGA c
 | TGA-24 | Read grayscale palette entries directly after the image ID. | [tests/loader/builtin/2256_tga_origin_gray_numeric.t](../../../tests/loader/builtin/2256_tga_origin_gray_numeric.t) |
 | TGA-25 | Read packed RGB16 palette entries directly after the image ID. | [tests/loader/builtin/2257_tga_origin_rgb16_numeric.t](../../../tests/loader/builtin/2257_tga_origin_rgb16_numeric.t) |
 
-### Quality regression tests
+### Decoded sample regressions
 
-| ID | Quality floor protected | Owning test |
+These 64 × 64 opaque fixtures compare every decoded byte sample exactly with ImageMagick references. They cover lossless raw/RLE reconstruction before encoder palette quantization; they do not use a perceptual image-size or score threshold. Each test records its reference-generation command.
+
+| ID | Sample contract | Owning test |
 | --- | --- | --- |
-| TGAQ-01 | A type-2 direct-color image retains its end-to-end visual floor. | [tests/loader/builtin/0010_lsqa_format_tga_type2_rgb.t](../../../tests/loader/builtin/0010_lsqa_format_tga_type2_rgb.t) |
-| TGAQ-02 | A type-10 RLE truecolor image retains its end-to-end visual floor. | [tests/loader/builtin/0014_lsqa_format_tga_type10_rgb.t](../../../tests/loader/builtin/0014_lsqa_format_tga_type10_rgb.t) |
-| TGAQ-03 | A type-3 grayscale image retains its end-to-end visual floor. | [tests/loader/builtin/0011_lsqa_format_tga_type3_gray.t](../../../tests/loader/builtin/0011_lsqa_format_tga_type3_gray.t) |
+| TGAQ-01 | A type-2 direct-color image reconstructs every RGB sample. | [tests/loader/builtin/0010_decode_samples_tga_type2_rgb.t](../../../tests/loader/builtin/0010_decode_samples_tga_type2_rgb.t) |
+| TGAQ-02 | A type-10 RLE truecolor image reconstructs every RGB sample. | [tests/loader/builtin/0014_decode_samples_tga_type10_rgb.t](../../../tests/loader/builtin/0014_decode_samples_tga_type10_rgb.t) |
+| TGAQ-03 | A type-3 grayscale image reconstructs every gray sample. | [tests/loader/builtin/0011_decode_samples_tga_type3_gray.t](../../../tests/loader/builtin/0011_decode_samples_tga_type3_gray.t) |
 
 ### Defensive and malformed-input tests
 

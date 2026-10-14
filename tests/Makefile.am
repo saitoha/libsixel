@@ -825,6 +825,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0012_SPEC_PARSE_INVALID \
     -DBUILD_TEST_0013_PIXEL_DELTA_PEAK \
     -DBUILD_TEST_0017_MS_SSIM_ORIGIN \
+    -DBUILD_IMAGE_VALUES_TEST_COMMON \
     -DBUILD_TEST_0012_EXTENDED_FAILURE_ATOMIC \
     -DBUILD_TEST_0008_INVALID_RGB_DEFINITION \
     -DBUILD_TEST_0009_ICC_LENGTH_OWNERSHIP \
@@ -3718,6 +3719,7 @@ test_runner_SOURCES = test_runner.c \
     processing/assessment/0012_spec_parse_invalid.c \
     processing/assessment/0013_pixel_delta_peak.c \
     processing/assessment/0017_ms_ssim_origin.c \
+    loader/image_values_test_common.c \
     processing/cms/0011_separate_intents.c \
     processing/cms/0012_engine_independence.c \
     processing/cms/0013_queued_transform_lifetime.c \

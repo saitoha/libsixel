@@ -9,12 +9,12 @@ set -v
 
 input="${TOP_SRCDIR}/tests/data/colormgmt/input/custom/rgb_trace_ignored_tags.png"
 
-value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" --cms-engine=builtin -L "builtin!" -m MS-SSIM --env SIXEL_TRACE_TOPIC=loader "$input" "${TOP_SRCDIR}/tests/data/colormgmt/input/custom/rgb_parametric_012.png") || {
+value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" --cms-engine=builtin -L "builtin!" -m DE00_max --env SIXEL_TRACE_TOPIC=loader "$input" "${TOP_SRCDIR}/tests/data/colormgmt/input/custom/rgb_parametric_012.png") || {
     echo "not ok 1 - profiled image must remain loadable"
     exit 0
 }
 
-test "$value" = 1.000000 || {
+test "$value" = 0.000000 || {
     echo "not ok 1 - ignored tags must preserve normalized pixels"
     exit 0
 }

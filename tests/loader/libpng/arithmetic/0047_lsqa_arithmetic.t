@@ -16,7 +16,7 @@ set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     ${SIXEL_RUNTIME-} "${LSQA_PATH}" \
-    "-Llibpng:cms_engine=builtin:A512bit!" -b MS-SSIM:0.98 \
+    "-Llibpng:cms_engine=builtin:A512bit!" -m DE00_max \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || {
     echo "not ok 1 - lsqa arithmetic conversion failed"

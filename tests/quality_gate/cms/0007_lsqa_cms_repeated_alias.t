@@ -11,14 +11,21 @@ set -v
 input="${TOP_SRCDIR}/tests/data/colormgmt/input/custom/rgb_parametric_012.png"
 reference="${TOP_SRCDIR}/tests/data/colormgmt/reference/custom/rgb_parametric_012_png_builtin.six"
 
-expected=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -L "builtin!" --cms-engine=none "$input" "$reference") || {
+expected=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m DE00_max -L "builtin!" --cms-engine=none "$input" "$reference") || {
     echo "not ok 1 - load disabled reference"
     exit 0
 }
-actual=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -L "builtin!" --cms-engine=builtin -# off "$input" "$reference") || {
+actual=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m DE00_max -L "builtin!" --cms-engine=builtin -# off "$input" "$reference") || {
     echo "not ok 1 - repeated CMS alias"
     exit 0
 }
+# Compare finite color-error values to observe CMS routing directly.
+case "${actual}:${expected}" in
+    *nan*|*inf*|:*)
+        echo "not ok 1 - CMS comparison must produce finite values"
+        exit 0
+        ;;
+esac
 test "$actual" = "$expected" || {
     echo "not ok 1 - last CMS selection must win"
     exit 0

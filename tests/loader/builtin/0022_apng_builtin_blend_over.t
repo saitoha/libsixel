@@ -21,10 +21,11 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" \
+# This small-frame regression checks exact decoded reference samples.
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_blend_over_builtin_static_reference.six" \
-    "${ARTIFACT_LOCAL_DIR}/apng_blend_over_builtin_static.six" 2>&1) || {
-    echo "not ok" 1 - "${lsqa_msg}"
+    "${ARTIFACT_LOCAL_DIR}/apng_blend_over_builtin_static.six" 'builtin:Enone!' 0 || {
+    echo "not ok 1 - selected APNG frame differs from the fixed reference"
     exit 0
 }
 

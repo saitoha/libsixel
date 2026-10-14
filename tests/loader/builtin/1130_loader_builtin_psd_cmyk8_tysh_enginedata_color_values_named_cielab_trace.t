@@ -15,18 +15,14 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 base_dir="${TOP_SRCDIR}/tests/data/inputs/formats"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_multilayer_fill_soco_gray_expected.ppm"
 input_psd="${base_dir}/snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_cielab.psd"
-output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 trace_output=''
-lsqa_msg=''
 command_status=0
 
-trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}"     --env SIXEL_TRACE_TOPIC=psd_decode     -Lbuiltin! -o "${output_sixel}" "${input_psd}" 2>&1) || command_status=$?
+trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}"     --env SIXEL_TRACE_TOPIC=psd_decode     -Lbuiltin! -o /dev/null "${input_psd}" 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
     echo "not ok" 1 - "builtin loader failed to decode fixture: ${trace_output}"
@@ -51,10 +47,14 @@ case "${trace_output}" in
         ;;
 esac
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear     -b "MS-SSIM:${lsqa_floor}"     "${expected_ppm}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "decode fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+# Observe decoded samples before palette quantization. The independent
+# PPM and decoded bytes can each round by half a level; reserve 0.01 for
+# floating-point arithmetic in addition to that one-level sample budget.
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
+    "${expected_ppm}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
+    echo "not ok 1 - decoded PSD samples differ from the independent PPM"
     exit 0
 }
 
-echo "ok" 1 - "PSD TySh /Color /CIELab decode keeps deterministic trace and MS-SSIM"
+echo "ok" 1 - "PSD TySh /Color /CIELab decode keeps deterministic trace matches reference pixel values"
 exit 0

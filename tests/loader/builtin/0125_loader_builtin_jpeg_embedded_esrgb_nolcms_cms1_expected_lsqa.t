@@ -2,6 +2,12 @@
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader applies embedded JPEG ICC when lcms2 is unavailable.
 
+# Quality is measured at the explicitly requested encoder output size.
+# Nearest resampling precedes palette construction; the independent reference
+# follows the same integer pixel replication. Native samples have separate
+# decoder tests. No measured SIXEL output is enlarged for assessment.
+# Regenerate references: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_LCMS2-}" != 1 || {
@@ -21,10 +27,10 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg"
-reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0002_snake_64_embedded_esrgb_converted_srgb_noicc.ppm"
+reference_path="${TOP_SRCDIR}/tests/data/loader/quality/0125-0002_snake_64_embedded_esrgb_converted_srgb_noicc.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/builtin_jpeg_embedded_esrgb_nolcms_cms1.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! "${input_jpeg}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Lbuiltin:cms_engine=auto! "${input_jpeg}" >"${output_sixel}" || {
     echo "not ok" 1 - "builtin embedded-ICC JPEG decode failed (nolcms, cms=1)"
     exit 0
 }

@@ -112,6 +112,9 @@ int test_qa_0011(int argc, char **argv);
 int test_qa_0012(int argc, char **argv);
 int test_qa_0013(int argc, char **argv);
 int test_qa_0017(int argc, char **argv);
+int test_image_values(int argc, char **argv);
+int test_image_sample_range(int argc, char **argv);
+int test_image_dimensions(int argc, char **argv);
 int test_named_output_0037(int argc, char **argv);
 int test_named_output_0038(int argc, char **argv);
 int test_named_output_0039(int argc, char **argv);
@@ -4665,6 +4668,12 @@ static test_entry_t const test_entries[] = {
     { "assessment/0012_spec_parse_invalid", test_qa_0012 },
     { "assessment/0013_pixel_delta_peak", test_qa_0013 },
     { "assessment/0017_ms_ssim_origin", test_qa_0017 },
+    { "loader/image_values", test_image_values },
+    { "loader/image_display_values", test_image_values },
+    { "loader/image_black_values", test_image_values },
+    { "loader/image_white_values", test_image_values },
+    { "loader/image_sample_range", test_image_sample_range },
+    { "loader/image_dimensions", test_image_dimensions },
     { "quant/palette/named_output/0037_adobe_libpng", test_named_output_0037 },
     { "quant/palette/named_output/0038_dci_libpng", test_named_output_0038 },
     { "quant/palette/named_output/0039_adobe_libtiff", test_named_output_0039 },

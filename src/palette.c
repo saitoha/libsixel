@@ -2130,6 +2130,7 @@ sixel_palette_map_gamut(sixel_palette_t *palette,
     return SIXEL_OK;
 }
 
+/* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */
 /* emacs indent-tabs-mode: nil */

@@ -10,28 +10,19 @@ test "${HAVE_LCMS2-}" = 1 || {
     exit 0
 }
 
-test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\n"
-    exit 0
-}
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.psd"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0002_snake_64_embedded_esrgb_converted_srgb_noicc.ppm"
-output_sixel="${ARTIFACT_LOCAL_DIR}/snake-64-builtin-psd-icc.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! "${input_psd}" >"${output_sixel}" || {
-    echo "not ok" 1 - "builtin decode failed"
+# The external 8-bit reference and the loader byte path can each round
+# once; one RGB level plus float roundoff bounds this sample contract.
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
+    "${reference_ppm}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
+    echo "not ok 1 - decoded PSD ICC samples differ from the external reference"
     exit 0
 }
-
-${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" "${reference_ppm}" "${output_sixel}" >/dev/null || {
-    echo "not ok" 1 - "builtin output mismatched converted reference"
-    exit 0
-}
-
-echo "ok" 1 - "builtin PSD ICC conversion matches fixed PNM reference"
+echo "ok 1 - decoded PSD ICC samples match the external reference"
 exit 0

@@ -2,6 +2,11 @@
 # TAP test: libpng should decode 16-bit sRGB PNG (without iCCP/gAMA/cHRM)
 # and keep visual parity against the 64x64 PNM reference.
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_LIBPNG-}" = 1 || {
@@ -19,10 +24,10 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/snake_64_rgb16_srgb_only.png"
-expected_ppm="${TOP_SRCDIR}/tests/data/loader/libpng_expected/0141_libpng_rgb16_srgb_only_64x64_expected.ppm"
+expected_ppm="${TOP_SRCDIR}/tests/data/loader/quality/ae7f5ddc-0141_libpng_rgb16_srgb_only_64x64_expected.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake_64_rgb16_srgb_only.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 - "img2sixel failed"
     exit 0
 }

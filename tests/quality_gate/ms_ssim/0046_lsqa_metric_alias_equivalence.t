@@ -1,14 +1,15 @@
 #!/bin/sh
 # Verify MS-SSIM aliases return identical single-metric output.
 
+# The five-scale metric requires at least 176 pixels in both dimensions.
 set -eux
 
 
 printf '1..1\n'
 set -v
 
-image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
-image_out="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
+image_ref="${TOP_SRCDIR}/images/snake.png"
+image_out="${TOP_SRCDIR}/images/snake.six"
 value_canonical=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM "${image_ref}" "${image_out}") || {
     echo "not ok" 1 - "failed to calculate canonical MS-SSIM"
     exit 0

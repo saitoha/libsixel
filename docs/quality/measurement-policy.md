@@ -36,7 +36,7 @@ MS-SSIM:0.98
 
 Never lower a quality threshold below `0.95` to make a regression pass.
 
-`MS-SSIM` currently names the historical arithmetic-average score. `MS-SSIM-origin` is the independently selectable reference five-scale product; its formula, input-size requirement and numerical tests are defined in [image-quality metrics](metrics.md#reference-ms-ssim-ms-ssim-origin). Existing gates retain their metric until explicitly migrated. Migrate a gate by recording both scores on its valid and degraded controls, checking the input dimensions and confirming that its threshold rejects the intended defect. Small fixtures must not be silently enlarged or assigned a reduced-scale score; use a justified larger fixture or keep the gate on the legacy metric pending redesign. Record the metric name with every baseline and benchmark, and re-evaluate policy rankings before carrying an old optimum into an origin-based comparison. A passing legacy gate does not establish the corresponding origin score.
+`MS-SSIM` and its compatibility name `MS-SSIM-origin` compute the reference five-scale product; its formula, minimum input dimensions and numerical tests are defined in [image-quality metrics](metrics.md#reference-ms-ssim-ms-ssim-origin). The incorrect historical arithmetic-average implementation is not a supported quality metric. Record the tool revision as well as the metric name with every baseline and benchmark. When migrating a historical gate, check valid and degraded controls and confirm that its threshold still rejects the intended defect. A historical score or policy ranking does not establish the corresponding reference-product result. Small fixtures must not be silently enlarged, assigned a reduced-scale score or allowed to pass with an unavailable result. Apply the [test-design decision](../testing/guide.md#image-quality-tests): use direct value assertions for a value contract, or redesign the fixture and its independent reference for a perceptual quality contract.
 
 Use secondary metrics to explain changes that MS-SSIM alone does not
 characterize. Depending on the defect, useful measurements include:
@@ -88,9 +88,8 @@ Apply the [general assertion rules](../testing/guide.md#assertions-and-evidence)
 
 ## Standard inputs
 
-- For ordinary `lsqa` tests, use `images/snake.png` resized to approximately
-  16 by 16 pixels. Retain enough structure for the measurement to be meaningful.
-- For dithering-quality tests, use an approximately 64 by 64 pixel input.
+- MS-SSIM requires both aligned dimensions to be at least 176 pixels. Use `images/snake.png` at its original dimensions for general MS-SSIM quality gates, or a purpose-built fixture that meets the same minimum.
+- Small loader and pixel-contract fixtures can remain approximately 16 by 16 pixels, and small dither fixtures approximately 64 by 64 pixels, when their assertions use sample values or an independently justified metric available at those dimensions.
 - For alpha or transparency tests, prepare the required alpha content with
   ImageMagick and verify alpha semantics separately.
 - Normally omit the color-count option (`-p`) so the 256-color default is
@@ -98,6 +97,10 @@ Apply the [general assertion rules](../testing/guide.md#assertions-and-evidence)
 - Prefer small, checked-in fixtures over runtime fixture construction.
 - Add a large fixture only when the test objective cannot be observed at the
   standard sizes.
+
+The shared `tests/data/inputs/snake_192.png` quality fixture is generated from the original `images/snake.png` using `magick images/snake.png -filter Lanczos -resize '192x192!' -depth 8 -strip PNG24:tests/data/inputs/snake_192.png`. Its square sampling follows the small snake fixtures while retaining all five reference scales. Encoding tests compare their decoded output directly with this pre-encoding reference; they do not enlarge encoded pixels.
+
+The resampling quality cases use a 240 by 240 source so their 80% and 120% targets have exact 192 by 192 and 288 by 288 dimensions. `python3 tests/data/inputs/generate_scaling_quality_fixtures.py` regenerates this source from the original photograph and each independent filter reference (ImageMagick for weighted kernels, documented floor-index selection for nearest). The same script creates the 192-pixel JPEG and 191-pixel independent resize reference used by SIMD integration cases. Absolute-height option tests retain small fixtures and assert dimensions directly.
 
 Fixtures must have a documented purpose. Do not replace a reference image only
 because a new output scores better against the replacement.

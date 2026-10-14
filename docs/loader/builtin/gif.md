@@ -137,12 +137,12 @@ The rows below are pipeline landmarks rather than the complete suite. The [GIF c
 | GIF-11 | Literal LZW input remains exact while the dictionary crosses each code-width boundary through 12 bits. | [tests/loader/builtin/1947_loader_builtin_gif_lzw_12bit_width_numeric.t](../../../tests/loader/builtin/1947_loader_builtin_gif_lzw_12bit_width_numeric.t) |
 | GIF-12 | Emitted frames preserve exact GCE delays and report the expected frame, loop, and multiframe metadata. | [tests/loader/builtin/1993_loader_builtin_gif_animation_metadata_numeric.t](../../../tests/loader/builtin/1993_loader_builtin_gif_animation_metadata_numeric.t) |
 
-### Quality regression tests
+### Decoded frame value tests
 
-| ID | Quality floor protected | Owning test |
+| ID | Frame value contract | Owning test |
 | --- | --- | --- |
-| GIFQ-01 | The later-frame local/global palette switch remains visually close to its reference after the full encode path. | [tests/loader/builtin/0259_loader_builtin_gif_lct_gct_switch_frame2_lsqa.t](../../../tests/loader/builtin/0259_loader_builtin_gif_lct_gct_switch_frame2_lsqa.t) |
-| GIFQ-02 | Transparency plus disposal 3 remains visually close to the expected second frame after the full encode path. | [tests/loader/builtin/0234_loader_builtin_gif_transparency_dispose3_frame2_lsqa.t](../../../tests/loader/builtin/0234_loader_builtin_gif_transparency_dispose3_frame2_lsqa.t) |
+| GIFQ-01 | The later-frame local/global palette switch preserves every expected decoded RGB component exactly after encoding. | [tests/loader/builtin/0259_loader_builtin_gif_lct_gct_switch_frame2_samples.t](../../../tests/loader/builtin/0259_loader_builtin_gif_lct_gct_switch_frame2_samples.t) |
+| GIFQ-02 | Transparency plus disposal 3 produces the expected frame, with at most two byte levels of endpoint-palette error plus float roundoff in every component. | [tests/loader/builtin/0234_loader_builtin_gif_transparency_dispose3_frame2_samples.t](../../../tests/loader/builtin/0234_loader_builtin_gif_transparency_dispose3_frame2_samples.t) |
 
 ### Defensive and malformed-input tests
 

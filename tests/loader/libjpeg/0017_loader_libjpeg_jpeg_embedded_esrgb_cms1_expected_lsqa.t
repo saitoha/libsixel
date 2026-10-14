@@ -1,6 +1,11 @@
 #!/bin/sh
 # Verify libjpeg loader applies embedded JPEG ICC profile when cms=1.
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -25,10 +30,10 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg"
-reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0002_snake_64_embedded_esrgb_converted_srgb_noicc.ppm"
+reference_path="${TOP_SRCDIR}/tests/data/loader/quality/36f3e25f-0002_snake_64_embedded_esrgb_converted_srgb_noicc.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/libjpeg_jpeg_embedded_esrgb_cms1.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libjpeg:cms_engine=auto! "${input_jpeg}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L libjpeg:cms_engine=auto! "${input_jpeg}" >"${output_sixel}" || {
     echo "not ok" 1 - "libjpeg embedded-ICC JPEG decode failed (cms=1)"
     exit 0
 }

@@ -2,6 +2,7 @@
 # Verify automatic Kmeans binning retains the explicit hard-policy output.
 # Top-level option regression
 
+# Image assertion: option-values-and-output-equivalence
 set -eux
 
 # OpenBSD rand() is non-deterministic by default, so pin the unrelated
@@ -20,7 +21,6 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
-reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"
 auto_output="${artifact_dir}/0034-quantize-kmeans-auto-binning-$$.six"
 hard_output="${artifact_dir}/0034-quantize-kmeans-hard-binning-$$.six"
@@ -42,12 +42,9 @@ cmp -s "${auto_output}" "${hard_output}" || {
     exit 0
 }
 
-lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" \
-    -b "MS-SSIM:0.98" "${reference_image}" \
-    "${auto_output}" 2>&1) || lsqa_status=$?
-test "${lsqa_status:-0}" -eq 0 || {
-    echo "not ok" 1 - "automatic Kmeans binning image quality regressed"
-    printf "# %s\n" "${lsqa_error}"
+# This test owns exact option-route equivalence and consumer selection.
+test -s "${auto_output}" || {
+    echo "not ok 1 - option-route output is empty"
     exit 0
 }
 

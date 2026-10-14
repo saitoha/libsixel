@@ -1,6 +1,11 @@
 #!/bin/sh
 # TAP test for forced libjpeg 16-bit JPEG decode quality.
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -24,11 +29,11 @@ set -v
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-16bit-lossless.jpg"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm"
+reference_path="${TOP_SRCDIR}/tests/data/loader/quality/68b7524a-snake_64.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake-jpeg-16bit-lossless.six"
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libjpeg! "${input_jpeg}" -o "${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L libjpeg! "${input_jpeg}" -o "${output_sixel}" || {
     echo "not ok" 1 - "forced libjpeg 16-bit JPEG decode failed"
     exit 0
 }

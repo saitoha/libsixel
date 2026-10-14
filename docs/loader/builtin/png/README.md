@@ -287,13 +287,14 @@ The rows below are pipeline landmarks rather than the complete suite. The [PNG/A
 | PNG-36 | Final SIXEL from an all-zero-alpha fixture paints exactly the source positive-alpha positions and their independently rounded RGB wire colors for either keycolor setting. | [tests/loader/builtin/2062_loader_builtin_png_palette_all_zero_k0_paint.t](../../../../tests/loader/builtin/2062_loader_builtin_png_palette_all_zero_k0_paint.t), [tests/loader/builtin/2063_loader_builtin_png_palette_all_zero_k1_paint.t](../../../../tests/loader/builtin/2063_loader_builtin_png_palette_all_zero_k1_paint.t) |
 | PNG-37 | Builtin CMS transforms original retained PNG palette RGB before zero-alpha coverage is applied; output bytes follow an independent stored-ICC matrix/TRC oracle. | [tests/loader/builtin/2064_loader_builtin_png_palette_cms_source_numeric.t](../../../../tests/loader/builtin/2064_loader_builtin_png_palette_cms_source_numeric.t) |
 | PNG-39 | Retained PNG palette/background composition uses normalized 8-bit alpha and nearest byte rounding, including transparent, partial and opaque entries. | [tests/loader/builtin/2065_loader_builtin_png_palette_background_numeric.t](../../../../tests/loader/builtin/2065_loader_builtin_png_palette_background_numeric.t) |
+| PNG-40 | Unmanaged PNGSuite RGBA8 composed over explicit black matches independently calculated linear-alpha RGB samples before quantization, including zero-alpha pixels. | [tests/loader/libpng/0039_pngsuite_basic_default_basn6a08_samples.t](../../../../tests/loader/libpng/0039_pngsuite_basic_default_basn6a08_samples.t) |
 
 ### Quality regression tests
 
 | ID | Quality floor protected | Owning test |
 | --- | --- | --- |
 | PNGQ-01 | Embedded ICC conversion remains visually close to the fixed converted PNM after the full encode path. | [tests/loader/builtin/0055_builtin_png_embedded_icc_matches_reference_pnm.t](../../../../tests/loader/builtin/0055_builtin_png_embedded_icc_matches_reference_pnm.t) |
-| PNGQ-02 | The libpng RGBA8 and RGBA16 paths retain their end-to-end PNGSuite MS-SSIM floors. | [tests/loader/libpng/0039_pngsuite_basic_default_basn6a08_msssim.t](../../../../tests/loader/libpng/0039_pngsuite_basic_default_basn6a08_msssim.t), [tests/loader/libpng/0040_pngsuite_basic_default_basn6a16_msssim.t](../../../../tests/loader/libpng/0040_pngsuite_basic_default_basn6a16_msssim.t) |
+| PNGQ-02 | PNGSuite RGBA16 composed over explicit black preserves its end-to-end MS-SSIM floor. | [tests/loader/libpng/0040_pngsuite_basic_default_basn6a16_msssim.t](../../../../tests/loader/libpng/0040_pngsuite_basic_default_basn6a16_msssim.t) |
 
 ### Defensive and malformed-input tests
 

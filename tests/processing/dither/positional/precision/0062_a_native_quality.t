@@ -1,6 +1,7 @@
 #!/bin/sh
 # Check native positional palette application against the 64px reference.
 # Policy: docs/encoder/palette-application/dithering/README.md
+# The reference five-scale MS-SSIM requires dimensions >=176x176.
 set -eux
 
 test "${HAVE_IMG2SIXEL-0}" = 1 -a "${HAVE_LIBPNG-0}" = 1 || {
@@ -20,7 +21,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
     -F none -a off -_ none '-~none' -d a_dither -t rgb \
     --sampling-policy=full-frame --binning-policy=none \
     -o "${ARTIFACT_LOCAL_DIR}/output.six" \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" 2>&1) || {
+    "${TOP_SRCDIR}/tests/data/inputs/snake_192.png" 2>&1) || {
     echo "not ok 1 - native a_dither encoding"
     printf '# %s\n' "${trace}"
     exit 0
@@ -35,7 +36,7 @@ esac || {
 }
 
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" -D -Tsrgb -Wlinear -Pfloat32 \
-    -b MS-SSIM:0.98 "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+    -b MS-SSIM:0.98 "${TOP_SRCDIR}/tests/data/inputs/snake_192.png" \
     "${ARTIFACT_LOCAL_DIR}/output.six" >/dev/null || {
     echo "not ok 1 - native a_dither quality"
     exit 0

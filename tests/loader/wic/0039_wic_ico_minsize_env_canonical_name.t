@@ -1,6 +1,11 @@
 #!/bin/sh
 # Verify canonical WIC ico_minsize env name applies without -L suboptions.
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -23,10 +28,10 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=0.96
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-multisize.ico"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.ppm"
+reference_path="${TOP_SRCDIR}/tests/data/loader/quality/cc877d5c-snake-32.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_ico_minsize_env_canonical.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 \
     --env SIXEL_LOADER_WIC_ICO_MINSIZE=30 \
     -Lwic! \
     "${image_path}" >"${output_sixel}" || {

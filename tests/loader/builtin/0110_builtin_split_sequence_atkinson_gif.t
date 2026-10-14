@@ -1,6 +1,9 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# TAP test: builtin loader static GIF frame with Atkinson dithering matches reference.
+# Verify the selected static GIF frame against independent source colors.
+# Reference generation (ImageMagick):
+#   magick 'tests/data/inputs/small.gif[0]' -alpha off -depth 8 \
+#       PPM:tests/data/loader/builtin_expected/small-gif-first-samples.ppm
 
 set -eux
 
@@ -21,10 +24,11 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -S -datkinson \
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" \
-    "${TOP_SRCDIR}/tests/data/inputs/formats/small_gif_atkinson_static_reference.six" \
-    "${ARTIFACT_LOCAL_DIR}/small_gif_atkinson_static.six" 2>&1) || {
-    echo "not ok" 1 - "${lsqa_msg}"
+# The first frame uses exact endpoint colors, with no palette loss.
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
+    "${TOP_SRCDIR}/tests/data/loader/builtin_expected/small-gif-first-samples.ppm" \
+    "${ARTIFACT_LOCAL_DIR}/small_gif_atkinson_static.six" 'builtin:Enone!' 0 || {
+    echo "not ok 1 - static GIF frame colors differ from the independent reference"
     exit 0
 }
 

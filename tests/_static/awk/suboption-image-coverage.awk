@@ -351,6 +351,9 @@ FILENAME == registry_file || FILENAME == completion_registry_file {
     test_range_policy[FILENAME] = range_policy
     next
 }
+/^# Image assertion: option-values-and-output-equivalence$/ {
+    value_equivalence[FILENAME] = 1
+}
 /^# Exact image reference: literal-pnm$/ {
     exact_image_reference[FILENAME] = 1
     next
@@ -612,8 +615,22 @@ END {
                  !has_cms_consumer[file, "env"])) {
             fail(file " does not verify both actual CMS apply records")
         }
-        if (!is_completion && !has_lsqa[file] && !has_exact_reference) {
-            fail(file " does not validate decoded image quality")
+        # Routing tests own typed values, consumer selection and exact output
+        # equivalence. They make no independent pixel-quality claim. Require
+        # nonempty output as well as the checked comparison and the ordinary
+        # assignment/consumer checks below; a marker alone is not evidence.
+        has_value_equivalence = value_equivalence[file] && has_compare[file] &&
+            index(source, "test -s \"${short_output}\" || {") > 0
+        if (value_equivalence[file] && !has_value_equivalence) {
+            fail(file " lacks checked nonempty output equivalence")
+        }
+        has_pixel_values = index(source, "${SIXEL_RUNTIME-} " \
+            "\"${TEST_RUNNER_PATH}\" loader/image_values \"$reference\" " \
+            "\"$short_output\" 'builtin:Enone!' 2.3 || {") > 0 &&
+            index(source, "tests/data/color-numeric/cli-rgb-reference.png") > 0
+        if (!is_completion && !has_lsqa[file] && !has_exact_reference &&
+                !has_value_equivalence && !has_pixel_values) {
+            fail(file " lacks a pixel reference or option-value observation")
         }
         if (!is_completion && !has_compare[file]) {
             fail(file " does not compare short and environment output")

@@ -1,6 +1,7 @@
 #!/bin/sh
 # Run lsqa quality checks for k-means final merge with float32 palettes.
 # Policy: docs/encoder/palette-construction/merge-policy/README.md
+# The reference five-scale MS-SSIM requires dimensions >=176x176.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -15,7 +16,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2 \

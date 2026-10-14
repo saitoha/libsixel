@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify lsqa target dequantize matches the sixel2png pipe form.
 
+# The five-scale metric requires at least 176 pixels in both dimensions.
 set -eux
 
 test -n "${SIXEL2PNG_PATH-}" || {
@@ -19,8 +20,8 @@ test "${HAVE_LIBPNG-}" = 1 || {
 printf '1..1\n'
 set -v
 
-image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
-image_six="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
+image_ref="${TOP_SRCDIR}/images/snake.png"
+image_six="${TOP_SRCDIR}/images/snake.six"
 
 direct_value=$(
     ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM \

@@ -22,10 +22,11 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apn
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" \
+# This small-frame regression checks exact decoded reference samples.
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2_builtin_start_frame_positive_reference.six" \
-    "${ARTIFACT_LOCAL_DIR}/apng_start_positive.six" 2>&1) || {
-    echo "not ok" 1 - "${lsqa_msg}"
+    "${ARTIFACT_LOCAL_DIR}/apng_start_positive.six" 'builtin:Enone!' 0 || {
+    echo "not ok 1 - selected APNG frame differs from the fixed reference"
     exit 0
 }
 

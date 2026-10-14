@@ -1,6 +1,11 @@
 #!/bin/sh
 # TAP test: coregraphics loader keeps MS-SSIM baseline for RLE palette4 TGA input.
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -20,10 +25,10 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=0.98
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type9-pal4.tga"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb-from-pal4.ppm"
+reference_path="${TOP_SRCDIR}/tests/data/loader/quality/5f0c9219-snake-64-reference-rgb-from-pal4.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_tga_rle_palette4.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! "${image_path}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L coregraphics! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "coregraphics failed to decode RLE palette4 TGA input"
     exit 0
 }

@@ -1375,220 +1375,9 @@ separable_conv2d(const sixel_assessment_float_buffer_t *img, int width,
     return out;
 }
 
-/*
- * SSIM and MS-SSIM computation
- */
-static float ssim_luma(
-    const sixel_assessment_float_buffer_t *x,
-    const sixel_assessment_float_buffer_t *y,
-    int width,
-    int height,
-    float k1,
-    float k2,
-    int win_size,
-    float sigma)
-{
-    sixel_assessment_float_buffer_t kernel;
-    sixel_assessment_float_buffer_t mu_x;
-    sixel_assessment_float_buffer_t mu_y;
-    sixel_assessment_float_buffer_t mu_x2;
-    sixel_assessment_float_buffer_t mu_y2;
-    sixel_assessment_float_buffer_t mu_xy;
-    sixel_assessment_float_buffer_t sigma_x2;
-    sixel_assessment_float_buffer_t sigma_y2;
-    sixel_assessment_float_buffer_t sigma_xy;
-    float C1;
-    float C2;
-    size_t total;
-    size_t i;
-    float mean;
-    float numerator;
-    float denominator;
-    float value;
-    sixel_assessment_float_buffer_t x_sq;
-    sixel_assessment_float_buffer_t y_sq;
-    sixel_assessment_float_buffer_t xy_buf;
-
-    kernel = gaussian_kernel1d(win_size, sigma);
-    mu_x = separable_conv2d(x, width, height, &kernel);
-    mu_y = separable_conv2d(y, width, height, &kernel);
-
-    total = (size_t)width * (size_t)height;
-    mu_x2 = float_buffer_create(total);
-    mu_y2 = float_buffer_create(total);
-    mu_xy = float_buffer_create(total);
-    sigma_x2 = float_buffer_create(total);
-    sigma_y2 = float_buffer_create(total);
-    sigma_xy = float_buffer_create(total);
-    x_sq = float_buffer_create(total);
-    y_sq = float_buffer_create(total);
-    xy_buf = float_buffer_create(total);
-
-    for (i = 0; i < total; ++i) {
-        mu_x2.values[i] = mu_x.values[i] * mu_x.values[i];
-        mu_y2.values[i] = mu_y.values[i] * mu_y.values[i];
-        mu_xy.values[i] = mu_x.values[i] * mu_y.values[i];
-        x_sq.values[i] = x->values[i] * x->values[i];
-        y_sq.values[i] = y->values[i] * y->values[i];
-        xy_buf.values[i] = x->values[i] * y->values[i];
-    }
-
-    float_buffer_free(&sigma_x2);
-    float_buffer_free(&sigma_y2);
-    float_buffer_free(&sigma_xy);
-    sigma_x2 = separable_conv2d(&x_sq, width, height, &kernel);
-    sigma_y2 = separable_conv2d(&y_sq, width, height, &kernel);
-    sigma_xy = separable_conv2d(&xy_buf, width, height, &kernel);
-
-    for (i = 0; i < total; ++i) {
-        sigma_x2.values[i] -= mu_x2.values[i];
-        sigma_y2.values[i] -= mu_y2.values[i];
-        sigma_xy.values[i] -= mu_xy.values[i];
-    }
-
-    C1 = (k1 * 1.0f) * (k1 * 1.0f);
-    C2 = (k2 * 1.0f) * (k2 * 1.0f);
-
-    mean = 0.0f;
-    for (i = 0; i < total; ++i) {
-        numerator = (2.0f * mu_xy.values[i] + C1) *
-                    (2.0f * sigma_xy.values[i] + C2);
-        denominator = (mu_x2.values[i] + mu_y2.values[i] + C1) *
-                      (sigma_x2.values[i] + sigma_y2.values[i] + C2);
-        if (denominator != 0.0f) {
-            value = numerator / (denominator + 1e-12f);
-        } else {
-            value = 0.0f;
-        }
-        mean += value;
-    }
-    mean /= (float)total;
-    mean = clamp_float(mean, 0.0f, 1.0f);
-
-    float_buffer_free(&kernel);
-    float_buffer_free(&mu_x);
-    float_buffer_free(&mu_y);
-    float_buffer_free(&mu_x2);
-    float_buffer_free(&mu_y2);
-    float_buffer_free(&mu_xy);
-    float_buffer_free(&sigma_x2);
-    float_buffer_free(&sigma_y2);
-    float_buffer_free(&sigma_xy);
-    float_buffer_free(&x_sq);
-    float_buffer_free(&y_sq);
-    float_buffer_free(&xy_buf);
-
-    return mean;
-}
-
-static sixel_assessment_float_buffer_t
-downsample2(const sixel_assessment_float_buffer_t *img, int width, int height,
-            int *new_width, int *new_height)
-{
-    int h2;
-    int w2;
-    int y;
-    int x;
-    sixel_assessment_float_buffer_t out;
-    float sum;
-    int idx0;
-    int idx1;
-    int idx2;
-    int idx3;
-
-    h2 = height / 2;
-    w2 = width / 2;
-    out = float_buffer_create((size_t)h2 * (size_t)w2);
-    for (y = 0; y < h2; ++y) {
-        for (x = 0; x < w2; ++x) {
-            sum = 0.0f;
-            idx0 = (2 * y) * width + (2 * x);
-            idx1 = (2 * y + 1) * width + (2 * x);
-            idx2 = (2 * y) * width + (2 * x + 1);
-            idx3 = (2 * y + 1) * width + (2 * x + 1);
-            sum += img->values[idx0];
-            sum += img->values[idx1];
-            sum += img->values[idx2];
-            sum += img->values[idx3];
-            out.values[y * w2 + x] = sum * 0.25f;
-        }
-    }
-    *new_width = w2;
-    *new_height = h2;
-    return out;
-}
-
-static float
-ms_ssim_luma(const sixel_assessment_float_buffer_t *ref,
-             const sixel_assessment_float_buffer_t *out,
-             int width,
-             int height)
-{
-    static const float weights[5] = {
-        0.0448f, 0.2856f, 0.3001f, 0.2363f, 0.1333f
-    };
-    sixel_assessment_float_buffer_t cur_ref;
-    sixel_assessment_float_buffer_t cur_out;
-    sixel_assessment_float_buffer_t next_ref;
-    sixel_assessment_float_buffer_t next_out;
-    int cur_width;
-    int cur_height;
-    float weighted_sum;
-    float weight_total;
-    int level;
-    float ssim_value;
-    int next_width;
-    int next_height;
-
-    cur_ref = float_buffer_create((size_t)width * (size_t)height);
-    cur_out = float_buffer_create((size_t)width * (size_t)height);
-    memcpy(cur_ref.values, ref->values,
-           sizeof(float) * (size_t)width * (size_t)height);
-    memcpy(cur_out.values, out->values,
-           sizeof(float) * (size_t)width * (size_t)height);
-    cur_width = width;
-    cur_height = height;
-    weighted_sum = 0.0f;
-    weight_total = 0.0f;
-
-    for (level = 0; level < 5; ++level) {
-        ssim_value = ssim_luma(&cur_ref, &cur_out, cur_width, cur_height,
-                               0.01f, 0.03f, 11, 1.5f);
-        if (!isfinite(ssim_value)) {
-            ssim_value = 0.0f;
-        }
-        weighted_sum += ssim_value * weights[level];
-        weight_total += weights[level];
-        if (level >= 4) {
-            continue;
-        }
-        if (cur_width < 2 || cur_height < 2) {
-            break;
-        }
-        next_ref = downsample2(&cur_ref, cur_width, cur_height,
-                               &next_width, &next_height);
-        next_out = downsample2(&cur_out, cur_width, cur_height,
-                               &next_width, &next_height);
-        float_buffer_free(&cur_ref);
-        float_buffer_free(&cur_out);
-        cur_ref = next_ref;
-        cur_out = next_out;
-        cur_width = next_width;
-        cur_height = next_height;
-    }
-
-    float_buffer_free(&cur_ref);
-    float_buffer_free(&cur_out);
-
-    if (weight_total > 0.0f) {
-        return weighted_sum / weight_total;
-    }
-    return 0.0f;
-}
-
 /* Wang's five-scale reference uses valid Gaussian windows and the product
  * of mean contrast/structure at scales 1--4 and mean full SSIM at scale 5.
- * Keep this independent of the historical arithmetic-average metric above.
+ * MS-SSIM and its origin compatibility name share this computation.
  * Double moments avoid cancellation in flat patches and double pooling
  * avoids image-size-dependent float summation error. */
 static double
@@ -1692,7 +1481,7 @@ ssim_origin_downsample(double *pixels, int width, int height)
 }
 
 static float
-ms_ssim_origin_luma(sixel_assessment_float_buffer_t const *ref,
+ms_ssim_luma(sixel_assessment_float_buffer_t const *ref,
                     sixel_assessment_float_buffer_t const *out,
                     int width, int height)
 {
@@ -1718,7 +1507,7 @@ ms_ssim_origin_luma(sixel_assessment_float_buffer_t const *ref,
     count = (size_t)width * (size_t)height;
     if (count > SIZE_MAX / (7u * sizeof(double))) {
         assessment_fail(SIXEL_BAD_ALLOCATION,
-                        "MS-SSIM-origin workspace size overflow");
+                        "MS-SSIM workspace size overflow");
     }
     for (index = 0u; index < count; ++index) {
         if (!isfinite(ref->values[index]) || !isfinite(out->values[index])) {
@@ -2725,7 +2514,7 @@ assessment_metrics_init(sixel_assessment_metrics_t *metrics)
 
 /* Produce physical PCS and a separate, documented luma signal.
  * Never overwrite the source frame or reinterpret opponent channels as RGB.
- * An unchanged gamma/linear signal is copied exactly for legacy MS-SSIM. */
+ * An unchanged gamma/linear signal is copied exactly for MS-SSIM. */
 static int
 assessment_color_pixels(float *pixels, double *xyz, size_t count,
                          int coordinate, int signal, int bytes,
@@ -2958,18 +2747,22 @@ evaluate_metrics(sixel_assessment_t *assessment,
         ref_luma = pixels_to_luma709(ref_pixels, width, height);
         out_luma = pixels_to_luma709(out_pixels, width, height);
     }
-    if (want_ms_ssim && need_luma) {
+    if (want_ms_ssim || want_ms_ssim_origin) {
+        /* Compute the reference product once, even for a full report. Keep
+         * both result slots selectable without reviving the incorrect
+         * arithmetic-average score or marking an unrequested slot valid. */
         metrics.ms_ssim = ms_ssim_luma(&ref_luma, &out_luma,
-                                       width, height);
-        assessment_metric_mark(&metrics,
-                               SIXEL_ASSESSMENT_METRIC_MS_SSIM,
-                               metrics.ms_ssim);
-    }
-    if (want_ms_ssim_origin && need_luma) {
-        metrics.ms_ssim_origin = ms_ssim_origin_luma(&ref_luma, &out_luma,
-                                                     width, height);
-        assessment_metric_mark(&metrics,
-            SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN, metrics.ms_ssim_origin);
+                                      width, height);
+        metrics.ms_ssim_origin = metrics.ms_ssim;
+        if (want_ms_ssim) {
+            assessment_metric_mark(&metrics,
+                SIXEL_ASSESSMENT_METRIC_MS_SSIM, metrics.ms_ssim);
+        }
+        if (want_ms_ssim_origin) {
+            assessment_metric_mark(&metrics,
+                SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN,
+                metrics.ms_ssim_origin);
+        }
     }
     if (need_luma && (want_high_freq_out || want_high_freq_delta)) {
         high_freq_out_value = high_frequency_ratio(&out_luma,

@@ -15,5 +15,15 @@ test "${value}" = '1.000000' || {
     echo "not ok 1 - origin identity score"
     exit 0
 }
+canonical=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none \
+    -m ms-ssim -b MS-SSIM:0.98 \
+    "${TOP_SRCDIR}/images/snake.png" "${TOP_SRCDIR}/images/snake.png") || {
+    echo "not ok 1 - canonical metric selection and baseline"
+    exit 0
+}
+test "${canonical}" = "${value}" || {
+    echo "not ok 1 - canonical and origin identity scores differ"
+    exit 0
+}
 echo "ok 1 - origin metric selection and baseline"
 exit 0

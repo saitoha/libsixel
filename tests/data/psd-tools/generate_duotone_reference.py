@@ -3,12 +3,13 @@
 
 The source is the pinned 4x4 raw, eight-bit psd-tools fixture. Matrix and
 Bradford arithmetic are rational; only the final gamma-2.2 byte encoding
-uses floating point. The PPM is a bounded legacy-gamma quality reference.
+uses floating point. The default PPM is a bounded legacy-gamma reference; --srgb produces
+a display-sRGB sample oracle without an encoder quantization boundary.
 The separate frame tests protect extended values before this narrowing.
 """
+import argparse
 from pathlib import Path
 import struct
-import sys
 from fractions import Fraction as F
 
 def mul(a,b):
@@ -33,7 +34,7 @@ s50=mul(b,white50);s65=mul(b,white65)
 adapt=mul(mul(inv(b),[[s65[i][0]/s50[i][0] if i==j else F(0) for j in range(3)] for i in range(3)]),b)
 
 
-def generate_duotone_expected(source: Path, destination: Path) -> None:
+def generate_duotone_expected(source: Path, destination: Path, srgb: bool = False) -> None:
     data = source.read_bytes()
     assert data[:6] == b"8BPS\x00\x01"
     assert struct.unpack_from(">HIIHH", data, 12) == (1, 4, 4, 8, 8)
@@ -75,9 +76,18 @@ def generate_duotone_expected(source: Path, destination: Path) -> None:
             xyz.append([white50[i][0] * v])
         for channel in mul(matrix, xyz):
             bounded = min(1.0, max(0.0, float(channel[0])))
-            pixels.append(int(255 * bounded ** (1 / 2.2) + 0.5))
+            encoded = bounded ** (1 / 2.2)
+            if srgb:
+                encoded = (12.92 * bounded if bounded <= .0031308
+                           else 1.055 * bounded ** (1 / 2.4) - .055)
+            pixels.append(int(255 * encoded + 0.5))
     destination.write_bytes(b"P6\n4 4\n255\n" + pixels)
 
 
 if __name__ == "__main__":
-    generate_duotone_expected(Path(sys.argv[1]), Path(sys.argv[2]))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("source", type=Path)
+    parser.add_argument("destination", type=Path)
+    parser.add_argument("--srgb", action="store_true")
+    args = parser.parse_args()
+    generate_duotone_expected(args.source, args.destination, args.srgb)

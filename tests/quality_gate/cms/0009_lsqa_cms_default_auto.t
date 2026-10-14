@@ -5,18 +5,25 @@ set -eux
 printf '1..1\n'
 set -v
 input="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg"
-expected=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L "builtin!" -m MS-SSIM --cms-engine=auto "$input" "${TOP_SRCDIR}/tests/data/inputs/snake_64.six") || {
+expected=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L "builtin!" -m DE00_max --cms-engine=auto "$input" "${TOP_SRCDIR}/tests/data/inputs/snake_64.six") || {
     echo "not ok 1 - CMS comparison command failed"
     exit 0
 }
-actual=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L "builtin!" -m MS-SSIM --env SIXEL_LOADER_CMS_ENGINE= "$input" "${TOP_SRCDIR}/tests/data/inputs/snake_64.six") || {
+actual=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L "builtin!" -m DE00_max --env SIXEL_LOADER_CMS_ENGINE= "$input" "${TOP_SRCDIR}/tests/data/inputs/snake_64.six") || {
     echo "not ok 1 - CMS comparison command failed"
     exit 0
 }
-disabled=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L "builtin!" -m MS-SSIM --cms-engine=none "$input" "${TOP_SRCDIR}/tests/data/inputs/snake_64.six") || {
+disabled=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L "builtin!" -m DE00_max --cms-engine=none "$input" "${TOP_SRCDIR}/tests/data/inputs/snake_64.six") || {
     echo "not ok 1 - CMS comparison command failed"
     exit 0
 }
+# Compare finite color-error values to observe CMS routing directly.
+case "${actual}:${expected}" in
+    *nan*|*inf*|:*)
+        echo "not ok 1 - CMS comparison must produce finite values"
+        exit 0
+        ;;
+esac
 test "$actual" = "$expected" || {
     echo "not ok 1 - default CMS must match auto and differ from none"
     exit 0

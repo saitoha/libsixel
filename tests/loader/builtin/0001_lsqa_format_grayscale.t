@@ -1,9 +1,10 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Ensure grayscale JPEG quality stays within the recorded lsqa baseline.
-# Reproduction commands (ImageMagick):
-#   convert images/snake.png -resize 64x64\! -colorspace Gray tests/data/inputs/formats/snake-64-grayscale.jpg
-#   convert images/snake.png -resize 64x64\! -colorspace Gray tests/data/inputs/formats/snake-64-reference-gray.ppm
+# Fixture: tests/data/inputs/snake_192.png is the 192x192 source.
+# Reference/fixture generation commands (ImageMagick):
+#   magick tests/data/inputs/snake_192.png -colorspace Gray -depth 8 -strip tests/data/inputs/formats/snake-192-grayscale.jpg
+#   magick tests/data/inputs/snake_192.png -colorspace Gray -depth 8 PPM:tests/data/inputs/formats/snake-192-reference-gray.ppm
 
 set -eux
 
@@ -20,8 +21,8 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 
-image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-grayscale.jpg"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.ppm"
+image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-192-grayscale.jpg"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-192-reference-gray.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/grayscale.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "grayscale quality regressed"

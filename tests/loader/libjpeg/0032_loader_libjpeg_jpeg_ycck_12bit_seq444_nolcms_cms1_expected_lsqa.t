@@ -1,6 +1,11 @@
 #!/bin/sh
 # Verify libjpeg loader decodes 12-bit YCCK JPEG on no-lcms builds with cms=1.
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -30,10 +35,10 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-12bit-ycck-seq444.jpg"
-reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0017_jpeg_ycck_12bit_seq444_r0_reference.ppm"
+reference_path="${TOP_SRCDIR}/tests/data/loader/quality/11fa4232-0017_jpeg_ycck_12bit_seq444_r0_reference.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/libjpeg_jpeg_ycck_12bit_seq444_nolcms_cms1.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libjpeg:cms_engine=auto! "${input_jpeg}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L libjpeg:cms_engine=auto! "${input_jpeg}" >"${output_sixel}" || {
     echo "not ok" 1 - "libjpeg 12-bit YCCK JPEG decode failed on no-lcms build (cms=1)"
     exit 0
 }

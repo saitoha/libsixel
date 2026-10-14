@@ -1,6 +1,11 @@
 #!/bin/sh
 # TAP test: libtiff colormgmt parity for grayscale/img_tiff_grayscale_icc0_wp0_pc1_trc0.tiff
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -19,7 +24,7 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_tiff="${TOP_SRCDIR}/tests/data/colormgmt/input/tiff/grayscale/img_tiff_grayscale_icc0_wp0_pc1_trc0.tiff"
-reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/tiff/grayscale/img_tiff_grayscale_icc0_wp0_pc1_trc0.six"
+reference_six="${TOP_SRCDIR}/tests/data/loader/quality/0d125011-img_tiff_grayscale_icc0_wp0_pc1_trc0.ppm"
 output_six="${ARTIFACT_LOCAL_DIR}/img_tiff_grayscale_icc0_wp0_pc1_trc0_libtiff.six"
 
 test -f "${input_tiff}" || {
@@ -32,7 +37,7 @@ test -f "${reference_six}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=auto! "${input_tiff}" >"${output_six}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Llibtiff:cms_engine=auto! "${input_tiff}" >"${output_six}" || {
     echo "not ok" 1 - "libtiff decode failed: grayscale/img_tiff_grayscale_icc0_wp0_pc1_trc0"
     exit 0
 }

@@ -1,31 +1,24 @@
 #!/bin/sh
 # Policy: docs/loader/png-color-metadata.md
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# TAP test: builtin loader colormgmt parity for rgb/img_rgb_icc1_srgb0_chrm1_gama1.png
+# TAP test: builtin loader independent decoded color values for rgb/img_rgb_icc1_srgb0_chrm1_gama1.png
 
 set -eux
 
-test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\n"
-    exit 0
-}
 
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/colormgmt/input/png/rgb/img_rgb_icc1_srgb0_chrm1_gama1.png"
-reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/rgb/img_rgb_icc1_srgb0_chrm1_gama1.six"
-output_six="${ARTIFACT_LOCAL_DIR}/img_rgb_icc1_srgb0_chrm1_gama1_builtin.six"
+reference_image="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/rgb/img_rgb_icc1_srgb0_chrm1_gama1.ppm"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! "${input_png}" >"${output_six}" || {
-    echo "not ok" 1 - "builtin decode failed"
-    exit 0
-}
-
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" "${reference_six}" "${output_six}" 2>&1) || {
-    echo "not ok" 1 - "${lsqa_msg}"
+# Check every displayed sRGB component against source equations before
+# palette quantization. Half an 8-bit level plus reference/float roundoff
+# permits either byte or float32 decoder storage without a spatial metric.
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_display_values \
+    "${reference_image}" "${input_png}" 'builtin:cms_engine=auto!' 0.51 || {
+    echo "not ok 1 - decoded PNG color samples differ from the independent oracle"
     exit 0
 }
 

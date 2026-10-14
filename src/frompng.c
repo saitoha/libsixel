@@ -810,11 +810,21 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
     }
     /* CMM failure can leave a modified prefix. Keep all source samples owned
      * by the caller intact until the complete transform has succeeded. */
-    staged = sixel_allocator_malloc(allocator, pixel_bytes);
+    /* A byte palette still needs the same color interpretation as a float
+     * raster. Transform in float and narrow only when publishing the byte
+     * destination; the legacy byte CMM uses different PCS/white matrices. */
+    if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+        return 0;
+    }
+    staged = sixel_allocator_malloc(allocator,
+        pixel_count * 3u * sizeof(float));
     if (staged == NULL) {
         return 0;
     }
-    memcpy(staged, pixels, pixel_bytes);
+    for (sample = 0u; sample < pixel_count * 3u; ++sample) {
+        ((float *)staged)[sample] = sample_bytes == 1u
+            ? pixels[sample] / 255.0f : ((float *)pixels)[sample];
+    }
     if (has_iccp) {
         if (sixel_frompng_extract_icc(buffer,
                                       size,
@@ -824,7 +834,7 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
                 staged,
                 width,
                 height,
-                pixelformat,
+                SIXEL_PIXELFORMAT_RGBFLOAT32,
                 icc_profile,
                 icc_profile_length);
         }
@@ -838,12 +848,20 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
             staged,
             width,
             height,
-            pixelformat,
+            SIXEL_PIXELFORMAT_RGBFLOAT32,
             chunk_profile);
         sixel_cms_close_profile(chunk_profile);
     }
     if (converted) {
-        memcpy(pixels, staged, pixel_bytes);
+        if (sample_bytes == sizeof(float)) {
+            memcpy(pixels, staged, pixel_bytes);
+        } else {
+            for (sample = 0u; sample < pixel_count * 3u; ++sample) {
+                value = ((float *)staged)[sample];
+                value = value < 0.0 ? 0.0 : value > 1.0 ? 1.0 : value;
+                pixels[sample] = (unsigned char)(value * 255.0 + 0.5);
+            }
+        }
     }
     stbi_image_free(icc_profile);
     sixel_allocator_free(allocator, staged);

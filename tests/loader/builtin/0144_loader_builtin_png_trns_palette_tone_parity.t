@@ -42,8 +42,8 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:1.0" \
-         "${out_builtin}" "${out_libpng}" >/dev/null 2>&1 || {
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
+         "${out_builtin}" "${out_libpng}" 'builtin:Enone!' 0 || {
     echo "not ok" 1 - "builtin palette+tRNS keycolor tone differs from libpng"
     exit 0
 }

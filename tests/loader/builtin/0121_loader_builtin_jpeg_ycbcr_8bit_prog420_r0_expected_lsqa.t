@@ -7,6 +7,12 @@
 #       -depth 8 -define ppm:format=raw \
 #       PPM:tests/data/loader/builtin_expected/0011_jpeg_ycbcr_8bit_prog420_r0_reference.ppm
 
+# Quality is measured at the explicitly requested encoder output size.
+# Nearest resampling precedes palette construction; the independent reference
+# follows the same integer pixel replication. Native samples have separate
+# decoder tests. No measured SIXEL output is enlarged for assessment.
+# Regenerate references: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -21,10 +27,10 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-8bit-ycbcr-prog420.jpg"
-reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0011_jpeg_ycbcr_8bit_prog420_r0_reference.ppm"
+reference_path="${TOP_SRCDIR}/tests/data/loader/quality/0121-0011_jpeg_ycbcr_8bit_prog420_r0_reference.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/builtin_jpeg_ycbcr_8bit_prog420_r0.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${input_jpeg}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Lbuiltin! "${input_jpeg}" >"${output_sixel}" || {
     echo "not ok" 1 - "builtin YCbCr 8-bit progressive 4:2:0 JPEG decode failed"
     exit 0
 }

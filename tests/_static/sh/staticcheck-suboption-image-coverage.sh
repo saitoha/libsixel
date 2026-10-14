@@ -17,7 +17,7 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
         consumer-result comparison image-reference legacy-assignment \
         legacy-binding legacy-consumer perceptual-pair perceptual-status \
         perceptual-capture perceptual-reference \
-        literal-reference; do
+        literal-reference value-nonempty; do
     fixture="$regression_dir/0085_loader_libpng_cms_engine_image_regression.t"
     expected=fail
     needle=__unchanged_positive_control__
@@ -31,7 +31,7 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
         consumer-engine) needle='engine=builtin\|*)'; replacement='engine=other\|*)' ;;
         consumer-result) needle='*\|ok=1)'; replacement='*\|ok=0)' ;;
         comparison) needle='cmp -s'; replacement=': -s' ;;
-        image-reference) needle='${LSQA_PATH}'; replacement='${OTHER_PATH}' ;;
+        image-reference) needle='${TEST_RUNNER_PATH}'; replacement='${OTHER_PATH}' ;;
         legacy-*)
             fixture="$regression_dir/0012_diffusion_stbn_alpha_guard_image_regression.t"
             case "$sample" in
@@ -48,6 +48,10 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
                 perceptual-status) needle='test "${equivalence_status:-0}" -eq 0'; replacement='test "${equivalence_status:-0}" -eq 1' ;;
                 perceptual-reference) needle='lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}"'; replacement='lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${OTHER_PATH}"' ;;
             esac
+            ;;
+        value-nonempty)
+            fixture="$regression_dir/0003_diffusion_fs_scan_image_regression.t"
+            needle='test -s "${short_output}"'; replacement=': "${short_output}"'
             ;;
         literal-reference)
             fixture="$regression_dir/0106_loader_builtin_pnm_truncated_ascii_image_regression.t"

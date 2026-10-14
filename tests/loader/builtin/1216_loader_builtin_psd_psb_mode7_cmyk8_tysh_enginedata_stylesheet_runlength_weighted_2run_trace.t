@@ -5,8 +5,7 @@
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py
 #   python3 tests/data/inputs/formats/generate_psb_missing_composite_fixtures.py
 # Reference generation command:
-#   magick -size 16x16 xc:'rgb(191,59,194)' -depth 8 -define ppm:format=raw \
-#       PPM:tests/data/loader/builtin_expected/psd_snake16_multilayer_fill_soco_weighted_2run_expected.ppm
+#   python3 tests/data/loader/builtin_expected/generate_small_psd_references.py
 
 set -eux
 
@@ -17,20 +16,16 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 base_dir="${TOP_SRCDIR}/tests/data/inputs/formats"
-expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_multilayer_fill_soco_weighted_2run_expected.ppm"
+expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_multilayer_fill_soco_weighted_2run_numeric.ppm"
 input_psd="${base_dir}/snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run.psd"
-output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 trace_output=''
-lsqa_msg=''
 command_status=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
-    -Lbuiltin! -o "${output_sixel}" "${input_psd}" 2>&1) || command_status=$?
+    -Lbuiltin! -o /dev/null "${input_psd}" 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
     echo "not ok" 1 - "builtin loader failed to decode PSB mode7 TySh StyleRun weighted 2-run fixture: ${trace_output}"
@@ -55,12 +50,13 @@ case "${trace_output}" in
         ;;
 esac
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
-    -b "MS-SSIM:${lsqa_floor}" \
-    "${expected_ppm}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "PSB mode7 TySh StyleRun weighted 2-run decode fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+# The reference uses the declared run weights or Normal fallback samples.
+# Two byte rounding boundaries plus float roundoff permit 1.01 RGB levels.
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
+    "${expected_ppm}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
+    echo "not ok 1 - decoded PSD samples differ from independent values"
     exit 0
 }
 
-echo "ok" 1 - "PSB mode7 TySh StyleRun weighted 2-run keeps deterministic trace and MS-SSIM ${lsqa_floor}"
+echo "ok" 1 - "PSB mode7 TySh StyleRun weighted 2-run keeps deterministic trace and independent pixel values"
 exit 0

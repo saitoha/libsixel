@@ -5,6 +5,11 @@
 #   python3 tests/data/loader/pngsuite_expected/generate_png_rgba8_white_ref.py \
 #       images/pngsuite/background/bgwn6a08.png \
 #       tests/data/loader/pngsuite_expected/0074_pngsuite_background_white_bgwn6a08_msssim.ppm
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_LIBPNG-}" = 1 || {
@@ -21,10 +26,10 @@ echo "1..1"
 set -v
 
 input_png="${TOP_SRCDIR}/images/pngsuite/background/bgwn6a08.png"
-expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0074_pngsuite_background_white_bgwn6a08_msssim.ppm"
+expected_ppm="${TOP_SRCDIR}/tests/data/loader/quality/3630e284-0074_pngsuite_background_white_bgwn6a08_msssim.ppm"
 output_sixel="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-bgwn6a08.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Acomposite -B#000 -Nexplicit_first -B#fff -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Acomposite -B#000 -Nexplicit_first -B#fff -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 - "img2sixel failed"
     exit 0
 }

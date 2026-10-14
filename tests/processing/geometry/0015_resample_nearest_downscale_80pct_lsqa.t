@@ -3,13 +3,13 @@
 # Policy: docs/encoder/preprocessing/resampling/compact-kernels.md
 #
 # Reference image details:
-# - Source: tests/data/inputs/snake_64.png (64x64)
-# - ImageMagick filter: Point
+# - Source: tests/data/inputs/snake_240.png (240x240)
+# - Independent reference: floor(output_index * source_size / target_size)
 # - Resize target: 80% of the original dimensions
 #
 # The test compares img2sixel output against the prebuilt reference image.
-# The MS-SSIM floor is tuned lower than other filters because nearest-neighbour
-# scaling preserves hard edges that amplify palette quantization artifacts.
+# Regenerate with tests/data/inputs/generate_scaling_quality_fixtures.py.
+# Both aligned dimensions remain >=176 after scaling.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -21,10 +21,10 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.90}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-reference_image="${TOP_SRCDIR}/tests/data/inputs/scaling/snake_64_nearest_80pct.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_240.png"
+reference_image="${TOP_SRCDIR}/tests/data/inputs/scaling/snake_240_nearest_80pct.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/nearest-downscale_80pct.six"
 
 

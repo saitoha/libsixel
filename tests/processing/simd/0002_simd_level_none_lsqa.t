@@ -1,6 +1,7 @@
 #!/bin/sh
 # Validate SIXEL_SIMD_LEVEL=none path with scale+colorspace work and LSQA.
 
+# The independently resized reference remains >=176x176.
 set -eux
 
 
@@ -16,13 +17,13 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
-reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_64_jpg_resize_63x.png"
-output_sixel="${ARTIFACT_LOCAL_DIR}/snake_63_none.six"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_192.jpg"
+reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_192_jpg_resize_191x.png"
+output_sixel="${ARTIFACT_LOCAL_DIR}/snake_191_none.six"
 lsqa_run_status=0
 lsqa_err=""
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_SIMD_LEVEL=none -Wo -w63 -o "${output_sixel}" "${input_image}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_SIMD_LEVEL=none -Wo -w191 -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "img2sixel failed"
     exit 0
 }

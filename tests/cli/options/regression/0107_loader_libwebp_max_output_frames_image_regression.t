@@ -4,6 +4,7 @@
 # Registry binding: libwebp_max_output_frames
 # Environment range: clamp-maximum
 
+# Image assertion: option-values-and-output-equivalence
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -22,7 +23,6 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp"
 reference_sixel="${TOP_SRCDIR}/tests/data/inputs/formats/animated_lossless_8x8_2frame_min_loop_disable_reference.six"
-reference_image="${TOP_SRCDIR}/tests/data/inputs/formats/animated-8x8-frame1-reference.ppm"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"
 short_output="${artifact_dir}/0107-loader-libwebp-max-frames-short-$$.six"
 env_output="${artifact_dir}/0107-loader-libwebp-max-frames-env-$$.six"
@@ -90,12 +90,10 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" \
-    -b "MS-SSIM:0.98" "${reference_image}" \
-    "${quality_output}" 2>&1) || lsqa_status=$?
-test "${lsqa_status:-0}" -eq 0 || {
-    echo "not ok" 1 - "max_output_frames image quality regressed"
-    printf "# %s\n" "${lsqa_error}"
+# The observation is option routing and exact output equivalence.
+# Image quality belongs to the dither, palette and loader quality suites.
+test -s "${short_output}" || {
+    echo "not ok 1 - option output is empty"
     exit 0
 }
 

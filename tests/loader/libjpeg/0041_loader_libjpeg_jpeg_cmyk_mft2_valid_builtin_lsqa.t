@@ -2,6 +2,11 @@
 # Policy: docs/loader/libjpeg.md
 # Verify libjpeg builtin CMS path renders embedded CMYK mft2 ICC profile.
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -19,7 +24,7 @@ set -v
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_jpeg="${TOP_SRCDIR}/tests/data/colormgmt/input/custom/cmyk_mft2_valid.jpg"
-reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/custom/cmyk_mft2_valid_builtin.six"
+reference_six="${TOP_SRCDIR}/tests/data/loader/quality/19f15fdd-cmyk_mft2_valid_builtin.ppm"
 output_six="${TMPDIR:-/tmp}/libsixel-cmyk-mft2-valid-$$.six"
 
 test -f "${input_jpeg}" || {
@@ -32,7 +37,7 @@ test -f "${reference_six}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibjpeg:cms_engine=builtin! "${input_jpeg}" >"${output_six}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Llibjpeg:cms_engine=builtin! "${input_jpeg}" >"${output_six}" || {
     echo "not ok" 1 - "libjpeg builtin cms decode failed: cmyk_mft2_valid"
     exit 0
 }

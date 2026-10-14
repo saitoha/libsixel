@@ -1,6 +1,11 @@
 #!/bin/sh
 # TAP test: libwebp -S renders the first frame for tiny animation.
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -24,10 +29,10 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp"
-image_ref="${TOP_SRCDIR}/tests/data/inputs/formats/animated-8x8-frame1-reference.ppm"
+image_ref="${TOP_SRCDIR}/tests/data/loader/quality/35e6e2c0-animated-8x8-frame1-reference.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/webp_static_frame.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! -S "${image_webp}" -o "${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 176 -h 176 -Llibwebp! -S "${image_webp}" -o "${output_sixel}" || {
     echo "not ok" 1 - "libwebp static frame conversion failed"
     exit 0
 }

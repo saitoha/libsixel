@@ -1,14 +1,15 @@
 #!/bin/sh
 # Check palette PNG stability across repeated lsqa runs.
 
+# The five-scale metric requires at least 176 pixels in both dimensions.
 set -eux
 
 
 printf '1..1\n'
 set -v
 
-image1="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
-image2="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
+image1="${TOP_SRCDIR}/images/snake-palette.png"
+image2="${TOP_SRCDIR}/images/snake.six"
 
 value0=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM "${image1}" "${image2}")
 value1=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM "${image1}" "${image2}")

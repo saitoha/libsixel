@@ -5,6 +5,7 @@
 # - Convert the input image with -X oklab -W din99d.
 # - Compare the output against the original image.
 # - Enforce MS-SSIM >= 0.99 via lsqa.
+# The reference five-scale MS-SSIM requires dimensions >=176x176.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -18,7 +19,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=0.99
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/cluster-oklab-work-din99d.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -t rgb -X oklab -W din99d -o "${output_sixel}" "${input_image}" || {

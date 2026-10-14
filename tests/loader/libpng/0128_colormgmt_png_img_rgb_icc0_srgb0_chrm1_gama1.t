@@ -1,7 +1,7 @@
 #!/bin/sh
 # Policy: docs/loader/png-color-metadata.md
 # Reference: independent gAMA/cHRM equations, before palette quantization.
-# TAP test: libpng loader colormgmt parity for rgb/img_rgb_icc0_srgb0_chrm1_gama1.png
+# TAP test: libpng loader independent decoded color values for rgb/img_rgb_icc0_srgb0_chrm1_gama1.png
 
 set -eux
 
@@ -10,19 +10,13 @@ test "${HAVE_LIBPNG-}" = 1 || {
     exit 0
 }
 
-test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\n"
-    exit 0
-}
 
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/colormgmt/input/png/rgb/img_rgb_icc0_srgb0_chrm1_gama1.png"
 reference_image="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/rgb/img_rgb_icc0_srgb0_chrm1_gama1.ppm"
-output_six="${ARTIFACT_LOCAL_DIR}/img_rgb_icc0_srgb0_chrm1_gama1_libpng.six"
 
 test -f "${input_png}" || {
     echo "not ok" 1 - "missing test fixture"
@@ -34,13 +28,12 @@ test -f "${reference_image}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng:cms_engine=auto! "${input_png}" >"${output_six}" || {
-    echo "not ok" 1 - "libpng decode failed"
-    exit 0
-}
-
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" "${reference_image}" "${output_six}" 2>&1) || {
-    echo "not ok" 1 - "${lsqa_msg}"
+# Check every displayed sRGB component against source equations before
+# palette quantization. Half an 8-bit level plus reference/float roundoff
+# permits either byte or float32 decoder storage without a spatial metric.
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_display_values \
+    "${reference_image}" "${input_png}" 'libpng:cms_engine=auto!' 0.51 || {
+    echo "not ok 1 - decoded PNG color samples differ from the independent oracle"
     exit 0
 }
 

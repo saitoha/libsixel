@@ -1,9 +1,8 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Confirm RGB PNG quality meets the lsqa baseline thresholds.
-# Reproduction commands (ImageMagick):
-#   convert images/snake.png -resize 64x64\! tests/data/inputs/snake_64.png
-#   convert images/snake.png -resize 64x64\! tests/data/inputs/formats/snake-64-reference-rgb.ppm
+# Fixture: tests/data/inputs/snake_192.png is the 192x192 source.
+# Compare the encoded image with its unquantized source samples.
 
 set -eux
 
@@ -20,8 +19,8 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 
-image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
+image_path="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/rgb.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "rgb quality regressed"

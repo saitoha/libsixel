@@ -1,6 +1,11 @@
 #!/bin/sh
 # Verify libtiff builtin CMS output for RGB mAB ICC fixture.
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -19,7 +24,7 @@ set -v
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_tiff="${TOP_SRCDIR}/tests/data/colormgmt/input/custom/rgb_mab_valid.tiff"
-reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/custom/rgb_mab_valid_tiff_builtin.six"
+reference_six="${TOP_SRCDIR}/tests/data/loader/quality/24a0f42d-rgb_mab_valid_tiff_builtin.ppm"
 output_six="${TMPDIR:-/tmp}/libsixel-rgb-mab-valid-tiff-$$.six"
 
 test -f "${input_tiff}" || {
@@ -32,7 +37,7 @@ test -f "${reference_six}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=builtin! "${input_tiff}" >"${output_six}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 176 -h 176 -Llibtiff:cms_engine=builtin! "${input_tiff}" >"${output_six}" || {
     echo "not ok" 1 - "libtiff builtin cms decode failed: rgb_mab_valid.tiff"
     exit 0
 }

@@ -2,6 +2,7 @@
 # Policy: docs/encoder/output/output-colorspace.md
 # Registry row: SIXEL_OPTION_SCHEMA_OUTPUT_COLORSPACE|g_output_color_values + 7|path
 # Registry binding: path|path_override
+# Image assertion: option-values-and-output-equivalence
 set -eux
 
 echo "1..1"
@@ -44,11 +45,10 @@ cmp -s "${short_output}" "${env_output}" || {
     echo "not ok 1 - ICC short and environment image agreement"
     exit 0
 }
-lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -Tdisplay-p3 \
-    -b "MS-SSIM:0.98" "${input_image}" "${short_output}" 2>&1) || lsqa_status=$?
-test "${lsqa_status:-0}" -eq 0 || {
-    printf '# %s\n' "${lsqa_error}"
-    echo "not ok 1 - ICC image sanity"
+# The observation is option routing and exact output equivalence.
+# Image quality belongs to the dither, palette and loader quality suites.
+test -s "${short_output}" || {
+    echo "not ok 1 - option output is empty"
     exit 0
 }
 echo "ok 1 - ICC file suboption image"

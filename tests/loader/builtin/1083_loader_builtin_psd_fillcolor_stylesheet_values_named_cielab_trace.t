@@ -16,22 +16,18 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 base_dir="${TOP_SRCDIR}/tests/data/inputs/formats"
 gray_reference="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_multilayer_fill_soco_gray_expected.ppm"
-output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 status=0
 trace_output=''
-lsqa_msg=''
 
 case_name=snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_cielab
     input_psd="${base_dir}/${case_name}.psd"
     command_status=0
     trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --env SIXEL_TRACE_TOPIC=psd_decode \
-        -Lbuiltin! -o "${output_sixel}" "${input_psd}" 2>&1) || command_status=$?
+        -Lbuiltin! -o /dev/null "${input_psd}" 2>&1) || command_status=$?
 
     test "${command_status}" -eq 0 || {
         echo "not ok" 1 - "builtin loader failed to decode TySh EngineData StyleSheetData /CIELab fixture ${case_name}: ${trace_output}"
@@ -59,14 +55,15 @@ case_name=snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_engin
             ;;
     esac
 
-    lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
-        -b "MS-SSIM:${lsqa_floor}" \
-        "${gray_reference}" "${output_sixel}" 2>&1) || {
-        echo "not ok" 1 - "TySh EngineData StyleSheetData /CIELab decode fell below MS-SSIM ${lsqa_floor} for ${case_name}: ${lsqa_msg}"
-        status=1
-        exit 0
-    }
+# Observe decoded samples before palette quantization. The independent
+# PPM and decoded bytes can each round by half a level; reserve 0.01 for
+# floating-point arithmetic in addition to that one-level sample budget.
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
+    "${gray_reference}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
+    echo "not ok 1 - decoded PSD samples differ from the independent PPM"
+    exit 0
+}
 test "${status}" -eq 0 || exit 0
 
-echo "ok" 1 - "PSD TySh EngineData StyleSheetData /CIELab matrix keeps deterministic trace and MS-SSIM ${lsqa_floor}"
+echo "ok" 1 - "PSD TySh EngineData StyleSheetData /CIELab matrix keeps deterministic trace matches reference pixel values"
 exit 0

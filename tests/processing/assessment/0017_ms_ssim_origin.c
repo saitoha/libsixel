@@ -15,6 +15,8 @@ test_qa_0017(int argc, char **argv)
     float *reference;
     float *target;
     unsigned int mask;
+    unsigned int canonical_mask;
+    unsigned int origin_mask;
     double expected;
     double actual;
     float av;
@@ -27,6 +29,9 @@ test_qa_0017(int argc, char **argv)
     int c;
     int value;
     int index;
+    int selection;
+    int canonical_index;
+    int origin_index;
     int ok;
     int available;
     size_t offset;
@@ -89,41 +94,72 @@ test_qa_0017(int argc, char **argv)
         goto end;
     }
     qa->signal_space = SIXEL_COLORSPACE_GAMMA;
-    mask = SIXEL_ASSESSMENT_METRIC_MASK(SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN);
-    index = SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN);
-    sixel_assessment_select_metrics(qa, mask);
-    if (SIXEL_FAILED(sixel_assessment_analyze(qa, a, b))) {
-        goto end;
-    }
-    expected = scenario == 1 ? 0.890641772073393 :
-        scenario == 2 ? 0.8264497748127774 :
-        scenario == 3 ? 0.9595507147459752 :
-        scenario == 4 || scenario == 5 ? 0.95971873668803 : 1.0;
-    actual = qa->results[index];
-    /* 1.5e-5 covers propagated input/luma error (at most 1.1e-5 for these
-     * fixtures), double moments/pooling/pow and float result storage. The
-     * independent 2-D generator also derives the input error bound. */
-    ok = qa->results_valid_mask == (available ? mask : 0u) &&
-        (!available || (isfinite(actual) && fabs(actual - expected) <= 1.5e-5));
-    if (scenario == 8 && ok) {
-        /* Valid -> unavailable must not publish the preceding score. Both
-         * narrow orientations are below the reference admission boundary. */
-        for (c = 0; c < 2 && ok; ++c) {
-            width = c == 0 ? 176 : 175;
-            height = c == 0 ? 175 : 176;
+    canonical_mask = SIXEL_ASSESSMENT_METRIC_MASK(
+        SIXEL_ASSESSMENT_METRIC_MS_SSIM);
+    origin_mask = SIXEL_ASSESSMENT_METRIC_MASK(
+        SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN);
+    canonical_index = SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_MS_SSIM);
+    origin_index = SIXEL_ASSESSMENT_INDEX(
+        SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN);
+    /* The same independent oracle applies to each spelling and to a full
+     * report. Exact masks also catch accidental publication of an alias
+     * which the caller did not select. */
+    ok = 1;
+    for (selection = 0; selection < 3 && ok; ++selection) {
+        ok = 0;
+        mask = selection == 0 ? canonical_mask : selection == 1 ? origin_mask
+            : canonical_mask | origin_mask;
+        index = selection == 1 ? origin_index : canonical_index;
+        if (scenario == 8) {
+            width = 176;
+            height = 176;
             if (SIXEL_FAILED(sixel_frame_init_borrowed(a, reference, width,
                     height, SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, 0)) ||
                     SIXEL_FAILED(sixel_frame_init_borrowed(b, target, width,
-                    height, SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, 0)) ||
-                    SIXEL_FAILED(sixel_assessment_analyze(qa, a, b))) {
-                ok = 0;
-            } else {
-                ok = qa->results_valid_mask == 0u && qa->results[index] == 0.0;
+                    height, SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, 0))) {
+                goto end;
+            }
+        }
+        sixel_assessment_select_metrics(qa, mask);
+        if (SIXEL_FAILED(sixel_assessment_analyze(qa, a, b))) {
+            goto end;
+        }
+        expected = scenario == 1 ? 0.890641772073393 :
+            scenario == 2 ? 0.8264497748127774 :
+            scenario == 3 ? 0.9595507147459752 :
+            scenario == 4 || scenario == 5 ? 0.95971873668803 : 1.0;
+        actual = qa->results[index];
+        /* 1.5e-5 covers propagated input/luma error (at most 1.1e-5 for these
+         * fixtures), double moments/pooling/pow and float result storage. The
+         * independent 2-D generator also derives the input error bound. */
+        ok = qa->results_valid_mask == (available ? mask : 0u) &&
+            (!available || (isfinite(actual) &&
+                fabs(actual - expected) <= 1.5e-5));
+        if (selection == 2 && available && ok) {
+            ok = qa->results[canonical_index] == qa->results[origin_index];
+        }
+        if (scenario == 8 && ok) {
+            /* Valid -> unavailable must not publish the preceding score. Both
+             * narrow orientations are below the reference size boundary. */
+            for (c = 0; c < 2 && ok; ++c) {
+                width = c == 0 ? 176 : 175;
+                height = c == 0 ? 175 : 176;
+                if (SIXEL_FAILED(sixel_frame_init_borrowed(a, reference, width,
+                        height, SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, 0)) ||
+                        SIXEL_FAILED(sixel_frame_init_borrowed(b, target, width,
+                        height, SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, 0)) ||
+                        SIXEL_FAILED(sixel_assessment_analyze(qa, a, b))) {
+                    ok = 0;
+                } else {
+                    ok = qa->results_valid_mask == 0u &&
+                        qa->results[canonical_index] == 0.0 &&
+                        qa->results[origin_index] == 0.0;
+                }
             }
         }
     }
     if (!ok) {
-        fprintf(stderr, "origin case %d: %.12g, expected %.12g, mask %x\n",
+        fprintf(stderr, "MS-SSIM case %d: %.12g, expected %.12g, mask %x\n",
             scenario, actual, expected, qa->results_valid_mask);
     }
 end:

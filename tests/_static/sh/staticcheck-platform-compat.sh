@@ -445,8 +445,10 @@ require_fixed 'od -An -tx1 -j16 -N8' \
     tests/cli/sixel2png/0013_size_preserves_aspect_ratio.t
 require_fixed '00 00 00 1f 00 00 00 05' \
     tests/cli/sixel2png/0013_size_preserves_aspect_ratio.t
-require_fixed 'lsqa_floor=0.98' \
-    tests/loader/builtin/0016_lsqa_roundtrip_rgba_small.t
+require_fixed 'loader/image_values' \
+    tests/loader/builtin/0016_roundtrip_rgba_samples.t
+require_fixed '"${output_sixel}" "${output_png}" '"'"'builtin:Enone!'"'"' 0' \
+    tests/loader/builtin/0016_roundtrip_rgba_samples.t
 require_fixed '#if defined(_MSC_VER)' assessment/lsqa.c
 require_fixed 'errno_t rc;' assessment/lsqa.c
 

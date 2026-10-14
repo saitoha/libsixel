@@ -17,23 +17,23 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_cmyk8_missing_composite_single_layer.psd"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_cmyk8_expected.ppm"
-output_sixel="${ARTIFACT_LOCAL_DIR}/psd_missing_composite_single_layer_cmyk8_output.six"
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" >/dev/null || {
     echo "not ok" 1 - "builtin loader failed to decode layer-only PSD CMYK8"
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear -b "MS-SSIM:${lsqa_floor}" \
-    "${reference_ppm}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "layer-only PSD CMYK8 fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+# This contract concerns decoded samples, before palette quantization.
+# The independent 8-bit PPM and decoded 8-bit samples can each round by
+# half a level; allow one RGB byte level plus float conversion roundoff.
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
+    "${reference_ppm}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
+    echo "not ok 1 - decoded PSD samples differ from the independent PPM"
     exit 0
 }
 
-echo "ok" 1 - "layer-only PSD CMYK8 keeps MS-SSIM ${lsqa_floor} against expected PPM"
+echo "ok" 1 - "layer-only PSD CMYK8 matches reference pixel values against expected PPM"
 exit 0

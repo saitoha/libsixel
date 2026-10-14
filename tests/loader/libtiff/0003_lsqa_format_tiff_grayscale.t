@@ -6,6 +6,11 @@
 #   convert images/snake.png -resize 64x64\! -colorspace Gray tests/data/inputs/formats/snake-64-reference-gray.ppm
 #   convert images/snake.png -resize 64x64\! -alpha set -channel A -evaluate set 100% +channel tests/data/inputs/formats/snake-64-reference-rgba.ppm
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -25,10 +30,10 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 lsqa_floor=0.98
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/grayscale.tiff"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.ppm"
+reference_path="${TOP_SRCDIR}/tests/data/loader/quality/ecb29f68-snake-64-reference-gray.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/grayscale.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibtiff! "${image_path}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Llibtiff! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "tiff grayscale conversion failed"
     exit 0
 }

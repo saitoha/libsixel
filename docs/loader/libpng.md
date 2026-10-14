@@ -244,12 +244,13 @@ The selected RGB16 Display-P3 ICC fixture is converted by the exclusive libpng l
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | LPW-01 | RGB16 ICC and partial alpha reach the actual CLI wire with independent RGB101 values, four retained holes, dimensions 8x4 and P2=1. | [tests/cli/color/0001_libpng_rgba16_wire.t](../../tests/cli/color/0001_libpng_rgba16_wire.t) |
+| LPW-02 | Unmanaged PNGSuite RGBA8 composed over explicit black matches independently calculated linear-alpha RGB samples before quantization, including zero-alpha pixels. | [tests/loader/libpng/0039_pngsuite_basic_default_basn6a08_samples.t](../../tests/loader/libpng/0039_pngsuite_basic_default_basn6a08_samples.t) |
 
 ### Quality regression tests
 
 | ID | Quality observation | Owning test |
 | --- | --- | --- |
-| LPQ-01 | PNGSuite RGBA8 and RGBA16 composed over explicit black preserve their MS-SSIM floors. | [tests/loader/libpng/0039_pngsuite_basic_default_basn6a08_msssim.t](../../tests/loader/libpng/0039_pngsuite_basic_default_basn6a08_msssim.t), [tests/loader/libpng/0040_pngsuite_basic_default_basn6a16_msssim.t](../../tests/loader/libpng/0040_pngsuite_basic_default_basn6a16_msssim.t) |
+| LPQ-01 | PNGSuite RGBA16 composed over explicit black preserves its end-to-end MS-SSIM floor. | [tests/loader/libpng/0040_pngsuite_basic_default_basn6a16_msssim.t](../../tests/loader/libpng/0040_pngsuite_basic_default_basn6a16_msssim.t) |
 | LPQ-03 | Multiple zero-alpha palette entries and a normalized single-zero fixture produce matching MS-SSIM 1.0 output with CMS disabled; this is not a direct index-map assertion. | [tests/loader/libpng/0172_loader_libpng_palette_trns_multi_zero_remap_icc.t](../../tests/loader/libpng/0172_loader_libpng_palette_trns_multi_zero_remap_icc.t) |
 
 

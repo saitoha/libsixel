@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/quality/metrics.md
-# JSON retains the origin key with null when five scales cannot be measured.
+# Both JSON keys are null when five scales cannot be measured.
 set -eux
 echo "1..1"
 set -v
@@ -12,7 +12,7 @@ value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none \
     exit 0
 }
 case "${value}" in
-    *'"MS-SSIM-origin": null'*) ;;
+    *'"MS-SSIM": null'*'"MS-SSIM-origin": null'*) ;;
     *) echo "not ok 1 - unavailable origin JSON field"; exit 0 ;;
 esac
 echo "ok 1 - unavailable origin JSON field"

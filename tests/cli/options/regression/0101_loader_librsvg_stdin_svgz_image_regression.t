@@ -5,6 +5,7 @@
 # Registry row: SIXEL_OPTION_SCHEMA_LOADERS|g_loader_values + SIXEL_LOADER_INDEX_LIBRSVG|stdin_svgz
 # Registry binding: librsvg_allow_stdin_svgz
 
+# Image assertion: option-values-and-output-equivalence
 set -eux
 
 test "${HAVE_LIBRSVG-}" = 1 || {
@@ -23,7 +24,6 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-transparent-2color.svgz"
-reference_image="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0087_librsvg_stdin_svgz_msssim.ppm"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"
 short_output="${artifact_dir}/0101-loader-librsvg-stdin-svgz-short-$$.six"
 env_output="${artifact_dir}/0101-loader-librsvg-stdin-svgz-env-$$.six"
@@ -67,12 +67,10 @@ cmp -s "${short_output}" "${env_output}" || {
     exit 0
 }
 
-lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" \
-    -D -b "MS-SSIM:0.98" "${reference_image}" \
-    "${short_output}" 2>&1) || lsqa_status=$?
-test "${lsqa_status:-0}" -eq 0 || {
-    echo "not ok" 1 - "stdin_svgz image quality regressed"
-    printf "# %s\n" "${lsqa_error}"
+# The observation is option routing and exact output equivalence.
+# Image quality belongs to the dither, palette and loader quality suites.
+test -s "${short_output}" || {
+    echo "not ok 1 - option output is empty"
     exit 0
 }
 

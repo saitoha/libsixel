@@ -994,7 +994,7 @@ static const MetricSpec sixel_metric_specs[] = {
     {"MS-SSIM-origin", "MS-SSIM-origin",
      SIXEL_ASSESSMENT_METRIC_MS_SSIM_ORIGIN},
     {"MS-SSIM", "MS-SSIM", SIXEL_ASSESSMENT_METRIC_MS_SSIM},
-    /* Preserve legacy prefixes, including -mm, now shared by origin. */
+    /* Keep established prefixes, including -mm, on the canonical name. */
     {"M", "MS-SSIM", SIXEL_ASSESSMENT_METRIC_MS_SSIM},
     {"MS", "MS-SSIM", SIXEL_ASSESSMENT_METRIC_MS_SSIM},
     {"MS-", "MS-SSIM", SIXEL_ASSESSMENT_METRIC_MS_SSIM},
@@ -2500,8 +2500,8 @@ show_help(void)
     fprintf(stdout,
             "\n"
             "MS-SSIM metrics:\n"
-            "  MS-SSIM         legacy multiscale arithmetic average\n"
-            "  MS-SSIM-origin  reference five-scale product (>=176x176)\n"
+            "  MS-SSIM         reference five-scale product (>=176x176)\n"
+            "  MS-SSIM-origin  compatibility name for MS-SSIM\n"
             "                  unavailable results print nan; JSON uses null\n"
             "\n"
             "Environment overrides:\n"

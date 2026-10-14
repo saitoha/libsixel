@@ -2,10 +2,11 @@
 # TAP test covering fixed float32 Sierra-1 diffusion.
 #
 # Flow:
-# - Convert the 64x64 snake reference with the target dithering options.
+# - Convert the 192x192 snake reference with the target dithering options.
 # - Decode the sixel output back to PNG for inspection.
 # - Run lsqa to ensure quality stays above the minimum floors.
 
+# The reference five-scale MS-SSIM requires dimensions >=176x176.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -20,7 +21,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d sierra:variant=1:scan=raster -W oklab -o "${output_sixel}" "${input_image}" || {

@@ -22,7 +22,7 @@ short_output="${artifact_dir}/0093-cms-short-$$.six"
 env_output="${artifact_dir}/0093-cms-env-$$.six"
 
 trace=$(SIXEL_TRACE_TOPIC=suboption_contract,loader ${SIXEL_RUNTIME-} \
-    "${IMG2SIXEL_PATH}" "-Lbuiltin:Ebuiltin!" \
+    "${IMG2SIXEL_PATH}" --lookup-policy=none "-Lbuiltin:Ebuiltin!" \
     "$input" 2>&1 >"${short_output}") || {
     echo "not ok 1 - short CMS conversion failed"
     exit 0
@@ -42,7 +42,7 @@ record=${record%%[![:print:]]*}
 }
 
 trace=$(SIXEL_TRACE_TOPIC=suboption_contract,loader ${SIXEL_RUNTIME-} \
-    "${IMG2SIXEL_PATH}" --env "SIXEL_LOADER_BUILTIN_CMS_ENGINE=builtin" "-Lbuiltin!" \
+    "${IMG2SIXEL_PATH}" --lookup-policy=none --env "SIXEL_LOADER_BUILTIN_CMS_ENGINE=builtin" "-Lbuiltin!" \
     "$input" 2>&1 >"${env_output}") || {
     echo "not ok 1 - env CMS conversion failed"
     exit 0
@@ -66,9 +66,13 @@ cmp -s "$short_output" "$env_output" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${LSQA_PATH}" --cms-engine=none -m MS-SSIM \
-    -b MS-SSIM:0.98 "$reference" "$short_output" >/dev/null || {
-    echo "not ok 1 - independent managed RGB quality below 0.98"
+# Eight exact source colors require no palette reduction. Full scanning
+# avoids lookup-table approximation. The sample budget is 1.275 levels for
+# SIXEL percentage rounding, 0.5 for decoding, 0.5 for the PNG oracle, and
+# 0.025 for floating-point color arithmetic (2.3 RGB byte levels total).
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
+    "$reference" "$short_output" 'builtin:Enone!' 2.3 || {
+    echo "not ok 1 - independent managed RGB samples exceed 2.3 levels"
     exit 0
 }
 

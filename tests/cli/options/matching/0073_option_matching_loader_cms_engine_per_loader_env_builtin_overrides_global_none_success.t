@@ -36,19 +36,17 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-lsqa_status=0
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" \
-    "${output_override}" "${output_cms1}" 2>&1) || lsqa_status=$?
-test "${lsqa_status}" -eq 0 || {
-    echo "not ok" 1 - "SIXEL_LOADER_BUILTIN_CMS_ENGINE did not match cms=1 reference: ${lsqa_msg-}"
+# Precedence is an exact output relationship, not a perceptual threshold.
+test -s "${output_override}" || {
+    echo "not ok 1 - encoded output is empty"
     exit 0
 }
-
-lsqa_status=0
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.995" \
-    "${output_override}" "${output_cms0}" 2>&1) || lsqa_status=$?
-test "${lsqa_status}" -eq 5 || {
-    echo "not ok" 1 - "override output did not differ from cms=0 baseline: ${lsqa_msg-}"
+cmp -s "${output_override}" "${output_cms1}" || {
+    echo "not ok 1 - per-loader override must match explicit CMS selection"
+    exit 0
+}
+cmp -s "${output_override}" "${output_cms0}" && {
+    echo "not ok 1 - per-loader override must differ from disabled CMS"
     exit 0
 }
 

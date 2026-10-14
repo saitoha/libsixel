@@ -2,12 +2,8 @@
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify multi-layer fallback keeps decoding and emits info trace for this
 # payload class after degrade policy update.
-# Reference generation commands:
-#   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py
-#   magick tests/data/inputs/snake_64.png -filter box -resize 16x16! \
-#       -fill 'rgb(255,0,255)' -draw 'rectangle 4,4 11,11' \
-#       -depth 8 -define ppm:format=raw \
-#       PPM:tests/data/loader/builtin_expected/psd_snake16_multilayer_unknown_blend_expected.ppm
+# Reference generation command:
+#   python3 tests/data/loader/builtin_expected/generate_small_psd_references.py
 
 set -eux
 
@@ -18,18 +14,15 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_mode7_rgb8_missing_composite_multilayer_unknown_blend.psd"
-reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_multilayer_unknown_blend_expected.ppm"
-output_sixel="${ARTIFACT_LOCAL_DIR}/0685_loader_builtin_psd_mode7_missing_composite_multilayer_unknown_blend_unsupported_trace_output.six"
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
+reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_multilayer_unknown_blend_numeric.ppm"
 trace_output=''
 command_status=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
-    -Lbuiltin! -o "${output_sixel}" "${input_psd}" 2>&1) || command_status=$?
+    -Lbuiltin! -o /dev/null "${input_psd}" 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
     echo "not ok" 1 - "builtin loader failed to decode fallback payload case: ${trace_output}"
@@ -45,11 +38,13 @@ case "${trace_output}" in
         ;;
 esac
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM  -b "MS-SSIM:${lsqa_floor}" \
-    "${reference_ppm}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "fallback payload decode fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+# The reference uses the declared run weights or Normal fallback samples.
+# Two byte rounding boundaries plus float roundoff permit 1.01 RGB levels.
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
+    "${reference_ppm}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
+    echo "not ok 1 - decoded PSD samples differ from independent values"
     exit 0
 }
 
-echo "ok" 1 - "fallback payload case decodes and keeps MS-SSIM ${lsqa_floor} with expected info trace"
+echo "ok" 1 - "fallback payload case decodes and keeps independent pixel values with expected info trace"
 exit 0

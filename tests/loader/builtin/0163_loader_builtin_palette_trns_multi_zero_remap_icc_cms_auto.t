@@ -35,11 +35,10 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! \
     exit 0
 }
 
-lsqa_msg=$(
-    set +xv
-    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:1.0" "${out_single}" "${out_multi}" 2>&1
-) || {
-    echo "not ok 1 - ${lsqa_msg}"
+# Palette-index remapping must preserve every decoded display sample.
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
+    "${out_single}" "${out_multi}" 'builtin:Enone!' 0 || {
+    echo "not ok 1 - palette remapping changed decoded display samples"
     exit 0
 }
 

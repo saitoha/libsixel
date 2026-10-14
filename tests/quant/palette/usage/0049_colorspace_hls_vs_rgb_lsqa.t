@@ -5,6 +5,7 @@
 # - Convert the input image with -t hls.
 # - Convert the input image with -t rgb.
 # - Compare both outputs and enforce MS-SSIM >= 0.99.
+# The reference five-scale MS-SSIM requires dimensions >=176x176.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -19,7 +20,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 lsqa_floor=0.99
 
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_hls="${ARTIFACT_LOCAL_DIR}/hls.six"
 output_rgb="${ARTIFACT_LOCAL_DIR}/rgb.six"
 

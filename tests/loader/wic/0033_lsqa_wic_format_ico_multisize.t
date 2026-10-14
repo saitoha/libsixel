@@ -3,6 +3,11 @@
 # Reproduction command (ImageMagick):
 #   convert tests/data/inputs/snake_64.png -define icon:auto-resize=16,32,48,64 tests/data/inputs/formats/snake-ico-multisize.ico
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -26,9 +31,9 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 lsqa_floor=0.96
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-multisize.ico"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.ppm"
+reference_path="${TOP_SRCDIR}/tests/data/loader/quality/cc877d5c-snake-32.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_ico_multisize.six"
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lwic:ico_minsize=30! "${image_path}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Lwic:ico_minsize=30! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "wic ico multisize conversion failed"
     exit 0
 }

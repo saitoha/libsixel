@@ -4,6 +4,11 @@
 # Reference image generation command:
 #   magick images/pngsuite/background/bgbn4a08.png -colorspace RGB -background "#000" -alpha remove -alpha off -colorspace sRGB -depth 8 \
 #       -define ppm:format=plain PPM:tests/data/loader/pngsuite_expected/0064_pngsuite_background_default_bgbn4a08_msssim.ppm
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_LIBPNG-}" = 1 || {
@@ -20,10 +25,10 @@ echo "1..1"
 set -v
 
 input_png="${TOP_SRCDIR}/images/pngsuite/background/bgbn4a08.png"
-expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0064_pngsuite_background_default_bgbn4a08_msssim.ppm"
+expected_ppm="${TOP_SRCDIR}/tests/data/loader/quality/0c07ee8f-0064_pngsuite_background_default_bgbn4a08_msssim.ppm"
 output_sixel="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-bgbn4a08.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Acomposite -B#000 -Nexplicit_first --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Acomposite -B#000 -Nexplicit_first --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 - "img2sixel failed"
     exit 0
 }

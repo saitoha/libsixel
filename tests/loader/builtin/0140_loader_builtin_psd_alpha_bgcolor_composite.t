@@ -48,14 +48,21 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${output_white_six}" -o "${output_whit
 }
 
 # Expect this to fail baseline check (status 5) because the images should differ.
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.99" \
-    "${output_black_png}" "${output_white_png}" 2>&1) || lsqa_status=$?
-lsqa_status=${lsqa_status-0}
-
-test "${lsqa_status}" -eq 5 || {
-    echo "not ok" 1 - "PSD bgcolor did not affect output: ${lsqa_msg}"
+# Observe a change in pixel colors directly: zero maximum color
+# difference means every compared pixel remained equal.
+# Maximum color error is a direct inequality observation here, with no
+# image-quality threshold and no unavailable-result-as-rejection shortcut.
+color_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m DE00_max \
+    "${output_black_png}" "${output_white_png}") || {
+    echo "not ok 1 - composited pixel comparison failed"
     exit 0
 }
+case "${color_error}" in
+    ""|0.000000|*[!0-9.]*)
+        echo "not ok 1 - background must produce a finite nonzero color change"
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - "builtin PSD alpha compositing changes with bgcolor"
 exit 0

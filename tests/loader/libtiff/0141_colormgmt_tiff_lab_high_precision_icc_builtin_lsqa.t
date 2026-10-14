@@ -2,6 +2,11 @@
 # Policy: docs/loader/color-management/README.md
 # Verify libtiff builtin CMS output for high-precision CIELAB TIFF with Lab ICC.
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -19,7 +24,7 @@ set -v
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_tiff="${TOP_SRCDIR}/tests/data/colormgmt/input/custom/lab_high_precision_icc.tiff"
-reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/custom/lab_high_precision_icc_tiff_builtin.six"
+reference_six="${TOP_SRCDIR}/tests/data/loader/quality/628be5d6-lab_high_precision_icc_tiff_builtin.ppm"
 output_six="${TMPDIR:-/tmp}/libsixel-lab-high-precision-icc-tiff-$$.six"
 
 test -f "${input_tiff}" || {
@@ -33,7 +38,7 @@ test -f "${reference_six}" || {
 }
 
 trace=$(SIXEL_TRACE_TOPIC=loader,loader_contract ${SIXEL_RUNTIME-} \
-    "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=builtin! "${input_tiff}" \
+    "${IMG2SIXEL_PATH}" -r nearest -w 176 -h 176 -Llibtiff:cms_engine=builtin! "${input_tiff}" \
     2>&1 >"${output_six}") || {
     echo "not ok" 1 - "libtiff builtin cms decode failed: lab_high_precision_icc.tiff"
     exit 0

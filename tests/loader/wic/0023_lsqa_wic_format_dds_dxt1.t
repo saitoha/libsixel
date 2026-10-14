@@ -9,6 +9,11 @@
 #   convert tests/data/inputs/snake_64.png DXT1:tests/data/inputs/formats/snake-dds-dxt1.dds
 #   convert tests/data/inputs/formats/rgba.png DXT5:tests/data/inputs/formats/snake-dds-dxt5.dds
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -32,9 +37,9 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 lsqa_floor=0.95
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-dds-dxt1.dds"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
+reference_path="${TOP_SRCDIR}/tests/data/loader/quality/7400d220-snake-64-reference-rgb.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_dds_dxt1.six"
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lwic! "${image_path}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Lwic! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "wic dds dxt1 conversion failed"
     exit 0
 }

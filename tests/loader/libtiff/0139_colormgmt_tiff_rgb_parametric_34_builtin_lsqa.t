@@ -2,6 +2,11 @@
 # Policy: docs/loader/color-management/README.md
 # Verify libtiff builtin CMS output for RGB parametric ICC fixture (types 3/4).
 
+# Assess the explicitly sized encoder output, after source decoding and
+# nearest resampling but before any post-encoding enlargement. The independent
+# reference uses the same integer replication; native sample tests stay small.
+# Regenerate: python3 tests/data/loader/quality/generate_references.py
+
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -20,7 +25,7 @@ set -v
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_tiff="${TOP_SRCDIR}/tests/data/colormgmt/input/custom/rgb_parametric_34.tiff"
-reference_png="${TOP_SRCDIR}/tests/data/color-numeric/tiff-para34-expected.png"
+reference_png="${TOP_SRCDIR}/tests/data/loader/quality/ab2e92a3-tiff-para34-expected.ppm"
 output_six="${TMPDIR:-/tmp}/libsixel-rgb-parametric-34-$$.six"
 
 test -f "${input_tiff}" || {
@@ -34,7 +39,7 @@ test -f "${reference_png}" || {
 }
 
 trace=$(SIXEL_TRACE_TOPIC=loader,loader_contract ${SIXEL_RUNTIME-} \
-    "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=builtin! "${input_tiff}" \
+    "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Llibtiff:cms_engine=builtin! "${input_tiff}" \
     2>&1 >"${output_six}") || {
     echo "not ok" 1 - "libtiff builtin cms decode failed: rgb_parametric_34"
     exit 0

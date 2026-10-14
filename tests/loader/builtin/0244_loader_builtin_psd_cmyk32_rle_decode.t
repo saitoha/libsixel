@@ -1,6 +1,6 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# Verify builtin loader decodes PSD CMYK 32-bit RLE with stable image quality.
+# Verify builtin loader decodes PSD CMYK 32-bit RLE with reference pixel values.
 # Fixture generation command:
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py
 # Reference generation command (ImageMagick):
@@ -18,23 +18,23 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_cmyk32_rle.psd"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_cmyk32_expected.ppm"
-output_sixel="${ARTIFACT_LOCAL_DIR}/psd_cmyk32_rle_output.six"
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.99}
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" >/dev/null || {
     echo "not ok" 1 - "PSD CMYK 32-bit RLE decode failed"
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear -P float32 -b "MS-SSIM:${lsqa_floor}" \
-    "${reference_ppm}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "PSD CMYK 32-bit RLE fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+# This contract concerns decoded samples, before palette quantization.
+# The independent 8-bit PPM and decoded 8-bit samples can each round by
+# half a level; allow one RGB byte level plus float conversion roundoff.
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
+    "${reference_ppm}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
+    echo "not ok 1 - decoded PSD samples differ from the independent PPM"
     exit 0
 }
 
-echo "ok" 1 - "PSD CMYK 32-bit RLE keeps MS-SSIM ${lsqa_floor} against expected PPM"
+echo "ok" 1 - "PSD CMYK 32-bit RLE matches reference pixel values against expected PPM"
 exit 0
