@@ -98,6 +98,14 @@ int test_color_0008(int argc, char **argv);
 int test_color_0009(int argc, char **argv);
 int test_color_0010(int argc, char **argv);
 int test_color_0011(int argc, char **argv);
+int test_kmgpu_0001_weighted_lloyd(int argc, char **argv);
+int test_kmgpu_0002_byte_rounding(int argc, char **argv);
+int test_kmgpu_0003_empty_cluster(int argc, char **argv);
+int test_kmgpu_0004_iteration_floor(int argc, char **argv);
+int test_kmgpu_0005_range_fallback_atomicity(int argc, char **argv);
+int test_kmgpu_0006_option_atomicity(int argc, char **argv);
+int test_kmgpu_0014_request_isolation(int argc, char **argv);
+int test_kmgpu_available(int argc, char **argv);
 int test_qa_0001(int argc, char **argv);
 int test_qa_0002(int argc, char **argv);
 int test_qa_0003(int argc, char **argv);
@@ -4817,6 +4825,22 @@ static test_entry_t const test_entries[] = {
     { "cms/0147_colorsync_curv", test_cms_0147 },
     { "cms/0181_gamma_option", test_cms_0181 },
     { "cms/0195_native_gamma", test_cms_0195 },
+    { "gpu-kmeans/0001_weighted_lloyd",
+      test_kmgpu_0001_weighted_lloyd },
+    { "gpu-kmeans/0002_byte_rounding",
+      test_kmgpu_0002_byte_rounding },
+    { "gpu-kmeans/0003_empty_cluster",
+      test_kmgpu_0003_empty_cluster },
+    { "gpu-kmeans/0004_iteration_floor",
+      test_kmgpu_0004_iteration_floor },
+    { "gpu-kmeans/0005_range_fallback_atomicity",
+      test_kmgpu_0005_range_fallback_atomicity },
+    { "gpu-kmeans/0006_option_atomicity",
+      test_kmgpu_0006_option_atomicity },
+    { "gpu-kmeans/0014_request_isolation",
+      test_kmgpu_0014_request_isolation },
+    { "gpu-kmeans/available",
+      test_kmgpu_available },
     { "assessment/0001_ciede2000_reference", test_qa_0001 },
     { "assessment/0002_same_physical_coordinates", test_qa_0002 },
     { "assessment/0003_same_rgb_different_definition", test_qa_0003 },

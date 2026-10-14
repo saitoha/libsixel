@@ -57,6 +57,8 @@
 #include "palette-kmeans.h"
 #include "palette-kmeans-assign.h"
 #include "palette-kmeans-build.h"
+#include "palette-kmeans-gpu.h"
+#include "options.h"
 #include "palette-plan.h"
 #include "palette-private.h"
 #include "pixelformat.h"
@@ -1219,6 +1221,7 @@ typedef struct sixel_palette_kmeans_build_request {
     int force_palette;
     int use_reversible;
     int final_merge_mode;
+    int gpu_policy;
     sixel_palette_binning_state_t *binning_state;
     sixel_allocator_t *allocator;
     int pixelformat;
@@ -1233,6 +1236,12 @@ static SIXELSTATUS
 build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
 {
     SIXELSTATUS status;
+    SIXELSTATUS gpu_status;
+    sixel_kmeans_gpu_request_t gpu_request;
+    unsigned int gpu_iterations;
+    int gpu_requested;
+    int gpu_required;
+    int gpu_completed;
     unsigned char **result;
     float **result_float32;
     unsigned char const *data;
@@ -1960,6 +1969,39 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                                     "init",
                                     log_detail);
     best_objective = 0.0;
+    memset(&gpu_request, 0, sizeof(gpu_request));
+    gpu_request.points = work_samples;
+    gpu_request.weights = work_weights;
+    gpu_request.centers = centers;
+    gpu_request.point_count = work_sample_count;
+    gpu_request.center_count = k;
+    gpu_request.max_iterations = max_iterations;
+    gpu_request.min_iterations = min_iterations;
+    gpu_request.threshold = lloyd_threshold;
+    gpu_request.round_centers = !input_is_float32;
+    /* The request carries the encoder's upper-level policy through dither
+     * and palette generation. OFF vetoes the stage-specific GPU opt-in;
+     * FORCE forbids fallback only when that opt-in selects GPU Lloyd. */
+    gpu_requested = request->gpu_policy != SIXEL_GPU_POLICY_OFF &&
+        sixel_get_kmeans_backend() == SIXEL_PALETTE_KMEANS_BACKEND_GPU;
+    gpu_required = gpu_requested &&
+        request->gpu_policy == SIXEL_GPU_POLICY_FORCE;
+    /* GPU Lloyd has no residual feedback or in-iteration output-grid snap.
+     * AUTO retains the CPU implementation; FORCE reports the incompatibility.
+     * Ordinary byte-center rounding is implemented by the GPU update pass. */
+    if (gpu_requested &&
+            (feedback_mode != SIXEL_PALETTE_KMEANS_FEEDBACK_OFF ||
+             (use_reversible && sixel_palette_snap_is_enabled() &&
+              sixel_palette_should_snap(
+                  SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER)))) {
+        if (gpu_required) {
+            sixel_helper_set_additional_message(
+                "gpu k-means: feedback or iteration snap is not supported.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        gpu_requested = 0;
+    }
     for (restart_index = 0u; restart_index < restart_count; ++restart_index) {
         hamerly_initialized = 0u;
         elkan_initialized = 0u;
@@ -1992,7 +2034,40 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             goto end;
         }
 
-        for (iteration = 0u; iteration < max_iterations; ++iteration) {
+        gpu_completed = 0;
+        gpu_status = SIXEL_FALSE;
+        if (gpu_requested) {
+            iteration_wall_start = sixel_timer_now();
+            if (lloyd_iterations == 0u) {
+                iterate_start = iteration_wall_start;
+            }
+            job_iteration = sixel_palette_kmeans_log_start(logger,
+                job_seq, engine_name, "palette/iterate", "iterate");
+            gpu_iterations = 0u;
+            gpu_status = sixel_kmeans_gpu_refine(&gpu_request,
+                                                  &gpu_iterations);
+            gpu_completed = gpu_status == SIXEL_OK;
+            if (gpu_completed) {
+                lloyd_iterations += gpu_iterations;
+                iterate_stop = sixel_timer_now();
+            }
+            (void)snprintf(log_detail, sizeof(log_detail),
+                "backend=%s restart=%u iter=%u status=0x%04x",
+                gpu_completed ? "metal" : "cpu-fallback", restart_index + 1u,
+                gpu_iterations, (unsigned int)gpu_status);
+            sixel_debugf("k-means %s", log_detail);
+            sixel_palette_kmeans_log_finish(logger, job_iteration,
+                engine_name, "palette/iterate", "iterate", log_detail);
+            if (!gpu_completed && gpu_required) {
+                sixel_helper_set_additional_message(
+                    "gpu k-means: required GPU backend could not execute.");
+                status = gpu_status == SIXEL_FALSE
+                    ? SIXEL_FEATURE_ERROR : gpu_status;
+                goto end;
+            }
+        }
+        for (iteration = 0u; !gpu_completed && iteration < max_iterations;
+                ++iteration) {
             iteration_wall_start = sixel_timer_now();
             if (lloyd_iterations == 0u) {
                 iterate_start = iteration_wall_start;
@@ -2410,6 +2485,20 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             }
         }
 
+        /* Trace the executed backend, including policy/platform fallback.
+         * This is separate from the requested option and remains available
+         * in release builds without creating a diagnostic log file. */
+        if (sixel_diagnostics_trace_topic_is_enabled("kmeans_backend")) {
+            fprintf(stderr,
+                "LSXKMEANS1|requested=%s|effective=%s|iterations=%u|"
+                "status=0x%04x|\n",
+                sixel_get_kmeans_backend() == SIXEL_PALETTE_KMEANS_BACKEND_GPU
+                    ? "gpu" : "cpu",
+                gpu_completed ? "metal" : "cpu",
+                gpu_completed ? gpu_iterations :
+                    (iteration < max_iterations ? iteration + 1u : iteration),
+                (unsigned int)gpu_status);
+        }
         objective = sixel_kmeans_assign_samples(centers,
                                                 k,
                                                 work_samples,
@@ -3370,6 +3459,7 @@ sixel_palette_build_kmeans_internal(
     build_request.origcolors = &origcolors;
     build_request.quality_mode = SIXEL_PALETTE_CONTEXT(palette)->quality_mode;
     build_request.force_palette = SIXEL_PALETTE_CONTEXT(palette)->force_palette;
+    build_request.gpu_policy = context->gpu_policy;
     build_request.use_reversible = reversible_for_quantizer;
     build_request.final_merge_mode = SIXEL_PALETTE_CONTEXT(palette)
         ->final_merge_mode;

@@ -1097,7 +1097,7 @@ static sixel_option_value_schema_t const g_quantize_values[] = {
         SIXEL_OPTION_BASE_POLICY_NONE
     },
     {
-        "kmeans", SIXEL_QUANTIZE_MODEL_KMEANS, 17u,
+        "kmeans", SIXEL_QUANTIZE_MODEL_KMEANS, 18u,
         SIXEL_OPTION_BASE_POLICY_NONE
     },
     {
@@ -1551,6 +1551,11 @@ static sixel_suboption_choice_t const g_lookup_packing_choices[] = {
     { "linear", SIXEL_LOOKUP_PACK_LINEAR },
     { "morton", SIXEL_LOOKUP_PACK_MORTON },
     { "hilbert", SIXEL_LOOKUP_PACK_HILBERT }
+};
+
+static sixel_suboption_choice_t const g_kmeans_backend_choices[] = {
+    { "cpu", SIXEL_PALETTE_KMEANS_BACKEND_CPU },
+    { "gpu", SIXEL_PALETTE_KMEANS_BACKEND_GPU }
 };
 
 static sixel_suboption_choice_t const g_kmeans_init_type_choices[] = {
@@ -2194,6 +2199,13 @@ static sixel_suboption_key_t const g_suboptions[] = {
         g_heckbert_profile_choices,
         quantize_model_heckbert_profile),
 
+    SIXEL_REGISTRY_ENCODER_CHOICE(
+        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+        g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
+        "backend", 'G', "SIXEL_PALETTE_KMEANS_BACKEND", NULL, NULL,
+        g_kmeans_backend_choices,
+        quantize_model_kmeans_backend,
+        quantize_model_kmeans_backend_override),
     SIXEL_REGISTRY_ENCODER_CHOICE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,

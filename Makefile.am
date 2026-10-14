@@ -723,6 +723,7 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/encoder/palette-construction/quantization/measurements/quantize-model-speed.csv \
 	docs/encoder/palette-construction/quantization/measurements/quantize-model-speed.png \
 	docs/encoder/palette-construction/quantization/README.md \
+	docs/encoder/palette-construction/gpu-kmeans.md \
 	docs/quality/measurement-policy.md \
 	docs/quality/metrics.md \
 	docs/quality/video-evaluation.md \

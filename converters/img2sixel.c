@@ -241,6 +241,11 @@ static cli_option_help_t const g_option_help_table[] = {
         "      sub-option:\n"
         "        :profile=NAME (:PNAME) compat, speed, quality\n"
         "      kmeans   -> k-means clustering. sub-option:\n"
+        "          :backend=NAME (:GNAME) cpu (default) or gpu.\n"
+        "              gpu uses Metal FP32 Lloyd iteration when supported;\n"
+        "              requires -Gauto (CPU fallback) or -Gforce (error).\n"
+        "              Feedback and iteration snap are CPU-only.\n"
+        "              GPU scans all centers; prune controls CPU execution.\n"
         "          :inittype=TYPE (:ITYPE) choose k-means seed mode:\n"
         "              auto -> choose seed mode automatically (default)\n"
         "              none -> disable specialized seeding\n"
@@ -275,7 +280,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      compact suboption names (uppercase letter + value):\n"
         "        all models: sample_target=C\n"
         "        heckbert: profile=P\n"
-        "        kmeans: inittype=I, threshold=T, binbits=N, mapping=M,\n"
+        "        kmeans: backend=G, inittype=I, threshold=T, binbits=N, mapping=M,\n"
         "          softdist=D, feedback=F,\n"
         "          prune=P, seed=S, restarts=E, iter=A, iter_max=X,\n"
         "          miniter=U, polish_iter=H, feedback_slots=K,\n"
@@ -811,14 +816,15 @@ static cli_option_help_t const g_option_help_table[] = {
         'G',
         "gpu-policy",
         "-G POLICY[:KEY=VALUE], --gpu-policy=POLICY[:KEY=VALUE]\n"
-        "    choose palette-apply accelerator policy:\n"
+        "    choose upper-level GPU accelerator policy:\n"
         "      off   -> keep the CPU path (default)\n"
-        "      auto  -> probe GPU support and use it only above the threshold\n"
+        "      auto  -> try eligible GPU stages, with CPU fallback\n"
         "      force -> require a supported GPU path and fail otherwise\n"
         "    encoder sub-option:\n"
         "      :palette_threshold=PIXELS (:PPIXELS)\n"
-        "      set the auto-policy minimum pixel count\n"
-        "    accelerates exact --lookup-policy=none and one-dimensional\n"
+        "      set the auto-policy minimum palette-apply pixel count\n"
+        "    gates -Qkmeans:backend=gpu and accelerates exact\n"
+        "    --lookup-policy=none and one-dimensional\n"
         "    --lookup-policy=eytzinger palette apply\n"
     },
     {
@@ -1985,6 +1991,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "Break condition for k-means refinement (0.0-0.5, default 0.125)."
     },
     {
+        "SIXEL_PALETTE_KMEANS_BACKEND",
+        "k-means iteration backend: cpu (default) or gpu.\n"
+        "Requires -Gauto (CPU fallback) or -Gforce (error if unsupported)."
+    },
+    {
         "SIXEL_PALETTE_KMEANS_INITTYPE",
         "choose k-means seed selection: auto, pca, or none (default auto)."
     },
@@ -2273,14 +2284,14 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_GPU_POLICY",
-        "set default palette-apply accelerator policy. Accepts off, auto,\n"
+        "set default upper-level GPU accelerator policy. Accepts off, auto,\n"
         "or force. Invalid values keep the built-in default off.\n"
-        "Overridden by -G/--gpu-policy. Currently accelerates exact\n"
-        "--lookup-policy=none palette apply."
+        "Overridden by -G/--gpu-policy. Gates GPU k-means and accelerates\n"
+        "exact --lookup-policy=none palette apply."
     },
     {
         "SIXEL_GPU_PALETTE_THRESHOLD",
-        "set the minimum pixel count for --gpu-policy=auto.\n"
+        "set the minimum palette-apply pixel count for --gpu-policy=auto.\n"
         "Invalid values keep the built-in default 262144. The -G\n"
         "palette_threshold suboption (short form PPIXELS) takes precedence."
     },

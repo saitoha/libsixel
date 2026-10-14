@@ -81,6 +81,9 @@
 # define SIXEL_KMEANS_TLS_AVAILABLE 0
 #endif
 
+static SIXEL_TLS int sixel_kmeans_backend_override_enabled = 0;
+static SIXEL_TLS sixel_kmeans_backend sixel_kmeans_backend_override_value
+    = SIXEL_PALETTE_KMEANS_BACKEND_CPU;
 static SIXEL_TLS int sixel_kmeans_init_type_override_enabled = 0;
 static SIXEL_TLS sixel_kmeans_init_type sixel_kmeans_init_type_override_value
     = SIXEL_PALETTE_KMEANS_INIT_AUTO;
@@ -885,6 +888,35 @@ sixel_kmeans_prune_policy_to_string(sixel_kmeans_prune_policy policy)
     default:
         return "auto";
     }
+}
+
+void
+sixel_set_kmeans_backend_override(int enabled, sixel_kmeans_backend backend)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
+    sixel_kmeans_backend_override_enabled = enabled ? 1 : 0;
+    sixel_kmeans_backend_override_value = backend;
+    sixel_kmeans_override_lock_release(lock_acquired);
+}
+
+sixel_kmeans_backend
+sixel_get_kmeans_backend(void)
+{
+    int value;
+
+    value = SIXEL_PALETTE_KMEANS_BACKEND_CPU;
+    if (sixel_kmeans_backend_override_enabled) {
+        value = sixel_kmeans_backend_override_value;
+    } else {
+        (void)sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, "kmeans",
+            SIXEL_SUBOPTION_BINDING_ID_2(quantize_model_kmeans_backend,
+                quantize_model_kmeans_backend_override), &value);
+    }
+    return value == SIXEL_PALETTE_KMEANS_BACKEND_GPU ?
+        SIXEL_PALETTE_KMEANS_BACKEND_GPU : SIXEL_PALETTE_KMEANS_BACKEND_CPU;
 }
 
 static sixel_kmeans_prune_policy

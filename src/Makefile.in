@@ -98,7 +98,8 @@ host_triplet = @host@
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/quicklook_thumbnailing.m
 
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_3 = \
-@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-palette-metal.m
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-palette-metal.m \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-kmeans-metal.m
 
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_4 = \
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/clipboard_macos.m
@@ -205,8 +206,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette-kmeans.c $(srcdir)/palette-kmeans-assign.c \
 	$(srcdir)/palette-kmeans-assign.h \
 	$(srcdir)/palette-kmeans-build.c \
-	$(srcdir)/palette-kmeans-build.h $(srcdir)/palette-kmeans.h \
-	$(srcdir)/palette-bin-histogram.c \
+	$(srcdir)/palette-kmeans-build.h \
+	$(srcdir)/palette-kmeans-gpu.c $(srcdir)/palette-kmeans-gpu.h \
+	$(srcdir)/palette-kmeans.h $(srcdir)/palette-bin-histogram.c \
 	$(srcdir)/palette-bin-histogram.h $(srcdir)/palette-plan.c \
 	$(srcdir)/palette-plan.h $(srcdir)/sample-stream.c \
 	$(srcdir)/sample-stream.h $(srcdir)/weighted-point-set.c \
@@ -348,10 +350,11 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/classid-factory.h $(srcdir)/classid-service.h \
 	$(srcdir)/rgblookup.h $(srcdir)/lso2.h \
 	$(srcdir)/quicklook_thumbnailing.m \
-	$(srcdir)/gpu-palette-metal.m $(srcdir)/clipboard_macos.m \
-	$(srcdir)/clipboard_carbon.c
+	$(srcdir)/gpu-palette-metal.m $(srcdir)/palette-kmeans-metal.m \
+	$(srcdir)/clipboard_macos.m $(srcdir)/clipboard_carbon.c
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
-@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-gpu-palette-metal.lo
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-gpu-palette-metal.lo \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-metal.lo
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_3 = libsixel_la-clipboard_macos.lo
 @HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_4 = libsixel_la-clipboard_carbon.lo
 @WANT_AMALGAMATED_LIB_FALSE@am_libsixel_la_OBJECTS =  \
@@ -390,6 +393,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-assign.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-build.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-gpu.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-bin-histogram.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-plan.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sample-stream.lo \
@@ -672,6 +676,8 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-palette-kcenter.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kmeans-build.Plo \
+	./$(DEPDIR)/libsixel_la-palette-kmeans-gpu.Plo \
+	./$(DEPDIR)/libsixel_la-palette-kmeans-metal.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kmeans.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kmedoids.Plo \
 	./$(DEPDIR)/libsixel_la-palette-plan.Plo \
@@ -1104,6 +1110,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans-assign.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans-build.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans-build.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans-gpu.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-bin-histogram.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-bin-histogram.h \
@@ -1710,6 +1718,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kcenter.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans-build.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans-gpu.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans-metal.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmedoids.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-plan.Plo@am__quote@ # am--include-marker
@@ -2010,6 +2020,13 @@ libsixel_la-palette-kmeans-build.lo: palette-kmeans-build.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-kmeans-build.c' object='libsixel_la-palette-kmeans-build.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-kmeans-build.lo `test -f 'palette-kmeans-build.c' || echo '$(srcdir)/'`palette-kmeans-build.c
+
+libsixel_la-palette-kmeans-gpu.lo: palette-kmeans-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-kmeans-gpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-kmeans-gpu.Tpo -c -o libsixel_la-palette-kmeans-gpu.lo `test -f 'palette-kmeans-gpu.c' || echo '$(srcdir)/'`palette-kmeans-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-kmeans-gpu.Tpo $(DEPDIR)/libsixel_la-palette-kmeans-gpu.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-kmeans-gpu.c' object='libsixel_la-palette-kmeans-gpu.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-kmeans-gpu.lo `test -f 'palette-kmeans-gpu.c' || echo '$(srcdir)/'`palette-kmeans-gpu.c
 
 libsixel_la-palette-bin-histogram.lo: palette-bin-histogram.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-bin-histogram.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-bin-histogram.Tpo -c -o libsixel_la-palette-bin-histogram.lo `test -f 'palette-bin-histogram.c' || echo '$(srcdir)/'`palette-bin-histogram.c
@@ -2882,6 +2899,13 @@ libsixel_la-gpu-palette-metal.lo: gpu-palette-metal.m
 @AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-gpu-palette-metal.lo `test -f 'gpu-palette-metal.m' || echo '$(srcdir)/'`gpu-palette-metal.m
 
+libsixel_la-palette-kmeans-metal.lo: palette-kmeans-metal.m
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-palette-kmeans-metal.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-kmeans-metal.Tpo -c -o libsixel_la-palette-kmeans-metal.lo `test -f 'palette-kmeans-metal.m' || echo '$(srcdir)/'`palette-kmeans-metal.m
+@am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-kmeans-metal.Tpo $(DEPDIR)/libsixel_la-palette-kmeans-metal.Plo
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='palette-kmeans-metal.m' object='libsixel_la-palette-kmeans-metal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-palette-kmeans-metal.lo `test -f 'palette-kmeans-metal.m' || echo '$(srcdir)/'`palette-kmeans-metal.m
+
 libsixel_la-clipboard_macos.lo: clipboard_macos.m
 @am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-clipboard_macos.lo -MD -MP -MF $(DEPDIR)/libsixel_la-clipboard_macos.Tpo -c -o libsixel_la-clipboard_macos.lo `test -f 'clipboard_macos.m' || echo '$(srcdir)/'`clipboard_macos.m
 @am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-clipboard_macos.Tpo $(DEPDIR)/libsixel_la-clipboard_macos.Plo
@@ -3207,6 +3231,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kcenter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-build.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-gpu.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmedoids.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-plan.Plo
@@ -3409,6 +3435,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kcenter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-build.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-gpu.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmedoids.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-plan.Plo

@@ -378,6 +378,7 @@ struct palette_float32_entries_request {
     int depth;
 };
 
+/* GPU policy is request-local; zero-initialized requests stay on CPU. */
 struct palette_generate_request {
     void const *data;
     unsigned int length;
@@ -392,6 +393,7 @@ struct palette_generate_request {
     int final_merge_mode;
     int lut_policy;
     int prefer_float32;
+    int gpu_policy;
 };
 
 struct palette_entries_view {

@@ -674,6 +674,7 @@ typedef struct sixel_palette_float32_entries_request {
     int depth;
 } sixel_palette_float32_entries_request_t;
 
+/* GPU policy is request-local; zero-initialized requests stay on CPU. */
 typedef struct sixel_palette_generate_request {
     void const *data;
     unsigned int length;
@@ -688,6 +689,7 @@ typedef struct sixel_palette_generate_request {
     int final_merge_mode;
     int lut_policy;
     int prefer_float32;
+    int gpu_policy;
 } sixel_palette_generate_request_t;
 
 typedef struct sixel_palette_entries_view {

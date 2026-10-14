@@ -1336,6 +1336,7 @@ sixel_palette_generate_internal(
     context.quantize_model = request->quantize_model;
     context.final_merge_mode = request->final_merge_mode;
     context.lut_policy = request->lut_policy;
+    context.gpu_policy = request->gpu_policy;
     context.attempt = storage->build_attempt_active != 0
         ? &storage->build_attempt
         : NULL;
@@ -1397,7 +1398,12 @@ sixel_palette_generate_internal(
             depth = (unsigned int)storage->depth;
             goto success;
         }
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
+        /* FORCE must survive the byte dispatcher as well: trying another
+         * CPU quantizer here would hide the selected GPU stage's failure. */
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat) ||
+                (context.gpu_policy == SIXEL_GPU_POLICY_FORCE &&
+                 sixel_get_kmeans_backend() ==
+                    SIXEL_PALETTE_KMEANS_BACKEND_GPU)) {
             goto end;
         }
     } else if (context.quantize_model == SIXEL_QUANTIZE_MODEL_KCENTER) {

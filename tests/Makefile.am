@@ -181,6 +181,14 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0001_WEIGHTED_LLOYD \
+    -DBUILD_TEST_0002_BYTE_ROUNDING \
+    -DBUILD_TEST_0003_EMPTY_CLUSTER \
+    -DBUILD_TEST_0004_ITERATION_FLOOR \
+    -DBUILD_TEST_0005_RANGE_FALLBACK_ATOMICITY \
+    -DBUILD_TEST_0006_OPTION_ATOMICITY \
+    -DBUILD_TEST_0014_REQUEST_ISOLATION \
+    -DBUILD_GPU_KMEANS_TEST_COMMON \
     -DBUILD_TEST_0001_SRGB_IDENTITY \
     -DBUILD_TEST_0038_EDGE_LINEAR_REFERENCE \
     -DBUILD_TEST_0039_RAY_SRGB_REFERENCE \
@@ -3492,6 +3500,14 @@ TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 endif
 
 test_runner_SOURCES = test_runner.c \
+    quant/palette/gpu_kmeans/0001_weighted_lloyd.c \
+    quant/palette/gpu_kmeans/0002_byte_rounding.c \
+    quant/palette/gpu_kmeans/0003_empty_cluster.c \
+    quant/palette/gpu_kmeans/0004_iteration_floor.c \
+    quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c \
+    quant/palette/gpu_kmeans/0006_option_atomicity.c \
+    quant/palette/gpu_kmeans/0014_request_isolation.c \
+    quant/palette/gpu_kmeans/gpu_kmeans_test_common.c \
     quant/palette/delta_native/0015_delta_signed_threshold.c \
     quant/palette/delta_native/0016_delta_p3_or_recovery.c \
     quant/palette/delta_native/0017_delta_spatial_dispatch.c \

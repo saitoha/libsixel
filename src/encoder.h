@@ -123,6 +123,8 @@ struct sixel_encoder {
     int quality_mode;
     int quantize_model;
     int quantize_model_heckbert_profile;
+    int quantize_model_kmeans_backend_override;
+    int quantize_model_kmeans_backend;
     int quantize_model_kmeans_init_override;
     int quantize_model_kmeans_init_type;
     int quantize_model_kmeans_threshold_override;

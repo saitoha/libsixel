@@ -136,6 +136,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/palette-kmeans-assign.h \
                 $(srcdir)/palette-kmeans-build.c \
                 $(srcdir)/palette-kmeans-build.h \
+                $(srcdir)/palette-kmeans-gpu.c \
+                $(srcdir)/palette-kmeans-gpu.h \
                 $(srcdir)/palette-kmeans.h \
                 $(srcdir)/palette-bin-histogram.c \
                 $(srcdir)/palette-bin-histogram.h \
@@ -396,7 +398,8 @@ $(srcdir)/quicklook_thumbnailing.m
 endif
 if HAVE_METAL
 libsixel_la_SOURCES += \
-$(srcdir)/gpu-palette-metal.m
+$(srcdir)/gpu-palette-metal.m \
+$(srcdir)/palette-kmeans-metal.m
 endif
 if HAVE_CLIPBOARD_MACOS_APPKIT
 libsixel_la_SOURCES += \

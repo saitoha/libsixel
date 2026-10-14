@@ -40,6 +40,17 @@
 extern "C" {
 #endif
 
+typedef enum sixel_kmeans_backend {
+    SIXEL_PALETTE_KMEANS_BACKEND_CPU = 0,
+    SIXEL_PALETTE_KMEANS_BACKEND_GPU,
+} sixel_kmeans_backend;
+
+SIXEL_INTERNAL_API void
+sixel_set_kmeans_backend_override(int enabled, sixel_kmeans_backend backend);
+
+SIXEL_INTERNAL_API sixel_kmeans_backend
+sixel_get_kmeans_backend(void);
+
 typedef enum sixel_kmeans_init_type {
     SIXEL_PALETTE_KMEANS_INIT_AUTO = 0,
     SIXEL_PALETTE_KMEANS_INIT_NONE,

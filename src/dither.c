@@ -2753,6 +2753,7 @@ sixel_dither_initialize_internal(
     palette_request.final_merge_mode = dither->final_merge_mode;
     palette_request.lut_policy = dither->lut_policy;
     palette_request.prefer_float32 = dither->prefer_float32;
+    palette_request.gpu_policy = dither->gpu_policy;
     if (build_attempt != NULL) {
         status = sixel_palette_build_attempt_begin(dither->palette,
                                                    build_attempt);

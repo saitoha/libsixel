@@ -123,11 +123,14 @@ pipelines.
 .RE
 .TP 5
 .B \-G \fIPOLICY[:KEY=VALUE]\fP, \-\-gpu\-policy=\fIPOLICY[:KEY=VALUE]\fP
-choose the palette application accelerator policy.
-\fBoff\fP keeps the CPU path, \fBauto\fP uses a supported GPU for
-sufficiently large images, and \fBforce\fP requires GPU acceleration.
+choose the upper-level GPU accelerator policy.
+\fBoff\fP keeps all stages on CPU (default); \fBauto\fP tries eligible
+GPU stages with CPU fallback; \fBforce\fP requires supported GPU execution
+for selected GPU stages and palette application.
+K-means additionally requires \fB-Qkmeans:backend=gpu\fP.
 The encoder suboption \fB:palette_threshold=PIXELS\fP, with short form
-\fB:PPIXELS\fP, sets the minimum image size used by \fBauto\fP.
+\fB:PPIXELS\fP, sets the minimum image size used by \fBauto\fP
+for palette application only, without gating GPU k-means.
 .TP 5
 .B \-j \fIPOLICY[:KEY=VALUE]\fP, \-\-runtime\-policy=\fIPOLICY[:KEY=VALUE]\fP
 choose process-wide runtime tuning.  \fIPOLICY\fP is \fBauto\fP,
@@ -245,6 +248,22 @@ The \fBkmeans\fP base value accepts suboptions using
 .br
 Supported k-means suboptions:
 .br
+\fBbackend\fP (short form \fBGNAME\fP): \fBcpu\fP (default) or \fBgpu\fP.
+GPU Lloyd iteration requires a Metal-enabled build and an available device.
+It uses FP32 arithmetic and full center scans; \fBprune\fP controls CPU
+execution. Sampling, initialization, final assignment and merge remain on CPU.
+With \fB--gpu-policy=auto\fP, residual feedback, active iteration snap,
+unsupported platforms, resource/numeric limits and failed GPU attempts fall
+back to CPU from unchanged seeds. With \fBforce\fP they return an error. Supported requests have at most 1048576
+weighted points and 1024 internal centers, finite coordinates within
++/-65536 and nonnegative weights no larger than 4294967295; nonzero
+coordinates and weights must be representable as normal FP32 values.
+Results need not be bit-identical to CPU double arithmetic.
+\fB--gpu-policy=off\fP (default) keeps k-means on CPU even when
+\fBbackend=gpu\fP is selected. \fBbackend=cpu\fP stays on CPU under
+every GPU policy. \fBforce\fP also retains its palette-application
+requirement; for example, use \fB--lookup-policy=none -dnone\fP.
+.br
 \fBinittype\fP (short form \fBITYPE\fP): \fBauto\fP, \fBnone\fP, \fBpca\fP.
 .br
 \fBthreshold\fP (short form \fBTVALUE\fP): floating value in 0.0-0.5.
@@ -323,7 +342,7 @@ all models: sample_target=C;
 .br
 heckbert: profile=P;
 .br
-kmeans: inittype=I, threshold=T, binbits=N, mapping=M, softdist=D,
+kmeans: backend=G, inittype=I, threshold=T, binbits=N, mapping=M, softdist=D,
 feedback=F, prune=P, seed=S, restarts=E,
 iter=A, iter_max=X, miniter=U, polish_iter=H, feedback_slots=K,
 feedback_interval=J;
@@ -2350,6 +2369,11 @@ k-means soft-binning kernel. Currently supports trilinear.
 .br
 k-means residual histogram feedback switch: 0 or 1 (default 0).
 .TP 5
+.B SIXEL_PALETTE_KMEANS_BACKEND
+Select the k-means iteration backend: cpu (default) or gpu.
+Overridden by -Q kmeans:backend=NAME. GPU execution additionally requires
+--gpu-policy=auto (CPU fallback) or force (error if unsupported).
+.TP
 .B SIXEL_PALETTE_KMEANS_PRUNE
 .br
 k-means pruning policy: auto, none, hamerly, elkan, or yinyang. Default auto

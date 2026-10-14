@@ -231,7 +231,7 @@ struct sixel_dither {
     int lut_policy_fhedt_first_touch;
     int lut_policy_fhedt_pin_threads_override;
     int lut_policy_fhedt_pin_threads;
-    int gpu_policy;                 /* palette-apply accelerator policy */
+    int gpu_policy;                 /* upper-level GPU accelerator policy */
     size_t gpu_palette_threshold;   /* AUTO policy pixel threshold */
     sixel_lookup_policy_interface_t *lookup_policy; /* prepared lookup cache */
     struct sixel_dither_policy_interface *dither_policy; /* apply strategy */

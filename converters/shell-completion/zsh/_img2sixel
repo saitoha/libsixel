@@ -133,9 +133,9 @@ _lookuppolicy() {
 _gpupolicy() {
   _values \
     'GPUPOLICY' \
-    'off[keep the CPU palette-apply path]' \
-    'auto[probe GPU support and apply the internal size threshold]' \
-    'force[require a supported GPU palette-apply path]'
+    'off[keep all stages on CPU]' \
+    'auto[try eligible GPU stages with CPU fallback]' \
+    'force[require supported GPU execution for selected stages]'
 }
 
 _looptype() {
@@ -321,6 +321,9 @@ _quantizemodel() {
                      "${prefix}${key}=none" \
                      "${prefix}${key}=pca"
           return 0
+        elif [[ ${key} == backend ]]; then
+          compadd -- "${prefix}${key}=cpu" "${prefix}${key}=gpu"
+          return 0
         elif [[ ${key} == mapping ]]; then
           compadd -- "${prefix}${key}=uniform" \
                      "${prefix}${key}=srgb"
@@ -421,7 +424,8 @@ _quantizemodel() {
                    "${prefix}Dtrilinear" "${prefix}softdist=" \
                    "${prefix}Foff" "${prefix}Fon" \
                    "${prefix}feedback=" \
-                   "${prefix}prune=" \
+                   "${prefix}prune=" "${prefix}backend=" \
+                   "${prefix}Gcpu" "${prefix}Ggpu" \
                    "${prefix}S1" "${prefix}S42" \
                    "${prefix}seed=" \
                    "${prefix}restarts=" \
@@ -1145,7 +1149,7 @@ _arguments -S -s -A "-*" -S \
   {-r,--resampling=}'[choose resampling filter used with -w or -h option]':resamplingtype:_resamplingtype \
   {-q,--quality=}'[select quality of color quanlization]':qualitytype:_qualitytype \
   {-~,--lookup-policy=}'[choose histogram lookup width and backend]':lookuppolicy:_lookuppolicy \
-  {-G,--gpu-policy=}'[choose palette-apply accelerator policy]':gpupolicy:_gpupolicy \
+  {-G,--gpu-policy=}'[choose upper-level GPU accelerator policy]':gpupolicy:_gpupolicy \
   {-j,--runtime-policy=}'[choose process runtime policy]':runtimepolicy:_runtimepolicy \
   {-x,--diagnostics=}'[choose diagnostic presentation]':diagnostics:_diagnosticspolicy \
   {-J,--log-path=}'[write the shared JSON timeline log]':files:_files \

@@ -52,6 +52,8 @@ srcs = [
   'palette-kmeans.h',
   'palette-kmeans-assign.h',
   'palette-kmeans-build.h',
+  'palette-kmeans-gpu.c',
+  'palette-kmeans-gpu.h',
   'palette-bin-histogram.c',
   'palette-bin-histogram.h',
   'palette-plan.c',
@@ -304,7 +306,7 @@ srcs = [
 ]
 
 if have_metal
-  srcs += ['gpu-palette-metal.m']
+  srcs += ['gpu-palette-metal.m', 'palette-kmeans-metal.m']
 endif
 
 if have_quicklook_thumbnailing

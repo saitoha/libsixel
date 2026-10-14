@@ -23,6 +23,7 @@ help_vars=$tmpdir/help_vars.txt
 missing=$tmpdir/missing.txt
 
 cat > "$expected" <<'EOF'
+backend	SIXEL_PALETTE_KMEANS_BACKEND
 inittype	SIXEL_PALETTE_KMEANS_INITTYPE
 threshold	SIXEL_PALETTE_KMEANS_THRESHOLD
 binbits	SIXEL_PALETTE_KMEANS_BINBITS

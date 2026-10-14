@@ -110,6 +110,14 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	quant/palette/gpu_kmeans/0001_weighted_lloyd.c \
+	quant/palette/gpu_kmeans/0002_byte_rounding.c \
+	quant/palette/gpu_kmeans/0003_empty_cluster.c \
+	quant/palette/gpu_kmeans/0004_iteration_floor.c \
+	quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c \
+	quant/palette/gpu_kmeans/0006_option_atomicity.c \
+	quant/palette/gpu_kmeans/0014_request_isolation.c \
+	quant/palette/gpu_kmeans/gpu_kmeans_test_common.c \
 	quant/palette/delta_native/0015_delta_signed_threshold.c \
 	quant/palette/delta_native/0016_delta_p3_or_recovery.c \
 	quant/palette/delta_native/0017_delta_spatial_dispatch.c \
@@ -3471,6 +3479,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/gpu_kmeans/test_runner-0001_weighted_lloyd.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/gpu_kmeans/test_runner-0002_byte_rounding.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/gpu_kmeans/test_runner-0003_empty_cluster.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/gpu_kmeans/test_runner-0004_iteration_floor.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/gpu_kmeans/test_runner-0005_range_fallback_atomicity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/gpu_kmeans/test_runner-0006_option_atomicity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/gpu_kmeans/test_runner-0014_request_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0015_delta_signed_threshold.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0016_delta_p3_or_recovery.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0017_delta_spatial_dispatch.$(OBJEXT) \
@@ -9750,6 +9766,14 @@ am__depfiles_remade =  \
 	quant/palette/fixed_mask/$(DEPDIR)/test_runner-0028_short_mask_retry.Po \
 	quant/palette/fixed_mask/$(DEPDIR)/test_runner-0029_ormode_retry.Po \
 	quant/palette/fixed_mask/$(DEPDIR)/test_runner-0030_full256_parallel.Po \
+	quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0001_weighted_lloyd.Po \
+	quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0002_byte_rounding.Po \
+	quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0003_empty_cluster.Po \
+	quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0004_iteration_floor.Po \
+	quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0005_range_fallback_atomicity.Po \
+	quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0006_option_atomicity.Po \
+	quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0014_request_isolation.Po \
+	quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_test_common.Po \
 	quant/palette/heckbert_float/$(DEPDIR)/test_runner-0001_heckbert_center.Po \
 	quant/palette/heckbert_float/$(DEPDIR)/test_runner-0002_heckbert_average.Po \
 	quant/palette/heckbert_float/$(DEPDIR)/test_runner-0003_heckbert_histogram.Po \
@@ -10809,6 +10833,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_WEIGHTED_LLOYD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_BYTE_ROUNDING \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_EMPTY_CLUSTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_ITERATION_FLOOR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_RANGE_FALLBACK_ATOMICITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_OPTION_ATOMICITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_REQUEST_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_GPU_KMEANS_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SRGB_IDENTITY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_EDGE_LINEAR_REFERENCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_RAY_SRGB_REFERENCE \
@@ -14151,6 +14183,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Avoid duplicate symbol definitions when test_runner links sixel.lib.
 @WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = 
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/gpu_kmeans/0001_weighted_lloyd.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/gpu_kmeans/0002_byte_rounding.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/gpu_kmeans/0003_empty_cluster.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/gpu_kmeans/0004_iteration_floor.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/gpu_kmeans/0006_option_atomicity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/gpu_kmeans/0014_request_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/gpu_kmeans/gpu_kmeans_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0015_delta_signed_threshold.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0016_delta_p3_or_recovery.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0017_delta_spatial_dispatch.c \
@@ -17744,6 +17784,36 @@ $(am__aclocal_m4_deps):
 clean-checkPROGRAMS:
 	$(am__rm_f) $(check_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
+quant/palette/gpu_kmeans/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/gpu_kmeans
+	@: >>quant/palette/gpu_kmeans/$(am__dirstamp)
+quant/palette/gpu_kmeans/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/gpu_kmeans/$(DEPDIR)
+	@: >>quant/palette/gpu_kmeans/$(DEPDIR)/$(am__dirstamp)
+quant/palette/gpu_kmeans/test_runner-0001_weighted_lloyd.$(OBJEXT):  \
+	quant/palette/gpu_kmeans/$(am__dirstamp) \
+	quant/palette/gpu_kmeans/$(DEPDIR)/$(am__dirstamp)
+quant/palette/gpu_kmeans/test_runner-0002_byte_rounding.$(OBJEXT):  \
+	quant/palette/gpu_kmeans/$(am__dirstamp) \
+	quant/palette/gpu_kmeans/$(DEPDIR)/$(am__dirstamp)
+quant/palette/gpu_kmeans/test_runner-0003_empty_cluster.$(OBJEXT):  \
+	quant/palette/gpu_kmeans/$(am__dirstamp) \
+	quant/palette/gpu_kmeans/$(DEPDIR)/$(am__dirstamp)
+quant/palette/gpu_kmeans/test_runner-0004_iteration_floor.$(OBJEXT):  \
+	quant/palette/gpu_kmeans/$(am__dirstamp) \
+	quant/palette/gpu_kmeans/$(DEPDIR)/$(am__dirstamp)
+quant/palette/gpu_kmeans/test_runner-0005_range_fallback_atomicity.$(OBJEXT):  \
+	quant/palette/gpu_kmeans/$(am__dirstamp) \
+	quant/palette/gpu_kmeans/$(DEPDIR)/$(am__dirstamp)
+quant/palette/gpu_kmeans/test_runner-0006_option_atomicity.$(OBJEXT):  \
+	quant/palette/gpu_kmeans/$(am__dirstamp) \
+	quant/palette/gpu_kmeans/$(DEPDIR)/$(am__dirstamp)
+quant/palette/gpu_kmeans/test_runner-0014_request_isolation.$(OBJEXT):  \
+	quant/palette/gpu_kmeans/$(am__dirstamp) \
+	quant/palette/gpu_kmeans/$(DEPDIR)/$(am__dirstamp)
+quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.$(OBJEXT):  \
+	quant/palette/gpu_kmeans/$(am__dirstamp) \
+	quant/palette/gpu_kmeans/$(DEPDIR)/$(am__dirstamp)
 quant/palette/delta_native/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette/delta_native
 	@: >>quant/palette/delta_native/$(am__dirstamp)
@@ -28413,6 +28483,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/fhedt_float/*.$(OBJEXT)
 	-rm -f quant/palette/fixed_animation/*.$(OBJEXT)
 	-rm -f quant/palette/fixed_mask/*.$(OBJEXT)
+	-rm -f quant/palette/gpu_kmeans/*.$(OBJEXT)
 	-rm -f quant/palette/heckbert_float/*.$(OBJEXT)
 	-rm -f quant/palette/icc_output/*.$(OBJEXT)
 	-rm -f quant/palette/lookup_float/*.$(OBJEXT)
@@ -31349,6 +31420,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_mask/$(DEPDIR)/test_runner-0028_short_mask_retry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_mask/$(DEPDIR)/test_runner-0029_ormode_retry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fixed_mask/$(DEPDIR)/test_runner-0030_full256_parallel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0001_weighted_lloyd.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0002_byte_rounding.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0003_empty_cluster.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0004_iteration_floor.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0005_range_fallback_atomicity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0006_option_atomicity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0014_request_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_float/$(DEPDIR)/test_runner-0001_heckbert_center.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_float/$(DEPDIR)/test_runner-0002_heckbert_average.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_float/$(DEPDIR)/test_runner-0003_heckbert_histogram.Po@am__quote@ # am--include-marker
@@ -31789,6 +31868,118 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+quant/palette/gpu_kmeans/test_runner-0001_weighted_lloyd.o: quant/palette/gpu_kmeans/0001_weighted_lloyd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-0001_weighted_lloyd.o -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0001_weighted_lloyd.Tpo -c -o quant/palette/gpu_kmeans/test_runner-0001_weighted_lloyd.o `test -f 'quant/palette/gpu_kmeans/0001_weighted_lloyd.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/0001_weighted_lloyd.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0001_weighted_lloyd.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0001_weighted_lloyd.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/0001_weighted_lloyd.c' object='quant/palette/gpu_kmeans/test_runner-0001_weighted_lloyd.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-0001_weighted_lloyd.o `test -f 'quant/palette/gpu_kmeans/0001_weighted_lloyd.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/0001_weighted_lloyd.c
+
+quant/palette/gpu_kmeans/test_runner-0001_weighted_lloyd.obj: quant/palette/gpu_kmeans/0001_weighted_lloyd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-0001_weighted_lloyd.obj -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0001_weighted_lloyd.Tpo -c -o quant/palette/gpu_kmeans/test_runner-0001_weighted_lloyd.obj `if test -f 'quant/palette/gpu_kmeans/0001_weighted_lloyd.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/0001_weighted_lloyd.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/0001_weighted_lloyd.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0001_weighted_lloyd.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0001_weighted_lloyd.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/0001_weighted_lloyd.c' object='quant/palette/gpu_kmeans/test_runner-0001_weighted_lloyd.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-0001_weighted_lloyd.obj `if test -f 'quant/palette/gpu_kmeans/0001_weighted_lloyd.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/0001_weighted_lloyd.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/0001_weighted_lloyd.c'; fi`
+
+quant/palette/gpu_kmeans/test_runner-0002_byte_rounding.o: quant/palette/gpu_kmeans/0002_byte_rounding.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-0002_byte_rounding.o -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0002_byte_rounding.Tpo -c -o quant/palette/gpu_kmeans/test_runner-0002_byte_rounding.o `test -f 'quant/palette/gpu_kmeans/0002_byte_rounding.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/0002_byte_rounding.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0002_byte_rounding.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0002_byte_rounding.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/0002_byte_rounding.c' object='quant/palette/gpu_kmeans/test_runner-0002_byte_rounding.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-0002_byte_rounding.o `test -f 'quant/palette/gpu_kmeans/0002_byte_rounding.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/0002_byte_rounding.c
+
+quant/palette/gpu_kmeans/test_runner-0002_byte_rounding.obj: quant/palette/gpu_kmeans/0002_byte_rounding.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-0002_byte_rounding.obj -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0002_byte_rounding.Tpo -c -o quant/palette/gpu_kmeans/test_runner-0002_byte_rounding.obj `if test -f 'quant/palette/gpu_kmeans/0002_byte_rounding.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/0002_byte_rounding.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/0002_byte_rounding.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0002_byte_rounding.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0002_byte_rounding.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/0002_byte_rounding.c' object='quant/palette/gpu_kmeans/test_runner-0002_byte_rounding.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-0002_byte_rounding.obj `if test -f 'quant/palette/gpu_kmeans/0002_byte_rounding.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/0002_byte_rounding.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/0002_byte_rounding.c'; fi`
+
+quant/palette/gpu_kmeans/test_runner-0003_empty_cluster.o: quant/palette/gpu_kmeans/0003_empty_cluster.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-0003_empty_cluster.o -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0003_empty_cluster.Tpo -c -o quant/palette/gpu_kmeans/test_runner-0003_empty_cluster.o `test -f 'quant/palette/gpu_kmeans/0003_empty_cluster.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/0003_empty_cluster.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0003_empty_cluster.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0003_empty_cluster.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/0003_empty_cluster.c' object='quant/palette/gpu_kmeans/test_runner-0003_empty_cluster.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-0003_empty_cluster.o `test -f 'quant/palette/gpu_kmeans/0003_empty_cluster.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/0003_empty_cluster.c
+
+quant/palette/gpu_kmeans/test_runner-0003_empty_cluster.obj: quant/palette/gpu_kmeans/0003_empty_cluster.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-0003_empty_cluster.obj -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0003_empty_cluster.Tpo -c -o quant/palette/gpu_kmeans/test_runner-0003_empty_cluster.obj `if test -f 'quant/palette/gpu_kmeans/0003_empty_cluster.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/0003_empty_cluster.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/0003_empty_cluster.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0003_empty_cluster.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0003_empty_cluster.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/0003_empty_cluster.c' object='quant/palette/gpu_kmeans/test_runner-0003_empty_cluster.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-0003_empty_cluster.obj `if test -f 'quant/palette/gpu_kmeans/0003_empty_cluster.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/0003_empty_cluster.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/0003_empty_cluster.c'; fi`
+
+quant/palette/gpu_kmeans/test_runner-0004_iteration_floor.o: quant/palette/gpu_kmeans/0004_iteration_floor.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-0004_iteration_floor.o -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0004_iteration_floor.Tpo -c -o quant/palette/gpu_kmeans/test_runner-0004_iteration_floor.o `test -f 'quant/palette/gpu_kmeans/0004_iteration_floor.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/0004_iteration_floor.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0004_iteration_floor.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0004_iteration_floor.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/0004_iteration_floor.c' object='quant/palette/gpu_kmeans/test_runner-0004_iteration_floor.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-0004_iteration_floor.o `test -f 'quant/palette/gpu_kmeans/0004_iteration_floor.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/0004_iteration_floor.c
+
+quant/palette/gpu_kmeans/test_runner-0004_iteration_floor.obj: quant/palette/gpu_kmeans/0004_iteration_floor.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-0004_iteration_floor.obj -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0004_iteration_floor.Tpo -c -o quant/palette/gpu_kmeans/test_runner-0004_iteration_floor.obj `if test -f 'quant/palette/gpu_kmeans/0004_iteration_floor.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/0004_iteration_floor.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/0004_iteration_floor.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0004_iteration_floor.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0004_iteration_floor.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/0004_iteration_floor.c' object='quant/palette/gpu_kmeans/test_runner-0004_iteration_floor.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-0004_iteration_floor.obj `if test -f 'quant/palette/gpu_kmeans/0004_iteration_floor.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/0004_iteration_floor.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/0004_iteration_floor.c'; fi`
+
+quant/palette/gpu_kmeans/test_runner-0005_range_fallback_atomicity.o: quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-0005_range_fallback_atomicity.o -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0005_range_fallback_atomicity.Tpo -c -o quant/palette/gpu_kmeans/test_runner-0005_range_fallback_atomicity.o `test -f 'quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0005_range_fallback_atomicity.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0005_range_fallback_atomicity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c' object='quant/palette/gpu_kmeans/test_runner-0005_range_fallback_atomicity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-0005_range_fallback_atomicity.o `test -f 'quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c
+
+quant/palette/gpu_kmeans/test_runner-0005_range_fallback_atomicity.obj: quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-0005_range_fallback_atomicity.obj -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0005_range_fallback_atomicity.Tpo -c -o quant/palette/gpu_kmeans/test_runner-0005_range_fallback_atomicity.obj `if test -f 'quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0005_range_fallback_atomicity.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0005_range_fallback_atomicity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c' object='quant/palette/gpu_kmeans/test_runner-0005_range_fallback_atomicity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-0005_range_fallback_atomicity.obj `if test -f 'quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/0005_range_fallback_atomicity.c'; fi`
+
+quant/palette/gpu_kmeans/test_runner-0006_option_atomicity.o: quant/palette/gpu_kmeans/0006_option_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-0006_option_atomicity.o -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0006_option_atomicity.Tpo -c -o quant/palette/gpu_kmeans/test_runner-0006_option_atomicity.o `test -f 'quant/palette/gpu_kmeans/0006_option_atomicity.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/0006_option_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0006_option_atomicity.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0006_option_atomicity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/0006_option_atomicity.c' object='quant/palette/gpu_kmeans/test_runner-0006_option_atomicity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-0006_option_atomicity.o `test -f 'quant/palette/gpu_kmeans/0006_option_atomicity.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/0006_option_atomicity.c
+
+quant/palette/gpu_kmeans/test_runner-0006_option_atomicity.obj: quant/palette/gpu_kmeans/0006_option_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-0006_option_atomicity.obj -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0006_option_atomicity.Tpo -c -o quant/palette/gpu_kmeans/test_runner-0006_option_atomicity.obj `if test -f 'quant/palette/gpu_kmeans/0006_option_atomicity.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/0006_option_atomicity.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/0006_option_atomicity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0006_option_atomicity.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0006_option_atomicity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/0006_option_atomicity.c' object='quant/palette/gpu_kmeans/test_runner-0006_option_atomicity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-0006_option_atomicity.obj `if test -f 'quant/palette/gpu_kmeans/0006_option_atomicity.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/0006_option_atomicity.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/0006_option_atomicity.c'; fi`
+
+quant/palette/gpu_kmeans/test_runner-0014_request_isolation.o: quant/palette/gpu_kmeans/0014_request_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-0014_request_isolation.o -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0014_request_isolation.Tpo -c -o quant/palette/gpu_kmeans/test_runner-0014_request_isolation.o `test -f 'quant/palette/gpu_kmeans/0014_request_isolation.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/0014_request_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0014_request_isolation.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0014_request_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/0014_request_isolation.c' object='quant/palette/gpu_kmeans/test_runner-0014_request_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-0014_request_isolation.o `test -f 'quant/palette/gpu_kmeans/0014_request_isolation.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/0014_request_isolation.c
+
+quant/palette/gpu_kmeans/test_runner-0014_request_isolation.obj: quant/palette/gpu_kmeans/0014_request_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-0014_request_isolation.obj -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0014_request_isolation.Tpo -c -o quant/palette/gpu_kmeans/test_runner-0014_request_isolation.obj `if test -f 'quant/palette/gpu_kmeans/0014_request_isolation.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/0014_request_isolation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/0014_request_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0014_request_isolation.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-0014_request_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/0014_request_isolation.c' object='quant/palette/gpu_kmeans/test_runner-0014_request_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-0014_request_isolation.obj `if test -f 'quant/palette/gpu_kmeans/0014_request_isolation.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/0014_request_isolation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/0014_request_isolation.c'; fi`
+
+quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.o: quant/palette/gpu_kmeans/gpu_kmeans_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.o -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_test_common.Tpo -c -o quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.o `test -f 'quant/palette/gpu_kmeans/gpu_kmeans_test_common.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/gpu_kmeans_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_test_common.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/gpu_kmeans_test_common.c' object='quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.o `test -f 'quant/palette/gpu_kmeans/gpu_kmeans_test_common.c' || echo '$(srcdir)/'`quant/palette/gpu_kmeans/gpu_kmeans_test_common.c
+
+quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.obj: quant/palette/gpu_kmeans/gpu_kmeans_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.obj -MD -MP -MF quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_test_common.Tpo -c -o quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.obj `if test -f 'quant/palette/gpu_kmeans/gpu_kmeans_test_common.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/gpu_kmeans_test_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/gpu_kmeans_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_test_common.Tpo quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/gpu_kmeans/gpu_kmeans_test_common.c' object='quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.obj `if test -f 'quant/palette/gpu_kmeans/gpu_kmeans_test_common.c'; then $(CYGPATH_W) 'quant/palette/gpu_kmeans/gpu_kmeans_test_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/gpu_kmeans/gpu_kmeans_test_common.c'; fi`
 
 quant/palette/delta_native/test_runner-0015_delta_signed_threshold.o: quant/palette/delta_native/0015_delta_signed_threshold.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0015_delta_signed_threshold.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0015_delta_signed_threshold.Tpo -c -o quant/palette/delta_native/test_runner-0015_delta_signed_threshold.o `test -f 'quant/palette/delta_native/0015_delta_signed_threshold.c' || echo '$(srcdir)/'`quant/palette/delta_native/0015_delta_signed_threshold.c
@@ -78601,6 +78792,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/fixed_animation/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/fixed_mask/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/fixed_mask/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/gpu_kmeans/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/gpu_kmeans/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/heckbert_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/heckbert_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/icc_output/$(DEPDIR)/$(am__dirstamp)

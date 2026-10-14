@@ -129,6 +129,7 @@ The encoder and decoder in data-flow order, from loading an image to writing SIX
 
 - [Palette construction pipeline](encoder/palette-construction/pipeline/README.md) defines the sampling, palette-space, binning, and quantization boundaries, joint automatic policy resolution, typed artifacts, and migration waves.
 - [Palette quantization](encoder/palette-construction/quantization/README.md) explains `-Q`, palette solver objectives, asymptotic costs, and the boundary between palette generation and use.
+- [GPU K-means](encoder/palette-construction/gpu-kmeans.md) describes the explicit Metal backend, CPU fallback, weighted Lloyd iteration, numeric limits and execution evidence.
 - [Palette clustering color space](encoder/palette-construction/clustering-colorspace/README.md) explains `-X`, its coordinate geometry and normalization, option interactions, and measured quality, speed, and size tradeoffs.
 - [Final palette merge policy](encoder/palette-construction/merge-policy/README.md) explains `-F`, Ward oversplit-and-reduce processing, optional Lloyd polishing, measured quality, speed, size, palette geometry, and flat-patch reachability.
 - [Palette cover policy](encoder/palette-construction/cover-policy/README.md) explains `-a` / `--cover-policy`, post-quantizer gamut reachability repair, soft and hard anchor selection, the links among gamut mapping, Neugebauer printing, and error-diffusion stability, and a three-layer measurement model.

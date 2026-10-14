@@ -7985,6 +7985,9 @@ sixel_encoder_prepare_palette(
     }
     quantize_override_lock_acquired =
         sixel_encoder_quantize_override_lock_acquire();
+    sixel_set_kmeans_backend_override(
+        encoder->quantize_model_kmeans_backend_override,
+        (sixel_kmeans_backend)encoder->quantize_model_kmeans_backend);
     sixel_set_kmeans_init_type_override(
         encoder->quantize_model_kmeans_init_override,
         (sixel_kmeans_init_type)encoder->quantize_model_kmeans_init_type);
@@ -8224,6 +8227,7 @@ sixel_encoder_prepare_palette(
         encoder->method_for_rep,
         encoder->quality_mode,
         &build_attempt);
+    sixel_set_kmeans_backend_override(0, SIXEL_PALETTE_KMEANS_BACKEND_CPU);
     sixel_set_kmeans_init_type_override(0, SIXEL_PALETTE_KMEANS_INIT_AUTO);
     sixel_set_kmeans_threshold_override(0, 0.125);
     sixel_set_kmeans_binbits_override(0, 6u);
@@ -9743,6 +9747,9 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model        = SIXEL_QUANTIZE_MODEL_AUTO;
     (*ppencoder)->quantize_model_heckbert_profile
         = SIXEL_HECKBERT_PROFILE_COMPAT;
+    (*ppencoder)->quantize_model_kmeans_backend_override = 0;
+    (*ppencoder)->quantize_model_kmeans_backend =
+        SIXEL_PALETTE_KMEANS_BACKEND_CPU;
     (*ppencoder)->quantize_model_kmeans_init_override = 0;
     (*ppencoder)->quantize_model_kmeans_init_type = SIXEL_PALETTE_KMEANS_INIT_AUTO;
     (*ppencoder)->quantize_model_kmeans_threshold_override = 0;

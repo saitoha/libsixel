@@ -157,6 +157,8 @@ This exact native histogram may contain more entries than the legacy 5bit/6bit h
 -Q kmeans[:key=value...]
 ```
 
+`backend=cpu|gpu` selects the primary iteration implementation, with CPU as the default. The opt-in [GPU K-means backend](../gpu-kmeans.md) also requires `--gpu-policy=auto|force`; that reference defines Metal requirements, fallback/error behavior and numerical differences. The pruning policies and bound-storage costs below describe CPU execution.
+
 K-means minimizes weighted within-cluster squared error:
 
 ```text

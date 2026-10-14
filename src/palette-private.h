@@ -43,6 +43,7 @@ typedef struct sixel_palette_build_context {
     int quantize_model;
     int final_merge_mode;
     int lut_policy;
+    int gpu_policy;
     sixel_palette_build_attempt_t *attempt;
 } sixel_palette_build_context_t;
 
