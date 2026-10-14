@@ -49,6 +49,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdint.h>
 
 #if HAVE_STRING_H
 # include <string.h>
@@ -104,6 +105,8 @@ typedef struct sixel_parallel_dither_config {
 typedef struct sixel_encode_work {
     char *map;
     size_t map_size;
+    uint64_t *occupancy;
+    size_t occupancy_words;
     sixel_node_t **columns;
     size_t columns_size;
     unsigned char *active_colors;
@@ -2365,90 +2368,61 @@ sixel_output_emit_literal(sixel_output_t *output,
     }
 }
 
-/*
- * Compose helpers accelerate palette sweeps by skipping zero columns in
- * word-sized chunks.
- */
-
+/* Only nonzero words reach this helper. The portable branch keeps the
+ * occupancy iterator available on compilers without a trailing-zero builtin. */
 static int
-sixel_compose_find_run_start(unsigned char const *row,
-                             int width,
-                             int start)
+sixel_compose_trailing_zeros(uint64_t bits)
 {
-    int idx;
-    size_t chunk_size;
-    unsigned char const *cursor;
-    unsigned long block;
+#if defined(__GNUC__) || defined(__clang__)
+    return __builtin_ctzll((unsigned long long)bits);
+#else
+    int shift;
 
-    idx = start;
-    chunk_size = sizeof(unsigned long);
-    cursor = row + start;
-
-    while ((width - idx) >= (int)chunk_size) {
-        memcpy(&block, cursor, chunk_size);
-        if (block != 0UL) {
-            break;
-        }
-        idx += (int)chunk_size;
-        cursor += chunk_size;
+    shift = 0;
+    if ((bits & UINT64_C(0xffffffff)) == 0) {
+        bits >>= 32;
+        shift += 32;
     }
-
-    while (idx < width) {
-        if (*cursor != 0) {
-            break;
-        }
-        idx += 1;
-        cursor += 1;
+    if ((bits & UINT64_C(0xffff)) == 0) {
+        bits >>= 16;
+        shift += 16;
     }
-
-    return idx;
+    if ((bits & UINT64_C(0xff)) == 0) {
+        bits >>= 8;
+        shift += 8;
+    }
+    if ((bits & UINT64_C(0xf)) == 0) {
+        bits >>= 4;
+        shift += 4;
+    }
+    if ((bits & UINT64_C(3)) == 0) {
+        bits >>= 2;
+        shift += 2;
+    }
+    return shift + ((bits & UINT64_C(1)) == 0);
+#endif
 }
 
-
+/* Consume each occupied column once, loading a new 64-column word only
+ * after exhausting the current one. Padding bits stay zero because classify
+ * records only source-backed columns inside the encoded width. */
 static int
-sixel_compose_measure_gap(unsigned char const *row,
-                          int width,
-                          int start,
-                          int *reached_end)
+sixel_compose_next_column(uint64_t const *occupancy, size_t words,
+                          size_t *word_index, uint64_t *bits, int width)
 {
-    int gap;
-    size_t chunk_size;
-    unsigned char const *cursor;
-    unsigned long block;
-    int remaining;
+    int column;
 
-    gap = 0;
-    *reached_end = 0;
-    if (start >= width) {
-        *reached_end = 1;
-        return gap;
-    }
-
-    chunk_size = sizeof(unsigned long);
-    cursor = row + start;
-    remaining = width - start;
-
-    while (remaining >= (int)chunk_size) {
-        memcpy(&block, cursor, chunk_size);
-        if (block != 0UL) {
-            break;
+    while (*bits == 0) {
+        *word_index += 1;
+        if (*word_index >= words) {
+            return width;
         }
-        gap += (int)chunk_size;
-        cursor += chunk_size;
-        remaining -= (int)chunk_size;
+        *bits = occupancy[*word_index];
     }
-
-    while (remaining > 0) {
-        if (*cursor != 0) {
-            return gap;
-        }
-        gap += 1;
-        cursor += 1;
-        remaining -= 1;
-    }
-
-    *reached_end = 1;
-    return gap;
+    column = (int)(*word_index * 64U) +
+        sixel_compose_trailing_zeros(*bits);
+    *bits &= *bits - UINT64_C(1);
+    return column;
 }
 
 
@@ -3063,6 +3037,8 @@ sixel_encode_work_init(sixel_encode_work_t *work)
 {
     work->map = NULL;
     work->map_size = 0;
+    work->occupancy = NULL;
+    work->occupancy_words = 0;
     work->columns = NULL;
     work->columns_size = 0;
     work->active_colors = NULL;
@@ -3081,6 +3057,7 @@ sixel_encode_work_allocate(sixel_encode_work_t *work,
     SIXELSTATUS status = SIXEL_FALSE;
     int len;
     size_t columns_size;
+    size_t occupancy_words;
     size_t active_colors_size;
     size_t active_color_index_size;
 
@@ -3095,6 +3072,27 @@ sixel_encode_work_allocate(sixel_encode_work_t *work,
         goto end;
     }
     work->map_size = (size_t)len;
+
+    /* One bit per encoded column is independent of the six row bits in map.
+     * Round in size_t and check the product before allocating all colors. */
+    occupancy_words = ((size_t)width + 63U) / 64U;
+    if (occupancy_words > SIZE_MAX / sizeof(uint64_t) / (size_t)ncolors) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_body: occupancy size overflow.");
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    if (occupancy_words > 0) {
+        work->occupancy = (uint64_t *)sixel_allocator_calloc(allocator,
+            occupancy_words * (size_t)ncolors, sizeof(uint64_t));
+        if (work->occupancy == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encode_body: occupancy allocation failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+    }
+    work->occupancy_words = occupancy_words;
 
     columns_size = sizeof(sixel_node_t *) * (size_t)width;
     if (width > 0) {
@@ -3169,6 +3167,11 @@ end:
             work->columns = NULL;
         }
         work->columns_size = 0;
+        if (work->occupancy != NULL) {
+            sixel_allocator_free(allocator, work->occupancy);
+            work->occupancy = NULL;
+        }
+        work->occupancy_words = 0;
         if (work->map != NULL) {
             sixel_allocator_free(allocator, work->map);
             work->map = NULL;
@@ -3198,6 +3201,11 @@ sixel_encode_work_cleanup(sixel_encode_work_t *work,
         work->columns = NULL;
     }
     work->columns_size = 0;
+    if (work->occupancy != NULL) {
+        sixel_allocator_free(allocator, work->occupancy);
+        work->occupancy = NULL;
+    }
+    work->occupancy_words = 0;
     if (work->map != NULL) {
         sixel_allocator_free(allocator, work->map);
         work->map = NULL;
@@ -3233,6 +3241,10 @@ sixel_band_finish(sixel_encode_work_t *work, sixel_band_state_t *state)
         if (c >= 0
             && (size_t)c < work->active_colors_size) {
             work->active_colors[c] = 0;
+            /* Emit may fill map gaps for size policy, but occupancy describes
+             * only classify's source pixels. Clear just this band's colors. */
+            memset(work->occupancy + (size_t)c * work->occupancy_words,
+                   0, work->occupancy_words * sizeof(uint64_t));
         }
     }
     state->active_color_count = 0;
@@ -3426,6 +3438,9 @@ sixel_band_classify_row(sixel_encode_work_t *work,
                 goto end;
             }
             map[check_integer_overflow + target_x] |= (1 << row_bit);
+            work->occupancy[(size_t)pix * work->occupancy_words +
+                (size_t)target_x / 64U] |=
+                UINT64_C(1) << ((unsigned int)target_x % 64U);
             if (active_colors != NULL && active_colors[pix] == 0) {
                 active_colors[pix] = 1;
                 if (state->active_color_count < ncolors
@@ -3461,8 +3476,10 @@ sixel_band_compose(sixel_encode_work_t *work,
     unsigned char *row;
     int sx;
     int mx;
-    int gap;
-    int gap_reached_end;
+    int next_column;
+    size_t word_index;
+    uint64_t bits;
+    uint64_t const *occupancy;
     sixel_node_t *np;
     sixel_node_t *column_head;
     sixel_node_t *column_tail;
@@ -3471,7 +3488,6 @@ sixel_band_compose(sixel_encode_work_t *work,
     (void)ncolors;
     (void)keycolor;
     row = NULL;
-    gap_reached_end = 0;
     np = NULL;
     column_head = NULL;
     column_tail = NULL;
@@ -3487,32 +3503,22 @@ sixel_band_compose(sixel_encode_work_t *work,
          color_index++) {
         c = work->active_color_index[color_index];
         row = (unsigned char *)(work->map + c * width);
-        sx = 0;
+        occupancy = work->occupancy + (size_t)c * work->occupancy_words;
+        word_index = 0;
+        bits = occupancy[0];
+        sx = sixel_compose_next_column(occupancy, work->occupancy_words,
+                                       &word_index, &bits, width);
         while (sx < width) {
-            sx = sixel_compose_find_run_start(
-                row,
-                width,
-                sx);
-            if (sx >= width) {
-                break;
-            }
-
             mx = sx + 1;
-            while (mx < width) {
-                if (row[mx] != 0) {
-                    mx += 1;
-                    continue;
-                }
-
-                gap = sixel_compose_measure_gap(
-                    row,
-                    width,
-                    mx + 1,
-                    &gap_reached_end);
-                if (gap >= 9 || gap_reached_end) {
-                    break;
-                }
-                mx += gap + 1;
+            next_column = sixel_compose_next_column(occupancy,
+                work->occupancy_words, &word_index, &bits, width);
+            /* mx is one past the last occupied column. Include up to nine
+             * intervening zero columns, but never append trailing zeros.
+             * Keep the first column beyond a longer gap for the next node. */
+            while (next_column < width && next_column - mx <= 9) {
+                mx = next_column + 1;
+                next_column = sixel_compose_next_column(occupancy,
+                    work->occupancy_words, &word_index, &bits, width);
             }
 
             if ((np = output->node_free) != NULL) {
@@ -3564,7 +3570,7 @@ sixel_band_compose(sixel_encode_work_t *work,
                 output->node_top = top.next;
             }
 
-            sx = mx;
+            sx = next_column;
         }
     }
 

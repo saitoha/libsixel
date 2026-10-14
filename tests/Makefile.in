@@ -3698,6 +3698,12 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/encoder-core/0042_node_unlink_fast_stream.c \
 	processing/encoder-core/0043_node_unlink_auto_stream.c \
 	processing/encoder-core/0044_node_unlink_size_stream.c \
+	processing/encoder-core/compose_test_common.c \
+	processing/encoder-core/0045_compose_gap_nine.c \
+	processing/encoder-core/0046_compose_gap_ten.c \
+	processing/encoder-core/0047_compose_word_boundaries.c \
+	processing/encoder-core/0048_compose_band_reset.c \
+	processing/encoder-core/0049_compose_allocation_recovery.c \
 	codec/macro/native_macro_test_common.c \
 	codec/macro/0009_srgb_float_define.c \
 	codec/macro/0010_p3_float_define.c \
@@ -7316,6 +7322,12 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0042_node_unlink_fast_stream.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0043_node_unlink_auto_stream.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0044_node_unlink_size_stream.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-compose_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0045_compose_gap_nine.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0046_compose_gap_ten.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0047_compose_word_boundaries.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0048_compose_band_reset.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0049_compose_allocation_recovery.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-native_macro_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0009_srgb_float_define.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0010_p3_float_define.$(OBJEXT) \
@@ -9564,6 +9576,12 @@ am__depfiles_remade =  \
 	processing/encoder-core/$(DEPDIR)/test_runner-0042_node_unlink_fast_stream.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0043_node_unlink_auto_stream.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0044_node_unlink_size_stream.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0045_compose_gap_nine.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0046_compose_gap_ten.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0047_compose_word_boundaries.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0048_compose_band_reset.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0049_compose_allocation_recovery.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-ormode_test_common.Po \
@@ -13276,6 +13294,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_NODE_UNLINK_FAST_STREAM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_NODE_UNLINK_AUTO_STREAM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_NODE_UNLINK_SIZE_STREAM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_COMPOSE_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_COMPOSE_GAP_NINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0046_COMPOSE_GAP_TEN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0047_COMPOSE_WORD_BOUNDARIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_COMPOSE_BAND_RESET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0049_COMPOSE_ALLOCATION_RECOVERY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_NATIVE_MACRO_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_SRGB_FLOAT_DEFINE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_P3_FLOAT_DEFINE \
@@ -19002,6 +19026,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0042_node_unlink_fast_stream.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0043_node_unlink_auto_stream.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0044_node_unlink_size_stream.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/compose_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0045_compose_gap_nine.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0046_compose_gap_ten.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0047_compose_word_boundaries.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0048_compose_band_reset.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0049_compose_allocation_recovery.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/native_macro_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0009_srgb_float_define.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0010_p3_float_define.c \
@@ -30506,6 +30536,24 @@ processing/encoder-core/test_runner-0043_node_unlink_auto_stream.$(OBJEXT):  \
 processing/encoder-core/test_runner-0044_node_unlink_size_stream.$(OBJEXT):  \
 	processing/encoder-core/$(am__dirstamp) \
 	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-compose_test_common.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0045_compose_gap_nine.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0046_compose_gap_ten.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0047_compose_word_boundaries.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0048_compose_band_reset.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0049_compose_allocation_recovery.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
 codec/macro/$(am__dirstamp):
 	@$(MKDIR_P) codec/macro
 	@: >>codec/macro/$(am__dirstamp)
@@ -33038,6 +33086,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0042_node_unlink_fast_stream.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0043_node_unlink_auto_stream.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0044_node_unlink_size_stream.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0045_compose_gap_nine.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0046_compose_gap_ten.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0047_compose_word_boundaries.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0048_compose_band_reset.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0049_compose_allocation_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
@@ -84095,6 +84149,90 @@ processing/encoder-core/test_runner-0044_node_unlink_size_stream.obj: processing
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0044_node_unlink_size_stream.c' object='processing/encoder-core/test_runner-0044_node_unlink_size_stream.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0044_node_unlink_size_stream.obj `if test -f 'processing/encoder-core/0044_node_unlink_size_stream.c'; then $(CYGPATH_W) 'processing/encoder-core/0044_node_unlink_size_stream.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0044_node_unlink_size_stream.c'; fi`
+
+processing/encoder-core/test_runner-compose_test_common.o: processing/encoder-core/compose_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-compose_test_common.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Tpo -c -o processing/encoder-core/test_runner-compose_test_common.o `test -f 'processing/encoder-core/compose_test_common.c' || echo '$(srcdir)/'`processing/encoder-core/compose_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Tpo processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/compose_test_common.c' object='processing/encoder-core/test_runner-compose_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-compose_test_common.o `test -f 'processing/encoder-core/compose_test_common.c' || echo '$(srcdir)/'`processing/encoder-core/compose_test_common.c
+
+processing/encoder-core/test_runner-compose_test_common.obj: processing/encoder-core/compose_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-compose_test_common.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Tpo -c -o processing/encoder-core/test_runner-compose_test_common.obj `if test -f 'processing/encoder-core/compose_test_common.c'; then $(CYGPATH_W) 'processing/encoder-core/compose_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/compose_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Tpo processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/compose_test_common.c' object='processing/encoder-core/test_runner-compose_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-compose_test_common.obj `if test -f 'processing/encoder-core/compose_test_common.c'; then $(CYGPATH_W) 'processing/encoder-core/compose_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/compose_test_common.c'; fi`
+
+processing/encoder-core/test_runner-0045_compose_gap_nine.o: processing/encoder-core/0045_compose_gap_nine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0045_compose_gap_nine.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0045_compose_gap_nine.Tpo -c -o processing/encoder-core/test_runner-0045_compose_gap_nine.o `test -f 'processing/encoder-core/0045_compose_gap_nine.c' || echo '$(srcdir)/'`processing/encoder-core/0045_compose_gap_nine.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0045_compose_gap_nine.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0045_compose_gap_nine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0045_compose_gap_nine.c' object='processing/encoder-core/test_runner-0045_compose_gap_nine.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0045_compose_gap_nine.o `test -f 'processing/encoder-core/0045_compose_gap_nine.c' || echo '$(srcdir)/'`processing/encoder-core/0045_compose_gap_nine.c
+
+processing/encoder-core/test_runner-0045_compose_gap_nine.obj: processing/encoder-core/0045_compose_gap_nine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0045_compose_gap_nine.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0045_compose_gap_nine.Tpo -c -o processing/encoder-core/test_runner-0045_compose_gap_nine.obj `if test -f 'processing/encoder-core/0045_compose_gap_nine.c'; then $(CYGPATH_W) 'processing/encoder-core/0045_compose_gap_nine.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0045_compose_gap_nine.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0045_compose_gap_nine.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0045_compose_gap_nine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0045_compose_gap_nine.c' object='processing/encoder-core/test_runner-0045_compose_gap_nine.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0045_compose_gap_nine.obj `if test -f 'processing/encoder-core/0045_compose_gap_nine.c'; then $(CYGPATH_W) 'processing/encoder-core/0045_compose_gap_nine.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0045_compose_gap_nine.c'; fi`
+
+processing/encoder-core/test_runner-0046_compose_gap_ten.o: processing/encoder-core/0046_compose_gap_ten.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0046_compose_gap_ten.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0046_compose_gap_ten.Tpo -c -o processing/encoder-core/test_runner-0046_compose_gap_ten.o `test -f 'processing/encoder-core/0046_compose_gap_ten.c' || echo '$(srcdir)/'`processing/encoder-core/0046_compose_gap_ten.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0046_compose_gap_ten.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0046_compose_gap_ten.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0046_compose_gap_ten.c' object='processing/encoder-core/test_runner-0046_compose_gap_ten.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0046_compose_gap_ten.o `test -f 'processing/encoder-core/0046_compose_gap_ten.c' || echo '$(srcdir)/'`processing/encoder-core/0046_compose_gap_ten.c
+
+processing/encoder-core/test_runner-0046_compose_gap_ten.obj: processing/encoder-core/0046_compose_gap_ten.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0046_compose_gap_ten.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0046_compose_gap_ten.Tpo -c -o processing/encoder-core/test_runner-0046_compose_gap_ten.obj `if test -f 'processing/encoder-core/0046_compose_gap_ten.c'; then $(CYGPATH_W) 'processing/encoder-core/0046_compose_gap_ten.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0046_compose_gap_ten.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0046_compose_gap_ten.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0046_compose_gap_ten.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0046_compose_gap_ten.c' object='processing/encoder-core/test_runner-0046_compose_gap_ten.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0046_compose_gap_ten.obj `if test -f 'processing/encoder-core/0046_compose_gap_ten.c'; then $(CYGPATH_W) 'processing/encoder-core/0046_compose_gap_ten.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0046_compose_gap_ten.c'; fi`
+
+processing/encoder-core/test_runner-0047_compose_word_boundaries.o: processing/encoder-core/0047_compose_word_boundaries.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0047_compose_word_boundaries.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0047_compose_word_boundaries.Tpo -c -o processing/encoder-core/test_runner-0047_compose_word_boundaries.o `test -f 'processing/encoder-core/0047_compose_word_boundaries.c' || echo '$(srcdir)/'`processing/encoder-core/0047_compose_word_boundaries.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0047_compose_word_boundaries.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0047_compose_word_boundaries.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0047_compose_word_boundaries.c' object='processing/encoder-core/test_runner-0047_compose_word_boundaries.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0047_compose_word_boundaries.o `test -f 'processing/encoder-core/0047_compose_word_boundaries.c' || echo '$(srcdir)/'`processing/encoder-core/0047_compose_word_boundaries.c
+
+processing/encoder-core/test_runner-0047_compose_word_boundaries.obj: processing/encoder-core/0047_compose_word_boundaries.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0047_compose_word_boundaries.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0047_compose_word_boundaries.Tpo -c -o processing/encoder-core/test_runner-0047_compose_word_boundaries.obj `if test -f 'processing/encoder-core/0047_compose_word_boundaries.c'; then $(CYGPATH_W) 'processing/encoder-core/0047_compose_word_boundaries.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0047_compose_word_boundaries.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0047_compose_word_boundaries.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0047_compose_word_boundaries.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0047_compose_word_boundaries.c' object='processing/encoder-core/test_runner-0047_compose_word_boundaries.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0047_compose_word_boundaries.obj `if test -f 'processing/encoder-core/0047_compose_word_boundaries.c'; then $(CYGPATH_W) 'processing/encoder-core/0047_compose_word_boundaries.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0047_compose_word_boundaries.c'; fi`
+
+processing/encoder-core/test_runner-0048_compose_band_reset.o: processing/encoder-core/0048_compose_band_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0048_compose_band_reset.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0048_compose_band_reset.Tpo -c -o processing/encoder-core/test_runner-0048_compose_band_reset.o `test -f 'processing/encoder-core/0048_compose_band_reset.c' || echo '$(srcdir)/'`processing/encoder-core/0048_compose_band_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0048_compose_band_reset.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0048_compose_band_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0048_compose_band_reset.c' object='processing/encoder-core/test_runner-0048_compose_band_reset.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0048_compose_band_reset.o `test -f 'processing/encoder-core/0048_compose_band_reset.c' || echo '$(srcdir)/'`processing/encoder-core/0048_compose_band_reset.c
+
+processing/encoder-core/test_runner-0048_compose_band_reset.obj: processing/encoder-core/0048_compose_band_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0048_compose_band_reset.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0048_compose_band_reset.Tpo -c -o processing/encoder-core/test_runner-0048_compose_band_reset.obj `if test -f 'processing/encoder-core/0048_compose_band_reset.c'; then $(CYGPATH_W) 'processing/encoder-core/0048_compose_band_reset.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0048_compose_band_reset.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0048_compose_band_reset.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0048_compose_band_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0048_compose_band_reset.c' object='processing/encoder-core/test_runner-0048_compose_band_reset.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0048_compose_band_reset.obj `if test -f 'processing/encoder-core/0048_compose_band_reset.c'; then $(CYGPATH_W) 'processing/encoder-core/0048_compose_band_reset.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0048_compose_band_reset.c'; fi`
+
+processing/encoder-core/test_runner-0049_compose_allocation_recovery.o: processing/encoder-core/0049_compose_allocation_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0049_compose_allocation_recovery.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0049_compose_allocation_recovery.Tpo -c -o processing/encoder-core/test_runner-0049_compose_allocation_recovery.o `test -f 'processing/encoder-core/0049_compose_allocation_recovery.c' || echo '$(srcdir)/'`processing/encoder-core/0049_compose_allocation_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0049_compose_allocation_recovery.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0049_compose_allocation_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0049_compose_allocation_recovery.c' object='processing/encoder-core/test_runner-0049_compose_allocation_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0049_compose_allocation_recovery.o `test -f 'processing/encoder-core/0049_compose_allocation_recovery.c' || echo '$(srcdir)/'`processing/encoder-core/0049_compose_allocation_recovery.c
+
+processing/encoder-core/test_runner-0049_compose_allocation_recovery.obj: processing/encoder-core/0049_compose_allocation_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0049_compose_allocation_recovery.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0049_compose_allocation_recovery.Tpo -c -o processing/encoder-core/test_runner-0049_compose_allocation_recovery.obj `if test -f 'processing/encoder-core/0049_compose_allocation_recovery.c'; then $(CYGPATH_W) 'processing/encoder-core/0049_compose_allocation_recovery.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0049_compose_allocation_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0049_compose_allocation_recovery.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0049_compose_allocation_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0049_compose_allocation_recovery.c' object='processing/encoder-core/test_runner-0049_compose_allocation_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0049_compose_allocation_recovery.obj `if test -f 'processing/encoder-core/0049_compose_allocation_recovery.c'; then $(CYGPATH_W) 'processing/encoder-core/0049_compose_allocation_recovery.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0049_compose_allocation_recovery.c'; fi`
 
 codec/macro/test_runner-native_macro_test_common.o: codec/macro/native_macro_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-native_macro_test_common.o -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Tpo -c -o codec/macro/test_runner-native_macro_test_common.o `test -f 'codec/macro/native_macro_test_common.c' || echo '$(srcdir)/'`codec/macro/native_macro_test_common.c

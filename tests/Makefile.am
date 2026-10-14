@@ -1721,6 +1721,12 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0042_NODE_UNLINK_FAST_STREAM \
     -DBUILD_TEST_0043_NODE_UNLINK_AUTO_STREAM \
     -DBUILD_TEST_0044_NODE_UNLINK_SIZE_STREAM \
+    -DBUILD_COMPOSE_TEST_COMMON \
+    -DBUILD_TEST_0045_COMPOSE_GAP_NINE \
+    -DBUILD_TEST_0046_COMPOSE_GAP_TEN \
+    -DBUILD_TEST_0047_COMPOSE_WORD_BOUNDARIES \
+    -DBUILD_TEST_0048_COMPOSE_BAND_RESET \
+    -DBUILD_TEST_0049_COMPOSE_ALLOCATION_RECOVERY \
     -DBUILD_NATIVE_MACRO_TEST_COMMON \
     -DBUILD_TEST_0009_SRGB_FLOAT_DEFINE \
     -DBUILD_TEST_0010_P3_FLOAT_DEFINE \
@@ -7416,6 +7422,12 @@ test_runner_SOURCES = test_runner.c \
     processing/encoder-core/0042_node_unlink_fast_stream.c \
     processing/encoder-core/0043_node_unlink_auto_stream.c \
     processing/encoder-core/0044_node_unlink_size_stream.c \
+    processing/encoder-core/compose_test_common.c \
+    processing/encoder-core/0045_compose_gap_nine.c \
+    processing/encoder-core/0046_compose_gap_ten.c \
+    processing/encoder-core/0047_compose_word_boundaries.c \
+    processing/encoder-core/0048_compose_band_reset.c \
+    processing/encoder-core/0049_compose_allocation_recovery.c \
     codec/macro/native_macro_test_common.c \
     codec/macro/0009_srgb_float_define.c \
     codec/macro/0010_p3_float_define.c \

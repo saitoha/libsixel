@@ -602,6 +602,11 @@ int test_or_native_0041(int argc, char **argv);
 int test_node_unlink_0042(int argc, char **argv);
 int test_node_unlink_0043(int argc, char **argv);
 int test_node_unlink_0044(int argc, char **argv);
+int test_compose_0045(int argc, char **argv);
+int test_compose_0046(int argc, char **argv);
+int test_compose_0047(int argc, char **argv);
+int test_compose_0048(int argc, char **argv);
+int test_compose_0049(int argc, char **argv);
 int test_macro_0009(int argc, char **argv);
 int test_macro_0010(int argc, char **argv);
 int test_macro_0011(int argc, char **argv);
@@ -3983,6 +3988,16 @@ static test_entry_t const test_entries[] = {
       test_node_unlink_0043 },
     { "encoder-core/0044_node_unlink_size_stream",
       test_node_unlink_0044 },
+    { "encoder-core/0045_compose_gap_nine",
+      test_compose_0045 },
+    { "encoder-core/0046_compose_gap_ten",
+      test_compose_0046 },
+    { "encoder-core/0047_compose_word_boundaries",
+      test_compose_0047 },
+    { "encoder-core/0048_compose_band_reset",
+      test_compose_0048 },
+    { "encoder-core/0049_compose_allocation_recovery",
+      test_compose_0049 },
     { "codec/macro/0009_srgb_float_define", test_macro_0009 },
     { "codec/macro/0010_p3_float_define", test_macro_0010 },
     { "codec/macro/0011_p3_float_invoke", test_macro_0011 },
