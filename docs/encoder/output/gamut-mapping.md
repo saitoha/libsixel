@@ -1,5 +1,7 @@
 # Output gamut mapping
 
+For a worked color example, diagrams and comparisons of the actual mapper and encoded images, start with [Gamut mapping: choosing a color the output can reproduce](../../concepts/gamut-mapping/README.md). This reference owns the CLI, numerical and implementation contracts.
+
 `img2sixel -U SPACE:gamut=POLICY` selects how colors outside the output RGB gamut are handled. The destination comes from `-U`, independently of the source frame's coordinate space. Negative or greater-than-one canonical sRGB coordinates can be valid colors inside a Display P3 or Adobe RGB destination and are retained.
 
 | Policy | Behavior |
@@ -63,6 +65,17 @@ With `local-minde`, `edge-seeker` or `ray-trace`, encoding owns a private float 
 
 Generated palettes are checked again after clustering, merge, cover and workspace conversion, because those operations can produce new out-of-gamut representatives. Fixed palettes are mapped in their application copy; the original palette definition remains separate. The continuous float palette and its compatibility byte view are published consistently before lookup or serialization. High-color maps its source plane before destination conversion and cell construction.
 
+The [pipeline diagram](../../concepts/gamut-mapping/README.md#where-the-mapper-sits-in-the-implemented-pipeline) distinguishes the sampling and application branches. Mapping a triplet uses canonical linear RGB for destination membership and transient Oklab for replacement selection, then returns to the caller's coordinate space; it does not retag the frame as Oklab. In particular, the clustering copy is converted to `-X` before mapping, and the application frame completes its planned `-W` conversion before mapping. This is not a loader hook or an unconditional preprocessing pass before resize.
+
+| Implementation entry | Responsibility |
+| --- | --- |
+| [`sixel_gamut_new`, `sixel_gamut_apply`, `sixel_gamut_free`](../../../src/gamut.c) | Construct the immutable destination/policy object; dispatch through its vtable; perform membership, replacement and cleanup. |
+| [`sixel_encoder_map_gamut`](../../../src/encoder.c) | Visit visible float pixels in an encoder-owned frame, preserve their coordinate tag and reject invalid float results. |
+| [`sixel_encode_dag_node_preplan`](../../../src/encoder.c) | Map the application frame after the geometry/colorspace filter plan. |
+| [`sixel_encoder_prepare_palette`](../../../src/encoder.c) | Map the clustering copy before quantization and recheck the generated application palette before output preparation. |
+| [`sixel_palette_map_gamut`](../../../src/palette.c) | Update continuous palette entries and their compatibility byte view consistently, retaining indices and order. |
+| [`sixel_palette_prepare_output_definition`](../../../src/palette.c) | Prepare destination encoding and wire values; this is separate from choosing a gamut replacement. |
+
 | Related policy | Boundary |
 | --- | --- |
 | `-X` / `-W` | Continue to select clustering and application geometry. Mapping does not change either choice. |
@@ -77,6 +90,18 @@ The mapper uses the selected CPU float palette/high-color paths and their existi
 ## Evaluation boundary
 
 The algorithm's published reference is not evidence that it improves every photograph. Default selection remains `clip` until photograph, wide-gamut, gradient and saturated highlight/shadow comparisons establish an acceptable quality/performance tradeoff. A future compression policy that changes near-boundary in-gamut colors is a different contract.
+
+The [illustrated comparison](../../concepts/gamut-mapping/README.md#add-palette-quantization-and-sixel) includes a Ray Trace numerical discontinuity on a saturated P3 hue/lightness pattern. It appears before palette construction; reference-vector agreement alone does not establish smoothness over a whole color volume. For source pixel `(163, 46)`, the fourth pass has the following destination-linear values:
+
+```text
+anchor red:     0.99999997058627033
+corrected red:  0.99999996858686657
+ray direction: -0.00000000199940376   (red component)
+exit parameter: 500149091.3227337
+intersection:  (-2.7e-17, 0.4891678154, 0.1383148634)
+```
+
+The correction has passed slightly behind the advanced anchor near the red=1 face. The unrestricted forward ray therefore exits at the opposite red=0 face instead of retaining the nearly converged magenta boundary point. Final clipping cannot repair this hue reversal. This records an unresolved convergence defect in the current implementation, not a permitted error threshold; the observed trace does not by itself establish which correction to the implementation or reference algorithm should be adopted.
 
 Use the [quality measurement policy](../../quality/measurement-policy.md) and [numerical assertion rules](../../testing/guide.md#intermediate-floating-point-error). Mapping error relative to the original and quantization error relative to the mapped reference are distinct observations. Inspect hue changes, flattened gradients and localized color errors in addition to aggregate metrics. Mapping may inspect every pixel; the chroma search, boundary lookup or ray iteration is restricted to out-of-gamut colors.
 

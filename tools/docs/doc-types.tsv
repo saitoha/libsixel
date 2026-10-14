@@ -142,3 +142,4 @@ docs/threading/overview.md	explanation	both	threading mental model + budget term
 docs/writers/png/README.md	reference	both	writer/API contracts + contributor benchmark and test ledger
 docs/encoder/palette-application/clamp-policy.md	reference	both	feedback bounds and precision contracts
 docs/encoder/output/gamut-mapping.md	reference	both	output policy and numeric contract
+docs/concepts/gamut-mapping/README.md	explanation	both	worked color examples and implemented mapping pipeline with reproducible figures

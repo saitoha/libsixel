@@ -49,6 +49,7 @@ The foundations the rest of the documentation builds on, in reading order: how v
 - [Transfer functions and gamma](concepts/colorspace/transfer-functions.md) shows why images are gamma-encoded, what 8 bits can and cannot do, the sRGB, power-law and broadcast curves and where they came from, the OETF, EOTF and OOTF, the many meanings of "gamma", and when arithmetic needs linear light.
 - [Primaries and white points](concepts/colorspace/primaries-and-white-points.md) explains chromaticity diagrams, the gamuts of NTSC, SMPTE-C, sRGB, Adobe RGB, Display P3, BT.2020 and ProPhoto RGB, the white points D65, D50, C, DCI and E, and how primaries and a white point determine the RGB-to-XYZ matrix.
 - [Color management basics](concepts/color-management/README.md) explains why images carry color profiles, what an ICC profile contains, the profile connection space, chromatic adaptation between D50 and D65, rendering intents, and where color management happens in libsixel.
+- [Gamut mapping](concepts/gamut-mapping/README.md) follows a P3 orange through conversion and replacement, compares clipping, Local MINDE, EdgeSeeker and Ray Trace with measured figures, and locates mapping within sampling, palette construction, dithering and RGB101 output.
 
 ### Color difference
 
@@ -144,7 +145,7 @@ The encoder and decoder in data-flow order, from loading an image to writing SIX
 
 - [Encoding policy](encoder/output/encode-policy/README.md) explains `-E`, six-row mask serialization, size-policy overpainting, and measured quality, speed, and stream-size behavior.
 - [Output color space](encoder/output/output-colorspace.md) explains `-U`, gamma/linear/SMPTE-C output, the selected CPU float Display P3 path, receiver interpretation, percentage rounding, fixed-palette and `-M` interactions, high-color destination conversion including its P3, packed-alpha and separated-mask scope, and test coverage.
-- [Output gamut mapping](encoder/output/gamut-mapping.md)
+- [Output gamut mapping](encoder/output/gamut-mapping.md) specifies `-U` gamut policies, numeric contracts, supported destination profiles, implementation entry points and test coverage; the [illustrated introduction](concepts/gamut-mapping/README.md) explains their purpose and visual effects.
 - [Delta encoding (6delta)](encoder/output/delta-encoding.md) explains `--update-policy`, retained display colors, threshold and palette comparisons, partial-update APIs, invalidation, CPU/GPU scope, and test coverage.
 - [OR-mode output](encoder/output/or-mode/README.md) explains `-O`, index-bit composition, `P2=5`, palette-zero and transparency semantics, receiver compatibility, and regression coverage. Its [scaling and decoding study](encoder/output/or-mode/scaling.md) compares palette budgets, encoder/decoder thread budgets, and in-process versus PNG-inclusive decoding.
 - [High-color output](encoder/output/high-color/README.md) explains `-I`, paint-time palette-register semantics, 15bit keys versus actual RGB counts, current parallelism limits, and the required band reset design. Its [measurement reference](encoder/output/high-color/measurement.md) compares 256-color output, artifacts and banding, histograms, quality, API speed, and stream size.

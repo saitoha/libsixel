@@ -1,0 +1,238 @@
+{
+  "schema": 1,
+  "scope": "Illustrative implementation samples, not independent test expectations",
+  "destination": "srgb",
+  "policies": [
+    "clip",
+    "local-minde",
+    "edge-seeker",
+    "ray-trace"
+  ],
+  "versions": {
+    "numpy": "2.5.3",
+    "matplotlib": "3.10.3",
+    "pillow": "12.3.0"
+  },
+  "implementation_sources": {
+    "src/gamut.c": "15e181bffc8d719e106781ba073cdf6bc18df827f31de8b4fcff4326e0d814bc",
+    "src/colorspace.c": "e68fa997125a065567b890ed8714faaf448afd72fa664ee93f8196772ecf3614",
+    "src/cms.c": "90a7830c233d76ea3f415fe2b345b73d605fc072cbcd5cbf40bf21b3ca8fb2be",
+    "src/encoder.c": "e9f2582e8462012fa5ad208abf2f378a2d09d2bdb4d471e279b95628851fec77",
+    "src/palette.c": "161630ec729e39d3d8fb76941a0a9b02d51b75ca5b6f430a8bd882ddad642ae6"
+  },
+  "orange_source": {
+    "definition": "named Display P3",
+    "encoded_rgb": [
+      1,
+      0.45,
+      0
+    ]
+  },
+  "pattern_source": {
+    "width": 192,
+    "height": 96,
+    "bits_per_channel": 16,
+    "icc_sha256": "9d6d78352546bdb31e31d15fc92a74c76edc5594491c6813af60caa1e394ad96",
+    "png_sha256": "f7a12a3d54b57666baa80300bf565e5b88ec0e980d1cfb3da7c70e07420608ca"
+  },
+  "orange": [
+    {
+      "method": "source",
+      "linear_srgb": [
+        1.186555274336824,
+        0.1357647874428972,
+        -0.033056397536110886
+      ],
+      "oklab": [
+        0.7255432701870415,
+        0.1586688822238647,
+        0.16655908505958505
+      ],
+      "encoded_srgb": null
+    },
+    {
+      "method": "clip",
+      "linear_srgb": [
+        1.0,
+        0.1357647874428972,
+        0.0
+      ],
+      "oklab": [
+        0.697121042418533,
+        0.14679907368116651,
+        0.14086627394453236
+      ],
+      "encoded_srgb": [
+        0.9999999999999999,
+        0.40410684686007686,
+        0.0
+      ]
+    },
+    {
+      "method": "local-minde",
+      "linear_srgb": [
+        1.0000000000000002,
+        0.16391722464642264,
+        4.510928876415158e-18
+      ],
+      "oklab": [
+        0.7097551439639478,
+        0.13379826992669275,
+        0.14359259865585522
+      ],
+      "encoded_srgb": [
+        0.9999999999999999,
+        0.4416068507404806,
+        5.828120108328384e-17
+      ]
+    },
+    {
+      "method": "edge-seeker",
+      "linear_srgb": [
+        0.9999405134673823,
+        0.19667727169142712,
+        0.02776900594195836
+      ],
+      "oklab": [
+        0.7255432648908483,
+        0.12545549337833461,
+        0.13169410958097408
+      ],
+      "encoded_srgb": [
+        0.9999738502579928,
+        0.480776136171255,
+        0.18199322555487332
+      ]
+    },
+    {
+      "method": "ray-trace",
+      "linear_srgb": [
+        1.0000000000000002,
+        0.19665812932494917,
+        0.027746955209993464
+      ],
+      "oklab": [
+        0.7255432629401992,
+        0.125466334373483,
+        0.1317055842011115
+      ],
+      "encoded_srgb": [
+        0.9999999999999999,
+        0.4807544078634645,
+        0.18191479451327253
+      ]
+    }
+  ],
+  "encoding_flags": [
+    "--threads=1",
+    "-.float32",
+    "-L",
+    "builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!",
+    "-Q",
+    "kmeans:seed=1",
+    "-X",
+    "oklab",
+    "-W",
+    "oklab",
+    "--sampling-policy=full-frame",
+    "--binning-policy=none",
+    "-F",
+    "none",
+    "-a",
+    "off",
+    "-_",
+    "none",
+    "-~",
+    "none",
+    "-0",
+    "soft",
+    "-t",
+    "rgb",
+    "-p",
+    "32",
+    "-=",
+    "2"
+  ],
+  "ray_trace_largest_horizontal_step": {
+    "xy": [
+      162,
+      46
+    ],
+    "source_p3": [
+      [
+        0.9755550469214923,
+        0.046555275806820784,
+        0.8928664072632945
+      ],
+      [
+        0.9755550469214923,
+        0.046555275806820784,
+        0.8636758983749142
+      ]
+    ],
+    "mapped_linear_srgb": [
+      [
+        1.0000000000000002,
+        0.03726062003335616,
+        0.7311350243113036
+      ],
+      [
+        -1.5750502225908244e-17,
+        0.4891678154341163,
+        0.1383148634320344
+      ]
+    ],
+    "mapped_delta_e_ok": 0.4527011441095064,
+    "source_delta_e_ok": 0.011657989482630344
+  },
+  "encodings": [
+    {
+      "policy": "clip",
+      "dither": "none",
+      "sixel_bytes": 3470,
+      "decoded_rgb_sha256": "541fd03a04485703d6783ac7ca27f962a997a80398e65c0be87bf7e6a443aa85"
+    },
+    {
+      "policy": "local-minde",
+      "dither": "none",
+      "sixel_bytes": 3454,
+      "decoded_rgb_sha256": "a4d6556fd4620d596d3d391b104e2eb656d4bdf7a896528ebe64f3345dac034a"
+    },
+    {
+      "policy": "edge-seeker",
+      "dither": "none",
+      "sixel_bytes": 3601,
+      "decoded_rgb_sha256": "2643ecaf86d56407d5472e1ec3bbe9caadc89b1c93005d7e4c1091a9565f9b50"
+    },
+    {
+      "policy": "ray-trace",
+      "dither": "none",
+      "sixel_bytes": 4000,
+      "decoded_rgb_sha256": "27bd7d32461d5879d9a4676657131227440c9659ce1181c01257319fefa8f0da"
+    },
+    {
+      "policy": "clip",
+      "dither": "fs",
+      "sixel_bytes": 8781,
+      "decoded_rgb_sha256": "abfa6fe4b13f9163949b8d416f0ebf373a4d258e4b975238d5fbb92948dcf045"
+    },
+    {
+      "policy": "local-minde",
+      "dither": "fs",
+      "sixel_bytes": 8495,
+      "decoded_rgb_sha256": "c6a439710c8dcaf8722320ee2cff798f35d502d63f42b521255e55d9c1f721d6"
+    },
+    {
+      "policy": "edge-seeker",
+      "dither": "fs",
+      "sixel_bytes": 8860,
+      "decoded_rgb_sha256": "267d3c948423361b37d23f059dad1ce2167f09f9e99f235c300bfda4afbc754e"
+    },
+    {
+      "policy": "ray-trace",
+      "dither": "fs",
+      "sixel_bytes": 9306,
+      "decoded_rgb_sha256": "bbed1aa932c5701f8317ed1fb6d02707dfdbb841750140bf2ace6ab0ff9f8977"
+    }
+  ]
+}

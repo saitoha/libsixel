@@ -443,6 +443,25 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/encoder/palette-construction/clustering-colorspace/README.md \
 	docs/encoder/palette-application/working-colorspace/README.md \
 	docs/encoder/output/gamut-mapping.md \
+	docs/concepts/gamut-mapping/README.md \
+	docs/concepts/gamut-mapping/figures/continuous-clip.png \
+	docs/concepts/gamut-mapping/figures/continuous-edge-seeker.png \
+	docs/concepts/gamut-mapping/figures/continuous-local-minde.png \
+	docs/concepts/gamut-mapping/figures/continuous-ramps.svg \
+	docs/concepts/gamut-mapping/figures/continuous-ray-trace.png \
+	docs/concepts/gamut-mapping/figures/encoded-clip-fs.png \
+	docs/concepts/gamut-mapping/figures/encoded-clip-none.png \
+	docs/concepts/gamut-mapping/figures/encoded-comparison.svg \
+	docs/concepts/gamut-mapping/figures/encoded-edge-seeker-fs.png \
+	docs/concepts/gamut-mapping/figures/encoded-edge-seeker-none.png \
+	docs/concepts/gamut-mapping/figures/encoded-local-minde-fs.png \
+	docs/concepts/gamut-mapping/figures/encoded-local-minde-none.png \
+	docs/concepts/gamut-mapping/figures/encoded-ray-trace-fs.png \
+	docs/concepts/gamut-mapping/figures/encoded-ray-trace-none.png \
+	docs/concepts/gamut-mapping/figures/orange-coordinates.svg \
+	docs/concepts/gamut-mapping/figures/p3-hue-lightness.png \
+	docs/concepts/gamut-mapping/figures/pipeline.svg \
+	docs/concepts/gamut-mapping/measurements/examples.json \
     docs/encoder/output/output-colorspace.md \
 	docs/encoder/palette-construction/merge-policy/README.md \
 	docs/encoder/palette-construction/merge-policy/measurements/merge-policy-comparison.csv \
@@ -817,6 +836,8 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	tools/plot_clustering_binning_threshold_measurements.py \
 	tools/plot_clustering_colorspace_measurements.py \
 	tools/plot_cover_policy_figures.py \
+	tools/plot_gamut_mapping_figures.py \
+	tools/gamut_mapping_samples.c \
 	tools/plot_dither_policy_measurements.py \
 	tools/plot_diffusion_perturb_measurements.py \
 	tools/plot_decoding_pipeline_figures.py \
