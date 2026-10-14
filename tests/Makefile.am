@@ -1734,6 +1734,12 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0053_CLASSIFY_ALLOCATION_RECOVERY \
     -DBUILD_TEST_0054_CLASSIFY_SOURCE_OVERFLOW \
     -DBUILD_TEST_0055_CLASSIFY_PLANE_OVERFLOW \
+    -DBUILD_TEST_0056_CLASSIFY_TWO_COLOR_KEY \
+    -DBUILD_CLEAR_MAP_TEST_COMMON \
+    -DBUILD_TEST_0057_CLEAR_MAP_SIZE_SERIAL \
+    -DBUILD_TEST_0058_CLEAR_MAP_SIZE_PARALLEL \
+    -DBUILD_TEST_0059_CLEAR_MAP_SPARSE_SERIAL \
+    -DBUILD_TEST_0060_CLEAR_MAP_SPARSE_PARALLEL \
     -DBUILD_NATIVE_MACRO_TEST_COMMON \
     -DBUILD_TEST_0009_SRGB_FLOAT_DEFINE \
     -DBUILD_TEST_0010_P3_FLOAT_DEFINE \
@@ -7442,6 +7448,12 @@ test_runner_SOURCES = test_runner.c \
     processing/encoder-core/0053_classify_allocation_recovery.c \
     processing/encoder-core/0054_classify_source_overflow.c \
     processing/encoder-core/0055_classify_plane_overflow.c \
+    processing/encoder-core/0056_classify_two_color_key.c \
+    processing/encoder-core/clear_map_test_common.c \
+    processing/encoder-core/0057_clear_map_size_serial.c \
+    processing/encoder-core/0058_clear_map_size_parallel.c \
+    processing/encoder-core/0059_clear_map_sparse_serial.c \
+    processing/encoder-core/0060_clear_map_sparse_parallel.c \
     codec/macro/native_macro_test_common.c \
     codec/macro/0009_srgb_float_define.c \
     codec/macro/0010_p3_float_define.c \

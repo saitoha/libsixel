@@ -75,7 +75,7 @@ test_classify_stream(int scenario, char const *expected)
                 pixels[y * width + x] = colors[(x + y / 2) % 6];
             }
         }
-    } else {
+    } else if (scenario == 2) {
         width = 4;
         height = 2;
         ncolors = 2;
@@ -88,6 +88,17 @@ test_classify_stream(int scenario, char const *expected)
         /* A mask always disables fill, even with palstate and a valid
          * first source pixel. Otherwise the first node paints this hole. */
         mask[0] = 1;
+    } else {
+        width = 3;
+        height = 6;
+        keycolor = 1;
+        /* Each column mixes the key and visible color. The two-color mono
+         * convention omits color selection when the key is not reserved. */
+        for (y = 0; y < height; y++) {
+            for (x = 0; x < width; x++) {
+                pixels[y * width + x] = (sixel_index_t)((x + y) % 2);
+            }
+        }
     }
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {

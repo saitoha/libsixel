@@ -613,6 +613,11 @@ int test_classify_0052(int argc, char **argv);
 int test_classify_0053(int argc, char **argv);
 int test_classify_0054(int argc, char **argv);
 int test_classify_0055(int argc, char **argv);
+int test_classify_0056(int argc, char **argv);
+int test_clear_map_0057(int argc, char **argv);
+int test_clear_map_0058(int argc, char **argv);
+int test_clear_map_0059(int argc, char **argv);
+int test_clear_map_0060(int argc, char **argv);
 int test_macro_0009(int argc, char **argv);
 int test_macro_0010(int argc, char **argv);
 int test_macro_0011(int argc, char **argv);
@@ -4016,6 +4021,16 @@ static test_entry_t const test_entries[] = {
       test_classify_0054 },
     { "encoder-core/0055_classify_plane_overflow",
       test_classify_0055 },
+    { "encoder-core/0056_classify_two_color_key",
+      test_classify_0056 },
+    { "encoder-core/0057_clear_map_size_serial",
+      test_clear_map_0057 },
+    { "encoder-core/0058_clear_map_size_parallel",
+      test_clear_map_0058 },
+    { "encoder-core/0059_clear_map_sparse_serial",
+      test_clear_map_0059 },
+    { "encoder-core/0060_clear_map_sparse_parallel",
+      test_clear_map_0060 },
     { "codec/macro/0009_srgb_float_define", test_macro_0009 },
     { "codec/macro/0010_p3_float_define", test_macro_0010 },
     { "codec/macro/0011_p3_float_invoke", test_macro_0011 },

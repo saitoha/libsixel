@@ -254,8 +254,7 @@ static void sixel_encode_work_cleanup(sixel_encode_work_t *work,
                                       sixel_allocator_t *allocator);
 static void sixel_band_state_reset(sixel_band_state_t *state);
 static void sixel_band_finish(sixel_encode_work_t *work,
-                              sixel_band_state_t *state);
-static void sixel_band_clear_map(sixel_encode_work_t *work);
+                              sixel_band_state_t *state, int width);
 static int sixel_output_has_transparent_offset(sixel_output_t const *output);
 static int sixel_count_sixel_bands(int height);
 static void sixel_band_classify(sixel_encode_work_t *work,
@@ -765,10 +764,9 @@ sixel_parallel_worker_reset(sixel_parallel_worker_state_t *state)
     }
 
     sixel_band_state_reset(&state->band);
-    if (!sixel_parallel_context_is_ormode(state->context)) {
-        sixel_band_clear_map(&state->work);
-    }
-    /* Parallel workers reset band-local buffers and output. */
+    /* Successful band finish clears map ranges before the next band.
+     * Workspaces belong to this context and are freed even on failure, so
+     * another encode cannot inherit them. Reset only band-local output. */
     state->writer_error = SIXEL_OK;
     state->output->pos = 0;
     state->output->save_count = 0;
@@ -1625,7 +1623,7 @@ sixel_parallel_worker_main(sixel_thread_pool_job_t job,
         goto cleanup;
     }
 
-    sixel_band_finish(&state->work, &state->band);
+    sixel_band_finish(&state->work, &state->band, ctx->encoded_width);
 done:
     status = SIXEL_OK;
 
@@ -3250,10 +3248,17 @@ sixel_band_state_reset(sixel_band_state_t *state)
 }
 
 static void
-sixel_band_finish(sixel_encode_work_t *work, sixel_band_state_t *state)
+sixel_band_finish(sixel_encode_work_t *work, sixel_band_state_t *state,
+                   int width)
 {
-    int color_index;
     int c;
+    int first;
+    int remaining;
+    size_t begin;
+    size_t end;
+    size_t word;
+    size_t edge;
+    uint64_t *occupied;
 
     if (work->active_colors == NULL
         || work->active_color_index == NULL) {
@@ -3261,28 +3266,55 @@ sixel_band_finish(sixel_encode_work_t *work, sixel_band_state_t *state)
         return;
     }
 
-    for (color_index = 0;
-         color_index < state->active_color_count;
-         color_index++) {
-        c = work->active_color_index[color_index];
-        if (c >= 0
-            && (size_t)c < work->active_colors_size) {
-            work->active_colors[c] = 0;
-            /* Emit may fill map gaps for size policy, but occupancy describes
-             * only classify's source pixels. Clear just this band's colors. */
-            memset(work->occupancy + (size_t)c * work->occupancy_words,
-                   0, work->occupancy_words * sizeof(uint64_t));
+    /* With every plane active, their merged range is the whole map. Batch
+     * all resets in this dense case rather than issuing one per color. */
+    if ((size_t)state->active_color_count == work->active_colors_size) {
+        memset(work->map, 0, work->map_size);
+        memset(work->occupancy, 0, work->active_colors_size *
+               work->occupancy_words * sizeof(uint64_t));
+        memset(work->active_colors, 0, work->active_colors_size);
+        state->active_color_count = 0;
+        return;
+    }
+
+    c = 0;
+    remaining = state->active_color_count;
+    while (remaining > 0) {
+        while (work->active_colors[c] == 0) {
+            c++;
         }
+        first = c;
+        occupied = work->occupancy + (size_t)c * work->occupancy_words;
+        /* Every active color has source occupancy. Round the first edge
+         * outward to its occupancy word to avoid an extra bit scan. */
+        word = 0;
+        while (occupied[word] == 0) {
+            word++;
+        }
+        begin = (size_t)c * width + word * 64U;
+        /* Merge adjacent active color planes into one clear, including their
+         * internal zero padding. Never cross an inactive color plane. This
+         * bounds the work to used colors without a small memset per node or
+         * color. The enclosing span includes all size-policy gap fill. */
+        do {
+            work->active_colors[c++] = 0;
+            remaining--;
+        } while (remaining > 0 && work->active_colors[c] != 0);
+        occupied = work->occupancy + (size_t)(c - 1) * work->occupancy_words;
+        word = work->occupancy_words;
+        while (occupied[word - 1] == 0) {
+            word--;
+        }
+        edge = word * 64U;
+        if (edge > (size_t)width) {
+            edge = (size_t)width;
+        }
+        end = (size_t)(c - 1) * width + edge;
+        memset(work->map + begin, 0, end - begin);
+        memset(work->occupancy + (size_t)first * work->occupancy_words, 0,
+               (size_t)(c - first) * work->occupancy_words * sizeof(uint64_t));
     }
     state->active_color_count = 0;
-}
-
-static void
-sixel_band_clear_map(sixel_encode_work_t *work)
-{
-    if (work->map != NULL && work->map_size > 0) {
-        memset(work->map, 0, work->map_size);
-    }
 }
 
 static SIXELSTATUS
@@ -3904,9 +3936,7 @@ sixel_encode_body(
             goto cleanup;
         }
 
-        sixel_band_finish(&work, &band);
-
-        sixel_band_clear_map(&work);
+        sixel_band_finish(&work, &band, encoded_width);
 
         if (logging_active) {
             sixel_timeline_logger_logf(logger,

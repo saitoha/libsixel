@@ -3711,6 +3711,12 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/encoder-core/0053_classify_allocation_recovery.c \
 	processing/encoder-core/0054_classify_source_overflow.c \
 	processing/encoder-core/0055_classify_plane_overflow.c \
+	processing/encoder-core/0056_classify_two_color_key.c \
+	processing/encoder-core/clear_map_test_common.c \
+	processing/encoder-core/0057_clear_map_size_serial.c \
+	processing/encoder-core/0058_clear_map_size_parallel.c \
+	processing/encoder-core/0059_clear_map_sparse_serial.c \
+	processing/encoder-core/0060_clear_map_sparse_parallel.c \
 	codec/macro/native_macro_test_common.c \
 	codec/macro/0009_srgb_float_define.c \
 	codec/macro/0010_p3_float_define.c \
@@ -7342,6 +7348,12 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0053_classify_allocation_recovery.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0054_classify_source_overflow.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0055_classify_plane_overflow.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0056_classify_two_color_key.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-clear_map_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0057_clear_map_size_serial.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0058_clear_map_size_parallel.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0059_clear_map_sparse_serial.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-native_macro_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0009_srgb_float_define.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0010_p3_float_define.$(OBJEXT) \
@@ -9601,7 +9613,13 @@ am__depfiles_remade =  \
 	processing/encoder-core/$(DEPDIR)/test_runner-0053_classify_allocation_recovery.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0054_classify_source_overflow.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0055_classify_plane_overflow.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0056_classify_two_color_key.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0057_clear_map_size_serial.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0058_clear_map_size_parallel.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0059_clear_map_sparse_serial.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0060_clear_map_sparse_parallel.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-classify_test_common.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-clear_map_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po \
@@ -13328,6 +13346,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_CLASSIFY_ALLOCATION_RECOVERY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_CLASSIFY_SOURCE_OVERFLOW \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_CLASSIFY_PLANE_OVERFLOW \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0056_CLASSIFY_TWO_COLOR_KEY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLEAR_MAP_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_CLEAR_MAP_SIZE_SERIAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_CLEAR_MAP_SIZE_PARALLEL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_CLEAR_MAP_SPARSE_SERIAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0060_CLEAR_MAP_SPARSE_PARALLEL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_NATIVE_MACRO_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_SRGB_FLOAT_DEFINE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_P3_FLOAT_DEFINE \
@@ -19067,6 +19091,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0053_classify_allocation_recovery.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0054_classify_source_overflow.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0055_classify_plane_overflow.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0056_classify_two_color_key.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/clear_map_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0057_clear_map_size_serial.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0058_clear_map_size_parallel.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0059_clear_map_sparse_serial.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0060_clear_map_sparse_parallel.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/native_macro_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0009_srgb_float_define.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0010_p3_float_define.c \
@@ -30610,6 +30640,24 @@ processing/encoder-core/test_runner-0054_classify_source_overflow.$(OBJEXT):  \
 processing/encoder-core/test_runner-0055_classify_plane_overflow.$(OBJEXT):  \
 	processing/encoder-core/$(am__dirstamp) \
 	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0056_classify_two_color_key.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-clear_map_test_common.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0057_clear_map_size_serial.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0058_clear_map_size_parallel.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0059_clear_map_sparse_serial.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
 codec/macro/$(am__dirstamp):
 	@$(MKDIR_P) codec/macro
 	@: >>codec/macro/$(am__dirstamp)
@@ -33153,7 +33201,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0053_classify_allocation_recovery.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0054_classify_source_overflow.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0055_classify_plane_overflow.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0056_classify_two_color_key.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0057_clear_map_size_serial.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0058_clear_map_size_parallel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0059_clear_map_sparse_serial.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0060_clear_map_sparse_parallel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-classify_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-clear_map_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po@am__quote@ # am--include-marker
@@ -84394,6 +84448,90 @@ processing/encoder-core/test_runner-0055_classify_plane_overflow.obj: processing
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0055_classify_plane_overflow.c' object='processing/encoder-core/test_runner-0055_classify_plane_overflow.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0055_classify_plane_overflow.obj `if test -f 'processing/encoder-core/0055_classify_plane_overflow.c'; then $(CYGPATH_W) 'processing/encoder-core/0055_classify_plane_overflow.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0055_classify_plane_overflow.c'; fi`
+
+processing/encoder-core/test_runner-0056_classify_two_color_key.o: processing/encoder-core/0056_classify_two_color_key.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0056_classify_two_color_key.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0056_classify_two_color_key.Tpo -c -o processing/encoder-core/test_runner-0056_classify_two_color_key.o `test -f 'processing/encoder-core/0056_classify_two_color_key.c' || echo '$(srcdir)/'`processing/encoder-core/0056_classify_two_color_key.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0056_classify_two_color_key.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0056_classify_two_color_key.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0056_classify_two_color_key.c' object='processing/encoder-core/test_runner-0056_classify_two_color_key.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0056_classify_two_color_key.o `test -f 'processing/encoder-core/0056_classify_two_color_key.c' || echo '$(srcdir)/'`processing/encoder-core/0056_classify_two_color_key.c
+
+processing/encoder-core/test_runner-0056_classify_two_color_key.obj: processing/encoder-core/0056_classify_two_color_key.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0056_classify_two_color_key.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0056_classify_two_color_key.Tpo -c -o processing/encoder-core/test_runner-0056_classify_two_color_key.obj `if test -f 'processing/encoder-core/0056_classify_two_color_key.c'; then $(CYGPATH_W) 'processing/encoder-core/0056_classify_two_color_key.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0056_classify_two_color_key.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0056_classify_two_color_key.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0056_classify_two_color_key.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0056_classify_two_color_key.c' object='processing/encoder-core/test_runner-0056_classify_two_color_key.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0056_classify_two_color_key.obj `if test -f 'processing/encoder-core/0056_classify_two_color_key.c'; then $(CYGPATH_W) 'processing/encoder-core/0056_classify_two_color_key.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0056_classify_two_color_key.c'; fi`
+
+processing/encoder-core/test_runner-clear_map_test_common.o: processing/encoder-core/clear_map_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-clear_map_test_common.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-clear_map_test_common.Tpo -c -o processing/encoder-core/test_runner-clear_map_test_common.o `test -f 'processing/encoder-core/clear_map_test_common.c' || echo '$(srcdir)/'`processing/encoder-core/clear_map_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-clear_map_test_common.Tpo processing/encoder-core/$(DEPDIR)/test_runner-clear_map_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/clear_map_test_common.c' object='processing/encoder-core/test_runner-clear_map_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-clear_map_test_common.o `test -f 'processing/encoder-core/clear_map_test_common.c' || echo '$(srcdir)/'`processing/encoder-core/clear_map_test_common.c
+
+processing/encoder-core/test_runner-clear_map_test_common.obj: processing/encoder-core/clear_map_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-clear_map_test_common.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-clear_map_test_common.Tpo -c -o processing/encoder-core/test_runner-clear_map_test_common.obj `if test -f 'processing/encoder-core/clear_map_test_common.c'; then $(CYGPATH_W) 'processing/encoder-core/clear_map_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/clear_map_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-clear_map_test_common.Tpo processing/encoder-core/$(DEPDIR)/test_runner-clear_map_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/clear_map_test_common.c' object='processing/encoder-core/test_runner-clear_map_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-clear_map_test_common.obj `if test -f 'processing/encoder-core/clear_map_test_common.c'; then $(CYGPATH_W) 'processing/encoder-core/clear_map_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/clear_map_test_common.c'; fi`
+
+processing/encoder-core/test_runner-0057_clear_map_size_serial.o: processing/encoder-core/0057_clear_map_size_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0057_clear_map_size_serial.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0057_clear_map_size_serial.Tpo -c -o processing/encoder-core/test_runner-0057_clear_map_size_serial.o `test -f 'processing/encoder-core/0057_clear_map_size_serial.c' || echo '$(srcdir)/'`processing/encoder-core/0057_clear_map_size_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0057_clear_map_size_serial.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0057_clear_map_size_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0057_clear_map_size_serial.c' object='processing/encoder-core/test_runner-0057_clear_map_size_serial.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0057_clear_map_size_serial.o `test -f 'processing/encoder-core/0057_clear_map_size_serial.c' || echo '$(srcdir)/'`processing/encoder-core/0057_clear_map_size_serial.c
+
+processing/encoder-core/test_runner-0057_clear_map_size_serial.obj: processing/encoder-core/0057_clear_map_size_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0057_clear_map_size_serial.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0057_clear_map_size_serial.Tpo -c -o processing/encoder-core/test_runner-0057_clear_map_size_serial.obj `if test -f 'processing/encoder-core/0057_clear_map_size_serial.c'; then $(CYGPATH_W) 'processing/encoder-core/0057_clear_map_size_serial.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0057_clear_map_size_serial.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0057_clear_map_size_serial.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0057_clear_map_size_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0057_clear_map_size_serial.c' object='processing/encoder-core/test_runner-0057_clear_map_size_serial.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0057_clear_map_size_serial.obj `if test -f 'processing/encoder-core/0057_clear_map_size_serial.c'; then $(CYGPATH_W) 'processing/encoder-core/0057_clear_map_size_serial.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0057_clear_map_size_serial.c'; fi`
+
+processing/encoder-core/test_runner-0058_clear_map_size_parallel.o: processing/encoder-core/0058_clear_map_size_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0058_clear_map_size_parallel.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0058_clear_map_size_parallel.Tpo -c -o processing/encoder-core/test_runner-0058_clear_map_size_parallel.o `test -f 'processing/encoder-core/0058_clear_map_size_parallel.c' || echo '$(srcdir)/'`processing/encoder-core/0058_clear_map_size_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0058_clear_map_size_parallel.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0058_clear_map_size_parallel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0058_clear_map_size_parallel.c' object='processing/encoder-core/test_runner-0058_clear_map_size_parallel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0058_clear_map_size_parallel.o `test -f 'processing/encoder-core/0058_clear_map_size_parallel.c' || echo '$(srcdir)/'`processing/encoder-core/0058_clear_map_size_parallel.c
+
+processing/encoder-core/test_runner-0058_clear_map_size_parallel.obj: processing/encoder-core/0058_clear_map_size_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0058_clear_map_size_parallel.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0058_clear_map_size_parallel.Tpo -c -o processing/encoder-core/test_runner-0058_clear_map_size_parallel.obj `if test -f 'processing/encoder-core/0058_clear_map_size_parallel.c'; then $(CYGPATH_W) 'processing/encoder-core/0058_clear_map_size_parallel.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0058_clear_map_size_parallel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0058_clear_map_size_parallel.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0058_clear_map_size_parallel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0058_clear_map_size_parallel.c' object='processing/encoder-core/test_runner-0058_clear_map_size_parallel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0058_clear_map_size_parallel.obj `if test -f 'processing/encoder-core/0058_clear_map_size_parallel.c'; then $(CYGPATH_W) 'processing/encoder-core/0058_clear_map_size_parallel.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0058_clear_map_size_parallel.c'; fi`
+
+processing/encoder-core/test_runner-0059_clear_map_sparse_serial.o: processing/encoder-core/0059_clear_map_sparse_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0059_clear_map_sparse_serial.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0059_clear_map_sparse_serial.Tpo -c -o processing/encoder-core/test_runner-0059_clear_map_sparse_serial.o `test -f 'processing/encoder-core/0059_clear_map_sparse_serial.c' || echo '$(srcdir)/'`processing/encoder-core/0059_clear_map_sparse_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0059_clear_map_sparse_serial.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0059_clear_map_sparse_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0059_clear_map_sparse_serial.c' object='processing/encoder-core/test_runner-0059_clear_map_sparse_serial.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0059_clear_map_sparse_serial.o `test -f 'processing/encoder-core/0059_clear_map_sparse_serial.c' || echo '$(srcdir)/'`processing/encoder-core/0059_clear_map_sparse_serial.c
+
+processing/encoder-core/test_runner-0059_clear_map_sparse_serial.obj: processing/encoder-core/0059_clear_map_sparse_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0059_clear_map_sparse_serial.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0059_clear_map_sparse_serial.Tpo -c -o processing/encoder-core/test_runner-0059_clear_map_sparse_serial.obj `if test -f 'processing/encoder-core/0059_clear_map_sparse_serial.c'; then $(CYGPATH_W) 'processing/encoder-core/0059_clear_map_sparse_serial.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0059_clear_map_sparse_serial.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0059_clear_map_sparse_serial.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0059_clear_map_sparse_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0059_clear_map_sparse_serial.c' object='processing/encoder-core/test_runner-0059_clear_map_sparse_serial.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0059_clear_map_sparse_serial.obj `if test -f 'processing/encoder-core/0059_clear_map_sparse_serial.c'; then $(CYGPATH_W) 'processing/encoder-core/0059_clear_map_sparse_serial.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0059_clear_map_sparse_serial.c'; fi`
+
+processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.o: processing/encoder-core/0060_clear_map_sparse_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0060_clear_map_sparse_parallel.Tpo -c -o processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.o `test -f 'processing/encoder-core/0060_clear_map_sparse_parallel.c' || echo '$(srcdir)/'`processing/encoder-core/0060_clear_map_sparse_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0060_clear_map_sparse_parallel.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0060_clear_map_sparse_parallel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0060_clear_map_sparse_parallel.c' object='processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.o `test -f 'processing/encoder-core/0060_clear_map_sparse_parallel.c' || echo '$(srcdir)/'`processing/encoder-core/0060_clear_map_sparse_parallel.c
+
+processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.obj: processing/encoder-core/0060_clear_map_sparse_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0060_clear_map_sparse_parallel.Tpo -c -o processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.obj `if test -f 'processing/encoder-core/0060_clear_map_sparse_parallel.c'; then $(CYGPATH_W) 'processing/encoder-core/0060_clear_map_sparse_parallel.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0060_clear_map_sparse_parallel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0060_clear_map_sparse_parallel.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0060_clear_map_sparse_parallel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0060_clear_map_sparse_parallel.c' object='processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.obj `if test -f 'processing/encoder-core/0060_clear_map_sparse_parallel.c'; then $(CYGPATH_W) 'processing/encoder-core/0060_clear_map_sparse_parallel.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0060_clear_map_sparse_parallel.c'; fi`
 
 codec/macro/test_runner-native_macro_test_common.o: codec/macro/native_macro_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-native_macro_test_common.o -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Tpo -c -o codec/macro/test_runner-native_macro_test_common.o `test -f 'codec/macro/native_macro_test_common.c' || echo '$(srcdir)/'`codec/macro/native_macro_test_common.c
