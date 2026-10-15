@@ -14,6 +14,7 @@ _MODE_T_DEFINED	platform	docs/misc/platforms/windows.md
 _MSC_VER	platform	docs/misc/platforms/msvc.md
 _MT	platform	docs/misc/platforms/msvc.md
 _M_AMD64	architecture	-
+_M_ARM64	architecture	-
 _M_IX86	architecture	-
 _M_IX86_FP	architecture	-
 _M_X64	architecture	-
@@ -49,6 +50,7 @@ __AFL_INIT	tooling	-
 __AFL_LOOP	tooling	-
 __ANDROID__	platform	docs/misc/platforms/posix-runtimes.md
 __APPLE__	platform	docs/misc/platforms/macos.md
+__ARM_BIG_ENDIAN	architecture	-
 __ARM_NEON	architecture	-
 __ARM_NEON__	architecture	-
 __ATOMIC_ACQUIRE	compiler	-

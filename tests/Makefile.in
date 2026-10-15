@@ -440,6 +440,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/decoder/0101_parallel_columns_allocation_failure.c \
 	processing/decoder/0102_parallel_parse_create_failure.c \
 	processing/decoder/0103_parallel_early_st_compatibility.c \
+	processing/decoder/0104_simd_band_words.c \
 	processing/cms/0011_separate_intents.c \
 	processing/cms/0012_engine_independence.c \
 	processing/cms/0013_queued_transform_lifetime.c \
@@ -4148,6 +4149,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0101_parallel_columns_allocation_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0102_parallel_parse_create_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0103_parallel_early_st_compatibility.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0104_simd_band_words.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0011_separate_intents.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0012_engine_independence.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0013_queued_transform_lifetime.$(OBJEXT) \
@@ -9443,6 +9445,7 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0101_parallel_columns_allocation_failure.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0102_parallel_parse_create_failure.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0103_parallel_early_st_compatibility.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0104_simd_band_words.Po \
 	processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po \
@@ -12751,6 +12754,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0101_PARALLEL_COLUMNS_ALLOCATION_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0102_PARALLEL_PARSE_CREATE_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0103_PARALLEL_EARLY_ST_COMPATIBILITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0104_SIMD_BAND_WORDS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SOURCE_SNAPSHOT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_HISTORY_REVISIONS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_PALETTE_KEEP_COST \
@@ -15867,6 +15871,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0101_parallel_columns_allocation_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0102_parallel_parse_create_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0103_parallel_early_st_compatibility.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0104_simd_band_words.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0011_separate_intents.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0012_engine_independence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0013_queued_transform_lifetime.c \
@@ -20512,6 +20517,9 @@ processing/decoder/test_runner-0102_parallel_parse_create_failure.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/test_runner-0103_parallel_early_st_compatibility.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0104_simd_band_words.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/cms/$(am__dirstamp):
@@ -33139,6 +33147,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0101_parallel_columns_allocation_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0102_parallel_parse_create_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0103_parallel_early_st_compatibility.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0104_simd_band_words.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po@am__quote@ # am--include-marker
@@ -39558,6 +39567,20 @@ processing/decoder/test_runner-0103_parallel_early_st_compatibility.obj: process
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0103_parallel_early_st_compatibility.c' object='processing/decoder/test_runner-0103_parallel_early_st_compatibility.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0103_parallel_early_st_compatibility.obj `if test -f 'processing/decoder/0103_parallel_early_st_compatibility.c'; then $(CYGPATH_W) 'processing/decoder/0103_parallel_early_st_compatibility.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0103_parallel_early_st_compatibility.c'; fi`
+
+processing/decoder/test_runner-0104_simd_band_words.o: processing/decoder/0104_simd_band_words.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0104_simd_band_words.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0104_simd_band_words.Tpo -c -o processing/decoder/test_runner-0104_simd_band_words.o `test -f 'processing/decoder/0104_simd_band_words.c' || echo '$(srcdir)/'`processing/decoder/0104_simd_band_words.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0104_simd_band_words.Tpo processing/decoder/$(DEPDIR)/test_runner-0104_simd_band_words.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0104_simd_band_words.c' object='processing/decoder/test_runner-0104_simd_band_words.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0104_simd_band_words.o `test -f 'processing/decoder/0104_simd_band_words.c' || echo '$(srcdir)/'`processing/decoder/0104_simd_band_words.c
+
+processing/decoder/test_runner-0104_simd_band_words.obj: processing/decoder/0104_simd_band_words.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0104_simd_band_words.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0104_simd_band_words.Tpo -c -o processing/decoder/test_runner-0104_simd_band_words.obj `if test -f 'processing/decoder/0104_simd_band_words.c'; then $(CYGPATH_W) 'processing/decoder/0104_simd_band_words.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0104_simd_band_words.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0104_simd_band_words.Tpo processing/decoder/$(DEPDIR)/test_runner-0104_simd_band_words.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0104_simd_band_words.c' object='processing/decoder/test_runner-0104_simd_band_words.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0104_simd_band_words.obj `if test -f 'processing/decoder/0104_simd_band_words.c'; then $(CYGPATH_W) 'processing/decoder/0104_simd_band_words.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0104_simd_band_words.c'; fi`
 
 processing/cms/test_runner-0011_separate_intents.o: processing/cms/0011_separate_intents.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0011_separate_intents.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Tpo -c -o processing/cms/test_runner-0011_separate_intents.o `test -f 'processing/cms/0011_separate_intents.c' || echo '$(srcdir)/'`processing/cms/0011_separate_intents.c

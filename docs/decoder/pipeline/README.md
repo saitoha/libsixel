@@ -74,6 +74,24 @@ The first parallel attempt normally precedes serial paint. Successful parallel d
 
 Dimension, repeat and cursor overflow checks still guard the general paint path. The contiguous loop runs only within an allocated complete band; the general path owns partial bands, trusted-raster clipping and growth. A column allocation checks the rounded band-count product independently of the output allocation, and allocation failures release all owned buffers without publishing partial output.
 
+## Vector band-word paths
+
+[`decoder-simd.h`](../../../src/decoder-simd.h) holds vector forms of the band-word updates. Each helper reproduces the scalar update in [`decoder-columns.h`](../../../src/decoder-columns.h) or [`decoder-ormode.h`](../../../src/decoder-ormode.h) for sixteen consecutive columns, and the scalar loops remain both the reference and the fallback. Output is byte-identical at every SIMD level; the vector paths change speed only.
+
+The parser records at context initialization whether `sixel_cpu_simd_level()` reports NEON, so `SIXEL_SIMD_LEVEL=none` (or a CPU without the extension) selects the scalar loops in the same binary. The first phase covers AArch64 NEON on little-endian targets:
+
+| Stage | Vector form | Scalar condition retained |
+| --- | --- | --- |
+| OR literal runs | Sixteen data characters are validated with one range test and ORed into the selected plane lanes of sixteen column words. | Fewer than sixteen bytes or columns remain, any byte is not a data character, or the register is 256 or greater. |
+| OR materialization | Row bits of sixteen plane words are gathered into sixteen indexes with pairwise adds, then stored as indexes or looked up as RGBA. | The tail of a row narrower than sixteen columns. |
+| Ordinary materialization | Table lookups extract the row indexes and coverage bits of sixteen column words; RGBA blends painted columns over the initialized destination. | Wide-index output and the row tail. |
+
+Ordinary literal runs stay scalar. Their mean length in measured streams is under ten characters and the scalar masked replacement already costs about 1.4 cycles per column, so per-run vector setup did not pay for itself. Repeats and runs share two scalar shortcuts: an empty data character leaves its columns untouched, and a character that paints all six rows replaces the word without reading it.
+
+Numeric parameters of repeat and color introducers are consumed in one inner loop rather than one digit per parser state transition; each digit keeps its overflow check.
+
+SSE2, AVX2 and WebAssembly SIMD forms are planned as a second phase using the same helper boundaries.
+
 ## Raster declaration versus observed paint
 
 Raster attributes are useful allocation evidence, but a real stream can paint outside its declared rectangle. This can happen naturally when a height is not a multiple of SIXEL's six-row unit, and malformed or producer-specific streams can disagree in either dimension.
@@ -190,6 +208,7 @@ PNG output does not require an external libpng because the repository includes a
 | Parser and painter | [`src/fromsixel.c`](../../../src/fromsixel.c) | DCS/body states, numeric controls, cursor movement, palette registers, canvas growth, masks, raster-policy flags, raw indexes, and direct RGBA |
 | Packed conversion | [`src/sixel_decode_pixels.c`](../../../src/sixel_decode_pixels.c) | Preferred layout validation, alpha/background handling, channel packing, stride, and result publication |
 | Stateful policy | [`src/decoder.c`](../../../src/decoder.c) | Input acquisition, decoder options, reconstruction, palette-redefinition bypass, resize, destination selection, and writer invocation |
+| Vector band words | [`src/decoder-simd.h`](../../../src/decoder-simd.h) | NEON forms of OR plane updates and ordinary and OR row materialization, each matching its scalar update |
 | Parallel execution | [`src/decoder-parallel.c`](../../../src/decoder-parallel.c) | Local column parsing, prefix resolution, barrier, parallel gather, halo reconstruction, and clean fallback |
 | PNG boundary | [`src/writer.c`](../../../src/writer.c) | Indexed, RGB, and RGBA PNG serialization through libpng or builtin code |
 | CLI frontend | [`converters/sixel2png.c`](../../../converters/sixel2png.c) | Process arguments, environment and diagnostic policy, stateful decoder setup, exit status, and user-facing help |
@@ -277,6 +296,11 @@ Each row is one independently reportable observation. Every owning test links ba
 | DP-41 | Materializing a band range changes only its rows, including a partial final band, at every output depth. | [tests/processing/decoder/0098_normal_columns_band_ranges.t](../../../tests/processing/decoder/0098_normal_columns_band_ranges.t) |
 | DP-42 | Failure at any normal-column allocation or growth step releases owned buffers and publishes no partial output. | [tests/processing/decoder/0099_normal_columns_allocation_failure.t](../../../tests/processing/decoder/0099_normal_columns_allocation_failure.t) |
 | DP-43 | Trusted literal runs retain exact paint and clipping flags at horizontal and partial-band raster edges, in ordinary and OR mode. | [tests/processing/decoder/0100_trusted_literal_run_edges.t](../../../tests/processing/decoder/0100_trusted_literal_run_edges.t) |
+| DP-44 | Every vector band-word helper matches its scalar update on random words, registers, rows, coverage and data bytes, and rejects blocks containing non-data bytes without writing. | [tests/processing/decoder/0104_simd_band_words.t](../../../tests/processing/decoder/0104_simd_band_words.t) |
+| DP-45 | An ordinary stream with a partial final sixteen-column block decodes serially to byte-identical indexed PNGs with SIMD disabled and at the detected level. | [tests/processing/decoder/0105_simd_level_ordinary_serial.t](../../../tests/processing/decoder/0105_simd_level_ordinary_serial.t) |
+| DP-46 | The same ordinary stream decodes identically at both SIMD levels when workers materialize their band ranges. | [tests/processing/decoder/0106_simd_level_ordinary_parallel.t](../../../tests/processing/decoder/0106_simd_level_ordinary_parallel.t) |
+| DP-47 | An OR-mode stream decodes identically at both SIMD levels, covering vector plane updates and row gathering. | [tests/processing/decoder/0107_simd_level_ormode.t](../../../tests/processing/decoder/0107_simd_level_ormode.t) |
+| DP-48 | RGBA output of a transparent stream whose runs cover sixteen-column blocks partially, fully and not at all is identical at both SIMD levels. | [tests/processing/decoder/0108_simd_level_transparent.t](../../../tests/processing/decoder/0108_simd_level_transparent.t) |
 
 ### Coverage boundary
 

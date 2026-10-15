@@ -148,6 +148,7 @@ int test_decoder_0100(int argc, char **argv);
 int test_decoder_0101(int argc, char **argv);
 int test_decoder_0102(int argc, char **argv);
 int test_decoder_0103(int argc, char **argv);
+int test_decoder_0104(int argc, char **argv);
 int test_named_output_0037(int argc, char **argv);
 int test_named_output_0038(int argc, char **argv);
 int test_named_output_0039(int argc, char **argv);
@@ -5769,6 +5770,7 @@ static test_entry_t const test_entries[] = {
     { "decoder/0101_parallel_columns_allocation_failure", test_decoder_0101 },
     { "decoder/0102_parallel_parse_create_failure", test_decoder_0102 },
     { "decoder/0103_parallel_early_st_compatibility", test_decoder_0103 },
+    { "decoder/0104_simd_band_words", test_decoder_0104 },
     { "quant/palette/named_output/0037_adobe_libpng", test_named_output_0037 },
     { "quant/palette/named_output/0038_dci_libpng", test_named_output_0038 },
     { "quant/palette/named_output/0039_adobe_libtiff", test_named_output_0039 },

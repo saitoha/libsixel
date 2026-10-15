@@ -1085,6 +1085,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0101_PARALLEL_COLUMNS_ALLOCATION_FAILURE \
     -DBUILD_TEST_0102_PARALLEL_PARSE_CREATE_FAILURE \
     -DBUILD_TEST_0103_PARALLEL_EARLY_ST_COMPATIBILITY \
+    -DBUILD_TEST_0104_SIMD_BAND_WORDS \
     -DBUILD_TEST_0001_SOURCE_SNAPSHOT \
     -DBUILD_TEST_0002_HISTORY_REVISIONS \
     -DBUILD_TEST_0003_PALETTE_KEEP_COST \
@@ -4170,6 +4171,7 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0101_parallel_columns_allocation_failure.c \
     processing/decoder/0102_parallel_parse_create_failure.c \
     processing/decoder/0103_parallel_early_st_compatibility.c \
+    processing/decoder/0104_simd_band_words.c \
     processing/cms/0011_separate_intents.c \
     processing/cms/0012_engine_independence.c \
     processing/cms/0013_queued_transform_lifetime.c \
