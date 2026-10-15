@@ -685,7 +685,7 @@ SIXEL_OPTFLAG_ENCODE_POLICY    = 'E'  # -E ENCODEPOLICY, --encode-policy=ENCODEP
 SIXEL_OPTFLAG_LUT_POLICY        = '~'  # -~ LOOKUPPOLICY,
                                       #   --lookup-policy=LOOKUPPOLICY:
                                       #        choose histogram lookup width.
-                                      #          auto    -> follow pixel depth
+                                      #          auto    -> exact VP-tree lookup
                                       #          5bit    -> force 5-bit buckets
                                       #          6bit    -> force 6-bit buckets
                                       #                     (RGB inputs)

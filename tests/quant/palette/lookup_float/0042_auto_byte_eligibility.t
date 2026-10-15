@@ -14,7 +14,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract,dither_contract \
     exit 0
 }
 
-case "${trace}" in *"selected=lookup/6bit.8bit"*) true ;; *) false ;; esac || {
+case "${trace}" in *"selected=lookup/vptree.8bit"*) true ;; *) false ;; esac || {
     echo "not ok 1 - actual float lookup consumer"
     printf '# %s\n' "${trace}"
     exit 0

@@ -50,22 +50,18 @@ whether they hold the palette fixed or measure this end-to-end behavior.
 --lookup-policy=POLICY
 ```
 
-The short option is the two-character spelling `-~`; there is no `--~` long option. The encoder default is currently `certlut`. An explicit `auto` value is a dispatch request and is not another search algorithm.
+The short option is the two-character spelling `-~`; there is no `--~` long option. The encoder default is `auto`, which currently resolves to `vptree`. An explicit `auto` value is a dispatch request and is not another search algorithm.
 
 An explicit lookup policy applies during palette application with generated palettes and with all three fixed-palette selectors: mapfiles selected by `-m`, built-in palettes selected by `-b`, and monochrome selected by `-e`. Outside the selected extended float path, a text mapfile retains its historical direct-scan behavior when no lookup policy is explicitly supplied; explicit lookup is the opt-in that enables the selected backend for that already completed palette.
 
 RGB666 became the fast lookup baseline during development of the 1.11 line,
 when commit
 [`4f57a743c`](https://github.com/saitoha/libsixel/commit/4f57a743c11c4149656cdad6e3f8d59d76c58036)
-replaced the historical RGB555 table. It remains the backend selected by
-explicit `auto` and by the selector fallback. It is not, however, the current
-built-in default: commit
+replaced the historical RGB555 table. It remains the selector fallback for an unrecognized policy value, but it is no longer what `auto` selects. Commit
 [`2e1cc0639`](https://github.com/saitoha/libsixel/commit/2e1cc06396009a452f25ecd9baf078e16e0d4d27)
-changed that default from `eytzinger` to `certlut`. Statements that call
-`6bit` "the 1.11 default" must therefore name the exact revision or release;
-this document describes the current source tree.
+changed the built-in default from `eytzinger` to `certlut`; the default later became `auto`, resolved to `vptree`. Statements that call `6bit` "the 1.11 default" must therefore name the exact revision or release; this document describes the current source tree.
 
-`-U display-p3` accepts `none`, `certlut`, `5bit`, `6bit`, `auto` (resolved to `6bit`), `vptree`, `rbc`, `mahalanobis`, `eytzinger` and `fhedt`. On that path, and on the ordinary sRGB float path that uses the same preparation, lookup retains the unrounded float working palette; separately converted and rounded RGB101 codes serve only serialization; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
+`-U display-p3` accepts `none`, `certlut`, `5bit`, `6bit`, `auto` (resolved to `vptree`), `vptree`, `rbc`, `mahalanobis`, `eytzinger` and `fhedt`. On that path, and on the ordinary sRGB float path that uses the same preparation, lookup retains the unrounded float working palette; separately converted and rounded RGB101 codes serve only serialization; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
 
 ## Policy chapters
 
@@ -218,8 +214,7 @@ independent variable.
 not define a distance, index, or complexity class of its own. The selected
 backend owns all of those properties.
 
-The built-in encoder default is currently `certlut`. Therefore an explicit
-`--lookup-policy=auto` is not merely another spelling of the default.
+The built-in encoder default is `auto`, so omitting `--lookup-policy` and passing `--lookup-policy=auto` select the same backend. The only difference is the explicit-policy flag: an explicit value also enables lookup for supplied palettes, as described above.
 
 ### Dispatch flow
 
@@ -241,6 +236,10 @@ completed palette and pixel format
               |
               no
               v
+ auto? -- yes --> vptree
+              |
+              no
+              v
  recognized concrete policy? -- yes --> that 8-bit or float32 backend
               |
               no
@@ -248,12 +247,9 @@ completed palette and pixel format
              6bit
 ```
 
-`auto` reaches the final branch and currently resolves to `6bit`, selecting
-the 8-bit or float32 implementation from the pixel representation. The float32
-`6bit` backend is an exhaustive normalized-distance scan rather than a dense
-RGB666 table.
+`auto` currently resolves to `vptree`, selecting the 8-bit or float32 implementation from the pixel representation. [`vptree`](#policy-vptree) is exact and, with its neighbor-list refinement, the fastest general backend in the current tree. Only an unrecognized policy value reaches the `6bit` fallback.
 
-The selected extended float path bypasses the byte black/white shortcut: its byte projection cannot establish equality of native float coordinates. It enables the requested lookup even for supplied palettes. Thus explicit `auto` always resolves to `6bit.float32` on that path, while the encoder default remains `certlut.float32`.
+The selected extended float path bypasses the byte black/white shortcut: its byte projection cannot establish equality of native float coordinates. It enables the requested lookup even for supplied palettes. Thus `auto`, explicit or default, always resolves to `vptree.float32` on that path.
 
 ### Guarantee and cost
 

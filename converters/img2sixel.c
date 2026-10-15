@@ -772,7 +772,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "lookup-policy",
         "-~ LOOKUPPOLICY, --lookup-policy=LOOKUPPOLICY\n"
         "    choose histogram lookup width LOOKUPPOLICY is one of them:\n"
-        "      auto      -> follow pixel depth\n"
+        "      auto      -> exact VP-tree lookup (default)\n"
         "      5bit      -> force classic 5-bit buckets\n"
         "        sub-option:\n"
         "          :packing=linear|morton|hilbert (:Pvalue)\n"
@@ -2357,7 +2357,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DITHER_LOOKUP_POLICY",
         "select palette lookup policy (auto, 5bit, 6bit, none, certlut,\n"
-        "eytzinger, fhedt, vptree, rbc, or mahalanobis; default is certlut)."
+        "eytzinger, fhedt, vptree, rbc, or mahalanobis; default is auto)."
     },
     {
         "SIXEL_GPU_POLICY",

@@ -166,7 +166,7 @@ Palette generation retains extended coordinates. A separate destination copy is 
 
 For gamma, linear and SMPTE-C output, [native final snap](../palette-construction/snap-policy/README.md#native-float-final-snap-for-srgb-output) is also supported for generated palettes with `timing=once` and cover default/AUTO, off or soft/hard cover. Display P3, Adobe RGB and DCI-P3 use [destination-aware targets and stages](../palette-construction/snap-policy/README.md#output-conversion-and-destination-aware-snap).
 
-The selected lookup classes consume the authoritative float palette even when its byte projection happens to be black and white. The default `certlut` and explicit `auto` (resolved to `6bit`) remain distinct choices. Their distance geometry and focused integration tests are owned by [Lookup policy](../palette-application/lookup-policy/README.md#extended-float-coordinates).
+The selected lookup classes consume the authoritative float palette even when its byte projection happens to be black and white. The default and explicit `auto` both resolve to `vptree`. Their distance geometry and focused integration tests are owned by [Lookup policy](../palette-application/lookup-policy/README.md#extended-float-coordinates).
 
 Ordinary RGB/HLS [native delta](delta-encoding.md#linear-and-smpte-c-output-history) also supports these linear and SMPTE-C output representations, retaining the selected output interpretation for threshold comparisons and converting kept colors back into the working space. Alternate delta transports remain outside that migration.
 

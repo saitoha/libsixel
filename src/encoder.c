@@ -931,21 +931,6 @@ sixel_encoder_path_has_extension(char const *path, char const *extension)
 }
 
 static int
-sixel_encoder_should_force_auto_lut_for_psd(
-    sixel_encoder_t const *encoder,
-    char const *path)
-{
-    if (encoder == NULL || path == NULL) {
-        return 0;
-    }
-    if (encoder->lut_policy != SIXEL_LUT_POLICY_CERTLUT) {
-        return 0;
-    }
-    return sixel_encoder_path_has_extension(path, "psd") ||
-           sixel_encoder_path_has_extension(path, "psb");
-}
-
-static int
 sixel_encoder_should_use_psd_trace_only(char const *path)
 {
     if (path == NULL) {
@@ -7397,7 +7382,7 @@ sixel_encoder_rgb101_restriction(sixel_encoder_t const *encoder)
         return "display-p3 does not support this dither method.";
     }
     /* These float lookup classes retain native palette coordinates. AUTO
-     * resolves to 6bit, whose float implementation is an exact scan. */
+     * resolves to vptree, whose float implementation is an exact search. */
     switch (encoder->lut_policy) {
     case SIXEL_LUT_POLICY_NONE:
     case SIXEL_LUT_POLICY_AUTO:
@@ -7928,7 +7913,7 @@ sixel_encoder_prepare_palette(
     effective_merge_oversplit = 1.81;
     effective_merge_lloyd_override = 0;
     effective_merge_lloyd = 3u;
-    effective_lut_policy = SIXEL_LUT_POLICY_CERTLUT;
+    effective_lut_policy = SIXEL_LUT_POLICY_AUTO;
     effective_lut_policy_override = 0;
     fixed_palette_cache_candidate = 0;
     dither_cache_hit = 0;
@@ -8209,7 +8194,7 @@ sixel_encoder_prepare_palette(
             && effective_lut_policy_override == 0
             && encoder->merge_policy_override == 0
             && encoder->method_for_largest_override == 0
-            && effective_lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
+            && effective_lut_policy == SIXEL_LUT_POLICY_AUTO) {
         /*
          * Keep speed profile internal and compatible: when lookup policy is not
          * explicitly pinned by user/env, use the lighter 5bit histogram bins.
@@ -10429,7 +10414,7 @@ sixel_encoder_new(
     (*ppencoder)->snap_policy_approach_rate = 1.0;
     (*ppencoder)->snap_policy_channel_factor_l_override = 0;
     (*ppencoder)->snap_policy_channel_factor_l = 0.85;
-    (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_CERTLUT;
+    (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_AUTO;
     (*ppencoder)->lut_policy_override   = 0;
     (*ppencoder)->lut_policy_shared_instance_override = 0;
     (*ppencoder)->lut_policy_shared_instance = 0;
@@ -15625,8 +15610,6 @@ sixel_encoder_encode_owned(
     sixel_encoder_load_context_t load_context;
     SIXELSTATUS pipeline_wait_status;
     int saved_errno;
-    int saved_lut_policy;
-    int force_auto_lut_for_psd;
     int psd_trace_only;
     int prefer_loader_float32;
     int loader_reqcolors;
@@ -15656,8 +15639,6 @@ sixel_encoder_encode_owned(
     png_open_errno = 0;
 #endif
     saved_errno = 0;
-    saved_lut_policy = SIXEL_LUT_POLICY_AUTO;
-    force_auto_lut_for_psd = 0;
     psd_trace_only = 0;
     prefer_loader_float32 = 0;
     loader_reqcolors = SIXEL_PALETTE_MAX;
@@ -15805,21 +15786,6 @@ sixel_encoder_encode_owned(
         effective_filename = clipboard_input_path;
     }
 
-    if (sixel_encoder_should_force_auto_lut_for_psd(encoder,
-                                                    effective_filename)) {
-        saved_lut_policy = encoder->lut_policy;
-        encoder->lut_policy = SIXEL_LUT_POLICY_AUTO;
-        force_auto_lut_for_psd = 1;
-        sixel_encoder_log_stage(encoder,
-                                NULL,
-                                "main",
-                                "encoder",
-                                "lut_policy_override",
-                                "source=%s policy=auto reason=psd-default",
-                                effective_filename != NULL
-                                    ? effective_filename
-                                    : "(null)");
-    }
     psd_trace_only = sixel_encoder_should_use_psd_trace_only(
         effective_filename);
     load_context.psd_trace_only = psd_trace_only;
@@ -16360,9 +16326,6 @@ end:
         if (pipeline_wait_status != SIXEL_OK) {
             return pipeline_wait_status;
         }
-    }
-    if (encoder != NULL && force_auto_lut_for_psd != 0) {
-        encoder->lut_policy = saved_lut_policy;
     }
     (void)sixel_encoder_frame_pipeline_finish(&load_context.frame_pipeline);
     sixel_encoder_frame_pipeline_dispose(&load_context.frame_pipeline);

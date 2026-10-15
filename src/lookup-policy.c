@@ -159,6 +159,11 @@ sixel_lookup_policy_normalize_fast_lut_policy(int lut_policy)
     int normalized;
 
     normalized = lut_policy;
+    if (normalized == SIXEL_LUT_POLICY_AUTO) {
+        /* The exact VP-tree with neighbor-list refinement is the fastest
+         * general lookup, so AUTO dispatches to it. */
+        return SIXEL_LUT_POLICY_VPTREE;
+    }
     if (normalized != SIXEL_LUT_POLICY_CERTLUT
         && normalized != SIXEL_LUT_POLICY_5BIT
         && normalized != SIXEL_LUT_POLICY_6BIT

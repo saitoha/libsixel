@@ -789,7 +789,7 @@ Options:
 -~ LOOKUPPOLICY, --lookup-policy=LOOKUPPOLICY
                            choose histogram lookup width
                            LOOKUPPOLICY is one of them:
-                             auto      -> follow pixel depth
+                             auto      -> exact VP-tree lookup (default)
                              5bit      -> force classic 5-bit buckets
                                sub-option:
                                  :shared_instance=0|1

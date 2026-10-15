@@ -844,7 +844,7 @@ choose histogram lookup width and backend.
 .br
 \fILOOKUPPOLICY\fP is one of them:
 .br
-auto      -> follow pixel depth to pick bucket size
+auto      -> exact VP-tree lookup (default)
 .br
 5bit      -> force classic 5-bit buckets
 .br
@@ -924,7 +924,7 @@ The lookup policies honour the following environment variables.  A matching
 command-line sub-option takes precedence:
 .br
 SIXEL_DITHER_LOOKUP_POLICY (auto, 5bit, 6bit, none, certlut, eytzinger,
-fhedt, vptree, rbc, or mahalanobis; default certlut)
+fhedt, vptree, rbc, or mahalanobis; default auto)
 .br
 SIXEL_LOOKUP_PACKING (linear, morton, or hilbert; default linear) selects
 dense LUT packing for 5bit/6bit lookups; other policies ignore it.
