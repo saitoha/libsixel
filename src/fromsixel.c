@@ -68,6 +68,8 @@
 #include "decoder-image.h"
 #include "decoder-ormode.h"
 #include "decoder-columns.h"
+#include "decoder-simd.h"
+#include "cpu.h"
 #include "decoder.h"
 #include "decoder-parallel.h"
 #include "sixel_decode_pixels.h"
@@ -525,6 +527,7 @@ typedef struct parser_context {
     uint64_t ormode_high_spread;
     uint64_t normal_color;
     int normal_disabled;
+    int simd_neon;
     int painted_outside_raster;
     int painted;
     int palette_redefined_after_paint;
@@ -552,6 +555,9 @@ parser_context_store_ormode_run(parser_context_t *context,
     size_t band;
     int x;
     int last;
+#if SIXEL_DECODER_NEON
+    int block_last;
+#endif
     int bits;
     int rows;
     int r;
@@ -580,6 +586,21 @@ parser_context_store_ormode_run(parser_context_t *context,
         }
         context->repeat_count = 1;
     }
+#if SIXEL_DECODER_NEON
+    if (context->simd_neon && high_spread == 0) {
+
+        while (end - p >= 16 && width - x >= 16 &&
+                p[15] >= '?' && p[15] <= '~' &&
+                sixel_simd_planes_or16(low + x, spread, p, &rows,
+                                       &block_last)) {
+            if (block_last >= 0) {
+                last = x + block_last;
+            }
+            p += 16;
+            x += 16;
+        }
+    }
+#endif
     while (p < end && *p >= '?' && *p <= '~' && x < width) {
         bits = *p++ - '?';
         low[x] |= (uint64_t)bits * spread;
@@ -1062,6 +1083,11 @@ parser_context_init(parser_context_t *context)
 
     context->state = PS_GROUND;
     context->palette_transform = NULL;
+#if SIXEL_DECODER_NEON
+    context->simd_neon = sixel_cpu_simd_level() == SIXEL_SIMD_LEVEL_NEON;
+#else
+    context->simd_neon = 0;
+#endif
     context->pos_x = 0;
     context->pos_y = 0;
     context->max_x = 0;

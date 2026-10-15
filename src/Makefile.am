@@ -379,6 +379,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/decoder-image.h \
                 $(srcdir)/decoder-ormode.h \
                 $(srcdir)/decoder-columns.h \
+                $(srcdir)/decoder-simd.h \
                 $(srcdir)/options.c \
                 $(srcdir)/options.h \
                 $(srcdir)/options-registry.c \
