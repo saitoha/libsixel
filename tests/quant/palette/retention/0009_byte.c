@@ -29,7 +29,7 @@ test_palette_retention_byte(int argc, char **argv)
                 SIXEL_SUCCEEDED(dither->palette->vtbl->get_entries_float32(
                     dither->palette, &view)) && view.entries == NULL &&
                 dither->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
-                !dither->prefer_float32 && !dither->clamp_promoted_rgb888;
+                !dither->prefer_float32;
             sixel_allocator_free(dither->allocator, indices);
         }
         sixel_dither_unref(dither);

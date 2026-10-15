@@ -375,30 +375,6 @@ sixel_dither_method_supports_float_pipeline(sixel_dither_t const *dither)
 }
 
 
-/* Soft and open feedback require signed headroom even for byte input.
- * This promotes only the palette-application buffer, not loader storage or
- * palette construction. Positional noise and no-dither keep byte fast paths. */
-static int
-sixel_dither_clamp_requires_float(sixel_dither_t const *dither)
-{
-    switch (dither->method_for_diffuse) {
-    case SIXEL_DIFFUSE_FS:
-    case SIXEL_DIFFUSE_ATKINSON:
-    case SIXEL_DIFFUSE_JAJUNI:
-    case SIXEL_DIFFUSE_STUCKI:
-    case SIXEL_DIFFUSE_BURKES:
-    case SIXEL_DIFFUSE_SIERRA1:
-    case SIXEL_DIFFUSE_SIERRA2:
-    case SIXEL_DIFFUSE_SIERRA3:
-    case SIXEL_DIFFUSE_LSO2:
-    case SIXEL_DIFFUSE_INTERFRAME:
-        return dither->clamp_policy != SIXEL_DITHER_CLAMP_HARD;
-    default:
-        return 0;
-    }
-}
-
-
 static const unsigned char pal_mono_dark[] = {
     0x00, 0x00, 0x00, 0xff, 0xff, 0xff
 };
@@ -1802,10 +1778,7 @@ sixel_dither_6delta_keep_float(
     int n;
 
     if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ||
-            dither == NULL || (!dither->clamp_promoted_rgb888 &&
-            !dither->use_rgb101_palette) ||
-            (!dither->use_rgb101_palette &&
-             pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32)) {
+            dither == NULL || !dither->use_rgb101_palette) {
         return 0;
     }
     pixel = sixel_dither_pipeline_6delta_plane_pixel(dither, x, y);
@@ -2251,7 +2224,6 @@ sixel_dither_new(
     (*ppdither)->prefer_float32 = 0;
     (*ppdither)->clamp_policy = SIXEL_DITHER_CLAMP_AUTO;
     (*ppdither)->clamp_threshold = SIXEL_DITHER_CLAMP_THRESHOLD;
-    (*ppdither)->clamp_promoted_rgb888 = 0;
     (*ppdither)->palette_snap_exact = 0;
     (*ppdither)->use_rgb101_palette = 0;
     (*ppdither)->standalone_palette_colors = 0;
@@ -4479,7 +4451,6 @@ sixel_dither_apply_palette_with_mode(
     }
 
     pipeline_pixelformat = dither->pixelformat;
-    dither->clamp_promoted_rgb888 = 0;
     /*
      * Reuse the externally allocated index buffer when the pipeline has
      * already provisioned storage for the producer/worker hand-off.
@@ -4519,9 +4490,13 @@ sixel_dither_apply_palette_with_mode(
      * coordinate and must not hide an authoritative RGB float palette. */
     palette_has_float = sixel_dither_palette_has_float_entries(palette, 3);
     prefer_float_pipeline = 0;
+    /*
+     * The clamp policy bounds feedback in float coordinates that may leave
+     * the byte cube; it never selects float arithmetic by itself.  Byte
+     * diffusion keeps its per-tap saturation and has no clamp policy.
+     */
     if (float_backend_available != 0
-            && (sixel_dither_clamp_requires_float(dither)
-                || dither->prefer_float32 != 0
+            && (dither->prefer_float32 != 0
                 || source_has_float != 0
                 || palette_has_float != 0)) {
         prefer_float_pipeline = 1;
@@ -4597,8 +4572,6 @@ sixel_dither_apply_palette_with_mode(
         input_pixels = (unsigned char *)float_pipeline_pixels;
         pipeline_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
         owns_float_pipeline = 1;
-        dither->clamp_promoted_rgb888 =
-            sixel_dither_clamp_requires_float(dither);
     } else if (prefer_float_pipeline
                && !SIXEL_PIXELFORMAT_IS_FLOAT32(pipeline_pixelformat)) {
         prefer_float_pipeline = 0;

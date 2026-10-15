@@ -436,8 +436,9 @@ static cli_option_help_t const g_option_help_table[] = {
         '0',
         "clamp-policy",
         "-0 POLICY, --clamp-policy=POLICY\n"
-        "    control dither feedback only: auto, soft, hard, none.\n"
-        "    Default auto selects soft; colorspace conversion is unaffected.\n"
+        "    control float dither feedback only: auto, soft, hard, none.\n"
+        "    Default auto selects soft; byte dithering and colorspace\n"
+        "    conversion are unaffected, and no policy promotes to float.\n"
         "    :threshold=VALUE (:TVALUE), 1.0-16.0, soft headroom boundary.\n"
         "    Default threshold: 1.01.\n"
         "    SIXEL_DITHER_CLAMP_POLICY and SIXEL_DITHER_CLAMP_THRESHOLD\n"

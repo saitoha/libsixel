@@ -155,8 +155,9 @@ test_delta_work_extended(int mode)
         query[0] = 1e30f;
         query[1] = query[2] = 0.0f;
     } else if (mode == 2) {
+        /* Without the RGB101 wire palette there is no float keep path:
+         * byte diffusion never enters float coordinates for delta. */
         dither->use_rgb101_palette = 0;
-        dither->clamp_promoted_rgb888 = 1;
     }
     sixel_dither_set_pipeline_accumulation_result_enabled(dither, 1);
     for (threshold = 2; threshold <= 3; ++threshold) {

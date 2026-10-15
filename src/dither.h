@@ -126,7 +126,6 @@ sixel_dither_perturb_float(sixel_dither_perturb_t const *context,
 struct sixel_dither {
     int clamp_policy;
     double clamp_threshold;
-    int clamp_promoted_rgb888;
     sixel_atomic_u32_t ref;         /* reference counter */
     sixel_palette_t *palette;       /* palette definition */
     int reqcolors;                  /* requested colors */

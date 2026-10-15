@@ -447,8 +447,11 @@ The lazy cache adds 256 KiB, and the full grid uses about 23.6 MiB per build.
 The corresponding \fBSIXEL_PALETTE_SNAP_*\fP environments provide defaults.
 .TP 5
 .B \-0 \fIPOLICY\fP, \-\-clamp\-policy=\fIPOLICY\fP
-limit error-diffusion feedback. Values are \fBauto\fP, \fBsoft\fP,
+limit float error-diffusion feedback. Values are \fBauto\fP, \fBsoft\fP,
 \fBhard\fP and \fBnone\fP. The default \fBauto\fP selects \fBsoft\fP.
+The policy applies only when diffusion already runs in float coordinates;
+byte diffusion keeps its per-tap saturation, and no policy promotes byte
+work to float.
 This option does not clamp loader, CMS, resize or color-space conversions.
 Original extended-range source coordinates remain intact.
 .br

@@ -365,7 +365,7 @@ test_delta_native_residual(int method)
             mode ? SIXEL_6DELTA_ERROR_DIFFUSE : SIXEL_6DELTA_ERROR_SKIP);
         indexes = sixel_dither_apply_palette(dither,
             (unsigned char *)pixels, 2, 1);
-        if (indexes == NULL || dither->clamp_promoted_rgb888 != 0 ||
+        if (indexes == NULL ||
                 indexes[0] != 2 ||
                 indexes[1] != (mode ? 0 : 1)) {
             goto end;

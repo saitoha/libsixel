@@ -1,6 +1,6 @@
 # Dither clamp policy
 
-`-0` / `--clamp-policy` controls error-diffusion feedback during palette application. It does not change loader samples, CMS, resizing, clustering, or color-space conversion. See [working color space](working-colorspace/README.md) for the coordinate system in which diffusion runs and [loader precision](../../loader/precision-policy.md) for source preservation.
+`-0` / `--clamp-policy` controls float error-diffusion feedback during palette application. It exists for float working coordinates, which can leave the byte cube with negative or over-range components; byte diffusion has no clamp policy. It does not change loader samples, CMS, resizing, clustering, or color-space conversion. See [working color space](working-colorspace/README.md) for the coordinate system in which diffusion runs and [loader precision](../../loader/precision-policy.md) for source preservation.
 
 ## Options
 
@@ -8,7 +8,7 @@
 | --- | --- |
 | `auto` | Select `soft`. This is the default. |
 | `soft` | Scale the added correction vector to keep the corrected sample within source-containing bounds with headroom. |
-| `hard` | Clamp corrected channels independently to source-containing bounds without headroom. The byte path retains its existing per-tap rounding and saturation. |
+| `hard` | Clamp corrected channels independently to source-containing bounds without headroom. |
 | `none` | Do not limit the correction. Finite-value validation still applies. |
 
 `threshold` (`T`) is a finite factor from 1 through 16, default 1.01. `-0 soft:threshold=1.1` and `-0 soft:T1.1` are equivalent. The threshold is accepted but inactive for `hard` and `none`. `SIXEL_DITHER_CLAMP_POLICY` and `SIXEL_DITHER_CLAMP_THRESHOLD` provide defaults; explicit arguments win. Repeating `-0` resets the previous suboptions before reapplying the environment and the new argument. Invalid explicit values are errors; invalid environment values are ignored.
@@ -33,17 +33,17 @@ A bound on corrected coordinates differs from a fixed cap on correction magnitud
 
 The policy applies to FS, Atkinson, Jarvis--Judice--Ninke, Stucki, Burkes, the Sierra variants, LSO2, and the interframe policy's corrected working samples. Positional noise and no-dither paths do not propagate quantization residuals, so this policy does not apply to them. [Positional candidate precision](dithering/README.md#positional-candidate-precision) defines their float bias and byte saturation boundaries. LSO2's existing lightness-only diffusion in Lab-family spaces is unchanged. Its correction has the form `(delta_L, 0, 0)`, so only L can constrain the soft scale factor; unchanged source chroma cannot suppress lightness compensation even outside nominal chroma bounds. No extra L weighting is needed. RGB working spaces still diffuse all three components. LSO2's error-dependent coefficient table continues to control both spatial distribution and total propagated error separately from this limiter.
 
-Soft and unlimited feedback require signed headroom. Byte source images can retain byte loading and palette construction, while their error-diffusion work buffer is promoted to float32. `--precision=8bit` cannot remove that arithmetic requirement. No-dither and positional byte fast paths remain eligible. Allocation failure is reported instead of silently switching a requested soft/none path to byte saturation. Explicit `hard` retains the legacy byte diffusion path when it is otherwise eligible; byte and float arithmetic are not promised to produce identical indexes.
+The policy only governs diffusion that already runs in float coordinates: a float source, a non-gamma working space, an authoritative float palette, or an explicit float precision request selects that path. The clamp policy never selects it. Byte diffusion keeps its per-tap rounding and saturation for every policy, so `-0` has no effect there and `--precision=8bit` keeps byte diffusion byte-wide. Byte and float arithmetic are not promised to produce identical indexes. The [byte-application test](../../../tests/processing/precision/0016_clamp_keeps_byte_application.t) traps the float promotion allocation for every diffusion kernel and policy.
 
 On the selected Display P3 and ordinary sRGB float paths, sources can hold extended coordinates outside the sRGB cube and the residual is computed against the unrounded working palette; the limiter bounds only the feedback and keeps those original coordinates, while `-0none` propagates the unrestricted residual. See [Output color space](../output/output-colorspace.md#display-p3-selected-cpu-float-path).
 
 The interframe implementation retains its existing quantized history representation. This option controls the corrected sample supplied to lookup; it does not increase temporal-history precision or remove its representation limits.
 
-Each hard/soft float diffusion request owns an immutable source snapshot. Unlimited feedback (`none`) needs no source-dependent bound and allocates no snapshot. Parallel bands do not share mutable limiter state. Band boundaries can still change incoming errors, so use a fixed worker count, scan order, and palette when comparing policies. RGB byte-input promotion preserves retained-color competition and residual propagation in delta encoding.
+Each hard/soft float diffusion request owns an immutable source snapshot. Unlimited feedback (`none`) needs no source-dependent bound and allocates no snapshot. Parallel bands do not share mutable limiter state. Band boundaries can still change incoming errors, so use a fixed worker count, scan order, and palette when comparing policies.
 
 ### Snapshot storage and process memory
 
-For an RGB float request covering `W` by `H` pixels, hard and soft each allocate one `W * H * 3 * sizeof(float)` snapshot. With binary32 components this is 12 bytes per pixel. The snapshot preserves the original coordinates exactly and owns independent storage; allocation failure is reported and does not select another policy. Finishing a failed or already finished snapshot does not free source pixels. The original source is needed by hard as well as soft because both expand their bounds to contain extended source coordinates. The eligible byte hard path has no float snapshot.
+For an RGB float request covering `W` by `H` pixels, hard and soft each allocate one `W * H * 3 * sizeof(float)` snapshot. With binary32 components this is 12 bytes per pixel. The snapshot preserves the original coordinates exactly and owns independent storage; allocation failure is reported and does not select another policy. Finishing a failed or already finished snapshot does not free source pixels. The original source is needed by hard as well as soft because both expand their bounds to contain extended source coordinates. Byte diffusion has no clamp policy and no snapshot.
 
 | Full-image RGB request | Hard or soft snapshot | None snapshot |
 | --- | ---: | ---: |
@@ -51,7 +51,7 @@ For an RGB float request covering `W` by `H` pixels, hard and soft each allocate
 | 1920 × 1080 | 23.730 MiB | 0 |
 | 3840 × 2160 | 94.922 MiB | 0 |
 
-These are derived allocation sizes, not measured whole-process peak RSS. Input decoding, format conversion, working copies, palette construction, output indexes, and queues can coexist or peak at other times. Consequently, subtracting two process RSS peaks does not directly measure the snapshot. A parallel request uses its effective work-band height including warm-up rows; sum the sizes of simultaneously active snapshots rather than multiplying the full-image size by the requested worker count. [Work-band geometry](../../threading/overview.md#work-band-seams-and-image-quality) defines that execution boundary. Keep format and concurrency fixed when comparing hard, soft and none; an 8-bit hard versus float soft comparison also includes a precision-path change.
+These are derived allocation sizes, not measured whole-process peak RSS. Input decoding, format conversion, working copies, palette construction, output indexes, and queues can coexist or peak at other times. Consequently, subtracting two process RSS peaks does not directly measure the snapshot. A parallel request uses its effective work-band height including warm-up rows; sum the sizes of simultaneously active snapshots rather than multiplying the full-image size by the requested worker count. [Work-band geometry](../../threading/overview.md#work-band-seams-and-image-quality) defines that execution boundary. Keep format and concurrency fixed when comparing hard, soft and none; the policies differ only on float paths.
 
 ## Quality and threshold selection
 
@@ -115,6 +115,7 @@ The default threshold 1.01 retains a small correction margin. It is a compromise
 | DC-48 | Source-containing hard has the same snapshot size and ownership contract. | [tests/processing/dither/clamp/0048_hard_snapshot.t](../../../tests/processing/dither/clamp/0048_hard_snapshot.t) |
 | DC-49 | None allocates no source snapshot. | [tests/processing/dither/clamp/0049_none_no_snapshot.t](../../../tests/processing/dither/clamp/0049_none_no_snapshot.t) |
 | DC-50 | Snapshot allocation failure permits safe finish and a successful retry. | [tests/processing/dither/clamp/0050_snapshot_failure.t](../../../tests/processing/dither/clamp/0050_snapshot_failure.t) |
+| DC-51 | No clamp policy promotes byte diffusion to float arithmetic, for any error-diffusion kernel. | [tests/processing/precision/0016_clamp_keeps_byte_application.t](../../../tests/processing/precision/0016_clamp_keeps_byte_application.t) |
 
 ### Quality regression tests
 
@@ -126,4 +127,4 @@ The default threshold 1.01 retains a small correction margin. It is a compromise
 
 The parallel-band fixtures use an independent 50-digit FS recurrence with source-containing soft bounds, and verify that rounding each stored operation to binary32 produces the same indexes. Their minimum nearest-color squared-distance gap exceeds `0.0017`; exact index assertions do not require bit-identical intermediate floating calculations. The source and palette coordinates are binary-exact. Regenerate or verify the fixtures with `tools/generate_clamp_band_fixtures.py [--check]`. Each fixture differs from whole-frame serial rendering, zero overlap, omitted limiting and byte-projected palettes. These tests cover spatial work-band isolation; they do not establish temporal-history precision or all combinations of scan order and diffusion kernel. [Threading overview](../../threading/overview.md#work-band-seams-and-image-quality) owns the work-band/overlap behavior.
 
-The value tests establish analytic limiter behavior and per-kernel dispatch. Retained-color tests compare propagated and skipped residuals after byte-input promotion. Dataset scores are supplementary measurements, not substitutes for those contracts.
+The value tests establish analytic limiter behavior and per-kernel dispatch. Retained-color tests compare propagated and skipped residuals in float diffusion. Dataset scores are supplementary measurements, not substitutes for those contracts.

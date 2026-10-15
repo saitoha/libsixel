@@ -88,7 +88,7 @@ test_delta_byte_method(int method)
         history, sizeof(history), valid, sizeof(valid),
         4, 3, 0, 0, 4, 3, 2, 1, 0, SIXEL_6DELTA_ERROR_DIFFUSE);
     if (SIXEL_FAILED(sixel_encode(pixels, 4, 3, 1, dither, output)) ||
-            dither->pipeline_6delta_rgb101 || dither->clamp_promoted_rgb888 ||
+            dither->pipeline_6delta_rgb101 ||
             dither->use_rgb101_palette ||
             SIXEL_FAILED(dither->palette->vtbl->get_entries(dither->palette,
                 &entries)) || entries.entries[0] != 32 ||
@@ -323,7 +323,7 @@ test_delta_byte_repeat(int workers)
         }
         dither = (sixel_dither_t *)encoder->diagnostic_dither;
         if (dither == NULL || dither->use_rgb101_palette ||
-                dither->clamp_promoted_rgb888 || dither->pipeline_6delta_rgb101
+                dither->pipeline_6delta_rgb101
                 || !encoder->accumulation_valid ||
                 (workers && dither->pipeline_last_encode_threads < 2)) {
             goto end;
@@ -432,7 +432,7 @@ test_delta_byte_hls_method(int method)
         if (SIXEL_FAILED(sixel_encode(pixels, 4, 3, 1, dither, output)) ||
                 dither->pipeline_6delta_hls_bytes != NULL ||
                 dither->pipeline_6delta_hls_count != 0U ||
-                dither->use_rgb101_palette || dither->clamp_promoted_rgb888 ||
+                dither->use_rgb101_palette ||
                 SIXEL_FAILED(dither->palette->vtbl->get_entries_float32(
                     dither->palette, &floats)) || floats.entries != NULL) {
             goto end;
@@ -617,7 +617,6 @@ test_delta_byte_hls_frames(int mode)
         }
         dither = (sixel_dither_t *)encoder->diagnostic_dither;
         if (dither == NULL || dither->use_rgb101_palette != native ||
-                dither->clamp_promoted_rgb888 ||
                 dither->pipeline_6delta_hls_bytes != NULL ||
                 dither->pipeline_6delta_hls_count != 0 ||
                 (mode == 1 && dither->pipeline_last_encode_threads < 2)) {

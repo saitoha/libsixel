@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: MIT */
-/* Allocation pressure must not select byte arithmetic for float work. */
+/* Allocation pressure must not select byte arithmetic for float work, and
+ * the clamp policy must not select float arithmetic for byte work. */
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -161,13 +162,20 @@ promotion_case(int scenario, int method, int clamp)
         dither->pipeline_index_size = sizeof(borrowed);
         promotion_borrowed_index = borrowed;
     }
-    promotion_armed = 1;
+    /* Interframe owns temporal error storage of the trapped size, so its
+     * byte work is identified by the applied depth alone. */
+    promotion_armed = !(scenario == 7 && method == SIXEL_DIFFUSE_INTERFRAME);
     indices = sixel_dither_apply_palette(dither, pixels,
         PROMOTION_PIXELS, 1);
-    if (scenario == 4) {
+    if (scenario == 4 || scenario == 7) {
         /* This byte-eligible application must never request a float image.
-         * Hard FS may modify source error state; NONE has literal picks. */
-        ok = promotion_hits == 0 && promotion_armed == 1 &&
+         * Scenario 7 covers every clamp policy: clamping bounds feedback in
+         * float coordinates and must not select float arithmetic for byte
+         * work.  Diffusion may modify source error state; NONE has literal
+         * picks. */
+        ok = promotion_hits == 0 &&
+            (promotion_armed == 1 ||
+             (scenario == 7 && method == SIXEL_DIFFUSE_INTERFRAME)) &&
             indices != NULL && promotion_palette_unchanged(dither, 0) &&
             dither->interframe_state.last_apply_status == SIXEL_OK &&
             dither->interframe_state.depth == 3 &&
@@ -321,8 +329,20 @@ end:
 int
 test_precision_0009(int argc, char **argv)
 {
+    static int const diffusions[] = {
+        SIXEL_DIFFUSE_FS, SIXEL_DIFFUSE_ATKINSON, SIXEL_DIFFUSE_JAJUNI,
+        SIXEL_DIFFUSE_STUCKI, SIXEL_DIFFUSE_BURKES, SIXEL_DIFFUSE_SIERRA1,
+        SIXEL_DIFFUSE_SIERRA2, SIXEL_DIFFUSE_SIERRA3, SIXEL_DIFFUSE_LSO2,
+        SIXEL_DIFFUSE_INTERFRAME
+    };
+    static int const clamps[] = {
+        SIXEL_DITHER_CLAMP_AUTO, SIXEL_DITHER_CLAMP_SOFT,
+        SIXEL_DITHER_CLAMP_NONE, SIXEL_DITHER_CLAMP_HARD
+    };
     int scenario;
     int method;
+    int diffusion;
+    int clamp;
 
     scenario = argc == 2 ? atoi(argv[1]) : -1;
     if (scenario < 0 || scenario > 8) {
@@ -334,8 +354,19 @@ test_precision_0009(int argc, char **argv)
     method = scenario == 1 || scenario == 3 || scenario == 7 ?
         SIXEL_DIFFUSE_FS : SIXEL_DIFFUSE_NONE;
     if (scenario == 7) {
-        return promotion_case(scenario, method, SIXEL_DITHER_CLAMP_SOFT) &&
-            promotion_case(scenario, method, SIXEL_DITHER_CLAMP_NONE) ? 0 : 1;
+        for (diffusion = 0;
+                diffusion < (int)(sizeof(diffusions) / sizeof(diffusions[0]));
+                ++diffusion) {
+            for (clamp = 0;
+                    clamp < (int)(sizeof(clamps) / sizeof(clamps[0]));
+                    ++clamp) {
+                if (!promotion_case(scenario, diffusions[diffusion],
+                        clamps[clamp])) {
+                    return 1;
+                }
+            }
+        }
+        return 0;
     }
     if (scenario == 4 && !promotion_case(scenario, SIXEL_DIFFUSE_FS,
             SIXEL_DITHER_CLAMP_HARD)) {
