@@ -264,9 +264,9 @@ The band-word decoders are measured on the same 100 retained 800×600 photograph
 
 | Output boundary | Median normal/OR speed ratio | Median OR/normal time ratio | Normal faster / OR faster |
 | --- | ---: | ---: | ---: |
-| RGBA API | 3.396× | 0.294× | 0 / 100 |
-| Indexed API | 3.334× | 0.300× | 0 / 100 |
-| RGBA PNG CLI | 1.030× | 0.971× | 2 / 98 |
+| RGBA API | 3.402× | 0.294× | 0 / 100 |
+| Indexed API | 3.323× | 0.301× | 0 / 100 |
+| RGBA PNG CLI | 1.028× | 0.973× | 2 / 98 |
 
 Each ratio compares the repeated-run medians for one photo; the table reports the median of those per-photo ratios. A speed ratio above 1 means OR is faster. PNG-inclusive times contain substantial output-generation work and must not be interpreted as pure decoding.
 
@@ -276,15 +276,15 @@ Box centers are medians across photos, boxes span the interquartile range, and w
 
 The API measurements use 21 timed calls after two warmup pairs, with streams already in memory. They include parsing, validation, result allocation, gathering, and applicable worker setup, but exclude file I/O, correctness comparisons, result freeing, and PNG encoding. CLI measurements use 11 timed processes after two warmup pairs, including process startup, cached input reads, decoding, and PNG writes to `/dev/null`. Normal/OR order alternates within each pair. Neither boundary measures terminal rendering or network transport.
 
-The matched [before/after records](sweeps/before-after.json) compare develop `0a77c616180a2a77bdf93dfd81e14204021ce1fc` with the ordinary band-column implementation at `da729980f93894beadde90d0b60de643e1df1c22`, using identical `-O3` build options, streams, output boundary and host. Across the 100 photographs, ordinary RGBA decoding has a median before/after speed ratio of **2.23×**, while OR has **1.02×**. The OR algorithm is unchanged. This comparison uses 21 timed calls after two warmup pairs for each build and alternates build order between photos. It measures implementation costs on fixed streams, not a universal advantage of either dialect.
+The matched [before/after records](sweeps/before-after.json) compare develop `4db3016215d202137c6ffaa096655886d956c69f` with private parallel columns at `0d0124a4c60914ae4a7513a42823d01e9ebfabd1`, using identical `-O3` build options, streams, output boundary and host. Across the 100 photographs, ordinary RGBA decoding has a median before/after speed ratio of **0.99×**, while OR has **0.99×**. The OR algorithm is unchanged. This comparison uses 21 timed calls after two warmup pairs for each build and alternates build order between photos. It measures implementation costs on fixed streams, not a universal advantage of either dialect.
 
-For the fixed 1920×1080 snake streams, each cell below is normal / OR in milliseconds. At one worker, the normal/OR RGBA speed ratio is **1.47×**. OR streams always decode serially; their observed medians range from 3.68 to 3.86 ms across the configured budgets. Ordinary decoding is fastest with a configured budget of 12 workers, with a median of 4.53 ms. Its serial path uses column words while its parallel workers retain the two-pass pixel painter, so adding workers need not improve it. These are workload/host observations, not universal recommended budgets.
+For the fixed 1920×1080 snake streams, each cell below is normal / OR in milliseconds. At one worker, the normal/OR RGBA speed ratio is **1.47×**. OR streams always decode serially; their observed medians range from 3.78 to 3.91 ms across the configured budgets. Ordinary decoding is fastest at 8 configured worker(s), with a median of 1.09 ms. Its ordinary workers parse their bands once into private columns and gather them after prefix resolution. OR keeps its serial plane parser; no OR parallel implementation is enabled by these measurements. These are workload/host observations, not universal recommended budgets.
 
 | Threads | RGBA decoder API | Indexed decoder API | RGBA PNG decoder CLI |
 | --- | ---: | ---: | ---: |
-| 1 | 5.43 / 3.68 | 5.40 / 3.69 | 185.16 / 185.08 |
-| 4 | 9.15 / 3.73 | 8.72 / 3.77 | 201.95 / 197.66 |
-| 12 | 4.53 / 3.86 | 4.37 / 3.83 | 199.24 / 199.81 |
+| 1 | 5.65 / 3.84 | 5.81 / 3.89 | 197.50 / 196.56 |
+| 4 | 1.59 / 3.79 | 1.72 / 3.80 | 187.85 / 190.11 |
+| 12 | 1.20 / 3.84 | 1.23 / 3.92 | 198.78 / 201.16 |
 
 Both serial parsers accumulate band words and then materialize pixels: ordinary mode replaces masked index bytes and preserves paint coverage, while OR mode accumulates index planes and gathers them. The [decoder study](scaling.md#how-the-band-plane-decoder-works) explains the representation, sixteen-bit registers, raster growth, partial bands, and why OR streams always decode serially. Its [color-count curves](scaling.md#color-count-axis) and complete [1–12-thread curves](scaling.md#thread-count-axis) retain cases where OR is slower.
 

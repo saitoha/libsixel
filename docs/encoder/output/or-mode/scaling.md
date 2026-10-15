@@ -6,7 +6,7 @@ OR-mode size and speed depend on the palette budget, image structure, worker bud
 
 The distributed study contains only the controls listed in its records. Their values are those of the recorded run, and figures and corpus totals cover exactly these controls.
 
-The encoder measurements and stream bytes come from the clean tracked checkout at `cf4cb3439aedec252b68bbc3674b10aa2bf0145f`, built with `-O3` on Apple M3 Max/macOS 26.5.1. The [original build metadata](measurements/metadata.json) records that compiler and configuration. Decoder measurements use Apple M3 Max/macOS 27.0.1 and band-word source `da729980f93894beadde90d0b60de643e1df1c22`, with `-O3`; [decoder metadata](sweeps/metadata.json) records its exact source hashes, compiler, configuration, and binary hashes, plus the retained encoder metadata. The encoder columns are retained historical measurements, while each normal/OR decoder pair uses the same pinned build and fixed original streams. PNG writing uses the builtin implementation.
+The encoder measurements and stream bytes come from the clean tracked checkout at `cf4cb3439aedec252b68bbc3674b10aa2bf0145f`, built with `-O3` on Apple M3 Max/macOS 26.5.1. The [original build metadata](measurements/metadata.json) records that compiler and configuration. Decoder measurements use Apple M3 Max/macOS 27.0.1 and band-word source `0d0124a4c60914ae4a7513a42823d01e9ebfabd1`, with `-O3`; [decoder metadata](sweeps/metadata.json) records its exact source hashes, compiler, configuration, and binary hashes, plus the retained encoder metadata. The encoder columns are retained historical measurements, while each normal/OR decoder pair uses the same pinned build and fixed original streams. PNG writing uses the builtin implementation.
 
 The [ordinary decoder API scaling measurements](../../../threading/decoder.md#in-process-api-scaling) provide a matched before/after comparison for ordinary band columns. These normal/OR curves compare both dialects in the same implementation.
 
@@ -45,15 +45,15 @@ The Full HD medians below make the different boundaries explicit. Times are norm
 
 | Threads | Encode CLI (retained) | RGBA decoder API | Indexed decoder API | RGBA PNG decoder CLI |
 | --- | ---: | ---: | ---: | ---: |
-| 1 | 220.47 / 199.98 | 5.43 / 3.68 | 5.40 / 3.69 | 185.16 / 185.08 |
-| 2 | 211.04 / 202.27 | 16.67 / 3.75 | 15.56 / 3.70 | 207.02 / 195.24 |
-| 4 | 157.49 / 158.19 | 9.15 / 3.73 | 8.72 / 3.77 | 201.95 / 197.66 |
-| 8 | 109.36 / 109.42 | 5.27 / 3.76 | 4.99 / 3.80 | 201.29 / 195.28 |
-| 12 | 93.75 / 92.26 | 4.53 / 3.86 | 4.37 / 3.83 | 199.24 / 199.81 |
+| 1 | 220.47 / 199.98 | 5.65 / 3.84 | 5.81 / 3.89 | 197.50 / 196.56 |
+| 2 | 211.04 / 202.27 | 2.76 / 3.91 | 2.89 / 3.84 | 185.99 / 191.73 |
+| 4 | 157.49 / 158.19 | 1.59 / 3.79 | 1.72 / 3.80 | 187.85 / 190.11 |
+| 8 | 109.36 / 109.42 | 1.09 / 3.80 | 1.19 / 3.82 | 196.06 / 201.46 |
+| 12 | 93.75 / 92.26 | 1.20 / 3.84 | 1.23 / 3.92 | 198.78 / 201.16 |
 
-At one worker, the normal/OR RGBA speed ratio is **1.47×**. OR streams always decode serially; their observed medians range from 3.68 to 3.86 ms across the configured budgets. Ordinary decoding is fastest with a configured budget of 12 workers, with a median of 4.53 ms. Its serial path uses column words while its parallel workers retain the two-pass pixel painter, so adding workers need not improve it. These are workload/host observations, not universal recommended budgets. The encoder column retains the original study's measurements.
+At one worker, the normal/OR RGBA speed ratio is **1.47×**. OR streams always decode serially; their observed medians range from 3.78 to 3.91 ms across the configured budgets. Ordinary decoding is fastest at 8 configured worker(s), with a median of 1.09 ms. Its ordinary workers parse their bands once into private columns and gather them after prefix resolution. OR keeps its serial plane parser; no OR parallel implementation is enabled by these measurements. These are workload/host observations, not universal recommended budgets. The encoder column retains the original study's measurements.
 
-Untimed [worker observations](sweeps/thread-observations.json) confirm serial execution at one worker. At four and twelve workers, each ordinary Full HD call starts four or twelve scan workers plus the same number of paint workers, while each OR call starts none, in both indexed and RGBA paths. These counts were collected separately from performance samples.
+Untimed [worker observations](sweeps/thread-observations.json) confirm serial execution at one worker. At four and twelve workers, each ordinary Full HD call starts four or twelve parse workers plus the same number of gather workers, while each OR call starts none, in both indexed and RGBA paths. These counts were collected separately from performance samples.
 
 ## Decoder timing boundaries
 
@@ -71,15 +71,15 @@ The same 100 photographs, 800×600 and 256 colors, give the following one-thread
 
 | Output boundary | Median normal/OR speed ratio | Median OR/normal time ratio | Normal faster / OR faster |
 | --- | ---: | ---: | ---: |
-| RGBA API | 3.396× | 0.294× | 0 / 100 |
-| Indexed API | 3.334× | 0.300× | 0 / 100 |
-| RGBA PNG CLI | 1.030× | 0.971× | 2 / 98 |
+| RGBA API | 3.402× | 0.294× | 0 / 100 |
+| Indexed API | 3.323× | 0.301× | 0 / 100 |
+| RGBA PNG CLI | 1.028× | 0.973× | 2 / 98 |
 
 ![Decoder speed-ratio distribution and its relationship to stream size on 100 photos](sweeps/decode-photos.png)
 
 These are per-image comparisons of the normal and OR members decoded by the same band-word implementation. PNG-inclusive CLI ratios are closer to equality because output generation consumes much of the process time. Small differences around equality do not establish a benefit beyond host noise. Box centers are medians across images, boxes are interquartile ranges, whiskers extend to 1.5 times the IQR, and points beyond them are outliers; these are not per-image confidence intervals.
 
-The matched [before/after records](sweeps/before-after.json) compare develop `0a77c616180a2a77bdf93dfd81e14204021ce1fc` with the ordinary band-column implementation at `da729980f93894beadde90d0b60de643e1df1c22`, using identical `-O3` build options, streams, output boundary and host. Across the 100 photographs, ordinary RGBA decoding has a median before/after speed ratio of **2.23×**, while OR has **1.02×**. The OR algorithm is unchanged. This comparison uses 21 timed calls after two warmup pairs for each build and alternates build order between photos. It measures implementation costs on fixed streams, not a universal advantage of either dialect.
+The matched [before/after records](sweeps/before-after.json) compare develop `4db3016215d202137c6ffaa096655886d956c69f` with private parallel columns at `0d0124a4c60914ae4a7513a42823d01e9ebfabd1`, using identical `-O3` build options, streams, output boundary and host. Across the 100 photographs, ordinary RGBA decoding has a median before/after speed ratio of **0.99×**, while OR has **0.99×**. The OR algorithm is unchanged. This comparison uses 21 timed calls after two warmup pairs for each build and alternates build order between photos. It measures implementation costs on fixed streams, not a universal advantage of either dialect.
 
 ### How the band-plane decoder works
 
@@ -89,7 +89,7 @@ After parsing and final sizing, a gather pass extracts one index from each row's
 
 Registers above 255 allocate a second array of eight-plane words only when needed, preserving all sixteen index bits. Raster growth copies band words, and the final gather visits only valid rows in a short final band. These are internal buffers: public decoder results retain their existing pixel formats and ownership. No planar-output or GPU API is introduced.
 
-OR streams always decode serially. [`sixel_decoder_parallel_request_start()`](../../../../src/decoder-parallel.c) declines an OR request before it shares any buffer, and the caller continues on the serial path. The parallel decoder would run a validation pass and a paint pass over each worker's span, launch and join its workers twice, and still leave the gather serial; its workers also paint row by row rather than consuming runs of data characters as plane words. With that structure, every budget from 2 to 12 workers was slower than one worker on both the photos and the Full HD stream. A configured decoder budget therefore applies to ordinary streams only. The [decoder threading guide](../../../threading/decoder.md) describes the parallel path that ordinary streams use.
+OR streams always decode serially. [`sixel_decoder_parallel_request_start()`](../../../../src/decoder-parallel.c) declines OR requests before sharing buffers. Ordinary workers now parse into private overwrite columns and gather in parallel, but those words do not implement OR composition. This implementation retains the serial OR plane parser and does not introduce a parallel OR accumulator. The configured OR budgets therefore measure the same serial algorithm. The [decoder threading guide](../../../threading/decoder.md) describes the parallel ordinary path.
 
 The ordinary serial decoder also uses one word per column, replacing six index-byte lanes under a row mask and retaining paint coverage in a seventh byte. It materializes before a wide register or paint-time palette change requires the ordinary pixel painter. See the [ordinary-mode pipeline](../../../decoder/pipeline/README.md#ordinary-mode-band-columns) for these boundaries. OR and ordinary mode therefore share a vertical working layout while retaining distinct overwrite and index-composition rules. Stream structure, repeat runs, palette budget, validation, allocation and output representation still matter; these CPU measurements do not establish a terminal-rendering speedup. The [X68030 console study](x68k.md) describes the historical column-word receiver buffer.
 
@@ -108,7 +108,7 @@ First complete the [original study setup](README.md#reproduce-and-inspect), reta
 ```sh
 py="$OR_MODE_STUDY_DIR/venv/bin/python"
 decoder_source=/path/to/band-word-libsixel
-baseline_source=/path/to/libsixel-at-0a77c6161
+baseline_source=/path/to/libsixel-at-4db301621
 reference_sweeps=/path/to/retained-sweep-records
 output="$OR_MODE_STUDY_DIR/planar-sweeps"
 cc -O3 -std=c99 -I "$decoder_source/include" \

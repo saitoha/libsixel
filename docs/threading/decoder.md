@@ -64,7 +64,7 @@ Each point is the median of nine instrumented runs after two warm-ups. The shade
 
 *Figure: Full HD decoder intervals measured inside `sixel2png`. PNG serialization is measured separately but intentionally omitted from these worker-scaling lines.*
 
-The one-worker serial path took 2.803 ms at the median; two workers took 16.125 ms. The fastest observed median was 2.803 ms with one worker. The serial path accumulates ordinary column words, whereas parallel workers still perform validation and per-pixel paint. Their timing curves therefore describe different implementations, and more workers need not be faster.
+The one-worker serial path took 2.799 ms at the median; two workers took 1.838 ms. The fastest observed median was 0.999 ms with 8 worker(s). The serial path and parallel workers both accumulate ordinary column words. Parallel work adds private allocation, thread startup, prefix resolution and gather coordination; those costs vary with the fixture and host.
 
 These numbers characterize this fixture, binary and host. No CPU affinity, exclusive host, frequency control or confidence-interval claim is implied. The retained [`decoder-thread-scaling.csv`](measurements/decoder-thread-scaling.csv) contains all 144 timed observations and 32 warm-ups with their schedule positions. Decoder-specific source, build and verified library provenance are recorded under `decoder_refresh` in [`threading-run.json`](measurements/threading-run.json); encoder and animation records retain their separate provenance.
 
@@ -72,48 +72,97 @@ These numbers characterize this fixture, binary and host. No CPU affinity, exclu
 
 The same source and encoder policy produce two dedicated decoder fixtures. These are single diagnostic observations, not repeated performance benchmarks. `PNG wall` measures the command's downstream output serialization separately from decoding.
 
-| Raster | SIXEL bytes | Scan wall | Parallel paint wall | Decoder wall | PNG wall |
+| Raster | SIXEL bytes | Parse wall | Gather wall | Decoder wall | PNG wall |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 900 x 675 | 295,821 | 0.690 ms | 0.784 ms | 1.805 ms | 18.054 ms |
-| 1920 x 1080 | 960,950 | 1.896 ms | 2.425 ms | 4.803 ms | 64.712 ms |
+| 900 x 675 | 295,821 | 0.443 ms | 0.076 ms | 0.840 ms | 17.121 ms |
+| 1920 x 1080 | 960,950 | 0.659 ms | 0.205 ms | 1.247 ms | 63.722 ms |
 
-These two points include scheduling and cache noise and must not be read as a scaling curve. [`decoder-size-comparison.csv`](measurements/decoder-size-comparison.csv) and both raw timelines retain the phase bounds and scan/paint fractions. Calling this only “band decoding” hides two facts: initial work units are encoded byte spans, and direct paint becomes row-parallel only after validation proves independence.
+These two points include scheduling and cache noise and must not be read as a scaling curve. [`decoder-size-comparison.csv`](measurements/decoder-size-comparison.csv) and both raw timelines retain the phase bounds and parse/gather fractions. Calling this only “band decoding” hides two facts: initial work units are encoded byte spans, and gather receives absolute band positions only after the local parses join.
 
 ## In-process API scaling
 
-The retained `snake-fullhd-p256-t1.0.six` fixture decodes to 1920 x 1080 pixels. These measurements compare develop `0a77c616180a2a77bdf93dfd81e14204021ce1fc` with ordinary band columns at `da729980f93894beadde90d0b60de643e1df1c22`. Cells contain the median of 21 timed API calls after two warm-ups, with the inclusive interquartile interval in brackets. Input loading, output freeing, PNG serialization and timeline logging are excluded. Build order alternates by condition; no builds or tests run alongside the experiment, while ordinary desktop activity remains uncontrolled.
+The retained `snake-fullhd-p256-t1.0.six` fixture decodes to 1920 x 1080 pixels. These measurements compare develop `4db3016215d202137c6ffaa096655886d956c69f` with private parallel columns at `0d0124a4c60914ae4a7513a42823d01e9ebfabd1`. Cells contain the median of 21 timed API calls after two warm-ups, with the inclusive interquartile interval in brackets. Input loading, output freeing, PNG serialization and timeline logging are excluded. Build order alternates by condition; no builds or tests run alongside the experiment, while ordinary desktop activity remains uncontrolled.
 
 ### `sixel_decode_direct`
 
-| Workers | Before, ms [Q1, Q3] | Band columns, ms [Q1, Q3] | Before / after |
-| ---: | ---: | ---: | ---: |
-| 1 | 16.549 [16.445, 16.716] | 5.399 [5.378, 5.496] | 3.07x |
-| 2 | 16.261 [16.227, 16.312] | 16.243 [16.234, 16.283] | 1.00x |
-| 4 | 8.999 [8.979, 9.040] | 9.005 [8.969, 9.035] | 1.00x |
-| 8 | 5.165 [5.139, 5.194] | 5.151 [5.124, 5.179] | 1.00x |
-| 12 | 4.498 [4.241, 4.610] | 4.327 [4.229, 4.376] | 1.04x |
+| Workers | Before, ms [Q1, Q3] | Private columns, ms [Q1, Q3] | Before / after | After serial / parallel |
+| ---: | ---: | ---: | ---: | ---: |
+| 1 | 5.787 [5.704, 6.016] | 6.275 [5.835, 6.544] | 0.92x | 1.00x |
+| 2 | 16.747 [16.671, 16.932] | 2.850 [2.750, 3.355] | 5.88x | 2.20x |
+| 3 | 11.635 [11.574, 11.705] | 1.918 [1.890, 1.952] | 6.07x | 3.27x |
+| 4 | 9.070 [9.027, 9.110] | 1.535 [1.507, 1.591] | 5.91x | 4.09x |
+| 5 | 7.565 [7.529, 7.602] | 1.320 [1.299, 1.371] | 5.73x | 4.75x |
+| 6 | 6.504 [6.461, 6.552] | 1.207 [1.181, 1.229] | 5.39x | 5.20x |
+| 7 | 5.687 [5.638, 5.722] | 1.068 [1.047, 1.088] | 5.32x | 5.88x |
+| 8 | 5.294 [5.194, 5.390] | 1.003 [0.992, 1.022] | 5.28x | 6.26x |
+| 9 | 4.730 [4.699, 4.830] | 1.000 [0.970, 1.040] | 4.73x | 6.28x |
+| 10 | 4.288 [4.263, 4.379] | 1.011 [0.924, 1.073] | 4.24x | 6.21x |
+| 11 | 4.568 [4.406, 4.711] | 1.053 [1.025, 1.087] | 4.34x | 5.96x |
+| 12 | 4.661 [4.588, 4.760] | 1.050 [1.037, 1.104] | 4.44x | 5.98x |
 
 ### `sixel_decode_raw`
 
-| Workers | Before, ms [Q1, Q3] | Band columns, ms [Q1, Q3] | Before / after |
-| ---: | ---: | ---: | ---: |
-| 1 | 15.930 [15.900, 15.983] | 5.331 [5.277, 5.385] | 2.99x |
-| 2 | 15.510 [15.497, 15.526] | 15.518 [15.504, 15.557] | 1.00x |
-| 4 | 8.507 [8.485, 8.532] | 8.545 [8.533, 8.559] | 1.00x |
-| 8 | 4.894 [4.875, 4.899] | 4.890 [4.875, 4.911] | 1.00x |
-| 12 | 4.239 [4.180, 4.380] | 4.195 [4.118, 4.357] | 1.01x |
+| Workers | Before, ms [Q1, Q3] | Private columns, ms [Q1, Q3] | Before / after | After serial / parallel |
+| ---: | ---: | ---: | ---: | ---: |
+| 1 | 5.558 [5.441, 5.667] | 5.578 [5.546, 5.641] | 1.00x | 1.00x |
+| 2 | 15.817 [15.759, 15.846] | 2.819 [2.783, 2.874] | 5.61x | 1.98x |
+| 3 | 11.097 [10.991, 11.355] | 2.107 [2.062, 2.177] | 5.27x | 2.65x |
+| 4 | 8.719 [8.659, 8.743] | 1.754 [1.711, 1.793] | 4.97x | 3.18x |
+| 5 | 7.262 [7.176, 7.335] | 1.480 [1.438, 1.516] | 4.91x | 3.77x |
+| 6 | 6.219 [6.160, 6.278] | 1.310 [1.284, 1.330] | 4.75x | 4.26x |
+| 7 | 5.446 [5.420, 5.587] | 1.188 [1.169, 1.229] | 4.58x | 4.70x |
+| 8 | 4.988 [4.921, 5.017] | 1.140 [1.129, 1.161] | 4.38x | 4.89x |
+| 9 | 4.486 [4.452, 4.518] | 1.048 [1.028, 1.055] | 4.28x | 5.32x |
+| 10 | 4.082 [4.022, 4.147] | 1.001 [0.971, 1.023] | 4.08x | 5.57x |
+| 11 | 4.363 [4.256, 4.512] | 1.151 [1.110, 1.175] | 3.79x | 4.85x |
+| 12 | 4.338 [4.285, 4.466] | 1.210 [1.150, 1.251] | 3.59x | 4.61x |
 
-The parallel worker algorithm is unchanged. These results do not imply that its validation and paint passes use band columns. The serial path can now outperform several parallel budgets; the API preserves the configured thread policy.
+Every measured parallel budget from 2 through 12 is compared with the same implementation at one worker. Column parsing and materialization are separate parallel phases, with no second interpretation of the ordinary body.
 
 For 100 retained photographs, per-image direct-RGBA speed ratios are:
 
 | Workers | Median speed ratio | Range |
 | ---: | ---: | ---: |
-| 1 | 2.23x | 1.54–3.13x |
-| 4 | 1.00x | 0.99–1.02x |
-| 12 | 1.00x | 0.96–1.10x |
+| 1 | 0.99x | 0.92–1.07x |
+| 2 | 4.02x | 2.83–5.91x |
+| 4 | 3.82x | 2.62–5.18x |
+| 12 | 2.50x | 1.60–3.16x |
+
+No image-size threshold is added for these retained photographs; their measured serial/parallel ratios are recorded below. This does not establish a universal crossover for smaller images.
+
+The separate [palette-map control](../encoder/output/or-mode/scaling.md#thread-count-axis) is only 598 x 42 pixels. Its ordinary RGBA median rises from 0.021 ms at one worker to 0.083 ms at two and 0.169 ms at twelve. Thread startup dominates this small input; the photographic results do not imply that every image benefits from additional workers. The default decoder budget remains one worker.
+
+| Workers | After serial / parallel, median | Range |
+| ---: | ---: | ---: |
+| 2 | 1.88x | 1.60–2.13x |
+| 4 | 3.14x | 2.26–3.91x |
+| 12 | 3.69x | 1.73–5.61x |
+
+### Trusted raster output
+
+`sixel_decode_pixels` uses the literal-run fast path for a whole six-row band inside the trusted height, bounded by the smaller of the allocated and declared positive widths. Edge bands and out-of-width characters retain scalar clipping and outside-paint flags.
+
+| Option | Workers | Before, ms [Q1, Q3] | After, ms [Q1, Q3] | Before / after |
+| --- | ---: | ---: | ---: | ---: |
+| None | 1 | 6.201 [6.176, 6.254] | 6.317 [6.278, 6.371] | 0.98x |
+| None | 8 | 5.917 [5.895, 6.038] | 1.679 [1.641, 1.730] | 3.52x |
+| TRUST_RASTER_SIZE | 1 | 17.670 [17.563, 17.768] | 6.422 [6.357, 6.484] | 2.75x |
+| TRUST_RASTER_SIZE | 8 | 5.907 [5.824, 5.938] | 1.684 [1.641, 1.744] | 3.51x |
 
 [`decoder-api-scaling.json`](measurements/decoder-api-scaling.json) retains every sample, input hash, revision, configure arguments and verified library path, including the OR and high-color controls. The instrumented scaling chart uses a different fixture and timing boundary, so its absolute values should not be combined with this table.
+
+### Repeated controls
+
+A matched follow-up repeats the same 21-call blocks four times after two warm-ups, alternating build order by condition and round. The following one-worker times are medians of the four block medians. The range retains each block's before/after ratio; the primary tables above remain unchanged.
+
+| API, one worker | Before, ms | After, ms | Before / after, median | Range across four blocks |
+| --- | ---: | ---: | ---: | ---: |
+| `sixel_decode_direct` | 5.692 | 5.687 | 1.001x | 0.992–1.018x |
+| `sixel_decode_raw` | 5.753 | 5.889 | 0.982x | 0.958–0.993x |
+
+The balanced one-worker direct ratios span both sides of equality. The raw ratios remain below 1.0 in these four blocks, with a median of 0.982 (about 2% slower after the change); the primary raw table is closer to equality. The observations therefore do not establish strictly unchanged serial latency.
+
+The literal-run width is computed only after run eligibility is established, so repeated and scalar paint avoid trusted-width setup. All configured Full HD budgets and the OR/high-color controls are retained under `repeated_controls` in [`decoder-api-scaling.json`](measurements/decoder-api-scaling.json). These observations characterize this host and stream; they do not establish equal timing on every input.
 
 ## Local-buffer and undither path
 
@@ -125,7 +174,7 @@ Do not infer behavior for decoder undithering from the direct-path chart. A time
 
 Parallel decoding begins only after the serial parser has established an anchor. A worker can still encounter syntax that needs global parser context, including raster resets or palette redefinitions. Such a stream may fall back to serial handling. This is an intended correctness boundary, not proof that the configured thread option was ignored.
 
-OR-mode streams (`P2=5`) never enter the parallel path. Their serial decoder accumulates band-plane words and is faster than the scan-and-paint workers at every measured budget, so the parallel entry point declines them before any buffer is shared. The [OR-mode decoder study](../encoder/output/or-mode/scaling.md#how-the-band-plane-decoder-works) explains that representation and the measurements.
+OR-mode streams (`P2=5`) never enter the parallel path. Their serial decoder accumulates band-plane words. The ordinary overwrite columns cannot represent OR composition, and this implementation does not add a separate parallel OR accumulator. Configured worker budgets therefore measure the same serial OR algorithm. The [OR-mode decoder study](../encoder/output/or-mode/scaling.md#how-the-band-plane-decoder-works) explains that representation and the measurements.
 
 Parallel work must preserve:
 
