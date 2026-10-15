@@ -445,6 +445,10 @@ run_case_tap "staticcheck-lookup-policy-no-backend-includes" \
     "$src_root/tests/_static/sh/staticcheck-lookup-policy-no-backend-includes.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-dither-clamp-float-only" \
+    "$src_root/tests/_static/sh/staticcheck-dither-clamp-float-only.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-factory-classid-registry-sync" \
     "$src_root/tests/_static/sh/staticcheck-factory-classid-registry-sync.sh" \
     "$src_root" || fail_and_exit $?

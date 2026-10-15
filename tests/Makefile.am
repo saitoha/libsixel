@@ -7665,6 +7665,7 @@ staticcheck-loader-cms-boundary \
 	staticcheck-frombmp-chunk-view-bind \
 	staticcheck-deprecated-diagnostic-guard \
 	staticcheck-lookup-policy-no-backend-includes \
+	staticcheck-dither-clamp-float-only \
 	staticcheck-factory-classid-registry-sync \
 	staticcheck-serviceid-registry-sync \
 	staticcheck-timeline-logging-boundary \
@@ -7741,6 +7742,7 @@ staticcheck-chunk-source-path-format-guard \
 staticcheck-frombmp-chunk-view-bind \
 staticcheck-deprecated-diagnostic-guard \
 staticcheck-lookup-policy-no-backend-includes \
+staticcheck-dither-clamp-float-only \
 staticcheck-factory-classid-registry-sync \
 staticcheck-serviceid-registry-sync \
 staticcheck-timeline-logging-boundary \
@@ -8098,6 +8100,16 @@ staticcheck-lookup-policy-no-backend-includes:
 		--trs-file staticcheck-lookup-policy-no-backend-includes.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-lookup-policy-no-backend-includes.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-dither-clamp-float-only:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-dither-clamp-float-only" \
+		--log-file staticcheck-dither-clamp-float-only.log \
+		--trs-file staticcheck-dither-clamp-float-only.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-dither-clamp-float-only.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-factory-classid-registry-sync:
@@ -9480,6 +9492,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
 		_static/sh/staticcheck-frombmp-chunk-view-bind.sh \
 		_static/sh/staticcheck-deprecated-diagnostic-guard.sh \
 		_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
+		_static/sh/staticcheck-dither-clamp-float-only.sh \
 		_static/sh/staticcheck-factory-classid-registry-sync.sh \
 		_static/sh/staticcheck-serviceid-registry-sync.sh \
 		_static/sh/staticcheck-timeline-logging-boundary.sh \
