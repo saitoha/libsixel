@@ -74,6 +74,18 @@ The first parallel attempt normally precedes serial paint. Successful parallel d
 
 Dimension, repeat and cursor overflow checks still guard the general paint path. The contiguous loop runs only within an allocated complete band; the general path owns partial bands, trusted-raster clipping and growth. A column allocation checks the rounded band-count product independently of the output allocation, and allocation failures release all owned buffers without publishing partial output.
 
+## Band-run token fast lane
+
+A typical encoder output alternates short literal runs with register selections and repeats: the measured Full HD stream averages about eight data characters per run, with one selection or repeat after nearly every run. Routing each of those tokens back through the state switch costs several state transitions and the general paint checks per token, so the band runs in [`fromsixel.c`](../../../src/fromsixel.c) consume the following tokens in place and continue the run:
+
+| Token | Consumed when | Otherwise |
+| --- | --- | --- |
+| `#Pc` | The selection is complete, has no further parameters, is not abandoned by ESC, and names a byte register. | Definitions, wide registers and an abandoned selection return to the general parser. |
+| `!Pn` followed by a data character | The repeat is complete and fits before the run width; `!0` and `!1` paint one cell as in the general parser. | Repeats crossing the width, followed by a control, or larger than the general limit return to the general parser. |
+| `$` | Always; paint extents of the finished pass are folded in first. | |
+
+Band changes, raster attributes, ESC and every token cut by the end of the input remain with the general parser. The lane reads at most five digits and declines longer numbers, which leaves overflow diagnostics to the general path. Because reading a number has no side effects, declining after looking ahead is always safe. A run is entered only after the general parser has handled a data character for the band, which already settled the parallel-start decision; nothing consumed in the lane can change that decision before a raster attribute reaches the general parser again.
+
 ## Vector band-word paths
 
 [`decoder-simd.h`](../../../src/decoder-simd.h) holds vector forms of the band-word updates. Each helper reproduces the scalar update in [`decoder-columns.h`](../../../src/decoder-columns.h) or [`decoder-ormode.h`](../../../src/decoder-ormode.h) for sixteen consecutive columns, and the scalar loops remain both the reference and the fallback. Output is byte-identical at every SIMD level; the vector paths change speed only.
@@ -301,6 +313,7 @@ Each row is one independently reportable observation. Every owning test links ba
 | DP-46 | The same ordinary stream decodes identically at both SIMD levels when workers materialize their band ranges. | [tests/processing/decoder/0106_simd_level_ordinary_parallel.t](../../../tests/processing/decoder/0106_simd_level_ordinary_parallel.t) |
 | DP-47 | An OR-mode stream decodes identically at both SIMD levels, covering vector plane updates and row gathering. | [tests/processing/decoder/0107_simd_level_ormode.t](../../../tests/processing/decoder/0107_simd_level_ormode.t) |
 | DP-48 | RGBA output of a transparent stream whose runs cover sixteen-column blocks partially, fully and not at all is identical at both SIMD levels. | [tests/processing/decoder/0108_simd_level_transparent.t](../../../tests/processing/decoder/0108_simd_level_transparent.t) |
+| DP-49 | Selections, repeats and carriage returns consumed inside band runs decode as the general parser decodes them, including abandoned selections, wide registers, width edges, trusted clipping, extents and tokens cut by the end of input, in ordinary and OR mode. | [tests/processing/decoder/0109_token_fast_lane.t](../../../tests/processing/decoder/0109_token_fast_lane.t) |
 
 ### Coverage boundary
 

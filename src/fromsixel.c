@@ -622,81 +622,56 @@ typedef struct parser_context {
 } parser_context_t;
 
 
-/* Consume adjacent unrepeated data bytes with one plane-word store each.
- * The caller has proved a complete band fits the allocated raster. Stop at
- * the right edge so the ordinary parser still owns growth and clipping. */
+/*
+ * Token fast lane shared by the band-word runs.
+ *
+ * Most of a typical stream is a short literal run followed by a register
+ * selection "#Pc" or a repeat "!Pn". Returning to the state switch for each
+ * of them costs several state transitions and the general paint checks, so
+ * the runs below consume these tokens in place when their effect is fully
+ * known: a complete selection of a byte register, a complete repeat that
+ * fits before the run width, or a carriage return "$". Anything else --
+ * definitions, wide registers, clipping, a token cut by the end of input,
+ * or numbers long enough to need the overflow diagnostics -- is left
+ * unconsumed for the general parser. Parsing a number has no side effects,
+ * so declining after looking ahead is always safe.
+ *
+ * The runs are entered only after the general parser has handled a data
+ * character for the current band, which already settled the parallel-start
+ * decision; selections, repeats and "$" cannot change that decision until
+ * a raster attribute reaches the general parser again.
+ */
+#define SIXEL_FAST_DIGITS_MAX 5
+
+/* Read at most SIXEL_FAST_DIGITS_MAX decimal digits. Returns the byte after
+ * the number, or NULL when the number is longer or reaches end. */
 static unsigned char *
-parser_context_store_ormode_run(parser_context_t *context,
-                                image_buffer_t *image,
-                                unsigned char *p, unsigned char *end,
-                                int width)
+parser_fast_number(unsigned char *p, unsigned char *end, int *value)
 {
-    uint64_t *low;
-    uint64_t *high;
-    uint64_t spread;
-    uint64_t high_spread;
-    size_t band;
-    int x;
-    int last;
-#if SIXEL_DECODER_NEON
-    int block_last;
-#endif
-    int bits;
-    int rows;
+    int v;
+    int n;
+
+    v = 0;
+    n = 0;
+    while (p < end && *p >= '0' && *p <= '9') {
+        if (++n > SIXEL_FAST_DIGITS_MAX) {
+            return NULL;
+        }
+        v = v * 10 + (*p++ - '0');
+    }
+    if (p >= end) {
+        return NULL;
+    }
+    *value = v;
+    return p;
+}
+
+/* Fold a run's last painted column and row union into the paint extents. */
+static void
+parser_context_note_extent(parser_context_t *context, int last, int rows)
+{
     int r;
 
-    band = (size_t)(context->pos_y / 6) * (size_t)image->width;
-    low = image->ormode_planes + band;
-    high = image->ormode_high_planes == NULL ? NULL :
-        image->ormode_high_planes + band;
-    spread = context->ormode_spread;
-    high_spread = context->ormode_high_spread;
-    x = context->pos_x;
-    last = -1;
-    rows = 0;
-    if (context->repeat_count > 1) {
-        /* The caller proved that the whole repeat fits before width. */
-        bits = *p++ - '?';
-        sixel_ormode_store(low + x, spread, bits, context->repeat_count);
-        if (high_spread != 0) {
-            sixel_ormode_store(high + x, high_spread, bits,
-                               context->repeat_count);
-        }
-        x += context->repeat_count;
-        if (bits != 0) {
-            last = x - 1;
-            rows = bits;
-        }
-        context->repeat_count = 1;
-    }
-#if SIXEL_DECODER_NEON
-    if (context->simd_neon && high_spread == 0) {
-
-        while (end - p >= 16 && width - x >= 16 &&
-                p[15] >= '?' && p[15] <= '~' &&
-                sixel_simd_planes_or16(low + x, spread, p, &rows,
-                                       &block_last)) {
-            if (block_last >= 0) {
-                last = x + block_last;
-            }
-            p += 16;
-            x += 16;
-        }
-    }
-#endif
-    while (p < end && *p >= '?' && *p <= '~' && x < width) {
-        bits = *p++ - '?';
-        low[x] |= (uint64_t)bits * spread;
-        if (high_spread != 0) {
-            high[x] |= (uint64_t)bits * high_spread;
-        }
-        if (bits != 0) {
-            last = x;
-            rows |= bits;
-        }
-        ++x;
-    }
-    context->pos_x = x;
     if (last > context->max_x) {
         context->max_x = last;
     }
@@ -708,11 +683,156 @@ parser_context_store_ormode_run(parser_context_t *context,
             break;
         }
     }
+}
+
+/* Apply "#Pc" without parameters exactly as the general DECGCI path does
+ * for a byte register; the caller declines wide registers. */
+static void
+parser_context_fast_select(parser_context_t *context, image_buffer_t *image,
+                           int index)
+{
+    context->color_index = index;
+    context->params[0] = index;
+    context->nparams = 1;
+    context->param = 0;
+    if (index + 1 > image->ncolors) {
+        image->ncolors = index + 1;
+    }
+}
+
+
+/* Consume adjacent unrepeated data bytes with one plane-word store each,
+ * together with the selections, repeats and carriage returns between them
+ * (see the fast lane above). The caller has proved a complete band fits
+ * the allocated raster. Stop at the right edge so the ordinary parser
+ * still owns growth and clipping. */
+static unsigned char *
+parser_context_store_ormode_run(parser_context_t *context,
+                                image_buffer_t *image,
+                                unsigned char *p, unsigned char *end,
+                                int width)
+{
+    uint64_t *low;
+    uint64_t *high;
+    uint64_t spread;
+    uint64_t high_spread;
+    unsigned char *q;
+    size_t band;
+    int x;
+    int last;
+#if SIXEL_DECODER_NEON
+    int block_last;
+#endif
+    int bits;
+    int rows;
+    int count;
+
+    band = (size_t)(context->pos_y / 6) * (size_t)image->width;
+    low = image->ormode_planes + band;
+    high = image->ormode_high_planes == NULL ? NULL :
+        image->ormode_high_planes + band;
+    spread = context->ormode_spread;
+    high_spread = context->ormode_high_spread;
+    x = context->pos_x;
+    last = -1;
+    rows = 0;
+    count = context->repeat_count;
+    context->repeat_count = 1;
+    for (;;) {
+        if (count > 1) {
+            /* The repeat is known to fit before width. */
+            bits = *p++ - '?';
+            sixel_ormode_store(low + x, spread, bits, count);
+            if (high_spread != 0) {
+                sixel_ormode_store(high + x, high_spread, bits, count);
+            }
+            x += count;
+            if (bits != 0) {
+                last = x - 1;
+                rows |= bits;
+            }
+        }
+#if SIXEL_DECODER_NEON
+        if (context->simd_neon && high_spread == 0) {
+            while (end - p >= 16 && width - x >= 16 &&
+                    p[15] >= '?' && p[15] <= '~' &&
+                    sixel_simd_planes_or16(low + x, spread, p, &rows,
+                                           &block_last)) {
+                if (block_last >= 0) {
+                    last = x + block_last;
+                }
+                p += 16;
+                x += 16;
+            }
+        }
+#endif
+        while (p < end && *p >= '?' && *p <= '~' && x < width) {
+            bits = *p++ - '?';
+            low[x] |= (uint64_t)bits * spread;
+            if (high_spread != 0) {
+                high[x] |= (uint64_t)bits * high_spread;
+            }
+            if (bits != 0) {
+                last = x;
+                rows |= bits;
+            }
+            ++x;
+        }
+        if (p >= end) {
+            break;
+        }
+        if (*p == '!') {
+            q = parser_fast_number(p + 1, end, &count);
+            if (q == NULL || *q < '?' || *q > '~') {
+                break;
+            }
+            if (count > 0xffff || count > width - x) {
+                break;
+            }
+            context->param = 0;
+            context->nparams = 0;
+            p = q;
+            if (count <= 1) {
+                /* "!0" and "!1" paint one cell: an ordinary literal. */
+                count = 0;
+            }
+            continue;
+        }
+        if (*p == '#') {
+            q = parser_fast_number(p + 1, end, &count);
+            /* ESC abandons the selection in the general parser. */
+            if (q == NULL || *q == ';' || *q == '\x1b' || count >= 256) {
+                break;
+            }
+            parser_context_fast_select(context, image, count);
+            spread = sixel_ormode_spread((unsigned int)count);
+            high_spread = 0;
+            context->ormode_spread = spread;
+            context->ormode_high_spread = 0;
+            count = 0;
+            p = q;
+            continue;
+        }
+        if (*p == '$') {
+            context->pos_x = x;
+            parser_context_note_extent(context, last, rows);
+            last = -1;
+            rows = 0;
+            x = 0;
+            count = 0;
+            ++p;
+            continue;
+        }
+        break;
+    }
+    context->pos_x = x;
+    parser_context_note_extent(context, last, rows);
     return p;
 }
 
 
-/* Consume a contiguous run without returning to the control-state switch.
+/* Consume a contiguous run, and the selections, repeats and carriage
+ * returns between runs, without returning to the control-state switch.
  * Full-band bounds have already been checked. Aggregate paint extents once
  * per run; an unset sixel advances x but neither paints nor grows extents. */
 static unsigned char *
@@ -724,11 +844,12 @@ parser_context_store_normal_run(parser_context_t *context,
     uint64_t *columns;
     uint64_t color;
     uint64_t mask;
+    unsigned char *q;
     int x;
     int last;
     int rows;
     int bits;
-    int r;
+    int count;
 
     columns = image->normal_columns +
         (size_t)(context->pos_y / 6) * (size_t)image->width;
@@ -739,40 +860,77 @@ parser_context_store_normal_run(parser_context_t *context,
     if (image->depth != 4 && context->color_index > image->ncolors) {
         image->ncolors = context->color_index;
     }
-    if (context->repeat_count > 1) {
-        /* The caller proved that the whole repeat fits before width. */
-        bits = *p++ - '?';
-        sixel_column_store(columns + x, color, bits, context->repeat_count);
-        x += context->repeat_count;
-        if (bits != 0) {
-            last = x - 1;
-            rows = bits;
-        }
-        context->repeat_count = 1;
-    }
-    while (p < end && *p >= '?' && *p <= '~' && x < width) {
-        bits = *p++ - '?';
-        mask = sixel_column_row_masks[bits];
-        columns[x] = (columns[x] & ~mask) | (color & mask) |
-            ((uint64_t)bits << 48);
-        if (bits != 0) {
-            last = x;
-            rows |= bits;
-        }
-        ++x;
-    }
-    context->pos_x = x;
-    if (last > context->max_x) {
-        context->max_x = last;
-    }
-    for (r = 5; r >= 0; --r) {
-        if ((rows & (1 << r)) != 0) {
-            if (context->pos_y + r > context->max_y) {
-                context->max_y = context->pos_y + r;
+    count = context->repeat_count;
+    context->repeat_count = 1;
+    for (;;) {
+        if (count > 1) {
+            /* The repeat is known to fit before width. */
+            bits = *p++ - '?';
+            sixel_column_store(columns + x, color, bits, count);
+            x += count;
+            if (bits != 0) {
+                last = x - 1;
+                rows |= bits;
             }
+        }
+        while (p < end && *p >= '?' && *p <= '~' && x < width) {
+            bits = *p++ - '?';
+            mask = sixel_column_row_masks[bits];
+            columns[x] = (columns[x] & ~mask) | (color & mask) |
+                ((uint64_t)bits << 48);
+            if (bits != 0) {
+                last = x;
+                rows |= bits;
+            }
+            ++x;
+        }
+        if (p >= end) {
             break;
         }
+        if (*p == '!') {
+            q = parser_fast_number(p + 1, end, &count);
+            if (q == NULL || *q < '?' || *q > '~') {
+                break;
+            }
+            if (count > 0xffff || count > width - x) {
+                break;
+            }
+            context->param = 0;
+            context->nparams = 0;
+            p = q;
+            if (count <= 1) {
+                /* "!0" and "!1" paint one cell: an ordinary literal. */
+                count = 0;
+            }
+            continue;
+        }
+        if (*p == '#') {
+            q = parser_fast_number(p + 1, end, &count);
+            /* ESC abandons the selection in the general parser. */
+            if (q == NULL || *q == ';' || *q == '\x1b' || count >= 256) {
+                break;
+            }
+            parser_context_fast_select(context, image, count);
+            color = sixel_column_color((unsigned int)count);
+            context->normal_color = color;
+            count = 0;
+            p = q;
+            continue;
+        }
+        if (*p == '$') {
+            context->pos_x = x;
+            parser_context_note_extent(context, last, rows);
+            last = -1;
+            rows = 0;
+            x = 0;
+            count = 0;
+            ++p;
+            continue;
+        }
+        break;
     }
+    context->pos_x = x;
+    parser_context_note_extent(context, last, rows);
     return p;
 }
 
