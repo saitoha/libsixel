@@ -1081,6 +1081,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0097_NORMAL_COLUMNS_GROWTH_CLIP \
     -DBUILD_TEST_0098_NORMAL_COLUMNS_BAND_RANGES \
     -DBUILD_TEST_0099_NORMAL_COLUMNS_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0100_TRUSTED_LITERAL_RUN_EDGES \
     -DBUILD_TEST_0001_SOURCE_SNAPSHOT \
     -DBUILD_TEST_0002_HISTORY_REVISIONS \
     -DBUILD_TEST_0003_PALETTE_KEEP_COST \
@@ -4157,6 +4158,7 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0097_normal_columns_growth_clip.c \
     processing/decoder/0098_normal_columns_band_ranges.c \
     processing/decoder/0099_normal_columns_allocation_failure.c \
+    processing/decoder/0100_trusted_literal_run_edges.c \
     processing/cms/0011_separate_intents.c \
     processing/cms/0012_engine_independence.c \
     processing/cms/0013_queued_transform_lifetime.c \

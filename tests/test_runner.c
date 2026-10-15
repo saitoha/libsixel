@@ -144,6 +144,7 @@ int test_decoder_0096(int argc, char **argv);
 int test_decoder_0097(int argc, char **argv);
 int test_decoder_0098(int argc, char **argv);
 int test_decoder_0099(int argc, char **argv);
+int test_decoder_0100(int argc, char **argv);
 int test_named_output_0037(int argc, char **argv);
 int test_named_output_0038(int argc, char **argv);
 int test_named_output_0039(int argc, char **argv);
@@ -5748,6 +5749,8 @@ static test_entry_t const test_entries[] = {
       test_decoder_0098 },
     { "decoder/0099_normal_columns_allocation_failure",
       test_decoder_0099 },
+    { "decoder/0100_trusted_literal_run_edges",
+      test_decoder_0100 },
     { "quant/palette/named_output/0037_adobe_libpng", test_named_output_0037 },
     { "quant/palette/named_output/0038_dci_libpng", test_named_output_0038 },
     { "quant/palette/named_output/0039_adobe_libtiff", test_named_output_0039 },

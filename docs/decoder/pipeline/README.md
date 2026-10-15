@@ -162,6 +162,8 @@ The indexed path uses approximately one byte per pixel plus palette and paint-st
 
 Parallel decoding adds a validation scan, span state, row-range analysis, worker setup, and synchronization before paint. Those fixed costs can make small inputs slower than the serial path. On sufficiently large inputs, disjoint paint ranges can amortize the scan and scheduling cost. The checked-in threading measurements deliberately separate decoder intervals from PNG serialization so a slow writer is not misreported as a decoder scaling failure.
 
+`TRUST_RASTER_SIZE` permits the literal-run fast path when the full six-row band fits the declared height (or no positive height is declared). Runs stop at the smaller of the allocated width and a positive declared width; partial bands and bytes beyond that edge retain checked clipping and result-flag accounting.
+
 `TRUST_RASTER_SIZE` can bound growth and avoid preserving contradictory out-of-raster paint, but its performance value does not override its semantic tradeoff. Callers should choose it from producer trust, not from an assumption that every SIXEL file obeys its declaration.
 
 ## Quality and user experience
@@ -274,6 +276,7 @@ Each row is one independently reportable observation. Every owning test links ba
 | DP-40 | Band storage preserves paint and coverage across raster growth, final cropping and trusted clipping. | [tests/processing/decoder/0097_normal_columns_growth_clip.t](../../../tests/processing/decoder/0097_normal_columns_growth_clip.t) |
 | DP-41 | Materializing a band range changes only its rows, including a partial final band, at every output depth. | [tests/processing/decoder/0098_normal_columns_band_ranges.t](../../../tests/processing/decoder/0098_normal_columns_band_ranges.t) |
 | DP-42 | Failure at any normal-column allocation or growth step releases owned buffers and publishes no partial output. | [tests/processing/decoder/0099_normal_columns_allocation_failure.t](../../../tests/processing/decoder/0099_normal_columns_allocation_failure.t) |
+| DP-43 | Trusted literal runs retain exact paint and clipping flags at horizontal and partial-band raster edges, in ordinary and OR mode. | [tests/processing/decoder/0100_trusted_literal_run_edges.t](../../../tests/processing/decoder/0100_trusted_literal_run_edges.t) |
 
 ### Coverage boundary
 

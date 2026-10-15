@@ -436,6 +436,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/decoder/0097_normal_columns_growth_clip.c \
 	processing/decoder/0098_normal_columns_band_ranges.c \
 	processing/decoder/0099_normal_columns_allocation_failure.c \
+	processing/decoder/0100_trusted_literal_run_edges.c \
 	processing/cms/0011_separate_intents.c \
 	processing/cms/0012_engine_independence.c \
 	processing/cms/0013_queued_transform_lifetime.c \
@@ -4135,6 +4136,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0097_normal_columns_growth_clip.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0098_normal_columns_band_ranges.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0099_normal_columns_allocation_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0100_trusted_literal_run_edges.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0011_separate_intents.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0012_engine_independence.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0013_queued_transform_lifetime.$(OBJEXT) \
@@ -9421,6 +9423,7 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0097_normal_columns_growth_clip.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0098_normal_columns_band_ranges.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0099_normal_columns_allocation_failure.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0100_trusted_literal_run_edges.Po \
 	processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po \
@@ -12720,6 +12723,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0097_NORMAL_COLUMNS_GROWTH_CLIP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0098_NORMAL_COLUMNS_BAND_RANGES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0099_NORMAL_COLUMNS_ALLOCATION_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0100_TRUSTED_LITERAL_RUN_EDGES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SOURCE_SNAPSHOT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_HISTORY_REVISIONS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_PALETTE_KEEP_COST \
@@ -15827,6 +15831,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0097_normal_columns_growth_clip.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0098_normal_columns_band_ranges.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0099_normal_columns_allocation_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0100_trusted_literal_run_edges.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0011_separate_intents.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0012_engine_independence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0013_queued_transform_lifetime.c \
@@ -20455,6 +20460,9 @@ processing/decoder/test_runner-0098_normal_columns_band_ranges.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/test_runner-0099_normal_columns_allocation_failure.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0100_trusted_literal_run_edges.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/cms/$(am__dirstamp):
@@ -33063,6 +33071,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0097_normal_columns_growth_clip.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0098_normal_columns_band_ranges.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0099_normal_columns_allocation_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0100_trusted_literal_run_edges.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po@am__quote@ # am--include-marker
@@ -39421,6 +39430,20 @@ processing/decoder/test_runner-0099_normal_columns_allocation_failure.obj: proce
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0099_normal_columns_allocation_failure.c' object='processing/decoder/test_runner-0099_normal_columns_allocation_failure.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0099_normal_columns_allocation_failure.obj `if test -f 'processing/decoder/0099_normal_columns_allocation_failure.c'; then $(CYGPATH_W) 'processing/decoder/0099_normal_columns_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0099_normal_columns_allocation_failure.c'; fi`
+
+processing/decoder/test_runner-0100_trusted_literal_run_edges.o: processing/decoder/0100_trusted_literal_run_edges.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0100_trusted_literal_run_edges.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0100_trusted_literal_run_edges.Tpo -c -o processing/decoder/test_runner-0100_trusted_literal_run_edges.o `test -f 'processing/decoder/0100_trusted_literal_run_edges.c' || echo '$(srcdir)/'`processing/decoder/0100_trusted_literal_run_edges.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0100_trusted_literal_run_edges.Tpo processing/decoder/$(DEPDIR)/test_runner-0100_trusted_literal_run_edges.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0100_trusted_literal_run_edges.c' object='processing/decoder/test_runner-0100_trusted_literal_run_edges.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0100_trusted_literal_run_edges.o `test -f 'processing/decoder/0100_trusted_literal_run_edges.c' || echo '$(srcdir)/'`processing/decoder/0100_trusted_literal_run_edges.c
+
+processing/decoder/test_runner-0100_trusted_literal_run_edges.obj: processing/decoder/0100_trusted_literal_run_edges.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0100_trusted_literal_run_edges.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0100_trusted_literal_run_edges.Tpo -c -o processing/decoder/test_runner-0100_trusted_literal_run_edges.obj `if test -f 'processing/decoder/0100_trusted_literal_run_edges.c'; then $(CYGPATH_W) 'processing/decoder/0100_trusted_literal_run_edges.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0100_trusted_literal_run_edges.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0100_trusted_literal_run_edges.Tpo processing/decoder/$(DEPDIR)/test_runner-0100_trusted_literal_run_edges.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0100_trusted_literal_run_edges.c' object='processing/decoder/test_runner-0100_trusted_literal_run_edges.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0100_trusted_literal_run_edges.obj `if test -f 'processing/decoder/0100_trusted_literal_run_edges.c'; then $(CYGPATH_W) 'processing/decoder/0100_trusted_literal_run_edges.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0100_trusted_literal_run_edges.c'; fi`
 
 processing/cms/test_runner-0011_separate_intents.o: processing/cms/0011_separate_intents.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0011_separate_intents.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Tpo -c -o processing/cms/test_runner-0011_separate_intents.o `test -f 'processing/cms/0011_separate_intents.c' || echo '$(srcdir)/'`processing/cms/0011_separate_intents.c

@@ -531,7 +531,8 @@ typedef struct parser_context {
 static unsigned char *
 parser_context_store_ormode_run(parser_context_t *context,
                                 image_buffer_t *image,
-                                unsigned char *p, unsigned char *end)
+                                unsigned char *p, unsigned char *end,
+                                int width)
 {
     uint64_t *low;
     uint64_t *high;
@@ -553,7 +554,7 @@ parser_context_store_ormode_run(parser_context_t *context,
     x = context->pos_x;
     last = -1;
     rows = 0;
-    while (p < end && *p >= '?' && *p <= '~' && x < image->width) {
+    while (p < end && *p >= '?' && *p <= '~' && x < width) {
         bits = *p++ - '?';
         low[x] |= (uint64_t)bits * spread;
         if (high_spread != 0) {
@@ -587,7 +588,8 @@ parser_context_store_ormode_run(parser_context_t *context,
 static unsigned char *
 parser_context_store_normal_run(parser_context_t *context,
                                 image_buffer_t *image,
-                                unsigned char *p, unsigned char *end)
+                                unsigned char *p, unsigned char *end,
+                                int width)
 {
     uint64_t *columns;
     uint64_t color;
@@ -607,7 +609,7 @@ parser_context_store_normal_run(parser_context_t *context,
     if (image->depth != 4 && context->color_index > image->ncolors) {
         image->ncolors = context->color_index;
     }
-    while (p < end && *p >= '?' && *p <= '~' && x < image->width) {
+    while (p < end && *p >= '?' && *p <= '~' && x < width) {
         bits = *p++ - '?';
         mask = sixel_column_row_masks[bits];
         columns[x] = (columns[x] & ~mask) | (color & mask) |
@@ -1235,6 +1237,7 @@ sixel_decode_raw_impl(
     int c;
     int trust_raster_size;
     int draw_repeat;
+    int run_width;
     int target_bottom;
     int drawn_y_end;
     int store_bits;
@@ -1490,16 +1493,25 @@ sixel_decode_raw_impl(
                     }
 #endif  /* SIXEL_ENABLE_THREADS */
 
+                    /* Stop trusted runs before either raster edge. A partial
+                     * final band and out-of-bounds bytes stay on the checked
+                     * path, which owns clipping and result-flag accounting. */
+                    run_width = image->width;
+                    if (trust_raster_size && context->attributed_ph > 0 &&
+                            run_width > context->attributed_ph) {
+                        run_width = context->attributed_ph;
+                    }
                     /* Keep OR runs outside normal-column setup checks. */
                     if (context->ormode) {
-                        if (!trust_raster_size &&
+                        if ((!trust_raster_size || context->attributed_pv <= 0 ||
+                                context->pos_y <= context->attributed_pv - 6) &&
                                 context->repeat_count == 1 &&
                                 context->pos_x >= 0 &&
-                                context->pos_x < image->width &&
+                                context->pos_x < run_width &&
                                 context->pos_y >= 0 &&
                                 context->pos_y <= image->height - 6) {
                             p = parser_context_store_ormode_run(
-                                context, image, p, p0 + len);
+                                context, image, p, p0 + len, run_width);
                             continue;
                         }
                     } else {
@@ -1517,14 +1529,16 @@ sixel_decode_raw_impl(
                             }
                         }
                         if (image->normal_columns != NULL &&
-                                !trust_raster_size &&
+                                (!trust_raster_size ||
+                                 context->attributed_pv <= 0 ||
+                                 context->pos_y <= context->attributed_pv - 6) &&
                                 context->repeat_count == 1 &&
                                 context->pos_x >= 0 &&
-                                context->pos_x < image->width &&
+                                context->pos_x < run_width &&
                                 context->pos_y >= 0 &&
                                 context->pos_y <= image->height - 6) {
                             p = parser_context_store_normal_run(
-                                context, image, p, p0 + len);
+                                context, image, p, p0 + len, run_width);
                             continue;
                         }
                     }
