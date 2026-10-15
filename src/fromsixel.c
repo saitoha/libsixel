@@ -421,10 +421,22 @@ image_buffer_finalize_ormode(image_buffer_t *image)
     int color;
     int r;
     int x;
+    int x0;
+#if SIXEL_DECODER_NEON
+    uint8x16_t indices;
+    uint8x16_t vector_max;
+    unsigned char block[16];
+    int i;
+    int simd;
+#endif
 
     if (image == NULL || image->ormode_planes == NULL) {
         return;
     }
+#if SIXEL_DECODER_NEON
+    simd = sixel_cpu_simd_level() == SIXEL_SIMD_LEVEL_NEON;
+    vector_max = vdupq_n_u8(0);
+#endif
     width = (size_t)image->width;
     bands = (image->height + 5) / 6;
     max_index = 0u;
@@ -449,14 +461,38 @@ image_buffer_finalize_ormode(image_buffer_t *image)
             row = ((size_t)band * 6u + (size_t)r) * width;
             if (high == NULL && image->depth == 1U) {
                 bytes = image->pixels.in_bytes + row;
-                for (x = 0; x < image->width; ++x) {
+                x0 = 0;
+#if SIXEL_DECODER_NEON
+                if (simd) {
+                    for (; x0 + 16 <= image->width; x0 += 16) {
+                        indices = sixel_simd_gather16(low + x0, r);
+                        vector_max = vmaxq_u8(vector_max, indices);
+                        vst1q_u8(bytes + x0, indices);
+                    }
+                }
+#endif
+                for (x = x0; x < image->width; ++x) {
                     index = sixel_ormode_gather(low[x], r);
                     max_index = index > max_index ? index : max_index;
                     bytes[x] = (unsigned char)index;
                 }
             } else if (high == NULL && image->depth == 4U) {
                 bytes = image->pixels.in_bytes + row * 4u;
-                for (x = 0; x < image->width; ++x) {
+                x0 = 0;
+#if SIXEL_DECODER_NEON
+                if (simd) {
+                    for (; x0 + 16 <= image->width; x0 += 16) {
+                        indices = sixel_simd_gather16(low + x0, r);
+                        vector_max = vmaxq_u8(vector_max, indices);
+                        vst1q_u8(block, indices);
+                        for (i = 0; i < 16; ++i) {
+                            memcpy(bytes + (size_t)(x0 + i) * 4u,
+                                   lut[block[i]], 4u);
+                        }
+                    }
+                }
+#endif
+                for (x = x0; x < image->width; ++x) {
                     index = sixel_ormode_gather(low[x], r);
                     max_index = index > max_index ? index : max_index;
                     memcpy(bytes + (size_t)x * 4u, lut[index], 4u);
@@ -489,6 +525,11 @@ image_buffer_finalize_ormode(image_buffer_t *image)
     }
     /* Retain the existing palette-definition/default floor as well as every
      * composed index. A register need not be selected itself to be produced. */
+#if SIXEL_DECODER_NEON
+    if (vmaxvq_u8(vector_max) > max_index) {
+        max_index = vmaxvq_u8(vector_max);
+    }
+#endif
     if ((int)max_index + 1 > image->ncolors) {
         image->ncolors = (int)max_index + 1;
     }

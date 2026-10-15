@@ -108,6 +108,44 @@ sixel_simd_planes_or16(uint64_t *dst, uint64_t spread,
     return 1;
 }
 
+/* Lane p of each word is shifted left by p so a pairwise add packs it. */
+static int8_t const sixel_simd_plane_shift[16] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7
+};
+
+/*
+ * OR mode: gather row r of sixteen band words into sixteen palette indices,
+ * i.e. sixel_ormode_gather() per word. Each byte lane holds one plane; the
+ * row bit is isolated, moved to its plane position, and three pairwise adds
+ * fold the eight lanes of every word into one byte, keeping word order.
+ */
+static inline uint8x16_t
+sixel_simd_gather16(uint64_t const *words, int row)
+{
+    uint8x16_t v[8];
+    uint8x16_t one;
+    int8x16_t down;
+    int8x16_t up;
+    uint8_t const *bytes;
+    int k;
+
+    one = vdupq_n_u8(1);
+    down = vdupq_n_s8((int8_t)-row);
+    up = vld1q_s8(sixel_simd_plane_shift);
+    bytes = (uint8_t const *)words;
+    for (k = 0; k < 8; ++k) {
+        v[k] = vshlq_u8(vandq_u8(vshlq_u8(vld1q_u8(bytes + k * 16), down),
+                                 one), up);
+    }
+    v[0] = vpaddq_u8(v[0], v[1]);
+    v[1] = vpaddq_u8(v[2], v[3]);
+    v[2] = vpaddq_u8(v[4], v[5]);
+    v[3] = vpaddq_u8(v[6], v[7]);
+    v[0] = vpaddq_u8(v[0], v[1]);
+    v[1] = vpaddq_u8(v[2], v[3]);
+    return vpaddq_u8(v[0], v[1]);
+}
+
 #endif /* SIXEL_DECODER_NEON */
 
 #endif /* SIXEL_DECODER_SIMD_H */
