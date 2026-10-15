@@ -2530,93 +2530,6 @@ sixel_emit_run(sixel_output_t *output, int symbol, int count)
 }
 
 
-/*
- * Walk a composed node and coalesce identical columns into runs so the
- * encoder core touches the repeat accumulator only once per symbol.
- */
-static SIXELSTATUS
-sixel_emit_span_from_map(sixel_output_t *output,
-                         unsigned char const *map,
-                         int length)
-{
-    SIXELSTATUS status = SIXEL_FALSE;
-    int index;
-    int run_length;
-    unsigned char value;
-    size_t chunk_size;
-    unsigned long pattern;
-    unsigned long block;
-    int chunk_mismatch;
-    int remain;
-    int byte_index;
-
-    if (length <= 0) {
-        return SIXEL_OK;
-    }
-
-    for (index = 0; index < length; index += run_length) {
-        value = map[index];
-        if (value > '?') {
-            value = 0;
-        }
-
-        run_length = 1;
-        chunk_size = sizeof(unsigned long);
-        chunk_mismatch = 0;
-        if (chunk_size > 1) {
-            remain = length - (index + run_length);
-            pattern = (~0UL / 0xffUL) * (unsigned long)value;
-
-            while (remain >= (int)chunk_size) {
-                memcpy(&block,
-                       map + index + run_length,
-                       chunk_size);
-                block ^= pattern;
-                if (block != 0UL) {
-                    for (byte_index = 0;
-                         byte_index < (int)chunk_size;
-                         byte_index++) {
-                        if ((block & 0xffUL) != 0UL) {
-                            chunk_mismatch = 1;
-                            break;
-                        }
-                        block >>= 8;
-                        run_length += 1;
-                    }
-                    break;
-                }
-                run_length += (int)chunk_size;
-                remain -= (int)chunk_size;
-            }
-        }
-
-        if (!chunk_mismatch) {
-            while (index + run_length < length) {
-                unsigned char next;
-
-                next = map[index + run_length];
-                if (next > '?') {
-                    next = 0;
-                }
-                if (next != value) {
-                    break;
-                }
-                run_length += 1;
-            }
-        }
-
-        status = sixel_emit_run(output,
-                                 (int)value + '?',
-                                 run_length);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
-    }
-
-    return SIXEL_OK;
-}
-
-
 static SIXELSTATUS
 sixel_put_pixel(sixel_output_t *const output, int pix)
 {
@@ -2647,6 +2560,69 @@ end:
     return status;
 }
 
+/* Write one complete run with the same DECGRI spelling as sixel_put_flash.
+ * The buffer has two packets. sixel_advance leaves pos below one packet,
+ * so at least SIXEL_OUTPUT_PACKET_SIZE bytes are free before every write.
+ * A chunk needs at most the decimal digits of an int plus two bytes (or
+ * three speculative literal bytes). Advance after each chunk, including
+ * every !255 chunk, before borrowing that space again. */
+static void
+sixel_put_run_fast(sixel_output_t *output, int symbol, int count)
+{
+    unsigned char *p;
+    char digits[sizeof(int) * CHAR_BIT];
+    int nwrite;
+    int value;
+    int ndigits;
+
+    if (count <= 0) {
+        return;
+    }
+    if (output->has_gri_arg_limit) {
+        while (count > 255) {
+            p = output->buffer + output->pos;
+            p[0] = '!';
+            p[1] = '2';
+            p[2] = '5';
+            p[3] = '5';
+            p[4] = (unsigned char)symbol;
+            sixel_advance(output, 5);
+            count -= 255;
+        }
+    }
+    p = output->buffer + output->pos;
+    if (count > 3) {
+        nwrite = 0;
+        p[nwrite++] = '!';
+        if (count < 10) {
+            p[nwrite++] = (unsigned char)('0' + count);
+        } else if (count < 100) {
+            p[nwrite++] = (unsigned char)('0' + count / 10);
+            p[nwrite++] = (unsigned char)('0' + count % 10);
+        } else if (count < 1000) {
+            p[nwrite++] = (unsigned char)('0' + count / 100);
+            p[nwrite++] = (unsigned char)('0' + count / 10 % 10);
+            p[nwrite++] = (unsigned char)('0' + count % 10);
+        } else {
+            ndigits = 0;
+            for (value = count; value > 0; value /= 10) {
+                digits[ndigits++] = (char)('0' + value % 10);
+            }
+            while (ndigits > 0) {
+                p[nwrite++] = (unsigned char)digits[--ndigits];
+            }
+        }
+        p[nwrite++] = (unsigned char)symbol;
+        sixel_advance(output, nwrite);
+    } else {
+        p[0] = (unsigned char)symbol;
+        p[1] = (unsigned char)symbol;
+        p[2] = (unsigned char)symbol;
+        sixel_advance(output, count);
+    }
+}
+
+
 static SIXELSTATUS
 sixel_put_node(
     sixel_output_t /* in */     *output,  /* output context */
@@ -2655,51 +2631,53 @@ sixel_put_node(
     int            /* in */     ncolors,  /* number of palette colors */
     int            /* in */     keycolor) /* transparent color number */
 {
-    SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
+    int i;
+    int end;
+    int mx;
+    unsigned char const *row;
+    unsigned char value;
 
+    /* Each node ends its runs locally, and workers reset save_count at
+     * band entry. No deferred repeat can cross this node's color selector.
+     * The leading gap is empty; composition (including size underpaint)
+     * starts the node on a nonempty column, so these runs cannot merge. */
     if (ncolors != 2 || keycolor == (-1) || output->keycolor_reserved) {
-        /* designate palette index */
+        /* Designate the palette index, preserving the monochrome rule. */
         if (output->active_palette != np->pal) {
             sixel_putc(output->buffer + output->pos, '#');
             sixel_advance(output, 1);
-            nwrite = sixel_putnum((char *)output->buffer + output->pos, np->pal);
+            nwrite = sixel_putnum((char *)output->buffer + output->pos,
+                                  np->pal);
             sixel_advance(output, nwrite);
             output->active_palette = np->pal;
         }
     }
-
     if (*x < np->sx) {
-        int span;
-
-        span = np->sx - *x;
-        status = sixel_emit_run(output, '?', span);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
+        sixel_put_run_fast(output, '?', np->sx - *x);
         *x = np->sx;
     }
-
-    if (*x < np->mx) {
-        int span;
-
-        span = np->mx - *x;
-        status = sixel_emit_span_from_map(output,
-                                          (unsigned char const *)np->map + *x,
-                                          span);
-        if (SIXEL_FAILED(status)) {
-            goto end;
+    row = (unsigned char const *)np->map;
+    mx = np->mx;
+    for (i = *x; i < mx; i = end) {
+        value = row[i];
+        if (value == 0 || value > '?') {
+            /* Out-of-range masks retain the empty-cell interpretation.
+             * Coalesce them with zero masks before spelling the run. */
+            value = 0;
+            for (end = i + 1; end < mx &&
+                    (row[end] == 0 || row[end] > '?'); end++) {
+            }
+        } else {
+            for (end = i + 1; end < mx && row[end] == value; end++) {
+            }
         }
-        *x = np->mx;
+        sixel_put_run_fast(output, '?' + value, end - i);
     }
-
-    status = sixel_put_flash(output);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (*x < mx) {
+        *x = mx;
     }
-
-end:
-    return status;
+    return SIXEL_OK;
 }
 
 

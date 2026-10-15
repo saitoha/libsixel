@@ -631,6 +631,10 @@ int test_clear_map_0057(int argc, char **argv);
 int test_clear_map_0058(int argc, char **argv);
 int test_clear_map_0059(int argc, char **argv);
 int test_clear_map_0060(int argc, char **argv);
+int test_emit_0061(int argc, char **argv);
+int test_emit_0062(int argc, char **argv);
+int test_emit_0063(int argc, char **argv);
+int test_emit_0064(int argc, char **argv);
 int test_macro_0009(int argc, char **argv);
 int test_macro_0010(int argc, char **argv);
 int test_macro_0011(int argc, char **argv);
@@ -4044,6 +4048,14 @@ static test_entry_t const test_entries[] = {
       test_clear_map_0059 },
     { "encoder-core/0060_clear_map_sparse_parallel",
       test_clear_map_0060 },
+    { "encoder-core/0061_emit_runs_unlimited",
+      test_emit_0061 },
+    { "encoder-core/0062_emit_runs_limited",
+      test_emit_0062 },
+    { "encoder-core/0063_emit_packet_unlimited",
+      test_emit_0063 },
+    { "encoder-core/0064_emit_packet_limited",
+      test_emit_0064 },
     { "codec/macro/0009_srgb_float_define", test_macro_0009 },
     { "codec/macro/0010_p3_float_define", test_macro_0010 },
     { "codec/macro/0011_p3_float_invoke", test_macro_0011 },

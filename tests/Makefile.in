@@ -3730,6 +3730,11 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/encoder-core/0058_clear_map_size_parallel.c \
 	processing/encoder-core/0059_clear_map_sparse_serial.c \
 	processing/encoder-core/0060_clear_map_sparse_parallel.c \
+	processing/encoder-core/emit_run_test_common.c \
+	processing/encoder-core/0061_emit_runs_unlimited.c \
+	processing/encoder-core/0062_emit_runs_limited.c \
+	processing/encoder-core/0063_emit_packet_unlimited.c \
+	processing/encoder-core/0064_emit_packet_limited.c \
 	codec/macro/native_macro_test_common.c \
 	codec/macro/0009_srgb_float_define.c \
 	codec/macro/0010_p3_float_define.c \
@@ -7380,6 +7385,11 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0058_clear_map_size_parallel.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0059_clear_map_sparse_serial.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-emit_run_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0061_emit_runs_unlimited.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0062_emit_runs_limited.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0063_emit_packet_unlimited.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0064_emit_packet_limited.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-native_macro_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0009_srgb_float_define.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	codec/macro/test_runner-0010_p3_float_define.$(OBJEXT) \
@@ -9657,9 +9667,14 @@ am__depfiles_remade =  \
 	processing/encoder-core/$(DEPDIR)/test_runner-0058_clear_map_size_parallel.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0059_clear_map_sparse_serial.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0060_clear_map_sparse_parallel.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0061_emit_runs_unlimited.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0062_emit_runs_limited.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0063_emit_packet_unlimited.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0064_emit_packet_limited.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-classify_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-clear_map_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-emit_run_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-ormode_test_common.Po \
@@ -13404,6 +13419,11 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_CLEAR_MAP_SIZE_PARALLEL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_CLEAR_MAP_SPARSE_SERIAL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0060_CLEAR_MAP_SPARSE_PARALLEL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_EMIT_RUN_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_EMIT_RUNS_UNLIMITED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_EMIT_RUNS_LIMITED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_EMIT_PACKET_UNLIMITED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_EMIT_PACKET_LIMITED \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_NATIVE_MACRO_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_SRGB_FLOAT_DEFINE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_P3_FLOAT_DEFINE \
@@ -19162,6 +19182,11 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0058_clear_map_size_parallel.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0059_clear_map_sparse_serial.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0060_clear_map_sparse_parallel.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/emit_run_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0061_emit_runs_unlimited.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0062_emit_runs_limited.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0063_emit_packet_unlimited.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0064_emit_packet_limited.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/native_macro_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0009_srgb_float_define.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    codec/macro/0010_p3_float_define.c \
@@ -30762,6 +30787,21 @@ processing/encoder-core/test_runner-0059_clear_map_sparse_serial.$(OBJEXT):  \
 processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.$(OBJEXT):  \
 	processing/encoder-core/$(am__dirstamp) \
 	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-emit_run_test_common.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0061_emit_runs_unlimited.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0062_emit_runs_limited.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0063_emit_packet_unlimited.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0064_emit_packet_limited.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
 codec/macro/$(am__dirstamp):
 	@$(MKDIR_P) codec/macro
 	@: >>codec/macro/$(am__dirstamp)
@@ -33323,9 +33363,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0058_clear_map_size_parallel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0059_clear_map_sparse_serial.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0060_clear_map_sparse_parallel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0061_emit_runs_unlimited.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0062_emit_runs_limited.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0063_emit_packet_unlimited.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0064_emit_packet_limited.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-classify_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-clear_map_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-emit_run_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
@@ -84831,6 +84876,76 @@ processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.obj: processi
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0060_clear_map_sparse_parallel.c' object='processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0060_clear_map_sparse_parallel.obj `if test -f 'processing/encoder-core/0060_clear_map_sparse_parallel.c'; then $(CYGPATH_W) 'processing/encoder-core/0060_clear_map_sparse_parallel.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0060_clear_map_sparse_parallel.c'; fi`
+
+processing/encoder-core/test_runner-emit_run_test_common.o: processing/encoder-core/emit_run_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-emit_run_test_common.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-emit_run_test_common.Tpo -c -o processing/encoder-core/test_runner-emit_run_test_common.o `test -f 'processing/encoder-core/emit_run_test_common.c' || echo '$(srcdir)/'`processing/encoder-core/emit_run_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-emit_run_test_common.Tpo processing/encoder-core/$(DEPDIR)/test_runner-emit_run_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/emit_run_test_common.c' object='processing/encoder-core/test_runner-emit_run_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-emit_run_test_common.o `test -f 'processing/encoder-core/emit_run_test_common.c' || echo '$(srcdir)/'`processing/encoder-core/emit_run_test_common.c
+
+processing/encoder-core/test_runner-emit_run_test_common.obj: processing/encoder-core/emit_run_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-emit_run_test_common.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-emit_run_test_common.Tpo -c -o processing/encoder-core/test_runner-emit_run_test_common.obj `if test -f 'processing/encoder-core/emit_run_test_common.c'; then $(CYGPATH_W) 'processing/encoder-core/emit_run_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/emit_run_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-emit_run_test_common.Tpo processing/encoder-core/$(DEPDIR)/test_runner-emit_run_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/emit_run_test_common.c' object='processing/encoder-core/test_runner-emit_run_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-emit_run_test_common.obj `if test -f 'processing/encoder-core/emit_run_test_common.c'; then $(CYGPATH_W) 'processing/encoder-core/emit_run_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/emit_run_test_common.c'; fi`
+
+processing/encoder-core/test_runner-0061_emit_runs_unlimited.o: processing/encoder-core/0061_emit_runs_unlimited.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0061_emit_runs_unlimited.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0061_emit_runs_unlimited.Tpo -c -o processing/encoder-core/test_runner-0061_emit_runs_unlimited.o `test -f 'processing/encoder-core/0061_emit_runs_unlimited.c' || echo '$(srcdir)/'`processing/encoder-core/0061_emit_runs_unlimited.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0061_emit_runs_unlimited.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0061_emit_runs_unlimited.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0061_emit_runs_unlimited.c' object='processing/encoder-core/test_runner-0061_emit_runs_unlimited.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0061_emit_runs_unlimited.o `test -f 'processing/encoder-core/0061_emit_runs_unlimited.c' || echo '$(srcdir)/'`processing/encoder-core/0061_emit_runs_unlimited.c
+
+processing/encoder-core/test_runner-0061_emit_runs_unlimited.obj: processing/encoder-core/0061_emit_runs_unlimited.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0061_emit_runs_unlimited.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0061_emit_runs_unlimited.Tpo -c -o processing/encoder-core/test_runner-0061_emit_runs_unlimited.obj `if test -f 'processing/encoder-core/0061_emit_runs_unlimited.c'; then $(CYGPATH_W) 'processing/encoder-core/0061_emit_runs_unlimited.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0061_emit_runs_unlimited.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0061_emit_runs_unlimited.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0061_emit_runs_unlimited.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0061_emit_runs_unlimited.c' object='processing/encoder-core/test_runner-0061_emit_runs_unlimited.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0061_emit_runs_unlimited.obj `if test -f 'processing/encoder-core/0061_emit_runs_unlimited.c'; then $(CYGPATH_W) 'processing/encoder-core/0061_emit_runs_unlimited.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0061_emit_runs_unlimited.c'; fi`
+
+processing/encoder-core/test_runner-0062_emit_runs_limited.o: processing/encoder-core/0062_emit_runs_limited.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0062_emit_runs_limited.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0062_emit_runs_limited.Tpo -c -o processing/encoder-core/test_runner-0062_emit_runs_limited.o `test -f 'processing/encoder-core/0062_emit_runs_limited.c' || echo '$(srcdir)/'`processing/encoder-core/0062_emit_runs_limited.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0062_emit_runs_limited.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0062_emit_runs_limited.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0062_emit_runs_limited.c' object='processing/encoder-core/test_runner-0062_emit_runs_limited.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0062_emit_runs_limited.o `test -f 'processing/encoder-core/0062_emit_runs_limited.c' || echo '$(srcdir)/'`processing/encoder-core/0062_emit_runs_limited.c
+
+processing/encoder-core/test_runner-0062_emit_runs_limited.obj: processing/encoder-core/0062_emit_runs_limited.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0062_emit_runs_limited.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0062_emit_runs_limited.Tpo -c -o processing/encoder-core/test_runner-0062_emit_runs_limited.obj `if test -f 'processing/encoder-core/0062_emit_runs_limited.c'; then $(CYGPATH_W) 'processing/encoder-core/0062_emit_runs_limited.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0062_emit_runs_limited.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0062_emit_runs_limited.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0062_emit_runs_limited.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0062_emit_runs_limited.c' object='processing/encoder-core/test_runner-0062_emit_runs_limited.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0062_emit_runs_limited.obj `if test -f 'processing/encoder-core/0062_emit_runs_limited.c'; then $(CYGPATH_W) 'processing/encoder-core/0062_emit_runs_limited.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0062_emit_runs_limited.c'; fi`
+
+processing/encoder-core/test_runner-0063_emit_packet_unlimited.o: processing/encoder-core/0063_emit_packet_unlimited.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0063_emit_packet_unlimited.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0063_emit_packet_unlimited.Tpo -c -o processing/encoder-core/test_runner-0063_emit_packet_unlimited.o `test -f 'processing/encoder-core/0063_emit_packet_unlimited.c' || echo '$(srcdir)/'`processing/encoder-core/0063_emit_packet_unlimited.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0063_emit_packet_unlimited.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0063_emit_packet_unlimited.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0063_emit_packet_unlimited.c' object='processing/encoder-core/test_runner-0063_emit_packet_unlimited.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0063_emit_packet_unlimited.o `test -f 'processing/encoder-core/0063_emit_packet_unlimited.c' || echo '$(srcdir)/'`processing/encoder-core/0063_emit_packet_unlimited.c
+
+processing/encoder-core/test_runner-0063_emit_packet_unlimited.obj: processing/encoder-core/0063_emit_packet_unlimited.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0063_emit_packet_unlimited.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0063_emit_packet_unlimited.Tpo -c -o processing/encoder-core/test_runner-0063_emit_packet_unlimited.obj `if test -f 'processing/encoder-core/0063_emit_packet_unlimited.c'; then $(CYGPATH_W) 'processing/encoder-core/0063_emit_packet_unlimited.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0063_emit_packet_unlimited.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0063_emit_packet_unlimited.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0063_emit_packet_unlimited.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0063_emit_packet_unlimited.c' object='processing/encoder-core/test_runner-0063_emit_packet_unlimited.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0063_emit_packet_unlimited.obj `if test -f 'processing/encoder-core/0063_emit_packet_unlimited.c'; then $(CYGPATH_W) 'processing/encoder-core/0063_emit_packet_unlimited.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0063_emit_packet_unlimited.c'; fi`
+
+processing/encoder-core/test_runner-0064_emit_packet_limited.o: processing/encoder-core/0064_emit_packet_limited.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0064_emit_packet_limited.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0064_emit_packet_limited.Tpo -c -o processing/encoder-core/test_runner-0064_emit_packet_limited.o `test -f 'processing/encoder-core/0064_emit_packet_limited.c' || echo '$(srcdir)/'`processing/encoder-core/0064_emit_packet_limited.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0064_emit_packet_limited.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0064_emit_packet_limited.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0064_emit_packet_limited.c' object='processing/encoder-core/test_runner-0064_emit_packet_limited.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0064_emit_packet_limited.o `test -f 'processing/encoder-core/0064_emit_packet_limited.c' || echo '$(srcdir)/'`processing/encoder-core/0064_emit_packet_limited.c
+
+processing/encoder-core/test_runner-0064_emit_packet_limited.obj: processing/encoder-core/0064_emit_packet_limited.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0064_emit_packet_limited.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0064_emit_packet_limited.Tpo -c -o processing/encoder-core/test_runner-0064_emit_packet_limited.obj `if test -f 'processing/encoder-core/0064_emit_packet_limited.c'; then $(CYGPATH_W) 'processing/encoder-core/0064_emit_packet_limited.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0064_emit_packet_limited.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0064_emit_packet_limited.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0064_emit_packet_limited.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0064_emit_packet_limited.c' object='processing/encoder-core/test_runner-0064_emit_packet_limited.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0064_emit_packet_limited.obj `if test -f 'processing/encoder-core/0064_emit_packet_limited.c'; then $(CYGPATH_W) 'processing/encoder-core/0064_emit_packet_limited.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0064_emit_packet_limited.c'; fi`
 
 codec/macro/test_runner-native_macro_test_common.o: codec/macro/native_macro_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT codec/macro/test_runner-native_macro_test_common.o -MD -MP -MF codec/macro/$(DEPDIR)/test_runner-native_macro_test_common.Tpo -c -o codec/macro/test_runner-native_macro_test_common.o `test -f 'codec/macro/native_macro_test_common.c' || echo '$(srcdir)/'`codec/macro/native_macro_test_common.c

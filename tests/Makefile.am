@@ -1753,6 +1753,11 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0058_CLEAR_MAP_SIZE_PARALLEL \
     -DBUILD_TEST_0059_CLEAR_MAP_SPARSE_SERIAL \
     -DBUILD_TEST_0060_CLEAR_MAP_SPARSE_PARALLEL \
+    -DBUILD_EMIT_RUN_TEST_COMMON \
+    -DBUILD_TEST_0061_EMIT_RUNS_UNLIMITED \
+    -DBUILD_TEST_0062_EMIT_RUNS_LIMITED \
+    -DBUILD_TEST_0063_EMIT_PACKET_UNLIMITED \
+    -DBUILD_TEST_0064_EMIT_PACKET_LIMITED \
     -DBUILD_NATIVE_MACRO_TEST_COMMON \
     -DBUILD_TEST_0009_SRGB_FLOAT_DEFINE \
     -DBUILD_TEST_0010_P3_FLOAT_DEFINE \
@@ -7480,6 +7485,11 @@ test_runner_SOURCES = test_runner.c \
     processing/encoder-core/0058_clear_map_size_parallel.c \
     processing/encoder-core/0059_clear_map_sparse_serial.c \
     processing/encoder-core/0060_clear_map_sparse_parallel.c \
+    processing/encoder-core/emit_run_test_common.c \
+    processing/encoder-core/0061_emit_runs_unlimited.c \
+    processing/encoder-core/0062_emit_runs_limited.c \
+    processing/encoder-core/0063_emit_packet_unlimited.c \
+    processing/encoder-core/0064_emit_packet_limited.c \
     codec/macro/native_macro_test_common.c \
     codec/macro/0009_srgb_float_define.c \
     codec/macro/0010_p3_float_define.c \
