@@ -173,6 +173,7 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
                                  sixel_dither_policy_a_dither_context_t *context
                                  )
 {
+    int lookup_hint;
     int serpentine;
     int y;
     int absolute_y;
@@ -230,7 +231,8 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
             || context->result == NULL
             || context->lookup_policy == NULL
             || context->lookup_policy->vtbl == NULL
-            || context->lookup_policy->vtbl->map_pixel == NULL) {
+            || context->lookup_policy->vtbl->map_pixel == NULL
+            || context->lookup_policy->vtbl->map_pixel_hint == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -248,6 +250,7 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
     }
 
 
+    lookup_hint = -1;
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
         sixel_dither_a_scanline_params_8bit(serpentine,
@@ -314,9 +317,11 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
                     val < 0 ? 0 : val > 255 ? 255 : val);
             }
 
-            color_index = context->lookup_policy->vtbl->map_pixel(
+            color_index = context->lookup_policy->vtbl->map_pixel_hint(
                 context->lookup_policy,
-                quantized);
+                quantized,
+                lookup_hint);
+            lookup_hint = color_index;
 
             /*
              * Noise chooses the palette candidate, but fidelity is measured
@@ -365,6 +370,7 @@ sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
                                     sixel_dither_policy_a_dither_context_t *context
                                     )
 {
+    int lookup_hint;
     int serpentine;
     int y;
     int absolute_y;
@@ -418,6 +424,7 @@ sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
             || context->lookup_policy == NULL
             || context->lookup_policy->vtbl == NULL
             || context->lookup_policy->vtbl->map_pixel == NULL
+            || context->lookup_policy->vtbl->map_pixel_hint == NULL
             || context->depth <= 0
             || context->depth > SIXEL_MAX_CHANNELS) {
         return SIXEL_BAD_ARGUMENT;
@@ -436,6 +443,7 @@ sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
         use_transparent_fence = 1;
     }
 
+    lookup_hint = -1;
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
         sixel_dither_a_scanline_params_float32(serpentine,
@@ -474,9 +482,11 @@ sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
 
             lookup_pixel = (unsigned char const *)(void const *)
                 lookup_pixel_float;
-            color_index = context->lookup_policy->vtbl->map_pixel(
+            color_index = context->lookup_policy->vtbl->map_pixel_hint(
                 context->lookup_policy,
-                lookup_pixel);
+                lookup_pixel,
+                lookup_hint);
+            lookup_hint = color_index;
 
             /* Noise selects a candidate, but retained-color fidelity uses
              * the unperturbed source. Native delta compares the wire
@@ -645,7 +655,8 @@ sixel_dither_policy_a_dither_build_context(
     context->pixelformat = request->pixelformat;
     context->method_for_scan = request->method_for_scan;
 
-    if (request->lookup_policy->vtbl->map_pixel == NULL) {
+    if (request->lookup_policy->vtbl->map_pixel == NULL
+            || request->lookup_policy->vtbl->map_pixel_hint == NULL) {
         sixel_helper_set_additional_message(
             "sixel_dither_map_pixels: lookup policy is not prepared.");
         return SIXEL_BAD_ARGUMENT;

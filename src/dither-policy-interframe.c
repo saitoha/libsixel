@@ -1076,6 +1076,7 @@ sixel_dither_apply_interframe_8bit(
     int method_for_diffuse,
     sixel_dither_t *dither)
 {
+    int lookup_hint;
     SIXELSTATUS status = SIXEL_FALSE;
     int serpentine;
     int y;
@@ -1121,7 +1122,8 @@ sixel_dither_apply_interframe_8bit(
         goto end;
     }
     if (lookup_policy == NULL || lookup_policy->vtbl == NULL
-            || lookup_policy->vtbl->map_pixel == NULL) {
+            || lookup_policy->vtbl->map_pixel == NULL
+            || lookup_policy->vtbl->map_pixel_hint == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -1210,6 +1212,8 @@ sixel_dither_apply_interframe_8bit(
 
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
 
+    lookup_hint = -1;
+
 #define SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(DIFFUSE_FN)                 \
     for (y = 0; y < height; ++y) {                                      \
         absolute_y = band_origin + y;                                   \
@@ -1291,9 +1295,11 @@ sixel_dither_apply_interframe_8bit(
                 source_pixel = data + base;                             \
             }                                                           \
                                                                         \
-            color_index = lookup_policy->vtbl->map_pixel(                \
+            color_index = lookup_policy->vtbl->map_pixel_hint(           \
                 lookup_policy,                                           \
-                source_pixel);                                           \
+                source_pixel,                                            \
+                lookup_hint);                                            \
+            lookup_hint = color_index;                                   \
                                                                         \
             output_index = color_index;                                 \
                                                                         \
@@ -3402,6 +3408,7 @@ sixel_dither_apply_interframe_float32(
     sixel_dither_policy_interframe_context_t *context,
     int method_for_diffuse)
 {
+    int lookup_hint;
     SIXELSTATUS status;
     float *palette_float;
     int float_depth;
@@ -3469,7 +3476,8 @@ sixel_dither_apply_interframe_float32(
         return SIXEL_BAD_ARGUMENT;
     }
     if (context->lookup_policy == NULL || context->lookup_policy->vtbl == NULL
-            || context->lookup_policy->vtbl->map_pixel == NULL) {
+            || context->lookup_policy->vtbl->map_pixel == NULL
+            || context->lookup_policy->vtbl->map_pixel_hint == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -3554,6 +3562,8 @@ sixel_dither_apply_interframe_float32(
             }
         }
     }
+
+    lookup_hint = -1;
 
 #define SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(DIFFUSE_FN)               \
     for (y = 0; y < context->height; ++y) {                             \
@@ -3660,9 +3670,11 @@ sixel_dither_apply_interframe_float32(
             }                                                           \
             lookup_pixel = (unsigned char const *)(void const *)        \
                 working_float;                                          \
-            color_index = context->lookup_policy->vtbl->map_pixel(       \
+            color_index = context->lookup_policy->vtbl->map_pixel_hint(  \
                 context->lookup_policy,                                  \
-                lookup_pixel);                                           \
+                lookup_pixel,                                            \
+                lookup_hint);                                            \
+            lookup_hint = color_index;                                   \
                                                                         \
                 output_index = color_index;                             \
                 if (absolute_y >= context->output_start) {              \
@@ -3935,7 +3947,8 @@ sixel_dither_policy_interframe_build_context(
     context->pixelformat = request->pixelformat;
     context->method_for_scan = request->method_for_scan;
 
-    if (request->lookup_policy->vtbl->map_pixel == NULL) {
+    if (request->lookup_policy->vtbl->map_pixel == NULL
+            || request->lookup_policy->vtbl->map_pixel_hint == NULL) {
         sixel_helper_set_additional_message(
             "sixel_dither_map_pixels: lookup policy is not prepared.");
         return SIXEL_BAD_ARGUMENT;

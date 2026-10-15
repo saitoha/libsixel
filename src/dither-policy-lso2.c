@@ -310,6 +310,7 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
                              sixel_dither_policy_lso2_context_t *context
                              )
 {
+    int lookup_hint;
     SIXELSTATUS status;
     unsigned char *data;
     unsigned char *palette;
@@ -360,7 +361,8 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
     if (context->lookup_policy == NULL || context->lookup_policy->vtbl == NULL
-            || context->lookup_policy->vtbl->map_pixel == NULL) {
+            || context->lookup_policy->vtbl->map_pixel == NULL
+            || context->lookup_policy->vtbl->map_pixel_hint == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -391,6 +393,7 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
 
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
 
+    lookup_hint = -1;
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
         sixel_dither_scanline_params_varcoeff_8bit(serpentine,
@@ -462,9 +465,11 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
                 continue;
             }
 
-            color_index = context->lookup_policy->vtbl->map_pixel(
+            color_index = context->lookup_policy->vtbl->map_pixel_hint(
                 context->lookup_policy,
-                source_pixel);
+                source_pixel,
+                lookup_hint);
+            lookup_hint = color_index;
 
             /*
              * Let the displayed color compete with LSO2's palette choice.
@@ -814,6 +819,7 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                                 sixel_dither_policy_lso2_context_t *context
                                 )
 {
+    int lookup_hint;
     SIXELSTATUS status;
     float selected[SIXEL_MAX_CHANNELS];
     float retained[SIXEL_MAX_CHANNELS];
@@ -908,7 +914,8 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
     if (context->lookup_policy == NULL || context->lookup_policy->vtbl == NULL
-            || context->lookup_policy->vtbl->map_pixel == NULL) {
+            || context->lookup_policy->vtbl->map_pixel == NULL
+            || context->lookup_policy->vtbl->map_pixel_hint == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (channel_count <= 0 || channel_count > SIXEL_MAX_CHANNELS) {
@@ -929,6 +936,7 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     }
 
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
+    lookup_hint = -1;
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
         sixel_dither_scanline_params_varcoeff_float32(serpentine,
@@ -974,9 +982,11 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
 
             lookup_pixel = (unsigned char const *)(void const *)
                 lookup_pixel_float;
-            color_index = context->lookup_policy->vtbl->map_pixel(
+            color_index = context->lookup_policy->vtbl->map_pixel_hint(
                 context->lookup_policy,
-                lookup_pixel);
+                lookup_pixel,
+                lookup_hint);
+            lookup_hint = color_index;
 
             /* Native and promoted-byte delta share retained-color
              * competition without rounding the corrected working sample. */
@@ -1218,7 +1228,8 @@ sixel_dither_policy_lso2_build_context(
     context->pixelformat = request->pixelformat;
     context->method_for_scan = request->method_for_scan;
 
-    if (request->lookup_policy->vtbl->map_pixel == NULL) {
+    if (request->lookup_policy->vtbl->map_pixel == NULL
+            || request->lookup_policy->vtbl->map_pixel_hint == NULL) {
         sixel_helper_set_additional_message(
             "sixel_dither_map_pixels: lookup policy is not prepared.");
         return SIXEL_BAD_ARGUMENT;

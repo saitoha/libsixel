@@ -112,6 +112,7 @@ sixel_dither_apply_none_8bit(
     sixel_lookup_policy_interface_t const *lookup_policy,
     sixel_dither_t *dither)
 {
+    int lookup_hint;
     SIXELSTATUS status;
     int serpentine;
     int y;
@@ -151,7 +152,8 @@ sixel_dither_apply_none_8bit(
         goto end;
     }
     if (lookup_policy == NULL || lookup_policy->vtbl == NULL
-            || lookup_policy->vtbl->map_pixel == NULL) {
+            || lookup_policy->vtbl->map_pixel == NULL
+            || lookup_policy->vtbl->map_pixel_hint == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -181,6 +183,7 @@ sixel_dither_apply_none_8bit(
 
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
 
+    lookup_hint = -1;
     for (y = 0; y < height; ++y) {
         absolute_y = band_origin + y;
         none_sixel_dither_scanline_params_fixed_8bit(
@@ -229,9 +232,11 @@ sixel_dither_apply_none_8bit(
                 }
                 continue;
             }
-            color_index = lookup_policy->vtbl->map_pixel(
+            color_index = lookup_policy->vtbl->map_pixel_hint(
                 lookup_policy,
-                source_pixel);
+                source_pixel,
+                lookup_hint);
+            lookup_hint = color_index;
             /*
              * Now that the palette has had its say, let the color already on
              * screen compete with it.  Keeping wins ties because it costs no
@@ -372,6 +377,7 @@ sixel_dither_apply_none_float32(
     sixel_dither_policy_none_context_t *context
     )
 {
+    int lookup_hint;
     SIXELSTATUS status;
     float *palette_float;
     int float_depth;
@@ -421,7 +427,8 @@ sixel_dither_apply_none_float32(
         return SIXEL_BAD_ARGUMENT;
     }
     if (context->lookup_policy == NULL || context->lookup_policy->vtbl == NULL
-            || context->lookup_policy->vtbl->map_pixel == NULL) {
+            || context->lookup_policy->vtbl->map_pixel == NULL
+            || context->lookup_policy->vtbl->map_pixel_hint == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -454,6 +461,7 @@ sixel_dither_apply_none_float32(
         have_palette_float = 0;
     }
 
+    lookup_hint = -1;
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
         none_sixel_dither_scanline_params_fixed_float32(
@@ -486,9 +494,11 @@ sixel_dither_apply_none_float32(
 
             lookup_pixel = (unsigned char const *)(void const *)
                 working_float;
-            color_index = context->lookup_policy->vtbl->map_pixel(
+            color_index = context->lookup_policy->vtbl->map_pixel_hint(
                 context->lookup_policy,
-                lookup_pixel);
+                lookup_pixel,
+                lookup_hint);
+            lookup_hint = color_index;
 
             keep = 0;
             if (absolute_y >= 0 && dither->pipeline_6delta_enabled) {
@@ -690,7 +700,8 @@ sixel_dither_policy_none_build_context(
     context->pixelformat = request->pixelformat;
     context->method_for_scan = request->method_for_scan;
 
-    if (request->lookup_policy->vtbl->map_pixel == NULL) {
+    if (request->lookup_policy->vtbl->map_pixel == NULL
+            || request->lookup_policy->vtbl->map_pixel_hint == NULL) {
         sixel_helper_set_additional_message(
             "sixel_dither_map_pixels: lookup policy is not prepared.");
         return SIXEL_BAD_ARGUMENT;
