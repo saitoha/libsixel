@@ -1,7 +1,7 @@
 {
   "baseline_revision": "551e9bb65",
   "before_library_sha256": "b85836fc016ba28ec8daf5b78283d459499da46f653af97f54259c63ba7498ed",
-  "after_library_sha256": "d9ee49c537df455f1018ae88a44c555b02b9114d9bce26a4712e902b2db4ad4c",
+  "after_library_sha256": "c8a47245f5771719cde511477b2caa68515e5d051dbc3333bd237a39cadff4d4",
   "stream_count": 957,
   "unique_stream_count": 731,
   "thread_budgets": [
@@ -28741,9 +28741,10 @@
   "after_decode_calls": 26316,
   "duplicate_policy": "Byte-identical input hashes reuse the same checked outputs in the final-build run.",
   "decoder_source_sha256": {
-    "src/fromsixel.c": "ee07d34b18406cfd26fb34e468dbc794f3a0d0d2f3b88ee79230c1ce2cfd7750",
-    "src/decoder-parallel.c": "1aae5e262f52b9d2724c454465fa8591f315c8de3313a33920f67db0f2c27667",
-    "src/decoder-image.h": "96a3822d15bf42dc91e57b09f53eb896d468a8d93341996f703703f05541e6af",
-    "src/decoder-ormode.h": "012723de3c0be4f4e259a17c498efc97c88157e909ac1a35980fba4d9d5d58d9"
+    "src/fromsixel.c": "99bb0092e5c043915edbb61f91b194ae16ea4459f1296e23d5191f56f587f6ee",
+    "src/decoder-parallel.c": "51237ed5ef756aa8e3268a37d8cd87c44eafb011677c84a620dfe9ec277eb80a",
+    "src/decoder-image.h": "a5b3ed44d335bc9e4a4bdc34088c984660f1d46db0cb539d4f0b5adf06596011",
+    "src/decoder-ormode.h": "012723de3c0be4f4e259a17c498efc97c88157e909ac1a35980fba4d9d5d58d9",
+    "src/decoder-columns.h": "c8bd024181b55c3ac4559cf8876aecab5d6dc286923ad5c05d3ea8aa206c0ce7"
   }
 }

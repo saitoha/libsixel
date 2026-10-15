@@ -18,7 +18,7 @@
       "directory": ".",
       "ldflags": ""
     },
-    "generated_at_utc": "2026-10-14T20:34:31.404798+00:00",
+    "generated_at_utc": "2026-10-15T00:59:02.326029+00:00",
     "host": {
       "logical_cpu_count": 14,
       "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O"
@@ -56,13 +56,13 @@
       },
       "img2sixel": {
         "launcher": "converters/img2sixel",
-        "launcher_sha256": "8383101ca994b376aa5d3c4c7bac8d2227162b0fa9b0f50acac261f38b72a88a",
+        "launcher_sha256": "b1c171071db7c95da508064c194717571e39fac279d90c10d5113d84c83e9fe1",
         "payload": "converters/.libs/img2sixel",
         "payload_sha256": "0682a0e6b3e45a52822a4144de0c2a66cae2ac4d9debf83b90d987b4d215a570"
       },
       "sixel2png": {
         "launcher": "converters/sixel2png",
-        "launcher_sha256": "c752970fd8aa0d0ab948cd3a963af2c3acab606a1b42f38d4523e1e355d6037c",
+        "launcher_sha256": "231ffc3e23984c855954492ea6ae05cc8190c613f069016fff9c623d74eecf7e",
         "payload": "converters/.libs/sixel2png",
         "payload_sha256": "2868785cd4c2bb99859cdfb85053742817b59b95c7bdcbee68ca10f4fe71f2f2"
       },
@@ -111,13 +111,13 @@
       "dependencies_unchanged_during_measurement": true,
       "libsixel": {
         "path": "src/.libs/libsixel.1.dylib",
-        "sha256": "0eda3e12d79579d238098f2e70ba318b3cb9f633f15805760ee0367c950f08d5"
+        "sha256": "c8a47245f5771719cde511477b2caa68515e5d051dbc3333bd237a39cadff4d4"
       },
       "load_probes": {
         "img2sixel": {
           "command": "'{img2sixel_payload}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -o '{null}' '{input}'",
           "loaded_path": "src/.libs/libsixel.1.dylib",
-          "loaded_sha256": "0eda3e12d79579d238098f2e70ba318b3cb9f633f15805760ee0367c950f08d5",
+          "loaded_sha256": "c8a47245f5771719cde511477b2caa68515e5d051dbc3333bd237a39cadff4d4",
           "method": "DYLD_PRINT_LIBRARIES",
           "payload": "converters/.libs/img2sixel",
           "required_diagnostic": "scale plan active=0 width=1920 height=1080",
@@ -129,7 +129,7 @@
         "sixel2png": {
           "command": "'{sixel2png_payload}' --threads=1 --gpu-policy=off -i '{decoder_sixel}' -o '{null}'",
           "loaded_path": "src/.libs/libsixel.1.dylib",
-          "loaded_sha256": "0eda3e12d79579d238098f2e70ba318b3cb9f633f15805760ee0367c950f08d5",
+          "loaded_sha256": "c8a47245f5771719cde511477b2caa68515e5d051dbc3333bd237a39cadff4d4",
           "method": "DYLD_PRINT_LIBRARIES",
           "payload": "converters/.libs/sixel2png",
           "required_diagnostic": null,
@@ -141,7 +141,7 @@
       }
     },
     "source": {
-      "revision": "51e088471d6d5cb27224ca304173c26f7d9b2bc4",
+      "revision": "da729980f93894beadde90d0b60de643e1df1c22",
       "tracked_worktree_state_at_start": "clean"
     }
   },

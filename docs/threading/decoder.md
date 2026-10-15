@@ -4,11 +4,13 @@
 
 A SIXEL stream states vertical movement through control sequences in the input. Before parsing those sequences, an arbitrary byte offset cannot be mapped directly to a destination-row strip. The decoder therefore begins serially, establishes raster bounds and initial palette state, and passes the remaining payload to the parallel decoder as byte spans.
 
+The serial path uses [ordinary band columns](../decoder/pipeline/README.md#ordinary-mode-band-columns). The following span design applies when a parallel request succeeds.
+
 The default span lengths are nearly equal. `SIXEL_PARALLEL_SKEW` can bias the distribution by up to 20 percent so later workers receive systematically more or less input. Thread count is capped by payload length; a payload cannot have more non-empty initial spans than bytes.
 
-## Normal direct path
+## Parallel direct path
 
-The normal path is a two-pass design rather than a single parallel paint:
+The ordinary parallel path validates its byte spans before painting:
 
 ```text
 serial parser reaches parallel anchor
@@ -67,7 +69,7 @@ Each point is the median of nine instrumented runs after two warm-ups. The shade
 
 *Figure: Full HD decoder intervals measured inside `sixel2png`. PNG serialization is measured separately but intentionally omitted from these worker-scaling lines.*
 
-The one-worker serial path took 14.294 ms at the median, and two workers took 15.529 ms. The fastest observed median was 3.846 ms with 10 workers, or 3.72 times faster than one worker. These intervals include instrumentation, worker creation, the validation join and the paint barrier. The two sequential phases and controller work keep total time above the ideal `T(1) / N` guide.
+The one-worker serial path took 2.803 ms at the median; two workers took 16.125 ms. The fastest observed median was 2.803 ms with one worker. The serial path accumulates ordinary column words, whereas parallel workers still perform validation and per-pixel paint. Their timing curves therefore describe different implementations, and more workers need not be faster.
 
 These numbers characterize this fixture, binary and host. No CPU affinity, exclusive host, frequency control or confidence-interval claim is implied. The retained [`decoder-thread-scaling.csv`](measurements/decoder-thread-scaling.csv) contains all 144 timed observations and 32 warm-ups with their schedule positions. Decoder-specific source, build and verified library provenance are recorded under `decoder_refresh` in [`threading-run.json`](measurements/threading-run.json); encoder and animation records retain their separate provenance.
 
@@ -77,34 +79,46 @@ The same source and encoder policy produce two dedicated decoder fixtures. These
 
 | Raster | SIXEL bytes | Scan wall | Parallel paint wall | Decoder wall | PNG wall |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 900 x 675 | 295,821 | 0.672 ms | 0.841 ms | 1.794 ms | 17.316 ms |
-| 1920 x 1080 | 960,950 | 1.883 ms | 2.328 ms | 4.564 ms | 61.364 ms |
+| 900 x 675 | 295,821 | 0.690 ms | 0.784 ms | 1.805 ms | 18.054 ms |
+| 1920 x 1080 | 960,950 | 1.896 ms | 2.425 ms | 4.803 ms | 64.712 ms |
 
 These two points include scheduling and cache noise and must not be read as a scaling curve. [`decoder-size-comparison.csv`](measurements/decoder-size-comparison.csv) and both raw timelines retain the phase bounds and scan/paint fractions. Calling this only “band decoding” hides two facts: initial work units are encoded byte spans, and direct paint becomes row-parallel only after validation proves independence.
 
 ## In-process API scaling
 
-The retained `snake-fullhd-p256-t1.0.six` fixture decodes to 1920 x 1080 RGBA through `sixel_decode_direct`. The table compares develop `a3ef14a007d9f02ca11ac7b86b4b155507377c37` with cached boundary state and prefix-derived row offsets at `51e088471d6d5cb27224ca304173c26f7d9b2bc4`. Each cell is the median of 21 timed calls after two warm-ups, with the inclusive interquartile interval in brackets. Input loading, output freeing, PNG serialization and timeline logging are excluded. No builds or test suites run alongside this experiment; ordinary desktop activity remains uncontrolled.
+The retained `snake-fullhd-p256-t1.0.six` fixture decodes to 1920 x 1080 pixels. These measurements compare develop `0a77c616180a2a77bdf93dfd81e14204021ce1fc` with ordinary band columns at `da729980f93894beadde90d0b60de643e1df1c22`. Cells contain the median of 21 timed API calls after two warm-ups, with the inclusive interquartile interval in brackets. Input loading, output freeing, PNG serialization and timeline logging are excluded. Build order alternates by condition; no builds or tests run alongside the experiment, while ordinary desktop activity remains uncontrolled.
 
-| Workers | Before, ms [Q1, Q3] | Cached state, ms [Q1, Q3] | Before / after |
+### `sixel_decode_direct`
+
+| Workers | Before, ms [Q1, Q3] | Band columns, ms [Q1, Q3] | Before / after |
 | ---: | ---: | ---: | ---: |
-| 1 | 16.152 [15.748, 16.321] | 15.522 [15.480, 15.604] | 1.04x |
-| 2 | 15.893 [15.706, 15.977] | 15.477 [15.419, 15.537] | 1.03x |
-| 4 | 10.143 [9.922, 10.227] | 8.889 [8.797, 8.986] | 1.14x |
-| 8 | 6.875 [6.806, 6.928] | 5.105 [5.048, 5.145] | 1.35x |
-| 12 | 6.256 [6.155, 6.413] | 4.361 [4.243, 4.435] | 1.43x |
+| 1 | 16.549 [16.445, 16.716] | 5.399 [5.378, 5.496] | 3.07x |
+| 2 | 16.261 [16.227, 16.312] | 16.243 [16.234, 16.283] | 1.00x |
+| 4 | 8.999 [8.979, 9.040] | 9.005 [8.969, 9.035] | 1.00x |
+| 8 | 5.165 [5.139, 5.194] | 5.151 [5.124, 5.179] | 1.00x |
+| 12 | 4.498 [4.241, 4.610] | 4.327 [4.229, 4.376] | 1.04x |
 
-Both builds are fastest at 12 workers among the measured budgets. Their speedups over their own one-worker result are 2.58x before and 3.56x after. Two workers remain close to serial performance. The serial path is unchanged by this optimization, so its observed difference must not be attributed to eliminating parallel prefix scans.
+### `sixel_decode_raw`
 
-For the 100 retained photographs, the per-image median-call speed ratios are:
+| Workers | Before, ms [Q1, Q3] | Band columns, ms [Q1, Q3] | Before / after |
+| ---: | ---: | ---: | ---: |
+| 1 | 15.930 [15.900, 15.983] | 5.331 [5.277, 5.385] | 2.99x |
+| 2 | 15.510 [15.497, 15.526] | 15.518 [15.504, 15.557] | 1.00x |
+| 4 | 8.507 [8.485, 8.532] | 8.545 [8.533, 8.559] | 1.00x |
+| 8 | 4.894 [4.875, 4.899] | 4.890 [4.875, 4.911] | 1.00x |
+| 12 | 4.239 [4.180, 4.380] | 4.195 [4.118, 4.357] | 1.01x |
+
+The parallel worker algorithm is unchanged. These results do not imply that its validation and paint passes use band columns. The serial path can now outperform several parallel budgets; the API preserves the configured thread policy.
+
+For 100 retained photographs, per-image direct-RGBA speed ratios are:
 
 | Workers | Median speed ratio | Range |
 | ---: | ---: | ---: |
-| 1 | 1.00x | 0.96–1.05x |
-| 4 | 1.14x | 0.96–1.47x |
-| 12 | 1.51x | 1.26–2.14x |
+| 1 | 2.23x | 1.54–3.13x |
+| 4 | 1.00x | 0.99–1.02x |
+| 12 | 1.00x | 0.96–1.10x |
 
-[`decoder-api-scaling.json`](measurements/decoder-api-scaling.json) retains every timed call, input hash, source revision, configure arguments and verified library path. These API measurements use different input streams and timing boundaries from the instrumented scaling chart, so their absolute values should not be combined.
+[`decoder-api-scaling.json`](measurements/decoder-api-scaling.json) retains every sample, input hash, revision, configure arguments and verified library path, including the OR and high-color controls. The instrumented scaling chart uses a different fixture and timing boundary, so its absolute values should not be combined with this table.
 
 ## Local-buffer and undither path
 

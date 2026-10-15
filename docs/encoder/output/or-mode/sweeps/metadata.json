@@ -2,22 +2,80 @@
   "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
   "cpu": "Apple M3 Max",
   "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin27.0.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
-  "decoder_base_revision": "5768e3e72450414e2b67de935124092e5f439008",
+  "decoder_base_revision": "da729980f93894beadde90d0b60de643e1df1c22",
   "decoder_source_sha256": {
-    "src/fromsixel.c": "ee07d34b18406cfd26fb34e468dbc794f3a0d0d2f3b88ee79230c1ce2cfd7750",
-    "src/decoder-parallel.c": "1aae5e262f52b9d2724c454465fa8591f315c8de3313a33920f67db0f2c27667",
-    "src/decoder-image.h": "96a3822d15bf42dc91e57b09f53eb896d468a8d93341996f703703f05541e6af",
+    "src/fromsixel.c": "99bb0092e5c043915edbb61f91b194ae16ea4459f1296e23d5191f56f587f6ee",
+    "src/decoder-parallel.c": "51237ed5ef756aa8e3268a37d8cd87c44eafb011677c84a620dfe9ec277eb80a",
+    "src/decoder-image.h": "a5b3ed44d335bc9e4a4bdc34088c984660f1d46db0cb539d4f0b5adf06596011",
     "src/decoder-ormode.h": "012723de3c0be4f4e259a17c498efc97c88157e909ac1a35980fba4d9d5d58d9",
+    "src/decoder-columns.h": "c8bd024181b55c3ac4559cf8876aecab5d6dc286923ad5c05d3ea8aa206c0ce7",
     "tools/ormode/decode-bench.c": "a5a4df96096c93a44755867656bf934a2378d8efc340e975d79c903af7e15dbf"
   },
-  "configure": "CFLAGS=-O3 --disable-curl --without-libcurl --without-jpeg --without-png --without-gd --disable-gdk-pixbuf2 --disable-imlib2 --disable-quicklook BASH=/bin/sh",
+  "configure": "CFLAGS=-O3 --without-libcurl --without-jpeg --without-png --without-gd --without-gdk-pixbuf2 --disable-quicklook-extension BASH=/bin/sh",
   "binary_sha256": {
-    "/private/tmp/claude-501/-Users-saitoha-repo-libsixel--claude-worktrees-or-mode-historical-context-703951/12230b2e-f529-46fb-a0d0-9545a3c3978a/scratchpad/study-root/decode-bench": "9d46ebfa2a368564fa9a2d8763544b0ee0884907b1a97842a21b1e5e5798a54f",
-    "/private/tmp/claude-501/-Users-saitoha-repo-libsixel--claude-worktrees-or-mode-historical-context-703951/12230b2e-f529-46fb-a0d0-9545a3c3978a/scratchpad/wt-mine/converters/.libs/sixel2png": "f2c544929f48e1c440fd82cf73a63dec2764584a4a8bf11a92cb0d45f80835b3",
-    "/private/tmp/claude-501/-Users-saitoha-repo-libsixel--claude-worktrees-or-mode-historical-context-703951/12230b2e-f529-46fb-a0d0-9545a3c3978a/scratchpad/wt-mine/src/.libs/libsixel.1.dylib": "d9ee49c537df455f1018ae88a44c555b02b9114d9bce26a4712e902b2db4ad4c"
+    "/Users/saitoha/.codex/worktrees/decoder-band-columns/study/decode-bench": "9d46ebfa2a368564fa9a2d8763544b0ee0884907b1a97842a21b1e5e5798a54f",
+    "/Users/saitoha/.codex/worktrees/decoder-band-columns/libsixel/converters/.libs/sixel2png": "2868785cd4c2bb99859cdfb85053742817b59b95c7bdcbee68ca10f4fe71f2f2",
+    "/Users/saitoha/.codex/worktrees/decoder-band-columns/libsixel/src/.libs/libsixel.1.dylib": "c8a47245f5771719cde511477b2caa68515e5d051dbc3333bd237a39cadff4d4"
   },
   "retained_encoder_metadata": {
-    "revision": "cf4cb3439aedec252b68bbc3674b10aa2bf0145f",
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "cpu": "Apple M3 Max",
+    "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin27.0.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "decoder_base_revision": "5768e3e72450414e2b67de935124092e5f439008",
+    "decoder_source_sha256": {
+      "src/fromsixel.c": "ee07d34b18406cfd26fb34e468dbc794f3a0d0d2f3b88ee79230c1ce2cfd7750",
+      "src/decoder-parallel.c": "1aae5e262f52b9d2724c454465fa8591f315c8de3313a33920f67db0f2c27667",
+      "src/decoder-image.h": "96a3822d15bf42dc91e57b09f53eb896d468a8d93341996f703703f05541e6af",
+      "src/decoder-ormode.h": "012723de3c0be4f4e259a17c498efc97c88157e909ac1a35980fba4d9d5d58d9",
+      "tools/ormode/decode-bench.c": "a5a4df96096c93a44755867656bf934a2378d8efc340e975d79c903af7e15dbf"
+    },
+    "configure": "CFLAGS=-O3 --disable-curl --without-libcurl --without-jpeg --without-png --without-gd --disable-gdk-pixbuf2 --disable-imlib2 --disable-quicklook BASH=/bin/sh",
+    "binary_sha256": {
+      "/private/tmp/claude-501/-Users-saitoha-repo-libsixel--claude-worktrees-or-mode-historical-context-703951/12230b2e-f529-46fb-a0d0-9545a3c3978a/scratchpad/study-root/decode-bench": "9d46ebfa2a368564fa9a2d8763544b0ee0884907b1a97842a21b1e5e5798a54f",
+      "/private/tmp/claude-501/-Users-saitoha-repo-libsixel--claude-worktrees-or-mode-historical-context-703951/12230b2e-f529-46fb-a0d0-9545a3c3978a/scratchpad/wt-mine/converters/.libs/sixel2png": "f2c544929f48e1c440fd82cf73a63dec2764584a4a8bf11a92cb0d45f80835b3",
+      "/private/tmp/claude-501/-Users-saitoha-repo-libsixel--claude-worktrees-or-mode-historical-context-703951/12230b2e-f529-46fb-a0d0-9545a3c3978a/scratchpad/wt-mine/src/.libs/libsixel.1.dylib": "d9ee49c537df455f1018ae88a44c555b02b9114d9bce26a4712e902b2db4ad4c"
+    },
+    "retained_encoder_metadata": {
+      "revision": "cf4cb3439aedec252b68bbc3674b10aa2bf0145f",
+      "colors": [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64,
+        128,
+        256
+      ],
+      "threads": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "cli_runs": 11,
+      "api_runs": 21,
+      "warmups": 2,
+      "binary_sha256": {
+        "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel": "d27a23d3a090651e89ac94a039151bf8e4f5bb37104d50da2dc498532cb2f9e0",
+        "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/sixel2png": "901bd28122ccc86af7a07ff56a1af2d351f0bc1a5c7f1a89a225ac476026e216",
+        "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/decode-bench": "1a90b3ea74476c2551f504b05de8179df1b3f0c26ca879bd87aa72f108cabc72",
+        "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/src/.libs/libsixel.1.dylib": "fe525ded019a9cf7a485b6d49310cf4f2cdcaa0c8914e1af07fdbc067996e49e"
+      },
+      "decoder_input": "Encode once at threads=1, then reuse identical stream bytes across all decoder budgets."
+    },
+    "reference_metadata_sha256": "55594377da311c5702de4880d41476f01600030d3777a6feb37d7e95641b856a",
+    "encoder_records": "Retained unchanged from reference_sweeps",
+    "reference_sweeps": "/private/tmp/claude-501/-Users-saitoha-repo-libsixel--claude-worktrees-or-mode-historical-context-703951/12230b2e-f529-46fb-a0d0-9545a3c3978a/scratchpad/wt-base/docs/encoder/output/or-mode/sweeps",
+    "decoder_input": "Retained fixed streams; no re-encoding",
     "colors": [
       2,
       4,
@@ -44,18 +102,11 @@
     ],
     "cli_runs": 11,
     "api_runs": 21,
-    "warmups": 2,
-    "binary_sha256": {
-      "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel": "d27a23d3a090651e89ac94a039151bf8e4f5bb37104d50da2dc498532cb2f9e0",
-      "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/sixel2png": "901bd28122ccc86af7a07ff56a1af2d351f0bc1a5c7f1a89a225ac476026e216",
-      "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/decode-bench": "1a90b3ea74476c2551f504b05de8179df1b3f0c26ca879bd87aa72f108cabc72",
-      "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/src/.libs/libsixel.1.dylib": "fe525ded019a9cf7a485b6d49310cf4f2cdcaa0c8914e1af07fdbc067996e49e"
-    },
-    "decoder_input": "Encode once at threads=1, then reuse identical stream bytes across all decoder budgets."
+    "warmups": 2
   },
-  "reference_metadata_sha256": "55594377da311c5702de4880d41476f01600030d3777a6feb37d7e95641b856a",
+  "reference_metadata_sha256": "18be77d9cb3b80e209624af194a334d03e3a4c4571ae76e0e9dc28be130c4639",
   "encoder_records": "Retained unchanged from reference_sweeps",
-  "reference_sweeps": "/private/tmp/claude-501/-Users-saitoha-repo-libsixel--claude-worktrees-or-mode-historical-context-703951/12230b2e-f529-46fb-a0d0-9545a3c3978a/scratchpad/wt-base/docs/encoder/output/or-mode/sweeps",
+  "reference_sweeps": "/Users/saitoha/.codex/worktrees/decoder-band-columns/libsixel/docs/encoder/output/or-mode/sweeps",
   "decoder_input": "Retained fixed streams; no re-encoding",
   "colors": [
     2,
