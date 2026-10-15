@@ -42,6 +42,10 @@ Supported platforms and command-line behavior that needs no background in color 
 
 The foundations the rest of the documentation builds on, in reading order: how vision works, how colors are represented as numbers, how color differences are judged, how pixels and precision are stored, how displays turn them into light, and how images are drawn with a limited palette.
 
+### Why these concepts matter
+
+- [Why quantization quality needs color, display, and vision knowledge](concepts/quality-optimization.md) explains why tuning quantization and dithering progresses from visual inspection through measurement and combined metrics to a perceptual definition of quality, why error is moved rather than removed, and what color spaces, displays, and visual physiology each contribute to resolving trade-offs.
+
 ### Visual perception
 
 - [Visual perception for image quality](quality/visual-perception/README.md) explains the sensory physiology behind the metrics: perceptual quality, photoreceptors and opponent channels, light and chromatic adaptation including display filters and dark rooms, contrast sensitivity, viewing geometry, and the visibility of noise and chroma detail.

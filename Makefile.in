@@ -843,6 +843,7 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/concepts/pixelformat-precision/measurements/pixelformat-precision-resize.png \
 	docs/concepts/pixelformat-precision/measurements/pixelformat-precision-run.json \
 	docs/concepts/pixelformat.md \
+	docs/concepts/quality-optimization.md \
 	docs/loader/README.md \
 	docs/loader/network-access.md \
 	docs/loader/libpng.md \

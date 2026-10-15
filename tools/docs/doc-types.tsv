@@ -29,6 +29,7 @@ docs/concepts/palettes/README.md	explanation	both
 docs/concepts/din99d/README.md	explanation	user	color-distance intuition + measured reference and reproduction how-to
 docs/concepts/pixelformat-precision/README.md	explanation	both	storage model + numeric contracts and large contributor test ledger
 docs/concepts/pixelformat.md	reference	both	pixel representations + explanatory model and contributor test ledger
+docs/concepts/quality-optimization.md	explanation	contributor	
 docs/encoder/animation.md	reference	both	playback matrix + usage/diagnosis how-to and contributor test ledger
 docs/encoder/colorspace-handling/README.md	reference	both	color-space contracts + configuration how-to and implementation references
 docs/encoder/palette-construction/clustering-colorspace/README.md	reference	both	color-space choices + mathematical explanation and measurement reproduction
