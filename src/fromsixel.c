@@ -1490,38 +1490,43 @@ sixel_decode_raw_impl(
                     }
 #endif  /* SIXEL_ENABLE_THREADS */
 
-                    /* Sequence packets keep a previously published canvas;
-                     * their untouched samples must never be reinitialized. */
-                    if (!context->ormode && !context->sequence &&
-                            !context->normal_disabled &&
-                            image->normal_columns == NULL) {
-                        image->normal_columns = image_buffer_allocate_planes(
-                            image->width, image->height, allocator);
-                        if (image->normal_columns == NULL) {
-                            status = SIXEL_BAD_ALLOCATION;
-                            goto end;
+                    /* Keep OR runs outside normal-column setup checks. */
+                    if (context->ormode) {
+                        if (!trust_raster_size &&
+                                context->repeat_count == 1 &&
+                                context->pos_x >= 0 &&
+                                context->pos_x < image->width &&
+                                context->pos_y >= 0 &&
+                                context->pos_y <= image->height - 6) {
+                            p = parser_context_store_ormode_run(
+                                context, image, p, p0 + len);
+                            continue;
                         }
-                    }
-                    if (image->normal_columns != NULL &&
-                            !trust_raster_size && context->repeat_count == 1 &&
-                            context->pos_x >= 0 &&
-                            context->pos_x < image->width &&
-                            context->pos_y >= 0 &&
-                            context->pos_y <= image->height - 6) {
-                        p = parser_context_store_normal_run(
-                            context, image, p, p0 + len);
-                        continue;
-                    }
-
-                    if (context->ormode && !trust_raster_size &&
-                            context->repeat_count == 1 &&
-                            context->pos_x >= 0 &&
-                            context->pos_x < image->width &&
-                            context->pos_y >= 0 &&
-                            context->pos_y <= image->height - 6) {
-                        p = parser_context_store_ormode_run(
-                            context, image, p, p0 + len);
-                        continue;
+                    } else {
+                        /* Sequence packets keep an existing canvas; their
+                         * untouched samples must never be reinitialized. */
+                        if (!context->sequence &&
+                                !context->normal_disabled &&
+                                image->normal_columns == NULL) {
+                            image->normal_columns =
+                                image_buffer_allocate_planes(image->width,
+                                    image->height, allocator);
+                            if (image->normal_columns == NULL) {
+                                status = SIXEL_BAD_ALLOCATION;
+                                goto end;
+                            }
+                        }
+                        if (image->normal_columns != NULL &&
+                                !trust_raster_size &&
+                                context->repeat_count == 1 &&
+                                context->pos_x >= 0 &&
+                                context->pos_x < image->width &&
+                                context->pos_y >= 0 &&
+                                context->pos_y <= image->height - 6) {
+                            p = parser_context_store_normal_run(
+                                context, image, p, p0 + len);
+                            continue;
+                        }
                     }
 
                     if (context->pos_x < 0 || context->pos_y < 0 ||
@@ -1931,21 +1936,6 @@ sequence_color_parameters:
                     }
                 }
 
-                if (!context->ormode) {
-                    if (context->color_index >= 256 ||
-                            (image->depth == 4 && context->painted &&
-                             context->nparams > 4)) {
-                        /* Byte lanes cannot hold wide registers. Direct
-                         * output also owns paint-time palette values; raw
-                         * indexes intentionally keep the final palette. */
-                        image_buffer_materialize_columns(image, allocator);
-                        context->normal_disabled = 1;
-                    } else {
-                        context->normal_color = sixel_column_color(
-                            (unsigned int)context->color_index);
-                    }
-                }
-
                 if (context->ormode) {
                     context->ormode_spread = sixel_ormode_spread(
                         (unsigned int)context->color_index);
@@ -1962,6 +1952,19 @@ sequence_color_parameters:
                             status = SIXEL_BAD_ALLOCATION;
                             goto end;
                         }
+                    }
+                } else {
+                    if (context->color_index >= 256 ||
+                            (image->depth == 4 && context->painted &&
+                             context->nparams > 4)) {
+                        /* Byte lanes cannot hold wide registers. Direct
+                         * output also owns paint-time palette values; raw
+                         * indexes intentionally keep the final palette. */
+                        image_buffer_materialize_columns(image, allocator);
+                        context->normal_disabled = 1;
+                    } else {
+                        context->normal_color = sixel_column_color(
+                            (unsigned int)context->color_index);
                     }
                 }
 
